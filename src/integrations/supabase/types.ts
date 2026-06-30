@@ -1593,6 +1593,36 @@ export type Database = {
         Returns: boolean
       }
       next_code: { Args: { _prefix: string }; Returns: string }
+      send_rfq: {
+        Args: {
+          p_due_date: string
+          p_enquiry_id: string
+          p_notes?: string
+          p_vendor_ids: string[]
+        }
+        Returns: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          due_date: string | null
+          enquiry_id: string
+          external_ref: Json | null
+          id: string
+          notes: string | null
+          project_id: string
+          rfq_no: string
+          status: Database["public"]["Enums"]["rfq_status"]
+          updated_at: string
+          workflow_state: Json | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rfqs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       activity_action:
