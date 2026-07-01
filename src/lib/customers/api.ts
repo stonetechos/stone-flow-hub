@@ -14,7 +14,7 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) {
     q = q.or(
       `name.ilike.%${s}%,customer_code.ilike.%${s}%,primary_phone.ilike.%${s}%,city.ilike.%${s}%`,
