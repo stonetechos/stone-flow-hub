@@ -41,6 +41,22 @@ export const qk = {
   activity: {
     byEntity: (type: string, id: string) => ["activity", type, id] as const,
   },
+  quotes: {
+    all: ["quotes"] as const,
+    list: (q?: string) => ["quotes", "list", q ?? ""] as const,
+    byId: (id: string) => ["quotes", "byId", id] as const,
+    byProject: (id: string) => ["quotes", "byProject", id] as const,
+    items: (id: string) => ["quotes", "items", id] as const,
+  },
+  invoices: {
+    all: ["invoices"] as const,
+    list: (q?: string) => ["invoices", "list", q ?? ""] as const,
+    byId: (id: string) => ["invoices", "byId", id] as const,
+    byProject: (id: string) => ["invoices", "byProject", id] as const,
+    items: (id: string) => ["invoices", "items", id] as const,
+    payments: (id: string) => ["invoices", "payments", id] as const,
+    links: (id: string) => ["invoices", "links", id] as const,
+  },
   tags: ["tags"] as const,
   productCategories: ["product_categories"] as const,
 } as const;

@@ -581,6 +581,285 @@ export type Database = {
           },
         ]
       }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          line_total: number
+          product_id: string | null
+          quantity: number
+          sort_order: number
+          tax_pct: number
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount_paid: number
+          balance_due: number
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string
+          due_date: string | null
+          external_ref: string | null
+          id: string
+          invoice_no: string
+          issue_date: string
+          notes: string | null
+          project_id: string
+          quote_id: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal: number
+          tax_amount: number
+          terms: string | null
+          total: number
+          updated_at: string
+          workflow_state: Json | null
+        }
+        Insert: {
+          amount_paid?: number
+          balance_due?: number
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id: string
+          due_date?: string | null
+          external_ref?: string | null
+          id?: string
+          invoice_no: string
+          issue_date?: string
+          notes?: string | null
+          project_id: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          tax_amount?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          workflow_state?: Json | null
+        }
+        Update: {
+          amount_paid?: number
+          balance_due?: number
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id?: string
+          due_date?: string | null
+          external_ref?: string | null
+          id?: string
+          invoice_no?: string
+          issue_date?: string
+          notes?: string | null
+          project_id?: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          tax_amount?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          workflow_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_links: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          expires_at: string | null
+          id: string
+          invoice_id: string
+          link_no: string
+          provider: string
+          provider_link_id: string | null
+          short_url: string | null
+          status: Database["public"]["Enums"]["payment_link_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id: string
+          link_no: string
+          provider?: string
+          provider_link_id?: string | null
+          short_url?: string | null
+          status?: Database["public"]["Enums"]["payment_link_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string
+          link_no?: string
+          provider?: string
+          provider_link_id?: string | null
+          short_url?: string | null
+          status?: Database["public"]["Enums"]["payment_link_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_links_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency_code: string
+          id: string
+          invoice_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          paid_at: string
+          payment_link_id: string | null
+          payment_no: string
+          razorpay_link_id: string | null
+          razorpay_payment_id: string | null
+          recorded_by: string | null
+          reference_no: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency_code?: string
+          id?: string
+          invoice_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          paid_at?: string
+          payment_link_id?: string | null
+          payment_no: string
+          razorpay_link_id?: string | null
+          razorpay_payment_id?: string | null
+          recorded_by?: string | null
+          reference_no?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency_code?: string
+          id?: string
+          invoice_id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          paid_at?: string
+          payment_link_id?: string | null
+          payment_no?: string
+          razorpay_link_id?: string | null
+          razorpay_payment_id?: string | null
+          recorded_by?: string | null
+          reference_no?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_payment_link_id_fkey"
+            columns: ["payment_link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string
@@ -925,6 +1204,154 @@ export type Database = {
             columns: ["purchase_contact_id"]
             isOneToOne: false
             referencedRelation: "customer_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          line_total: number
+          product_id: string | null
+          quantity: number
+          quote_id: string
+          sort_order: number
+          tax_pct: number
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          quote_id: string
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          quote_id?: string
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string
+          enquiry_id: string | null
+          external_ref: string | null
+          id: string
+          issue_date: string
+          notes: string | null
+          project_id: string
+          quote_no: string
+          status: Database["public"]["Enums"]["quote_status"]
+          subtotal: number
+          tax_amount: number
+          terms: string | null
+          total: number
+          updated_at: string
+          valid_until: string | null
+          workflow_state: Json | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id: string
+          enquiry_id?: string | null
+          external_ref?: string | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          project_id: string
+          quote_no: string
+          status?: Database["public"]["Enums"]["quote_status"]
+          subtotal?: number
+          tax_amount?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+          workflow_state?: Json | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id?: string
+          enquiry_id?: string | null
+          external_ref?: string | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          project_id?: string
+          quote_no?: string
+          status?: Database["public"]["Enums"]["quote_status"]
+          subtotal?: number
+          tax_amount?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+          workflow_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -1578,6 +2005,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      convert_quote_to_invoice: {
+        Args: { p_due_date?: string; p_quote_id: string }
+        Returns: {
+          amount_paid: number
+          balance_due: number
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string
+          due_date: string | null
+          external_ref: string | null
+          id: string
+          invoice_no: string
+          issue_date: string
+          notes: string | null
+          project_id: string
+          quote_id: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal: number
+          tax_amount: number
+          terms: string | null
+          total: number
+          updated_at: string
+          workflow_state: Json | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -1592,7 +2052,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_staff_access: { Args: { _user_id: string }; Returns: boolean }
       next_code: { Args: { _prefix: string }; Returns: string }
+      recalc_invoice_totals: {
+        Args: { _invoice_id: string }
+        Returns: undefined
+      }
+      recalc_quote_totals: { Args: { _quote_id: string }; Returns: undefined }
       send_rfq: {
         Args: {
           p_due_date: string
@@ -1637,6 +2103,10 @@ export type Database = {
         | "quote_approved"
         | "followup_completed"
         | "note_added"
+        | "quote_sent"
+        | "quote_accepted"
+        | "invoice_issued"
+        | "payment_received"
       app_role: "admin" | "sales_manager" | "sales" | "purchase"
       contact_designation:
         | "owner"
@@ -1671,6 +2141,13 @@ export type Database = {
         | "other"
       followup_channel: "call" | "whatsapp" | "email" | "meeting" | "site_visit"
       followup_status: "pending" | "done" | "snoozed" | "missed" | "cancelled"
+      invoice_status:
+        | "draft"
+        | "sent"
+        | "partially_paid"
+        | "paid"
+        | "cancelled"
+        | "overdue"
       lead_stage:
         | "new_lead"
         | "contacted"
@@ -1688,6 +2165,20 @@ export type Database = {
         | "completed"
         | "lost"
         | "cancelled"
+      payment_link_status:
+        | "created"
+        | "sent"
+        | "partially_paid"
+        | "paid"
+        | "cancelled"
+        | "expired"
+      payment_method:
+        | "razorpay"
+        | "bank_transfer"
+        | "upi_manual"
+        | "cheque"
+        | "cash"
+        | "other"
       preferred_transport: "road" | "rail" | "sea" | "air" | "mixed"
       product_unit:
         | "sqft"
@@ -1707,6 +2198,13 @@ export type Database = {
         | "villa"
         | "apartment"
         | "other"
+      quote_status:
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "converted"
       rfq_status:
         | "draft"
         | "sent"
@@ -1881,6 +2379,10 @@ export const Constants = {
         "quote_approved",
         "followup_completed",
         "note_added",
+        "quote_sent",
+        "quote_accepted",
+        "invoice_issued",
+        "payment_received",
       ],
       app_role: ["admin", "sales_manager", "sales", "purchase"],
       contact_designation: [
@@ -1919,6 +2421,14 @@ export const Constants = {
       ],
       followup_channel: ["call", "whatsapp", "email", "meeting", "site_visit"],
       followup_status: ["pending", "done", "snoozed", "missed", "cancelled"],
+      invoice_status: [
+        "draft",
+        "sent",
+        "partially_paid",
+        "paid",
+        "cancelled",
+        "overdue",
+      ],
       lead_stage: [
         "new_lead",
         "contacted",
@@ -1936,6 +2446,22 @@ export const Constants = {
         "completed",
         "lost",
         "cancelled",
+      ],
+      payment_link_status: [
+        "created",
+        "sent",
+        "partially_paid",
+        "paid",
+        "cancelled",
+        "expired",
+      ],
+      payment_method: [
+        "razorpay",
+        "bank_transfer",
+        "upi_manual",
+        "cheque",
+        "cash",
+        "other",
       ],
       preferred_transport: ["road", "rail", "sea", "air", "mixed"],
       product_unit: [
@@ -1957,6 +2483,14 @@ export const Constants = {
         "villa",
         "apartment",
         "other",
+      ],
+      quote_status: [
+        "draft",
+        "sent",
+        "accepted",
+        "rejected",
+        "expired",
+        "converted",
       ],
       rfq_status: [
         "draft",
