@@ -1,5 +1,18 @@
 import { z } from "zod";
 import { zRequired, zOptional, zUuid } from "@/lib/zod";
+import type { DbEnum } from "@/lib/types";
+
+export const PROJECT_TYPES: ReadonlyArray<{ value: DbEnum<"project_type">; label: string }> = [
+  { value: "residential",   label: "Residential" },
+  { value: "commercial",    label: "Commercial" },
+  { value: "hospitality",   label: "Hospitality" },
+  { value: "healthcare",    label: "Healthcare" },
+  { value: "institutional", label: "Institutional" },
+  { value: "industrial",    label: "Industrial" },
+  { value: "villa",         label: "Villa" },
+  { value: "apartment",     label: "Apartment" },
+  { value: "other",         label: "Other" },
+];
 
 export const projectCreateSchema = z.object({
   // Quick Fill
@@ -8,21 +21,21 @@ export const projectCreateSchema = z.object({
   city: zRequired("City"),
 
   // More Details
-  type: z.enum(["residential", "commercial", "hospitality", "institutional", "other"]).default("residential"),
-  address: zOptional(),
+  project_type: z.enum([
+    "residential", "commercial", "hospitality", "healthcare",
+    "institutional", "industrial", "villa", "apartment", "other",
+  ]).default("residential"),
+  site_address: zOptional(),
   state: zOptional(),
   pincode: zOptional(),
 
   // Advanced
-  budget: z.preprocess(
+  expected_value_inr: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
     z.number().nonnegative().nullable().optional(),
   ),
-  area_sqft: z.preprocess(
-    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
-    z.number().nonnegative().nullable().optional(),
-  ),
-  expected_close_date: zOptional(),
+  expected_start_date: zOptional(),
+  expected_completion_date: zOptional(),
   notes: zOptional(),
 });
 

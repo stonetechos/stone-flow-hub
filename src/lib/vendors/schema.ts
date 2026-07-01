@@ -3,20 +3,19 @@ import { zRequired, zOptional, zMobile, zEmail } from "@/lib/zod";
 
 export const vendorCreateSchema = z.object({
   // Quick Fill
-  name: zRequired("Vendor name"),
+  company_name: zRequired("Vendor company"),
   contact_name: zRequired("Contact person"),
   mobile: zMobile,
 
   // More Details
   email: zEmail,
   city: zOptional(),
-  specialty: zOptional(),
 
   // Advanced
   address: zOptional(),
   state: zOptional(),
   pincode: zOptional(),
-  gstin: zOptional(),
+  gst_number: zOptional(),
   payment_terms: zOptional(),
   notes: zOptional(),
 });
