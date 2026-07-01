@@ -27,7 +27,7 @@ export async function listEnquiries(query = ""): Promise<EnquiryListItem[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`enquiry_no.ilike.%${s}%,notes.ilike.%${s}%`);
 
   const { data, error } = await q;
