@@ -13,7 +13,7 @@ export async function listVendors(query = ""): Promise<VendorRow[]> {
     .select("*")
     .order("created_at", { ascending: false })
     .limit(200);
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) {
     q = q.or(
       `company_name.ilike.%${s}%,vendor_code.ilike.%${s}%,city.ilike.%${s}%`,
