@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable, LeadStage } from "@/lib/types";
+import { sanitizeSearch } from "@/lib/zod";
 import {
   enquiryCreateSchema,
   sendRfqSchema,
