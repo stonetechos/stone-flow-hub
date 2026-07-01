@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
+import { sanitizeSearch } from "@/lib/zod";
 import { projectCreateSchema, type ProjectCreateInput } from "./schema";
 
 export type ProjectRow = DbTable<"projects">;
