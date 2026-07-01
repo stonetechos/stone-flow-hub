@@ -1,7 +1,7 @@
 /** Vendors data access. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { normalizeMobile } from "@/lib/zod";
+import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { vendorCreateSchema, type VendorCreateInput } from "./schema";
 
