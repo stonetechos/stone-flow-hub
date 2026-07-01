@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardList, Send, CalendarClock, Users, ArrowRight } from "lucide-react";
+import { ClipboardList, Send, CalendarClock, Users, ArrowRight, Wallet, Receipt } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +31,7 @@ function DashboardPage() {
       ) : error ? (
         <ErrorBlock message={toUserMessage(error)} onRetry={() => refetch()} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Kpi
             title="Active Enquiries"
             value={data?.activeEnquiries ?? 0}
@@ -51,6 +51,18 @@ function DashboardPage() {
             to="/enquiries"
           />
           <Kpi
+            title="Outstanding (₹)"
+            value={formatMoney(data?.outstandingInr ?? 0)}
+            icon={<Wallet className="h-5 w-5" />}
+            to="/invoices"
+          />
+          <Kpi
+            title="Collected This Month (₹)"
+            value={formatMoney(data?.paymentsThisMonthInr ?? 0)}
+            icon={<Receipt className="h-5 w-5" />}
+            to="/invoices"
+          />
+          <Kpi
             title="Active Customers"
             value={data?.customers ?? 0}
             icon={<Users className="h-5 w-5" />}
@@ -62,6 +74,12 @@ function DashboardPage() {
   );
 }
 
+function formatMoney(n: number): string {
+  if (n >= 1_00_00_000) return (n / 1_00_00_000).toFixed(1) + " Cr";
+  if (n >= 1_00_000) return (n / 1_00_000).toFixed(1) + " L";
+  return n.toLocaleString("en-IN");
+}
+
 function Kpi({
   title,
   value,
@@ -69,7 +87,7 @@ function Kpi({
   to,
 }: {
   title: string;
-  value: number;
+  value: number | string;
   icon: React.ReactNode;
   to: string;
 }) {

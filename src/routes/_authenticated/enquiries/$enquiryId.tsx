@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -64,9 +64,19 @@ function EnquiryDetailPage() {
         title={enq.enquiry_no}
         subtitle={`${enq.project?.name ?? "—"} • ${enq.customer?.name ?? "—"}`}
         actions={
-          <Button onClick={() => setRfqOpen(true)}>
-            <Send className="mr-2 h-4 w-4" /> Send RFQ
-          </Button>
+          <div className="flex gap-2">
+            <Link
+              to="/quotes"
+              search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}
+            >
+              <Button variant="outline">
+                <FileText className="mr-2 h-4 w-4" /> New quote
+              </Button>
+            </Link>
+            <Button onClick={() => setRfqOpen(true)}>
+              <Send className="mr-2 h-4 w-4" /> Send RFQ
+            </Button>
+          </div>
         }
       />
 
