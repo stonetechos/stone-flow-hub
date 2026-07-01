@@ -44,13 +44,11 @@ export async function getVendor(id: string): Promise<VendorRow | null> {
 export async function createVendor(input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
 
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "VEN" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // vendor_code is populated by the `assign_vendor_code` trigger when blank.
   const { data: vendor, error } = await supabase
     .from("vendors")
     .insert({
-      vendor_code: code,
+      vendor_code: "",
       company_name: parsed.company_name,
       city: parsed.city ?? null,
       state: parsed.state ?? null,
