@@ -52,13 +52,11 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
 
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "PRJ" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // project_code is populated by the `assign_project_code` trigger when blank.
   const { data, error } = await supabase
     .from("projects")
     .insert({
-      project_code: code,
+      project_code: "",
       customer_id: parsed.customer_id,
       name: parsed.name,
       city: parsed.city,
