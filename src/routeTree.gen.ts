@@ -14,10 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedVendorsIndexRouteImport } from './routes/_authenticated/vendors/index'
+import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
+import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes/$quoteId'
+import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedEnquiriesEnquiryIdRouteImport } from './routes/_authenticated/enquiries/$enquiryId'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 
@@ -46,6 +50,12 @@ const AuthenticatedVendorsIndexRoute =
     path: '/vendors/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedQuotesIndexRoute =
+  AuthenticatedQuotesIndexRouteImport.update({
+    id: '/quotes/',
+    path: '/quotes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsIndexRoute =
   AuthenticatedProjectsIndexRouteImport.update({
     id: '/projects/',
@@ -58,6 +68,12 @@ const AuthenticatedProductsIndexRoute =
     path: '/products/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInvoicesIndexRoute =
+  AuthenticatedInvoicesIndexRouteImport.update({
+    id: '/invoices/',
+    path: '/invoices/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnquiriesIndexRoute =
   AuthenticatedEnquiriesIndexRouteImport.update({
     id: '/enquiries/',
@@ -68,6 +84,18 @@ const AuthenticatedCustomersIndexRoute =
   AuthenticatedCustomersIndexRouteImport.update({
     id: '/customers/',
     path: '/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQuotesQuoteIdRoute =
+  AuthenticatedQuotesQuoteIdRouteImport.update({
+    id: '/quotes/$quoteId',
+    path: '/quotes/$quoteId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvoicesInvoiceIdRoute =
+  AuthenticatedInvoicesInvoiceIdRouteImport.update({
+    id: '/invoices/$invoiceId',
+    path: '/invoices/$invoiceId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEnquiriesEnquiryIdRoute =
@@ -88,10 +116,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/vendors/': typeof AuthenticatedVendorsIndexRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -100,10 +132,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
+  '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/vendors': typeof AuthenticatedVendorsIndexRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -114,10 +150,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/_authenticated/vendors/': typeof AuthenticatedVendorsIndexRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -128,10 +168,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/enquiries/$enquiryId'
+    | '/invoices/$invoiceId'
+    | '/quotes/$quoteId'
     | '/customers/'
     | '/enquiries/'
+    | '/invoices/'
     | '/products/'
     | '/projects/'
+    | '/quotes/'
     | '/vendors/'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
@@ -140,10 +184,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/enquiries/$enquiryId'
+    | '/invoices/$invoiceId'
+    | '/quotes/$quoteId'
     | '/customers'
     | '/enquiries'
+    | '/invoices'
     | '/products'
     | '/projects'
+    | '/quotes'
     | '/vendors'
     | '/api/public/webhooks/razorpay'
   id:
@@ -153,10 +201,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/enquiries/$enquiryId'
+    | '/_authenticated/invoices/$invoiceId'
+    | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/customers/'
     | '/_authenticated/enquiries/'
+    | '/_authenticated/invoices/'
     | '/_authenticated/products/'
     | '/_authenticated/projects/'
+    | '/_authenticated/quotes/'
     | '/_authenticated/vendors/'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
@@ -205,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVendorsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quotes/': {
+      id: '/_authenticated/quotes/'
+      path: '/quotes'
+      fullPath: '/quotes/'
+      preLoaderRoute: typeof AuthenticatedQuotesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/projects'
@@ -219,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/invoices/': {
+      id: '/_authenticated/invoices/'
+      path: '/invoices'
+      fullPath: '/invoices/'
+      preLoaderRoute: typeof AuthenticatedInvoicesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/enquiries/': {
       id: '/_authenticated/enquiries/'
       path: '/enquiries'
@@ -231,6 +297,20 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/customers/'
       preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/quotes/$quoteId': {
+      id: '/_authenticated/quotes/$quoteId'
+      path: '/quotes/$quoteId'
+      fullPath: '/quotes/$quoteId'
+      preLoaderRoute: typeof AuthenticatedQuotesQuoteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invoices/$invoiceId': {
+      id: '/_authenticated/invoices/$invoiceId'
+      path: '/invoices/$invoiceId'
+      fullPath: '/invoices/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/enquiries/$enquiryId': {
@@ -253,20 +333,28 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEnquiriesEnquiryIdRoute: typeof AuthenticatedEnquiriesEnquiryIdRoute
+  AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
+  AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedEnquiriesIndexRoute: typeof AuthenticatedEnquiriesIndexRoute
+  AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedQuotesIndexRoute: typeof AuthenticatedQuotesIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEnquiriesEnquiryIdRoute: AuthenticatedEnquiriesEnquiryIdRoute,
+  AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
+  AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedEnquiriesIndexRoute: AuthenticatedEnquiriesIndexRoute,
+  AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedQuotesIndexRoute: AuthenticatedQuotesIndexRoute,
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
 }
 
