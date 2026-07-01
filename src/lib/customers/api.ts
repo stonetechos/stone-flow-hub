@@ -57,10 +57,11 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
-  // customer_code is populated by the `assign_customer_code` trigger.
+  // customer_code is populated by the `assign_customer_code` trigger when blank.
   const { data, error } = await supabase
     .from("customers")
     .insert({
+      customer_code: "",
       name: parsed.name,
       primary_phone: normalizeMobile(parsed.mobile),
       primary_email: parsed.email ?? null,
