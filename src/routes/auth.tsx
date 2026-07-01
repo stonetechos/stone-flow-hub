@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toUserMessage } from "@/lib/errors";
 import { Loader2 } from "lucide-react";
 
@@ -32,22 +31,15 @@ function AuthPage() {
           </p>
         </div>
         <Card className="shadow-3">
-          <Tabs defaultValue="signin">
-            <CardHeader>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Create account</TabsTrigger>
-              </TabsList>
-            </CardHeader>
-            <CardContent>
-              <TabsContent value="signin" className="mt-0">
-                <SignInForm />
-              </TabsContent>
-              <TabsContent value="signup" className="mt-0">
-                <SignUpForm />
-              </TabsContent>
-            </CardContent>
-          </Tabs>
+          <CardHeader>
+            <CardTitle>Sign in</CardTitle>
+            <CardDescription>
+              Accounts are provisioned by an administrator. Contact your admin for access.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SignInForm />
+          </CardContent>
         </Card>
       </div>
     </div>
@@ -108,79 +100,3 @@ function SignInForm() {
   );
 }
 
-function SignUpForm() {
-  const navigate = useNavigate();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    setBusy(true);
-    try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName }, emailRedirectTo: redirectUrl },
-      });
-      if (error) throw error;
-      toast.success("Account created");
-      await navigate({ to: "/dashboard" });
-    } catch (err) {
-      toast.error(toUserMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <CardDescription>
-        The first account becomes the administrator automatically.
-      </CardDescription>
-      <div className="space-y-2">
-        <Label htmlFor="signup-name">Full name</Label>
-        <Input
-          id="signup-name"
-          required
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="signup-email">Email</Label>
-        <Input
-          id="signup-email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="signup-password">Password</Label>
-        <Input
-          id="signup-password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
-      </div>
-      <Button type="submit" className="w-full" disabled={busy}>
-        {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Create account
-      </Button>
-    </form>
-  );
-}

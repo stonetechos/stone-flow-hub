@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
+import { sanitizeSearch } from "@/lib/zod";
 import { productCreateSchema, type ProductCreateInput } from "./schema";
 
 export type ProductRow = DbTable<"products">;
@@ -13,7 +14,7 @@ export async function listProducts(query = ""): Promise<ProductRow[]> {
     .select("*")
     .order("created_at", { ascending: false })
     .limit(200);
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`name.ilike.%${s}%,product_code.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
@@ -33,13 +34,11 @@ export async function listProductCategories(): Promise<ProductCategoryRow[]> {
 export async function createProduct(input: ProductCreateInput): Promise<ProductRow> {
   const parsed = productCreateSchema.parse(input);
 
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "PRD" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // product_code is populated by the `assign_product_code` trigger when blank.
   const { data, error } = await supabase
     .from("products")
     .insert({
-      product_code: code,
+      product_code: "",
       name: parsed.name,
       stone_type: parsed.stone_type,
       default_unit: parsed.default_unit,

@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable, LeadStage } from "@/lib/types";
+import { sanitizeSearch } from "@/lib/zod";
 import {
   enquiryCreateSchema,
   sendRfqSchema,
@@ -26,7 +27,7 @@ export async function listEnquiries(query = ""): Promise<EnquiryListItem[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`enquiry_no.ilike.%${s}%,notes.ilike.%${s}%`);
 
   const { data, error } = await q;
@@ -51,13 +52,11 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
   const project = await getProject(parsed.project_id);
   if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
 
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "ENQ" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // enquiry_no is populated by the `assign_enquiry_code` trigger when blank.
   const { data, error } = await supabase
     .from("enquiries")
     .insert({
-      enquiry_no: code,
+      enquiry_no: "",
       project_id: project.id,
       customer_id: project.customer_id,
       priority: parsed.priority,

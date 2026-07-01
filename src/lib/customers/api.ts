@@ -1,7 +1,7 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { normalizeMobile } from "@/lib/zod";
+import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { customerCreateSchema, type CustomerCreateInput } from "./schema";
 
@@ -14,7 +14,7 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) {
     q = q.or(
       `name.ilike.%${s}%,customer_code.ilike.%${s}%,primary_phone.ilike.%${s}%,city.ilike.%${s}%`,
@@ -57,14 +57,11 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
-  // Generate code via Postgres sequence.
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "CUS" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // customer_code is populated by the `assign_customer_code` trigger when blank.
   const { data, error } = await supabase
     .from("customers")
     .insert({
-      customer_code: code,
+      customer_code: "",
       name: parsed.name,
       primary_phone: normalizeMobile(parsed.mobile),
       primary_email: parsed.email ?? null,

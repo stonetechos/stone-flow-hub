@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
+import { sanitizeSearch } from "@/lib/zod";
 import { projectCreateSchema, type ProjectCreateInput } from "./schema";
 
 export type ProjectRow = DbTable<"projects">;
@@ -19,7 +20,7 @@ export async function listProjects(query = ""): Promise<ProjectWithCustomer[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`name.ilike.%${s}%,project_code.ilike.%${s}%,city.ilike.%${s}%`);
 
   const { data, error } = await q;
@@ -51,13 +52,11 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
 
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "PRJ" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // project_code is populated by the `assign_project_code` trigger when blank.
   const { data, error } = await supabase
     .from("projects")
     .insert({
-      project_code: code,
+      project_code: "",
       customer_id: parsed.customer_id,
       name: parsed.name,
       city: parsed.city,
