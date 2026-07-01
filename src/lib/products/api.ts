@@ -14,7 +14,7 @@ export async function listProducts(query = ""): Promise<ProductRow[]> {
     .select("*")
     .order("created_at", { ascending: false })
     .limit(200);
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`name.ilike.%${s}%,product_code.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
