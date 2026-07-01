@@ -20,7 +20,7 @@ export async function listProjects(query = ""): Promise<ProjectWithCustomer[]> {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  const s = query.trim();
+  const s = sanitizeSearch(query);
   if (s) q = q.or(`name.ilike.%${s}%,project_code.ilike.%${s}%,city.ilike.%${s}%`);
 
   const { data, error } = await q;
