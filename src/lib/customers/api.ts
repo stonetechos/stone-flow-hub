@@ -1,7 +1,7 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { normalizeMobile } from "@/lib/zod";
+import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { customerCreateSchema, type CustomerCreateInput } from "./schema";
 
