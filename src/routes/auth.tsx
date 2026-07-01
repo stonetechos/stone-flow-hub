@@ -31,22 +31,15 @@ function AuthPage() {
           </p>
         </div>
         <Card className="shadow-3">
-          <Tabs defaultValue="signin">
-            <CardHeader>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Create account</TabsTrigger>
-              </TabsList>
-            </CardHeader>
-            <CardContent>
-              <TabsContent value="signin" className="mt-0">
-                <SignInForm />
-              </TabsContent>
-              <TabsContent value="signup" className="mt-0">
-                <SignUpForm />
-              </TabsContent>
-            </CardContent>
-          </Tabs>
+          <CardHeader>
+            <CardTitle>Sign in</CardTitle>
+            <CardDescription>
+              Accounts are provisioned by an administrator. Contact your admin for access.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SignInForm />
+          </CardContent>
         </Card>
       </div>
     </div>
