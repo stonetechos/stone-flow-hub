@@ -112,7 +112,7 @@ function QuoteDetailPage() {
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
               <div>Subtotal: <span className="font-medium">{formatInr(quote.subtotal)}</span></div>
-              <div>Tax: <span className="font-medium">{formatInr(quote.tax_total)}</span></div>
+              <div>Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span></div>
               <div className="text-base font-semibold">Total: {formatInr(quote.total)}</div>
             </div>
           </CardContent>

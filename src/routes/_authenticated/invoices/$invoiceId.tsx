@@ -143,7 +143,7 @@ function InvoiceDetailPage() {
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
               <div>Subtotal: <span className="font-medium">{formatInr(invoice.subtotal)}</span></div>
-              <div>Tax: <span className="font-medium">{formatInr(invoice.tax_total)}</span></div>
+              <div>Tax: <span className="font-medium">{formatInr(invoice.tax_amount)}</span></div>
               <div>Total: <span className="font-medium">{formatInr(invoice.total)}</span></div>
               <div>Paid: <span className="font-medium">{formatInr(invoice.amount_paid)}</span></div>
               <div className="text-base font-semibold">Balance: {formatInr(invoice.balance_due)}</div>
