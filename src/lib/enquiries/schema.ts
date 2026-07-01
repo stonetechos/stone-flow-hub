@@ -1,22 +1,21 @@
 import { z } from "zod";
-import { zRequired, zOptional, zUuid } from "@/lib/zod";
+import { zOptional, zUuid } from "@/lib/zod";
 
 export const enquiryCreateSchema = z.object({
-  // Quick Fill
+  // Quick Fill — pick an existing project (customer is derived server-side)
   project_id: zUuid,
-  title: zRequired("Enquiry title"),
 
   // More Details
-  source: z.enum(["walk_in", "phone", "email", "referral", "website", "exhibition", "other"]).default("phone"),
+  source: zOptional(),
   priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-  estimated_value: z.preprocess(
+  budget_inr: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
     z.number().nonnegative().nullable().optional(),
   ),
-  required_by: zOptional(),
+  required_delivery_date: zOptional(),
 
   // Advanced
-  description: zOptional(),
+  notes: zOptional(),
 });
 
 export type EnquiryCreateInput = z.infer<typeof enquiryCreateSchema>;
@@ -24,7 +23,7 @@ export type EnquiryCreateInput = z.infer<typeof enquiryCreateSchema>;
 export const sendRfqSchema = z.object({
   enquiry_id: zUuid,
   vendor_ids: z.array(zUuid).min(1, "Select at least one vendor"),
-  due_date: zRequired("Due date"),
+  due_date: z.string().min(1, "Due date is required"),
   notes: zOptional(),
 });
 
