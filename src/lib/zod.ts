@@ -30,3 +30,12 @@ export const zMoney = z.coerce.number().nonnegative("Must be 0 or more");
 export function normalizeMobile(v: string): string {
   return v.replace(/\D+/g, "").replace(/^0+/, "").slice(-10);
 }
+
+/**
+ * Strip characters with PostgREST filter-syntax meaning from a search string,
+ * so untrusted input cannot break out of an `.ilike()` value inside an `.or()` filter.
+ */
+export function sanitizeSearch(v: string, max = 80): string {
+  return v.replace(/[,()%*:."\\]/g, "").trim().slice(0, max);
+}
+
