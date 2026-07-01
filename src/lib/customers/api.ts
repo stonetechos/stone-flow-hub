@@ -57,14 +57,10 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
-  // Generate code via Postgres sequence.
-  const { data: code, error: codeErr } = await supabase.rpc("next_code", { _prefix: "CUS" });
-  if (codeErr || !code) throw new AppError(mapDbError(codeErr));
-
+  // customer_code is populated by the `assign_customer_code` trigger.
   const { data, error } = await supabase
     .from("customers")
     .insert({
-      customer_code: code,
       name: parsed.name,
       primary_phone: normalizeMobile(parsed.mobile),
       primary_email: parsed.email ?? null,
