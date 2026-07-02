@@ -35,10 +35,11 @@ export const qk = {
   },
   followups: {
     all: ["followups"] as const,
-    today: ["followups", "today"] as const,
-    byEntity: (type: string, id: string) => ["followups", type, id] as const,
+    scope: (scope: "pending" | "today" | "all") => ["followups", "scope", scope] as const,
+    byEnquiry: (id: string) => ["followups", "byEnquiry", id] as const,
   },
   activity: {
+    recent: ["activity", "recent"] as const,
     byEntity: (type: string, id: string) => ["activity", type, id] as const,
   },
   quotes: {
