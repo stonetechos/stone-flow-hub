@@ -44,6 +44,7 @@ import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEnquiriesEnquiryIdRouteImport } from './routes/_authenticated/enquiries/$enquiryId'
 import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenticated/dispatch/new'
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
+import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes/$quoteId.edit'
@@ -252,6 +253,12 @@ const AuthenticatedDispatchIdRoute = AuthenticatedDispatchIdRouteImport.update({
   path: '/dispatch/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCustomersCustomerIdRoute =
+  AuthenticatedCustomersCustomerIdRouteImport.update({
+    id: '/customers/$customerId',
+    path: '/customers/$customerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
@@ -308,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -352,6 +360,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -398,6 +407,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/_authenticated/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/_authenticated/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -444,6 +454,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/settings'
+    | '/customers/$customerId'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -488,6 +499,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/settings'
+    | '/customers/$customerId'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -533,6 +545,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/customers/$customerId'
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/new'
     | '/_authenticated/enquiries/$enquiryId'
@@ -825,6 +838,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDispatchIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/customers/$customerId': {
+      id: '/_authenticated/customers/$customerId'
+      path: '/customers/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/razorpay': {
       id: '/api/public/webhooks/razorpay'
       path: '/api/public/webhooks/razorpay'
@@ -989,6 +1009,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
   AuthenticatedDispatchNewRoute: typeof AuthenticatedDispatchNewRoute
   AuthenticatedEnquiriesEnquiryIdRoute: typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -1024,6 +1045,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRouteWithChildren,
   AuthenticatedDispatchNewRoute: AuthenticatedDispatchNewRoute,
   AuthenticatedEnquiriesEnquiryIdRoute: AuthenticatedEnquiriesEnquiryIdRoute,
