@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ExternalLink, Link as LinkIcon, Ban, Plus } from "lucide-react";
+import { ArrowLeft, Loader2, ExternalLink, Link as LinkIcon, Ban, Plus, Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { deleteInvoice } from "@/lib/invoices/api";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -39,7 +42,9 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 function InvoiceDetailPage() {
   const { invoiceId } = Route.useParams();
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [payOpen, setPayOpen] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
 
   const inv = useQuery({ queryKey: qk.invoices.byId(invoiceId), queryFn: () => getInvoice(invoiceId) });
   const items = useQuery({ queryKey: qk.invoices.items(invoiceId), queryFn: () => getInvoiceItems(invoiceId) });
@@ -76,6 +81,12 @@ function InvoiceDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const delMut = useMutation({
+    mutationFn: () => deleteInvoice(invoiceId),
+    onSuccess: () => { toast.success("Invoice deleted"); qc.invalidateQueries({ queryKey: qk.invoices.all }); nav({ to: "/invoices" }); },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (inv.isLoading) return <LoadingBlock />;
   if (inv.error) return <ErrorBlock message={toUserMessage(inv.error)} onRetry={() => inv.refetch()} />;
   if (!inv.data) return <ErrorBlock message="Invoice not found." />;
@@ -97,6 +108,12 @@ function InvoiceDetailPage() {
         subtitle={`${invoice.customer?.name ?? "—"} • ${invoice.project?.name ?? "—"}`}
         actions={
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmDel(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
             <Button
               variant="outline"
               onClick={() => linkMut.mutate()}
@@ -112,6 +129,7 @@ function InvoiceDetailPage() {
           </div>
         }
       />
+
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
@@ -238,13 +256,24 @@ function InvoiceDetailPage() {
         </Card>
       </div>
 
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <NotesPanel table="invoices" id={invoiceId} value={invoice.notes ?? null} invalidateKey={qk.invoices.byId(invoiceId)} />
+        <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
+        <TimelinePanel entityType="invoice" entityId={invoiceId} />
+      </div>
+
       <RecordPaymentDialog
         open={payOpen}
         onOpenChange={setPayOpen}
         invoiceId={invoiceId}
         maxAmount={balance}
       />
+
+      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
+        title="Delete invoice?" description={`${invoice.invoice_no} will be removed.`}
+        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
     </div>
+
   );
 }
 

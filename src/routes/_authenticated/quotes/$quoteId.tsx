@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ArrowRightCircle } from "lucide-react";
+import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -9,10 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
   convertQuoteToInvoice,
+  deleteQuote,
   getQuote,
   getQuoteItems,
   setQuoteStatus,
@@ -31,6 +35,7 @@ function QuoteDetailPage() {
   const { quoteId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
+  const [confirmDel, setConfirmDel] = useState(false);
 
   const q = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
   const items = useQuery({ queryKey: qk.quotes.items(quoteId), queryFn: () => getQuoteItems(quoteId) });
@@ -56,6 +61,16 @@ function QuoteDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const delMut = useMutation({
+    mutationFn: () => deleteQuote(quoteId),
+    onSuccess: () => {
+      toast.success("Quote deleted");
+      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      nav({ to: "/quotes" });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Quote not found." />;
@@ -75,12 +90,21 @@ function QuoteDetailPage() {
         title={quote.quote_no}
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
-          <Button onClick={() => convertMut.mutate()} disabled={!canConvert || convertMut.isPending}>
-            {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmDel(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+            <Button onClick={() => convertMut.mutate()} disabled={!canConvert || convertMut.isPending}>
+              {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
+            </Button>
+          </div>
         }
       />
+
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
@@ -148,6 +172,18 @@ function QuoteDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <NotesPanel table="quotes" id={quoteId} value={quote.notes ?? null} invalidateKey={qk.quotes.byId(quoteId)} />
+        <AttachmentsPanel entityType="quote" entityId={quoteId} />
+        <TimelinePanel entityType="quote" entityId={quoteId} />
+
+      </div>
+
+      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
+        title="Delete quote?" description={`${quote.quote_no} will be removed.`}
+        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
     </div>
   );
 }
+

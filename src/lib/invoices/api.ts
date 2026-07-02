@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
-import { recordPaymentSchema, setInvoiceStatusSchema, type RecordPaymentInput, type SetInvoiceStatusInput } from "./schema";
+import { invoiceUpdateSchema, recordPaymentSchema, setInvoiceStatusSchema, type InvoiceUpdateInput, type RecordPaymentInput, type SetInvoiceStatusInput } from "./schema";
 
 export type InvoiceRow = DbTable<"invoices">;
 export type InvoiceItemRow = DbTable<"invoice_items">;
@@ -110,4 +110,25 @@ export async function recordManualPayment(input: RecordPaymentInput): Promise<Pa
     .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+export async function updateInvoice(id: string, input: InvoiceUpdateInput): Promise<InvoiceRow> {
+  const parsed = invoiceUpdateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("invoices")
+    .update({
+      due_date: parsed.due_date ?? null,
+      notes: parsed.notes ?? null,
+      terms: parsed.terms ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  const { error } = await supabase.from("invoices").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
 }

@@ -7,8 +7,10 @@ import { getProject } from "@/lib/projects/api";
 import {
   convertQuoteSchema,
   quoteCreateSchema,
+  quoteUpdateSchema,
   type ConvertQuoteInput,
   type QuoteCreateInput,
+  type QuoteUpdateInput,
 } from "./schema";
 
 export type QuoteRow = DbTable<"quotes">;
@@ -124,4 +126,25 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
   });
   if (error) throw new AppError(mapDbError(error));
   return data as DbTable<"invoices">;
+}
+
+export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<QuoteRow> {
+  const parsed = quoteUpdateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("quotes")
+    .update({
+      valid_until: parsed.valid_until ?? null,
+      notes: parsed.notes ?? null,
+      terms: parsed.terms ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteQuote(id: string): Promise<void> {
+  const { error } = await supabase.from("quotes").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
 }

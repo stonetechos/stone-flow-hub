@@ -26,3 +26,10 @@ export const convertQuoteSchema = z.object({
   due_date: zOptional(),
 });
 export type ConvertQuoteInput = z.infer<typeof convertQuoteSchema>;
+
+export const quoteUpdateSchema = z.object({
+  valid_until: zOptional(),
+  notes: zOptional(),
+  terms: zOptional(),
+});
+export type QuoteUpdateInput = z.infer<typeof quoteUpdateSchema>;

@@ -15,9 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createQuote, listQuotes } from "@/lib/quotes/api";
+import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
 import { quoteItemInputSchema, type QuoteItemInput } from "@/lib/quotes/schema";
 import { listProjectsForPicker } from "@/lib/projects/api";
 import { formatInr } from "@/lib/format";
@@ -36,10 +38,19 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 
 function QuotesPage() {
   const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
   const params = Route.useSearch();
   const nav = useNavigate();
+  const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
+  const del = useMutation({
+    mutationFn: (id: string) => deleteQuote(id),
+    onSuccess: () => { toast.success("Quote deleted"); qc.invalidateQueries({ queryKey: qk.quotes.all }); setToDelete(null); },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+  const rows = (query.data ?? []).filter((r) => statusFilter === "all" || r.status === statusFilter);
 
   useEffect(() => {
     if (params.new) {
@@ -54,15 +65,28 @@ function QuotesPage() {
         subtitle="Send priced offers, then convert to invoice."
         actions={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New quote</Button>}
       />
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by quote no…" className="max-w-md" />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="accepted">Accepted</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="converted">Converted</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {query.isLoading ? (
         <LoadingBlock />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<FileText className="h-6 w-6" />}
           title="No quotes yet"
@@ -80,10 +104,11 @@ function QuotesPage() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Valid Until</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((r) => (
+              {rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">
                     <Link to="/quotes/$quoteId" params={{ quoteId: r.id }} className="text-primary hover:underline">
@@ -95,12 +120,23 @@ function QuotesPage() {
                   <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
                   <TableCell className="text-right">{formatInr(r.total)}</TableCell>
                   <TableCell>{r.valid_until ?? "—"}</TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })}
+                      onDelete={() => setToDelete(r)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <ConfirmDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete quote?" description={toDelete ? `${toDelete.quote_no} will be removed.` : ""}
+        busy={del.isPending} onConfirm={() => toDelete && del.mutate(toDelete.id)} />
+
 
       <CreateQuoteDialog
         open={open}

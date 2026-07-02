@@ -16,3 +16,10 @@ export const setInvoiceStatusSchema = z.object({
   status: z.enum(["draft", "sent", "cancelled", "overdue"]),
 });
 export type SetInvoiceStatusInput = z.infer<typeof setInvoiceStatusSchema>;
+
+export const invoiceUpdateSchema = z.object({
+  due_date: zOptional(),
+  notes: zOptional(),
+  terms: zOptional(),
+});
+export type InvoiceUpdateInput = z.infer<typeof invoiceUpdateSchema>;
