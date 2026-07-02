@@ -17,6 +17,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedVendorsIndexRouteImport } from './routes/_authenticated/vendors/index'
 import { Route as AuthenticatedSalesOrdersIndexRouteImport } from './routes/_authenticated/sales-orders/index'
 import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes/index'
@@ -95,6 +96,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVendorsIndexRoute =
@@ -338,6 +344,7 @@ const AuthenticatedDispatchIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -387,6 +394,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -438,6 +446,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/activity'
     | '/calendar'
     | '/dashboard'
     | '/reports'
@@ -538,6 +548,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/activity'
     | '/calendar'
     | '/dashboard'
     | '/reports'
@@ -588,6 +599,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/activity'
     | '/_authenticated/calendar'
     | '/_authenticated/dashboard'
     | '/_authenticated/reports'
@@ -698,6 +710,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors/': {
@@ -1084,6 +1103,7 @@ const AuthenticatedSalesOrdersIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -1124,6 +1144,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
