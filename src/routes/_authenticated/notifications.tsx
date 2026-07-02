@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell } from "lucide-react";
-import { mockNotifications } from "@/lib/notifications/mock";
+import { MOCK_NOTIFICATIONS } from "@/lib/notifications/mock";
 import { formatRelative } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
