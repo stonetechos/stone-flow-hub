@@ -82,6 +82,33 @@ export async function updateEnquiryStage(id: string, stage: LeadStage): Promise<
   return data;
 }
 
+export async function updateEnquiry(id: string, input: EnquiryCreateInput): Promise<EnquiryRow> {
+  const parsed = enquiryCreateSchema.parse(input);
+  const project = await getProject(parsed.project_id);
+  if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+  const { data, error } = await supabase
+    .from("enquiries")
+    .update({
+      project_id: project.id,
+      customer_id: project.customer_id,
+      priority: parsed.priority,
+      source: parsed.source ?? null,
+      budget_inr: parsed.budget_inr ?? null,
+      required_delivery_date: parsed.required_delivery_date ?? null,
+      notes: parsed.notes ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteEnquiry(id: string): Promise<void> {
+  const { error } = await supabase.from("enquiries").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
+}
+
 export async function sendRfq(input: SendRfqInput) {
   const parsed = sendRfqSchema.parse(input);
   const { data, error } = await supabase.rpc("send_rfq", {

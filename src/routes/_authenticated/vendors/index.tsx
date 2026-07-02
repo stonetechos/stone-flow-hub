@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Factory } from "lucide-react";
 import { toast } from "sonner";
@@ -12,9 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createVendor, listVendors } from "@/lib/vendors/api";
+import {
+  createVendor, deleteVendor, getPrimaryContact, listVendors, updateVendor,
+  type VendorRow,
+} from "@/lib/vendors/api";
 import { vendorCreateSchema, type VendorCreateInput } from "@/lib/vendors/schema";
 
 export const Route = createFileRoute("/_authenticated/vendors/")({
@@ -23,16 +28,34 @@ export const Route = createFileRoute("/_authenticated/vendors/")({
 });
 
 function VendorsPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<VendorRow | null>(null);
+  const [toDelete, setToDelete] = useState<VendorRow | null>(null);
+
   const query = useQuery({ queryKey: qk.vendors.list(q), queryFn: () => listVendors(q) });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => deleteVendor(id),
+    onSuccess: () => {
+      toast.success("Vendor deleted");
+      qc.invalidateQueries({ queryKey: qk.vendors.all });
+      setToDelete(null);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
 
   return (
     <div>
       <PageHeader
         title="Vendors"
         subtitle="Suppliers you send RFQs to."
-        actions={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New vendor</Button>}
+        actions={
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> New vendor
+          </Button>
+        }
       />
       <div className="mb-3 flex items-center gap-2">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by company, code, city…" className="max-w-md" />
@@ -47,7 +70,7 @@ function VendorsPage() {
           icon={<Factory className="h-6 w-6" />}
           title="No vendors yet"
           message="Add your first vendor to start sending RFQs."
-          action={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New vendor</Button>}
+          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New vendor</Button>}
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -59,6 +82,7 @@ function VendorsPage() {
                 <TableHead>City</TableHead>
                 <TableHead>GST</TableHead>
                 <TableHead>Payment terms</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -69,6 +93,12 @@ function VendorsPage() {
                   <TableCell>{v.city ?? "—"}</TableCell>
                   <TableCell>{v.gst_number ?? "—"}</TableCell>
                   <TableCell>{v.payment_terms ?? "—"}</TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => { setEditing(v); setFormOpen(true); }}
+                      onDelete={() => setToDelete(v)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -76,31 +106,66 @@ function VendorsPage() {
         </div>
       )}
 
-      <CreateVendorDialog open={open} onOpenChange={setOpen} />
+      <VendorFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete vendor?"
+        description={toDelete ? `${toDelete.company_name} (${toDelete.vendor_code}) will be permanently removed.` : ""}
+        busy={delMut.isPending}
+        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }
 
-function CreateVendorDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function emptyForm(): VendorCreateInput {
+  return {
+    company_name: "", contact_name: "", mobile: "", email: null, city: null,
+    address: null, state: null, pincode: null, gst_number: null,
+    payment_terms: null, notes: null,
+  };
+}
+
+function VendorFormDialog({
+  open, onOpenChange, editing,
+}: { open: boolean; onOpenChange: (o: boolean) => void; editing: VendorRow | null }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<VendorCreateInput>({
-    company_name: "",
-    contact_name: "",
-    mobile: "",
-    email: null,
-    city: null,
-    address: null,
-    state: null,
-    pincode: null,
-    gst_number: null,
-    payment_terms: null,
-    notes: null,
+  const [form, setForm] = useState<VendorCreateInput>(emptyForm);
+
+  // Load primary contact for edit mode
+  const contactQuery = useQuery({
+    queryKey: ["vendor", editing?.id, "primary-contact"],
+    queryFn: () => getPrimaryContact(editing!.id),
+    enabled: !!(open && editing),
   });
 
+  useEffect(() => {
+    if (!open) return;
+    if (!editing) {
+      setForm(emptyForm());
+      return;
+    }
+    setForm({
+      company_name: editing.company_name,
+      contact_name: contactQuery.data?.name ?? "",
+      mobile: contactQuery.data?.phone ?? "",
+      email: contactQuery.data?.email ?? null,
+      city: editing.city,
+      address: editing.address,
+      state: editing.state,
+      pincode: editing.pincode,
+      gst_number: editing.gst_number,
+      payment_terms: editing.payment_terms,
+      notes: editing.notes,
+    });
+  }, [open, editing, contactQuery.data]);
+
   const mutation = useMutation({
-    mutationFn: createVendor,
+    mutationFn: (input: VendorCreateInput) =>
+      editing ? updateVendor(editing.id, input) : createVendor(input),
     onSuccess: (row) => {
-      toast.success(`Vendor ${row.vendor_code} created`);
+      toast.success(editing ? "Vendor updated" : `Vendor ${row.vendor_code} created`);
       qc.invalidateQueries({ queryKey: qk.vendors.all });
       onOpenChange(false);
     },
@@ -110,20 +175,18 @@ function CreateVendorDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = vendorCreateSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
-      return;
-    }
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
     mutation.mutate(parsed.data);
   }
-
   const set = <K extends keyof VendorCreateInput>(k: K, v: VendorCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>New vendor</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{editing ? `Edit ${editing.company_name}` : "New vendor"}</DialogTitle>
+        </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Vendor company" required>
@@ -162,7 +225,8 @@ function CreateVendorDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Save" : "Create"}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

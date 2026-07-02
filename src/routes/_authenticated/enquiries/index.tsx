@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
@@ -14,9 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createEnquiry, listEnquiries } from "@/lib/enquiries/api";
+import {
+  createEnquiry, deleteEnquiry, listEnquiries, updateEnquiry,
+  type EnquiryListItem,
+} from "@/lib/enquiries/api";
 import { enquiryCreateSchema, type EnquiryCreateInput } from "@/lib/enquiries/schema";
 import { listProjectsForPicker } from "@/lib/projects/api";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
@@ -27,16 +32,35 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 });
 
 function EnquiriesPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<EnquiryListItem | null>(null);
+  const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
+
   const query = useQuery({ queryKey: qk.enquiries.list(q), queryFn: () => listEnquiries(q) });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => deleteEnquiry(id),
+    onSuccess: () => {
+      toast.success("Enquiry deleted");
+      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+      setToDelete(null);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
 
   return (
     <div>
       <PageHeader
         title="Enquiries"
         subtitle="Every lead in the pipeline."
-        actions={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New enquiry</Button>}
+        actions={
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> New enquiry
+          </Button>
+        }
       />
       <div className="mb-3 flex items-center gap-2">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by enquiry no or notes…" className="max-w-md" />
@@ -51,7 +75,7 @@ function EnquiriesPage() {
           icon={<ClipboardList className="h-6 w-6" />}
           title="No enquiries yet"
           message="Log your first enquiry against an existing project."
-          action={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New enquiry</Button>}
+          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New enquiry</Button>}
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -64,11 +88,12 @@ function EnquiriesPage() {
                 <TableHead>Stage</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Budget (INR)</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {query.data!.map((e) => (
-                <TableRow key={e.id} className="cursor-pointer" onClick={() => { /* linked below */ }}>
+                <TableRow key={e.id}>
                   <TableCell className="font-mono text-xs">
                     <Link to="/enquiries/$enquiryId" params={{ enquiryId: e.id }} className="text-primary hover:underline">
                       {e.enquiry_no}
@@ -79,6 +104,12 @@ function EnquiriesPage() {
                   <TableCell><Badge variant="outline">{LEAD_STAGE_LABEL[e.stage]}</Badge></TableCell>
                   <TableCell className="capitalize">{e.priority}</TableCell>
                   <TableCell>{e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}</TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => { setEditing(e); setFormOpen(true); }}
+                      onDelete={() => setToDelete(e)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -86,27 +117,52 @@ function EnquiriesPage() {
         </div>
       )}
 
-      <CreateEnquiryDialog open={open} onOpenChange={setOpen} />
+      <EnquiryFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete enquiry?"
+        description={toDelete ? `${toDelete.enquiry_no} will be permanently removed.` : ""}
+        busy={delMut.isPending}
+        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }
 
-function CreateEnquiryDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function emptyForm(): EnquiryCreateInput {
+  return {
+    project_id: "", source: null, priority: "normal",
+    budget_inr: null, required_delivery_date: null, notes: null,
+  };
+}
+function fromRow(e: EnquiryListItem): EnquiryCreateInput {
+  return {
+    project_id: e.project_id,
+    source: e.source,
+    priority: e.priority,
+    budget_inr: e.budget_inr,
+    required_delivery_date: e.required_delivery_date,
+    notes: e.notes,
+  };
+}
+
+function EnquiryFormDialog({
+  open, onOpenChange, editing,
+}: { open: boolean; onOpenChange: (o: boolean) => void; editing: EnquiryListItem | null }) {
   const qc = useQueryClient();
   const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
-  const [form, setForm] = useState<EnquiryCreateInput>({
-    project_id: "",
-    source: null,
-    priority: "normal",
-    budget_inr: null,
-    required_delivery_date: null,
-    notes: null,
-  });
+  const [form, setForm] = useState<EnquiryCreateInput>(emptyForm);
+
+  useEffect(() => {
+    if (open) setForm(editing ? fromRow(editing) : emptyForm());
+  }, [open, editing]);
 
   const mutation = useMutation({
-    mutationFn: createEnquiry,
+    mutationFn: (input: EnquiryCreateInput) =>
+      editing ? updateEnquiry(editing.id, input) : createEnquiry(input),
     onSuccess: (row) => {
-      toast.success(`Enquiry ${row.enquiry_no} created`);
+      toast.success(editing ? "Enquiry updated" : `Enquiry ${row.enquiry_no} created`);
       qc.invalidateQueries({ queryKey: qk.enquiries.all });
       qc.invalidateQueries({ queryKey: qk.dashboard });
       onOpenChange(false);
@@ -117,20 +173,18 @@ function CreateEnquiryDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = enquiryCreateSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
-      return;
-    }
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
     mutation.mutate(parsed.data);
   }
-
   const set = <K extends keyof EnquiryCreateInput>(k: K, v: EnquiryCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>New enquiry</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{editing ? `Edit ${editing.enquiry_no}` : "New enquiry"}</DialogTitle>
+        </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Project" required className="md:col-span-2" hint="Customer is derived from the project.">
@@ -180,7 +234,8 @@ function CreateEnquiryDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Save" : "Create"}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

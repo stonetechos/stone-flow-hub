@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, PackageSearch } from "lucide-react";
 import { toast } from "sonner";
@@ -14,9 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createProduct, listProducts, listProductCategories } from "@/lib/products/api";
+import {
+  createProduct, deleteProduct, listProducts, listProductCategories, updateProduct,
+  type ProductRow,
+} from "@/lib/products/api";
 import {
   PRODUCT_UNITS, STONE_TYPES, STONE_FINISHES,
   productCreateSchema, type ProductCreateInput,
@@ -28,16 +33,34 @@ export const Route = createFileRoute("/_authenticated/products/")({
 });
 
 function ProductsPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [toDelete, setToDelete] = useState<ProductRow | null>(null);
+
   const query = useQuery({ queryKey: qk.products.list(q), queryFn: () => listProducts(q) });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => deleteProduct(id),
+    onSuccess: () => {
+      toast.success("Product deleted");
+      qc.invalidateQueries({ queryKey: qk.products.all });
+      setToDelete(null);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
 
   return (
     <div>
       <PageHeader
         title="Products"
         subtitle="Your natural-stone catalogue."
-        actions={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New product</Button>}
+        actions={
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> New product
+          </Button>
+        }
       />
       <div className="mb-3 flex items-center gap-2">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or code…" className="max-w-md" />
@@ -52,7 +75,7 @@ function ProductsPage() {
           icon={<PackageSearch className="h-6 w-6" />}
           title="No products yet"
           message="Add stones you deal with to reuse them in enquiries and RFQs."
-          action={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New product</Button>}
+          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New product</Button>}
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -65,6 +88,7 @@ function ProductsPage() {
                 <TableHead>Finish</TableHead>
                 <TableHead>Unit</TableHead>
                 <TableHead>Thickness (mm)</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,6 +100,12 @@ function ProductsPage() {
                   <TableCell className="capitalize">{p.finish?.replace("_", " ") ?? "—"}</TableCell>
                   <TableCell>{p.default_unit}</TableCell>
                   <TableCell>{p.thickness_mm ?? "—"}</TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => { setEditing(p); setFormOpen(true); }}
+                      onDelete={() => setToDelete(p)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -83,30 +113,56 @@ function ProductsPage() {
         </div>
       )}
 
-      <CreateProductDialog open={open} onOpenChange={setOpen} />
+      <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete product?"
+        description={toDelete ? `${toDelete.name} (${toDelete.product_code}) will be permanently removed.` : ""}
+        busy={delMut.isPending}
+        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }
 
-function CreateProductDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function emptyForm(): ProductCreateInput {
+  return {
+    name: "", stone_type: "marble", default_unit: "sqft",
+    finish: null, category_id: null, thickness_mm: null,
+    origin_country: null, hsn_code: null, description: null,
+  };
+}
+function fromRow(p: ProductRow): ProductCreateInput {
+  return {
+    name: p.name,
+    stone_type: p.stone_type ?? "marble",
+    default_unit: p.default_unit,
+    finish: p.finish,
+    category_id: p.category_id,
+    thickness_mm: p.thickness_mm,
+    origin_country: p.origin_country,
+    hsn_code: p.hsn_code,
+    description: p.description,
+  };
+}
+
+function ProductFormDialog({
+  open, onOpenChange, editing,
+}: { open: boolean; onOpenChange: (o: boolean) => void; editing: ProductRow | null }) {
   const qc = useQueryClient();
   const cats = useQuery({ queryKey: qk.productCategories, queryFn: listProductCategories });
-  const [form, setForm] = useState<ProductCreateInput>({
-    name: "",
-    stone_type: "marble",
-    default_unit: "sqft",
-    finish: null,
-    category_id: null,
-    thickness_mm: null,
-    origin_country: null,
-    hsn_code: null,
-    description: null,
-  });
+  const [form, setForm] = useState<ProductCreateInput>(emptyForm);
+
+  useEffect(() => {
+    if (open) setForm(editing ? fromRow(editing) : emptyForm());
+  }, [open, editing]);
 
   const mutation = useMutation({
-    mutationFn: createProduct,
+    mutationFn: (input: ProductCreateInput) =>
+      editing ? updateProduct(editing.id, input) : createProduct(input),
     onSuccess: (row) => {
-      toast.success(`Product ${row.product_code} created`);
+      toast.success(editing ? "Product updated" : `Product ${row.product_code} created`);
       qc.invalidateQueries({ queryKey: qk.products.all });
       onOpenChange(false);
     },
@@ -116,20 +172,18 @@ function CreateProductDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = productCreateSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
-      return;
-    }
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
     mutation.mutate(parsed.data);
   }
-
   const set = <K extends keyof ProductCreateInput>(k: K, v: ProductCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>New product</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{editing ? `Edit ${editing.name}` : "New product"}</DialogTitle>
+        </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Product name" required>
@@ -188,7 +242,8 @@ function CreateProductDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Save" : "Create"}
             </Button>
           </QuickForm.Actions>
         </QuickForm>
