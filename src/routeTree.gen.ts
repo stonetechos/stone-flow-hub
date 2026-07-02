@@ -42,6 +42,7 @@ import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
+import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes/$quoteId.edit'
 import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/_authenticated/purchase-orders/$id.edit'
 import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authenticated/payments/$id.edit'
 import { Route as AuthenticatedInventoryIdEditRouteImport } from './routes/_authenticated/inventory/$id.edit'
@@ -237,6 +238,12 @@ const AuthenticatedSalesOrdersIdEditRoute =
     path: '/edit',
     getParentRoute: () => AuthenticatedSalesOrdersIdRoute,
   } as any)
+const AuthenticatedQuotesQuoteIdEditRoute =
+  AuthenticatedQuotesQuoteIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedQuotesQuoteIdRoute,
+  } as any)
 const AuthenticatedPurchaseOrdersIdEditRoute =
   AuthenticatedPurchaseOrdersIdEditRouteImport.update({
     id: '/edit',
@@ -276,7 +283,7 @@ export interface FileRoutesByFullPath {
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
-  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -314,7 +322,7 @@ export interface FileRoutesByTo {
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
-  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
+  '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -335,6 +343,7 @@ export interface FileRoutesByTo {
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -354,7 +363,7 @@ export interface FileRoutesById {
   '/_authenticated/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/_authenticated/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/_authenticated/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
-  '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
+  '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -375,6 +384,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/_authenticated/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/_authenticated/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/_authenticated/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/inventory/$id/edit'
     | '/payments/$id/edit'
     | '/purchase-orders/$id/edit'
+    | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/inventory/$id/edit'
     | '/payments/$id/edit'
     | '/purchase-orders/$id/edit'
+    | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
     | '/api/public/webhooks/razorpay'
   id:
@@ -492,6 +504,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/$id/edit'
     | '/_authenticated/payments/$id/edit'
     | '/_authenticated/purchase-orders/$id/edit'
+    | '/_authenticated/quotes/$quoteId/edit'
     | '/_authenticated/sales-orders/$id/edit'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
@@ -736,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesOrdersIdEditRouteImport
       parentRoute: typeof AuthenticatedSalesOrdersIdRoute
     }
+    '/_authenticated/quotes/$quoteId/edit': {
+      id: '/_authenticated/quotes/$quoteId/edit'
+      path: '/edit'
+      fullPath: '/quotes/$quoteId/edit'
+      preLoaderRoute: typeof AuthenticatedQuotesQuoteIdEditRouteImport
+      parentRoute: typeof AuthenticatedQuotesQuoteIdRoute
+    }
     '/_authenticated/purchase-orders/$id/edit': {
       id: '/_authenticated/purchase-orders/$id/edit'
       path: '/edit'
@@ -824,6 +844,20 @@ const AuthenticatedPurchaseOrdersIdRouteWithChildren =
     AuthenticatedPurchaseOrdersIdRouteChildren,
   )
 
+interface AuthenticatedQuotesQuoteIdRouteChildren {
+  AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
+}
+
+const AuthenticatedQuotesQuoteIdRouteChildren: AuthenticatedQuotesQuoteIdRouteChildren =
+  {
+    AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
+  }
+
+const AuthenticatedQuotesQuoteIdRouteWithChildren =
+  AuthenticatedQuotesQuoteIdRoute._addFileChildren(
+    AuthenticatedQuotesQuoteIdRouteChildren,
+  )
+
 interface AuthenticatedSalesOrdersIdRouteChildren {
   AuthenticatedSalesOrdersIdEditRoute: typeof AuthenticatedSalesOrdersIdEditRoute
 }
@@ -850,7 +884,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsNewRoute: typeof AuthenticatedPaymentsNewRoute
   AuthenticatedPurchaseOrdersIdRoute: typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
-  AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
+  AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
@@ -882,7 +916,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersIdRoute:
     AuthenticatedPurchaseOrdersIdRouteWithChildren,
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
-  AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
+  AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRouteWithChildren,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
