@@ -53,7 +53,8 @@ export function NotesPanel({
     <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <MessageSquare className="h-4 w-4 text-muted-foreground" />
-        <CardTitle className="text-sm">Notes</CardTitle>
+        <CardTitle className="text-sm">{title}</CardTitle>
+
       </CardHeader>
       <CardContent className="space-y-2">
         <Textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} />
