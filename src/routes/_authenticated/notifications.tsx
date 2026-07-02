@@ -18,7 +18,7 @@ function NotificationsPage() {
       <Card>
         <CardContent className="p-0">
           <ul className="divide-y divide-border">
-            {mockNotifications.map((n) => (
+            {MOCK_NOTIFICATIONS.map((n) => (
               <li key={n.id} className="flex items-start gap-3 px-4 py-3">
                 <Bell className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
