@@ -211,7 +211,7 @@ function ProjectHub() {
             <CardContent>
               <InfoGrid items={[
                 { label: "Stage", value: <Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge> },
-                { label: "Workflow", value: p.workflow_state ?? "—" },
+                { label: "Workflow", value: p.workflow_state ? JSON.stringify(p.workflow_state) : "—" },
                 { label: "Active", value: p.is_active ? "Yes" : "No" },
                 { label: "Created", value: new Date(p.created_at).toLocaleString() },
                 { label: "Updated", value: new Date(p.updated_at).toLocaleString() },
