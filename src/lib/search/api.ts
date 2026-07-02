@@ -56,7 +56,7 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     payments,
     dispatch,
   ] = await Promise.all([
-    safe(supabase.from("customers").select("id,name,customer_code,mobile").or(`name.ilike.${p},customer_code.ilike.${p},mobile.ilike.${p}`).limit(LIMIT)),
+    safe(supabase.from("customers").select("id,name,customer_code,primary_phone").or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p}`).limit(LIMIT)),
     safe(supabase.from("projects").select("id,name,city").or(`name.ilike.${p},city.ilike.${p}`).limit(LIMIT)),
     safe(supabase.from("vendors").select("id,company_name,vendor_code,city").or(`company_name.ilike.${p},vendor_code.ilike.${p},city.ilike.${p}`).limit(LIMIT)),
     safe(supabase.from("products").select("id,name,product_code").or(`name.ilike.${p},product_code.ilike.${p}`).limit(LIMIT)),
@@ -70,28 +70,30 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     safe(supabase.from("dispatches").select("id,dispatch_no,tracking_no").or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`).limit(LIMIT)),
   ]);
 
-  type C = { id: string; name: string; customer_code: string | null; mobile: string | null };
-  type P = { id: string; name: string; city: string | null };
-  type V = { id: string; company_name: string; vendor_code: string | null; city: string | null };
-  type Pr = { id: string; name: string; product_code: string | null };
-  type E = { id: string; enquiry_no: string | null; notes: string | null };
-  type Inv = { id: string; stock_code: string | null; location: string | null };
-  type Pay = { id: string; payment_no: string | null; reference_no: string | null };
-  type Dsp = { id: string; dispatch_no: string | null; tracking_no: string | null };
+  type Row = Record<string, unknown> & { id: string };
+  const val = (r: Row, k: string): string | null => {
+    const v = r[k];
+    return typeof v === "string" && v.length > 0 ? v : null;
+  };
+  const push = (rows: unknown, group: SearchGroupKey, groupLabel: string, hrefBase: string, labelKey: string, subKey: string, fallback: string): void => {
+    for (const r of (rows as Row[])) {
+      hits.push({ id: r.id, label: val(r, labelKey) ?? fallback, sublabel: val(r, subKey), href: `${hrefBase}/${r.id}`, group, groupLabel });
+    }
+  };
 
   const hits: SearchHit[] = [];
-  for (const r of customers as C[]) hits.push({ id: r.id, label: r.name, sublabel: r.customer_code ?? r.mobile, href: `/customers/${r.id}`, group: "customers", groupLabel: "Customers" });
-  for (const r of projects as P[]) hits.push({ id: r.id, label: r.name, sublabel: r.city, href: `/projects/${r.id}`, group: "projects", groupLabel: "Projects" });
-  for (const r of vendors as V[]) hits.push({ id: r.id, label: r.company_name, sublabel: r.vendor_code ?? r.city, href: `/vendors/${r.id}`, group: "vendors", groupLabel: "Vendors" });
-  for (const r of products as Pr[]) hits.push({ id: r.id, label: r.name, sublabel: r.product_code, href: `/products/${r.id}`, group: "products", groupLabel: "Products" });
-  for (const r of enquiries as E[]) hits.push({ id: r.id, label: r.enquiry_no ?? "Enquiry", sublabel: r.notes, href: `/enquiries/${r.id}`, group: "enquiries", groupLabel: "Enquiries" });
-  for (const r of quotes as E[]) hits.push({ id: r.id, label: (r as unknown as { quote_no: string | null }).quote_no ?? "Quote", sublabel: r.notes, href: `/quotes/${r.id}`, group: "quotes", groupLabel: "Quotations" });
-  for (const r of salesOrders as E[]) hits.push({ id: r.id, label: (r as unknown as { so_no: string | null }).so_no ?? "SO", sublabel: r.notes, href: `/sales-orders/${r.id}`, group: "salesOrders", groupLabel: "Sales Orders" });
-  for (const r of purchaseOrders as E[]) hits.push({ id: r.id, label: (r as unknown as { po_no: string | null }).po_no ?? "PO", sublabel: r.notes, href: `/purchase-orders/${r.id}`, group: "purchaseOrders", groupLabel: "Purchase Orders" });
-  for (const r of inventory as Inv[]) hits.push({ id: r.id, label: r.stock_code ?? "Item", sublabel: r.location, href: `/inventory/${r.id}`, group: "inventory", groupLabel: "Inventory" });
-  for (const r of invoices as E[]) hits.push({ id: r.id, label: (r as unknown as { invoice_no: string | null }).invoice_no ?? "Invoice", sublabel: r.notes, href: `/invoices/${r.id}`, group: "invoices", groupLabel: "Invoices" });
-  for (const r of payments as Pay[]) hits.push({ id: r.id, label: r.payment_no ?? "Payment", sublabel: r.reference_no, href: `/payments/${r.id}`, group: "payments", groupLabel: "Payments" });
-  for (const r of dispatch as Dsp[]) hits.push({ id: r.id, label: r.dispatch_no ?? "Dispatch", sublabel: r.tracking_no, href: `/dispatch/${r.id}`, group: "dispatch", groupLabel: "Dispatch" });
+  push(customers, "customers", "Customers", "/customers", "name", "customer_code", "Customer");
+  push(projects, "projects", "Projects", "/projects", "name", "city", "Project");
+  push(vendors, "vendors", "Vendors", "/vendors", "company_name", "vendor_code", "Vendor");
+  push(products, "products", "Products", "/products", "name", "product_code", "Product");
+  push(enquiries, "enquiries", "Enquiries", "/enquiries", "enquiry_no", "notes", "Enquiry");
+  push(quotes, "quotes", "Quotations", "/quotes", "quote_no", "notes", "Quote");
+  push(salesOrders, "salesOrders", "Sales Orders", "/sales-orders", "so_no", "notes", "SO");
+  push(purchaseOrders, "purchaseOrders", "Purchase Orders", "/purchase-orders", "po_no", "notes", "PO");
+  push(inventory, "inventory", "Inventory", "/inventory", "stock_code", "location", "Item");
+  push(invoices, "invoices", "Invoices", "/invoices", "invoice_no", "notes", "Invoice");
+  push(payments, "payments", "Payments", "/payments", "payment_no", "reference_no", "Payment");
+  push(dispatch, "dispatch", "Dispatch", "/dispatch", "dispatch_no", "tracking_no", "Dispatch");
 
   return hits;
 }
