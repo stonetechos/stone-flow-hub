@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Factory } from "lucide-react";
+import { Plus, Loader2, Factory, ExternalLink } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -88,17 +90,29 @@ function VendorsPage() {
             <TableBody>
               {query.data!.map((v) => (
                 <TableRow key={v.id}>
-                  <TableCell className="font-mono text-xs">{v.vendor_code}</TableCell>
-                  <TableCell className="font-medium">{v.company_name}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">{v.vendor_code}</Link>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">{v.company_name}</Link>
+                  </TableCell>
                   <TableCell>{v.city ?? "—"}</TableCell>
                   <TableCell>{v.gst_number ?? "—"}</TableCell>
                   <TableCell>{v.payment_terms ?? "—"}</TableCell>
                   <TableCell>
                     <RowActions
+                      extra={
+                        <DropdownMenuItem asChild>
+                          <Link to="/vendors/$vendorId" params={{ vendorId: v.id }}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> Open
+                          </Link>
+                        </DropdownMenuItem>
+                      }
                       onEdit={() => { setEditing(v); setFormOpen(true); }}
                       onDelete={() => setToDelete(v)}
                     />
                   </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>

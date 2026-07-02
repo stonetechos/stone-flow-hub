@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, PackageSearch } from "lucide-react";
+import { Plus, Loader2, PackageSearch, ExternalLink } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -94,18 +96,30 @@ function ProductsPage() {
             <TableBody>
               {query.data!.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="font-mono text-xs">{p.product_code}</TableCell>
-                  <TableCell className="font-medium">{p.name}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <Link to="/products/$productId" params={{ productId: p.id }} className="hover:underline">{p.product_code}</Link>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link to="/products/$productId" params={{ productId: p.id }} className="hover:underline">{p.name}</Link>
+                  </TableCell>
                   <TableCell><Badge variant="secondary" className="capitalize">{p.stone_type ?? "—"}</Badge></TableCell>
                   <TableCell className="capitalize">{p.finish?.replace("_", " ") ?? "—"}</TableCell>
                   <TableCell>{p.default_unit}</TableCell>
                   <TableCell>{p.thickness_mm ?? "—"}</TableCell>
                   <TableCell>
                     <RowActions
+                      extra={
+                        <DropdownMenuItem asChild>
+                          <Link to="/products/$productId" params={{ productId: p.id }}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> Open
+                          </Link>
+                        </DropdownMenuItem>
+                      }
                       onEdit={() => { setEditing(p); setFormOpen(true); }}
                       onDelete={() => setToDelete(p)}
                     />
                   </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>

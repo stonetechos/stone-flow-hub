@@ -10,9 +10,11 @@ import {
 export function RowActions({
   onEdit,
   onDelete,
+  extra,
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
+  extra?: React.ReactNode;
 }) {
   return (
     <DropdownMenu>
@@ -28,6 +30,7 @@ export function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        {extra}
         {onEdit && (
           <DropdownMenuItem onSelect={() => onEdit()}>
             <Pencil className="mr-2 h-4 w-4" /> Edit
