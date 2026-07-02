@@ -38,10 +38,19 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 
 function QuotesPage() {
   const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
   const params = Route.useSearch();
   const nav = useNavigate();
+  const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
+  const del = useMutation({
+    mutationFn: (id: string) => deleteQuote(id),
+    onSuccess: () => { toast.success("Quote deleted"); qc.invalidateQueries({ queryKey: qk.quotes.all }); setToDelete(null); },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+  const rows = (query.data ?? []).filter((r) => statusFilter === "all" || r.status === statusFilter);
 
   useEffect(() => {
     if (params.new) {
