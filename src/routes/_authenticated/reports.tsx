@@ -30,7 +30,7 @@ const REPORTS: ReportCard[] = [
 ];
 
 export function ReportsPage() {
-  const kpis = useQuery({ queryKey: qk.dashboard.kpis, queryFn: getDashboardKpis });
+  const kpis = useQuery({ queryKey: qk.dashboard, queryFn: getDashboardKpis });
 
   return (
     <div>
