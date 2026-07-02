@@ -45,24 +45,31 @@ export async function createTag(name: string, color = "#64748b"): Promise<TagRow
 
 export async function listEntityTags(entityType: TaggableType, entityId: string): Promise<TagRow[]> {
   const b = BINDINGS[entityType];
-  const { data, error } = await supabase
-    .from(b.table)
-    .select("tag_id, tags(*)")
-    .eq(b.fk, entityId);
+  // The join tables share a uniform shape, so a runtime cast is safe.
+  const client = supabase.from(b.table) as unknown as {
+    select: (s: string) => {
+      eq: (c: string, v: string) => Promise<{ data: Array<{ tags: TagRow | null }> | null; error: { code?: string; message?: string } | null }>;
+    };
+  };
+  const { data, error } = await client.select("tag_id, tags(*)").eq(b.fk, entityId);
   if (error) throw new AppError(mapDbError(error));
-  const rows = (data ?? []) as unknown as Array<{ tags: TagRow | null }>;
-  return rows.map((r) => r.tags).filter((t): t is TagRow => !!t);
+  return (data ?? []).map((r) => r.tags).filter((t): t is TagRow => !!t);
 }
 
 export async function attachTag(entityType: TaggableType, entityId: string, tagId: string): Promise<void> {
   const b = BINDINGS[entityType];
-  const row = { [b.fk]: entityId, tag_id: tagId } as never;
-  const { error } = await supabase.from(b.table).insert(row);
+  const client = supabase.from(b.table) as unknown as {
+    insert: (row: Record<string, string>) => Promise<{ error: { code?: string; message?: string } | null }>;
+  };
+  const { error } = await client.insert({ [b.fk]: entityId, tag_id: tagId });
   if (error && error.code !== "23505") throw new AppError(mapDbError(error));
 }
 
 export async function detachTag(entityType: TaggableType, entityId: string, tagId: string): Promise<void> {
   const b = BINDINGS[entityType];
-  const { error } = await supabase.from(b.table).delete().eq(b.fk, entityId).eq("tag_id", tagId);
+  const client = supabase.from(b.table) as unknown as {
+    delete: () => { eq: (c: string, v: string) => { eq: (c: string, v: string) => Promise<{ error: { code?: string; message?: string } | null }> } };
+  };
+  const { error } = await client.delete().eq(b.fk, entityId).eq("tag_id", tagId);
   if (error) throw new AppError(mapDbError(error));
 }
