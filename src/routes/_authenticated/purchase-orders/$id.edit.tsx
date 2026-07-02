@@ -67,7 +67,7 @@ function EditPurchaseOrderPage() {
             <Select value={form.vendor_id ?? ""} onValueChange={(v) => set("vendor_id", v || null)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {(vendors.data ?? []).map((v) => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+                {(vendors.data ?? []).map((v) => <SelectItem key={v.id} value={v.id}>{v.company_name}</SelectItem>)}
               </SelectContent>
             </Select>
           </Field>
