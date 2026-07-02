@@ -1,7 +1,7 @@
 /** Central document search & filter across all uploaded files. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import type { DbTable } from "@/lib/types";
+import type { DbTable, FileFolder } from "@/lib/types";
 
 export type FileRow = DbTable<"file_objects">;
 
