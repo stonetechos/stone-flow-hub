@@ -256,13 +256,24 @@ function InvoiceDetailPage() {
         </Card>
       </div>
 
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <NotesPanel table="invoices" id={invoiceId} value={invoice.notes ?? null} invalidateKey={qk.invoices.byId(invoiceId)} />
+        <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
+        <TimelinePanel entityType="invoice" entityId={invoiceId} />
+      </div>
+
       <RecordPaymentDialog
         open={payOpen}
         onOpenChange={setPayOpen}
         invoiceId={invoiceId}
         maxAmount={balance}
       />
+
+      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
+        title="Delete invoice?" description={`${invoice.invoice_no} will be removed.`}
+        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
     </div>
+
   );
 }
 
