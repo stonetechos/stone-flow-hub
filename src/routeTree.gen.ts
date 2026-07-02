@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -336,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
@@ -434,6 +442,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/_authenticated/dispatch/new': typeof AuthenticatedDispatchNewRoute
@@ -484,6 +493,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/settings'
+    | '/tasks'
     | '/customers/$customerId'
     | '/dispatch/$id'
     | '/dispatch/new'
@@ -532,6 +542,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/settings'
+    | '/tasks'
     | '/customers/$customerId'
     | '/dispatch/$id'
     | '/dispatch/new'
@@ -581,6 +592,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/tasks'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/new'
@@ -652,6 +664,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tasks': {
+      id: '/_authenticated/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -1069,6 +1088,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
   AuthenticatedDispatchNewRoute: typeof AuthenticatedDispatchNewRoute
@@ -1108,6 +1128,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRouteWithChildren,
   AuthenticatedDispatchNewRoute: AuthenticatedDispatchNewRoute,
