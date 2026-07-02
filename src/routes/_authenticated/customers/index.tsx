@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -8,17 +8,17 @@ import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createCustomer, listCustomers } from "@/lib/customers/api";
+import { createCustomer, deleteCustomer, listCustomers, updateCustomer, type CustomerRow } from "@/lib/customers/api";
 import { CUSTOMER_TYPES, customerCreateSchema, type CustomerCreateInput } from "@/lib/customers/schema";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
@@ -27,12 +27,23 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 });
 
 function CustomersPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<CustomerRow | null>(null);
+  const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
 
-  const query = useQuery({
-    queryKey: qk.customers.list(q),
-    queryFn: () => listCustomers(q),
+  const query = useQuery({ queryKey: qk.customers.list(q), queryFn: () => listCustomers(q) });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => deleteCustomer(id),
+    onSuccess: () => {
+      toast.success("Customer deleted");
+      qc.invalidateQueries({ queryKey: qk.customers.all });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+      setToDelete(null);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
   });
 
   return (
@@ -41,19 +52,15 @@ function CustomersPage() {
         title="Customers"
         subtitle="Master list of everyone you sell to."
         actions={
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New customer
           </Button>
         }
       />
 
       <div className="mb-3 flex items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, code, phone, city…"
-          className="max-w-md"
-        />
+        <Input value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by name, code, phone, city…" className="max-w-md" />
       </div>
 
       {query.isLoading ? (
@@ -65,11 +72,7 @@ function CustomersPage() {
           icon={<Users className="h-6 w-6" />}
           title="No customers yet"
           message="Add your first customer — only name and mobile are required."
-          action={
-            <Button onClick={() => setOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> New customer
-            </Button>
-          }
+          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New customer</Button>}
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -81,6 +84,7 @@ function CustomersPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Mobile</TableHead>
                 <TableHead>City</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -95,6 +99,12 @@ function CustomersPage() {
                   </TableCell>
                   <TableCell>{c.primary_phone ?? "—"}</TableCell>
                   <TableCell>{c.city ?? "—"}</TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => { setEditing(c); setFormOpen(true); }}
+                      onDelete={() => setToDelete(c)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -102,31 +112,58 @@ function CustomersPage() {
         </div>
       )}
 
-      <CreateCustomerDialog open={open} onOpenChange={setOpen} />
+      <CustomerFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete customer?"
+        description={toDelete ? `${toDelete.name} (${toDelete.customer_code}) will be permanently removed.` : ""}
+        busy={delMut.isPending}
+        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }
 
-function CreateCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function emptyForm(): CustomerCreateInput {
+  return {
+    name: "", mobile: "", email: null, city: null, customer_type: "individual",
+    whatsapp: null, billing_address: null, state: null, pincode: null,
+    gst_number: null, notes: null,
+  };
+}
+
+function fromRow(c: CustomerRow): CustomerCreateInput {
+  return {
+    name: c.name,
+    mobile: c.primary_phone ?? "",
+    email: c.primary_email,
+    city: c.city,
+    customer_type: c.customer_type,
+    whatsapp: c.whatsapp,
+    billing_address: c.billing_address,
+    state: c.state,
+    pincode: c.pincode,
+    gst_number: c.gst_number,
+    notes: c.notes,
+  };
+}
+
+function CustomerFormDialog({
+  open, onOpenChange, editing,
+}: { open: boolean; onOpenChange: (o: boolean) => void; editing: CustomerRow | null }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<CustomerCreateInput>({
-    name: "",
-    mobile: "",
-    email: null,
-    city: null,
-    customer_type: "individual",
-    whatsapp: null,
-    billing_address: null,
-    state: null,
-    pincode: null,
-    gst_number: null,
-    notes: null,
-  });
+  const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
+
+  useEffect(() => {
+    if (open) setForm(editing ? fromRow(editing) : emptyForm());
+  }, [open, editing]);
 
   const mutation = useMutation({
-    mutationFn: createCustomer,
+    mutationFn: (input: CustomerCreateInput) =>
+      editing ? updateCustomer(editing.id, input) : createCustomer(input),
     onSuccess: (row) => {
-      toast.success(`Customer ${row.customer_code} created`);
+      toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
       qc.invalidateQueries({ queryKey: qk.customers.all });
       qc.invalidateQueries({ queryKey: qk.dashboard });
       onOpenChange(false);
@@ -143,7 +180,6 @@ function CreateCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     }
     mutation.mutate(parsed.data);
   }
-
   const set = <K extends keyof CustomerCreateInput>(k: K, v: CustomerCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -151,37 +187,35 @@ function CreateCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>New customer</DialogTitle>
+          <DialogTitle>{editing ? `Edit ${editing.name}` : "New customer"}</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
-            <Field label="Customer name" required htmlFor="cust-name">
-              <Input id="cust-name" value={form.name} onChange={(e) => set("name", e.target.value)} required />
+            <Field label="Customer name" required>
+              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
-            <Field label="Mobile" required htmlFor="cust-mobile" hint="10 digits, +91 optional">
-              <Input id="cust-mobile" value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
+            <Field label="Mobile" required hint="10 digits, +91 optional">
+              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
             </Field>
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>
-            <Field label="Email" htmlFor="cust-email">
-              <Input id="cust-email" type="email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} />
+            <Field label="Email">
+              <Input type="email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} />
             </Field>
-            <Field label="City" htmlFor="cust-city">
-              <Input id="cust-city" value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
+            <Field label="City">
+              <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
             </Field>
             <Field label="Type">
               <Select value={form.customer_type} onValueChange={(v) => set("customer_type", v as CustomerCreateInput["customer_type"])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CUSTOMER_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                  ))}
+                  {CUSTOMER_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="WhatsApp" htmlFor="cust-wa">
-              <Input id="cust-wa" value={form.whatsapp ?? ""} onChange={(e) => set("whatsapp", e.target.value)} />
+            <Field label="WhatsApp">
+              <Input value={form.whatsapp ?? ""} onChange={(e) => set("whatsapp", e.target.value)} />
             </Field>
           </QuickForm.MoreDetails>
 
@@ -200,7 +234,8 @@ function CreateCustomerDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Save" : "Create"}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

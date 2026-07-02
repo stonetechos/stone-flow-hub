@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Building2 } from "lucide-react";
 import { toast } from "sonner";
@@ -14,9 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createProject, listProjects } from "@/lib/projects/api";
+import {
+  createProject, deleteProject, listProjects, updateProject,
+  type ProjectWithCustomer,
+} from "@/lib/projects/api";
 import { listCustomers } from "@/lib/customers/api";
 import { PROJECT_TYPES, projectCreateSchema, type ProjectCreateInput } from "@/lib/projects/schema";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
@@ -27,10 +32,23 @@ export const Route = createFileRoute("/_authenticated/projects/")({
 });
 
 function ProjectsPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ProjectWithCustomer | null>(null);
+  const [toDelete, setToDelete] = useState<ProjectWithCustomer | null>(null);
 
   const query = useQuery({ queryKey: qk.projects.list(q), queryFn: () => listProjects(q) });
+
+  const delMut = useMutation({
+    mutationFn: (id: string) => deleteProject(id),
+    onSuccess: () => {
+      toast.success("Project deleted");
+      qc.invalidateQueries({ queryKey: qk.projects.all });
+      setToDelete(null);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
 
   return (
     <div>
@@ -38,12 +56,11 @@ function ProjectsPage() {
         title="Projects"
         subtitle="Every enquiry lives inside a project."
         actions={
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New project
           </Button>
         }
       />
-
       <div className="mb-3 flex items-center gap-2">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, code, city…" className="max-w-md" />
       </div>
@@ -57,7 +74,7 @@ function ProjectsPage() {
           icon={<Building2 className="h-6 w-6" />}
           title="No projects yet"
           message="Create a project against a customer to start tracking enquiries."
-          action={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New project</Button>}
+          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New project</Button>}
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -70,6 +87,7 @@ function ProjectsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>City</TableHead>
                 <TableHead>Stage</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,6 +99,12 @@ function ProjectsPage() {
                   <TableCell><Badge variant="secondary" className="capitalize">{p.project_type}</Badge></TableCell>
                   <TableCell>{p.city ?? "—"}</TableCell>
                   <TableCell><Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge></TableCell>
+                  <TableCell>
+                    <RowActions
+                      onEdit={() => { setEditing(p); setFormOpen(true); }}
+                      onDelete={() => setToDelete(p)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -88,32 +112,60 @@ function ProjectsPage() {
         </div>
       )}
 
-      <CreateProjectDialog open={open} onOpenChange={setOpen} />
+      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete project?"
+        description={toDelete ? `${toDelete.name} (${toDelete.project_code}) will be permanently removed.` : ""}
+        busy={delMut.isPending}
+        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }
 
-function CreateProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function emptyForm(): ProjectCreateInput {
+  return {
+    customer_id: "", name: "", city: "", project_type: "residential",
+    site_address: null, state: null, pincode: null,
+    expected_value_inr: null, expected_start_date: null,
+    expected_completion_date: null, notes: null,
+  };
+}
+
+function fromRow(p: ProjectWithCustomer): ProjectCreateInput {
+  return {
+    customer_id: p.customer_id,
+    name: p.name,
+    city: p.city ?? "",
+    project_type: p.project_type,
+    site_address: p.site_address,
+    state: p.state,
+    pincode: p.pincode,
+    expected_value_inr: p.expected_value_inr,
+    expected_start_date: p.expected_start_date,
+    expected_completion_date: p.expected_completion_date,
+    notes: p.notes,
+  };
+}
+
+function ProjectFormDialog({
+  open, onOpenChange, editing,
+}: { open: boolean; onOpenChange: (o: boolean) => void; editing: ProjectWithCustomer | null }) {
   const qc = useQueryClient();
   const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers("") });
-  const [form, setForm] = useState<ProjectCreateInput>({
-    customer_id: "",
-    name: "",
-    city: "",
-    project_type: "residential",
-    site_address: null,
-    state: null,
-    pincode: null,
-    expected_value_inr: null,
-    expected_start_date: null,
-    expected_completion_date: null,
-    notes: null,
-  });
+  const [form, setForm] = useState<ProjectCreateInput>(emptyForm);
+
+  useEffect(() => {
+    if (open) setForm(editing ? fromRow(editing) : emptyForm());
+  }, [open, editing]);
 
   const mutation = useMutation({
-    mutationFn: createProject,
+    mutationFn: (input: ProjectCreateInput) =>
+      editing ? updateProject(editing.id, input) : createProject(input),
     onSuccess: (row) => {
-      toast.success(`Project ${row.project_code} created`);
+      toast.success(editing ? "Project updated" : `Project ${row.project_code} created`);
       qc.invalidateQueries({ queryKey: qk.projects.all });
       onOpenChange(false);
     },
@@ -123,20 +175,18 @@ function CreateProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = projectCreateSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
-      return;
-    }
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
     mutation.mutate(parsed.data);
   }
-
   const set = <K extends keyof ProjectCreateInput>(k: K, v: ProjectCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{editing ? `Edit ${editing.name}` : "New project"}</DialogTitle>
+        </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Customer" required className="md:col-span-2">
@@ -189,7 +239,8 @@ function CreateProjectDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Save" : "Create"}
             </Button>
           </QuickForm.Actions>
         </QuickForm>
