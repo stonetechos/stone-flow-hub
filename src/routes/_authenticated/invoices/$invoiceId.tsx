@@ -81,6 +81,12 @@ function InvoiceDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const delMut = useMutation({
+    mutationFn: () => deleteInvoice(invoiceId),
+    onSuccess: () => { toast.success("Invoice deleted"); qc.invalidateQueries({ queryKey: qk.invoices.all }); nav({ to: "/invoices" }); },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (inv.isLoading) return <LoadingBlock />;
   if (inv.error) return <ErrorBlock message={toUserMessage(inv.error)} onRetry={() => inv.refetch()} />;
   if (!inv.data) return <ErrorBlock message="Invoice not found." />;
@@ -102,6 +108,12 @@ function InvoiceDetailPage() {
         subtitle={`${invoice.customer?.name ?? "—"} • ${invoice.project?.name ?? "—"}`}
         actions={
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmDel(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
             <Button
               variant="outline"
               onClick={() => linkMut.mutate()}
@@ -117,6 +129,7 @@ function InvoiceDetailPage() {
           </div>
         }
       />
+
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
