@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 export const PURCHASE_ORDER_STATUSES = [
-  "draft","sent","acknowledged","partially_received","received","cancelled",
+  "draft",
+  "sent",
+  "acknowledged",
+  "partially_received",
+  "received",
+  "cancelled",
 ] as const;
 export type PurchaseOrderStatus = (typeof PURCHASE_ORDER_STATUSES)[number];
 

@@ -7,9 +7,22 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
@@ -31,22 +44,39 @@ function InvoicesPage() {
   const query = useQuery({ queryKey: qk.invoices.list(q), queryFn: () => listInvoices(q) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
-    onSuccess: () => { toast.success("Invoice deleted"); qc.invalidateQueries({ queryKey: qk.invoices.all }); setToDelete(null); },
+    onSuccess: () => {
+      toast.success("Invoice deleted");
+      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      setToDelete(null);
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
-  const rows = (query.data ?? []).filter((r) => statusFilter === "all" || r.status === statusFilter);
+  const rows = (query.data ?? []).filter(
+    (r) => statusFilter === "all" || r.status === statusFilter,
+  );
 
   return (
     <div>
       <PageHeader
         title="Invoices"
         subtitle="Collect payments — Razorpay links or manual entries."
-        actions={<Button onClick={() => nav({ to: "/invoices/new" })}><Plus className="mr-2 h-4 w-4" /> New invoice</Button>}
+        actions={
+          <Button onClick={() => nav({ to: "/invoices/new" })}>
+            <Plus className="mr-2 h-4 w-4" /> New invoice
+          </Button>
+        }
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by invoice no…" className="max-w-md" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by invoice no…"
+          className="max-w-md"
+        />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -68,7 +98,11 @@ function InvoicesPage() {
           icon={<Receipt className="h-6 w-6" />}
           title="No invoices yet"
           message="Convert an accepted quote to create your first invoice."
-          action={<Button onClick={() => nav({ to: "/invoices/new" })}><Plus className="mr-2 h-4 w-4" /> New invoice</Button>}
+          action={
+            <Button onClick={() => nav({ to: "/invoices/new" })}>
+              <Plus className="mr-2 h-4 w-4" /> New invoice
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -89,19 +123,31 @@ function InvoicesPage() {
               {rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">
-                    <Link to="/invoices/$invoiceId" params={{ invoiceId: r.id }} className="text-primary hover:underline">
+                    <Link
+                      to="/invoices/$invoiceId"
+                      params={{ invoiceId: r.id }}
+                      className="text-primary hover:underline"
+                    >
                       {r.invoice_no}
                     </Link>
                   </TableCell>
                   <TableCell>{r.customer?.name ?? "—"}</TableCell>
                   <TableCell>{r.project?.name ?? "—"}</TableCell>
-                  <TableCell><Badge variant="outline" className="capitalize">{r.status.replace(/_/g, " ")}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {r.status.replace(/_/g, " ")}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">{formatInr(r.total)}</TableCell>
-                  <TableCell className="text-right font-medium">{formatInr(r.balance_due)}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatInr(r.balance_due)}
+                  </TableCell>
                   <TableCell>{r.due_date ?? "—"}</TableCell>
                   <TableCell>
                     <RowActions
-                      onEdit={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })}
+                      onEdit={() =>
+                        nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
+                      }
                       onDelete={() => setToDelete(r)}
                     />
                   </TableCell>
@@ -112,9 +158,14 @@ function InvoicesPage() {
         </div>
       )}
 
-      <ConfirmDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete invoice?" description={toDelete ? `${toDelete.invoice_no} will be removed.` : ""}
-        busy={del.isPending} onConfirm={() => toDelete && del.mutate(toDelete.id)} />
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete invoice?"
+        description={toDelete ? `${toDelete.invoice_no} will be removed.` : ""}
+        busy={del.isPending}
+        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+      />
     </div>
   );
 }

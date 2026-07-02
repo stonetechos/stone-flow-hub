@@ -9,11 +9,7 @@ export type VendorRow = DbTable<"vendors">;
 export type VendorContactRow = DbTable<"vendor_contacts">;
 
 export async function listVendors(query = ""): Promise<VendorRow[]> {
-  let q = supabase
-    .from("vendors")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(200);
+  let q = supabase.from("vendors").select("*").order("created_at", { ascending: false }).limit(200);
   const s = sanitizeSearch(query);
   if (s) {
     q = q.or(`company_name.ilike.%${s}%,vendor_code.ilike.%${s}%,city.ilike.%${s}%`);

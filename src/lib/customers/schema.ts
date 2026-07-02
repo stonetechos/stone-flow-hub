@@ -3,14 +3,14 @@ import { zRequired, zOptional, zMobile, zEmail, normalizeMobile } from "@/lib/zo
 import type { DbEnum } from "@/lib/types";
 
 export const CUSTOMER_TYPES: ReadonlyArray<{ value: DbEnum<"customer_type">; label: string }> = [
-  { value: "individual",         label: "Individual" },
-  { value: "company",            label: "Company" },
-  { value: "builder",            label: "Builder" },
-  { value: "architect",          label: "Architect" },
-  { value: "interior_designer",  label: "Interior Designer" },
-  { value: "contractor",         label: "Contractor" },
-  { value: "government",         label: "Government" },
-  { value: "other",              label: "Other" },
+  { value: "individual", label: "Individual" },
+  { value: "company", label: "Company" },
+  { value: "builder", label: "Builder" },
+  { value: "architect", label: "Architect" },
+  { value: "interior_designer", label: "Interior Designer" },
+  { value: "contractor", label: "Contractor" },
+  { value: "government", label: "Government" },
+  { value: "other", label: "Other" },
 ];
 
 export const customerCreateSchema = z.object({
@@ -21,10 +21,18 @@ export const customerCreateSchema = z.object({
   // More Details
   email: zEmail,
   city: zOptional(),
-  customer_type: z.enum([
-    "individual", "company", "builder", "architect",
-    "interior_designer", "contractor", "government", "other",
-  ]).default("individual"),
+  customer_type: z
+    .enum([
+      "individual",
+      "company",
+      "builder",
+      "architect",
+      "interior_designer",
+      "contractor",
+      "government",
+      "other",
+    ])
+    .default("individual"),
 
   // Advanced
   whatsapp: zOptional(),

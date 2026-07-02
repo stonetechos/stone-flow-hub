@@ -54,7 +54,6 @@ export function NotesPanel({
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
         <MessageSquare className="h-4 w-4 text-muted-foreground" />
         <CardTitle className="text-sm">{title}</CardTitle>
-
       </CardHeader>
       <CardContent className="space-y-2">
         <Textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} />
@@ -126,8 +125,17 @@ export function AttachmentsPanel({
               e.target.value = "";
             }}
           />
-          <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={upload.isPending}>
-            {upload.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Paperclip className="mr-2 h-3 w-3" />}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => fileRef.current?.click()}
+            disabled={upload.isPending}
+          >
+            {upload.isPending ? (
+              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+            ) : (
+              <Paperclip className="mr-2 h-3 w-3" />
+            )}
             Upload
           </Button>
         </>
@@ -146,7 +154,12 @@ export function AttachmentsPanel({
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => open(f)}>
                     <Download className="h-3 w-3" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => del.mutate(f)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    onClick={() => del.mutate(f)}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -159,13 +172,7 @@ export function AttachmentsPanel({
   );
 }
 
-export function TimelinePanel({
-  entityType,
-  entityId,
-}: {
-  entityType: string;
-  entityId: string;
-}) {
+export function TimelinePanel({ entityType, entityId }: { entityType: string; entityId: string }) {
   const key = ["activity", entityType, entityId] as const;
   const query = useQuery({
     queryKey: key,

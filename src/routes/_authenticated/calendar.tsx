@@ -45,7 +45,10 @@ function CalendarPage() {
   }, [cursor]);
 
   const byDay = useMemo(() => {
-    const map = new Map<string, typeof query.data extends undefined ? never : NonNullable<typeof query.data>>();
+    const map = new Map<
+      string,
+      typeof query.data extends undefined ? never : NonNullable<typeof query.data>
+    >();
     for (const f of query.data ?? []) {
       const key = new Date(f.scheduled_at).toDateString();
       const arr = (map.get(key) ?? []) as NonNullable<typeof query.data>;
@@ -64,16 +67,34 @@ function CalendarPage() {
         subtitle="Scheduled follow-ups and events across your projects."
         actions={
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() - 1, 1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() - 1, 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-40 text-center text-sm font-medium">{monthLabel}</div>
-            <Button variant="outline" size="icon" onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + 1, 1))}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + 1, 1))}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="ml-2" onClick={() => {
-              const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); setCursor(d);
-            }}>Today</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2"
+              onClick={() => {
+                const d = new Date();
+                d.setDate(1);
+                d.setHours(0, 0, 0, 0);
+                setCursor(d);
+              }}
+            >
+              Today
+            </Button>
           </div>
         }
       />
@@ -84,21 +105,37 @@ function CalendarPage() {
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (
         <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">{monthLabel}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">{monthLabel}</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-px rounded-sm border border-border bg-border text-sm">
-              {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => (
-                <div key={d} className="bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">{d}</div>
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                <div
+                  key={d}
+                  className="bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
+                >
+                  {d}
+                </div>
               ))}
               {grid.map((cell, i) => {
                 const key = cell.date?.toDateString();
                 const items = key ? (byDay.get(key) ?? []) : [];
                 const isToday = key === today;
                 return (
-                  <div key={i} className={cn("min-h-24 bg-card p-1.5", !cell.date && "bg-muted/40")}>
+                  <div
+                    key={i}
+                    className={cn("min-h-24 bg-card p-1.5", !cell.date && "bg-muted/40")}
+                  >
                     {cell.date && (
                       <>
-                        <div className={cn("mb-1 text-xs font-medium", isToday && "inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground")}>
+                        <div
+                          className={cn(
+                            "mb-1 text-xs font-medium",
+                            isToday &&
+                              "inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground",
+                          )}
+                        >
                           {cell.date.getDate()}
                         </div>
                         <div className="space-y-0.5">
@@ -108,13 +145,19 @@ function CalendarPage() {
                               to="/enquiries/$enquiryId"
                               params={{ enquiryId: f.enquiry_id }}
                               className="block truncate rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary hover:bg-primary/20"
-                              title={(f.notes ?? f.channel)}
+                              title={f.notes ?? f.channel}
                             >
-                              {new Date(f.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} {(f.notes ?? f.channel)}
+                              {new Date(f.scheduled_at).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
+                              {f.notes ?? f.channel}
                             </Link>
                           ))}
                           {items.length > 3 && (
-                            <div className="text-[11px] text-muted-foreground">+{items.length - 3} more</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              +{items.length - 3} more
+                            </div>
                           )}
                         </div>
                       </>
@@ -128,10 +171,18 @@ function CalendarPage() {
       )}
 
       <Card className="mt-4 shadow-1">
-        <CardHeader><CardTitle className="text-sm">Upcoming follow-ups</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm">Upcoming follow-ups</CardTitle>
+        </CardHeader>
         <CardContent>
-          {(query.data ?? []).filter((f) => new Date(f.scheduled_at) >= new Date() && f.status === "pending").slice(0, 10).length === 0 ? (
-            <EmptyState icon={<CalendarClock className="h-6 w-6" />} title="Nothing scheduled" message="Create follow-ups from an enquiry to see them here." />
+          {(query.data ?? [])
+            .filter((f) => new Date(f.scheduled_at) >= new Date() && f.status === "pending")
+            .slice(0, 10).length === 0 ? (
+            <EmptyState
+              icon={<CalendarClock className="h-6 w-6" />}
+              title="Nothing scheduled"
+              message="Create follow-ups from an enquiry to see them here."
+            />
           ) : (
             <ul className="divide-y divide-border">
               {(query.data ?? [])
@@ -140,12 +191,15 @@ function CalendarPage() {
                 .map((f) => (
                   <li key={f.id} className="flex items-center justify-between py-2 text-sm">
                     <div className="min-w-0">
-                      <div className="truncate font-medium">{(f.notes ?? f.channel)}</div>
+                      <div className="truncate font-medium">{f.notes ?? f.channel}</div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(f.scheduled_at).toLocaleString()} • {f.enquiry?.project?.name ?? "—"}
+                        {new Date(f.scheduled_at).toLocaleString()} •{" "}
+                        {f.enquiry?.project?.name ?? "—"}
                       </div>
                     </div>
-                    <Badge variant="outline" className="capitalize">{f.status}</Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {f.status}
+                    </Badge>
                   </li>
                 ))}
             </ul>

@@ -11,7 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
@@ -19,7 +26,11 @@ import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
-  createVendor, deleteVendor, getPrimaryContact, listVendors, updateVendor,
+  createVendor,
+  deleteVendor,
+  getPrimaryContact,
+  listVendors,
+  updateVendor,
   type VendorRow,
 } from "@/lib/vendors/api";
 import { vendorCreateSchema, type VendorCreateInput } from "@/lib/vendors/schema";
@@ -54,13 +65,23 @@ function VendorsPage() {
         title="Vendors"
         subtitle="Suppliers you send RFQs to."
         actions={
-          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" /> New vendor
           </Button>
         }
       />
       <div className="mb-3 flex items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by company, code, city…" className="max-w-md" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by company, code, city…"
+          className="max-w-md"
+        />
       </div>
 
       {query.isLoading ? (
@@ -72,7 +93,16 @@ function VendorsPage() {
           icon={<Factory className="h-6 w-6" />}
           title="No vendors yet"
           message="Add your first vendor to start sending RFQs."
-          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New vendor</Button>}
+          action={
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" /> New vendor
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -91,10 +121,22 @@ function VendorsPage() {
               {query.data!.map((v) => (
                 <TableRow key={v.id}>
                   <TableCell className="font-mono text-xs">
-                    <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">{v.vendor_code}</Link>
+                    <Link
+                      to="/vendors/$vendorId"
+                      params={{ vendorId: v.id }}
+                      className="hover:underline"
+                    >
+                      {v.vendor_code}
+                    </Link>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">{v.company_name}</Link>
+                    <Link
+                      to="/vendors/$vendorId"
+                      params={{ vendorId: v.id }}
+                      className="hover:underline"
+                    >
+                      {v.company_name}
+                    </Link>
                   </TableCell>
                   <TableCell>{v.city ?? "—"}</TableCell>
                   <TableCell>{v.gst_number ?? "—"}</TableCell>
@@ -108,11 +150,13 @@ function VendorsPage() {
                           </Link>
                         </DropdownMenuItem>
                       }
-                      onEdit={() => { setEditing(v); setFormOpen(true); }}
+                      onEdit={() => {
+                        setEditing(v);
+                        setFormOpen(true);
+                      }}
                       onDelete={() => setToDelete(v)}
                     />
                   </TableCell>
-
                 </TableRow>
               ))}
             </TableBody>
@@ -125,7 +169,11 @@ function VendorsPage() {
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete vendor?"
-        description={toDelete ? `${toDelete.company_name} (${toDelete.vendor_code}) will be permanently removed.` : ""}
+        description={
+          toDelete
+            ? `${toDelete.company_name} (${toDelete.vendor_code}) will be permanently removed.`
+            : ""
+        }
         busy={delMut.isPending}
         onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
       />
@@ -135,15 +183,29 @@ function VendorsPage() {
 
 function emptyForm(): VendorCreateInput {
   return {
-    company_name: "", contact_name: "", mobile: "", email: null, city: null,
-    address: null, state: null, pincode: null, gst_number: null,
-    payment_terms: null, notes: null,
+    company_name: "",
+    contact_name: "",
+    mobile: "",
+    email: null,
+    city: null,
+    address: null,
+    state: null,
+    pincode: null,
+    gst_number: null,
+    payment_terms: null,
+    notes: null,
   };
 }
 
 function VendorFormDialog({
-  open, onOpenChange, editing,
-}: { open: boolean; onOpenChange: (o: boolean) => void; editing: VendorRow | null }) {
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  editing: VendorRow | null;
+}) {
   const qc = useQueryClient();
   const [form, setForm] = useState<VendorCreateInput>(emptyForm);
 
@@ -204,10 +266,18 @@ function VendorFormDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Vendor company" required>
-              <Input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} required />
+              <Input
+                value={form.company_name}
+                onChange={(e) => set("company_name", e.target.value)}
+                required
+              />
             </Field>
             <Field label="Contact person" required>
-              <Input value={form.contact_name} onChange={(e) => set("contact_name", e.target.value)} required />
+              <Input
+                value={form.contact_name}
+                onChange={(e) => set("contact_name", e.target.value)}
+                required
+              />
             </Field>
             <Field label="Mobile" required>
               <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
@@ -219,25 +289,53 @@ function VendorFormDialog({
 
           <QuickForm.MoreDetails>
             <Field label="Email">
-              <Input type="email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} />
+              <Input
+                type="email"
+                value={form.email ?? ""}
+                onChange={(e) => set("email", e.target.value)}
+              />
             </Field>
-            <Field label="GST number"><Input value={form.gst_number ?? ""} onChange={(e) => set("gst_number", e.target.value)} /></Field>
-            <Field label="Payment terms"><Input value={form.payment_terms ?? ""} onChange={(e) => set("payment_terms", e.target.value)} /></Field>
-            <Field label="State"><Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} /></Field>
+            <Field label="GST number">
+              <Input
+                value={form.gst_number ?? ""}
+                onChange={(e) => set("gst_number", e.target.value)}
+              />
+            </Field>
+            <Field label="Payment terms">
+              <Input
+                value={form.payment_terms ?? ""}
+                onChange={(e) => set("payment_terms", e.target.value)}
+              />
+            </Field>
+            <Field label="State">
+              <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
+            </Field>
           </QuickForm.MoreDetails>
 
           <QuickForm.Advanced>
             <Field label="Address" className="md:col-span-2">
-              <Textarea rows={2} value={form.address ?? ""} onChange={(e) => set("address", e.target.value)} />
+              <Textarea
+                rows={2}
+                value={form.address ?? ""}
+                onChange={(e) => set("address", e.target.value)}
+              />
             </Field>
-            <Field label="Pincode"><Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} /></Field>
+            <Field label="Pincode">
+              <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
+            </Field>
             <Field label="Notes" className="md:col-span-2">
-              <Textarea rows={2} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+              <Textarea
+                rows={2}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+              />
             </Field>
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save" : "Create"}

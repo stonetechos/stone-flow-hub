@@ -11,9 +11,12 @@ export type InventoryListItem = InventoryRow & {
 
 const SELECT = "*, product:products!inventory_items_product_id_fkey(id,name,product_code)";
 
-
 export async function listInventory(query = ""): Promise<InventoryListItem[]> {
-  let q = supabase.from("inventory_items").select(SELECT).order("created_at", { ascending: false }).limit(200);
+  let q = supabase
+    .from("inventory_items")
+    .select(SELECT)
+    .order("created_at", { ascending: false })
+    .limit(200);
   const s = sanitizeSearch(query);
   if (s) q = q.or(`stock_code.ilike.%${s}%,location.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;
@@ -22,7 +25,11 @@ export async function listInventory(query = ""): Promise<InventoryListItem[]> {
 }
 
 export async function getInventoryItem(id: string): Promise<InventoryListItem | null> {
-  const { data, error } = await supabase.from("inventory_items").select(SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("inventory_items")
+    .select(SELECT)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as InventoryListItem | null) ?? null;
 }
@@ -46,7 +53,10 @@ export async function createInventoryItem(input: InventoryCreateInput): Promise<
   return data;
 }
 
-export async function updateInventoryItem(id: string, input: InventoryCreateInput): Promise<InventoryRow> {
+export async function updateInventoryItem(
+  id: string,
+  input: InventoryCreateInput,
+): Promise<InventoryRow> {
   const p = inventoryCreateSchema.parse(input);
   const { data, error } = await supabase
     .from("inventory_items")

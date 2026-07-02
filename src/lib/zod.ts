@@ -2,8 +2,7 @@
 import { z } from "zod";
 
 export const zTrimmed = z.string().trim();
-export const zRequired = (label: string) =>
-  zTrimmed.min(1, `${label} is required`);
+export const zRequired = (label: string) => zTrimmed.min(1, `${label} is required`);
 
 /** Empty string becomes null — matches what most DB columns want. */
 export const zOptional = () =>
@@ -36,6 +35,8 @@ export function normalizeMobile(v: string): string {
  * so untrusted input cannot break out of an `.ilike()` value inside an `.or()` filter.
  */
 export function sanitizeSearch(v: string, max = 80): string {
-  return v.replace(/[,()%*:."\\]/g, "").trim().slice(0, max);
+  return v
+    .replace(/[,()%*:."\\]/g, "")
+    .trim()
+    .slice(0, max);
 }
-

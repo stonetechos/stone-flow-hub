@@ -45,8 +45,10 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     if (r.error) throw new AppError(mapDbError(r.error));
   }
 
-  const sum = (rows: Array<{ balance_due?: number | null; amount?: number | null }> | null, key: "balance_due" | "amount") =>
-    (rows ?? []).reduce((acc, r) => acc + Number(r[key] ?? 0), 0);
+  const sum = (
+    rows: Array<{ balance_due?: number | null; amount?: number | null }> | null,
+    key: "balance_due" | "amount",
+  ) => (rows ?? []).reduce((acc, r) => acc + Number(r[key] ?? 0), 0);
 
   return {
     activeEnquiries: activeEnq.count ?? 0,

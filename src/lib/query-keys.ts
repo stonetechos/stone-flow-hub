@@ -41,7 +41,8 @@ export const qk = {
   activity: {
     recent: ["activity", "recent"] as const,
     byEntity: (type: string, id: string) => ["activity", type, id] as const,
-    global: (filters: Record<string, string | null | undefined>) => ["activity", "global", filters] as const,
+    global: (filters: Record<string, string | null | undefined>) =>
+      ["activity", "global", filters] as const,
   },
   quotes: {
     all: ["quotes"] as const,
@@ -66,7 +67,8 @@ export const qk = {
   },
   purchaseOrders: {
     all: ["purchaseOrders"] as const,
-    list: (q?: string, status?: string) => ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
+    list: (q?: string, status?: string) =>
+      ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
     byId: (id: string) => ["purchaseOrders", "byId", id] as const,
   },
   inventory: {
@@ -89,7 +91,8 @@ export const qk = {
 
   tasks: {
     all: ["tasks"] as const,
-    list: (filters: Record<string, string | null | undefined>) => ["tasks", "list", filters] as const,
+    list: (filters: Record<string, string | null | undefined>) =>
+      ["tasks", "list", filters] as const,
     byEntity: (type: string, id: string) => ["tasks", "byEntity", type, id] as const,
     myOpen: ["tasks", "myOpen"] as const,
   },
@@ -105,6 +108,7 @@ export const qk = {
     global: (q: string) => ["search", "global", q] as const,
   },
   documents: {
-    all: (filters: Record<string, string | null | undefined>) => ["documents", "all", filters] as const,
+    all: (filters: Record<string, string | null | undefined>) =>
+      ["documents", "all", filters] as const,
   },
 } as const;

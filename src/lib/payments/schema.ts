@@ -1,8 +1,14 @@
 import { z } from "zod";
 
-export const PAYMENT_METHODS = ["razorpay","bank_transfer","upi_manual","cheque","cash","other"] as const;
+export const PAYMENT_METHODS = [
+  "razorpay",
+  "bank_transfer",
+  "upi_manual",
+  "cheque",
+  "cash",
+  "other",
+] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
-
 
 export const paymentCreateSchema = z.object({
   invoice_id: z.string().uuid("Pick an invoice"),

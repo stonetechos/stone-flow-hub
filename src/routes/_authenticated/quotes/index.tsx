@@ -10,9 +10,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
@@ -47,10 +60,16 @@ function QuotesPage() {
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
   const del = useMutation({
     mutationFn: (id: string) => deleteQuote(id),
-    onSuccess: () => { toast.success("Quote deleted"); qc.invalidateQueries({ queryKey: qk.quotes.all }); setToDelete(null); },
+    onSuccess: () => {
+      toast.success("Quote deleted");
+      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      setToDelete(null);
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
-  const rows = (query.data ?? []).filter((r) => statusFilter === "all" || r.status === statusFilter);
+  const rows = (query.data ?? []).filter(
+    (r) => statusFilter === "all" || r.status === statusFilter,
+  );
 
   useEffect(() => {
     if (params.new) {
@@ -63,12 +82,23 @@ function QuotesPage() {
       <PageHeader
         title="Quotes"
         subtitle="Send priced offers, then convert to invoice."
-        actions={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New quote</Button>}
+        actions={
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> New quote
+          </Button>
+        }
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by quote no…" className="max-w-md" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by quote no…"
+          className="max-w-md"
+        />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -91,7 +121,11 @@ function QuotesPage() {
           icon={<FileText className="h-6 w-6" />}
           title="No quotes yet"
           message="Create your first quote from a project."
-          action={<Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New quote</Button>}
+          action={
+            <Button onClick={() => setOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> New quote
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -111,13 +145,21 @@ function QuotesPage() {
               {rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">
-                    <Link to="/quotes/$quoteId" params={{ quoteId: r.id }} className="text-primary hover:underline">
+                    <Link
+                      to="/quotes/$quoteId"
+                      params={{ quoteId: r.id }}
+                      className="text-primary hover:underline"
+                    >
                       {r.quote_no}
                     </Link>
                   </TableCell>
                   <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
                   <TableCell>{r.customer?.name ?? "—"}</TableCell>
-                  <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {r.status}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">{formatInr(r.total)}</TableCell>
                   <TableCell>{r.valid_until ?? "—"}</TableCell>
                   <TableCell>
@@ -133,10 +175,14 @@ function QuotesPage() {
         </div>
       )}
 
-      <ConfirmDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete quote?" description={toDelete ? `${toDelete.quote_no} will be removed.` : ""}
-        busy={del.isPending} onConfirm={() => toDelete && del.mutate(toDelete.id)} />
-
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete quote?"
+        description={toDelete ? `${toDelete.quote_no} will be removed.` : ""}
+        busy={del.isPending}
+        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+      />
 
       <CreateQuoteDialog
         open={open}
@@ -166,7 +212,10 @@ function emptyItem(): FormItem {
 }
 
 function CreateQuoteDialog({
-  open, onOpenChange, initialProjectId, initialEnquiryId,
+  open,
+  onOpenChange,
+  initialProjectId,
+  initialEnquiryId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -194,7 +243,8 @@ function CreateQuoteDialog({
   }, [open, initialProjectId]);
 
   const totals = useMemo(() => {
-    let sub = 0, tax = 0;
+    let sub = 0,
+      tax = 0;
     for (const it of items) {
       const line = Number(it.quantity || 0) * Number(it.unit_price || 0);
       sub += line;
@@ -244,12 +294,16 @@ function CreateQuoteDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
-        <DialogHeader><DialogTitle>New quote</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New quote</DialogTitle>
+        </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Project" required className="md:col-span-2">
               <Select value={projectId} onValueChange={setProjectId} disabled={!!initialProjectId}>
-                <SelectTrigger><SelectValue placeholder={projects.isLoading ? "Loading…" : "Select project"} /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder={projects.isLoading ? "Loading…" : "Select project"} />
+                </SelectTrigger>
                 <SelectContent>
                   {(projects.data ?? []).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
@@ -263,33 +317,77 @@ function CreateQuoteDialog({
             <div className="md:col-span-2">
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium">Line items</label>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setItems((p) => [...p, emptyItem()])}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setItems((p) => [...p, emptyItem()])}
+                >
                   <Plus className="mr-1 h-3 w-3" /> Add line
                 </Button>
               </div>
               <div className="space-y-2">
                 {items.map((it) => (
-                  <div key={it.key} className="grid grid-cols-12 gap-2 rounded-sm border border-border bg-background p-2">
-                    <Input className="col-span-5" placeholder="Description" value={it.description}
-                      onChange={(e) => updateItem(it.key, { description: e.target.value })} />
-                    <Input className="col-span-1" type="number" step="0.01" placeholder="Qty" value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) })} />
-                    <Input className="col-span-1" placeholder="Unit" value={it.unit ?? ""}
-                      onChange={(e) => updateItem(it.key, { unit: e.target.value })} />
-                    <Input className="col-span-2" type="number" step="0.01" placeholder="Rate" value={it.unit_price}
-                      onChange={(e) => updateItem(it.key, { unit_price: Number(e.target.value) })} />
-                    <Input className="col-span-2" type="number" step="0.01" placeholder="Tax %" value={it.tax_pct}
-                      onChange={(e) => updateItem(it.key, { tax_pct: Number(e.target.value) })} />
-                    <Button type="button" variant="ghost" size="icon" className="col-span-1"
-                      onClick={() => removeItem(it.key)} disabled={items.length === 1}>
+                  <div
+                    key={it.key}
+                    className="grid grid-cols-12 gap-2 rounded-sm border border-border bg-background p-2"
+                  >
+                    <Input
+                      className="col-span-5"
+                      placeholder="Description"
+                      value={it.description}
+                      onChange={(e) => updateItem(it.key, { description: e.target.value })}
+                    />
+                    <Input
+                      className="col-span-1"
+                      type="number"
+                      step="0.01"
+                      placeholder="Qty"
+                      value={it.quantity}
+                      onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) })}
+                    />
+                    <Input
+                      className="col-span-1"
+                      placeholder="Unit"
+                      value={it.unit ?? ""}
+                      onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                    />
+                    <Input
+                      className="col-span-2"
+                      type="number"
+                      step="0.01"
+                      placeholder="Rate"
+                      value={it.unit_price}
+                      onChange={(e) => updateItem(it.key, { unit_price: Number(e.target.value) })}
+                    />
+                    <Input
+                      className="col-span-2"
+                      type="number"
+                      step="0.01"
+                      placeholder="Tax %"
+                      value={it.tax_pct}
+                      onChange={(e) => updateItem(it.key, { tax_pct: Number(e.target.value) })}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="col-span-1"
+                      onClick={() => removeItem(it.key)}
+                      disabled={items.length === 1}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
               </div>
               <div className="mt-2 flex justify-end gap-6 text-sm">
-                <div>Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span></div>
-                <div>Tax: <span className="font-medium">{formatInr(totals.tax)}</span></div>
+                <div>
+                  Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
+                </div>
+                <div>
+                  Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
+                </div>
                 <div className="font-semibold">Total: {formatInr(totals.total)}</div>
               </div>
             </div>
@@ -297,7 +395,11 @@ function CreateQuoteDialog({
 
           <QuickForm.MoreDetails>
             <Field label="Valid until">
-              <Input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+              <Input
+                type="date"
+                value={validUntil}
+                onChange={(e) => setValidUntil(e.target.value)}
+              />
             </Field>
           </QuickForm.MoreDetails>
 
@@ -311,7 +413,9 @@ function CreateQuoteDialog({
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create quote
             </Button>

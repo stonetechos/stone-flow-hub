@@ -49,7 +49,10 @@ export function Breadcrumbs() {
   }));
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1 overflow-hidden text-xs text-muted-foreground">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex items-center gap-1 overflow-hidden text-xs text-muted-foreground"
+    >
       <Link to="/dashboard" className="flex items-center gap-1 hover:text-foreground">
         <Home className="h-3.5 w-3.5" />
       </Link>

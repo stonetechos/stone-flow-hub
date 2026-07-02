@@ -9,9 +9,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
@@ -20,11 +33,17 @@ import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
-  completeFollowup, createFollowup, deleteFollowup, listFollowups, updateFollowup,
+  completeFollowup,
+  createFollowup,
+  deleteFollowup,
+  listFollowups,
+  updateFollowup,
   type FollowupWithEnquiry,
 } from "@/lib/followups/api";
 import {
-  FOLLOWUP_CHANNELS, followupCreateSchema, type FollowupCreateInput,
+  FOLLOWUP_CHANNELS,
+  followupCreateSchema,
+  type FollowupCreateInput,
 } from "@/lib/followups/schema";
 import { listEnquiries } from "@/lib/enquiries/api";
 
@@ -74,7 +93,12 @@ function FollowupsPage() {
         title="Follow-ups"
         subtitle="Keep every lead moving."
         actions={
-          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" /> New follow-up
           </Button>
         }
@@ -99,7 +123,16 @@ function FollowupsPage() {
           icon={<CalendarClock className="h-6 w-6" />}
           title="Nothing scheduled"
           message="Add a follow-up so nothing slips through the cracks."
-          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New follow-up</Button>}
+          action={
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" /> New follow-up
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -119,29 +152,56 @@ function FollowupsPage() {
               {query.data!.map((f) => (
                 <TableRow key={f.id}>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(f.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                    {new Date(f.scheduled_at).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {f.enquiry ? (
-                      <Link to="/enquiries/$enquiryId" params={{ enquiryId: f.enquiry.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/enquiries/$enquiryId"
+                        params={{ enquiryId: f.enquiry.id }}
+                        className="text-primary hover:underline"
+                      >
                         {f.enquiry.enquiry_no}
                       </Link>
-                    ) : "—"}
+                    ) : (
+                      "—"
+                    )}
                   </TableCell>
                   <TableCell>{f.enquiry?.customer?.name ?? "—"}</TableCell>
                   <TableCell className="capitalize">{f.channel.replace("_", " ")}</TableCell>
-                  <TableCell><Badge variant={f.status === "done" ? "secondary" : "outline"} className="capitalize">{f.status}</Badge></TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">{f.notes ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={f.status === "done" ? "secondary" : "outline"}
+                      className="capitalize"
+                    >
+                      {f.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate text-muted-foreground">
+                    {f.notes ?? "—"}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {f.status === "pending" && (
-                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Mark done"
-                          onClick={() => completeMut.mutate(f.id)} disabled={completeMut.isPending}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8"
+                          title="Mark done"
+                          onClick={() => completeMut.mutate(f.id)}
+                          disabled={completeMut.isPending}
+                        >
                           <Check className="h-4 w-4" />
                         </Button>
                       )}
                       <RowActions
-                        onEdit={() => { setEditing(f); setFormOpen(true); }}
+                        onEdit={() => {
+                          setEditing(f);
+                          setFormOpen(true);
+                        }}
                         onDelete={() => setToDelete(f)}
                       />
                     </div>
@@ -183,8 +243,14 @@ function emptyForm(): FollowupCreateInput {
 }
 
 function FollowupFormDialog({
-  open, onOpenChange, editing,
-}: { open: boolean; onOpenChange: (o: boolean) => void; editing: FollowupWithEnquiry | null }) {
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  editing: FollowupWithEnquiry | null;
+}) {
   const qc = useQueryClient();
   const enquiries = useQuery({
     queryKey: qk.enquiries.list(""),
@@ -242,7 +308,9 @@ function FollowupFormDialog({
           <QuickForm.QuickFill>
             <Field label="Enquiry" required className="md:col-span-2">
               <Select value={form.enquiry_id} onValueChange={(v) => set("enquiry_id", v)}>
-                <SelectTrigger><SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} />
+                </SelectTrigger>
                 <SelectContent>
                   {(enquiries.data ?? []).map((e) => (
                     <SelectItem key={e.id} value={e.id}>
@@ -253,14 +321,27 @@ function FollowupFormDialog({
               </Select>
             </Field>
             <Field label="When" required>
-              <Input type="datetime-local" value={form.scheduled_at}
-                onChange={(e) => set("scheduled_at", e.target.value)} required />
+              <Input
+                type="datetime-local"
+                value={form.scheduled_at}
+                onChange={(e) => set("scheduled_at", e.target.value)}
+                required
+              />
             </Field>
             <Field label="Channel" required>
-              <Select value={form.channel} onValueChange={(v) => set("channel", v as FollowupCreateInput["channel"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.channel}
+                onValueChange={(v) => set("channel", v as FollowupCreateInput["channel"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {FOLLOWUP_CHANNELS.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                  {FOLLOWUP_CHANNELS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>
@@ -268,12 +349,18 @@ function FollowupFormDialog({
 
           <QuickForm.MoreDetails>
             <Field label="Notes" className="md:col-span-2">
-              <Textarea rows={3} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+              <Textarea
+                rows={3}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+              />
             </Field>
           </QuickForm.MoreDetails>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save" : "Schedule"}

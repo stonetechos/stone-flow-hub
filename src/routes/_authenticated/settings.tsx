@@ -48,21 +48,42 @@ function SettingsPage() {
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList>
-          <TabsTrigger value="profile"><User className="mr-2 h-4 w-4" />Profile</TabsTrigger>
-          <TabsTrigger value="company"><Building2 className="mr-2 h-4 w-4" />Company</TabsTrigger>
-          <TabsTrigger value="appearance"><Palette className="mr-2 h-4 w-4" />Appearance</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className="mr-2 h-4 w-4" />Notifications</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="mr-2 h-4 w-4" />Security</TabsTrigger>
+          <TabsTrigger value="profile">
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="company">
+            <Building2 className="mr-2 h-4 w-4" />
+            Company
+          </TabsTrigger>
+          <TabsTrigger value="appearance">
+            <Palette className="mr-2 h-4 w-4" />
+            Appearance
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="mr-2 h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="security">
+            <Shield className="mr-2 h-4 w-4" />
+            Security
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="text-sm">Profile</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Profile</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Full name</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Your name"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Email</Label>
@@ -82,32 +103,60 @@ function SettingsPage() {
 
         <TabsContent value="company" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="flex items-center gap-2 text-sm">Company <Badge variant="outline">Coming soon</Badge></CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                Company <Badge variant="outline">Coming soon</Badge>
+              </CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5"><Label>Company name</Label><Input placeholder="Stone Tech Pvt. Ltd." disabled /></div>
-                <div className="space-y-1.5"><Label>GSTIN</Label><Input placeholder="—" disabled /></div>
-                <div className="space-y-1.5"><Label>Currency</Label><Input value="INR" disabled /></div>
-                <div className="space-y-1.5"><Label>Timezone</Label><Input value="Asia/Kolkata" disabled /></div>
+                <div className="space-y-1.5">
+                  <Label>Company name</Label>
+                  <Input placeholder="Stone Tech Pvt. Ltd." disabled />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>GSTIN</Label>
+                  <Input placeholder="—" disabled />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Currency</Label>
+                  <Input value="INR" disabled />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Timezone</Label>
+                  <Input value="Asia/Kolkata" disabled />
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">Multi-company workspace configuration ships in a later phase.</p>
+              <p className="text-xs text-muted-foreground">
+                Multi-company workspace configuration ships in a later phase.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="text-sm">Appearance</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Appearance</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div>Theme: <Badge>Granite &amp; Teal</Badge></div>
-              <p className="text-xs text-muted-foreground">Theme switcher will be added in a later phase.</p>
+              <div>
+                Theme: <Badge>Granite &amp; Teal</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Theme switcher will be added in a later phase.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="flex items-center gap-2 text-sm">Notifications <Badge variant="outline">Coming soon</Badge></CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                Notifications <Badge variant="outline">Coming soon</Badge>
+              </CardTitle>
+            </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
               Email, WhatsApp, and in-app notifications will be configurable here.
             </CardContent>
@@ -116,7 +165,9 @@ function SettingsPage() {
 
         <TabsContent value="security" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="text-sm">Security</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Security</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               <Button
                 variant="outline"
@@ -128,7 +179,9 @@ function SettingsPage() {
               >
                 Send password reset email
               </Button>
-              <p className="text-xs text-muted-foreground">Two-factor authentication and audit logs are planned.</p>
+              <p className="text-xs text-muted-foreground">
+                Two-factor authentication and audit logs are planned.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

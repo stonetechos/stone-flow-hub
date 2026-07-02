@@ -80,7 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Stone Tech OS" },
-      { name: "description", content: "ERP for the natural stone industry — leads, projects, vendors, RFQs." },
+      {
+        name: "description",
+        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+      },
       { name: "author", content: "Stone Tech OS" },
       { property: "og:title", content: "Stone Tech OS" },
       { property: "og:description", content: "ERP for the natural stone industry." },

@@ -26,7 +26,11 @@ function FavoritesPage() {
       {isLoading ? (
         <div className="p-6 text-sm text-muted-foreground">Loading…</div>
       ) : rows.length === 0 ? (
-        <Card><CardContent className="p-6 text-sm text-muted-foreground">Nothing pinned yet. Use the star icon on any detail page.</CardContent></Card>
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            Nothing pinned yet. Use the star icon on any detail page.
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -37,11 +41,17 @@ function FavoritesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="truncate">{f.label ?? f.entity_id}</div>
                     <div className="text-xs text-muted-foreground">
-                      <Badge variant="secondary" className="mr-2 text-[10px] capitalize">{f.entity_type.replace(/_/g, " ")}</Badge>
+                      <Badge variant="secondary" className="mr-2 text-[10px] capitalize">
+                        {f.entity_type.replace(/_/g, " ")}
+                      </Badge>
                       {formatRelative(f.created_at)}
                     </div>
                   </div>
-                  <FavoriteButton entityType={f.entity_type} entityId={f.entity_id} label={f.label ?? undefined} />
+                  <FavoriteButton
+                    entityType={f.entity_type}
+                    entityId={f.entity_id}
+                    label={f.label ?? undefined}
+                  />
                 </li>
               ))}
             </ul>

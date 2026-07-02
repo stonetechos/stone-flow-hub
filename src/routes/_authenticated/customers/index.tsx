@@ -10,9 +10,22 @@ import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
@@ -20,8 +33,18 @@ import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { createCustomer, deleteCustomer, listCustomers, updateCustomer, type CustomerRow } from "@/lib/customers/api";
-import { CUSTOMER_TYPES, customerCreateSchema, type CustomerCreateInput } from "@/lib/customers/schema";
+import {
+  createCustomer,
+  deleteCustomer,
+  listCustomers,
+  updateCustomer,
+  type CustomerRow,
+} from "@/lib/customers/api";
+import {
+  CUSTOMER_TYPES,
+  customerCreateSchema,
+  type CustomerCreateInput,
+} from "@/lib/customers/schema";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   ssr: false,
@@ -54,15 +77,24 @@ function CustomersPage() {
         title="Customers"
         subtitle="Master list of everyone you sell to."
         actions={
-          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" /> New customer
           </Button>
         }
       />
 
       <div className="mb-3 flex items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, code, phone, city…" className="max-w-md" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by name, code, phone, city…"
+          className="max-w-md"
+        />
       </div>
 
       {query.isLoading ? (
@@ -74,7 +106,16 @@ function CustomersPage() {
           icon={<Users className="h-6 w-6" />}
           title="No customers yet"
           message="Add your first customer — only name and mobile are required."
-          action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="mr-2 h-4 w-4" /> New customer</Button>}
+          action={
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" /> New customer
+            </Button>
+          }
         />
       ) : (
         <div className="rounded-md border border-border bg-card shadow-1">
@@ -93,10 +134,22 @@ function CustomersPage() {
               {query.data!.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-mono text-xs">
-                    <Link to="/customers/$customerId" params={{ customerId: c.id }} className="hover:underline">{c.customer_code}</Link>
+                    <Link
+                      to="/customers/$customerId"
+                      params={{ customerId: c.id }}
+                      className="hover:underline"
+                    >
+                      {c.customer_code}
+                    </Link>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <Link to="/customers/$customerId" params={{ customerId: c.id }} className="hover:underline">{c.name}</Link>
+                    <Link
+                      to="/customers/$customerId"
+                      params={{ customerId: c.id }}
+                      className="hover:underline"
+                    >
+                      {c.name}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
@@ -114,11 +167,13 @@ function CustomersPage() {
                           </Link>
                         </DropdownMenuItem>
                       }
-                      onEdit={() => { setEditing(c); setFormOpen(true); }}
+                      onEdit={() => {
+                        setEditing(c);
+                        setFormOpen(true);
+                      }}
                       onDelete={() => setToDelete(c)}
                     />
                   </TableCell>
-
                 </TableRow>
               ))}
             </TableBody>
@@ -131,7 +186,11 @@ function CustomersPage() {
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete customer?"
-        description={toDelete ? `${toDelete.name} (${toDelete.customer_code}) will be permanently removed.` : ""}
+        description={
+          toDelete
+            ? `${toDelete.name} (${toDelete.customer_code}) will be permanently removed.`
+            : ""
+        }
         busy={delMut.isPending}
         onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
       />
@@ -141,9 +200,17 @@ function CustomersPage() {
 
 function emptyForm(): CustomerCreateInput {
   return {
-    name: "", mobile: "", email: null, city: null, customer_type: "individual",
-    whatsapp: null, billing_address: null, state: null, pincode: null,
-    gst_number: null, notes: null,
+    name: "",
+    mobile: "",
+    email: null,
+    city: null,
+    customer_type: "individual",
+    whatsapp: null,
+    billing_address: null,
+    state: null,
+    pincode: null,
+    gst_number: null,
+    notes: null,
   };
 }
 
@@ -164,8 +231,14 @@ function fromRow(c: CustomerRow): CustomerCreateInput {
 }
 
 function CustomerFormDialog({
-  open, onOpenChange, editing,
-}: { open: boolean; onOpenChange: (o: boolean) => void; editing: CustomerRow | null }) {
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  editing: CustomerRow | null;
+}) {
   const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
 
@@ -215,38 +288,75 @@ function CustomerFormDialog({
 
           <QuickForm.MoreDetails>
             <Field label="Email">
-              <Input type="email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} />
+              <Input
+                type="email"
+                value={form.email ?? ""}
+                onChange={(e) => set("email", e.target.value)}
+              />
             </Field>
             <Field label="City">
               <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
             </Field>
             <Field label="Type">
-              <Select value={form.customer_type} onValueChange={(v) => set("customer_type", v as CustomerCreateInput["customer_type"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.customer_type}
+                onValueChange={(v) =>
+                  set("customer_type", v as CustomerCreateInput["customer_type"])
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {CUSTOMER_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                  {CUSTOMER_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>
             <Field label="WhatsApp">
-              <Input value={form.whatsapp ?? ""} onChange={(e) => set("whatsapp", e.target.value)} />
+              <Input
+                value={form.whatsapp ?? ""}
+                onChange={(e) => set("whatsapp", e.target.value)}
+              />
             </Field>
           </QuickForm.MoreDetails>
 
           <QuickForm.Advanced>
             <Field label="Billing address" className="md:col-span-2">
-              <Textarea rows={2} value={form.billing_address ?? ""} onChange={(e) => set("billing_address", e.target.value)} />
+              <Textarea
+                rows={2}
+                value={form.billing_address ?? ""}
+                onChange={(e) => set("billing_address", e.target.value)}
+              />
             </Field>
-            <Field label="State"><Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} /></Field>
-            <Field label="Pincode"><Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} /></Field>
-            <Field label="GST number"><Input value={form.gst_number ?? ""} onChange={(e) => set("gst_number", e.target.value)} /></Field>
+            <Field label="State">
+              <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
+            </Field>
+            <Field label="Pincode">
+              <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
+            </Field>
+            <Field label="GST number">
+              <Input
+                value={form.gst_number ?? ""}
+                onChange={(e) => set("gst_number", e.target.value)}
+              />
+            </Field>
             <Field label="Notes" className="md:col-span-2">
-              <Textarea rows={2} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
+              <Textarea
+                rows={2}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+              />
             </Field>
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save" : "Create"}

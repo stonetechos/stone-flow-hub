@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
-import { invoiceUpdateSchema, recordPaymentSchema, setInvoiceStatusSchema, type InvoiceUpdateInput, type RecordPaymentInput, type SetInvoiceStatusInput } from "./schema";
+import {
+  invoiceUpdateSchema,
+  recordPaymentSchema,
+  setInvoiceStatusSchema,
+  type InvoiceUpdateInput,
+  type RecordPaymentInput,
+  type SetInvoiceStatusInput,
+} from "./schema";
 
 export type InvoiceRow = DbTable<"invoices">;
 export type InvoiceItemRow = DbTable<"invoice_items">;

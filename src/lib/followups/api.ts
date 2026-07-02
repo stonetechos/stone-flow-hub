@@ -22,7 +22,9 @@ export type FollowupWithEnquiry = FollowupRow & {
 const SELECT_WITH_JOINS =
   "*, enquiry:enquiries!followups_enquiry_id_fkey(id,enquiry_no,project:projects!enquiries_project_id_fkey(id,name),customer:customers!enquiries_customer_id_fkey(id,name))";
 
-export async function listFollowups(scope: "pending" | "today" | "all" = "all"): Promise<FollowupWithEnquiry[]> {
+export async function listFollowups(
+  scope: "pending" | "today" | "all" = "all",
+): Promise<FollowupWithEnquiry[]> {
   let q = supabase
     .from("followups")
     .select(SELECT_WITH_JOINS)
@@ -35,7 +37,10 @@ export async function listFollowups(scope: "pending" | "today" | "all" = "all"):
     start.setHours(0, 0, 0, 0);
     const end = new Date();
     end.setHours(23, 59, 59, 999);
-    q = q.eq("status", "pending").gte("scheduled_at", start.toISOString()).lte("scheduled_at", end.toISOString());
+    q = q
+      .eq("status", "pending")
+      .gte("scheduled_at", start.toISOString())
+      .lte("scheduled_at", end.toISOString());
   }
 
   const { data, error } = await q;

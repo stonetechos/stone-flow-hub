@@ -3,7 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { LinkProps } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toUserMessage } from "@/lib/errors";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 
@@ -32,7 +39,9 @@ export function RelatedList<T extends { id: string }>({
 
   return (
     <Card className="shadow-1">
-      <CardHeader><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle className="text-sm">{title}</CardTitle>
+      </CardHeader>
       <CardContent>
         {q.isLoading ? (
           <LoadingBlock />
@@ -45,7 +54,11 @@ export function RelatedList<T extends { id: string }>({
             <Table>
               <TableHeader>
                 <TableRow>
-                  {columns.map((c) => <TableHead key={c.header} className={c.className}>{c.header}</TableHead>)}
+                  {columns.map((c) => (
+                    <TableHead key={c.header} className={c.className}>
+                      {c.header}
+                    </TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -56,10 +69,15 @@ export function RelatedList<T extends { id: string }>({
                       {columns.map((c, i) => (
                         <TableCell key={c.header} className={c.className}>
                           {i === 0 && link ? (
-                            <Link {...link} className="text-primary underline-offset-2 hover:underline">
+                            <Link
+                              {...link}
+                              className="text-primary underline-offset-2 hover:underline"
+                            >
                               {c.cell(row)}
                             </Link>
-                          ) : c.cell(row)}
+                          ) : (
+                            c.cell(row)
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>

@@ -35,7 +35,11 @@ export async function isFavorite(entityType: string, entityId: string): Promise<
   return !!data;
 }
 
-export async function addFavorite(entityType: string, entityId: string, label?: string): Promise<void> {
+export async function addFavorite(
+  entityType: string,
+  entityId: string,
+  label?: string,
+): Promise<void> {
   const uid = await requireUserId();
   const { error } = await supabase.from("favorites").insert({
     user_id: uid,

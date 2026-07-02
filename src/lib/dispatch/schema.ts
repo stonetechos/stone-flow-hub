@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DISPATCH_STATUSES = ["planned","in_transit","delivered","cancelled"] as const;
+export const DISPATCH_STATUSES = ["planned", "in_transit", "delivered", "cancelled"] as const;
 export type DispatchStatus = (typeof DISPATCH_STATUSES)[number];
 
 export const dispatchCreateSchema = z.object({

@@ -33,7 +33,9 @@ function write(items: RecentItem[]): void {
 }
 
 export function pushRecent(item: Omit<RecentItem, "at">): void {
-  const items = read().filter((i) => !(i.entityType === item.entityType && i.entityId === item.entityId));
+  const items = read().filter(
+    (i) => !(i.entityType === item.entityType && i.entityId === item.entityId),
+  );
   items.unshift({ ...item, at: Date.now() });
   write(items);
 }

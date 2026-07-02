@@ -56,18 +56,90 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     payments,
     dispatch,
   ] = await Promise.all([
-    safe(supabase.from("customers").select("id,name,customer_code,primary_phone").or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("projects").select("id,name,city").or(`name.ilike.${p},city.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("vendors").select("id,company_name,vendor_code,city").or(`company_name.ilike.${p},vendor_code.ilike.${p},city.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("products").select("id,name,product_code").or(`name.ilike.${p},product_code.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("enquiries").select("id,enquiry_no,notes").or(`enquiry_no.ilike.${p},notes.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("quotes").select("id,quote_no,notes").or(`quote_no.ilike.${p},notes.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("sales_orders").select("id,so_no,notes").or(`so_no.ilike.${p},notes.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("purchase_orders").select("id,po_no,notes").or(`po_no.ilike.${p},notes.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("inventory_items").select("id,stock_code,location").or(`stock_code.ilike.${p},location.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("invoices").select("id,invoice_no,notes").or(`invoice_no.ilike.${p},notes.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("payments").select("id,payment_no,reference_no").or(`payment_no.ilike.${p},reference_no.ilike.${p}`).limit(LIMIT)),
-    safe(supabase.from("dispatches").select("id,dispatch_no,tracking_no").or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`).limit(LIMIT)),
+    safe(
+      supabase
+        .from("customers")
+        .select("id,name,customer_code,primary_phone")
+        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("projects")
+        .select("id,name,city")
+        .or(`name.ilike.${p},city.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("vendors")
+        .select("id,company_name,vendor_code,city")
+        .or(`company_name.ilike.${p},vendor_code.ilike.${p},city.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("products")
+        .select("id,name,product_code")
+        .or(`name.ilike.${p},product_code.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("enquiries")
+        .select("id,enquiry_no,notes")
+        .or(`enquiry_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("quotes")
+        .select("id,quote_no,notes")
+        .or(`quote_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("sales_orders")
+        .select("id,so_no,notes")
+        .or(`so_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("purchase_orders")
+        .select("id,po_no,notes")
+        .or(`po_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("inventory_items")
+        .select("id,stock_code,location")
+        .or(`stock_code.ilike.${p},location.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("invoices")
+        .select("id,invoice_no,notes")
+        .or(`invoice_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("payments")
+        .select("id,payment_no,reference_no")
+        .or(`payment_no.ilike.${p},reference_no.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("dispatches")
+        .select("id,dispatch_no,tracking_no")
+        .or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`)
+        .limit(LIMIT),
+    ),
   ]);
 
   type Row = Record<string, unknown> & { id: string };
@@ -75,9 +147,24 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     const v = r[k];
     return typeof v === "string" && v.length > 0 ? v : null;
   };
-  const push = (rows: unknown, group: SearchGroupKey, groupLabel: string, hrefBase: string, labelKey: string, subKey: string, fallback: string): void => {
-    for (const r of (rows as Row[])) {
-      hits.push({ id: r.id, label: val(r, labelKey) ?? fallback, sublabel: val(r, subKey), href: `${hrefBase}/${r.id}`, group, groupLabel });
+  const push = (
+    rows: unknown,
+    group: SearchGroupKey,
+    groupLabel: string,
+    hrefBase: string,
+    labelKey: string,
+    subKey: string,
+    fallback: string,
+  ): void => {
+    for (const r of rows as Row[]) {
+      hits.push({
+        id: r.id,
+        label: val(r, labelKey) ?? fallback,
+        sublabel: val(r, subKey),
+        href: `${hrefBase}/${r.id}`,
+        group,
+        groupLabel,
+      });
     }
   };
 
@@ -89,7 +176,15 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   push(enquiries, "enquiries", "Enquiries", "/enquiries", "enquiry_no", "notes", "Enquiry");
   push(quotes, "quotes", "Quotations", "/quotes", "quote_no", "notes", "Quote");
   push(salesOrders, "salesOrders", "Sales Orders", "/sales-orders", "so_no", "notes", "SO");
-  push(purchaseOrders, "purchaseOrders", "Purchase Orders", "/purchase-orders", "po_no", "notes", "PO");
+  push(
+    purchaseOrders,
+    "purchaseOrders",
+    "Purchase Orders",
+    "/purchase-orders",
+    "po_no",
+    "notes",
+    "PO",
+  );
   push(inventory, "inventory", "Inventory", "/inventory", "stock_code", "location", "Item");
   push(invoices, "invoices", "Invoices", "/invoices", "invoice_no", "notes", "Invoice");
   push(payments, "payments", "Payments", "/payments", "payment_no", "reference_no", "Payment");

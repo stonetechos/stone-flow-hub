@@ -25,7 +25,6 @@ export async function uploadAttachment(params: {
 }): Promise<FileRow> {
   const folder: FileFolder = params.folder ?? "other";
 
-
   const path = `${params.entityType}/${params.entityId}/${Date.now()}_${params.file.name}`;
   const up = await supabase.storage.from(FILES_BUCKET).upload(path, params.file, {
     contentType: params.file.type || undefined,
@@ -57,7 +56,9 @@ export async function deleteAttachment(row: FileRow): Promise<void> {
 }
 
 export async function signedUrl(row: FileRow, expiresSec = 300): Promise<string> {
-  const { data, error } = await supabase.storage.from(row.bucket).createSignedUrl(row.object_path, expiresSec);
+  const { data, error } = await supabase.storage
+    .from(row.bucket)
+    .createSignedUrl(row.object_path, expiresSec);
   if (error) throw new AppError(error.message);
   return data.signedUrl;
 }

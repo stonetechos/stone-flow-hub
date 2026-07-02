@@ -20,11 +20,7 @@ export function QuickForm({
   busy?: boolean;
 }) {
   return (
-    <form
-      onSubmit={onSubmit}
-      aria-busy={busy}
-      className="space-y-4"
-    >
+    <form onSubmit={onSubmit} aria-busy={busy} className="space-y-4">
       {children}
     </form>
   );
@@ -67,10 +63,7 @@ function CollapsibleSection({
           {title}
         </span>
         <ChevronDown
-          className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform",
-            open && "rotate-180",
-          )}
+          className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")}
         />
       </button>
       {open && (
@@ -89,7 +82,5 @@ QuickForm.Advanced = function Advanced({ children }: { children: ReactNode }) {
 };
 
 QuickForm.Actions = function Actions({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-end gap-2 pt-2">{children}</div>
-  );
+  return <div className="flex items-center justify-end gap-2 pt-2">{children}</div>;
 };

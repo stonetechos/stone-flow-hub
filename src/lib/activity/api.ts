@@ -25,8 +25,14 @@ export interface GlobalActivityFilters {
   limit?: number;
 }
 
-export async function listGlobalActivity(filters: GlobalActivityFilters = {}): Promise<ActivityRow[]> {
-  let q = supabase.from("activity_log").select("*").order("created_at", { ascending: false }).limit(filters.limit ?? 200);
+export async function listGlobalActivity(
+  filters: GlobalActivityFilters = {},
+): Promise<ActivityRow[]> {
+  let q = supabase
+    .from("activity_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(filters.limit ?? 200);
   if (filters.entityType) q = q.eq("entity_type", filters.entityType);
   if (filters.entityId) q = q.eq("entity_id", filters.entityId);
   if (filters.projectId) q = q.eq("project_id", filters.projectId);
@@ -38,6 +44,10 @@ export async function listGlobalActivity(filters: GlobalActivityFilters = {}): P
   return data ?? [];
 }
 
-export async function listEntityActivity(entityType: string, entityId: string, limit = 50): Promise<ActivityRow[]> {
+export async function listEntityActivity(
+  entityType: string,
+  entityId: string,
+  limit = 50,
+): Promise<ActivityRow[]> {
   return listGlobalActivity({ entityType, entityId, limit });
 }

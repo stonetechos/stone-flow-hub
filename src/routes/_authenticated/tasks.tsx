@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_authenticated/tasks")({
 function TasksPage() {
   return (
     <div className="space-y-4">
-      <PageHeader title="Tasks" subtitle="Every task across every entity. Add general tasks or filter by status." />
+      <PageHeader
+        title="Tasks"
+        subtitle="Every task across every entity. Add general tasks or filter by status."
+      />
       <TasksPanel title="All tasks" />
     </div>
   );
