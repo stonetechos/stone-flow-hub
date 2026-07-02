@@ -6,6 +6,7 @@ import {
   Factory,
   PackageSearch,
   ClipboardList,
+  CalendarClock,
   FileText,
   Receipt,
   LogOut,
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
   { to: "/dashboard",  label: "Dashboard", icon: LayoutDashboard },
   { to: "/enquiries",  label: "Enquiries", icon: ClipboardList },
+  { to: "/followups",  label: "Follow-ups", icon: CalendarClock },
   { to: "/quotes",     label: "Quotes",    icon: FileText },
   { to: "/invoices",   label: "Invoices",  icon: Receipt },
   { to: "/customers",  label: "Customers", icon: Users },
