@@ -18,6 +18,7 @@ import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
+import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
 import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes/$quoteId'
@@ -74,6 +75,12 @@ const AuthenticatedInvoicesIndexRoute =
     path: '/invoices/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFollowupsIndexRoute =
+  AuthenticatedFollowupsIndexRouteImport.update({
+    id: '/followups/',
+    path: '/followups/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnquiriesIndexRoute =
   AuthenticatedEnquiriesIndexRouteImport.update({
     id: '/enquiries/',
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -136,6 +144,7 @@ export interface FileRoutesByTo {
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
+  '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -154,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/quotes/$quoteId'
     | '/customers/'
     | '/enquiries/'
+    | '/followups/'
     | '/invoices/'
     | '/products/'
     | '/projects/'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/quotes/$quoteId'
     | '/customers'
     | '/enquiries'
+    | '/followups'
     | '/invoices'
     | '/products'
     | '/projects'
@@ -205,6 +217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/customers/'
     | '/_authenticated/enquiries/'
+    | '/_authenticated/followups/'
     | '/_authenticated/invoices/'
     | '/_authenticated/products/'
     | '/_authenticated/projects/'
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvoicesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/followups/': {
+      id: '/_authenticated/followups/'
+      path: '/followups'
+      fullPath: '/followups/'
+      preLoaderRoute: typeof AuthenticatedFollowupsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/enquiries/': {
       id: '/_authenticated/enquiries/'
       path: '/enquiries'
@@ -337,6 +357,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedEnquiriesIndexRoute: typeof AuthenticatedEnquiriesIndexRoute
+  AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -351,6 +372,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedEnquiriesIndexRoute: AuthenticatedEnquiriesIndexRoute,
+  AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
