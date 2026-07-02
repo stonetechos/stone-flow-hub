@@ -24,10 +24,12 @@ import {
   CheckSquare,
   FolderOpen,
   Star,
+  Menu,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
@@ -59,10 +61,40 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/settings",         label: "Settings",        icon: Settings },
 ];
 
+function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
+  return (
+    <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="Primary">
+      {NAV.map((item) => {
+        const active = path === item.to || path.startsWith(`${item.to}/`);
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-sm px-3 py-2 text-sm outline-none transition-colors",
+              "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar",
+              active
+                ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="truncate">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
@@ -82,36 +114,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
+    <div className="flex min-h-dvh bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
+      >
+        Skip to main content
+      </a>
+
+      {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-          <Gem className="h-5 w-5 text-sidebar-primary" />
+          <Gem className="h-5 w-5 text-sidebar-primary" aria-hidden />
           <span className="font-display text-lg font-semibold">
             Stone Tech <span className="text-sidebar-primary">OS</span>
           </span>
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-          {NAV.map((item) => {
-            const active = path === item.to || path.startsWith(`${item.to}/`);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <NavList path={path} />
         <div className="border-t border-sidebar-border p-2">
           <Button
             variant="ghost"
@@ -119,7 +138,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={onSignOut}
             className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 h-4 w-4" aria-hidden />
             Sign out
           </Button>
         </div>
@@ -128,22 +147,69 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Topbar */}
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-card px-4 shadow-1">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-card px-3 shadow-1 sm:gap-3 sm:px-4">
+          {/* Mobile nav trigger */}
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground">
+              <SheetHeader className="h-14 flex-row items-center gap-2 border-b border-sidebar-border px-4 py-0 space-y-0">
+                <Gem className="h-5 w-5 text-sidebar-primary" aria-hidden />
+                <SheetTitle className="font-display text-lg font-semibold text-sidebar-foreground">
+                  Stone Tech <span className="text-sidebar-primary">OS</span>
+                </SheetTitle>
+              </SheetHeader>
+              <NavList path={path} onNavigate={() => setMobileNavOpen(false)} />
+              <div className="border-t border-sidebar-border p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSignOut}
+                  className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                >
+                  <LogOut className="mr-2 h-4 w-4" aria-hidden />
+                  Sign out
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <div className="flex items-center gap-2 md:hidden">
-            <Gem className="h-5 w-5 text-primary" />
+            <Gem className="h-5 w-5 text-primary" aria-hidden />
             <span className="font-display font-semibold">Stone Tech OS</span>
           </div>
-          <div className="flex flex-1 items-center">
+
+          <div className="ml-auto flex flex-1 items-center md:ml-0">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="group relative flex h-9 w-full max-w-md items-center gap-2 rounded-sm border border-input bg-background pl-8 pr-3 text-left text-sm text-muted-foreground hover:text-foreground"
+              className={cn(
+                "group relative hidden h-9 w-full max-w-md items-center gap-2 rounded-sm border border-input bg-background pl-8 pr-3 text-left text-sm text-muted-foreground",
+                "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
+              )}
               aria-label="Open global search"
             >
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden />
               <span className="truncate">Search customers, projects, enquiries…</span>
               <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">⌘K</kbd>
             </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="sm:hidden"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Open global search"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
           </div>
           <div className="flex items-center gap-1">
             <QuickCreateMenu />
@@ -155,7 +221,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Breadcrumbs />
         </div>
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
       </div>
 
       <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
