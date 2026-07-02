@@ -22,11 +22,15 @@ export function NotesPanel({
   id,
   value,
   invalidateKey,
+  column = "notes",
+  title = "Notes",
 }: {
   table: string;
   id: string;
   value: string | null;
   invalidateKey: readonly unknown[];
+  column?: string;
+  title?: string;
 }) {
   const qc = useQueryClient();
   const [text, setText] = useState(value ?? "");
@@ -34,16 +38,17 @@ export function NotesPanel({
     mutationFn: async () => {
       const { error } = await supabase
         .from(table as never)
-        .update({ notes: text } as never)
+        .update({ [column]: text } as never)
         .eq("id", id);
       if (error) throw new AppError(mapDbError(error));
     },
     onSuccess: () => {
-      toast.success("Notes saved");
+      toast.success(`${title} saved`);
       qc.invalidateQueries({ queryKey: invalidateKey });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
