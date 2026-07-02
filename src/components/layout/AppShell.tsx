@@ -17,6 +17,9 @@ import {
   Warehouse,
   ClipboardCheck,
   Wallet,
+  Calendar,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +31,7 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/dashboard",        label: "Dashboard",       icon: LayoutDashboard },
   { to: "/enquiries",        label: "Enquiries",       icon: ClipboardList },
   { to: "/followups",        label: "Follow-ups",      icon: CalendarClock },
+  { to: "/calendar",         label: "Calendar",        icon: Calendar },
   { to: "/quotes",           label: "Quotations",      icon: FileText },
   { to: "/sales-orders",     label: "Sales Orders",    icon: ShoppingCart },
   { to: "/purchase-orders",  label: "Purchase Orders", icon: ClipboardCheck },
@@ -39,7 +43,10 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/projects",         label: "Projects",        icon: Building2 },
   { to: "/vendors",          label: "Vendors",         icon: Factory },
   { to: "/products",         label: "Products",        icon: PackageSearch },
+  { to: "/reports",          label: "Reports",         icon: BarChart3 },
+  { to: "/settings",         label: "Settings",        icon: Settings },
 ];
+
 
 
 export function AppShell({ children }: { children: ReactNode }) {
