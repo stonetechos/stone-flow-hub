@@ -88,7 +88,7 @@ function VendorHub() {
         <TabsContent value="products" className="mt-4">
           <RelatedList title="Products Supplied"
             queryKey={["hub", "vendor", vendorId, "products"]}
-            queryFn={() => hub.vendorProducts(vendorId)}
+            queryFn={async () => (await hub.vendorProducts(vendorId)).map((r) => ({ ...r, id: r.product_id }))}
             linkFor={(r) => r.product ? { to: "/products/$productId", params: { productId: r.product.id } } : null}
             columns={[
               { header: "Product", cell: (r) => r.product?.name ?? "—" },
@@ -98,6 +98,7 @@ function VendorHub() {
             ]}
           />
         </TabsContent>
+
 
         <TabsContent value="invoices" className="mt-4">
           <PlaceholderTab message="Vendor bills will appear here once vendor invoicing is enabled." />
