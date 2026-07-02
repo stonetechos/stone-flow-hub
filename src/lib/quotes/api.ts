@@ -7,8 +7,10 @@ import { getProject } from "@/lib/projects/api";
 import {
   convertQuoteSchema,
   quoteCreateSchema,
+  quoteUpdateSchema,
   type ConvertQuoteInput,
   type QuoteCreateInput,
+  type QuoteUpdateInput,
 } from "./schema";
 
 export type QuoteRow = DbTable<"quotes">;
