@@ -9,7 +9,7 @@ export async function listRecentActivity(limit = 10): Promise<ActivityRow[]> {
   const { data, error } = await supabase
     .from("activity_log")
     .select("*")
-    .order("occurred_at", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
