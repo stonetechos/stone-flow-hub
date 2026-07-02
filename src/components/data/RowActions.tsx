@@ -1,6 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import type { LinkProps } from "@tanstack/react-router";
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,11 +10,11 @@ import {
 export function RowActions({
   onEdit,
   onDelete,
-  viewLink,
+  extra,
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
-  viewLink?: LinkProps;
+  extra?: React.ReactNode;
 }) {
   return (
     <DropdownMenu>
@@ -32,13 +30,7 @@ export function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        {viewLink && (
-          <DropdownMenuItem asChild>
-            <Link {...viewLink}>
-              <Eye className="mr-2 h-4 w-4" /> Open
-            </Link>
-          </DropdownMenuItem>
-        )}
+        {extra}
         {onEdit && (
           <DropdownMenuItem onSelect={() => onEdit()}>
             <Pencil className="mr-2 h-4 w-4" /> Edit
