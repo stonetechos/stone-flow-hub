@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ExternalLink, Link as LinkIcon, Ban, Plus } from "lucide-react";
+import { ArrowLeft, Loader2, ExternalLink, Link as LinkIcon, Ban, Plus, Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { deleteInvoice } from "@/lib/invoices/api";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
