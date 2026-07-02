@@ -41,6 +41,7 @@ export const qk = {
   activity: {
     recent: ["activity", "recent"] as const,
     byEntity: (type: string, id: string) => ["activity", type, id] as const,
+    global: (filters: Record<string, string | null | undefined>) => ["activity", "global", filters] as const,
   },
   quotes: {
     all: ["quotes"] as const,
@@ -85,5 +86,25 @@ export const qk = {
   },
   tags: ["tags"] as const,
   productCategories: ["product_categories"] as const,
-} as const;
 
+  tasks: {
+    all: ["tasks"] as const,
+    list: (filters: Record<string, string | null | undefined>) => ["tasks", "list", filters] as const,
+    byEntity: (type: string, id: string) => ["tasks", "byEntity", type, id] as const,
+    myOpen: ["tasks", "myOpen"] as const,
+  },
+  comments: {
+    byEntity: (type: string, id: string) => ["comments", type, id] as const,
+  },
+  favorites: {
+    all: ["favorites"] as const,
+    byUser: ["favorites", "me"] as const,
+    check: (type: string, id: string) => ["favorites", "check", type, id] as const,
+  },
+  search: {
+    global: (q: string) => ["search", "global", q] as const,
+  },
+  documents: {
+    all: (filters: Record<string, string | null | undefined>) => ["documents", "all", filters] as const,
+  },
+} as const;

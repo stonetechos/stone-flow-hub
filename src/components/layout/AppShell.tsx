@@ -20,17 +20,26 @@ import {
   Calendar,
   BarChart3,
   Settings,
+  Activity,
+  CheckSquare,
+  FolderOpen,
+  Star,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
+import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
+import { NotificationsBell } from "@/components/global/NotificationsBell";
+import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
   { to: "/dashboard",        label: "Dashboard",       icon: LayoutDashboard },
   { to: "/enquiries",        label: "Enquiries",       icon: ClipboardList },
   { to: "/followups",        label: "Follow-ups",      icon: CalendarClock },
+  { to: "/tasks",            label: "Tasks",           icon: CheckSquare },
   { to: "/calendar",         label: "Calendar",        icon: Calendar },
   { to: "/quotes",           label: "Quotations",      icon: FileText },
   { to: "/sales-orders",     label: "Sales Orders",    icon: ShoppingCart },
@@ -43,15 +52,28 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/projects",         label: "Projects",        icon: Building2 },
   { to: "/vendors",          label: "Vendors",         icon: Factory },
   { to: "/products",         label: "Products",        icon: PackageSearch },
+  { to: "/documents",        label: "Documents",       icon: FolderOpen },
+  { to: "/activity",         label: "Activity",        icon: Activity },
+  { to: "/favorites",        label: "Favorites",       icon: Star },
   { to: "/reports",          label: "Reports",         icon: BarChart3 },
   { to: "/settings",         label: "Settings",        icon: Settings },
 ];
 
-
-
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   async function onSignOut() {
     await supabase.auth.signOut();
@@ -69,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Stone Tech <span className="text-sidebar-primary">OS</span>
           </span>
         </div>
-        <nav className="flex-1 space-y-0.5 p-2">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
           {NAV.map((item) => {
             const active = path === item.to || path.startsWith(`${item.to}/`);
             const Icon = item.icon;
@@ -112,19 +134,31 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="font-display font-semibold">Stone Tech OS</span>
           </div>
           <div className="flex flex-1 items-center">
-            <div className="relative w-full max-w-md">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                aria-label="Search"
-                placeholder="Search customers, projects, enquiries…"
-                className="h-9 w-full rounded-sm border border-input bg-background pl-8 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="group relative flex h-9 w-full max-w-md items-center gap-2 rounded-sm border border-input bg-background pl-8 pr-3 text-left text-sm text-muted-foreground hover:text-foreground"
+              aria-label="Open global search"
+            >
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <span className="truncate">Search customers, projects, enquiries…</span>
+              <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">⌘K</kbd>
+            </button>
+          </div>
+          <div className="flex items-center gap-1">
+            <QuickCreateMenu />
+            <NotificationsBell />
           </div>
         </header>
 
+        <div className="border-b border-border bg-muted/30 px-4 py-2 md:px-6">
+          <Breadcrumbs />
+        </div>
+
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 }
