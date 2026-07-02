@@ -29,7 +29,7 @@ const REPORTS: ReportCard[] = [
   { title: "Collections", description: "Payments received by period.", href: "/payments", icon: Wallet, status: "planned" },
 ];
 
-export function ReportsPage() {
+function ReportsPage() {
   const kpis = useQuery({ queryKey: qk.dashboard, queryFn: getDashboardKpis });
 
   return (
