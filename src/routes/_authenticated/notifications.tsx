@@ -27,7 +27,7 @@ function NotificationsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {!n.read ? <Badge className="text-[10px]">New</Badge> : null}
-                  <span className="text-xs text-muted-foreground">{formatRelative(n.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground">{formatRelative(n.at)}</span>
                 </div>
               </li>
             ))}
