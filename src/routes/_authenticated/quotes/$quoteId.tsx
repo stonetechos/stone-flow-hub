@@ -172,6 +172,17 @@ function QuoteDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <NotesPanel table={"quotes" as const} id={quoteId} invalidateKey={qk.quotes.byId(quoteId)} />
+        <AttachmentsPanel table={"quotes" as const} id={quoteId} invalidateKey={qk.quotes.byId(quoteId)} />
+        <TimelinePanel table={"quotes" as const} id={quoteId} />
+      </div>
+
+      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
+        title="Delete quote?" description={`${quote.quote_no} will be removed.`}
+        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
     </div>
   );
 }
+
