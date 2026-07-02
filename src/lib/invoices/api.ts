@@ -111,3 +111,24 @@ export async function recordManualPayment(input: RecordPaymentInput): Promise<Pa
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
+
+export async function updateInvoice(id: string, input: InvoiceUpdateInput): Promise<InvoiceRow> {
+  const parsed = invoiceUpdateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("invoices")
+    .update({
+      due_date: parsed.due_date ?? null,
+      notes: parsed.notes ?? null,
+      terms: parsed.terms ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  const { error } = await supabase.from("invoices").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
+}
