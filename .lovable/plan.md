@@ -1,78 +1,85 @@
 
-## Goal
+# Stone Tech OS — Full Audit Plan
 
-Add a full sales-to-cash flow to Stone Tech OS:
-Enquiry → **Quote** (sent to customer) → on acceptance, convert to **Invoice** → generate a **Razorpay payment link** → customer pays via UPI/card/netbanking → payment auto-recorded against the project.
+## Scope
 
-Razorpay is not one of Lovable's built-in providers, so we'll integrate it directly using your Razorpay account's API keys (BYOK).
+A read-first, fix-second pass across every module — no new features, no business-logic changes. Anything that requires a product decision is reported, not silently changed.
 
----
+## Phase 1 — Static inventory (no code changes)
 
-## What you'll need (before I build)
+1. **Route map** — enumerate every file under `src/routes/_authenticated/`, confirm each sidebar entry in `AppShell.tsx` resolves to a real route file with correct `createFileRoute` path.
+2. **Module coverage matrix** — for each of the 18 modules, record which of the standard artifacts exist:
+   - list (`index.tsx`), detail (`$id.tsx`), create (`new.tsx`), edit (`$id.edit.tsx`)
+   - `src/lib/<domain>/schema.ts` (Zod) and `api.ts` (CRUD)
+   - `qk.<domain>` query key
+3. **Schema cross-check** — for each `api.ts`, confirm the tables/columns referenced exist in the Supabase types (`src/integrations/supabase/types.ts`) and that foreign-key joins use the right FK alias.
+4. **Dead code sweep** — `rg` for unused exports, orphan components, duplicate helpers between domain slices.
+5. **Import guards** — verify no route file imports `client.server`, no `process.env.*` at module scope in shared files, no `@/pages/*` paths.
 
-1. A **Razorpay account** (razorpay.com → Sign up, complete KYC).
-2. Two API keys from Razorpay Dashboard → Settings → API Keys:
-   - `RAZORPAY_KEY_ID` (starts with `rzp_test_` or `rzp_live_`)
-   - `RAZORPAY_KEY_SECRET`
-3. A **webhook secret** you'll set when I configure the webhook URL in Razorpay.
+## Phase 2 — Behavioural spot-checks
 
-I'll ask for these via the secrets prompt at the right moment — you won't need to paste them in chat.
+For each module, verify by reading code (not clicking):
 
----
+- List page: `useQuery` + `LoadingBlock` + `ErrorBlock` + `EmptyState` present; search input wired; filter chips wired.
+- Detail page: `NotesPanel` / `AttachmentsPanel` / `TimelinePanel` present where the entity has a polymorphic spine; RowActions + `ConfirmDialog` for delete.
+- Create/Edit: uses `QuickForm` progressive-disclosure pattern; Zod schema imported; `mapDbError` in mutation onError.
+- Relationships: joins reference the correct FK names from the DB (e.g. `enquiries!enquiries_project_id_fkey`).
 
-## Data model (new tables)
+Cross-cutting checks:
 
-- **`quotes`** — quote_no (`QUO-######`), enquiry_id, customer_id, project_id, status (draft/sent/accepted/rejected/expired), valid_until, subtotal, tax_amount, total, currency, notes, terms.
-- **`quote_items`** — line items (product_id or free text, qty, unit_price, tax_pct, line_total).
-- **`invoices`** — invoice_no (`INV-######`), quote_id (nullable — can invoice directly), project_id, customer_id, status (draft/sent/partial/paid/cancelled), issue_date, due_date, subtotal, tax_amount, total, amount_paid, balance_due, currency.
-- **`invoice_items`** — mirrors quote_items shape.
-- **`payments`** — invoice_id, amount, paid_at, method (razorpay/bank_transfer/upi_manual/cheque/cash), razorpay_payment_id, razorpay_link_id, reference_no (for manual), notes, recorded_by.
-- **`payment_links`** — invoice_id, provider (razorpay), provider_link_id, short_url, status (created/paid/cancelled/expired), amount, expires_at.
+- **Auth**: `_authenticated/route.tsx` is the integration-managed one; no duplicate gate on children; sign-out follows cache-teardown order.
+- **Query keys**: every mutation invalidates the right key; no stale `qk.dashboard.kpis` style mistakes.
+- **Type safety**: `bunx tsgo --noEmit` must be clean.
+- **Accessibility**: buttons have labels, dialogs have titles, form inputs have `<Label>`.
+- **Dark mode**: no hard-coded `text-white` / `bg-black` / hex utilities — only semantic tokens.
+- **Responsiveness**: sidebar is mobile-hidden (already), tables scroll on small viewports.
 
-All tables: sequence-based codes via existing `next_code()`, RLS scoped to authenticated staff, activity_log triggers, GRANTs.
+## Phase 3 — Auto-fixes (safe, no business-logic change)
 
----
+Anything in this list will be fixed in place without asking:
 
-## UI
+- Broken import paths, unused imports, unused variables, dead files.
+- Missing `errorComponent` / `notFoundComponent` where a loader exists.
+- Missing empty/loading/error states on list pages.
+- Wrong or missing `qk.*` invalidation after a mutation.
+- Hard-coded colors → semantic token equivalents.
+- Missing `aria-label` on icon-only buttons.
+- Duplicate helpers → single source in `src/lib/utils.ts` or a domain module.
+- `<Link>` corrections where `<a href>` interpolates params.
+- `zod` validation gaps on create/edit forms (adding a `.min(1)` etc.).
+- TypeScript errors and lint warnings.
 
-- **Enquiry detail** → new "Create Quote" action. Opens a QuickForm to pick line items from your Products master (or free text) and set validity.
-- **Quotes list + detail** (`/quotes`, `/quotes/$id`): status pipeline, "Send to customer" (records status only for v1; email/PDF later), "Mark accepted → Convert to Invoice", "Duplicate".
-- **Invoices list + detail** (`/invoices`, `/invoices/$id`): shows totals, payment history, outstanding balance, "Generate Razorpay Link" button, "Record manual payment" button, "Send reminder" (v2).
-- **Project Hub** gets two new tabs: **Quotes** and **Invoices** (filtered to that project).
-- **Dashboard** gains two tiles: *Outstanding invoices (₹)* and *Payments this month (₹)*.
+## Phase 4 — Report-only (needs your decision)
 
-Progressive Disclosure is preserved — Quick Fill = customer/project/items/total; More Details = tax %, validity, terms; Advanced = notes, custom line descriptions.
+Will NOT be auto-changed:
 
----
+- Missing sub-features (e.g. Customers module has only a list — no dedicated detail/edit routes; edit currently happens in-dialog).
+- Placeholder fields where pricing/GST/stock/accounting logic is deferred.
+- Any schema change (new FK, new column, RLS tightening).
+- Any UI redesign or navigation restructure.
+- Anything requiring a decision on scope of a future phase.
 
-## Razorpay integration (server-side only)
+## Phase 5 — Verification
 
-Three server functions in `src/lib/payments/`:
+- `bunx tsgo --noEmit` → zero errors.
+- Production build via the sandbox build pipeline → zero errors, zero warnings (or documented residual warnings).
+- `supabase--linter` → review + report DB-level advisories.
 
-1. **`createRazorpayLink`** (protected) — takes `invoice_id`, calls Razorpay `POST /v1/payment_links` with amount, customer contact, invoice reference. Stores the returned `short_url` + `id` in `payment_links`. Returns the URL for the UI to copy/share via WhatsApp.
-2. **`cancelRazorpayLink`** (protected) — cancels an unpaid link.
-3. **Public webhook route** `/api/public/webhooks/razorpay` — verifies Razorpay's HMAC signature against `RAZORPAY_WEBHOOK_SECRET`, then on `payment_link.paid` inserts into `payments`, updates invoice `amount_paid` / `balance_due` / `status`, and appends to activity_log.
+## Deliverable — ERP Health Report
 
-Never exposes the secret key to the browser. Webhook URL will be `https://project--<your-id>.lovable.app/api/public/webhooks/razorpay` — I'll give you the exact URL to paste into Razorpay Dashboard → Webhooks after building.
+A single markdown report at the end with:
 
----
+1. **Module status matrix** — for each of the 18 modules: ✅ Complete / 🟡 Partial / ⚪ Placeholder, with the specific gap named.
+2. **Auto-fixes applied** — bullet list of every change made in Phase 3, grouped by module.
+3. **Open issues needing a decision** — Phase 4 items with a one-line recommendation each.
+4. **Placeholders inventory** — every field/screen currently stubbed for pricing, GST, stock, accounting, notifications, PDF, AI.
+5. **Recommended next enhancements** — prioritized shortlist (e.g. Customer/Vendor/Product detail pages, PDF generation, GST engine, stock ledger, email/WhatsApp notifications, RBAC UI, multi-company).
+6. **Production readiness** — overall % with a breakdown across: schema, CRUD coverage, auth/RLS, UX polish, error handling, performance, accessibility, ops readiness.
 
-## Out of scope for v1 (do later)
+## Notes / limits
 
-- PDF generation and emailing of quotes/invoices (can add via Lovable Emails once v1 is stable).
-- Advance/part-payment schedules (you flagged as a nice-to-have — I'll leave the `payments` table capable of multiple entries per invoice so this drops in cleanly).
-- GST/e-invoicing/IRN — India compliance layer is a separate module.
-- Credit notes and refunds.
+- I won't run interactive Playwright click-throughs of every module (would consume the entire session budget). Behavioural checks are code-read plus targeted Playwright runs only where a real question exists.
+- Zero-warning production builds depend on upstream deps; unavoidable third-party warnings will be listed rather than suppressed.
+- No migrations will run in this pass unless the audit uncovers a broken FK — which would be reported first for your approval.
 
----
-
-## Build order
-
-1. Migration: create the 6 tables + code sequences + triggers + RLS + GRANTs.
-2. Domain slices: `src/lib/quotes/`, `src/lib/invoices/`, `src/lib/payments/` (schemas + api).
-3. Quotes UI (list, detail, create-from-enquiry, convert-to-invoice).
-4. Invoices UI (list, detail, record-manual-payment).
-5. Razorpay server functions + webhook route + secrets prompt.
-6. "Generate payment link" button on invoice detail + Project Hub tabs + Dashboard tiles.
-
-Say the word and I'll start with step 1 (migration).
+Approve to switch to build mode and start Phase 1.
