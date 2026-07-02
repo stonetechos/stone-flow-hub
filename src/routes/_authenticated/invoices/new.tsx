@@ -7,7 +7,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Receipt } from "lucide-react";
 import { qk } from "@/lib/query-keys";
@@ -33,7 +40,10 @@ function NewInvoicePage() {
       toast.success(`Invoice ${inv.invoice_no} created`);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
-    onError: (e) => { toast.error(toUserMessage(e)); setBusyId(null); },
+    onError: (e) => {
+      toast.error(toUserMessage(e));
+      setBusyId(null);
+    },
   });
 
   const eligible = (query.data ?? []).filter((r) => r.status === "accepted");
@@ -50,56 +60,81 @@ function NewInvoicePage() {
         }
       />
       <div className="mb-3 flex items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search quotes…" className="max-w-md" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search quotes…"
+          className="max-w-md"
+        />
       </div>
 
-      {query.isLoading ? <LoadingBlock />
-        : query.error ? <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-        : eligible.length === 0 ? (
-          <EmptyState
-            icon={<Receipt className="h-6 w-6" />}
-            title="No accepted quotes"
-            message="Mark a quote as Accepted first, then convert it here."
-            action={<Button onClick={() => nav({ to: "/quotes" })}>Go to quotes</Button>}
-          />
-        ) : (
-          <div className="rounded-md border border-border bg-card shadow-1">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Quote</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="w-32" />
+      {query.isLoading ? (
+        <LoadingBlock />
+      ) : query.error ? (
+        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+      ) : eligible.length === 0 ? (
+        <EmptyState
+          icon={<Receipt className="h-6 w-6" />}
+          title="No accepted quotes"
+          message="Mark a quote as Accepted first, then convert it here."
+          action={<Button onClick={() => nav({ to: "/quotes" })}>Go to quotes</Button>}
+        />
+      ) : (
+        <div className="rounded-md border border-border bg-card shadow-1">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Quote</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="w-32" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {eligible.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="font-mono text-xs">
+                    <Link
+                      to="/quotes/$quoteId"
+                      params={{ quoteId: r.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {r.quote_no}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{r.customer?.name ?? "—"}</TableCell>
+                  <TableCell>{r.project?.name ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {r.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">{formatInr(r.total)}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      disabled={busyId === r.id}
+                      onClick={() => {
+                        setBusyId(r.id);
+                        convert.mutate(r.id);
+                      }}
+                    >
+                      {busyId === r.id ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : (
+                        <ArrowRightCircle className="mr-1 h-3 w-3" />
+                      )}
+                      Convert
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {eligible.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">
-                      <Link to="/quotes/$quoteId" params={{ quoteId: r.id }} className="text-primary hover:underline">
-                        {r.quote_no}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{r.customer?.name ?? "—"}</TableCell>
-                    <TableCell>{r.project?.name ?? "—"}</TableCell>
-                    <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
-                    <TableCell className="text-right">{formatInr(r.total)}</TableCell>
-                    <TableCell>
-                      <Button size="sm" disabled={busyId === r.id}
-                        onClick={() => { setBusyId(r.id); convert.mutate(r.id); }}>
-                        {busyId === r.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <ArrowRightCircle className="mr-1 h-3 w-3" />}
-                        Convert
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }

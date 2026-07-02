@@ -22,7 +22,8 @@ function SalesOrderDetailPage() {
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
 
   if (query.isLoading) return <LoadingBlock />;
-  if (query.error) return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
+  if (query.error)
+    return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Sales order not found." />;
   const r = query.data;
 
@@ -46,20 +47,45 @@ function SalesOrderDetailPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle className="text-sm">Overview</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Overview</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
-              <Row label="Status"><StatusPill status={r.status} /></Row>
+              <Row label="Status">
+                <StatusPill status={r.status} />
+              </Row>
               <Row label="Delivery date">{r.delivery_date ?? "—"}</Row>
               <Row label="Customer">{r.customer?.name ?? "—"}</Row>
               <Row label="Project">
-                {r.project ? <Link className="text-primary hover:underline" to="/projects">{r.project.name}</Link> : "—"}
+                {r.project ? (
+                  <Link className="text-primary hover:underline" to="/projects">
+                    {r.project.name}
+                  </Link>
+                ) : (
+                  "—"
+                )}
               </Row>
               <Row label="Source quote">
-                {r.quote ? <Link className="text-primary hover:underline" to="/quotes/$quoteId" params={{ quoteId: r.quote.id }}>{r.quote.quote_no}</Link> : "—"}
+                {r.quote ? (
+                  <Link
+                    className="text-primary hover:underline"
+                    to="/quotes/$quoteId"
+                    params={{ quoteId: r.quote.id }}
+                  >
+                    {r.quote.quote_no}
+                  </Link>
+                ) : (
+                  "—"
+                )}
               </Row>
             </CardContent>
           </Card>
-          <NotesPanel table="sales_orders" id={r.id} value={r.notes} invalidateKey={qk.salesOrders.byId(r.id)} />
+          <NotesPanel
+            table="sales_orders"
+            id={r.id}
+            value={r.notes}
+            invalidateKey={qk.salesOrders.byId(r.id)}
+          />
           <AttachmentsPanel entityType="sales_order" entityId={r.id} />
         </div>
         <div className="space-y-4">

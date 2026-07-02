@@ -13,8 +13,7 @@ export type DbInsert<T extends keyof Database["public"]["Tables"]> =
 export type DbUpdate<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Update"];
 
-export type DbEnum<T extends keyof Database["public"]["Enums"]> =
-  Database["public"]["Enums"][T];
+export type DbEnum<T extends keyof Database["public"]["Enums"]> = Database["public"]["Enums"][T];
 
 export type AppRole = DbEnum<"app_role">;
 export type LeadStage = DbEnum<"lead_stage">;

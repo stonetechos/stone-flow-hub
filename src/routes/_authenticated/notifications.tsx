@@ -14,7 +14,10 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 function NotificationsPage() {
   return (
     <div className="space-y-4">
-      <PageHeader title="Notifications" subtitle="Realtime alerts across the ERP. Delivery channels are configured in Settings." />
+      <PageHeader
+        title="Notifications"
+        subtitle="Realtime alerts across the ERP. Delivery channels are configured in Settings."
+      />
       <Card>
         <CardContent className="p-0">
           <ul className="divide-y divide-border">

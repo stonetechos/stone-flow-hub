@@ -12,7 +12,11 @@ export type PaymentListItem = PaymentRow & {
 const SELECT = "*, invoice:invoices!payments_invoice_id_fkey(id,invoice_no)";
 
 export async function listPayments(query = ""): Promise<PaymentListItem[]> {
-  let q = supabase.from("payments").select(SELECT).order("paid_at", { ascending: false }).limit(200);
+  let q = supabase
+    .from("payments")
+    .select(SELECT)
+    .order("paid_at", { ascending: false })
+    .limit(200);
   const s = sanitizeSearch(query);
   if (s) q = q.or(`payment_no.ilike.%${s}%,reference_no.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;

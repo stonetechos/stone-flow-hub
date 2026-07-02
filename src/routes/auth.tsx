@@ -26,9 +26,7 @@ function AuthPage() {
           <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
             Stone Tech <span className="text-primary">OS</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            ERP for the natural stone industry
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">ERP for the natural stone industry</p>
         </div>
         <Card className="shadow-3">
           <CardHeader>
@@ -99,4 +97,3 @@ function SignInForm() {
     </form>
   );
 }
-

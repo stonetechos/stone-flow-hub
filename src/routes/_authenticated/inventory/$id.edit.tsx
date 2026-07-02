@@ -8,7 +8,13 @@ import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
@@ -34,7 +40,9 @@ function EditInventoryPage() {
     if (query.data) {
       const r = query.data;
       setForm({
-        product_id: r.product_id, location: r.location, unit: r.unit,
+        product_id: r.product_id,
+        location: r.location,
+        unit: r.unit,
         quantity_on_hand: Number(r.quantity_on_hand ?? 0),
         reorder_level: Number(r.reorder_level ?? 0),
         notes: r.notes,
@@ -61,18 +69,36 @@ function EditInventoryPage() {
   return (
     <div>
       <PageHeader title={`Edit ${query.data?.stock_code ?? ""}`} />
-      <QuickForm onSubmit={(e) => { e.preventDefault(); mut.mutate(form); }} busy={mut.isPending}>
+      <QuickForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          mut.mutate(form);
+        }}
+        busy={mut.isPending}
+      >
         <QuickForm.QuickFill>
           <Field label="Product">
-            <Select value={form.product_id ?? ""} onValueChange={(v) => set("product_id", v || null)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={form.product_id ?? ""}
+              onValueChange={(v) => set("product_id", v || null)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {(products.data ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                {(products.data ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
           <Field label="Location">
-            <Input value={form.location ?? ""} onChange={(e) => set("location", e.target.value || null)} />
+            <Input
+              value={form.location ?? ""}
+              onChange={(e) => set("location", e.target.value || null)}
+            />
           </Field>
         </QuickForm.QuickFill>
         <QuickForm.MoreDetails>
@@ -80,19 +106,39 @@ function EditInventoryPage() {
             <Input value={form.unit ?? ""} onChange={(e) => set("unit", e.target.value || null)} />
           </Field>
           <Field label="On hand">
-            <Input type="number" min={0} value={form.quantity_on_hand} onChange={(e) => set("quantity_on_hand", Number(e.target.value))} />
+            <Input
+              type="number"
+              min={0}
+              value={form.quantity_on_hand}
+              onChange={(e) => set("quantity_on_hand", Number(e.target.value))}
+            />
           </Field>
           <Field label="Reorder level">
-            <Input type="number" min={0} value={form.reorder_level} onChange={(e) => set("reorder_level", Number(e.target.value))} />
+            <Input
+              type="number"
+              min={0}
+              value={form.reorder_level}
+              onChange={(e) => set("reorder_level", Number(e.target.value))}
+            />
           </Field>
         </QuickForm.MoreDetails>
         <QuickForm.Advanced>
           <Field label="Notes" className="md:col-span-2">
-            <Textarea rows={3} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value || null)} />
+            <Textarea
+              rows={3}
+              value={form.notes ?? ""}
+              onChange={(e) => set("notes", e.target.value || null)}
+            />
           </Field>
         </QuickForm.Advanced>
         <QuickForm.Actions>
-          <Button type="button" variant="ghost" onClick={() => nav({ to: "/inventory/$id", params: { id } })}>Cancel</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => nav({ to: "/inventory/$id", params: { id } })}
+          >
+            Cancel
+          </Button>
           <Button type="submit" disabled={mut.isPending}>
             {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
           </Button>

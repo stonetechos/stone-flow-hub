@@ -12,9 +12,16 @@ export type DispatchListItem = DispatchRow & {
 const SELECT = "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no)";
 
 export async function listDispatches(query = "", status = ""): Promise<DispatchListItem[]> {
-  let q = supabase.from("dispatches").select(SELECT).order("created_at", { ascending: false }).limit(200);
+  let q = supabase
+    .from("dispatches")
+    .select(SELECT)
+    .order("created_at", { ascending: false })
+    .limit(200);
   const s = sanitizeSearch(query);
-  if (s) q = q.or(`dispatch_no.ilike.%${s}%,carrier.ilike.%${s}%,tracking_no.ilike.%${s}%,notes.ilike.%${s}%`);
+  if (s)
+    q = q.or(
+      `dispatch_no.ilike.%${s}%,carrier.ilike.%${s}%,tracking_no.ilike.%${s}%,notes.ilike.%${s}%`,
+    );
   if (status) q = q.eq("status", status as DispatchStatus);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
@@ -22,7 +29,11 @@ export async function listDispatches(query = "", status = ""): Promise<DispatchL
 }
 
 export async function getDispatch(id: string): Promise<DispatchListItem | null> {
-  const { data, error } = await supabase.from("dispatches").select(SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("dispatches")
+    .select(SELECT)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as DispatchListItem | null) ?? null;
 }

@@ -11,7 +11,10 @@ import { formatRelative } from "@/lib/format";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
-interface Props { entityType: string; entityId: string; }
+interface Props {
+  entityType: string;
+  entityId: string;
+}
 
 export function CommentsPanel({ entityType, entityId }: Props) {
   const qc = useQueryClient();
@@ -25,9 +28,11 @@ export function CommentsPanel({ entityType, entityId }: Props) {
   });
 
   const create = useMutation({
-    mutationFn: () => createComment({ entity_type: entityType, entity_id: entityId, body, parent_id: replyTo }),
+    mutationFn: () =>
+      createComment({ entity_type: entityType, entity_id: entityId, body, parent_id: replyTo }),
     onSuccess: () => {
-      setBody(""); setReplyTo(null);
+      setBody("");
+      setReplyTo(null);
       void qc.invalidateQueries({ queryKey: qk.comments.byEntity(entityType, entityId) });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -44,7 +49,9 @@ export function CommentsPanel({ entityType, entityId }: Props) {
 
   return (
     <Card>
-      <CardHeader className="pb-3"><CardTitle className="text-base">Comments</CardTitle></CardHeader>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Comments</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Textarea
@@ -54,8 +61,18 @@ export function CommentsPanel({ entityType, entityId }: Props) {
             rows={2}
           />
           <div className="flex items-center justify-end gap-2">
-            {replyTo && <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>Cancel reply</Button>}
-            <Button size="sm" disabled={!body.trim() || create.isPending} onClick={() => create.mutate()}>Post</Button>
+            {replyTo && (
+              <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>
+                Cancel reply
+              </Button>
+            )}
+            <Button
+              size="sm"
+              disabled={!body.trim() || create.isPending}
+              onClick={() => create.mutate()}
+            >
+              Post
+            </Button>
           </div>
         </div>
 
@@ -72,7 +89,11 @@ export function CommentsPanel({ entityType, entityId }: Props) {
                   <ul className="ml-4 mt-2 space-y-2 border-l border-border pl-3">
                     {childrenOf(c.id).map((child) => (
                       <li key={child.id}>
-                        <CommentNode c={child} onReply={setReplyTo} onDelete={(id) => del.mutate(id)} />
+                        <CommentNode
+                          c={child}
+                          onReply={setReplyTo}
+                          onDelete={(id) => del.mutate(id)}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -86,14 +107,28 @@ export function CommentsPanel({ entityType, entityId }: Props) {
   );
 }
 
-function CommentNode({ c, onReply, onDelete }: { c: CommentRow; onReply: (id: string) => void; onDelete: (id: string) => void }) {
+function CommentNode({
+  c,
+  onReply,
+  onDelete,
+}: {
+  c: CommentRow;
+  onReply: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatRelative(c.created_at)}</span>
         <div className="flex items-center gap-2">
-          <button className="hover:text-foreground" onClick={() => onReply(c.id)}>Reply</button>
-          <button className="hover:text-destructive" onClick={() => onDelete(c.id)} aria-label="Delete">
+          <button className="hover:text-foreground" onClick={() => onReply(c.id)}>
+            Reply
+          </button>
+          <button
+            className="hover:text-destructive"
+            onClick={() => onDelete(c.id)}
+            aria-label="Delete"
+          >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>

@@ -21,12 +21,48 @@ type ReportCard = {
 };
 
 const REPORTS: ReportCard[] = [
-  { title: "Sales Pipeline", description: "Enquiries by stage, conversion funnel.", href: "/enquiries", icon: TrendingUp, status: "live" },
-  { title: "Customer Ledger", description: "Outstanding & payments per customer.", href: "/customers", icon: Users, status: "planned" },
-  { title: "Inventory Snapshot", description: "Stock on hand by product & warehouse.", href: "/inventory", icon: Package, status: "planned" },
-  { title: "Quotation Register", description: "All quotes with status & value.", href: "/quotes", icon: FileText, status: "live" },
-  { title: "Invoice Aging", description: "Overdue invoices grouped by bucket.", href: "/invoices", icon: FileText, status: "planned" },
-  { title: "Collections", description: "Payments received by period.", href: "/payments", icon: Wallet, status: "planned" },
+  {
+    title: "Sales Pipeline",
+    description: "Enquiries by stage, conversion funnel.",
+    href: "/enquiries",
+    icon: TrendingUp,
+    status: "live",
+  },
+  {
+    title: "Customer Ledger",
+    description: "Outstanding & payments per customer.",
+    href: "/customers",
+    icon: Users,
+    status: "planned",
+  },
+  {
+    title: "Inventory Snapshot",
+    description: "Stock on hand by product & warehouse.",
+    href: "/inventory",
+    icon: Package,
+    status: "planned",
+  },
+  {
+    title: "Quotation Register",
+    description: "All quotes with status & value.",
+    href: "/quotes",
+    icon: FileText,
+    status: "live",
+  },
+  {
+    title: "Invoice Aging",
+    description: "Overdue invoices grouped by bucket.",
+    href: "/invoices",
+    icon: FileText,
+    status: "planned",
+  },
+  {
+    title: "Collections",
+    description: "Payments received by period.",
+    href: "/payments",
+    icon: Wallet,
+    status: "planned",
+  },
 ];
 
 function ReportsPage() {

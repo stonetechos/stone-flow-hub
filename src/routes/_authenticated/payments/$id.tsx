@@ -22,7 +22,8 @@ function PaymentDetailPage() {
   const query = useQuery({ queryKey: qk.paymentsAll.byId(id), queryFn: () => getPayment(id) });
 
   if (query.isLoading) return <LoadingBlock />;
-  if (query.error) return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
+  if (query.error)
+    return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Payment not found." />;
   const r = query.data;
 
@@ -33,23 +34,40 @@ function PaymentDetailPage() {
         subtitle={`Received ${new Date(r.paid_at).toLocaleDateString()}`}
         actions={
           <>
-            <Button variant="ghost" onClick={() => nav({ to: "/payments" })}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-            <Button onClick={() => nav({ to: "/payments/$id/edit", params: { id } })}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+            <Button variant="ghost" onClick={() => nav({ to: "/payments" })}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <Button onClick={() => nav({ to: "/payments/$id/edit", params: { id } })}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
           </>
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle className="text-sm">Overview</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Overview</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
               <Row label="Invoice">{r.invoice?.invoice_no ?? "—"}</Row>
-              <Row label="Amount"><span className="font-mono">{Number(r.amount).toFixed(2)}</span></Row>
-              <Row label="Method"><Badge variant="outline" className="capitalize">{r.method.replace(/_/g, " ")}</Badge></Row>
+              <Row label="Amount">
+                <span className="font-mono">{Number(r.amount).toFixed(2)}</span>
+              </Row>
+              <Row label="Method">
+                <Badge variant="outline" className="capitalize">
+                  {r.method.replace(/_/g, " ")}
+                </Badge>
+              </Row>
               <Row label="Reference #">{r.reference_no ?? "—"}</Row>
             </CardContent>
           </Card>
-          <NotesPanel table="payments" id={r.id} value={r.notes} invalidateKey={qk.paymentsAll.byId(r.id)} />
+          <NotesPanel
+            table="payments"
+            id={r.id}
+            value={r.notes}
+            invalidateKey={qk.paymentsAll.byId(r.id)}
+          />
           <AttachmentsPanel entityType="payment" entityId={r.id} />
         </div>
         <div className="space-y-4">
@@ -61,5 +79,10 @@ function PaymentDetailPage() {
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><div className="text-xs text-muted-foreground">{label}</div><div className="mt-0.5">{children}</div></div>;
+  return (
+    <div>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-0.5">{children}</div>
+    </div>
+  );
 }

@@ -2,7 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
-import { purchaseOrderCreateSchema, type PurchaseOrderCreateInput, type PurchaseOrderStatus } from "./schema";
+import {
+  purchaseOrderCreateSchema,
+  type PurchaseOrderCreateInput,
+  type PurchaseOrderStatus,
+} from "./schema";
 
 export type PurchaseOrderRow = DbTable<"purchase_orders">;
 export type PurchaseOrderListItem = PurchaseOrderRow & {
@@ -10,11 +14,18 @@ export type PurchaseOrderListItem = PurchaseOrderRow & {
   project: { id: string; name: string; project_code: string } | null;
 };
 
-const SELECT = "*, vendor:vendors!purchase_orders_vendor_id_fkey(id,company_name,vendor_code), project:projects!purchase_orders_project_id_fkey(id,name,project_code)";
+const SELECT =
+  "*, vendor:vendors!purchase_orders_vendor_id_fkey(id,company_name,vendor_code), project:projects!purchase_orders_project_id_fkey(id,name,project_code)";
 
-
-export async function listPurchaseOrders(query = "", status = ""): Promise<PurchaseOrderListItem[]> {
-  let q = supabase.from("purchase_orders").select(SELECT).order("created_at", { ascending: false }).limit(200);
+export async function listPurchaseOrders(
+  query = "",
+  status = "",
+): Promise<PurchaseOrderListItem[]> {
+  let q = supabase
+    .from("purchase_orders")
+    .select(SELECT)
+    .order("created_at", { ascending: false })
+    .limit(200);
   const s = sanitizeSearch(query);
   if (s) q = q.or(`po_no.ilike.%${s}%,notes.ilike.%${s}%`);
   if (status) q = q.eq("status", status as PurchaseOrderStatus);
@@ -24,12 +35,18 @@ export async function listPurchaseOrders(query = "", status = ""): Promise<Purch
 }
 
 export async function getPurchaseOrder(id: string): Promise<PurchaseOrderListItem | null> {
-  const { data, error } = await supabase.from("purchase_orders").select(SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("purchase_orders")
+    .select(SELECT)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as PurchaseOrderListItem | null) ?? null;
 }
 
-export async function createPurchaseOrder(input: PurchaseOrderCreateInput): Promise<PurchaseOrderRow> {
+export async function createPurchaseOrder(
+  input: PurchaseOrderCreateInput,
+): Promise<PurchaseOrderRow> {
   const p = purchaseOrderCreateSchema.parse(input);
   const { data, error } = await supabase
     .from("purchase_orders")
@@ -48,7 +65,10 @@ export async function createPurchaseOrder(input: PurchaseOrderCreateInput): Prom
   return data;
 }
 
-export async function updatePurchaseOrder(id: string, input: PurchaseOrderCreateInput): Promise<PurchaseOrderRow> {
+export async function updatePurchaseOrder(
+  id: string,
+  input: PurchaseOrderCreateInput,
+): Promise<PurchaseOrderRow> {
   const p = purchaseOrderCreateSchema.parse(input);
   const { data, error } = await supabase
     .from("purchase_orders")

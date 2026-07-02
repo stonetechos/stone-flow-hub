@@ -6,7 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { qk } from "@/lib/query-keys";
 import { listDocuments } from "@/lib/documents/api";
 import { formatRelative } from "@/lib/format";
@@ -32,11 +38,14 @@ function DocumentsPage() {
   const [entityType, setEntityType] = useState("");
   const [folder, setFolder] = useState("");
 
-  const filters = useMemo(() => ({
-    q: q.trim() || null,
-    entityType: entityType || null,
-    folder: folder || null,
-  }), [q, entityType, folder]);
+  const filters = useMemo(
+    () => ({
+      q: q.trim() || null,
+      entityType: entityType || null,
+      folder: folder || null,
+    }),
+    [q, entityType, folder],
+  );
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: qk.documents.all(filters as unknown as Record<string, string | null>),
@@ -56,28 +65,47 @@ function DocumentsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Documents" subtitle="Every uploaded file across the ERP, searchable and grouped." />
+      <PageHeader
+        title="Documents"
+        subtitle="Every uploaded file across the ERP, searchable and grouped."
+      />
 
       <Card>
         <CardContent className="grid gap-3 p-4 md:grid-cols-4">
           <div className="space-y-1 md:col-span-2">
             <Label className="text-xs">Search</Label>
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="File name…" className="h-9" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="File name…"
+              className="h-9"
+            />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Entity</Label>
-            <Select value={entityType || "all"} onValueChange={(v) => setEntityType(v === "all" ? "" : v)}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+            <Select
+              value={entityType || "all"}
+              onValueChange={(v) => setEntityType(v === "all" ? "" : v)}
+            >
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All entities</SelectItem>
-                {GROUPS.map((g) => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                {GROUPS.map((g) => (
+                  <SelectItem key={g.value} value={g.value}>
+                    {g.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Folder</Label>
             <Select value={folder || "all"} onValueChange={(v) => setFolder(v === "all" ? "" : v)}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All folders</SelectItem>
                 <SelectItem value="quotation">Quotation</SelectItem>
@@ -101,7 +129,11 @@ function DocumentsPage() {
       {isLoading ? (
         <div className="p-6 text-sm text-muted-foreground">Loading…</div>
       ) : rows.length === 0 ? (
-        <Card><CardContent className="p-6 text-sm text-muted-foreground">No documents match your filters.</CardContent></Card>
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            No documents match your filters.
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {grouped.map(([type, list]) => (
@@ -109,7 +141,9 @@ function DocumentsPage() {
               <CardContent className="p-0">
                 <div className="flex items-center justify-between border-b border-border px-4 py-2">
                   <div className="text-sm font-semibold capitalize">{type.replace(/_/g, " ")}</div>
-                  <Badge variant="secondary" className="text-xs">{list.length}</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {list.length}
+                  </Badge>
                 </div>
                 <ul className="divide-y divide-border">
                   {list.map((r) => (

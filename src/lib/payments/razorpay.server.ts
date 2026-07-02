@@ -43,7 +43,8 @@ export async function rzpCreatePaymentLink(payload: {
   });
   const json = (await res.json()) as unknown;
   if (!res.ok) {
-    const msg = (json as { error?: { description?: string } })?.error?.description ?? "Razorpay error";
+    const msg =
+      (json as { error?: { description?: string } })?.error?.description ?? "Razorpay error";
     throw new Error(`Razorpay: ${msg}`);
   }
   return json as RazorpayPaymentLink;

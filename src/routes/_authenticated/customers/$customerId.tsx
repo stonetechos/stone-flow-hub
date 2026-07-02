@@ -21,8 +21,14 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 
 function CustomerHub() {
   const { customerId } = Route.useParams();
-  const q = useQuery({ queryKey: qk.customers.byId(customerId), queryFn: () => getCustomer(customerId) });
-  const stats = useQuery({ queryKey: ["hub", "customer", customerId, "stats"], queryFn: () => hub.customerStats(customerId) });
+  const q = useQuery({
+    queryKey: qk.customers.byId(customerId),
+    queryFn: () => getCustomer(customerId),
+  });
+  const stats = useQuery({
+    queryKey: ["hub", "customer", customerId, "stats"],
+    queryFn: () => hub.customerStats(customerId),
+  });
 
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
@@ -32,13 +38,23 @@ function CustomerHub() {
   return (
     <div>
       <div className="mb-2">
-        <Link to="/customers" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/customers"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-3 w-3" /> Back to customers
         </Link>
       </div>
       <PageHeader
         title={c.name}
-        subtitle={<span className="flex items-center gap-2"><span className="font-mono text-xs">{c.customer_code}</span><Badge variant="secondary" className="capitalize">{c.customer_type.replace("_", " ")}</Badge></span>}
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span className="font-mono text-xs">{c.customer_code}</span>
+            <Badge variant="secondary" className="capitalize">
+              {c.customer_type.replace("_", " ")}
+            </Badge>
+          </span>
+        }
       />
 
       <Tabs defaultValue="overview" className="w-full">
@@ -60,20 +76,25 @@ function CustomerHub() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
-          <Card className="shadow-1"><CardHeader><CardTitle className="text-sm">Overview</CardTitle></CardHeader>
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Overview</CardTitle>
+            </CardHeader>
             <CardContent>
-              <InfoGrid items={[
-                { label: "Name", value: c.name },
-                { label: "Code", value: <span className="font-mono">{c.customer_code}</span> },
-                { label: "Type", value: c.customer_type },
-                { label: "Mobile", value: c.primary_phone },
-                { label: "Email", value: c.primary_email },
-                { label: "WhatsApp", value: c.whatsapp },
-                { label: "City", value: c.city },
-                { label: "State", value: c.state },
-                { label: "GST", value: c.gst_number },
-                { label: "Source", value: c.source },
-              ]} />
+              <InfoGrid
+                items={[
+                  { label: "Name", value: c.name },
+                  { label: "Code", value: <span className="font-mono">{c.customer_code}</span> },
+                  { label: "Type", value: c.customer_type },
+                  { label: "Mobile", value: c.primary_phone },
+                  { label: "Email", value: c.primary_email },
+                  { label: "WhatsApp", value: c.whatsapp },
+                  { label: "City", value: c.city },
+                  { label: "State", value: c.state },
+                  { label: "GST", value: c.gst_number },
+                  { label: "Source", value: c.source },
+                ]}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -85,10 +106,20 @@ function CustomerHub() {
             queryFn={() => hub.customerProjects(customerId)}
             linkFor={(r) => ({ to: "/projects/$projectId", params: { projectId: r.id } })}
             columns={[
-              { header: "Code", cell: (r) => <span className="font-mono text-xs">{r.project_code}</span> },
+              {
+                header: "Code",
+                cell: (r) => <span className="font-mono text-xs">{r.project_code}</span>,
+              },
               { header: "Name", cell: (r) => r.name },
               { header: "City", cell: (r) => r.city ?? "—" },
-              { header: "Type", cell: (r) => <Badge variant="secondary" className="capitalize">{r.project_type}</Badge> },
+              {
+                header: "Type",
+                cell: (r) => (
+                  <Badge variant="secondary" className="capitalize">
+                    {r.project_type}
+                  </Badge>
+                ),
+              },
             ]}
           />
         </TabsContent>
@@ -100,7 +131,10 @@ function CustomerHub() {
             queryFn={() => hub.customerEnquiries(customerId)}
             linkFor={(r) => ({ to: "/enquiries/$enquiryId", params: { enquiryId: r.id } })}
             columns={[
-              { header: "No.", cell: (r) => <span className="font-mono text-xs">{r.enquiry_no}</span> },
+              {
+                header: "No.",
+                cell: (r) => <span className="font-mono text-xs">{r.enquiry_no}</span>,
+              },
               { header: "Stage", cell: (r) => <Badge variant="outline">{r.stage}</Badge> },
               { header: "Priority", cell: (r) => r.priority },
               { header: "Created", cell: (r) => new Date(r.created_at).toLocaleDateString() },
@@ -115,10 +149,16 @@ function CustomerHub() {
             queryFn={() => hub.customerQuotes(customerId)}
             linkFor={(r) => ({ to: "/quotes/$quoteId", params: { quoteId: r.id } })}
             columns={[
-              { header: "No.", cell: (r) => <span className="font-mono text-xs">{r.quote_no}</span> },
+              {
+                header: "No.",
+                cell: (r) => <span className="font-mono text-xs">{r.quote_no}</span>,
+              },
               { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
               { header: "Total", cell: (r) => formatInr(r.total) },
-              { header: "Date", cell: (r) => r.issue_date ?? new Date(r.created_at).toLocaleDateString() },
+              {
+                header: "Date",
+                cell: (r) => r.issue_date ?? new Date(r.created_at).toLocaleDateString(),
+              },
             ]}
           />
         </TabsContent>
@@ -145,7 +185,10 @@ function CustomerHub() {
             queryFn={() => hub.customerInvoices(customerId)}
             linkFor={(r) => ({ to: "/invoices/$invoiceId", params: { invoiceId: r.id } })}
             columns={[
-              { header: "No.", cell: (r) => <span className="font-mono text-xs">{r.invoice_no}</span> },
+              {
+                header: "No.",
+                cell: (r) => <span className="font-mono text-xs">{r.invoice_no}</span>,
+              },
               { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
               { header: "Total", cell: (r) => formatInr(r.total) },
               { header: "Balance", cell: (r) => formatInr(r.balance_due) },
@@ -159,7 +202,10 @@ function CustomerHub() {
             queryKey={["hub", "customer", customerId, "payments"]}
             queryFn={() => hub.customerPayments(customerId)}
             columns={[
-              { header: "No.", cell: (r) => <span className="font-mono text-xs">{r.payment_no}</span> },
+              {
+                header: "No.",
+                cell: (r) => <span className="font-mono text-xs">{r.payment_no}</span>,
+              },
               { header: "Invoice", cell: (r) => r.invoice?.invoice_no ?? "—" },
               { header: "Amount", cell: (r) => formatInr(r.amount) },
               { header: "Method", cell: (r) => r.method },
@@ -177,7 +223,12 @@ function CustomerHub() {
         </TabsContent>
 
         <TabsContent value="notes" className="mt-4">
-          <NotesPanel table="customers" id={customerId} value={c.notes} invalidateKey={qk.customers.byId(customerId)} />
+          <NotesPanel
+            table="customers"
+            id={customerId}
+            value={c.notes}
+            invalidateKey={qk.customers.byId(customerId)}
+          />
         </TabsContent>
 
         <TabsContent value="attachments" className="mt-4">
@@ -195,28 +246,37 @@ function CustomerHub() {
               { header: "Designation", cell: (r) => r.designation ?? "—" },
               { header: "Phone", cell: (r) => r.phone ?? "—" },
               { header: "Email", cell: (r) => r.email ?? "—" },
-              { header: "Primary", cell: (r) => r.is_primary ? <Badge variant="secondary">Primary</Badge> : "—" },
+              {
+                header: "Primary",
+                cell: (r) => (r.is_primary ? <Badge variant="secondary">Primary</Badge> : "—"),
+              },
             ]}
           />
         </TabsContent>
 
         <TabsContent value="addresses" className="mt-4">
           <Card className="shadow-1">
-            <CardHeader><CardTitle className="text-sm">Addresses</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Addresses</CardTitle>
+            </CardHeader>
             <CardContent>
-              <InfoGrid items={[
-                { label: "Billing address", value: c.billing_address ?? "—" },
-                { label: "City", value: c.city },
-                { label: "State", value: c.state },
-                { label: "Pincode", value: c.pincode },
-                { label: "Country", value: c.country },
-              ]} />
+              <InfoGrid
+                items={[
+                  { label: "Billing address", value: c.billing_address ?? "—" },
+                  { label: "City", value: c.city },
+                  { label: "State", value: c.state },
+                  { label: "Pincode", value: c.pincode },
+                  { label: "Country", value: c.country },
+                ]}
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="stats" className="mt-4">
-          {stats.isLoading ? <LoadingBlock /> : (
+          {stats.isLoading ? (
+            <LoadingBlock />
+          ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { label: "Projects", value: stats.data?.projects ?? 0 },
@@ -237,7 +297,9 @@ function CustomerHub() {
       </Tabs>
 
       {stats.isError && <PlaceholderTab message="Stats unavailable" />}
-      <span className="hidden"><Users /></span>
+      <span className="hidden">
+        <Users />
+      </span>
     </div>
   );
 }

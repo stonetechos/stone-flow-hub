@@ -1,7 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ExternalLink, Link as LinkIcon, Ban, Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  ExternalLink,
+  Link as LinkIcon,
+  Ban,
+  Plus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { deleteInvoice } from "@/lib/invoices/api";
@@ -13,9 +22,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -46,10 +68,22 @@ function InvoiceDetailPage() {
   const [payOpen, setPayOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
 
-  const inv = useQuery({ queryKey: qk.invoices.byId(invoiceId), queryFn: () => getInvoice(invoiceId) });
-  const items = useQuery({ queryKey: qk.invoices.items(invoiceId), queryFn: () => getInvoiceItems(invoiceId) });
-  const payments = useQuery({ queryKey: qk.invoices.payments(invoiceId), queryFn: () => getInvoicePayments(invoiceId) });
-  const links = useQuery({ queryKey: qk.invoices.links(invoiceId), queryFn: () => getInvoicePaymentLinks(invoiceId) });
+  const inv = useQuery({
+    queryKey: qk.invoices.byId(invoiceId),
+    queryFn: () => getInvoice(invoiceId),
+  });
+  const items = useQuery({
+    queryKey: qk.invoices.items(invoiceId),
+    queryFn: () => getInvoiceItems(invoiceId),
+  });
+  const payments = useQuery({
+    queryKey: qk.invoices.payments(invoiceId),
+    queryFn: () => getInvoicePayments(invoiceId),
+  });
+  const links = useQuery({
+    queryKey: qk.invoices.links(invoiceId),
+    queryFn: () => getInvoicePaymentLinks(invoiceId),
+  });
 
   const invalidateAll = () => {
     qc.invalidateQueries({ queryKey: qk.invoices.byId(invoiceId) });
@@ -60,8 +94,15 @@ function InvoiceDetailPage() {
   };
 
   const statusMut = useMutation({
-    mutationFn: (s: InvoiceStatus) => setInvoiceStatus({ invoice_id: invoiceId, status: s as "draft" | "sent" | "cancelled" | "overdue" }),
-    onSuccess: () => { toast.success("Status updated"); invalidateAll(); },
+    mutationFn: (s: InvoiceStatus) =>
+      setInvoiceStatus({
+        invoice_id: invoiceId,
+        status: s as "draft" | "sent" | "cancelled" | "overdue",
+      }),
+    onSuccess: () => {
+      toast.success("Status updated");
+      invalidateAll();
+    },
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
@@ -77,18 +118,26 @@ function InvoiceDetailPage() {
 
   const cancelMut = useMutation({
     mutationFn: (id: string) => cancelRazorpayLink({ data: { payment_link_id: id } }),
-    onSuccess: () => { toast.success("Link cancelled"); invalidateAll(); },
+    onSuccess: () => {
+      toast.success("Link cancelled");
+      invalidateAll();
+    },
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
   const delMut = useMutation({
     mutationFn: () => deleteInvoice(invoiceId),
-    onSuccess: () => { toast.success("Invoice deleted"); qc.invalidateQueries({ queryKey: qk.invoices.all }); nav({ to: "/invoices" }); },
+    onSuccess: () => {
+      toast.success("Invoice deleted");
+      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      nav({ to: "/invoices" });
+    },
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
   if (inv.isLoading) return <LoadingBlock />;
-  if (inv.error) return <ErrorBlock message={toUserMessage(inv.error)} onRetry={() => inv.refetch()} />;
+  if (inv.error)
+    return <ErrorBlock message={toUserMessage(inv.error)} onRetry={() => inv.refetch()} />;
   if (!inv.data) return <ErrorBlock message="Invoice not found." />;
 
   const invoice = inv.data;
@@ -98,7 +147,10 @@ function InvoiceDetailPage() {
   return (
     <div>
       <div className="mb-2">
-        <Link to="/invoices" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/invoices"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-3 w-3" /> Back to invoices
         </Link>
       </div>
@@ -108,7 +160,10 @@ function InvoiceDetailPage() {
         subtitle={`${invoice.customer?.name ?? "—"} • ${invoice.project?.name ?? "—"}`}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}>
+            <Button
+              variant="outline"
+              onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}
+            >
               <Pencil className="mr-2 h-4 w-4" /> Edit
             </Button>
             <Button variant="outline" onClick={() => setConfirmDel(true)}>
@@ -120,7 +175,11 @@ function InvoiceDetailPage() {
               disabled={linkMut.isPending || balance <= 0 || !!activeLink}
               title={activeLink ? "A link is already active" : undefined}
             >
-              {linkMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
+              {linkMut.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LinkIcon className="mr-2 h-4 w-4" />
+              )}
               Razorpay link
             </Button>
             <Button onClick={() => setPayOpen(true)} disabled={balance <= 0}>
@@ -130,10 +189,11 @@ function InvoiceDetailPage() {
         }
       />
 
-
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Line items</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Line items</CardTitle>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -160,23 +220,42 @@ function InvoiceDetailPage() {
               </TableBody>
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
-              <div>Subtotal: <span className="font-medium">{formatInr(invoice.subtotal)}</span></div>
-              <div>Tax: <span className="font-medium">{formatInr(invoice.tax_amount)}</span></div>
-              <div>Total: <span className="font-medium">{formatInr(invoice.total)}</span></div>
-              <div>Paid: <span className="font-medium">{formatInr(invoice.amount_paid)}</span></div>
-              <div className="text-base font-semibold">Balance: {formatInr(invoice.balance_due)}</div>
+              <div>
+                Subtotal: <span className="font-medium">{formatInr(invoice.subtotal)}</span>
+              </div>
+              <div>
+                Tax: <span className="font-medium">{formatInr(invoice.tax_amount)}</span>
+              </div>
+              <div>
+                Total: <span className="font-medium">{formatInr(invoice.total)}</span>
+              </div>
+              <div>
+                Paid: <span className="font-medium">{formatInr(invoice.amount_paid)}</span>
+              </div>
+              <div className="text-base font-semibold">
+                Balance: {formatInr(invoice.balance_due)}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">Status</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Status</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
-            <Badge variant="outline" className="capitalize">{invoice.status}</Badge>
+            <Badge variant="outline" className="capitalize">
+              {invoice.status}
+            </Badge>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Change status</label>
-              <Select value={invoice.status} onValueChange={(v) => statusMut.mutate(v as InvoiceStatus)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <Select
+                value={invoice.status}
+                onValueChange={(v) => statusMut.mutate(v as InvoiceStatus)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
@@ -192,7 +271,9 @@ function InvoiceDetailPage() {
         </Card>
 
         <Card className="shadow-1 md:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Payments</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Payments</CardTitle>
+          </CardHeader>
           <CardContent>
             {(payments.data ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
@@ -216,7 +297,9 @@ function InvoiceDetailPage() {
                       <TableCell className="text-xs text-muted-foreground">
                         {p.reference_no ?? p.razorpay_payment_id ?? "—"}
                       </TableCell>
-                      <TableCell className="text-right font-medium">{formatInr(p.amount)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatInr(p.amount)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -226,7 +309,9 @@ function InvoiceDetailPage() {
         </Card>
 
         <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">Payment links</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Payment links</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2">
             {(links.data ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">No links yet.</p>
@@ -235,17 +320,29 @@ function InvoiceDetailPage() {
                 <div key={l.id} className="rounded-sm border border-border p-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-mono">{l.link_no}</span>
-                    <Badge variant="outline" className="capitalize">{l.status}</Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {l.status}
+                    </Badge>
                   </div>
                   <div className="mt-1">{formatInr(l.amount)}</div>
                   {l.short_url && (
-                    <a href={l.short_url} target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-1 text-primary hover:underline">
+                    <a
+                      href={l.short_url}
+                      target="_blank"
+                      rel="noopener"
+                      className="mt-1 inline-flex items-center gap-1 text-primary hover:underline"
+                    >
                       Open link <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                   {l.status === "created" && (
-                    <Button size="sm" variant="ghost" className="mt-1 h-7 w-full"
-                      onClick={() => cancelMut.mutate(l.id)} disabled={cancelMut.isPending}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mt-1 h-7 w-full"
+                      onClick={() => cancelMut.mutate(l.id)}
+                      disabled={cancelMut.isPending}
+                    >
                       <Ban className="mr-1 h-3 w-3" /> Cancel
                     </Button>
                   )}
@@ -257,7 +354,12 @@ function InvoiceDetailPage() {
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <NotesPanel table="invoices" id={invoiceId} value={invoice.notes ?? null} invalidateKey={qk.invoices.byId(invoiceId)} />
+        <NotesPanel
+          table="invoices"
+          id={invoiceId}
+          value={invoice.notes ?? null}
+          invalidateKey={qk.invoices.byId(invoiceId)}
+        />
         <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
         <TimelinePanel entityType="invoice" entityId={invoiceId} />
       </div>
@@ -269,17 +371,29 @@ function InvoiceDetailPage() {
         maxAmount={balance}
       />
 
-      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
-        title="Delete invoice?" description={`${invoice.invoice_no} will be removed.`}
-        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
+      <ConfirmDialog
+        open={confirmDel}
+        onOpenChange={setConfirmDel}
+        title="Delete invoice?"
+        description={`${invoice.invoice_no} will be removed.`}
+        busy={delMut.isPending}
+        onConfirm={() => delMut.mutate()}
+      />
     </div>
-
   );
 }
 
 function RecordPaymentDialog({
-  open, onOpenChange, invoiceId, maxAmount,
-}: { open: boolean; onOpenChange: (o: boolean) => void; invoiceId: string; maxAmount: number }) {
+  open,
+  onOpenChange,
+  invoiceId,
+  maxAmount,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  invoiceId: string;
+  maxAmount: number;
+}) {
   const qc = useQueryClient();
   const [form, setForm] = useState<RecordPaymentInput>({
     invoice_id: invoiceId,
@@ -309,7 +423,9 @@ function RecordPaymentDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Record payment</DialogTitle>
+        </DialogHeader>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -319,12 +435,22 @@ function RecordPaymentDialog({
         >
           <div className="grid gap-3 md:grid-cols-2">
             <Field label="Amount (INR)" required hint={`Balance: ${formatInr(maxAmount)}`}>
-              <Input type="number" step="0.01" value={form.amount}
-                onChange={(e) => set("amount", Number(e.target.value))} required />
+              <Input
+                type="number"
+                step="0.01"
+                value={form.amount}
+                onChange={(e) => set("amount", Number(e.target.value))}
+                required
+              />
             </Field>
             <Field label="Method" required>
-              <Select value={form.method} onValueChange={(v) => set("method", v as RecordPaymentInput["method"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.method}
+                onValueChange={(v) => set("method", v as RecordPaymentInput["method"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bank_transfer">Bank transfer</SelectItem>
                   <SelectItem value="upi_manual">UPI (manual)</SelectItem>
@@ -335,20 +461,30 @@ function RecordPaymentDialog({
               </Select>
             </Field>
             <Field label="Paid on">
-              <Input type="date" value={form.paid_at ?? ""}
-                onChange={(e) => set("paid_at", e.target.value || null)} />
+              <Input
+                type="date"
+                value={form.paid_at ?? ""}
+                onChange={(e) => set("paid_at", e.target.value || null)}
+              />
             </Field>
             <Field label="Reference no.">
-              <Input value={form.reference_no ?? ""}
-                onChange={(e) => set("reference_no", e.target.value || null)} />
+              <Input
+                value={form.reference_no ?? ""}
+                onChange={(e) => set("reference_no", e.target.value || null)}
+              />
             </Field>
           </div>
           <Field label="Notes">
-            <Textarea rows={2} value={form.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value || null)} />
+            <Textarea
+              rows={2}
+              value={form.notes ?? ""}
+              onChange={(e) => set("notes", e.target.value || null)}
+            />
           </Field>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             </Button>

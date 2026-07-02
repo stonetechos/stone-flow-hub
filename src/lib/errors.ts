@@ -29,10 +29,15 @@ export function toUserMessage(err: unknown): string {
 export function mapDbError(err: { code?: string; message?: string } | null): string {
   if (!err) return "Unknown database error";
   switch (err.code) {
-    case "23505": return "A record with the same details already exists.";
-    case "23503": return "Cannot complete: a linked record is missing.";
-    case "42501": return "You don't have permission to do that.";
-    case "PGRST301": return "Your session expired. Please sign in again.";
-    default: return err.message || "Database error";
+    case "23505":
+      return "A record with the same details already exists.";
+    case "23503":
+      return "Cannot complete: a linked record is missing.";
+    case "42501":
+      return "You don't have permission to do that.";
+    case "PGRST301":
+      return "Your session expired. Please sign in again.";
+    default:
+      return err.message || "Database error";
   }
 }

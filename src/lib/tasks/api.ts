@@ -29,19 +29,28 @@ export const taskCreateSchema = z.object({
   description: zOptional(),
   entity_type: z.string().nullable().optional(),
   entity_id: z.string().uuid().nullable().optional(),
-  status: z.enum(["pending", "in_progress", "completed", "cancelled", "overdue"]).default("pending"),
+  status: z
+    .enum(["pending", "in_progress", "completed", "cancelled", "overdue"])
+    .default("pending"),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   due_at: z.string().nullable().optional(),
 });
 export type TaskCreateInput = z.infer<typeof taskCreateSchema>;
 
-export async function listTasks(filters: {
-  entityType?: string;
-  entityId?: string;
-  status?: TaskStatus;
-  q?: string;
-} = {}): Promise<TaskRow[]> {
-  let q = supabase.from("tasks").select("*").order("due_at", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false }).limit(200);
+export async function listTasks(
+  filters: {
+    entityType?: string;
+    entityId?: string;
+    status?: TaskStatus;
+    q?: string;
+  } = {},
+): Promise<TaskRow[]> {
+  let q = supabase
+    .from("tasks")
+    .select("*")
+    .order("due_at", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false })
+    .limit(200);
   if (filters.entityType) q = q.eq("entity_type", filters.entityType);
   if (filters.entityId) q = q.eq("entity_id", filters.entityId);
   if (filters.status) q = q.eq("status", filters.status);
@@ -55,7 +64,11 @@ export async function createTask(input: TaskCreateInput): Promise<TaskRow> {
   const parsed = taskCreateSchema.parse(input);
   const auth = await supabase.auth.getUser();
   const uid = auth.data.user?.id ?? null;
-  const { data, error } = await supabase.from("tasks").insert({ ...parsed, created_by: uid }).select("*").single();
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert({ ...parsed, created_by: uid })
+    .select("*")
+    .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }

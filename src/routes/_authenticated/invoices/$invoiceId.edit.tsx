@@ -24,8 +24,15 @@ function EditInvoicePage() {
   const { invoiceId } = Route.useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: qk.invoices.byId(invoiceId), queryFn: () => getInvoice(invoiceId) });
-  const [form, setForm] = useState<InvoiceUpdateInput>({ due_date: null, notes: null, terms: null });
+  const query = useQuery({
+    queryKey: qk.invoices.byId(invoiceId),
+    queryFn: () => getInvoice(invoiceId),
+  });
+  const [form, setForm] = useState<InvoiceUpdateInput>({
+    due_date: null,
+    notes: null,
+    terms: null,
+  });
 
   useEffect(() => {
     if (query.data) {
@@ -52,7 +59,8 @@ function EditInvoicePage() {
   });
 
   if (query.isLoading) return <LoadingBlock />;
-  if (query.error) return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
+  if (query.error)
+    return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Invoice not found." />;
 
   return (
@@ -61,27 +69,54 @@ function EditInvoicePage() {
         title={`Edit ${query.data.invoice_no}`}
         subtitle="Update invoice metadata."
         actions={
-          <Button variant="ghost" onClick={() => nav({ to: "/invoices/$invoiceId", params: { invoiceId } })}>
+          <Button
+            variant="ghost"
+            onClick={() => nav({ to: "/invoices/$invoiceId", params: { invoiceId } })}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
         }
       />
-      <QuickForm onSubmit={(e) => { e.preventDefault(); mut.mutate(); }} busy={mut.isPending}>
+      <QuickForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          mut.mutate();
+        }}
+        busy={mut.isPending}
+      >
         <QuickForm.QuickFill>
           <Field label="Due date">
-            <Input type="date" value={form.due_date ?? ""} onChange={(e) => set("due_date", e.target.value || null)} />
+            <Input
+              type="date"
+              value={form.due_date ?? ""}
+              onChange={(e) => set("due_date", e.target.value || null)}
+            />
           </Field>
         </QuickForm.QuickFill>
         <QuickForm.MoreDetails>
           <Field label="Notes" className="md:col-span-2">
-            <Textarea rows={3} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value || null)} />
+            <Textarea
+              rows={3}
+              value={form.notes ?? ""}
+              onChange={(e) => set("notes", e.target.value || null)}
+            />
           </Field>
           <Field label="Terms" className="md:col-span-2">
-            <Textarea rows={3} value={form.terms ?? ""} onChange={(e) => set("terms", e.target.value || null)} />
+            <Textarea
+              rows={3}
+              value={form.terms ?? ""}
+              onChange={(e) => set("terms", e.target.value || null)}
+            />
           </Field>
         </QuickForm.MoreDetails>
         <QuickForm.Actions>
-          <Button type="button" variant="ghost" onClick={() => nav({ to: "/invoices/$invoiceId", params: { invoiceId } })}>Cancel</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => nav({ to: "/invoices/$invoiceId", params: { invoiceId } })}
+          >
+            Cancel
+          </Button>
           <Button type="submit" disabled={mut.isPending}>
             {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
           </Button>

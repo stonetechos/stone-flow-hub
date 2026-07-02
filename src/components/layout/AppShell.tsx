@@ -38,27 +38,27 @@ import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
-  { to: "/dashboard",        label: "Dashboard",       icon: LayoutDashboard },
-  { to: "/enquiries",        label: "Enquiries",       icon: ClipboardList },
-  { to: "/followups",        label: "Follow-ups",      icon: CalendarClock },
-  { to: "/tasks",            label: "Tasks",           icon: CheckSquare },
-  { to: "/calendar",         label: "Calendar",        icon: Calendar },
-  { to: "/quotes",           label: "Quotations",      icon: FileText },
-  { to: "/sales-orders",     label: "Sales Orders",    icon: ShoppingCart },
-  { to: "/purchase-orders",  label: "Purchase Orders", icon: ClipboardCheck },
-  { to: "/inventory",        label: "Inventory",       icon: Warehouse },
-  { to: "/dispatch",         label: "Dispatch",        icon: Truck },
-  { to: "/invoices",         label: "Invoices",        icon: Receipt },
-  { to: "/payments",         label: "Payments",        icon: Wallet },
-  { to: "/customers",        label: "Customers",       icon: Users },
-  { to: "/projects",         label: "Projects",        icon: Building2 },
-  { to: "/vendors",          label: "Vendors",         icon: Factory },
-  { to: "/products",         label: "Products",        icon: PackageSearch },
-  { to: "/documents",        label: "Documents",       icon: FolderOpen },
-  { to: "/activity",         label: "Activity",        icon: Activity },
-  { to: "/favorites",        label: "Favorites",       icon: Star },
-  { to: "/reports",          label: "Reports",         icon: BarChart3 },
-  { to: "/settings",         label: "Settings",        icon: Settings },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/enquiries", label: "Enquiries", icon: ClipboardList },
+  { to: "/followups", label: "Follow-ups", icon: CalendarClock },
+  { to: "/tasks", label: "Tasks", icon: CheckSquare },
+  { to: "/calendar", label: "Calendar", icon: Calendar },
+  { to: "/quotes", label: "Quotations", icon: FileText },
+  { to: "/sales-orders", label: "Sales Orders", icon: ShoppingCart },
+  { to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardCheck },
+  { to: "/inventory", label: "Inventory", icon: Warehouse },
+  { to: "/dispatch", label: "Dispatch", icon: Truck },
+  { to: "/invoices", label: "Invoices", icon: Receipt },
+  { to: "/payments", label: "Payments", icon: Wallet },
+  { to: "/customers", label: "Customers", icon: Users },
+  { to: "/projects", label: "Projects", icon: Building2 },
+  { to: "/vendors", label: "Vendors", icon: Factory },
+  { to: "/products", label: "Products", icon: PackageSearch },
+  { to: "/documents", label: "Documents", icon: FolderOpen },
+  { to: "/activity", label: "Activity", icon: Activity },
+  { to: "/favorites", label: "Favorites", icon: Star },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
@@ -160,7 +160,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground">
+            <SheetContent
+              side="left"
+              className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground"
+            >
               <SheetHeader className="h-14 flex-row items-center gap-2 border-b border-sidebar-border px-4 py-0 space-y-0">
                 <Gem className="h-5 w-5 text-sidebar-primary" aria-hidden />
                 <SheetTitle className="font-display text-lg font-semibold text-sidebar-foreground">
@@ -197,9 +200,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
               aria-label="Open global search"
             >
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden />
+              <Search
+                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2"
+                aria-hidden
+              />
               <span className="truncate">Search customers, projects, enquiries…</span>
-              <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">⌘K</kbd>
+              <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+                ⌘K
+              </kbd>
             </button>
             <Button
               variant="ghost"
@@ -221,7 +229,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Breadcrumbs />
         </div>
 
-        <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
+        <main id="main-content" className="flex-1 p-4 md:p-6">
+          {children}
+        </main>
       </div>
 
       <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />

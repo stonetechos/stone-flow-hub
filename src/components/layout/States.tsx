@@ -31,21 +31,23 @@ export function SkeletonTable({
     <div
       role="status"
       aria-label="Loading data"
-      className={cn(
-        "overflow-hidden rounded-md border border-border bg-card shadow-1",
-        className,
-      )}
+      className={cn("overflow-hidden rounded-md border border-border bg-card shadow-1", className)}
     >
-      <div className="grid gap-3 border-b border-border bg-muted/40 px-4 py-3"
-           style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-3 border-b border-border bg-muted/40 px-4 py-3"
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      >
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} className="h-4 w-24" />
         ))}
       </div>
       <div className="divide-y divide-border">
         {Array.from({ length: rows }).map((_, r) => (
-          <div key={r} className="grid gap-3 px-4 py-3"
-               style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+          <div
+            key={r}
+            className="grid gap-3 px-4 py-3"
+            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+          >
             {Array.from({ length: columns }).map((_, c) => (
               <Skeleton key={c} className={cn("h-4", c === 0 ? "w-32" : "w-20")} />
             ))}
@@ -59,11 +61,7 @@ export function SkeletonTable({
 /** Skeleton card grid for detail/dashboard pages. */
 export function SkeletonCards({ count = 4 }: { count?: number }) {
   return (
-    <div
-      role="status"
-      aria-label="Loading"
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-    >
+    <div role="status" aria-label="Loading" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded-md border border-border bg-card p-4 shadow-1">
           <Skeleton className="h-3 w-20" />
@@ -100,13 +98,7 @@ export function EmptyState({
   );
 }
 
-export function ErrorBlock({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry?: () => void;
-}) {
+export function ErrorBlock({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div
       role="alert"

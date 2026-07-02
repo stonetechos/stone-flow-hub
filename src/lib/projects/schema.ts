@@ -3,15 +3,15 @@ import { zRequired, zOptional, zUuid } from "@/lib/zod";
 import type { DbEnum } from "@/lib/types";
 
 export const PROJECT_TYPES: ReadonlyArray<{ value: DbEnum<"project_type">; label: string }> = [
-  { value: "residential",   label: "Residential" },
-  { value: "commercial",    label: "Commercial" },
-  { value: "hospitality",   label: "Hospitality" },
-  { value: "healthcare",    label: "Healthcare" },
+  { value: "residential", label: "Residential" },
+  { value: "commercial", label: "Commercial" },
+  { value: "hospitality", label: "Hospitality" },
+  { value: "healthcare", label: "Healthcare" },
   { value: "institutional", label: "Institutional" },
-  { value: "industrial",    label: "Industrial" },
-  { value: "villa",         label: "Villa" },
-  { value: "apartment",     label: "Apartment" },
-  { value: "other",         label: "Other" },
+  { value: "industrial", label: "Industrial" },
+  { value: "villa", label: "Villa" },
+  { value: "apartment", label: "Apartment" },
+  { value: "other", label: "Other" },
 ];
 
 export const projectCreateSchema = z.object({
@@ -21,10 +21,19 @@ export const projectCreateSchema = z.object({
   city: zRequired("City"),
 
   // More Details
-  project_type: z.enum([
-    "residential", "commercial", "hospitality", "healthcare",
-    "institutional", "industrial", "villa", "apartment", "other",
-  ]).default("residential"),
+  project_type: z
+    .enum([
+      "residential",
+      "commercial",
+      "hospitality",
+      "healthcare",
+      "institutional",
+      "industrial",
+      "villa",
+      "apartment",
+      "other",
+    ])
+    .default("residential"),
   site_address: zOptional(),
   state: zOptional(),
   pincode: zOptional(),

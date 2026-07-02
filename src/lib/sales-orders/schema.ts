@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 export const SALES_ORDER_STATUSES = [
-  "draft","confirmed","in_production","ready","shipped","delivered","cancelled",
+  "draft",
+  "confirmed",
+  "in_production",
+  "ready",
+  "shipped",
+  "delivered",
+  "cancelled",
 ] as const;
 export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
 

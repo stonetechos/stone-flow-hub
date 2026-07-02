@@ -15,7 +15,11 @@ export interface DocumentFilters {
 }
 
 export async function listDocuments(filters: DocumentFilters = {}): Promise<FileRow[]> {
-  let q = supabase.from("file_objects").select("*").order("uploaded_at", { ascending: false }).limit(filters.limit ?? 200);
+  let q = supabase
+    .from("file_objects")
+    .select("*")
+    .order("uploaded_at", { ascending: false })
+    .limit(filters.limit ?? 200);
   if (filters.entityType) q = q.eq("entity_type", filters.entityType);
   if (filters.entityId) q = q.eq("entity_id", filters.entityId);
   if (filters.projectId) q = q.eq("project_id", filters.projectId);

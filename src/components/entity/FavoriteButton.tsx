@@ -8,7 +8,12 @@ import { toUserMessage } from "@/lib/errors";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-interface Props { entityType: string; entityId: string; label?: string; size?: "icon" | "sm"; }
+interface Props {
+  entityType: string;
+  entityId: string;
+  label?: string;
+  size?: "icon" | "sm";
+}
 
 export function FavoriteButton({ entityType, entityId, label, size = "icon" }: Props) {
   const qc = useQueryClient();

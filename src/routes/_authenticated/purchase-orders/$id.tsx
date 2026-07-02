@@ -19,10 +19,14 @@ export const Route = createFileRoute("/_authenticated/purchase-orders/$id")({
 function PurchaseOrderDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
-  const query = useQuery({ queryKey: qk.purchaseOrders.byId(id), queryFn: () => getPurchaseOrder(id) });
+  const query = useQuery({
+    queryKey: qk.purchaseOrders.byId(id),
+    queryFn: () => getPurchaseOrder(id),
+  });
 
   if (query.isLoading) return <LoadingBlock />;
-  if (query.error) return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
+  if (query.error)
+    return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Purchase order not found." />;
   const r = query.data;
 
@@ -33,23 +37,36 @@ function PurchaseOrderDetailPage() {
         subtitle={`Order date ${r.order_date}`}
         actions={
           <>
-            <Button variant="ghost" onClick={() => nav({ to: "/purchase-orders" })}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-            <Button onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+            <Button variant="ghost" onClick={() => nav({ to: "/purchase-orders" })}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <Button onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
           </>
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle className="text-sm">Overview</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-sm">Overview</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
-              <Row label="Status"><StatusPill status={r.status} /></Row>
+              <Row label="Status">
+                <StatusPill status={r.status} />
+              </Row>
               <Row label="Expected date">{r.expected_date ?? "—"}</Row>
               <Row label="Vendor">{r.vendor?.company_name ?? "—"}</Row>
               <Row label="Project">{r.project?.name ?? "—"}</Row>
             </CardContent>
           </Card>
-          <NotesPanel table="purchase_orders" id={r.id} value={r.notes} invalidateKey={qk.purchaseOrders.byId(r.id)} />
+          <NotesPanel
+            table="purchase_orders"
+            id={r.id}
+            value={r.notes}
+            invalidateKey={qk.purchaseOrders.byId(r.id)}
+          />
           <AttachmentsPanel entityType="purchase_order" entityId={r.id} />
         </div>
         <div className="space-y-4">
@@ -61,5 +78,10 @@ function PurchaseOrderDetailPage() {
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><div className="text-xs text-muted-foreground">{label}</div><div className="mt-0.5">{children}</div></div>;
+  return (
+    <div>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-0.5">{children}</div>
+    </div>
+  );
 }

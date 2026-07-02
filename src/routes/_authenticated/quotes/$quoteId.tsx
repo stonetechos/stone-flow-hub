@@ -8,8 +8,21 @@ import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { qk } from "@/lib/query-keys";
@@ -38,7 +51,10 @@ function QuoteDetailPage() {
   const [confirmDel, setConfirmDel] = useState(false);
 
   const q = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
-  const items = useQuery({ queryKey: qk.quotes.items(quoteId), queryFn: () => getQuoteItems(quoteId) });
+  const items = useQuery({
+    queryKey: qk.quotes.items(quoteId),
+    queryFn: () => getQuoteItems(quoteId),
+  });
 
   const statusMut = useMutation({
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
@@ -81,7 +97,10 @@ function QuoteDetailPage() {
   return (
     <div>
       <div className="mb-2">
-        <Link to="/quotes" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/quotes"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-3 w-3" /> Back to quotes
         </Link>
       </div>
@@ -91,13 +110,19 @@ function QuoteDetailPage() {
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}>
+            <Button
+              variant="outline"
+              onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+            >
               <Pencil className="mr-2 h-4 w-4" /> Edit
             </Button>
             <Button variant="outline" onClick={() => setConfirmDel(true)}>
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </Button>
-            <Button onClick={() => convertMut.mutate()} disabled={!canConvert || convertMut.isPending}>
+            <Button
+              onClick={() => convertMut.mutate()}
+              disabled={!canConvert || convertMut.isPending}
+            >
               {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
             </Button>
@@ -105,10 +130,11 @@ function QuoteDetailPage() {
         }
       />
 
-
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Line items</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Line items</CardTitle>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -135,21 +161,34 @@ function QuoteDetailPage() {
               </TableBody>
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
-              <div>Subtotal: <span className="font-medium">{formatInr(quote.subtotal)}</span></div>
-              <div>Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span></div>
+              <div>
+                Subtotal: <span className="font-medium">{formatInr(quote.subtotal)}</span>
+              </div>
+              <div>
+                Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span>
+              </div>
               <div className="text-base font-semibold">Total: {formatInr(quote.total)}</div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">Status</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Status</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
-            <Badge variant="outline" className="capitalize">{quote.status}</Badge>
+            <Badge variant="outline" className="capitalize">
+              {quote.status}
+            </Badge>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Change status</label>
-              <Select value={quote.status} onValueChange={(v) => statusMut.mutate(v as QuoteStatus)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <Select
+                value={quote.status}
+                onValueChange={(v) => statusMut.mutate(v as QuoteStatus)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
@@ -174,16 +213,24 @@ function QuoteDetailPage() {
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <NotesPanel table="quotes" id={quoteId} value={quote.notes ?? null} invalidateKey={qk.quotes.byId(quoteId)} />
+        <NotesPanel
+          table="quotes"
+          id={quoteId}
+          value={quote.notes ?? null}
+          invalidateKey={qk.quotes.byId(quoteId)}
+        />
         <AttachmentsPanel entityType="quote" entityId={quoteId} />
         <TimelinePanel entityType="quote" entityId={quoteId} />
-
       </div>
 
-      <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
-        title="Delete quote?" description={`${quote.quote_no} will be removed.`}
-        busy={delMut.isPending} onConfirm={() => delMut.mutate()} />
+      <ConfirmDialog
+        open={confirmDel}
+        onOpenChange={setConfirmDel}
+        title="Delete quote?"
+        description={`${quote.quote_no} will be removed.`}
+        busy={delMut.isPending}
+        onConfirm={() => delMut.mutate()}
+      />
     </div>
   );
 }
-
