@@ -58,6 +58,32 @@ export const qk = {
     payments: (id: string) => ["invoices", "payments", id] as const,
     links: (id: string) => ["invoices", "links", id] as const,
   },
+  salesOrders: {
+    all: ["salesOrders"] as const,
+    list: (q?: string, status?: string) => ["salesOrders", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["salesOrders", "byId", id] as const,
+  },
+  purchaseOrders: {
+    all: ["purchaseOrders"] as const,
+    list: (q?: string, status?: string) => ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["purchaseOrders", "byId", id] as const,
+  },
+  inventory: {
+    all: ["inventory"] as const,
+    list: (q?: string) => ["inventory", "list", q ?? ""] as const,
+    byId: (id: string) => ["inventory", "byId", id] as const,
+  },
+  dispatch: {
+    all: ["dispatch"] as const,
+    list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["dispatch", "byId", id] as const,
+  },
+  paymentsAll: {
+    all: ["paymentsAll"] as const,
+    list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,
+    byId: (id: string) => ["paymentsAll", "byId", id] as const,
+  },
   tags: ["tags"] as const,
   productCategories: ["product_categories"] as const,
 } as const;
+
