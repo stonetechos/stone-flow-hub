@@ -47,7 +47,6 @@ export async function findCustomerByPhone(mobile: string): Promise<CustomerRow |
 export async function createCustomer(input: CustomerCreateInput): Promise<CustomerRow> {
   const parsed = customerCreateSchema.parse(input);
 
-  // Duplicate guard on phone.
   const existing = await findCustomerByPhone(parsed.mobile);
   if (existing) {
     throw new AppError(
@@ -57,7 +56,6 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
-  // customer_code is populated by the `assign_customer_code` trigger when blank.
   const { data, error } = await supabase
     .from("customers")
     .insert({
@@ -79,4 +77,33 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
 
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+export async function updateCustomer(id: string, input: CustomerCreateInput): Promise<CustomerRow> {
+  const parsed = customerCreateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("customers")
+    .update({
+      name: parsed.name,
+      primary_phone: normalizeMobile(parsed.mobile),
+      primary_email: parsed.email ?? null,
+      whatsapp: parsed.whatsapp ?? null,
+      city: parsed.city ?? null,
+      state: parsed.state ?? null,
+      pincode: parsed.pincode ?? null,
+      billing_address: parsed.billing_address ?? null,
+      gst_number: parsed.gst_number ?? null,
+      notes: parsed.notes ?? null,
+      customer_type: parsed.customer_type,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteCustomer(id: string): Promise<void> {
+  const { error } = await supabase.from("customers").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
 }

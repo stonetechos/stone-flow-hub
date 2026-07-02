@@ -52,7 +52,6 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
 
-  // project_code is populated by the `assign_project_code` trigger when blank.
   const { data, error } = await supabase
     .from("projects")
     .insert({
@@ -73,4 +72,33 @@ export async function createProject(input: ProjectCreateInput): Promise<ProjectR
     .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+export async function updateProject(id: string, input: ProjectCreateInput): Promise<ProjectRow> {
+  const parsed = projectCreateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
+      customer_id: parsed.customer_id,
+      name: parsed.name,
+      city: parsed.city,
+      project_type: parsed.project_type,
+      site_address: parsed.site_address ?? null,
+      state: parsed.state ?? null,
+      pincode: parsed.pincode ?? null,
+      expected_value_inr: parsed.expected_value_inr ?? null,
+      expected_start_date: parsed.expected_start_date ?? null,
+      expected_completion_date: parsed.expected_completion_date ?? null,
+      notes: parsed.notes ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const { error } = await supabase.from("projects").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
 }

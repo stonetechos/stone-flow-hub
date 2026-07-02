@@ -7,6 +7,7 @@ import { productCreateSchema, type ProductCreateInput } from "./schema";
 
 export type ProductRow = DbTable<"products">;
 export type ProductCategoryRow = DbTable<"product_categories">;
+export type ProductImageRow = DbTable<"product_images">;
 
 export async function listProducts(query = ""): Promise<ProductRow[]> {
   let q = supabase
@@ -31,10 +32,24 @@ export async function listProductCategories(): Promise<ProductCategoryRow[]> {
   return data ?? [];
 }
 
+export async function getProduct(id: string): Promise<ProductRow | null> {
+  const { data, error } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function listProductImages(productId: string): Promise<ProductImageRow[]> {
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("*")
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? [];
+}
+
 export async function createProduct(input: ProductCreateInput): Promise<ProductRow> {
   const parsed = productCreateSchema.parse(input);
-
-  // product_code is populated by the `assign_product_code` trigger when blank.
   const { data, error } = await supabase
     .from("products")
     .insert({
@@ -53,4 +68,31 @@ export async function createProduct(input: ProductCreateInput): Promise<ProductR
     .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+export async function updateProduct(id: string, input: ProductCreateInput): Promise<ProductRow> {
+  const parsed = productCreateSchema.parse(input);
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      name: parsed.name,
+      stone_type: parsed.stone_type,
+      default_unit: parsed.default_unit,
+      finish: parsed.finish ?? null,
+      category_id: parsed.category_id ?? null,
+      thickness_mm: parsed.thickness_mm ?? null,
+      origin_country: parsed.origin_country ?? null,
+      hsn_code: parsed.hsn_code ?? null,
+      description: parsed.description ?? null,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
 }
