@@ -6,11 +6,11 @@ import { purchaseOrderCreateSchema, type PurchaseOrderCreateInput, type Purchase
 
 export type PurchaseOrderRow = DbTable<"purchase_orders">;
 export type PurchaseOrderListItem = PurchaseOrderRow & {
-  vendor: { id: string; name: string; vendor_code: string } | null;
-  project: { id: string; name: string; project_code: string } | null;
+  vendor: { id: string; company_name: string; vendor_code: string } | null;
+  project: { id: string; company_name: string; project_code: string } | null;
 };
 
-const SELECT = "*, vendor:vendors!purchase_orders_vendor_id_fkey(id,name,vendor_code), project:projects!purchase_orders_project_id_fkey(id,name,project_code)";
+const SELECT = "*, vendor:vendors!purchase_orders_vendor_id_fkey(id,company_name,vendor_code), project:projects!purchase_orders_project_id_fkey(id,name,project_code)";
 
 
 export async function listPurchaseOrders(query = "", status = ""): Promise<PurchaseOrderListItem[]> {
