@@ -42,7 +42,9 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 function InvoiceDetailPage() {
   const { invoiceId } = Route.useParams();
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [payOpen, setPayOpen] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
 
   const inv = useQuery({ queryKey: qk.invoices.byId(invoiceId), queryFn: () => getInvoice(invoiceId) });
   const items = useQuery({ queryKey: qk.invoices.items(invoiceId), queryFn: () => getInvoiceItems(invoiceId) });
