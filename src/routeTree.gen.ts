@@ -34,6 +34,7 @@ import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_au
 import { Route as AuthenticatedPurchaseOrdersIdRouteImport } from './routes/_authenticated/purchase-orders/$id'
 import { Route as AuthenticatedPaymentsNewRouteImport } from './routes/_authenticated/payments/new'
 import { Route as AuthenticatedPaymentsIdRouteImport } from './routes/_authenticated/payments/$id'
+import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
@@ -191,6 +192,12 @@ const AuthenticatedPaymentsIdRoute = AuthenticatedPaymentsIdRouteImport.update({
   path: '/payments/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInvoicesNewRoute =
+  AuthenticatedInvoicesNewRouteImport.update({
+    id: '/invoices/new',
+    path: '/invoices/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvoicesInvoiceIdRoute =
   AuthenticatedInvoicesInvoiceIdRouteImport.update({
     id: '/invoices/$invoiceId',
@@ -279,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
@@ -318,6 +326,7 @@ export interface FileRoutesByTo {
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
@@ -359,6 +368,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/_authenticated/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/_authenticated/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/inventory/$id'
     | '/inventory/new'
     | '/invoices/$invoiceId'
+    | '/invoices/new'
     | '/payments/$id'
     | '/payments/new'
     | '/purchase-orders/$id'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/inventory/$id'
     | '/inventory/new'
     | '/invoices/$invoiceId'
+    | '/invoices/new'
     | '/payments/$id'
     | '/payments/new'
     | '/purchase-orders/$id'
@@ -479,6 +491,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/new'
     | '/_authenticated/invoices/$invoiceId'
+    | '/_authenticated/invoices/new'
     | '/_authenticated/payments/$id'
     | '/_authenticated/payments/new'
     | '/_authenticated/purchase-orders/$id'
@@ -693,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/invoices/new': {
+      id: '/_authenticated/invoices/new'
+      path: '/invoices/new'
+      fullPath: '/invoices/new'
+      preLoaderRoute: typeof AuthenticatedInvoicesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/invoices/$invoiceId': {
       id: '/_authenticated/invoices/$invoiceId'
       path: '/invoices/$invoiceId'
@@ -880,6 +900,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
+  AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedPaymentsIdRoute: typeof AuthenticatedPaymentsIdRouteWithChildren
   AuthenticatedPaymentsNewRoute: typeof AuthenticatedPaymentsNewRoute
   AuthenticatedPurchaseOrdersIdRoute: typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
@@ -911,6 +932,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
   AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
+  AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedPaymentsIdRoute: AuthenticatedPaymentsIdRouteWithChildren,
   AuthenticatedPaymentsNewRoute: AuthenticatedPaymentsNewRoute,
   AuthenticatedPurchaseOrdersIdRoute:
