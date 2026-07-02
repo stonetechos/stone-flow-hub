@@ -20,11 +20,7 @@ export async function listDocuments(filters: DocumentFilters = {}): Promise<File
   if (filters.entityId) q = q.eq("entity_id", filters.entityId);
   if (filters.projectId) q = q.eq("project_id", filters.projectId);
   if (filters.folder) {
-    const folders = ["design", "invoice", "quote", "photo", "spec", "contract", "other"] as const;
-    type Folder = typeof folders[number];
-    if ((folders as readonly string[]).includes(filters.folder)) {
-      q = q.eq("folder", filters.folder as Folder);
-    }
+    q = q.eq("folder", filters.folder as FileFolder);
   }
   if (filters.q) q = q.ilike("file_name", `%${filters.q}%`);
   const { data, error } = await q;
