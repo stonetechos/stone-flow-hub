@@ -108,9 +108,9 @@ function CalendarPage() {
                               to="/enquiries/$enquiryId"
                               params={{ enquiryId: f.enquiry_id }}
                               className="block truncate rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary hover:bg-primary/20"
-                              title={f.title}
+                              title={(f.notes ?? f.channel)}
                             >
-                              {new Date(f.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} {f.title}
+                              {new Date(f.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} {(f.notes ?? f.channel)}
                             </Link>
                           ))}
                           {items.length > 3 && (
@@ -140,7 +140,7 @@ function CalendarPage() {
                 .map((f) => (
                   <li key={f.id} className="flex items-center justify-between py-2 text-sm">
                     <div className="min-w-0">
-                      <div className="truncate font-medium">{f.title}</div>
+                      <div className="truncate font-medium">{(f.notes ?? f.channel)}</div>
                       <div className="text-xs text-muted-foreground">
                         {new Date(f.scheduled_at).toLocaleString()} • {f.enquiry?.project?.name ?? "—"}
                       </div>
