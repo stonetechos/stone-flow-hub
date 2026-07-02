@@ -136,7 +136,7 @@ function emptyForm(): ProductCreateInput {
 function fromRow(p: ProductRow): ProductCreateInput {
   return {
     name: p.name,
-    stone_type: p.stone_type,
+    stone_type: p.stone_type ?? "marble",
     default_unit: p.default_unit,
     finish: p.finish,
     category_id: p.category_id,
