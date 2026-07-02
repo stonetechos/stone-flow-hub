@@ -174,9 +174,10 @@ function QuoteDetailPage() {
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <NotesPanel table={"quotes" as const} id={quoteId} invalidateKey={qk.quotes.byId(quoteId)} />
-        <AttachmentsPanel table={"quotes" as const} id={quoteId} invalidateKey={qk.quotes.byId(quoteId)} />
-        <TimelinePanel table={"quotes" as const} id={quoteId} />
+        <NotesPanel table="quotes" id={quoteId} value={quote.notes ?? null} invalidateKey={qk.quotes.byId(quoteId)} />
+        <AttachmentsPanel entityType="quote" entityId={quoteId} />
+        <TimelinePanel entityType="quote" entityId={quoteId} />
+
       </div>
 
       <ConfirmDialog open={confirmDel} onOpenChange={setConfirmDel}
