@@ -90,8 +90,12 @@ function CustomersPage() {
             <TableBody>
               {query.data!.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-mono text-xs">{c.customer_code}</TableCell>
-                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <Link to="/customers/$customerId" params={{ customerId: c.id }} className="hover:underline">{c.customer_code}</Link>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link to="/customers/$customerId" params={{ customerId: c.id }} className="hover:underline">{c.name}</Link>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
                       {c.customer_type.replace("_", " ")}
@@ -101,10 +105,18 @@ function CustomersPage() {
                   <TableCell>{c.city ?? "—"}</TableCell>
                   <TableCell>
                     <RowActions
+                      extra={
+                        <DropdownMenuItem asChild>
+                          <Link to="/customers/$customerId" params={{ customerId: c.id }}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> Open
+                          </Link>
+                        </DropdownMenuItem>
+                      }
                       onEdit={() => { setEditing(c); setFormOpen(true); }}
                       onDelete={() => setToDelete(c)}
                     />
                   </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
