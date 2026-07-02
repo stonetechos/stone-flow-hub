@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ArrowRightCircle } from "lucide-react";
+import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -9,10 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
   convertQuoteToInvoice,
+  deleteQuote,
   getQuote,
   getQuoteItems,
   setQuoteStatus,
