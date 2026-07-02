@@ -80,7 +80,7 @@ function PurchaseOrdersPage() {
                     <TableCell className="font-mono text-xs">
                       <Link to="/purchase-orders/$id" params={{ id: r.id }} className="text-primary hover:underline">{r.po_no}</Link>
                     </TableCell>
-                    <TableCell>{r.vendor?.name ?? "—"}</TableCell>
+                    <TableCell>{r.vendor?.company_name ?? "—"}</TableCell>
                     <TableCell>{r.project?.name ?? "—"}</TableCell>
                     <TableCell>{r.order_date}</TableCell>
                     <TableCell>{r.expected_date ?? "—"}</TableCell>

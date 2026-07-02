@@ -45,7 +45,7 @@ function PurchaseOrderDetailPage() {
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
               <Row label="Status"><StatusPill status={r.status} /></Row>
               <Row label="Expected date">{r.expected_date ?? "—"}</Row>
-              <Row label="Vendor">{r.vendor?.name ?? "—"}</Row>
+              <Row label="Vendor">{r.vendor?.company_name ?? "—"}</Row>
               <Row label="Project">{r.project?.name ?? "—"}</Row>
             </CardContent>
           </Card>
