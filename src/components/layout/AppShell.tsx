@@ -12,6 +12,11 @@ import {
   LogOut,
   Search,
   Gem,
+  ShoppingCart,
+  Truck,
+  Warehouse,
+  ClipboardCheck,
+  Wallet,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,16 +25,22 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
-  { to: "/dashboard",  label: "Dashboard", icon: LayoutDashboard },
-  { to: "/enquiries",  label: "Enquiries", icon: ClipboardList },
-  { to: "/followups",  label: "Follow-ups", icon: CalendarClock },
-  { to: "/quotes",     label: "Quotes",    icon: FileText },
-  { to: "/invoices",   label: "Invoices",  icon: Receipt },
-  { to: "/customers",  label: "Customers", icon: Users },
-  { to: "/projects",   label: "Projects",  icon: Building2 },
-  { to: "/vendors",    label: "Vendors",   icon: Factory },
-  { to: "/products",   label: "Products",  icon: PackageSearch },
+  { to: "/dashboard",        label: "Dashboard",       icon: LayoutDashboard },
+  { to: "/enquiries",        label: "Enquiries",       icon: ClipboardList },
+  { to: "/followups",        label: "Follow-ups",      icon: CalendarClock },
+  { to: "/quotes",           label: "Quotations",      icon: FileText },
+  { to: "/sales-orders",     label: "Sales Orders",    icon: ShoppingCart },
+  { to: "/purchase-orders",  label: "Purchase Orders", icon: ClipboardCheck },
+  { to: "/inventory",        label: "Inventory",       icon: Warehouse },
+  { to: "/dispatch",         label: "Dispatch",        icon: Truck },
+  { to: "/invoices",         label: "Invoices",        icon: Receipt },
+  { to: "/payments",         label: "Payments",        icon: Wallet },
+  { to: "/customers",        label: "Customers",       icon: Users },
+  { to: "/projects",         label: "Projects",        icon: Building2 },
+  { to: "/vendors",          label: "Vendors",         icon: Factory },
+  { to: "/products",         label: "Products",        icon: PackageSearch },
 ];
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
