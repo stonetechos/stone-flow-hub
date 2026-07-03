@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/products/$productId")({
 
 function ProductHub() {
   const { productId } = Route.useParams();
+  const [tab, setTab] = useState("overview");
   const q = useQuery({
     queryKey: ["products", "byId", productId],
     queryFn: () => getProduct(productId),
@@ -53,9 +54,33 @@ function ProductHub() {
             </Badge>
           </span>
         }
+        actions={
+          <DetailActionBar
+            pin={{ entityType: "product", entityId: productId, label: p.name }}
+            primary={
+              <Link to="/products" search={{ edit: productId }}>
+                <Button size="sm">
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+              </Link>
+            }
+            overflow={[
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () => setTab("documents"),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () => setTab("timeline"),
+              },
+            ]}
+          />
+        }
       />
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
