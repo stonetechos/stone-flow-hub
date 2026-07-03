@@ -49,9 +49,8 @@ import {
 export const Route = createFileRoute("/_authenticated/customers/")({
   ssr: false,
   component: CustomersPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    edit: typeof s.edit === "string" ? s.edit : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
+    typeof s.edit === "string" ? { edit: s.edit } : {},
 });
 
 function CustomersPage() {
