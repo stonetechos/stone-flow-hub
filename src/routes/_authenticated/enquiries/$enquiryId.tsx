@@ -214,6 +214,10 @@ function EnquiryDetailPage() {
         </Card>
       </div>
 
+      <div className="mt-4">
+        <RfqsForEnquiry enquiryId={enquiryId} />
+      </div>
+
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div id="enquiry-documents">
           <AttachmentsPanel entityType="enquiry" entityId={enquiryId} />
@@ -222,6 +226,7 @@ function EnquiryDetailPage() {
           <TimelinePanel entityType="enquiry" entityId={enquiryId} />
         </div>
       </div>
+
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
       <ConvertToProjectDialog open={convertOpen} onOpenChange={setConvertOpen} enquiryId={enq.id} />
