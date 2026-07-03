@@ -6,7 +6,7 @@
  *   3. Advanced (collapsed by default)
  * Used by every "create / edit" form to keep first-time UX under 30–60 seconds.
  */
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,19 @@ export function QuickForm({
 }
 
 QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    // Auto-focus the first enabled, focusable input inside the Quick Fill zone
+    // so users can start typing immediately when a create dialog opens.
+    const root = ref.current;
+    if (!root) return;
+    const el = root.querySelector<HTMLElement>(
+      "input:not([type=hidden]):not([disabled]), textarea:not([disabled]), [role=combobox]:not([disabled])",
+    );
+    // Defer to after Radix Dialog focus-trap runs its initial focus.
+    const t = window.setTimeout(() => el?.focus(), 60);
+    return () => window.clearTimeout(t);
+  }, []);
   return (
     <section className="rounded-md border border-border bg-card p-4 shadow-1">
       <header className="mb-3 flex items-center gap-2">
@@ -36,10 +49,13 @@ QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) 
         </h3>
         <span className="text-xs text-muted-foreground">— essentials only</span>
       </header>
-      <div className="grid gap-4 md:grid-cols-2">{children}</div>
+      <div ref={ref} className="grid gap-4 md:grid-cols-2">
+        {children}
+      </div>
     </section>
   );
 };
+
 
 function CollapsibleSection({
   title,
