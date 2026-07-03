@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getVendorContext } from "@/lib/vendor-portal/session";
 import { toUserMessage } from "@/lib/errors";
 
-export const Route = createFileRoute("/_vendor/profile")({
+export const Route = createFileRoute("/vendor/profile")({
   component: VendorProfile,
 });
 

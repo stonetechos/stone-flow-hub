@@ -22,7 +22,7 @@ async function listOrders(): Promise<PoRow[]> {
   return data ?? [];
 }
 
-export const Route = createFileRoute("/_vendor/orders/")({
+export const Route = createFileRoute("/vendor/orders/")({
   component: OrdersList,
 });
 

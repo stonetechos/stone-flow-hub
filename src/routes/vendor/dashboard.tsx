@@ -8,7 +8,7 @@ import { getVendorKpis } from "@/lib/vendor-portal/dashboard";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_vendor/dashboard")({
+export const Route = createFileRoute("/vendor/dashboard")({
   component: VendorDashboard,
 });
 

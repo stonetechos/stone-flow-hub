@@ -20,7 +20,7 @@ const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
 });
 
-export const Route = createFileRoute("/_vendor/rfqs/")({
+export const Route = createFileRoute("/vendor/rfqs/")({
   validateSearch: zodValidator(searchSchema),
   component: RfqInbox,
 });

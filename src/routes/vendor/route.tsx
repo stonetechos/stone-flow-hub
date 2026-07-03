@@ -7,7 +7,7 @@ import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { getVendorContext } from "@/lib/vendor-portal/session";
 import { toUserMessage } from "@/lib/errors";
 
-export const Route = createFileRoute("/_vendor")({
+export const Route = createFileRoute("/vendor")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();

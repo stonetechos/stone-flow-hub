@@ -20,7 +20,7 @@ import { listAttachments, uploadAttachment } from "@/lib/attachments/api";
 import { FilePreview } from "@/components/vendor-portal/FilePreview";
 import { toUserMessage } from "@/lib/errors";
 
-export const Route = createFileRoute("/_vendor/rfqs/$rfqId")({
+export const Route = createFileRoute("/vendor/rfqs/$rfqId")({
   component: RfqDetail,
 });
 
