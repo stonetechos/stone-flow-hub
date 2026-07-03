@@ -46,13 +46,13 @@ export async function saveQuoteDraft(
 
   const payload = {
     total_inr: parsed.price_total ?? 0,
-    freight_inr: parsed.freight_inr ?? null,
-    dispatch_days: parsed.dispatch_days ?? null,
+    freight_inr: parsed.freight_inr ?? undefined,
+    dispatch_days: parsed.dispatch_days ?? undefined,
     gst_included: parsed.gst_included ?? false,
     stock_available: parsed.stock_available ?? false,
-    valid_until: parsed.valid_until ?? null,
-    remarks: parsed.remarks ?? null,
-    quote_pdf_file_id: parsed.quote_pdf_file_id ?? null,
+    valid_until: parsed.valid_until ?? undefined,
+    remarks: parsed.remarks ?? undefined,
+    quote_pdf_file_id: parsed.quote_pdf_file_id ?? undefined,
   };
 
   if (existing) {
