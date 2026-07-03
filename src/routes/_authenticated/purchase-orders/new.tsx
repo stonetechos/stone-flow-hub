@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +27,14 @@ import {
 import { listVendorsForPicker } from "@/lib/vendors/api";
 import { listProjectsForPicker } from "@/lib/projects/api";
 
+const search = z.object({
+  project: z.string().uuid().optional(),
+  vendor: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/purchase-orders/new")({
   ssr: false,
+  validateSearch: (s) => search.parse(s),
   component: NewPurchaseOrderPage,
 });
 
@@ -37,12 +44,13 @@ function today() {
 
 function NewPurchaseOrderPage() {
   const nav = useNavigate();
+  const params = Route.useSearch();
   const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: listVendorsForPicker });
   const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
 
   const [form, setForm] = useState<PurchaseOrderCreateInput>({
-    vendor_id: null,
-    project_id: null,
+    vendor_id: params.vendor ?? null,
+    project_id: params.project ?? null,
     status: "draft",
     order_date: today(),
     expected_date: null,
