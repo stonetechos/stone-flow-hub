@@ -37,8 +37,9 @@ const FILTERS: { key: InboxFilter; label: string; icon: typeof Circle }[] = [
 ];
 
 function RfqInbox() {
-  const { filter, q: qParam } = Route.useSearch();
-  const [searchInput, setSearchInput] = useState(qParam);
+  const search = Route.useSearch();
+  const filter: InboxFilter = search.filter ?? "all";
+  const [searchInput, setSearchInput] = useState(search.q ?? "");
   const debounced = useDebouncedValue(searchInput, 250);
 
   const list = useQuery({
