@@ -62,7 +62,7 @@ function ProjectsPage() {
   const [editing, setEditing] = useState<ProjectWithCustomer | null>(null);
   const [toDelete, setToDelete] = useState<ProjectWithCustomer | null>(null);
 
-  const query = useQuery({ queryKey: qk.projects.list(q), queryFn: () => listProjects(q) });
+  const query = useQuery({ queryKey: qk.projects.list(dq), queryFn: () => listProjects(dq) });
 
   useEffect(() => {
     if (!edit) return;

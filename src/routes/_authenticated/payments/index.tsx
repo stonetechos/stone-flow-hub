@@ -35,7 +35,7 @@ function PaymentsPage() {
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<PaymentListItem | null>(null);
 
-  const query = useQuery({ queryKey: qk.paymentsAll.list(q), queryFn: () => listPayments(q) });
+  const query = useQuery({ queryKey: qk.paymentsAll.list(dq), queryFn: () => listPayments(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deletePayment(id),
     onSuccess: () => {

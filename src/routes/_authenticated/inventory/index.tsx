@@ -34,7 +34,7 @@ function InventoryPage() {
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<InventoryListItem | null>(null);
 
-  const query = useQuery({ queryKey: qk.inventory.list(q), queryFn: () => listInventory(q) });
+  const query = useQuery({ queryKey: qk.inventory.list(dq), queryFn: () => listInventory(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInventoryItem(id),
     onSuccess: () => {

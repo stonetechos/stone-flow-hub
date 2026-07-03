@@ -64,7 +64,7 @@ function EnquiriesPage() {
   const [editing, setEditing] = useState<EnquiryListItem | null>(null);
   const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
 
-  const query = useQuery({ queryKey: qk.enquiries.list(q), queryFn: () => listEnquiries(q) });
+  const query = useQuery({ queryKey: qk.enquiries.list(dq), queryFn: () => listEnquiries(dq) });
 
   useEffect(() => {
     if (!edit) return;

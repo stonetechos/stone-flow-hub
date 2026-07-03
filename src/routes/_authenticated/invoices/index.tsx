@@ -43,7 +43,7 @@ function InvoicesPage() {
   const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
   const nav = useNavigate();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: qk.invoices.list(q), queryFn: () => listInvoices(q) });
+  const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
     onSuccess: () => {

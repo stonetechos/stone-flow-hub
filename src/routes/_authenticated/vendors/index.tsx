@@ -53,7 +53,7 @@ function VendorsPage() {
   const [editing, setEditing] = useState<VendorRow | null>(null);
   const [toDelete, setToDelete] = useState<VendorRow | null>(null);
 
-  const query = useQuery({ queryKey: qk.vendors.list(q), queryFn: () => listVendors(q) });
+  const query = useQuery({ queryKey: qk.vendors.list(dq), queryFn: () => listVendors(dq) });
 
   useEffect(() => {
     if (!edit) return;

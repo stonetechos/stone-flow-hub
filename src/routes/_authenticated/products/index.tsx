@@ -67,7 +67,7 @@ function ProductsPage() {
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
 
-  const query = useQuery({ queryKey: qk.products.list(q), queryFn: () => listProducts(q) });
+  const query = useQuery({ queryKey: qk.products.list(dq), queryFn: () => listProducts(dq) });
 
   useEffect(() => {
     if (!edit) return;

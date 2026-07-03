@@ -59,7 +59,7 @@ function QuotesPage() {
   const params = Route.useSearch();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
+  const query = useQuery({ queryKey: qk.quotes.list(dq), queryFn: () => listQuotes(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteQuote(id),
     onSuccess: () => {
