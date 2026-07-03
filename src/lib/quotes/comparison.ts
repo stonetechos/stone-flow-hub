@@ -168,6 +168,7 @@ export async function getRfqComparison(rfqId: string): Promise<RfqCompareBundle>
     status: rfq.status,
     projectId: rfq.project_id,
     projectName: proj?.name ?? null,
+    enquiryId: rfq.enquiry_id ?? null,
     rows,
   };
 }
