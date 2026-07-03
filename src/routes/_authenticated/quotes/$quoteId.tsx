@@ -109,7 +109,7 @@ function QuoteDetailPage() {
         title={quote.quote_no}
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
@@ -119,6 +119,18 @@ function QuoteDetailPage() {
             <Button variant="outline" onClick={() => setConfirmDel(true)}>
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </Button>
+            <Link
+              to="/sales-orders/new"
+              search={{
+                quote: quoteId,
+                ...(quote.project_id ? { project: quote.project_id } : {}),
+                ...(quote.customer_id ? { customer: quote.customer_id } : {}),
+              }}
+            >
+              <Button variant="outline">
+                <ShoppingCart className="mr-2 h-4 w-4" /> Create sales order
+              </Button>
+            </Link>
             <Button
               onClick={() => convertMut.mutate()}
               disabled={!canConvert || convertMut.isPending}
