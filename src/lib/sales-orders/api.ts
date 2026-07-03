@@ -12,11 +12,11 @@ export type SalesOrderRow = DbTable<"sales_orders">;
 export type SalesOrderListItem = SalesOrderRow & {
   customer: { id: string; name: string; customer_code: string } | null;
   project: { id: string; name: string; project_code: string } | null;
-  quote: { id: string; quote_no: string } | null;
+  quote: { id: string; quote_no: string; status: DbTable<"quotes">["status"] } | null;
 };
 
 const SELECT =
-  "*, customer:customers!sales_orders_customer_id_fkey(id,name,customer_code), project:projects!sales_orders_project_id_fkey(id,name,project_code), quote:quotes!sales_orders_quote_id_fkey(id,quote_no)";
+  "*, customer:customers!sales_orders_customer_id_fkey(id,name,customer_code), project:projects!sales_orders_project_id_fkey(id,name,project_code), quote:quotes!sales_orders_quote_id_fkey(id,quote_no,status)";
 
 export async function listSalesOrders(query = "", status = ""): Promise<SalesOrderListItem[]> {
   let q = supabase
