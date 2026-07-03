@@ -1,7 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileText, FolderPlus, Loader2, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  FolderPlus,
+  Loader2,
+  Send,
+  Pencil,
+  CheckCircle2,
+  XCircle,
+  FolderOpen,
+  History,
+} from "lucide-react";
+import { AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
