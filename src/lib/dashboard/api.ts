@@ -63,7 +63,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     supabase
       .from("sales_orders")
       .select("id", { count: "exact", head: true })
-      .in("status", ["confirmed", "pending"]),
+      .eq("status", "confirmed"),
     supabase.from("quotes").select("total").in("status", ["draft", "sent"]),
     supabase.from("customers").select("id", { count: "exact", head: true }).eq("is_active", true),
     supabase.from("invoices").select("balance_due").not("status", "in", '("cancelled","draft")'),
