@@ -127,8 +127,8 @@ function EnquiryDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => stageMut.mutate("won")}
-                  disabled={enq.stage === "won" || stageMut.isPending}
+                  onClick={() => stageMut.mutate("completed")}
+                  disabled={enq.stage === "completed" || stageMut.isPending}
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" /> Mark won
                 </Button>
