@@ -156,9 +156,11 @@ function SalesOrderDetailPage() {
             value={r.notes}
             invalidateKey={qk.salesOrders.byId(r.id)}
           />
-          <AttachmentsPanel entityType="sales_order" entityId={r.id} />
+          <div id="so-documents">
+            <AttachmentsPanel entityType="sales_order" entityId={r.id} />
+          </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4" id="so-timeline">
           <TimelinePanel entityType="sales_order" entityId={r.id} />
         </div>
       </div>
