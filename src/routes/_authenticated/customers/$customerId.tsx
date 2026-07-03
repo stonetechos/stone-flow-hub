@@ -96,7 +96,7 @@ function CustomerHub() {
                     <FolderPlus className="mr-2 h-4 w-4" /> New project
                   </Button>
                 </Link>
-                <Link to="/quotes" search={{ new: "1", customer: customerId }}>
+                <Link to="/quotes" search={{ new: "1" }}>
                   <Button variant="outline" size="sm">
                     <FileText className="mr-2 h-4 w-4" /> New quote
                   </Button>
