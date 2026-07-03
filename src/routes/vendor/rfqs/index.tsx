@@ -88,8 +88,8 @@ function RfqInbox() {
               return (
                 <Link
                   key={f.key}
-                  from="/vendor/rfqs"
-                  search={(prev) => ({ ...prev, filter: f.key })}
+                  to="/vendor/rfqs"
+                  search={{ filter: f.key, q: debounced || undefined }}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs",
                     active
