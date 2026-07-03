@@ -180,7 +180,165 @@ export const hub = {
     >;
   },
 
-  // ---------- Vendor hub ----------
+  /** RFQs raised from any enquiry belonging to this project, with quote roll-ups. */
+  projectRfqs: async (projectId: string) => {
+    const { data, error } = await supabase
+      .from("rfqs")
+      .select(
+        `id, rfq_no, status, due_date, created_at, enquiry_id,
+         enquiry:enquiries!inner(id, enquiry_no, project_id),
+         vendor_requests(id, vendor_id, response_status,
+           vendor:vendors(id, company_name),
+           vendor_quotes(id, submitted_at, is_approved, rejected_at, total_inr))`,
+      )
+      .eq("enquiry.project_id", projectId)
+      .order("created_at", { ascending: false });
+    if (error) throw new AppError(mapDbError(error));
+    return (data ?? []) as unknown as Array<{
+      id: string;
+      rfq_no: string;
+      status: string;
+      due_date: string | null;
+      created_at: string;
+      enquiry_id: string;
+      enquiry: { id: string; enquiry_no: string; project_id: string } | null;
+      vendor_requests: Array<{
+        id: string;
+        vendor_id: string;
+        response_status: string;
+        vendor: { id: string; company_name: string } | null;
+        vendor_quotes: Array<{
+          id: string;
+          submitted_at: string | null;
+          is_approved: boolean;
+          rejected_at: string | null;
+          total_inr: number | null;
+        }>;
+      }>;
+    }>;
+  },
+
+  /** Follow-ups scheduled against any enquiry belonging to this project. */
+  projectFollowups: async (projectId: string) => {
+    const { data, error } = await supabase
+      .from("followups")
+      .select(
+        "*, enquiry:enquiries!followups_enquiry_id_fkey(id, enquiry_no, project_id)",
+      )
+      .eq("project_id", projectId)
+      .order("scheduled_at", { ascending: false })
+      .limit(100);
+    if (error) throw new AppError(mapDbError(error));
+    return data ?? [];
+  },
+
+  /** Site visits recorded against this project. */
+  projectSiteVisits: async (projectId: string) => {
+    const { data, error } = await supabase
+      .from("site_visits")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("visited_at", { ascending: false })
+      .limit(50);
+    if (error) throw new AppError(mapDbError(error));
+    return data ?? [];
+  },
+
+  /** Compact overview: counts, financials, next follow-up, approved vendors. */
+  projectSummary: async (projectId: string) => {
+    const [enqCount, quoteCount, poCount, invRows, dispatchCount, nextFu, approvedVendors] =
+      await Promise.all([
+        supabase
+          .from("enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("project_id", projectId),
+        supabase
+          .from("quotes")
+          .select("id", { count: "exact", head: true })
+          .eq("project_id", projectId),
+        supabase
+          .from("purchase_orders")
+          .select("id", { count: "exact", head: true })
+          .eq("project_id", projectId),
+        supabase
+          .from("invoices")
+          .select("total, amount_paid, balance_due, status")
+          .eq("project_id", projectId),
+        supabase
+          .from("dispatches")
+          .select("id, sales_order:sales_orders!inner(project_id)", {
+            count: "exact",
+            head: true,
+          })
+          .eq("sales_order.project_id", projectId),
+        supabase
+          .from("followups")
+          .select(
+            "id, scheduled_at, channel, notes, enquiry:enquiries!followups_enquiry_id_fkey(enquiry_no)",
+          )
+          .eq("project_id", projectId)
+          .eq("status", "pending")
+          .order("scheduled_at", { ascending: true })
+          .limit(1),
+        supabase
+          .from("vendor_quotes")
+          .select(
+            `id, total_inr, approved_at,
+             vendor_request:vendor_requests!inner(
+               id,
+               vendor:vendors(id, company_name, vendor_code),
+               rfq:rfqs!inner(
+                 id, rfq_no,
+                 enquiry:enquiries!inner(project_id)
+               )
+             )`,
+          )
+          .eq("is_approved", true)
+          .eq("vendor_request.rfq.enquiry.project_id", projectId),
+      ]);
+    // Aggregate invoices client-side.
+    const invoices = (invRows.data ?? []) as Array<{
+      total: number | null;
+      amount_paid: number | null;
+      balance_due: number | null;
+      status: string;
+    }>;
+    const invoiced = invoices
+      .filter((i) => i.status !== "cancelled" && i.status !== "draft")
+      .reduce((a, i) => a + Number(i.total ?? 0), 0);
+    const collected = invoices.reduce((a, i) => a + Number(i.amount_paid ?? 0), 0);
+    const outstanding = invoices
+      .filter((i) => i.status !== "cancelled" && i.status !== "draft")
+      .reduce((a, i) => a + Number(i.balance_due ?? 0), 0);
+
+    return {
+      counts: {
+        enquiries: enqCount.count ?? 0,
+        quotes: quoteCount.count ?? 0,
+        purchaseOrders: poCount.count ?? 0,
+        invoices: invoices.length,
+        dispatches: dispatchCount.count ?? 0,
+      },
+      financials: { invoiced, collected, outstanding },
+      nextFollowup: (nextFu.data ?? [])[0] ?? null,
+      approvedVendors: ((approvedVendors.data ?? []) as unknown as Array<{
+        id: string;
+        total_inr: number | null;
+        approved_at: string | null;
+        vendor_request: {
+          vendor: { id: string; company_name: string; vendor_code: string } | null;
+          rfq: { id: string; rfq_no: string } | null;
+        } | null;
+      }>).map((r) => ({
+        quoteId: r.id,
+        totalInr: r.total_inr,
+        approvedAt: r.approved_at,
+        vendor: r.vendor_request?.vendor ?? null,
+        rfq: r.vendor_request?.rfq ?? null,
+      })),
+    };
+  },
+
   vendorPurchaseOrders: (vendorId: string) =>
     run<PurchaseOrderRow[]>(
       supabase
