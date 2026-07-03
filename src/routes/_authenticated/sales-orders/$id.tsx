@@ -44,48 +44,73 @@ function SalesOrderDetailPage() {
 
   return (
     <div>
+      <div className="mb-2">
+        <Button variant="ghost" size="sm" onClick={() => nav({ to: "/sales-orders" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+      </div>
       <PageHeader
         title={r.so_no}
         subtitle={`Order date ${r.order_date}`}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" onClick={() => nav({ to: "/sales-orders" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => nav({ to: "/sales-orders/$id/edit", params: { id } })}
-            >
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-            <Link to="/dispatch/new" search={{ so: id }}>
-              <Button variant="outline">
-                <Truck className="mr-2 h-4 w-4" /> New dispatch
-              </Button>
-            </Link>
-            {r.quote ? (
-              <Button
-                onClick={() => convertMut.mutate(r.quote!.id)}
-                disabled={!quoteAccepted || convertMut.isPending}
-                title={
-                  quoteAccepted
-                    ? undefined
-                    : "Source quote must be marked Accepted first"
-                }
-              >
-                {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Receipt className="mr-2 h-4 w-4" /> Create invoice
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                disabled
-                title="Invoices are generated from an accepted quote"
-              >
-                <Receipt className="mr-2 h-4 w-4" /> Create invoice
-              </Button>
-            )}
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "sales_order", entityId: id, label: r.so_no }}
+            primary={
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => nav({ to: "/sales-orders/$id/edit", params: { id } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Link to="/dispatch/new" search={{ so: id }}>
+                  <Button size="sm" variant="outline">
+                    <Truck className="mr-2 h-4 w-4" /> New dispatch
+                  </Button>
+                </Link>
+                {r.quote ? (
+                  <Button
+                    size="sm"
+                    onClick={() => convertMut.mutate(r.quote!.id)}
+                    disabled={!quoteAccepted || convertMut.isPending}
+                    title={
+                      quoteAccepted ? undefined : "Source quote must be marked Accepted first"
+                    }
+                  >
+                    {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Receipt className="mr-2 h-4 w-4" /> Create invoice
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled
+                    title="Invoices are generated from an accepted quote"
+                  >
+                    <Receipt className="mr-2 h-4 w-4" /> Create invoice
+                  </Button>
+                )}
+              </>
+            }
+            overflow={[
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("so-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("so-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+            ]}
+          />
         }
       />
 
