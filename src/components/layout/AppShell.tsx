@@ -94,6 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -117,11 +118,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           setSearchOpen(true);
           return;
         }
+        if (e.key.toLowerCase() === "c") {
+          e.preventDefault();
+          setCreateOpen((v) => !v);
+          return;
+        }
         if (e.key === "?") {
           e.preventDefault();
           toast("Shortcuts", {
             description:
-              "⌘/Ctrl+K or / — search · N — new (on list pages) · G then D — dashboard · ? — this help",
+              "⌘/Ctrl+K or / — search · C — create menu · ? — this help",
           });
         }
       }
@@ -129,6 +135,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
 
 
   async function onSignOut() {
