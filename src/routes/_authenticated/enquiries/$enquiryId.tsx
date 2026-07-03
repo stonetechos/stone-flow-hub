@@ -158,9 +158,149 @@ function EnquiryDetailPage() {
       </div>
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
+      <ConvertToProjectDialog
+        open={convertOpen}
+        onOpenChange={setConvertOpen}
+        enquiryId={enq.id}
+      />
     </div>
   );
 }
+
+function ConvertToProjectDialog({
+  open,
+  onOpenChange,
+  enquiryId,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  enquiryId: string;
+}) {
+  const qc = useQueryClient();
+  const nav = useNavigate();
+  const empty: ConvertToProjectInput = {
+    name: "",
+    site_address: null,
+    city: "",
+    state: null,
+    architect_name: null,
+    contractor_name: null,
+    area_sqft: null,
+    expected_completion_date: null,
+  };
+  const [form, setForm] = useState<ConvertToProjectInput>(empty);
+
+  useEffect(() => {
+    if (open) setForm(empty);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const mutation = useMutation({
+    mutationFn: (input: ConvertToProjectInput) => convertEnquiryToProject(enquiryId, input),
+    onSuccess: ({ project_id }) => {
+      toast.success("Project created and linked");
+      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      qc.invalidateQueries({ queryKey: qk.enquiries.byId(enquiryId) });
+      qc.invalidateQueries({ queryKey: qk.projects.all });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+      onOpenChange(false);
+      nav({ to: "/projects/$projectId", params: { projectId: project_id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = convertToProjectSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
+    mutation.mutate(parsed.data);
+  }
+  const set = <K extends keyof ConvertToProjectInput>(k: K, v: ConvertToProjectInput[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Convert enquiry to project</DialogTitle>
+        </DialogHeader>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <QuickForm.QuickFill>
+            <Field label="Project name" required className="md:col-span-2">
+              <Input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="City" required>
+              <Input
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="State">
+              <Input
+                value={form.state ?? ""}
+                onChange={(e) => set("state", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Site address" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.site_address ?? ""}
+                onChange={(e) => set("site_address", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Architect">
+              <Input
+                value={form.architect_name ?? ""}
+                onChange={(e) => set("architect_name", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Contractor">
+              <Input
+                value={form.contractor_name ?? ""}
+                onChange={(e) => set("contractor_name", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Area (sq ft)">
+              <Input
+                type="number"
+                value={form.area_sqft ?? ""}
+                onChange={(e) =>
+                  set("area_sqft", e.target.value === "" ? null : Number(e.target.value))
+                }
+              />
+            </Field>
+            <Field label="Target completion date">
+              <Input
+                type="date"
+                value={form.expected_completion_date ?? ""}
+                onChange={(e) => set("expected_completion_date", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create project
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function Info({
   label,
