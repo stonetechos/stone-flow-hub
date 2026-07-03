@@ -38,8 +38,12 @@ import {
   updateEnquiry,
   type EnquiryListItem,
 } from "@/lib/enquiries/api";
-import { enquiryCreateSchema, type EnquiryCreateInput } from "@/lib/enquiries/schema";
-import { listProjectsForPicker } from "@/lib/projects/api";
+import {
+  enquiryCreateSchema,
+  enquiryUpdateSchema,
+  type EnquiryCreateInput,
+  type EnquiryUpdateInput,
+} from "@/lib/enquiries/schema";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authenticated/enquiries/")({
@@ -50,7 +54,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 function EnquiriesPage() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
   const [editing, setEditing] = useState<EnquiryListItem | null>(null);
   const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
 
@@ -71,14 +75,9 @@ function EnquiriesPage() {
     <div>
       <PageHeader
         title="Enquiries"
-        subtitle="Every lead in the pipeline."
+        subtitle="Every lead in the pipeline — capture first, qualify later."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button onClick={() => setNewOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> New enquiry
           </Button>
         }
@@ -87,7 +86,7 @@ function EnquiriesPage() {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by enquiry no or notes…"
+          placeholder="Search by enquiry no, requirement, or notes…"
           className="max-w-md"
         />
       </div>
@@ -100,14 +99,9 @@ function EnquiriesPage() {
         <EmptyState
           icon={<ClipboardList className="h-6 w-6" />}
           title="No enquiries yet"
-          message="Log your first enquiry against an existing project."
+          message="Log your first lead — you can convert it into a project later."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+            <Button onClick={() => setNewOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> New enquiry
             </Button>
           }
@@ -118,8 +112,9 @@ function EnquiriesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>No.</TableHead>
-                <TableHead>Project</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>Requirement</TableHead>
+                <TableHead>Project</TableHead>
                 <TableHead>Stage</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Budget (INR)</TableHead>
@@ -138,8 +133,15 @@ function EnquiriesPage() {
                       {e.enquiry_no}
                     </Link>
                   </TableCell>
-                  <TableCell className="font-medium">{e.project?.name ?? "—"}</TableCell>
-                  <TableCell>{e.customer?.name ?? "—"}</TableCell>
+                  <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
+                  <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
+                  <TableCell>
+                    {e.project ? (
+                      e.project.name
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Unassigned</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">{LEAD_STAGE_LABEL[e.stage]}</Badge>
                   </TableCell>
@@ -149,10 +151,7 @@ function EnquiriesPage() {
                   </TableCell>
                   <TableCell>
                     <RowActions
-                      onEdit={() => {
-                        setEditing(e);
-                        setFormOpen(true);
-                      }}
+                      onEdit={() => setEditing(e)}
                       onDelete={() => setToDelete(e)}
                     />
                   </TableCell>
@@ -163,7 +162,12 @@ function EnquiriesPage() {
         </div>
       )}
 
-      <EnquiryFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} />
+      <EditEnquiryDialog
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+        editing={editing}
+      />
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
@@ -176,50 +180,42 @@ function EnquiriesPage() {
   );
 }
 
-function emptyForm(): EnquiryCreateInput {
+// ---------- New enquiry ----------
+
+function emptyNew(): EnquiryCreateInput {
   return {
-    project_id: "",
-    source: null,
-    priority: "normal",
+    customer_name: "",
+    mobile: "",
+    email: null,
+    source: "",
+    requirement: "",
     budget_inr: null,
-    required_delivery_date: null,
     notes: null,
-  };
-}
-function fromRow(e: EnquiryListItem): EnquiryCreateInput {
-  return {
-    project_id: e.project_id,
-    source: e.source,
-    priority: e.priority,
-    budget_inr: e.budget_inr,
-    required_delivery_date: e.required_delivery_date,
-    notes: e.notes,
+    priority: "normal",
+    required_delivery_date: null,
   };
 }
 
-function EnquiryFormDialog({
+function NewEnquiryDialog({
   open,
   onOpenChange,
-  editing,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  editing: EnquiryListItem | null;
 }) {
   const qc = useQueryClient();
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
-  const [form, setForm] = useState<EnquiryCreateInput>(emptyForm);
+  const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
 
   useEffect(() => {
-    if (open) setForm(editing ? fromRow(editing) : emptyForm());
-  }, [open, editing]);
+    if (open) setForm(emptyNew());
+  }, [open]);
 
   const mutation = useMutation({
-    mutationFn: (input: EnquiryCreateInput) =>
-      editing ? updateEnquiry(editing.id, input) : createEnquiry(input),
+    mutationFn: (input: EnquiryCreateInput) => createEnquiry(input),
     onSuccess: (row) => {
-      toast.success(editing ? "Enquiry updated" : `Enquiry ${row.enquiry_no} created`);
+      toast.success(`Enquiry ${row.enquiry_no} created`);
       qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      qc.invalidateQueries({ queryKey: qk.customers.all });
       qc.invalidateQueries({ queryKey: qk.dashboard });
       onOpenChange(false);
     },
@@ -239,31 +235,55 @@ function EnquiryFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.enquiry_no}` : "New enquiry"}</DialogTitle>
+          <DialogTitle>New enquiry</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
-            <Field
-              label="Project"
-              required
-              className="md:col-span-2"
-              hint="Customer is derived from the project."
-            >
-              <Select value={form.project_id} onValueChange={(v) => set("project_id", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={projects.isLoading ? "Loading…" : "Select project"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(projects.data ?? []).map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name} — {p.customer?.name ?? "no customer"}
-                      <span className="ml-2 font-mono text-xs text-muted-foreground">
-                        {p.project_code}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field label="Customer name" required>
+              <Input
+                value={form.customer_name}
+                onChange={(e) => set("customer_name", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Mobile number" required hint="New number → new customer created">
+              <Input
+                value={form.mobile}
+                onChange={(e) => set("mobile", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Email">
+              <Input
+                type="email"
+                value={form.email ?? ""}
+                onChange={(e) => set("email", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Lead source" required hint="e.g. walk-in, referral, website">
+              <Input
+                value={form.source ?? ""}
+                onChange={(e) => set("source", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Requirement" required className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.requirement ?? ""}
+                onChange={(e) => set("requirement", e.target.value)}
+                placeholder="What is the customer looking for?"
+                required
+              />
+            </Field>
+            <Field label="Budget (INR)">
+              <Input
+                type="number"
+                value={form.budget_inr ?? ""}
+                onChange={(e) =>
+                  set("budget_inr", e.target.value === "" ? null : Number(e.target.value))
+                }
+              />
             </Field>
           </QuickForm.QuickFill>
 
@@ -283,18 +303,6 @@ function EnquiryFormDialog({
                   <SelectItem value="urgent">Urgent</SelectItem>
                 </SelectContent>
               </Select>
-            </Field>
-            <Field label="Source" hint="e.g. walk-in, referral, website">
-              <Input value={form.source ?? ""} onChange={(e) => set("source", e.target.value)} />
-            </Field>
-            <Field label="Budget (INR)">
-              <Input
-                type="number"
-                value={form.budget_inr ?? ""}
-                onChange={(e) =>
-                  set("budget_inr", e.target.value === "" ? null : Number(e.target.value))
-                }
-              />
             </Field>
             <Field label="Required by">
               <Input
@@ -321,7 +329,148 @@ function EnquiryFormDialog({
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editing ? "Save" : "Create"}
+              Create
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------- Edit enquiry ----------
+
+function fromRowForEdit(e: EnquiryListItem): EnquiryUpdateInput {
+  return {
+    source: e.source,
+    requirement: e.requirement,
+    priority: e.priority,
+    budget_inr: e.budget_inr,
+    required_delivery_date: e.required_delivery_date,
+    notes: e.notes,
+  };
+}
+
+function EditEnquiryDialog({
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  editing: EnquiryListItem | null;
+}) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<EnquiryUpdateInput>({
+    source: null,
+    requirement: null,
+    priority: "normal",
+    budget_inr: null,
+    required_delivery_date: null,
+    notes: null,
+  });
+
+  useEffect(() => {
+    if (open && editing) setForm(fromRowForEdit(editing));
+  }, [open, editing]);
+
+  const mutation = useMutation({
+    mutationFn: (input: EnquiryUpdateInput) => {
+      if (!editing) throw new Error("no enquiry");
+      return updateEnquiry(editing.id, input);
+    },
+    onSuccess: () => {
+      toast.success("Enquiry updated");
+      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      onOpenChange(false);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = enquiryUpdateSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
+    mutation.mutate(parsed.data);
+  }
+  const set = <K extends keyof EnquiryUpdateInput>(k: K, v: EnquiryUpdateInput[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Edit {editing?.enquiry_no}</DialogTitle>
+        </DialogHeader>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <QuickForm.QuickFill>
+            <Field label="Requirement" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.requirement ?? ""}
+                onChange={(e) => set("requirement", e.target.value)}
+              />
+            </Field>
+            <Field label="Lead source">
+              <Input
+                value={form.source ?? ""}
+                onChange={(e) => set("source", e.target.value)}
+              />
+            </Field>
+            <Field label="Budget (INR)">
+              <Input
+                type="number"
+                value={form.budget_inr ?? ""}
+                onChange={(e) =>
+                  set("budget_inr", e.target.value === "" ? null : Number(e.target.value))
+                }
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Priority">
+              <Select
+                value={form.priority}
+                onValueChange={(v) => set("priority", v as EnquiryUpdateInput["priority"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Required by">
+              <Input
+                type="date"
+                value={form.required_delivery_date ?? ""}
+                onChange={(e) => set("required_delivery_date", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Advanced>
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea
+                rows={3}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+              />
+            </Field>
+          </QuickForm.Advanced>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save
             </Button>
           </QuickForm.Actions>
         </QuickForm>
