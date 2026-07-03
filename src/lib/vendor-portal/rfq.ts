@@ -33,7 +33,7 @@ export async function listVendorInbox(): Promise<InboxItem[]> {
     .order("sent_at", { ascending: false, nullsFirst: false })
     .limit(200);
   if (error) throw new AppError(mapDbError(error));
-  const rows = (data ?? []) as Array<
+  const rows = (data ?? []) as unknown as Array<
     VendorRequestRow & {
       rfqs: RfqRow | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
