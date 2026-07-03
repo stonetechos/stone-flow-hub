@@ -46,12 +46,18 @@ const ITEMS: ReadonlyArray<{
   { to: "/tasks", label: "Task", icon: CheckSquare, group: "Ops" },
 ];
 
-export function QuickCreateMenu() {
+export function QuickCreateMenu({
+  open,
+  onOpenChange,
+}: {
+  open?: boolean;
+  onOpenChange?: (o: boolean) => void;
+} = {}) {
   const groups: ReadonlyArray<"Master" | "Sales" | "Ops"> = ["Master", "Sales", "Ops"];
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" className="gap-1.5">
+        <Button size="sm" className="gap-1.5" aria-label="Create new record (press C)">
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Create</span>
         </Button>
@@ -80,3 +86,4 @@ export function QuickCreateMenu() {
     </DropdownMenu>
   );
 }
+
