@@ -251,20 +251,26 @@ function ProjectHub() {
             queryFn={() => hub.projectSiteVisits(projectId)}
             columns={[
               {
-                header: "Date",
+                header: "Scheduled",
                 cell: (r) =>
-                  r.visited_at ? new Date(r.visited_at).toLocaleString() : "—",
+                  r.scheduled_at ? new Date(r.scheduled_at).toLocaleString() : "—",
               },
-              { header: "Purpose", cell: (r) => r.purpose ?? "—" },
               {
-                header: "Notes",
+                header: "Conducted",
+                cell: (r) =>
+                  r.conducted_at ? new Date(r.conducted_at).toLocaleString() : "—",
+              },
+              { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
+              {
+                header: "Summary",
                 cell: (r) => (
                   <span className="line-clamp-1 max-w-[320px] text-xs text-muted-foreground">
-                    {r.notes ?? "—"}
+                    {r.summary ?? "—"}
                   </span>
                 ),
               },
             ]}
+
           />
         </TabsContent>
 
