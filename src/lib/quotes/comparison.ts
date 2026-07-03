@@ -40,7 +40,7 @@ export interface RfqCompareBundle {
 export async function getRfqComparison(rfqId: string): Promise<RfqCompareBundle> {
   const { data: rfq, error: rfqErr } = await supabase
     .from("rfqs")
-    .select("id, rfq_no, due_date, status, project_id, projects:project_id(id,name)")
+    .select("id, rfq_no, due_date, status, project_id, enquiry_id, projects:project_id(id,name)")
     .eq("id", rfqId)
     .maybeSingle();
   if (rfqErr) throw new AppError(mapDbError(rfqErr));
