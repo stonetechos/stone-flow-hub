@@ -47,11 +47,13 @@ function EnquiryDetailPage() {
   const { enquiryId } = Route.useParams();
   const qc = useQueryClient();
   const [rfqOpen, setRfqOpen] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
 
   const query = useQuery({
     queryKey: qk.enquiries.byId(enquiryId),
     queryFn: () => getEnquiry(enquiryId),
   });
+
 
   const stageMut = useMutation({
     mutationFn: (stage: LeadStage) => updateEnquiryStage(enquiryId, stage),
