@@ -418,8 +418,12 @@ function InvoiceDetailPage() {
           value={invoice.notes ?? null}
           invalidateKey={qk.invoices.byId(invoiceId)}
         />
-        <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
-        <TimelinePanel entityType="invoice" entityId={invoiceId} />
+        <div id="invoice-documents">
+          <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
+        </div>
+        <div id="invoice-timeline">
+          <TimelinePanel entityType="invoice" entityId={invoiceId} />
+        </div>
       </div>
 
       <RecordPaymentDialog
