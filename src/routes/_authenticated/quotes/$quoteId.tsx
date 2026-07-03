@@ -1,7 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  ArrowRightCircle,
+  Pencil,
+  Trash2,
+  ShoppingCart,
+  Printer,
+  Share2,
+  FolderOpen,
+  History,
+} from "lucide-react";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -109,36 +121,76 @@ function QuoteDetailPage() {
         title={quote.quote_no}
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-            >
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-            <Button variant="outline" onClick={() => setConfirmDel(true)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
-            <Link
-              to="/sales-orders/new"
-              search={{
-                quote: quoteId,
-                ...(quote.project_id ? { project: quote.project_id } : {}),
-                ...(quote.customer_id ? { customer: quote.customer_id } : {}),
-              }}
-            >
-              <Button variant="outline">
-                <ShoppingCart className="mr-2 h-4 w-4" /> Create sales order
-              </Button>
-            </Link>
-            <Button
-              onClick={() => convertMut.mutate()}
-              disabled={!canConvert || convertMut.isPending}
-            >
-              {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
-            </Button>
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
+            primary={
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Link
+                  to="/sales-orders/new"
+                  search={{
+                    quote: quoteId,
+                    ...(quote.project_id ? { project: quote.project_id } : {}),
+                    ...(quote.customer_id ? { customer: quote.customer_id } : {}),
+                  }}
+                >
+                  <Button size="sm" variant="outline">
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Sales order
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  onClick={() => convertMut.mutate()}
+                  disabled={!canConvert || convertMut.isPending}
+                >
+                  {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
+                </Button>
+              </>
+            }
+            overflow={[
+              {
+                label: "Print",
+                icon: <Printer className="h-4 w-4" />,
+                onSelect: () => window.print(),
+              },
+              {
+                label: "Share link",
+                icon: <Share2 className="h-4 w-4" />,
+                onSelect: async () => {
+                  await navigator.clipboard.writeText(window.location.href);
+                },
+              },
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("quote-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("quote-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Delete quote",
+                icon: <Trash2 className="h-4 w-4" />,
+                onSelect: () => setConfirmDel(true),
+                destructive: true,
+                separatorBefore: true,
+              },
+            ]}
+          />
         }
       />
 
@@ -231,8 +283,12 @@ function QuoteDetailPage() {
           value={quote.notes ?? null}
           invalidateKey={qk.quotes.byId(quoteId)}
         />
-        <AttachmentsPanel entityType="quote" entityId={quoteId} />
-        <TimelinePanel entityType="quote" entityId={quoteId} />
+        <div id="quote-documents">
+          <AttachmentsPanel entityType="quote" entityId={quoteId} />
+        </div>
+        <div id="quote-timeline">
+          <TimelinePanel entityType="quote" entityId={quoteId} />
+        </div>
       </div>
 
       <ConfirmDialog

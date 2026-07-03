@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, FileText, ShoppingCart, Package, Truck, Receipt } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowLeft,
+  FileText,
+  ShoppingCart,
+  Package,
+  Truck,
+  Receipt,
+  Pencil,
+  FolderOpen,
+  History,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -13,6 +24,7 @@ import { getProject } from "@/lib/projects/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 import { formatInr } from "@/lib/format";
 
@@ -23,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
 
 function ProjectHub() {
   const { projectId } = Route.useParams();
+  const [tab, setTab] = useState("overview");
   const q = useQuery({
     queryKey: qk.projects.byId(projectId),
     queryFn: () => getProject(projectId),
@@ -54,43 +67,62 @@ function ProjectHub() {
           </span>
         }
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              to="/quotes"
-              search={{ new: "1", project: p.id, ...(p.customer ? {} : {}) }}
-            >
-              <Button variant="outline" size="sm">
-                <FileText className="mr-2 h-4 w-4" /> New quote
-              </Button>
-            </Link>
-            <Link
-              to="/sales-orders/new"
-              search={{ project: p.id, ...(p.customer ? { customer: p.customer.id } : {}) }}
-            >
-              <Button variant="outline" size="sm">
-                <ShoppingCart className="mr-2 h-4 w-4" /> New SO
-              </Button>
-            </Link>
-            <Link to="/purchase-orders/new" search={{ project: p.id }}>
-              <Button variant="outline" size="sm">
-                <Package className="mr-2 h-4 w-4" /> New PO
-              </Button>
-            </Link>
-            <Link to="/dispatch/new" search={{}}>
-              <Button variant="outline" size="sm">
-                <Truck className="mr-2 h-4 w-4" /> New dispatch
-              </Button>
-            </Link>
-            <Link to="/invoices/new">
-              <Button size="sm">
-                <Receipt className="mr-2 h-4 w-4" /> New invoice
-              </Button>
-            </Link>
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "project", entityId: projectId, label: p.name }}
+            primary={
+              <>
+                <Link to="/projects" search={{ edit: projectId }}>
+                  <Button size="sm">
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+                <Link to="/quotes" search={{ new: "1", project: p.id }}>
+                  <Button variant="outline" size="sm">
+                    <FileText className="mr-2 h-4 w-4" /> New quote
+                  </Button>
+                </Link>
+                <Link
+                  to="/sales-orders/new"
+                  search={{ project: p.id, ...(p.customer ? { customer: p.customer.id } : {}) }}
+                >
+                  <Button variant="outline" size="sm">
+                    <ShoppingCart className="mr-2 h-4 w-4" /> New SO
+                  </Button>
+                </Link>
+                <Link to="/purchase-orders/new" search={{ project: p.id }}>
+                  <Button variant="outline" size="sm">
+                    <Package className="mr-2 h-4 w-4" /> New PO
+                  </Button>
+                </Link>
+                <Link to="/dispatch/new" search={{}}>
+                  <Button variant="outline" size="sm">
+                    <Truck className="mr-2 h-4 w-4" /> New dispatch
+                  </Button>
+                </Link>
+                <Link to="/invoices/new">
+                  <Button variant="outline" size="sm">
+                    <Receipt className="mr-2 h-4 w-4" /> New invoice
+                  </Button>
+                </Link>
+              </>
+            }
+            overflow={[
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () => setTab("documents"),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () => setTab("timeline"),
+              },
+            ]}
+          />
         }
       />
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="customer">Customer</TabsTrigger>

@@ -1,7 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileText, FolderPlus, Loader2, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  FolderPlus,
+  Loader2,
+  Send,
+  Pencil,
+  CheckCircle2,
+  XCircle,
+  FolderOpen,
+  History,
+} from "lucide-react";
+import { AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -87,23 +100,73 @@ function EnquiryDetailPage() {
         title={enq.enquiry_no}
         subtitle={`${enq.customer?.name ?? "—"}${enq.project ? ` • ${enq.project.name}` : " • Unassigned lead"}`}
         actions={
-          <div className="flex flex-wrap gap-2">
-            {!enq.project_id && (
-              <Button onClick={() => setConvertOpen(true)}>
-                <FolderPlus className="mr-2 h-4 w-4" /> Convert to project
-              </Button>
-            )}
-            {enq.project_id && (
-              <Link to="/quotes" search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}>
-                <Button variant="outline">
-                  <FileText className="mr-2 h-4 w-4" /> New quote
+          <DetailActionBar
+            pin={{ entityType: "enquiry", entityId: enquiryId, label: enq.enquiry_no }}
+            primary={
+              <>
+                <Link to="/enquiries" search={{ edit: enquiryId }}>
+                  <Button size="sm">
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+                {!enq.project_id && (
+                  <Button size="sm" onClick={() => setConvertOpen(true)}>
+                    <FolderPlus className="mr-2 h-4 w-4" /> Convert to project
+                  </Button>
+                )}
+                {enq.project_id && (
+                  <Link
+                    to="/quotes"
+                    search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}
+                  >
+                    <Button variant="outline" size="sm">
+                      <FileText className="mr-2 h-4 w-4" /> Create quote
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => stageMut.mutate("completed")}
+                  disabled={enq.stage === "completed" || stageMut.isPending}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" /> Mark won
                 </Button>
-              </Link>
-            )}
-            <Button variant="outline" onClick={() => setRfqOpen(true)}>
-              <Send className="mr-2 h-4 w-4" /> Send RFQ
-            </Button>
-          </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => stageMut.mutate("lost")}
+                  disabled={enq.stage === "lost" || stageMut.isPending}
+                >
+                  <XCircle className="mr-2 h-4 w-4" /> Mark lost
+                </Button>
+              </>
+            }
+            overflow={[
+              {
+                label: "Send RFQ",
+                icon: <Send className="h-4 w-4" />,
+                onSelect: () => setRfqOpen(true),
+              },
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("enquiry-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                separatorBefore: true,
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("enquiry-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+            ]}
+          />
         }
       />
 
@@ -127,7 +190,6 @@ function EnquiryDetailPage() {
             <Info label="Notes" value={enq.notes ?? "—"} />
           </CardContent>
         </Card>
-
 
         <Card className="shadow-1">
           <CardHeader>
@@ -155,6 +217,15 @@ function EnquiryDetailPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div id="enquiry-documents">
+          <AttachmentsPanel entityType="enquiry" entityId={enquiryId} />
+        </div>
+        <div id="enquiry-timeline">
+          <TimelinePanel entityType="enquiry" entityId={enquiryId} />
+        </div>
       </div>
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />

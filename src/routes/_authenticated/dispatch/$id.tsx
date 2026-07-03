@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History, Printer } from "lucide-react";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -29,18 +30,46 @@ function DispatchDetailPage() {
 
   return (
     <div>
+      <div className="mb-2">
+        <Button variant="ghost" size="sm" onClick={() => nav({ to: "/dispatch" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+      </div>
       <PageHeader
         title={r.dispatch_no}
         subtitle={`Dispatch date ${r.dispatch_date}`}
         actions={
-          <>
-            <Button variant="ghost" onClick={() => nav({ to: "/dispatch" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-          </>
+          <DetailActionBar
+            pin={{ entityType: "dispatch", entityId: id, label: r.dispatch_no }}
+            primary={
+              <Button size="sm" onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </Button>
+            }
+            overflow={[
+              {
+                label: "Print",
+                icon: <Printer className="h-4 w-4" />,
+                onSelect: () => window.print(),
+              },
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("dispatch-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("dispatch-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+            ]}
+          />
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
@@ -64,9 +93,11 @@ function DispatchDetailPage() {
             value={r.notes}
             invalidateKey={qk.dispatch.byId(r.id)}
           />
-          <AttachmentsPanel entityType="dispatch" entityId={r.id} />
+          <div id="dispatch-documents">
+            <AttachmentsPanel entityType="dispatch" entityId={r.id} />
+          </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4" id="dispatch-timeline">
           <TimelinePanel entityType="dispatch" entityId={r.id} />
         </div>
       </div>

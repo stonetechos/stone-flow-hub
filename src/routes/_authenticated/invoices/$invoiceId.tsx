@@ -10,9 +10,14 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Printer,
+  Share2,
+  FolderOpen,
+  History,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { deleteInvoice } from "@/lib/invoices/api";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -159,33 +164,86 @@ function InvoiceDetailPage() {
         title={invoice.invoice_no}
         subtitle={`${invoice.customer?.name ?? "—"} • ${invoice.project?.name ?? "—"}`}
         actions={
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}
-            >
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-            <Button variant="outline" onClick={() => setConfirmDel(true)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => linkMut.mutate()}
-              disabled={linkMut.isPending || balance <= 0 || !!activeLink}
-              title={activeLink ? "A link is already active" : undefined}
-            >
-              {linkMut.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LinkIcon className="mr-2 h-4 w-4" />
-              )}
-              Razorpay link
-            </Button>
-            <Button onClick={() => setPayOpen(true)} disabled={balance <= 0}>
-              <Plus className="mr-2 h-4 w-4" /> Record payment
-            </Button>
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "invoice", entityId: invoiceId, label: invoice.invoice_no }}
+            primary={
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Button size="sm" onClick={() => setPayOpen(true)} disabled={balance <= 0}>
+                  <Plus className="mr-2 h-4 w-4" /> Record payment
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => window.print()}>
+                  <Printer className="mr-2 h-4 w-4" /> Print
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    const url = window.location.href;
+                    const nav = navigator as Navigator & {
+                      share?: (data: ShareData) => Promise<void>;
+                    };
+                    if (nav.share) {
+                      try {
+                        await nav.share({ title: invoice.invoice_no, url });
+                      } catch {
+                        /* cancelled */
+                      }
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      toast.success("Link copied");
+                    }
+                  }}
+                >
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => linkMut.mutate()}
+                  disabled={linkMut.isPending || balance <= 0 || !!activeLink}
+                  title={activeLink ? "A link is already active" : undefined}
+                >
+                  {linkMut.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LinkIcon className="mr-2 h-4 w-4" />
+                  )}
+                  Razorpay link
+                </Button>
+              </>
+            }
+            overflow={[
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("invoice-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("invoice-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Delete invoice",
+                icon: <Trash2 className="h-4 w-4" />,
+                onSelect: () => setConfirmDel(true),
+                destructive: true,
+                separatorBefore: true,
+              },
+            ]}
+          />
         }
       />
 
@@ -360,8 +418,12 @@ function InvoiceDetailPage() {
           value={invoice.notes ?? null}
           invalidateKey={qk.invoices.byId(invoiceId)}
         />
-        <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
-        <TimelinePanel entityType="invoice" entityId={invoiceId} />
+        <div id="invoice-documents">
+          <AttachmentsPanel entityType="invoice" entityId={invoiceId} />
+        </div>
+        <div id="invoice-timeline">
+          <TimelinePanel entityType="invoice" entityId={invoiceId} />
+        </div>
       </div>
 
       <RecordPaymentDialog

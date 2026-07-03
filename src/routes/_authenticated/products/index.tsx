@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, PackageSearch, ExternalLink } from "lucide-react";
@@ -52,16 +52,31 @@ import {
 export const Route = createFileRoute("/_authenticated/products/")({
   ssr: false,
   component: ProductsPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    edit: typeof s.edit === "string" ? s.edit : undefined,
+  }),
 });
 
 function ProductsPage() {
   const qc = useQueryClient();
+  const nav = useNavigate();
+  const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
 
   const query = useQuery({ queryKey: qk.products.list(q), queryFn: () => listProducts(q) });
+
+  useEffect(() => {
+    if (!edit) return;
+    const row = (query.data ?? []).find((r) => r.id === edit);
+    if (row) {
+      setEditing(row);
+      setFormOpen(true);
+      nav({ to: "/products", search: {}, replace: true });
+    }
+  }, [edit, query.data, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteProduct(id),

@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowLeft,
+  Pencil,
+  Package,
+  Phone,
+  MessageCircle,
+  Mail,
+  FolderOpen,
+  History,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +19,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getVendor } from "@/lib/vendors/api";
+import { getVendor, getPrimaryContact } from "@/lib/vendors/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
   ssr: false,
@@ -20,11 +32,20 @@ export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
 
 function VendorHub() {
   const { vendorId } = Route.useParams();
+  const [tab, setTab] = useState("overview");
   const q = useQuery({ queryKey: qk.vendors.byId(vendorId), queryFn: () => getVendor(vendorId) });
+  const contact = useQuery({
+    queryKey: ["vendor", vendorId, "primaryContact"],
+    queryFn: () => getPrimaryContact(vendorId),
+  });
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Vendor not found." />;
   const v = q.data;
+
+  const phone = contact.data?.phone ?? "";
+  const email = contact.data?.email ?? "";
+  const waDigits = phone.replace(/[^0-9]/g, "");
 
   return (
     <div>
@@ -44,9 +65,56 @@ function VendorHub() {
             {v.city && <Badge variant="secondary">{v.city}</Badge>}
           </span>
         }
+        actions={
+          <DetailActionBar
+            pin={{ entityType: "vendor", entityId: vendorId, label: v.company_name }}
+            primary={
+              <>
+                <Link to="/vendors" search={{ edit: vendorId }}>
+                  <Button size="sm">
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+                <Link to="/purchase-orders/new" search={{ vendor: vendorId }}>
+                  <Button variant="outline" size="sm">
+                    <Package className="mr-2 h-4 w-4" /> New PO
+                  </Button>
+                </Link>
+              </>
+            }
+            overflow={[
+              ...(phone
+                ? [{ label: `Call ${phone}`, icon: <Phone className="h-4 w-4" />, href: `tel:${phone}` }]
+                : []),
+              ...(waDigits
+                ? [
+                    {
+                      label: "WhatsApp",
+                      icon: <MessageCircle className="h-4 w-4" />,
+                      href: `https://wa.me/${waDigits}`,
+                    },
+                  ]
+                : []),
+              ...(email
+                ? [{ label: "Email", icon: <Mail className="h-4 w-4" />, href: `mailto:${email}` }]
+                : []),
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () => setTab("documents"),
+                separatorBefore: true,
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () => setTab("timeline"),
+              },
+            ]}
+          />
+        }
       />
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="po">Purchase Orders</TabsTrigger>
