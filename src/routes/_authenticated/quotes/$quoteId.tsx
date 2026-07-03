@@ -243,8 +243,12 @@ function QuoteDetailPage() {
           value={quote.notes ?? null}
           invalidateKey={qk.quotes.byId(quoteId)}
         />
-        <AttachmentsPanel entityType="quote" entityId={quoteId} />
-        <TimelinePanel entityType="quote" entityId={quoteId} />
+        <div id="quote-documents">
+          <AttachmentsPanel entityType="quote" entityId={quoteId} />
+        </div>
+        <div id="quote-timeline">
+          <TimelinePanel entityType="quote" entityId={quoteId} />
+        </div>
       </div>
 
       <ConfirmDialog
