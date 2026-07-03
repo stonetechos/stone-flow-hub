@@ -143,7 +143,7 @@ function CalendarPage() {
                             <Link
                               key={f.id}
                               to="/enquiries/$enquiryId"
-                              params={{ enquiryId: f.enquiry_id }}
+                              params={{ enquiryId: f.enquiry_id ?? "" }}
                               className="block truncate rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary hover:bg-primary/20"
                               title={f.notes ?? f.channel}
                             >
