@@ -15,6 +15,7 @@ import {
   FileText,
   ExternalLink,
   Loader2,
+  ShoppingCart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -98,22 +99,50 @@ function CompareRfqPage() {
 
   const bundle = q.data;
   const submittedCount = bundle.rows.filter((r) => !!r.quote?.submitted_at).length;
+  const approvedRow = bundle.rows.find((r) => r.quote?.is_approved) ?? null;
 
   return (
     <div>
       <div className="mb-2">
-        <Link
-          to="/enquiries"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-3 w-3" /> Back to enquiries
-        </Link>
+        {bundle.enquiryId ? (
+          <Link
+            to="/enquiries/$enquiryId"
+            params={{ enquiryId: bundle.enquiryId }}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3 w-3" /> Back to enquiry
+          </Link>
+        ) : (
+          <Link
+            to="/enquiries"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3 w-3" /> Back to enquiries
+          </Link>
+        )}
       </div>
 
       <PageHeader
         title={`Compare quotes · ${bundle.rfqNo}`}
         subtitle={`${bundle.projectName ?? "—"} · ${bundle.rows.length} vendor${bundle.rows.length === 1 ? "" : "s"} · ${submittedCount} submitted${bundle.dueDate ? ` · due ${bundle.dueDate}` : ""}`}
+        actions={
+          approvedRow ? (
+            <Link
+              to="/purchase-orders/new"
+              search={{
+                vendor: approvedRow.vendor.id,
+                project: bundle.projectId ?? undefined,
+              }}
+            >
+              <Button size="sm">
+                <ShoppingCart className="mr-1.5 h-4 w-4" />
+                Convert to Purchase Order
+              </Button>
+            </Link>
+          ) : null
+        }
       />
+
 
       {bundle.rows.length === 0 ? (
         <Card className="shadow-1">
