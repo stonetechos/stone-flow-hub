@@ -10,9 +10,14 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Printer,
+  Share2,
+  FolderOpen,
+  History,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { deleteInvoice } from "@/lib/invoices/api";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
