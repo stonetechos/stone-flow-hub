@@ -375,6 +375,7 @@ function CreateQuoteDialog({
                       variant="ghost"
                       size="icon"
                       className="col-span-1"
+                      aria-label="Remove line item"
                       onClick={() => removeItem(it.key)}
                       disabled={items.length === 1}
                     >
