@@ -59,11 +59,12 @@ function CustomersPage() {
   const nav = useNavigate();
   const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerRow | null>(null);
   const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
 
-  const query = useQuery({ queryKey: qk.customers.list(q), queryFn: () => listCustomers(q) });
+  const query = useQuery({ queryKey: qk.customers.list(dq), queryFn: () => listCustomers(dq) });
 
   useEffect(() => {
     if (!edit) return;
