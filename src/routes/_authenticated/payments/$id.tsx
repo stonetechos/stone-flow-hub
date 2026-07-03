@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, Printer, History } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getPayment } from "@/lib/payments/crud";
@@ -29,18 +30,38 @@ function PaymentDetailPage() {
 
   return (
     <div>
+      <div className="mb-2">
+        <Button variant="ghost" size="sm" onClick={() => nav({ to: "/payments" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+      </div>
       <PageHeader
         title={r.payment_no}
         subtitle={`Received ${new Date(r.paid_at).toLocaleDateString()}`}
         actions={
-          <>
-            <Button variant="ghost" onClick={() => nav({ to: "/payments" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button onClick={() => nav({ to: "/payments/$id/edit", params: { id } })}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-          </>
+          <DetailActionBar
+            pin={{ entityType: "payment", entityId: id, label: r.payment_no }}
+            primary={
+              <>
+                <Button size="sm" onClick={() => nav({ to: "/payments/$id/edit", params: { id } })}>
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => window.print()}>
+                  <Printer className="mr-2 h-4 w-4" /> Receipt
+                </Button>
+              </>
+            }
+            overflow={[
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("payment-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+            ]}
+          />
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
@@ -70,7 +91,7 @@ function PaymentDetailPage() {
           />
           <AttachmentsPanel entityType="payment" entityId={r.id} />
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4" id="payment-timeline">
           <TimelinePanel entityType="payment" entityId={r.id} />
         </div>
       </div>
