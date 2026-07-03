@@ -5,7 +5,8 @@ import { Plus, Loader2, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,13 +52,14 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 
 function QuotesPage() {
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
   const params = Route.useSearch();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
+  const query = useQuery({ queryKey: qk.quotes.list(dq), queryFn: () => listQuotes(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteQuote(id),
     onSuccess: () => {
@@ -113,7 +115,7 @@ function QuotesPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -373,6 +375,7 @@ function CreateQuoteDialog({
                       variant="ghost"
                       size="icon"
                       className="col-span-1"
+                      aria-label="Remove line item"
                       onClick={() => removeItem(it.key)}
                       disabled={items.length === 1}
                     >

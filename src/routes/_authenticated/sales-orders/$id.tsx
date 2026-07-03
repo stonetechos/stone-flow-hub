@@ -73,9 +73,7 @@ function SalesOrderDetailPage() {
                     size="sm"
                     onClick={() => convertMut.mutate(r.quote!.id)}
                     disabled={!quoteAccepted || convertMut.isPending}
-                    title={
-                      quoteAccepted ? undefined : "Source quote must be marked Accepted first"
-                    }
+                    title={quoteAccepted ? undefined : "Source quote must be marked Accepted first"}
                   >
                     {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <Receipt className="mr-2 h-4 w-4" /> Create invoice

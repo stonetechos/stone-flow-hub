@@ -6,7 +6,8 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -58,11 +59,12 @@ function CustomersPage() {
   const nav = useNavigate();
   const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerRow | null>(null);
   const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
 
-  const query = useQuery({ queryKey: qk.customers.list(q), queryFn: () => listCustomers(q) });
+  const query = useQuery({ queryKey: qk.customers.list(dq), queryFn: () => listCustomers(dq) });
 
   useEffect(() => {
     if (!edit) return;
@@ -112,7 +114,7 @@ function CustomersPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (query.data ?? []).length === 0 ? (

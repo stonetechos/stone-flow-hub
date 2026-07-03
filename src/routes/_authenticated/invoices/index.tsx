@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,11 +38,12 @@ export const Route = createFileRoute("/_authenticated/invoices/")({
 
 function InvoicesPage() {
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
   const nav = useNavigate();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: qk.invoices.list(q), queryFn: () => listInvoices(q) });
+  const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
     onSuccess: () => {
@@ -90,7 +92,7 @@ function InvoicesPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (

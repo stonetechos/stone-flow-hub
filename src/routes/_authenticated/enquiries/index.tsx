@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,11 +59,12 @@ function EnquiriesPage() {
   const nav = useNavigate();
   const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [newOpen, setNewOpen] = useState(false);
   const [editing, setEditing] = useState<EnquiryListItem | null>(null);
   const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
 
-  const query = useQuery({ queryKey: qk.enquiries.list(q), queryFn: () => listEnquiries(q) });
+  const query = useQuery({ queryKey: qk.enquiries.list(dq), queryFn: () => listEnquiries(dq) });
 
   useEffect(() => {
     if (!edit) return;
@@ -105,7 +107,7 @@ function EnquiriesPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (query.data ?? []).length === 0 ? (
@@ -163,10 +165,7 @@ function EnquiriesPage() {
                     {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
                   </TableCell>
                   <TableCell>
-                    <RowActions
-                      onEdit={() => setEditing(e)}
-                      onDelete={() => setToDelete(e)}
-                    />
+                    <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -260,11 +259,7 @@ function NewEnquiryDialog({
               />
             </Field>
             <Field label="Mobile number" required hint="New number → new customer created">
-              <Input
-                value={form.mobile}
-                onChange={(e) => set("mobile", e.target.value)}
-                required
-              />
+              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
             </Field>
             <Field label="Email">
               <Input
@@ -425,10 +420,7 @@ function EditEnquiryDialog({
               />
             </Field>
             <Field label="Lead source">
-              <Input
-                value={form.source ?? ""}
-                onChange={(e) => set("source", e.target.value)}
-              />
+              <Input value={form.source ?? ""} onChange={(e) => set("source", e.target.value)} />
             </Field>
             <Field label="Budget (INR)">
               <Input

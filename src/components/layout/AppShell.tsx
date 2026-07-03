@@ -94,13 +94,41 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null;
+      const typing =
+        !!target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable ||
+          target.getAttribute("role") === "combobox");
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen((v) => !v);
+        return;
+      }
+      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (e.key === "/") {
+          e.preventDefault();
+          setSearchOpen(true);
+          return;
+        }
+        if (e.key.toLowerCase() === "c") {
+          e.preventDefault();
+          setCreateOpen((v) => !v);
+          return;
+        }
+        if (e.key === "?") {
+          e.preventDefault();
+          toast("Shortcuts", {
+            description: "⌘/Ctrl+K or / — search · C — create menu · ? — this help",
+          });
+        }
       }
     };
     window.addEventListener("keydown", handler);
@@ -220,7 +248,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           </div>
           <div className="flex items-center gap-1">
-            <QuickCreateMenu />
+            <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
             <NotificationsBell />
           </div>
         </header>

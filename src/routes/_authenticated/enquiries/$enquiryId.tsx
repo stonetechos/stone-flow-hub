@@ -42,14 +42,10 @@ import {
   sendRfq,
   updateEnquiryStage,
 } from "@/lib/enquiries/api";
-import {
-  convertToProjectSchema,
-  type ConvertToProjectInput,
-} from "@/lib/enquiries/schema";
+import { convertToProjectSchema, type ConvertToProjectInput } from "@/lib/enquiries/schema";
 import { listVendorsForPicker } from "@/lib/vendors/api";
 import { LEAD_STAGES, LEAD_STAGE_LABEL } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
-
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
@@ -66,7 +62,6 @@ function EnquiryDetailPage() {
     queryKey: qk.enquiries.byId(enquiryId),
     queryFn: () => getEnquiry(enquiryId),
   });
-
 
   const stageMut = useMutation({
     mutationFn: (stage: LeadStage) => updateEnquiryStage(enquiryId, stage),
@@ -229,11 +224,7 @@ function EnquiryDetailPage() {
       </div>
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
-      <ConvertToProjectDialog
-        open={convertOpen}
-        onOpenChange={setConvertOpen}
-        enquiryId={enq.id}
-      />
+      <ConvertToProjectDialog open={convertOpen} onOpenChange={setConvertOpen} enquiryId={enq.id} />
     </div>
   );
 }
@@ -298,18 +289,10 @@ function ConvertToProjectDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Project name" required className="md:col-span-2">
-              <Input
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                required
-              />
+              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
             <Field label="City" required>
-              <Input
-                value={form.city}
-                onChange={(e) => set("city", e.target.value)}
-                required
-              />
+              <Input value={form.city} onChange={(e) => set("city", e.target.value)} required />
             </Field>
             <Field label="State">
               <Input
@@ -371,7 +354,6 @@ function ConvertToProjectDialog({
     </Dialog>
   );
 }
-
 
 function Info({
   label,

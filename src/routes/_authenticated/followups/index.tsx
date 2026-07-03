@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, CalendarClock, Check } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,7 +115,7 @@ function FollowupsPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (query.data ?? []).length === 0 ? (
@@ -191,6 +191,7 @@ function FollowupsPage() {
                           variant="ghost"
                           className="h-8 w-8"
                           title="Mark done"
+                          aria-label="Mark follow-up done"
                           onClick={() => completeMut.mutate(f.id)}
                           disabled={completeMut.isPending}
                         >

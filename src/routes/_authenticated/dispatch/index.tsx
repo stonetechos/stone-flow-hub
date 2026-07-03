@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,12 +40,13 @@ function DispatchPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [q, setQ] = useState("");
+  const dq = useDebouncedValue(q, 250);
   const [status, setStatus] = useState<string>("");
   const [toDelete, setToDelete] = useState<DispatchListItem | null>(null);
 
   const query = useQuery({
-    queryKey: qk.dispatch.list(q, status),
-    queryFn: () => listDispatches(q, status),
+    queryKey: qk.dispatch.list(dq, status),
+    queryFn: () => listDispatches(dq, status),
   });
   const del = useMutation({
     mutationFn: (id: string) => deleteDispatch(id),
@@ -91,7 +93,7 @@ function DispatchPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (query.data ?? []).length === 0 ? (
