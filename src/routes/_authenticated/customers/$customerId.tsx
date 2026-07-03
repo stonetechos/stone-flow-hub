@@ -56,6 +56,20 @@ function CustomerHub() {
             </Badge>
           </span>
         }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/enquiries">
+              <Button variant="outline" size="sm">
+                <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
+              </Button>
+            </Link>
+            <Link to="/projects">
+              <Button size="sm">
+                <FolderPlus className="mr-2 h-4 w-4" /> New project
+              </Button>
+            </Link>
+          </div>
+        }
       />
 
       <Tabs defaultValue="overview" className="w-full">
