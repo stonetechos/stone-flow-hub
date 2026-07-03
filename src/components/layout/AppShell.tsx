@@ -251,7 +251,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           </div>
           <div className="flex items-center gap-1">
-            <QuickCreateMenu />
+            <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
             <NotificationsBell />
           </div>
         </header>
