@@ -57,7 +57,19 @@ function SignInForm() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Signed in");
-      await navigate({ to: "/dashboard" });
+      // Route vendors to their portal; staff to the internal dashboard.
+      const { data: sess } = await supabase.auth.getUser();
+      const uid = sess.user?.id;
+      let isVendor = false;
+      if (uid) {
+        const { data: vu } = await supabase
+          .from("vendor_users")
+          .select("vendor_id")
+          .eq("user_id", uid)
+          .maybeSingle();
+        isVendor = !!vu;
+      }
+      await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
     } catch (err) {
       toast.error(toUserMessage(err));
     } finally {
