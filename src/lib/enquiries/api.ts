@@ -166,7 +166,7 @@ export async function convertEnquiryToProject(
     .from("enquiries")
     .update({
       project_id: project.id,
-      stage: enq.stage === "new_lead" ? "qualified" : enq.stage,
+      stage: enq.stage === "new_lead" ? "contacted" : enq.stage,
     })
     .eq("id", enquiryId);
   if (uErr) throw new AppError(mapDbError(uErr));
