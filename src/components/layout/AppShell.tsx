@@ -98,14 +98,38 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null;
+      const typing =
+        !!target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable ||
+          target.getAttribute("role") === "combobox");
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen((v) => !v);
+        return;
+      }
+      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (e.key === "/") {
+          e.preventDefault();
+          setSearchOpen(true);
+          return;
+        }
+        if (e.key === "?") {
+          e.preventDefault();
+          toast("Shortcuts", {
+            description:
+              "⌘/Ctrl+K or / — search · N — new (on list pages) · G then D — dashboard · ? — this help",
+          });
+        }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
 
   async function onSignOut() {
     await supabase.auth.signOut();
