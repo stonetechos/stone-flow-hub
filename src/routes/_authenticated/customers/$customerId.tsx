@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 
 function CustomerHub() {
   const { customerId } = Route.useParams();
+  const [tab, setTab] = useState("overview");
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
@@ -49,6 +50,11 @@ function CustomerHub() {
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Customer not found." />;
   const c = q.data;
+
+  const phone = c.primary_phone ?? "";
+  const wa = c.whatsapp ?? c.primary_phone ?? "";
+  const email = c.primary_email ?? "";
+  const waDigits = wa.replace(/[^0-9]/g, "");
 
   return (
     <div>
@@ -71,22 +77,65 @@ function CustomerHub() {
           </span>
         }
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Link to="/enquiries">
-              <Button variant="outline" size="sm">
-                <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
-              </Button>
-            </Link>
-            <Link to="/projects">
-              <Button size="sm">
-                <FolderPlus className="mr-2 h-4 w-4" /> New project
-              </Button>
-            </Link>
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "customer", entityId: customerId, label: c.name }}
+            primary={
+              <>
+                <Link to="/customers" search={{ edit: customerId }}>
+                  <Button size="sm">
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+                <Link to="/enquiries">
+                  <Button variant="outline" size="sm">
+                    <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
+                  </Button>
+                </Link>
+                <Link to="/projects">
+                  <Button variant="outline" size="sm">
+                    <FolderPlus className="mr-2 h-4 w-4" /> New project
+                  </Button>
+                </Link>
+                <Link to="/quotes" search={{ new: "1", customer: customerId }}>
+                  <Button variant="outline" size="sm">
+                    <FileText className="mr-2 h-4 w-4" /> New quote
+                  </Button>
+                </Link>
+              </>
+            }
+            overflow={[
+              ...(phone
+                ? [{ label: `Call ${phone}`, icon: <Phone className="h-4 w-4" />, href: `tel:${phone}` }]
+                : []),
+              ...(waDigits
+                ? [
+                    {
+                      label: "WhatsApp",
+                      icon: <MessageCircle className="h-4 w-4" />,
+                      href: `https://wa.me/${waDigits}`,
+                    },
+                  ]
+                : []),
+              ...(email
+                ? [{ label: "Email", icon: <Mail className="h-4 w-4" />, href: `mailto:${email}` }]
+                : []),
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () => setTab("documents"),
+                separatorBefore: true,
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () => setTab("timeline"),
+              },
+            ]}
+          />
         }
       />
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
