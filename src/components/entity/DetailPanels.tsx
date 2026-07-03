@@ -151,13 +151,20 @@ export function AttachmentsPanel({
               <li key={f.id} className="flex items-center justify-between py-2 text-sm">
                 <span className="truncate">{f.file_name}</span>
                 <div className="flex items-center gap-1">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => open(f)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    aria-label={`Download ${f.file_name}`}
+                    onClick={() => open(f)}
+                  >
                     <Download className="h-3 w-3" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7"
+                    aria-label={`Delete ${f.file_name}`}
                     onClick={() => del.mutate(f)}
                   >
                     <Trash2 className="h-3 w-3" />
