@@ -85,15 +85,22 @@ function EnquiryDetailPage() {
 
       <PageHeader
         title={enq.enquiry_no}
-        subtitle={`${enq.project?.name ?? "—"} • ${enq.customer?.name ?? "—"}`}
+        subtitle={`${enq.customer?.name ?? "—"}${enq.project ? ` • ${enq.project.name}` : " • Unassigned lead"}`}
         actions={
-          <div className="flex gap-2">
-            <Link to="/quotes" search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}>
-              <Button variant="outline">
-                <FileText className="mr-2 h-4 w-4" /> New quote
+          <div className="flex flex-wrap gap-2">
+            {!enq.project_id && (
+              <Button onClick={() => setConvertOpen(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" /> Convert to project
               </Button>
-            </Link>
-            <Button onClick={() => setRfqOpen(true)}>
+            )}
+            {enq.project_id && (
+              <Link to="/quotes" search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}>
+                <Button variant="outline">
+                  <FileText className="mr-2 h-4 w-4" /> New quote
+                </Button>
+              </Link>
+            )}
+            <Button variant="outline" onClick={() => setRfqOpen(true)}>
               <Send className="mr-2 h-4 w-4" /> Send RFQ
             </Button>
           </div>
@@ -107,7 +114,8 @@ function EnquiryDetailPage() {
           </CardHeader>
           <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
             <Info label="Customer" value={enq.customer?.name} />
-            <Info label="Project" value={enq.project?.name} />
+            <Info label="Project" value={enq.project?.name ?? "Not yet assigned"} />
+            <Info label="Requirement" value={enq.requirement ?? "—"} />
             <Info label="City" value={enq.project?.city} />
             <Info label="Priority" value={enq.priority} capitalize />
             <Info label="Source" value={enq.source ?? "—"} />
@@ -119,6 +127,7 @@ function EnquiryDetailPage() {
             <Info label="Notes" value={enq.notes ?? "—"} />
           </CardContent>
         </Card>
+
 
         <Card className="shadow-1">
           <CardHeader>
