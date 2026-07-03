@@ -191,6 +191,7 @@ function FollowupsPage() {
                           variant="ghost"
                           className="h-8 w-8"
                           title="Mark done"
+                          aria-label="Mark follow-up done"
                           onClick={() => completeMut.mutate(f.id)}
                           disabled={completeMut.isPending}
                         >
