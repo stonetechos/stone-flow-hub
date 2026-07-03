@@ -49,9 +49,8 @@ import { LEAD_STAGE_LABEL } from "@/lib/constants";
 export const Route = createFileRoute("/_authenticated/enquiries/")({
   ssr: false,
   component: EnquiriesPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    edit: typeof s.edit === "string" ? s.edit : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
+    typeof s.edit === "string" ? { edit: s.edit } : {},
 });
 
 function EnquiriesPage() {
