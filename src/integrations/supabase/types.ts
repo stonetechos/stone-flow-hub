@@ -906,6 +906,92 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          attempts: number
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          error: string | null
+          event_id: string
+          id: string
+          provider_message_id: string | null
+          recipient: string
+          recipient_user_id: string | null
+          scheduled_at: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          error?: string | null
+          event_id: string
+          id?: string
+          provider_message_id?: string | null
+          recipient: string
+          recipient_user_id?: string | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          error?: string | null
+          event_id?: string
+          id?: string
+          provider_message_id?: string | null
+          recipient?: string
+          recipient_user_id?: string | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "notification_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          event: Database["public"]["Enums"]["notification_event"]
+          id: string
+          payload: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          event: Database["public"]["Enums"]["notification_event"]
+          id?: string
+          payload?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          event?: Database["public"]["Enums"]["notification_event"]
+          id?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       payment_links: {
         Row: {
           amount: number
@@ -2005,6 +2091,71 @@ export type Database = {
           },
         ]
       }
+      vendor_performance_cache: {
+        Row: {
+          approval_pct: number
+          avg_dispatch_days: number | null
+          avg_response_hours: number | null
+          completion_pct: number
+          delay_pct: number
+          is_preferred: boolean
+          last_order_at: string | null
+          last_rfq_at: string | null
+          orders_count: number
+          purchase_value: number
+          quotes_approved: number
+          quotes_submitted: number
+          recomputed_at: string
+          rfqs_received: number
+          score: number
+          vendor_id: string
+        }
+        Insert: {
+          approval_pct?: number
+          avg_dispatch_days?: number | null
+          avg_response_hours?: number | null
+          completion_pct?: number
+          delay_pct?: number
+          is_preferred?: boolean
+          last_order_at?: string | null
+          last_rfq_at?: string | null
+          orders_count?: number
+          purchase_value?: number
+          quotes_approved?: number
+          quotes_submitted?: number
+          recomputed_at?: string
+          rfqs_received?: number
+          score?: number
+          vendor_id: string
+        }
+        Update: {
+          approval_pct?: number
+          avg_dispatch_days?: number | null
+          avg_response_hours?: number | null
+          completion_pct?: number
+          delay_pct?: number
+          is_preferred?: boolean
+          last_order_at?: string | null
+          last_rfq_at?: string | null
+          orders_count?: number
+          purchase_value?: number
+          quotes_approved?: number
+          quotes_submitted?: number
+          recomputed_at?: string
+          rfqs_received?: number
+          score?: number
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_performance_cache_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: true
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_product_categories: {
         Row: {
           category_id: string
@@ -2148,7 +2299,11 @@ export type Database = {
           id: string
           is_approved: boolean
           quote_no: string | null
+          quote_pdf_file_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
           remarks: string | null
+          revision_of: string | null
           stock_available: boolean | null
           submitted_at: string
           submitted_by: string | null
@@ -2169,7 +2324,11 @@ export type Database = {
           id?: string
           is_approved?: boolean
           quote_no?: string | null
+          quote_pdf_file_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           remarks?: string | null
+          revision_of?: string | null
           stock_available?: boolean | null
           submitted_at?: string
           submitted_by?: string | null
@@ -2190,7 +2349,11 @@ export type Database = {
           id?: string
           is_approved?: boolean
           quote_no?: string | null
+          quote_pdf_file_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           remarks?: string | null
+          revision_of?: string | null
           stock_available?: boolean | null
           submitted_at?: string
           submitted_by?: string | null
@@ -2200,6 +2363,20 @@ export type Database = {
           vendor_request_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vendor_quotes_quote_pdf_file_id_fkey"
+            columns: ["quote_pdf_file_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_quotes_revision_of_fkey"
+            columns: ["revision_of"]
+            isOneToOne: false
+            referencedRelation: "vendor_quotes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vendor_quotes_vendor_request_id_fkey"
             columns: ["vendor_request_id"]
@@ -2212,11 +2389,14 @@ export type Database = {
       vendor_requests: {
         Row: {
           created_at: string
+          first_viewed_at: string | null
           id: string
           last_reminder_at: string | null
           notes: string | null
           reminder_count: number
           response_status: Database["public"]["Enums"]["vendor_request_status"]
+          revision_note: string | null
+          revision_requested_at: string | null
           rfq_id: string
           sent_at: string | null
           sent_by: string | null
@@ -2225,11 +2405,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          first_viewed_at?: string | null
           id?: string
           last_reminder_at?: string | null
           notes?: string | null
           reminder_count?: number
           response_status?: Database["public"]["Enums"]["vendor_request_status"]
+          revision_note?: string | null
+          revision_requested_at?: string | null
           rfq_id: string
           sent_at?: string | null
           sent_by?: string | null
@@ -2238,11 +2421,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          first_viewed_at?: string | null
           id?: string
           last_reminder_at?: string | null
           notes?: string | null
           reminder_count?: number
           response_status?: Database["public"]["Enums"]["vendor_request_status"]
+          revision_note?: string | null
+          revision_requested_at?: string | null
           rfq_id?: string
           sent_at?: string | null
           sent_by?: string | null
@@ -2262,6 +2448,35 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_rfq_views: {
+        Row: {
+          id: string
+          user_id: string
+          vendor_request_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          vendor_request_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          vendor_request_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_rfq_views_vendor_request_id_fkey"
+            columns: ["vendor_request_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -2289,6 +2504,47 @@ export type Database = {
           },
           {
             foreignKeyName: "vendor_tags_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_users: {
+        Row: {
+          created_at: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["vendor_portal_role"]
+          updated_at: string
+          user_id: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["vendor_portal_role"]
+          updated_at?: string
+          user_id: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["vendor_portal_role"]
+          updated_at?: string
+          user_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_users_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
@@ -2424,6 +2680,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_vendor_id: { Args: never; Returns: string }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -2439,12 +2696,29 @@ export type Database = {
         Returns: boolean
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
+      is_vendor_of: {
+        Args: { _user_id: string; _vendor_id: string }
+        Returns: boolean
+      }
+      log_notification_event: {
+        Args: {
+          _entity_id: string
+          _entity_type: string
+          _event: Database["public"]["Enums"]["notification_event"]
+          _payload?: Json
+        }
+        Returns: string
+      }
       next_code: { Args: { _prefix: string }; Returns: string }
       recalc_invoice_totals: {
         Args: { _invoice_id: string }
         Returns: undefined
       }
       recalc_quote_totals: { Args: { _quote_id: string }; Returns: undefined }
+      recalc_vendor_performance: {
+        Args: { _vendor_id: string }
+        Returns: undefined
+      }
       send_rfq: {
         Args: {
           p_due_date: string
@@ -2552,6 +2826,19 @@ export type Database = {
         | "completed"
         | "lost"
         | "cancelled"
+      notification_channel: "email" | "whatsapp" | "sms" | "push"
+      notification_event:
+        | "RFQ_CREATED"
+        | "RFQ_REMINDER"
+        | "QUOTE_SUBMITTED"
+        | "QUOTE_UPDATED"
+        | "QUOTE_APPROVED"
+        | "QUOTE_REJECTED"
+        | "ORDER_CONFIRMED"
+        | "PRODUCTION_STARTED"
+        | "DISPATCH_REQUESTED"
+        | "DISPATCH_COMPLETED"
+      notification_status: "pending" | "sent" | "failed" | "skipped"
       payment_link_status:
         | "created"
         | "sent"
@@ -2643,6 +2930,7 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "overdue"
+      vendor_portal_role: "vendor_owner" | "vendor_member"
       vendor_request_status:
         | "pending"
         | "submitted"
@@ -2857,6 +3145,20 @@ export const Constants = {
         "lost",
         "cancelled",
       ],
+      notification_channel: ["email", "whatsapp", "sms", "push"],
+      notification_event: [
+        "RFQ_CREATED",
+        "RFQ_REMINDER",
+        "QUOTE_SUBMITTED",
+        "QUOTE_UPDATED",
+        "QUOTE_APPROVED",
+        "QUOTE_REJECTED",
+        "ORDER_CONFIRMED",
+        "PRODUCTION_STARTED",
+        "DISPATCH_REQUESTED",
+        "DISPATCH_COMPLETED",
+      ],
+      notification_status: ["pending", "sent", "failed", "skipped"],
       payment_link_status: [
         "created",
         "sent",
@@ -2959,6 +3261,7 @@ export const Constants = {
         "cancelled",
         "overdue",
       ],
+      vendor_portal_role: ["vendor_owner", "vendor_member"],
       vendor_request_status: [
         "pending",
         "submitted",
