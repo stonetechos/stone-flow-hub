@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +25,15 @@ import { listCustomers } from "@/lib/customers/api";
 import { listProjectsForPicker } from "@/lib/projects/api";
 import { listQuotes } from "@/lib/quotes/api";
 
+const search = z.object({
+  project: z.string().uuid().optional(),
+  customer: z.string().uuid().optional(),
+  quote: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/sales-orders/new")({
   ssr: false,
+  validateSearch: (s) => search.parse(s),
   component: NewSalesOrderPage,
 });
 
@@ -35,14 +43,15 @@ function today() {
 
 function NewSalesOrderPage() {
   const nav = useNavigate();
+  const params = Route.useSearch();
   const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers() });
   const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
   const quotes = useQuery({ queryKey: qk.quotes.list(""), queryFn: () => listQuotes() });
 
   const [form, setForm] = useState<SalesOrderCreateInput>({
-    quote_id: null,
-    project_id: null,
-    customer_id: null,
+    quote_id: params.quote ?? null,
+    project_id: params.project ?? null,
+    customer_id: params.customer ?? null,
     status: "draft",
     order_date: today(),
     delivery_date: null,
