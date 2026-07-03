@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, ClipboardList } from "lucide-react";
@@ -49,16 +49,30 @@ import { LEAD_STAGE_LABEL } from "@/lib/constants";
 export const Route = createFileRoute("/_authenticated/enquiries/")({
   ssr: false,
   component: EnquiriesPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    edit: typeof s.edit === "string" ? s.edit : undefined,
+  }),
 });
 
 function EnquiriesPage() {
   const qc = useQueryClient();
+  const nav = useNavigate();
+  const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
   const [newOpen, setNewOpen] = useState(false);
   const [editing, setEditing] = useState<EnquiryListItem | null>(null);
   const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
 
   const query = useQuery({ queryKey: qk.enquiries.list(q), queryFn: () => listEnquiries(q) });
+
+  useEffect(() => {
+    if (!edit) return;
+    const row = (query.data ?? []).find((r) => r.id === edit);
+    if (row) {
+      setEditing(row);
+      nav({ to: "/enquiries", search: {}, replace: true });
+    }
+  }, [edit, query.data, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteEnquiry(id),
