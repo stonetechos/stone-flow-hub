@@ -334,8 +334,9 @@ export type Database = {
           lost_reason: string | null
           notes: string | null
           priority: Database["public"]["Enums"]["enquiry_priority"]
-          project_id: string
+          project_id: string | null
           required_delivery_date: string | null
+          requirement: string | null
           source: string | null
           stage: Database["public"]["Enums"]["lead_stage"]
           updated_at: string
@@ -355,8 +356,9 @@ export type Database = {
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
-          project_id: string
+          project_id?: string | null
           required_delivery_date?: string | null
+          requirement?: string | null
           source?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           updated_at?: string
@@ -376,8 +378,9 @@ export type Database = {
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
-          project_id?: string
+          project_id?: string | null
           required_delivery_date?: string | null
+          requirement?: string | null
           source?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           updated_at?: string
@@ -1273,8 +1276,11 @@ export type Database = {
       projects: {
         Row: {
           architect_contact_id: string | null
+          architect_name: string | null
+          area_sqft: number | null
           city: string | null
           company_id: string | null
+          contractor_name: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -1300,8 +1306,11 @@ export type Database = {
         }
         Insert: {
           architect_contact_id?: string | null
+          architect_name?: string | null
+          area_sqft?: number | null
           city?: string | null
           company_id?: string | null
+          contractor_name?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -1327,8 +1336,11 @@ export type Database = {
         }
         Update: {
           architect_contact_id?: string | null
+          architect_name?: string | null
+          area_sqft?: number | null
           city?: string | null
           company_id?: string | null
+          contractor_name?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
