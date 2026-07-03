@@ -313,6 +313,7 @@ function Kpi({
   value,
   icon,
   to,
+  search,
   tone = "muted",
   compact = false,
 }: {
@@ -320,11 +321,12 @@ function Kpi({
   value: number | string;
   icon: React.ReactNode;
   to: string;
+  search?: Record<string, string>;
   tone?: Tone;
   compact?: boolean;
 }) {
   return (
-    <Link to={to} className="block">
+    <Link to={to} search={search as never} className="block">
       <div
         className={cn(
           "rounded-lg border px-3 py-2.5 transition-shadow hover:shadow-2",
@@ -349,3 +351,4 @@ function Kpi({
     </Link>
   );
 }
+
