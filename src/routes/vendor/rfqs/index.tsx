@@ -1,7 +1,6 @@
 /** Email-style RFQ inbox. */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { Search, Circle, AlertCircle, CheckCircle2, FileEdit, Inbox } from "lucide-react";
@@ -16,12 +15,16 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 const searchSchema = z.object({
-  filter: fallback(z.enum(["all", "new", "draft", "submitted", "overdue"]), "all").default("all"),
-  q: fallback(z.string(), "").default(""),
+  filter: z.enum(["all", "new", "draft", "submitted", "overdue"]).optional(),
+  q: z.string().optional(),
 });
+type InboxSearch = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute("/vendor/rfqs/")({
-  validateSearch: zodValidator(searchSchema),
+  validateSearch: (raw: Record<string, unknown>): InboxSearch => {
+    const parsed = searchSchema.safeParse(raw);
+    return parsed.success ? parsed.data : {};
+  },
   component: RfqInbox,
 });
 
