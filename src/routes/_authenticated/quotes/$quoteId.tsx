@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -109,7 +109,7 @@ function QuoteDetailPage() {
         title={quote.quote_no}
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
@@ -119,6 +119,18 @@ function QuoteDetailPage() {
             <Button variant="outline" onClick={() => setConfirmDel(true)}>
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </Button>
+            <Link
+              to="/sales-orders/new"
+              search={{
+                quote: quoteId,
+                ...(quote.project_id ? { project: quote.project_id } : {}),
+                ...(quote.customer_id ? { customer: quote.customer_id } : {}),
+              }}
+            >
+              <Button variant="outline">
+                <ShoppingCart className="mr-2 h-4 w-4" /> Create sales order
+              </Button>
+            </Link>
             <Button
               onClick={() => convertMut.mutate()}
               disabled={!canConvert || convertMut.isPending}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, ClipboardList, FolderPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,20 @@ function CustomerHub() {
               {c.customer_type.replace("_", " ")}
             </Badge>
           </span>
+        }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/enquiries">
+              <Button variant="outline" size="sm">
+                <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
+              </Button>
+            </Link>
+            <Link to="/projects">
+              <Button size="sm">
+                <FolderPlus className="mr-2 h-4 w-4" /> New project
+              </Button>
+            </Link>
+          </div>
         }
       />
 

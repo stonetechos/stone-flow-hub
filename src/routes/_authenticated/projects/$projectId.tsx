@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, ShoppingCart, Package, Truck, Receipt } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +52,41 @@ function ProjectHub() {
               {p.project_type}
             </Badge>
           </span>
+        }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/quotes"
+              search={{ new: "1", project: p.id, ...(p.customer ? {} : {}) }}
+            >
+              <Button variant="outline" size="sm">
+                <FileText className="mr-2 h-4 w-4" /> New quote
+              </Button>
+            </Link>
+            <Link
+              to="/sales-orders/new"
+              search={{ project: p.id, ...(p.customer ? { customer: p.customer.id } : {}) }}
+            >
+              <Button variant="outline" size="sm">
+                <ShoppingCart className="mr-2 h-4 w-4" /> New SO
+              </Button>
+            </Link>
+            <Link to="/purchase-orders/new" search={{ project: p.id }}>
+              <Button variant="outline" size="sm">
+                <Package className="mr-2 h-4 w-4" /> New PO
+              </Button>
+            </Link>
+            <Link to="/dispatch/new" search={{}}>
+              <Button variant="outline" size="sm">
+                <Truck className="mr-2 h-4 w-4" /> New dispatch
+              </Button>
+            </Link>
+            <Link to="/invoices/new">
+              <Button size="sm">
+                <Receipt className="mr-2 h-4 w-4" /> New invoice
+              </Button>
+            </Link>
+          </div>
         }
       />
 

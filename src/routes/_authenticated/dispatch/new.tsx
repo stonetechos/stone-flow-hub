@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +23,13 @@ import { createDispatch } from "@/lib/dispatch/api";
 import { DISPATCH_STATUSES, type DispatchCreateInput } from "@/lib/dispatch/schema";
 import { listSalesOrdersForPicker } from "@/lib/sales-orders/api";
 
+const search = z.object({
+  so: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/dispatch/new")({
   ssr: false,
+  validateSearch: (s) => search.parse(s),
   component: NewDispatchPage,
 });
 
@@ -33,13 +39,14 @@ function today() {
 
 function NewDispatchPage() {
   const nav = useNavigate();
+  const params = Route.useSearch();
   const orders = useQuery({
     queryKey: qk.salesOrders.list("", ""),
     queryFn: listSalesOrdersForPicker,
   });
 
   const [form, setForm] = useState<DispatchCreateInput>({
-    sales_order_id: null,
+    sales_order_id: params.so ?? null,
     status: "planned",
     dispatch_date: today(),
     carrier: null,
