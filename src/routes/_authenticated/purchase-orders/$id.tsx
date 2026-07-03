@@ -33,18 +33,49 @@ function PurchaseOrderDetailPage() {
 
   return (
     <div>
+      <div className="mb-2">
+        <Button variant="ghost" size="sm" onClick={() => nav({ to: "/purchase-orders" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+      </div>
       <PageHeader
         title={r.po_no}
         subtitle={`Order date ${r.order_date}`}
         actions={
-          <>
-            <Button variant="ghost" onClick={() => nav({ to: "/purchase-orders" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-          </>
+          <DetailActionBar
+            pin={{ entityType: "purchase_order", entityId: id, label: r.po_no }}
+            primary={
+              <Button
+                size="sm"
+                onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}
+              >
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </Button>
+            }
+            overflow={[
+              {
+                label: "Print",
+                icon: <Printer className="h-4 w-4" />,
+                onSelect: () => window.print(),
+              },
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("po-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("po-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+            ]}
+          />
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
@@ -68,9 +99,11 @@ function PurchaseOrderDetailPage() {
             value={r.notes}
             invalidateKey={qk.purchaseOrders.byId(r.id)}
           />
-          <AttachmentsPanel entityType="purchase_order" entityId={r.id} />
+          <div id="po-documents">
+            <AttachmentsPanel entityType="purchase_order" entityId={r.id} />
+          </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4" id="po-timeline">
           <TimelinePanel entityType="purchase_order" entityId={r.id} />
         </div>
       </div>
