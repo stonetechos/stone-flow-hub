@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileText, Loader2, Send } from "lucide-react";
+import { ArrowLeft, FileText, FolderPlus, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -19,13 +19,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getEnquiry, updateEnquiryStage, sendRfq } from "@/lib/enquiries/api";
+import {
+  convertEnquiryToProject,
+  getEnquiry,
+  sendRfq,
+  updateEnquiryStage,
+} from "@/lib/enquiries/api";
+import {
+  convertToProjectSchema,
+  type ConvertToProjectInput,
+} from "@/lib/enquiries/schema";
 import { listVendorsForPicker } from "@/lib/vendors/api";
 import { LEAD_STAGES, LEAD_STAGE_LABEL } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
+
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
