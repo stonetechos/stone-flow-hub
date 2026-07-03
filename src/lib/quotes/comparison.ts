@@ -33,6 +33,7 @@ export interface RfqCompareBundle {
   status: string;
   projectId: string | null;
   projectName: string | null;
+  enquiryId: string | null;
   rows: QuoteComparisonRow[];
 }
 
