@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileText, Loader2, Send } from "lucide-react";
+import { ArrowLeft, FileText, FolderPlus, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -19,13 +19,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getEnquiry, updateEnquiryStage, sendRfq } from "@/lib/enquiries/api";
+import {
+  convertEnquiryToProject,
+  getEnquiry,
+  sendRfq,
+  updateEnquiryStage,
+} from "@/lib/enquiries/api";
+import {
+  convertToProjectSchema,
+  type ConvertToProjectInput,
+} from "@/lib/enquiries/schema";
 import { listVendorsForPicker } from "@/lib/vendors/api";
 import { LEAD_STAGES, LEAD_STAGE_LABEL } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
+
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
@@ -36,11 +47,13 @@ function EnquiryDetailPage() {
   const { enquiryId } = Route.useParams();
   const qc = useQueryClient();
   const [rfqOpen, setRfqOpen] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
 
   const query = useQuery({
     queryKey: qk.enquiries.byId(enquiryId),
     queryFn: () => getEnquiry(enquiryId),
   });
+
 
   const stageMut = useMutation({
     mutationFn: (stage: LeadStage) => updateEnquiryStage(enquiryId, stage),
@@ -72,15 +85,22 @@ function EnquiryDetailPage() {
 
       <PageHeader
         title={enq.enquiry_no}
-        subtitle={`${enq.project?.name ?? "—"} • ${enq.customer?.name ?? "—"}`}
+        subtitle={`${enq.customer?.name ?? "—"}${enq.project ? ` • ${enq.project.name}` : " • Unassigned lead"}`}
         actions={
-          <div className="flex gap-2">
-            <Link to="/quotes" search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}>
-              <Button variant="outline">
-                <FileText className="mr-2 h-4 w-4" /> New quote
+          <div className="flex flex-wrap gap-2">
+            {!enq.project_id && (
+              <Button onClick={() => setConvertOpen(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" /> Convert to project
               </Button>
-            </Link>
-            <Button onClick={() => setRfqOpen(true)}>
+            )}
+            {enq.project_id && (
+              <Link to="/quotes" search={{ new: "1", project: enq.project?.id, enquiry: enq.id }}>
+                <Button variant="outline">
+                  <FileText className="mr-2 h-4 w-4" /> New quote
+                </Button>
+              </Link>
+            )}
+            <Button variant="outline" onClick={() => setRfqOpen(true)}>
               <Send className="mr-2 h-4 w-4" /> Send RFQ
             </Button>
           </div>
@@ -94,7 +114,8 @@ function EnquiryDetailPage() {
           </CardHeader>
           <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
             <Info label="Customer" value={enq.customer?.name} />
-            <Info label="Project" value={enq.project?.name} />
+            <Info label="Project" value={enq.project?.name ?? "Not yet assigned"} />
+            <Info label="Requirement" value={enq.requirement ?? "—"} />
             <Info label="City" value={enq.project?.city} />
             <Info label="Priority" value={enq.priority} capitalize />
             <Info label="Source" value={enq.source ?? "—"} />
@@ -106,6 +127,7 @@ function EnquiryDetailPage() {
             <Info label="Notes" value={enq.notes ?? "—"} />
           </CardContent>
         </Card>
+
 
         <Card className="shadow-1">
           <CardHeader>
@@ -136,9 +158,149 @@ function EnquiryDetailPage() {
       </div>
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
+      <ConvertToProjectDialog
+        open={convertOpen}
+        onOpenChange={setConvertOpen}
+        enquiryId={enq.id}
+      />
     </div>
   );
 }
+
+function ConvertToProjectDialog({
+  open,
+  onOpenChange,
+  enquiryId,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  enquiryId: string;
+}) {
+  const qc = useQueryClient();
+  const nav = useNavigate();
+  const empty: ConvertToProjectInput = {
+    name: "",
+    site_address: null,
+    city: "",
+    state: null,
+    architect_name: null,
+    contractor_name: null,
+    area_sqft: null,
+    expected_completion_date: null,
+  };
+  const [form, setForm] = useState<ConvertToProjectInput>(empty);
+
+  useEffect(() => {
+    if (open) setForm(empty);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const mutation = useMutation({
+    mutationFn: (input: ConvertToProjectInput) => convertEnquiryToProject(enquiryId, input),
+    onSuccess: ({ project_id }) => {
+      toast.success("Project created and linked");
+      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      qc.invalidateQueries({ queryKey: qk.enquiries.byId(enquiryId) });
+      qc.invalidateQueries({ queryKey: qk.projects.all });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+      onOpenChange(false);
+      nav({ to: "/projects/$projectId", params: { projectId: project_id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = convertToProjectSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
+    mutation.mutate(parsed.data);
+  }
+  const set = <K extends keyof ConvertToProjectInput>(k: K, v: ConvertToProjectInput[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Convert enquiry to project</DialogTitle>
+        </DialogHeader>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <QuickForm.QuickFill>
+            <Field label="Project name" required className="md:col-span-2">
+              <Input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="City" required>
+              <Input
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="State">
+              <Input
+                value={form.state ?? ""}
+                onChange={(e) => set("state", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Site address" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.site_address ?? ""}
+                onChange={(e) => set("site_address", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Architect">
+              <Input
+                value={form.architect_name ?? ""}
+                onChange={(e) => set("architect_name", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Contractor">
+              <Input
+                value={form.contractor_name ?? ""}
+                onChange={(e) => set("contractor_name", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Area (sq ft)">
+              <Input
+                type="number"
+                value={form.area_sqft ?? ""}
+                onChange={(e) =>
+                  set("area_sqft", e.target.value === "" ? null : Number(e.target.value))
+                }
+              />
+            </Field>
+            <Field label="Target completion date">
+              <Input
+                type="date"
+                value={form.expected_completion_date ?? ""}
+                onChange={(e) => set("expected_completion_date", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create project
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function Info({
   label,

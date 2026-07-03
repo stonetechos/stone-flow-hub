@@ -1,15 +1,19 @@
-/** Enquiries data access — includes stage advance and Send-RFQ orchestration. */
+/** Enquiries data access — includes stage advance, Send-RFQ, and Convert-to-Project. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable, LeadStage } from "@/lib/types";
-import { sanitizeSearch } from "@/lib/zod";
+import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import {
+  convertToProjectSchema,
   enquiryCreateSchema,
+  enquiryUpdateSchema,
   sendRfqSchema,
+  type ConvertToProjectInput,
   type EnquiryCreateInput,
+  type EnquiryUpdateInput,
   type SendRfqInput,
 } from "./schema";
-import { getProject } from "@/lib/projects/api";
+import { findCustomerByPhone, createCustomer } from "@/lib/customers/api";
 
 export type EnquiryRow = DbTable<"enquiries">;
 export type EnquiryListItem = EnquiryRow & {
@@ -28,7 +32,7 @@ export async function listEnquiries(query = ""): Promise<EnquiryListItem[]> {
     .limit(200);
 
   const s = sanitizeSearch(query);
-  if (s) q = q.or(`enquiry_no.ilike.%${s}%,notes.ilike.%${s}%`);
+  if (s) q = q.or(`enquiry_no.ilike.%${s}%,notes.ilike.%${s}%,requirement.ilike.%${s}%`);
 
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
@@ -45,22 +49,40 @@ export async function getEnquiry(id: string): Promise<EnquiryListItem | null> {
   return (data as EnquiryListItem | null) ?? null;
 }
 
+/**
+ * Create a new enquiry. Looks up the customer by mobile; if none exists,
+ * creates one on the fly. Project remains NULL — assign later via convert.
+ */
 export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryRow> {
   const parsed = enquiryCreateSchema.parse(input);
 
-  // Derive customer_id from the chosen project (single source of truth).
-  const project = await getProject(parsed.project_id);
-  if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+  let customer = await findCustomerByPhone(parsed.mobile);
+  if (!customer) {
+    customer = await createCustomer({
+      name: parsed.customer_name,
+      mobile: parsed.mobile,
+      email: parsed.email ?? null,
+      customer_type: "individual",
+      whatsapp: null,
+      city: null,
+      state: null,
+      pincode: null,
+      billing_address: null,
+      gst_number: null,
+      notes: null,
+    });
+  }
 
-  // enquiry_no is populated by the `assign_enquiry_code` trigger when blank.
   const { data, error } = await supabase
     .from("enquiries")
     .insert({
       enquiry_no: "",
-      project_id: project.id,
-      customer_id: project.customer_id,
+      customer_id: customer.id,
+      project_id: null,
+      stage: "new_lead",
       priority: parsed.priority,
-      source: parsed.source ?? null,
+      source: parsed.source,
+      requirement: parsed.requirement,
       budget_inr: parsed.budget_inr ?? null,
       required_delivery_date: parsed.required_delivery_date ?? null,
       notes: parsed.notes ?? null,
@@ -82,17 +104,14 @@ export async function updateEnquiryStage(id: string, stage: LeadStage): Promise<
   return data;
 }
 
-export async function updateEnquiry(id: string, input: EnquiryCreateInput): Promise<EnquiryRow> {
-  const parsed = enquiryCreateSchema.parse(input);
-  const project = await getProject(parsed.project_id);
-  if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+export async function updateEnquiry(id: string, input: EnquiryUpdateInput): Promise<EnquiryRow> {
+  const parsed = enquiryUpdateSchema.parse(input);
   const { data, error } = await supabase
     .from("enquiries")
     .update({
-      project_id: project.id,
-      customer_id: project.customer_id,
-      priority: parsed.priority,
       source: parsed.source ?? null,
+      requirement: parsed.requirement ?? null,
+      priority: parsed.priority,
       budget_inr: parsed.budget_inr ?? null,
       required_delivery_date: parsed.required_delivery_date ?? null,
       notes: parsed.notes ?? null,
@@ -109,6 +128,52 @@ export async function deleteEnquiry(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
+/**
+ * Convert an unassigned enquiry into a full Project.
+ * Creates the project against the enquiry's customer, links it back, and
+ * advances the enquiry stage if still at 'new_lead'.
+ */
+export async function convertEnquiryToProject(
+  enquiryId: string,
+  input: ConvertToProjectInput,
+): Promise<{ project_id: string }> {
+  const parsed = convertToProjectSchema.parse(input);
+
+  const enq = await getEnquiry(enquiryId);
+  if (!enq) throw new AppError("Enquiry not found", "NOT_FOUND", 404);
+  if (enq.project_id)
+    throw new AppError("This enquiry is already linked to a project", "CONFLICT", 409);
+
+  const { data: project, error: pErr } = await supabase
+    .from("projects")
+    .insert({
+      project_code: "",
+      customer_id: enq.customer_id,
+      name: parsed.name,
+      city: parsed.city,
+      site_address: parsed.site_address ?? null,
+      state: parsed.state ?? null,
+      architect_name: parsed.architect_name ?? null,
+      contractor_name: parsed.contractor_name ?? null,
+      area_sqft: parsed.area_sqft ?? null,
+      expected_completion_date: parsed.expected_completion_date ?? null,
+    })
+    .select("id")
+    .single();
+  if (pErr) throw new AppError(mapDbError(pErr));
+
+  const { error: uErr } = await supabase
+    .from("enquiries")
+    .update({
+      project_id: project.id,
+      stage: enq.stage === "new_lead" ? "contacted" : enq.stage,
+    })
+    .eq("id", enquiryId);
+  if (uErr) throw new AppError(mapDbError(uErr));
+
+  return { project_id: project.id };
+}
+
 export async function sendRfq(input: SendRfqInput) {
   const parsed = sendRfqSchema.parse(input);
   const { data, error } = await supabase.rpc("send_rfq", {
@@ -120,3 +185,6 @@ export async function sendRfq(input: SendRfqInput) {
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
+
+// normalizeMobile re-export placeholder to satisfy tree-shaking assumptions
+void normalizeMobile;
