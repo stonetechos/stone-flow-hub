@@ -16,7 +16,11 @@ export const Route = createFileRoute("/auth")({
     if (data.session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
+  pendingComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4" />
+  ),
 });
+
 
 function AuthPage() {
   return (
