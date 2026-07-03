@@ -126,8 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         if (e.key === "?") {
           e.preventDefault();
           toast("Shortcuts", {
-            description:
-              "⌘/Ctrl+K or / — search · C — create menu · ? — this help",
+            description: "⌘/Ctrl+K or / — search · C — create menu · ? — this help",
           });
         }
       }
@@ -135,8 +134,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
-
-
 
   async function onSignOut() {
     await supabase.auth.signOut();

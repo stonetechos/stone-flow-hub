@@ -61,10 +61,7 @@ function DashboardPage() {
                 {todayFu.isLoading ? (
                   <ul className="space-y-2" aria-hidden>
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <li
-                        key={i}
-                        className="h-9 animate-pulse rounded-sm bg-muted/60"
-                      />
+                      <li key={i} className="h-9 animate-pulse rounded-sm bg-muted/60" />
                     ))}
                   </ul>
                 ) : (todayFu.data ?? []).length === 0 ? (
@@ -113,10 +110,7 @@ function DashboardPage() {
                 {activity.isLoading ? (
                   <ul className="space-y-2" aria-hidden>
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <li
-                        key={i}
-                        className="h-8 animate-pulse rounded-sm bg-muted/60"
-                      />
+                      <li key={i} className="h-8 animate-pulse rounded-sm bg-muted/60" />
                     ))}
                   </ul>
                 ) : (activity.data ?? []).length === 0 ? (
@@ -194,7 +188,6 @@ function DashboardPage() {
     </div>
   );
 }
-
 
 function formatMoney(n: number): string {
   if (n >= 1_00_00_000) return (n / 1_00_00_000).toFixed(1) + " Cr";

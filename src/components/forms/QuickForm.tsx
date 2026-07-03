@@ -56,7 +56,6 @@ QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) 
   );
 };
 
-
 function CollapsibleSection({
   title,
   defaultOpen = false,

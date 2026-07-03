@@ -165,10 +165,7 @@ function EnquiriesPage() {
                     {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
                   </TableCell>
                   <TableCell>
-                    <RowActions
-                      onEdit={() => setEditing(e)}
-                      onDelete={() => setToDelete(e)}
-                    />
+                    <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -262,11 +259,7 @@ function NewEnquiryDialog({
               />
             </Field>
             <Field label="Mobile number" required hint="New number → new customer created">
-              <Input
-                value={form.mobile}
-                onChange={(e) => set("mobile", e.target.value)}
-                required
-              />
+              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
             </Field>
             <Field label="Email">
               <Input
@@ -427,10 +420,7 @@ function EditEnquiryDialog({
               />
             </Field>
             <Field label="Lead source">
-              <Input
-                value={form.source ?? ""}
-                onChange={(e) => set("source", e.target.value)}
-              />
+              <Input value={form.source ?? ""} onChange={(e) => set("source", e.target.value)} />
             </Field>
             <Field label="Budget (INR)">
               <Input

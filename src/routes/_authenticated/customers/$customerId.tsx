@@ -105,7 +105,13 @@ function CustomerHub() {
             }
             overflow={[
               ...(phone
-                ? [{ label: `Call ${phone}`, icon: <Phone className="h-4 w-4" />, href: `tel:${phone}` }]
+                ? [
+                    {
+                      label: `Call ${phone}`,
+                      icon: <Phone className="h-4 w-4" />,
+                      href: `tel:${phone}`,
+                    },
+                  ]
                 : []),
               ...(waDigits
                 ? [
