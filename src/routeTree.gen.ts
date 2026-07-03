@@ -43,6 +43,7 @@ import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders/new'
 import { Route as AuthenticatedSalesOrdersIdRouteImport } from './routes/_authenticated/sales-orders/$id'
+import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authenticated/rfqs/$rfqId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes/new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes/$quoteId'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders/new'
@@ -254,6 +255,11 @@ const AuthenticatedSalesOrdersIdRoute =
     path: '/sales-orders/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRfqsRfqIdRoute = AuthenticatedRfqsRfqIdRouteImport.update({
+  id: '/rfqs/$rfqId',
+  path: '/rfqs/$rfqId',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   id: '/quotes/new',
   path: '/quotes/new',
@@ -427,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
@@ -486,6 +493,7 @@ export interface FileRoutesByTo {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
@@ -547,6 +555,7 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
@@ -608,6 +617,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
     | '/vendors/$vendorId'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
     | '/vendors/$vendorId'
@@ -727,6 +738,7 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-orders/new'
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/quotes/new'
+    | '/_authenticated/rfqs/$rfqId'
     | '/_authenticated/sales-orders/$id'
     | '/_authenticated/sales-orders/new'
     | '/_authenticated/vendors/$vendorId'
@@ -1002,6 +1014,13 @@ declare module '@tanstack/react-router' {
       path: '/sales-orders/$id'
       fullPath: '/sales-orders/$id'
       preLoaderRoute: typeof AuthenticatedSalesOrdersIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rfqs/$rfqId': {
+      id: '/_authenticated/rfqs/$rfqId'
+      path: '/rfqs/$rfqId'
+      fullPath: '/rfqs/$rfqId'
+      preLoaderRoute: typeof AuthenticatedRfqsRfqIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quotes/new': {
@@ -1301,6 +1320,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
+  AuthenticatedRfqsRfqIdRoute: typeof AuthenticatedRfqsRfqIdRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
   AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRoute
@@ -1347,6 +1367,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRouteWithChildren,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
+  AuthenticatedRfqsRfqIdRoute: AuthenticatedRfqsRfqIdRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
   AuthenticatedVendorsVendorIdRoute: AuthenticatedVendorsVendorIdRoute,

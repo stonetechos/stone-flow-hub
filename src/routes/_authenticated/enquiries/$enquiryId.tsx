@@ -214,6 +214,10 @@ function EnquiryDetailPage() {
         </Card>
       </div>
 
+      <div className="mt-4">
+        <RfqsForEnquiry enquiryId={enquiryId} />
+      </div>
+
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div id="enquiry-documents">
           <AttachmentsPanel entityType="enquiry" entityId={enquiryId} />
@@ -222,6 +226,7 @@ function EnquiryDetailPage() {
           <TimelinePanel entityType="enquiry" entityId={enquiryId} />
         </div>
       </div>
+
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
       <ConvertToProjectDialog open={convertOpen} onOpenChange={setConvertOpen} enquiryId={enq.id} />
@@ -473,3 +478,52 @@ function SendRfqDialog({
     </Dialog>
   );
 }
+
+function RfqsForEnquiry({ enquiryId }: { enquiryId: string }) {
+  const rfqs = useQuery({
+    queryKey: qk.rfqs.byEnquiry(enquiryId),
+    queryFn: async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase
+        .from("rfqs")
+        .select("id, rfq_no, status, due_date, created_at, vendor_requests(id, response_status), vendor_quotes:vendor_requests(vendor_quotes(id, submitted_at, is_approved))")
+        .eq("enquiry_id", enquiryId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  if (rfqs.isLoading || (rfqs.data ?? []).length === 0) return null;
+  return (
+    <Card className="shadow-1">
+      <CardHeader className="pb-2 pt-3">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Send className="h-4 w-4 text-primary" /> RFQs sent
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <ul className="divide-y divide-border">
+          {rfqs.data!.map((r) => {
+            const requests = (r.vendor_requests ?? []) as Array<{ response_status: string }>;
+            const submitted = requests.filter((x) => x.response_status === "submitted").length;
+            return (
+              <li key={r.id} className="flex items-center justify-between py-2 text-sm">
+                <div className="min-w-0">
+                  <div className="font-mono text-xs text-muted-foreground">{r.rfq_no}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {requests.length} vendor{requests.length === 1 ? "" : "s"} · {submitted}{" "}
+                    submitted{r.due_date ? ` · due ${r.due_date}` : ""}
+                  </div>
+                </div>
+                <Link to="/rfqs/$rfqId" params={{ rfqId: r.id }}>
+                  <Button size="sm" variant="outline">Compare quotes</Button>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+

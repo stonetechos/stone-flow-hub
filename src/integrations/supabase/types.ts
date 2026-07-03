@@ -2838,6 +2838,7 @@ export type Database = {
         | "PRODUCTION_STARTED"
         | "DISPATCH_REQUESTED"
         | "DISPATCH_COMPLETED"
+        | "REVISION_REQUESTED"
       notification_status: "pending" | "sent" | "failed" | "skipped"
       payment_link_status:
         | "created"
@@ -3157,6 +3158,7 @@ export const Constants = {
         "PRODUCTION_STARTED",
         "DISPATCH_REQUESTED",
         "DISPATCH_COMPLETED",
+        "REVISION_REQUESTED",
       ],
       notification_status: ["pending", "sent", "failed", "skipped"],
       payment_link_status: [
