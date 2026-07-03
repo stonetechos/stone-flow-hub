@@ -14,7 +14,6 @@ import {
   History,
 } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
-import { toast as _toast } from "sonner";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
