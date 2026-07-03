@@ -1,7 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ArrowRightCircle, Pencil, Trash2, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  ArrowRightCircle,
+  Pencil,
+  Trash2,
+  ShoppingCart,
+  Printer,
+  Share2,
+  FolderOpen,
+  History,
+} from "lucide-react";
+import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { toast as _toast } from "sonner";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
