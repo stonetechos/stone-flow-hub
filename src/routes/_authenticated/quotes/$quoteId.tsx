@@ -121,36 +121,76 @@ function QuoteDetailPage() {
         title={quote.quote_no}
         subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-            >
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </Button>
-            <Button variant="outline" onClick={() => setConfirmDel(true)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
-            <Link
-              to="/sales-orders/new"
-              search={{
-                quote: quoteId,
-                ...(quote.project_id ? { project: quote.project_id } : {}),
-                ...(quote.customer_id ? { customer: quote.customer_id } : {}),
-              }}
-            >
-              <Button variant="outline">
-                <ShoppingCart className="mr-2 h-4 w-4" /> Create sales order
-              </Button>
-            </Link>
-            <Button
-              onClick={() => convertMut.mutate()}
-              disabled={!canConvert || convertMut.isPending}
-            >
-              {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
-            </Button>
-          </div>
+          <DetailActionBar
+            pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
+            primary={
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Link
+                  to="/sales-orders/new"
+                  search={{
+                    quote: quoteId,
+                    ...(quote.project_id ? { project: quote.project_id } : {}),
+                    ...(quote.customer_id ? { customer: quote.customer_id } : {}),
+                  }}
+                >
+                  <Button size="sm" variant="outline">
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Sales order
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  onClick={() => convertMut.mutate()}
+                  disabled={!canConvert || convertMut.isPending}
+                >
+                  {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
+                </Button>
+              </>
+            }
+            overflow={[
+              {
+                label: "Print",
+                icon: <Printer className="h-4 w-4" />,
+                onSelect: () => window.print(),
+              },
+              {
+                label: "Share link",
+                icon: <Share2 className="h-4 w-4" />,
+                onSelect: async () => {
+                  await navigator.clipboard.writeText(window.location.href);
+                },
+              },
+              {
+                label: "Documents",
+                icon: <FolderOpen className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("quote-documents")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Timeline",
+                icon: <History className="h-4 w-4" />,
+                onSelect: () =>
+                  document
+                    .getElementById("quote-timeline")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+              },
+              {
+                label: "Delete quote",
+                icon: <Trash2 className="h-4 w-4" />,
+                onSelect: () => setConfirmDel(true),
+                destructive: true,
+                separatorBefore: true,
+              },
+            ]}
+          />
         }
       />
 
