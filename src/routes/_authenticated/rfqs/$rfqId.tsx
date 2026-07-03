@@ -179,7 +179,7 @@ function CompareRfqPage() {
         description="The vendor will be notified. Other submitted quotes remain visible but this one becomes the approved choice."
         confirmLabel="Approve"
         onConfirm={() => approvingId && approveMut.mutate(approvingId)}
-        loading={approveMut.isPending}
+        busy={approveMut.isPending}
       />
 
       {/* Reject confirm */}
@@ -189,10 +189,10 @@ function CompareRfqPage() {
         title="Reject this quote?"
         description="The vendor will be notified that their quote was not selected."
         confirmLabel="Reject"
-        variant="destructive"
         onConfirm={() => rejectingId && rejectMut.mutate(rejectingId)}
-        loading={rejectMut.isPending}
+        busy={rejectMut.isPending}
       />
+
 
       {/* Revision dialog */}
       <RevisionDialog
