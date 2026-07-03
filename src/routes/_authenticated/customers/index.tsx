@@ -114,7 +114,7 @@ function CustomersPage() {
       </div>
 
       {query.isLoading ? (
-        <LoadingBlock />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : (query.data ?? []).length === 0 ? (
