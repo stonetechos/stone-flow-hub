@@ -238,7 +238,7 @@ export const hub = {
       .from("site_visits")
       .select("*")
       .eq("project_id", projectId)
-      .order("visited_at", { ascending: false })
+      .order("scheduled_at", { ascending: false, nullsFirst: false })
       .limit(50);
     if (error) throw new AppError(mapDbError(error));
     return data ?? [];
