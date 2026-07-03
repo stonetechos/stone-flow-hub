@@ -49,46 +49,8 @@ function DashboardPage() {
         <ErrorBlock message={toUserMessage(error)} onRetry={() => refetch()} />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Kpi
-              title="Active Enquiries"
-              value={data?.activeEnquiries ?? 0}
-              icon={<ClipboardList className="h-5 w-5" />}
-              to="/enquiries"
-            />
-            <Kpi
-              title="Pending RFQs"
-              value={data?.pendingRfqs ?? 0}
-              icon={<Send className="h-5 w-5" />}
-              to="/enquiries"
-            />
-            <Kpi
-              title="Today's Follow-ups"
-              value={data?.todayFollowups ?? 0}
-              icon={<CalendarClock className="h-5 w-5" />}
-              to="/followups"
-            />
-            <Kpi
-              title="Outstanding (₹)"
-              value={formatMoney(data?.outstandingInr ?? 0)}
-              icon={<Wallet className="h-5 w-5" />}
-              to="/invoices"
-            />
-            <Kpi
-              title="Collected This Month (₹)"
-              value={formatMoney(data?.paymentsThisMonthInr ?? 0)}
-              icon={<Receipt className="h-5 w-5" />}
-              to="/invoices"
-            />
-            <Kpi
-              title="Active Customers"
-              value={data?.customers ?? 0}
-              icon={<Users className="h-5 w-5" />}
-              to="/customers"
-            />
-          </div>
-
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {/* Operational panels first — what needs attention today. */}
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card className="shadow-1">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
@@ -97,7 +59,14 @@ function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {todayFu.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading…</p>
+                  <ul className="space-y-2" aria-hidden>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <li
+                        key={i}
+                        className="h-9 animate-pulse rounded-sm bg-muted/60"
+                      />
+                    ))}
+                  </ul>
                 ) : (todayFu.data ?? []).length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Nothing due today. Enjoy the calm.
@@ -142,7 +111,14 @@ function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {activity.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading…</p>
+                  <ul className="space-y-2" aria-hidden>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <li
+                        key={i}
+                        className="h-8 animate-pulse rounded-sm bg-muted/60"
+                      />
+                    ))}
+                  </ul>
                 ) : (activity.data ?? []).length === 0 ? (
                   <p className="text-sm text-muted-foreground">No activity yet.</p>
                 ) : (
@@ -173,11 +149,52 @@ function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Pipeline stats — supporting context, ranked below actionable panels. */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Kpi
+              title="Active Enquiries"
+              value={data?.activeEnquiries ?? 0}
+              icon={<ClipboardList className="h-5 w-5" />}
+              to="/enquiries"
+            />
+            <Kpi
+              title="Pending RFQs"
+              value={data?.pendingRfqs ?? 0}
+              icon={<Send className="h-5 w-5" />}
+              to="/enquiries"
+            />
+            <Kpi
+              title="Today's Follow-ups"
+              value={data?.todayFollowups ?? 0}
+              icon={<CalendarClock className="h-5 w-5" />}
+              to="/followups"
+            />
+            <Kpi
+              title="Outstanding (₹)"
+              value={formatMoney(data?.outstandingInr ?? 0)}
+              icon={<Wallet className="h-5 w-5" />}
+              to="/invoices"
+            />
+            <Kpi
+              title="Collected This Month (₹)"
+              value={formatMoney(data?.paymentsThisMonthInr ?? 0)}
+              icon={<Receipt className="h-5 w-5" />}
+              to="/invoices"
+            />
+            <Kpi
+              title="Active Customers"
+              value={data?.customers ?? 0}
+              icon={<Users className="h-5 w-5" />}
+              to="/customers"
+            />
+          </div>
         </>
       )}
     </div>
   );
 }
+
 
 function formatMoney(n: number): string {
   if (n >= 1_00_00_000) return (n / 1_00_00_000).toFixed(1) + " Cr";
