@@ -42,6 +42,7 @@ const search = z.object({
   new: z.string().optional(),
   project: z.string().uuid().optional(),
   enquiry: z.string().uuid().optional(),
+  status: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/quotes/")({
@@ -53,10 +54,10 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 function QuotesPage() {
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const params = Route.useSearch();
+  const [statusFilter, setStatusFilter] = useState<string>(params.status ?? "all");
   const [open, setOpen] = useState(false);
   const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
-  const params = Route.useSearch();
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.list(dq), queryFn: () => listQuotes(dq) });
@@ -78,6 +79,13 @@ function QuotesPage() {
       setOpen(true);
     }
   }, [params.new]);
+  useEffect(() => {
+    if (params.status && params.status !== statusFilter) {
+      setStatusFilter(params.status);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.status]);
+
 
   return (
     <div>

@@ -86,6 +86,7 @@ function DashboardPage() {
           value={data?.todayFollowups ?? 0}
           icon={<CalendarClock className="h-4 w-4" />}
           to="/followups"
+          search={{ scope: "today" }}
           tone={data?.todayFollowups ? "primary" : "muted"}
         />
         <Kpi
@@ -93,6 +94,7 @@ function DashboardPage() {
           value={data?.overdueFollowups ?? 0}
           icon={<AlertTriangle className="h-4 w-4" />}
           to="/followups"
+          search={{ scope: "pending" }}
           tone={data?.overdueFollowups ? "danger" : "muted"}
         />
         <Kpi
@@ -107,6 +109,7 @@ function DashboardPage() {
           value={data?.quotesAwaitingApproval ?? 0}
           icon={<FileCheck2 className="h-4 w-4" />}
           to="/quotes"
+          search={{ status: "sent" }}
           tone="warn"
         />
         <Kpi
@@ -114,6 +117,7 @@ function DashboardPage() {
           value={data?.ordersToStart ?? 0}
           icon={<Factory className="h-4 w-4" />}
           to="/sales-orders"
+          search={{ status: "confirmed" }}
           tone="info"
         />
         <Kpi
@@ -121,8 +125,10 @@ function DashboardPage() {
           value={"₹" + formatMoney(data?.revenuePipelineInr ?? 0)}
           icon={<TrendingUp className="h-4 w-4" />}
           to="/quotes"
+          search={{ status: "sent" }}
           tone="ok"
         />
+
       </div>
 
       {/* Secondary KPIs — money & pipeline health. */}
@@ -307,6 +313,7 @@ function Kpi({
   value,
   icon,
   to,
+  search,
   tone = "muted",
   compact = false,
 }: {
@@ -314,11 +321,12 @@ function Kpi({
   value: number | string;
   icon: React.ReactNode;
   to: string;
+  search?: Record<string, string>;
   tone?: Tone;
   compact?: boolean;
 }) {
   return (
-    <Link to={to} className="block">
+    <Link to={to} search={search as never} className="block">
       <div
         className={cn(
           "rounded-lg border px-3 py-2.5 transition-shadow hover:shadow-2",
@@ -343,3 +351,4 @@ function Kpi({
     </Link>
   );
 }
+

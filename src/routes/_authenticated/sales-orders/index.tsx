@@ -34,20 +34,24 @@ import { SALES_ORDER_STATUSES } from "@/lib/sales-orders/schema";
 export const Route = createFileRoute("/_authenticated/sales-orders/")({
   ssr: false,
   component: SalesOrdersPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string } =>
+    typeof s.status === "string" ? { status: s.status } : {},
 });
 
 function SalesOrdersPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
+  const search = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>(search.status ?? "");
   const [toDelete, setToDelete] = useState<SalesOrderListItem | null>(null);
 
   const query = useQuery({
     queryKey: qk.salesOrders.list(dq, status),
     queryFn: () => listSalesOrders(dq, status),
   });
+
 
   const del = useMutation({
     mutationFn: (id: string) => deleteSalesOrder(id),
