@@ -38,9 +38,8 @@ import { vendorCreateSchema, type VendorCreateInput } from "@/lib/vendors/schema
 export const Route = createFileRoute("/_authenticated/vendors/")({
   ssr: false,
   component: VendorsPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    edit: typeof s.edit === "string" ? s.edit : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
+    typeof s.edit === "string" ? { edit: s.edit } : {},
 });
 
 function VendorsPage() {
