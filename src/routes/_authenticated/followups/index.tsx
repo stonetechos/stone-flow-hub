@@ -52,11 +52,16 @@ type Scope = "today" | "pending" | "all";
 export const Route = createFileRoute("/_authenticated/followups/")({
   ssr: false,
   component: FollowupsPage,
+  validateSearch: (s: Record<string, unknown>): { scope?: Scope } => {
+    const v = typeof s.scope === "string" ? s.scope : "";
+    return v === "today" || v === "pending" || v === "all" ? { scope: v as Scope } : {};
+  },
 });
 
 function FollowupsPage() {
   const qc = useQueryClient();
-  const [scope, setScope] = useState<Scope>("today");
+  const search = Route.useSearch();
+  const [scope, setScope] = useState<Scope>(search.scope ?? "today");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FollowupWithEnquiry | null>(null);
   const [toDelete, setToDelete] = useState<FollowupWithEnquiry | null>(null);
@@ -65,6 +70,7 @@ function FollowupsPage() {
     queryKey: qk.followups.scope(scope),
     queryFn: () => listFollowups(scope),
   });
+
 
   const completeMut = useMutation({
     mutationFn: (id: string) => completeFollowup({ id }),
