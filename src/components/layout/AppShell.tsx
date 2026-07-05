@@ -136,9 +136,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   async function onSignOut() {
-    await supabase.auth.signOut();
-    toast.success("Signed out");
-    await navigate({ to: "/auth" });
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      toast.success("Signed out");
+      // Root-level onAuthStateChange handles cache teardown + redirect.
+      await navigate({ to: "/auth", replace: true });
+    }
   }
 
   return (
