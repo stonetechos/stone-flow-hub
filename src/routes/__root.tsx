@@ -126,9 +126,23 @@ function RootComponent() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_OUT") {
+        // Stop in-flight protected queries before their 401s land, then drop
+        // cached protected data. Redirect happens via the auth gate on the
+        // next router.invalidate().
+        void queryClient.cancelQueries();
+        queryClient.clear();
+        router.invalidate();
+        // Force navigation to /auth from anywhere (e.g. another tab signed us out).
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+          window.location.replace("/auth");
+        }
+        return;
+      }
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        router.invalidate();
+        queryClient.invalidateQueries();
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
