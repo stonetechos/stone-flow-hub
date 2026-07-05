@@ -62,6 +62,10 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
+const ADMIN_NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
+  { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
+];
+
 function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
   return (
     <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="Primary">
