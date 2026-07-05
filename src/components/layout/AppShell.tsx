@@ -24,6 +24,7 @@ import {
   CheckSquare,
   FolderOpen,
   Star,
+  ShieldCheck,
   Menu,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
