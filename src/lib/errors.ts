@@ -33,11 +33,26 @@ export function mapDbError(err: { code?: string; message?: string } | null): str
       return "A record with the same details already exists.";
     case "23503":
       return "Cannot complete: a linked record is missing.";
+    case "23514":
+      return "That value doesn't meet a required rule. Check the highlighted fields.";
+    case "22P02":
+      return "One of the fields has an invalid value.";
     case "42501":
-      return "You don't have permission to do that.";
+      // Distinguish real permission denials from a stale/missing session.
+      // The auth gate + attacher will redirect on missing session.
+      return "Permission denied. Your role does not allow this action.";
     case "PGRST301":
-      return "Your session expired. Please sign in again.";
+    case "PGRST302":
+      return "Your session has expired. Please sign in again.";
+    case "PGRST116":
+      return "Record not found.";
     default:
+      if (/JWT|jwt|token/i.test(err.message ?? "")) {
+        return "Your session has expired. Please sign in again.";
+      }
+      if (/Failed to fetch|NetworkError/i.test(err.message ?? "")) {
+        return "Network error. Check your connection and try again.";
+      }
       return err.message || "Database error";
   }
 }

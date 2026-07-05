@@ -24,6 +24,7 @@ import {
   CheckSquare,
   FolderOpen,
   Star,
+  ShieldCheck,
   Menu,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -61,10 +62,23 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
+const ADMIN_NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
+  { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
+];
+
+function NavList({
+  path,
+  onNavigate,
+  isAdmin,
+}: {
+  path: string;
+  onNavigate?: () => void;
+  isAdmin: boolean;
+}) {
+  const items = isAdmin ? [...NAV, ...ADMIN_NAV] : NAV;
   return (
     <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="Primary">
-      {NAV.map((item) => {
+      {items.map((item) => {
         const active = path === item.to || path.startsWith(`${item.to}/`);
         const Icon = item.icon;
         return (
@@ -96,6 +110,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data: sess } = await supabase.auth.getUser();
+      const uid = sess.user?.id;
+      if (!uid) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!cancelled) setIsAdmin(!!data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
@@ -136,9 +170,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   async function onSignOut() {
-    await supabase.auth.signOut();
-    toast.success("Signed out");
-    await navigate({ to: "/auth" });
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      toast.success("Signed out");
+      // Root-level onAuthStateChange handles cache teardown + redirect.
+      await navigate({ to: "/auth", replace: true });
+    }
   }
 
   return (
@@ -158,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Stone Tech <span className="text-sidebar-primary">OS</span>
           </span>
         </div>
-        <NavList path={path} />
+        <NavList path={path} isAdmin={isAdmin} />
         <div className="border-t border-sidebar-border p-2">
           <Button
             variant="ghost"
@@ -198,7 +236,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   Stone Tech <span className="text-sidebar-primary">OS</span>
                 </SheetTitle>
               </SheetHeader>
-              <NavList path={path} onNavigate={() => setMobileNavOpen(false)} />
+              <NavList path={path} isAdmin={isAdmin} onNavigate={() => setMobileNavOpen(false)} />
               <div className="border-t border-sidebar-border p-2">
                 <Button
                   variant="ghost"
