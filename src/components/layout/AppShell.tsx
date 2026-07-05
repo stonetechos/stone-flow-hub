@@ -66,10 +66,19 @@ const ADMIN_NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutD
   { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
 ];
 
-function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
+function NavList({
+  path,
+  onNavigate,
+  isAdmin,
+}: {
+  path: string;
+  onNavigate?: () => void;
+  isAdmin: boolean;
+}) {
+  const items = isAdmin ? [...NAV, ...ADMIN_NAV] : NAV;
   return (
     <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="Primary">
-      {NAV.map((item) => {
+      {items.map((item) => {
         const active = path === item.to || path.startsWith(`${item.to}/`);
         const Icon = item.icon;
         return (
