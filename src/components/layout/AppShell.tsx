@@ -196,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Stone Tech <span className="text-sidebar-primary">OS</span>
           </span>
         </div>
-        <NavList path={path} />
+        <NavList path={path} isAdmin={isAdmin} />
         <div className="border-t border-sidebar-border p-2">
           <Button
             variant="ghost"
@@ -236,7 +236,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   Stone Tech <span className="text-sidebar-primary">OS</span>
                 </SheetTitle>
               </SheetHeader>
-              <NavList path={path} onNavigate={() => setMobileNavOpen(false)} />
+              <NavList path={path} isAdmin={isAdmin} onNavigate={() => setMobileNavOpen(false)} />
               <div className="border-t border-sidebar-border p-2">
                 <Button
                   variant="ghost"
