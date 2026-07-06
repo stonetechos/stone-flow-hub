@@ -42,6 +42,8 @@ export const qk = {
     all: ["followups"] as const,
     scope: (scope: "pending" | "today" | "all") => ["followups", "scope", scope] as const,
     byEnquiry: (id: string) => ["followups", "byEnquiry", id] as const,
+    byEntity: (entityType: string, entityId: string) =>
+      ["followups", "byEntity", entityType, entityId] as const,
   },
   activity: {
     recent: ["activity", "recent"] as const,
