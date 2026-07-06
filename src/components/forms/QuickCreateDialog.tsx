@@ -90,6 +90,7 @@ function QuickCreateCustomer({
     },
     onSuccess: (row) => {
       toast.success(`Customer ${row.customer_code} created`);
+      seedPickerCache(qc, "customer", row);
       invalidateCustomer(qc, row.id);
       onCreated(row);
       onOpenChange(false);
