@@ -190,6 +190,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
+    <DemoProvider>
     <div className="flex min-h-dvh bg-background">
       <a
         href="#main-content"
