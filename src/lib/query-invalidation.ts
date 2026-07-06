@@ -29,6 +29,40 @@ function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["products", "list"] });
 }
 
+/**
+ * Seed a newly-created row into every relevant picker/list/byId cache so
+ * open dropdowns render the new row immediately (before the background
+ * refetch triggered by the matching `invalidate*` helper completes).
+ */
+export function seedPickerCache(
+  qc: QueryClient,
+  type: "customer" | "vendor" | "project" | "product",
+  row: { id: string; [k: string]: unknown },
+): void {
+  const listPrefixes: readonly string[][] = (() => {
+    switch (type) {
+      case "customer":
+        return [["customers", "picker"], ["customers", "list"]];
+      case "vendor":
+        return [["vendors", "picker"], ["vendors", "list"]];
+      case "project":
+        return [["projects", "picker"], ["projects", "list"], ["projects", "byCustomer"]];
+      case "product":
+        return [["products", "picker"], ["products", "list"]];
+    }
+  })();
+  for (const prefix of listPrefixes) {
+    qc.setQueriesData({ queryKey: prefix }, (prev: unknown) => {
+      if (!Array.isArray(prev)) return prev;
+      if (prev.some((r) => (r as { id?: string })?.id === row.id)) return prev;
+      return [row, ...prev];
+    });
+  }
+  const byIdKey =
+    type === "product" ? ["products", "byId", row.id] : [`${type}s`, "byId", row.id];
+  qc.setQueryData(byIdKey, row);
+}
+
 export function invalidateCustomer(qc: QueryClient, id?: string): void {
   bump(qc, qk.customers.all);
   if (id) bump(qc, qk.customers.byId(id));

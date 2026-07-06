@@ -33,7 +33,7 @@ import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
-import { invalidateCustomer } from "@/lib/query-invalidation";
+import { invalidateCustomer, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
   createCustomer,
@@ -267,7 +267,8 @@ function CustomerFormDialog({
       editing ? updateCustomer(editing.id, input) : createCustomer(input),
     onSuccess: (row) => {
       toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
-      invalidateCustomer(qc);
+      if (!editing) seedPickerCache(qc, "customer", row);
+      invalidateCustomer(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

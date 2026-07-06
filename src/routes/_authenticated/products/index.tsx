@@ -33,7 +33,7 @@ import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
-import { invalidateProduct } from "@/lib/query-invalidation";
+import { invalidateProduct, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
   createProduct,
@@ -265,7 +265,8 @@ function ProductFormDialog({
       editing ? updateProduct(editing.id, input) : createProduct(input),
     onSuccess: (row) => {
       toast.success(editing ? "Product updated" : `Product ${row.product_code} created`);
-      invalidateProduct(qc);
+      if (!editing) seedPickerCache(qc, "product", row);
+      invalidateProduct(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

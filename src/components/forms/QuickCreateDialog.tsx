@@ -29,6 +29,7 @@ import {
   invalidateVendor,
   invalidateProject,
   invalidateProduct,
+  seedPickerCache,
 } from "@/lib/query-invalidation";
 import { createCustomer } from "@/lib/customers/api";
 import { customerCreateSchema, CUSTOMER_TYPES } from "@/lib/customers/schema";
@@ -89,6 +90,7 @@ function QuickCreateCustomer({
     },
     onSuccess: (row) => {
       toast.success(`Customer ${row.customer_code} created`);
+      seedPickerCache(qc, "customer", row);
       invalidateCustomer(qc, row.id);
       onCreated(row);
       onOpenChange(false);
@@ -194,6 +196,7 @@ function QuickCreateVendor({
     },
     onSuccess: (row) => {
       toast.success(`Vendor ${row.vendor_code} created`);
+      seedPickerCache(qc, "vendor", row);
       invalidateVendor(qc, row.id);
       onCreated(row);
       onOpenChange(false);
@@ -296,6 +299,7 @@ function QuickCreateProject({
     },
     onSuccess: (row) => {
       toast.success(`Project ${row.project_code} created`);
+      seedPickerCache(qc, "project", row);
       invalidateProject(qc, row.id);
       onCreated(row);
       onOpenChange(false);
@@ -392,6 +396,7 @@ function QuickCreateProduct({
     },
     onSuccess: (row) => {
       toast.success(`Product ${row.product_code} created`);
+      seedPickerCache(qc, "product", row);
       invalidateProduct(qc, row.id);
       onCreated(row);
       onOpenChange(false);
