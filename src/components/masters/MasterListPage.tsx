@@ -2,7 +2,7 @@
  * Shared master-data CRUD page. Drives all 12 stone-industry master routes
  * from a single MasterConfig — one component, zero duplicated CRUD logic.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Search, Layers } from "lucide-react";
 import { toast } from "sonner";
