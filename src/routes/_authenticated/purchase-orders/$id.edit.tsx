@@ -40,7 +40,7 @@ function EditPurchaseOrderPage() {
     queryKey: qk.purchaseOrders.byId(id),
     queryFn: () => getPurchaseOrder(id),
   });
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: listVendorsForPicker });
+  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
   const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
 
   const [form, setForm] = useState<PurchaseOrderCreateInput | null>(null);

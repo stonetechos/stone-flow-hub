@@ -45,7 +45,7 @@ function today() {
 function NewPurchaseOrderPage() {
   const nav = useNavigate();
   const params = Route.useSearch();
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: listVendorsForPicker });
+  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
   const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
 
   const [form, setForm] = useState<PurchaseOrderCreateInput>({
