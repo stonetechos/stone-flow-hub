@@ -266,6 +266,7 @@ function ProjectFormDialog({
       editing ? updateProject(editing.id, input) : createProject(input),
     onSuccess: (row) => {
       toast.success(editing ? "Project updated" : `Project ${row.project_code} created`);
+      if (!editing) seedPickerCache(qc, "project", row);
       invalidateProject(qc, row.id);
       onOpenChange(false);
     },
