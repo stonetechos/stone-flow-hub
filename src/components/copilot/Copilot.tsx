@@ -138,8 +138,9 @@ export function Copilot() {
           </p>
         </SheetHeader>
 
-        <ScrollArea className="flex-1" viewportRef={scrollRef}>
-          <div className="space-y-3 p-4">
+        <ScrollArea className="flex-1">
+          <div ref={scrollRef} className="space-y-3 p-4">
+
             {messages.length === 0 && (
               <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
                 <p className="mb-2 font-medium">Try one of these:</p>
