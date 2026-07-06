@@ -36,7 +36,7 @@ function EditSalesOrderPage() {
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
   const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers() });
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
+  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
   const quotes = useQuery({ queryKey: qk.quotes.list(""), queryFn: () => listQuotes() });
 
   const [form, setForm] = useState<SalesOrderCreateInput | null>(null);

@@ -234,7 +234,7 @@ function CreateQuoteDialog({
 }) {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: listProjectsForPicker });
+  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
   const [validUntil, setValidUntil] = useState("");
