@@ -46,6 +46,7 @@ import { convertToProjectSchema, type ConvertToProjectInput } from "@/lib/enquir
 import { listVendorsForPicker } from "@/lib/vendors/api";
 import { LEAD_STAGES, LEAD_STAGE_LABEL } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
+import { invalidateEnquiry } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,

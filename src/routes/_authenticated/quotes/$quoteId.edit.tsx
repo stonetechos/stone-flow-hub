@@ -14,6 +14,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getQuote, updateQuote } from "@/lib/quotes/api";
 import type { QuoteUpdateInput } from "@/lib/quotes/schema";
+import { invalidateQuote } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   ssr: false,

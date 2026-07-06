@@ -48,6 +48,7 @@ import {
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 import type { DbTable } from "@/lib/types";
+import { invalidateQuote, invalidateInvoice } from "@/lib/query-invalidation";
 
 type QuoteStatus = DbTable<"quotes">["status"];
 

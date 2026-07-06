@@ -22,6 +22,7 @@ import { toUserMessage } from "@/lib/errors";
 import { getInventoryItem, updateInventoryItem } from "@/lib/inventory/api";
 import type { InventoryCreateInput } from "@/lib/inventory/schema";
 import { listProducts } from "@/lib/products/api";
+import { invalidateInventory } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/inventory/$id/edit")({
   ssr: false,
