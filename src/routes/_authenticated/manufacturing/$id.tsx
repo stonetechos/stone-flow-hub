@@ -192,7 +192,7 @@ function ProductionOrderDetail() {
         )}
       </Card>
 
-      <InstallationTracker orderId={id} projectId={po.project_id ?? null} />
+      <InstallationTracker orderId={id} projectId={po.projects?.id ?? null} />
     </div>
   );
 }
