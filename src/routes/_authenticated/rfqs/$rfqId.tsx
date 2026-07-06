@@ -43,6 +43,7 @@ import {
 } from "@/lib/quotes/comparison";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import { RfqVendorRecommendations } from "@/components/rfqs/RfqVendorRecommendations";
 
 export const Route = createFileRoute("/_authenticated/rfqs/$rfqId")({
   ssr: false,
