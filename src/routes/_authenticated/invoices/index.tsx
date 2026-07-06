@@ -83,15 +83,17 @@ function InvoicesPage() {
         title="Invoices"
         subtitle="Collect payments — Razorpay links or manual entries."
         actions={
-          <Button onClick={() => nav({ to: "/invoices/new" })}>
-            <Plus className="mr-2 h-4 w-4" /> New invoice
-          </Button>
+          roles.canWrite && (
+            <Button onClick={() => nav({ to: "/invoices/new" })}>
+              <Plus className="mr-2 h-4 w-4" /> New invoice
+            </Button>
+          )
         }
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => commitSearch(e.target.value)}
           placeholder="Search by invoice no…"
           className="max-w-md"
         />
