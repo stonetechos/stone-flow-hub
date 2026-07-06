@@ -317,5 +317,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <Copilot />
     </div>
+    </DemoProvider>
   );
 }
