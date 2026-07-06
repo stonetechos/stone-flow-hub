@@ -121,6 +121,10 @@ const LABEL: Record<EntityType, { singular: string; placeholder: string }> = {
   vendor: { singular: "vendor", placeholder: "Select vendor" },
   project: { singular: "project", placeholder: "Select project" },
   product: { singular: "product", placeholder: "Select product" },
+  stone_type: { singular: "stone type", placeholder: "Select stone" },
+  surface_finish: { singular: "surface finish", placeholder: "Select finish" },
+  edge_finish: { singular: "edge finish", placeholder: "Select edge" },
+  product_family: { singular: "product family", placeholder: "Select family" },
 };
 
 export function EntityPicker({
