@@ -182,6 +182,27 @@ export const MASTER_CONFIGS: MasterConfig[] = [
       { key: "dimension", label: "Dimension" },
     ],
   },
+  {
+    table: "qc_templates",
+    route: "qc-templates",
+    title: "QC Templates",
+    singular: "QC Template",
+    description: "Reusable QC checklists (surface, dimension, thickness, edge, colour, crack, packing, dispatch).",
+    extraFields: [
+      { key: "category", label: "Category", type: "text", required: true, placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch" },
+    ],
+    extraColumns: [{ key: "category", label: "Category" }],
+  },
+];
+    extraFields: [
+      { key: "symbol", label: "Symbol", type: "text", required: true },
+      { key: "dimension", label: "Dimension", type: "text", placeholder: "area / length / mass / count" },
+    ],
+    extraColumns: [
+      { key: "symbol", label: "Symbol" },
+      { key: "dimension", label: "Dimension" },
+    ],
+  },
 ];
 
 export const COMMON_FIELDS = [COMMON.code, COMMON.name];
