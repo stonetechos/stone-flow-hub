@@ -26,6 +26,7 @@ import {
   FolderOpen,
   Star,
   ShieldCheck,
+  Layers,
   Menu,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
