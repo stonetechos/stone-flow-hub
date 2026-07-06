@@ -62,6 +62,11 @@ export function QuickCreateDialog(props: QuickCreateDialogProps) {
       return <QuickCreateProject {...props} />;
     case "product":
       return <QuickCreateProduct {...props} />;
+    default:
+      // Masters (stone_type / surface_finish / edge_finish / product_family) are
+      // managed on their dedicated pages, not inline. EntityPicker hides the
+      // "create new" affordance when there is no quick-create form.
+      return null;
   }
 }
 
