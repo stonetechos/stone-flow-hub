@@ -254,23 +254,53 @@ function NewEnquiryDialog({
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
-            <Field label="Customer name" required>
-              <Input
-                value={form.customer_name}
-                onChange={(e) => set("customer_name", e.target.value)}
-                required
+            <Field
+              label="Customer"
+              required
+              className="md:col-span-2"
+              hint="Pick an existing customer or create a new one."
+            >
+              <EntityPicker
+                type="customer"
+                value={form.customer_id ?? null}
+                onChange={(id) => {
+                  set("customer_id", id);
+                  if (id) {
+                    // Selected an existing customer — clear inline-create fields.
+                    set("customer_name", "");
+                    set("mobile", "");
+                    set("email", null);
+                  }
+                }}
+                allowCreate
+                placeholder="Search customer by name, code, phone…"
               />
             </Field>
-            <Field label="Mobile number" required hint="New number → new customer created">
-              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
-            </Field>
-            <Field label="Email">
-              <Input
-                type="email"
-                value={form.email ?? ""}
-                onChange={(e) => set("email", e.target.value || null)}
-              />
-            </Field>
+            {!form.customer_id ? (
+              <>
+                <Field label="Customer name" required>
+                  <Input
+                    value={form.customer_name}
+                    onChange={(e) => set("customer_name", e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field label="Mobile number" required hint="New number → new customer created">
+                  <Input
+                    value={form.mobile}
+                    onChange={(e) => set("mobile", e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field label="Email">
+                  <Input
+                    type="email"
+                    value={form.email ?? ""}
+                    onChange={(e) => set("email", e.target.value || null)}
+                  />
+                </Field>
+              </>
+            ) : null}
             <Field label="Lead source" required hint="e.g. walk-in, referral, website">
               <Input
                 value={form.source ?? ""}
