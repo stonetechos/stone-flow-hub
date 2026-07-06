@@ -150,6 +150,7 @@ function SalesOrderDetailPage() {
               </Row>
             </CardContent>
           </Card>
+          <ProductionOrdersPanel salesOrderId={r.id} />
           <NotesPanel
             table="sales_orders"
             id={r.id}
