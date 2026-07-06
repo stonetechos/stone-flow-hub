@@ -16,8 +16,17 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
 
   const s = sanitizeSearch(query);
   if (s) {
+    // Search across every field a staff user reasonably types when looking up a customer.
     q = q.or(
-      `name.ilike.%${s}%,customer_code.ilike.%${s}%,primary_phone.ilike.%${s}%,city.ilike.%${s}%`,
+      [
+        `name.ilike.%${s}%`,
+        `customer_code.ilike.%${s}%`,
+        `primary_phone.ilike.%${s}%`,
+        `whatsapp.ilike.%${s}%`,
+        `primary_email.ilike.%${s}%`,
+        `gst_number.ilike.%${s}%`,
+        `city.ilike.%${s}%`,
+      ].join(","),
     );
   }
   const { data, error } = await q;
