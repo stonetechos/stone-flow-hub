@@ -75,7 +75,7 @@ function PaymentsPage() {
       <div className="mb-3 flex items-center gap-2">
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => commitSearch(e.target.value)}
           placeholder="Search payment or reference…"
           className="max-w-md"
         />
@@ -91,9 +91,11 @@ function PaymentsPage() {
           title="No payments yet"
           message="Record a payment received against an invoice."
           action={
-            <Button onClick={() => nav({ to: "/payments/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New payment
-            </Button>
+            roles.canWrite ? (
+              <Button onClick={() => nav({ to: "/payments/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New payment
+              </Button>
+            ) : undefined
           }
         />
       ) : (
