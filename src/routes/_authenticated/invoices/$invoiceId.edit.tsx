@@ -14,6 +14,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getInvoice, updateInvoice } from "@/lib/invoices/api";
 import type { InvoiceUpdateInput } from "@/lib/invoices/schema";
+import { invalidateInvoice } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/edit")({
   ssr: false,
