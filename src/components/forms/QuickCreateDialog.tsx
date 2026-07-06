@@ -196,6 +196,7 @@ function QuickCreateVendor({
     },
     onSuccess: (row) => {
       toast.success(`Vendor ${row.vendor_code} created`);
+      seedPickerCache(qc, "vendor", row);
       invalidateVendor(qc, row.id);
       onCreated(row);
       onOpenChange(false);
