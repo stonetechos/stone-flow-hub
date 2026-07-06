@@ -267,7 +267,8 @@ function CustomerFormDialog({
       editing ? updateCustomer(editing.id, input) : createCustomer(input),
     onSuccess: (row) => {
       toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
-      invalidateCustomer(qc);
+      if (!editing) seedPickerCache(qc, "customer", row);
+      invalidateCustomer(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
