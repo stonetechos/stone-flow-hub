@@ -52,7 +52,7 @@ export function seedPickerCache(
     }
   })();
   for (const prefix of listPrefixes) {
-    qc.setQueriesData<unknown>({ queryKey: prefix }, (prev) => {
+    qc.setQueriesData({ queryKey: prefix }, (prev: unknown) => {
       if (!Array.isArray(prev)) return prev;
       if (prev.some((r) => (r as { id?: string })?.id === row.id)) return prev;
       return [row, ...prev];
