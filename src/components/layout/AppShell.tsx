@@ -13,6 +13,7 @@ import {
   Search,
   Gem,
   ShoppingCart,
+  Send,
   Truck,
   Warehouse,
   ClipboardCheck,
@@ -41,6 +42,7 @@ import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/enquiries", label: "Enquiries", icon: ClipboardList },
+  { to: "/rfqs", label: "RFQs", icon: Send },
   { to: "/followups", label: "Follow-ups", icon: CalendarClock },
   { to: "/tasks", label: "Tasks", icon: CheckSquare },
   { to: "/calendar", label: "Calendar", icon: Calendar },

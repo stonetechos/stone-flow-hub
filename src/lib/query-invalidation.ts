@@ -122,6 +122,25 @@ export function invalidateDispatch(qc: QueryClient, id?: string): void {
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
 }
+export function invalidatePayment(qc: QueryClient, id?: string, invoiceId?: string): void {
+  bump(qc, qk.paymentsAll.all);
+  if (id) bump(qc, qk.paymentsAll.byId(id));
+  if (invoiceId) {
+    bump(qc, qk.invoices.byId(invoiceId));
+    bump(qc, qk.invoices.payments(invoiceId));
+  }
+  bump(qc, qk.invoices.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateInventory(qc: QueryClient, id?: string): void {
+  bump(qc, qk.inventory.all);
+  if (id) bump(qc, qk.inventory.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
 
 export function invalidateFollowup(
   qc: QueryClient,

@@ -30,29 +30,49 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
 import { formatInr } from "@/lib/format";
+import { invalidateInvoice } from "@/lib/query-invalidation";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/invoices/")({
   ssr: false,
   component: InvoicesPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; q?: string } => ({
+    status: typeof s.status === "string" ? s.status : undefined,
+    q: typeof s.q === "string" ? s.q : undefined,
+  }),
 });
 
 function InvoicesPage() {
-  const [q, setQ] = useState("");
-  const dq = useDebouncedValue(q, 250);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
   const nav = useNavigate();
   const qc = useQueryClient();
+  const roles = useRoles();
+  const search = Route.useSearch();
+  const statusFilter = search.status ?? "all";
+  const [q, setQ] = useState(search.q ?? "");
+  const dq = useDebouncedValue(q, 250);
+  const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
   const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
     onSuccess: () => {
       toast.success("Invoice deleted");
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      invalidateInvoice(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+  const setStatusFilter = (v: string) =>
+    nav({
+      to: "/invoices",
+      search: { status: v === "all" ? undefined : v, q: dq || undefined },
+    });
+  const commitSearch = (v: string) => {
+    setQ(v);
+    nav({
+      to: "/invoices",
+      search: { status: statusFilter === "all" ? undefined : statusFilter, q: v || undefined },
+    });
+  };
   const rows = (query.data ?? []).filter(
     (r) => statusFilter === "all" || r.status === statusFilter,
   );
