@@ -60,14 +60,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --shadow-1: 0 1px 2px 0 rgb(0 0 0 / 0.06);
-  --shadow-2: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
-  --shadow-3: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
-  --shadow-4: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --shadow-1: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-2: 0 2px 6px -1px rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+  --shadow-3: 0 8px 20px -6px rgb(15 23 42 / 0.10), 0 3px 6px -3px rgb(15 23 42 / 0.06);
+  --shadow-4: 0 20px 40px -12px rgb(15 23 42 / 0.14), 0 8px 16px -8px rgb(15 23 42 / 0.08);
 }
 
 :root {
-  --radius: 0.25rem; /* 4px Material */
+  --radius: 0.625rem; /* 10px — Material 3 inspired, softer than 4px */
 
   /* surfaces */
   --background: oklch(0.985 0.003 240);       /* #F9FAFB-ish warm off-white */
