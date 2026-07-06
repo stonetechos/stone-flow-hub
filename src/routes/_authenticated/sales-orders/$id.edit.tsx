@@ -114,11 +114,21 @@ function EditSalesOrderPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SALES_ORDER_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
+                {SALES_ORDER_STATUSES.map((s) => {
+                  const allowed = allowedNextSalesOrderStatuses(query.data!.status);
+                  const disabled = !allowed.includes(s);
+                  return (
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      disabled={disabled}
+                      className="capitalize"
+                    >
+                      {s.replace(/_/g, " ")}
+                      {disabled ? " (blocked)" : ""}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </Field>
