@@ -194,16 +194,6 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     extraColumns: [{ key: "category", label: "Category" }],
   },
 ];
-    extraFields: [
-      { key: "symbol", label: "Symbol", type: "text", required: true },
-      { key: "dimension", label: "Dimension", type: "text", placeholder: "area / length / mass / count" },
-    ],
-    extraColumns: [
-      { key: "symbol", label: "Symbol" },
-      { key: "dimension", label: "Dimension" },
-    ],
-  },
-];
 
 export const COMMON_FIELDS = [COMMON.code, COMMON.name];
 export const COMMON_TRAILING_FIELDS = [COMMON.sort_order, COMMON.notes];
