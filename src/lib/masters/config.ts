@@ -25,7 +25,16 @@ export type MasterConfig = {
     | "manufacturing_stages"
     | "quality_grades"
     | "packaging_types"
-    | "uoms";
+    | "uoms"
+    | "qc_templates";
+  route: string;
+  title: string;
+  singular: string;
+  description: string;
+  extraFields: MasterField[];
+  // Extra columns to render in the table (besides code + name + status)
+  extraColumns: { key: string; label: string }[];
+};
   route: string;
   title: string;
   singular: string;
