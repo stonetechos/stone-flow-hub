@@ -1,28 +1,52 @@
 import { z } from "zod";
-import { zOptional, zRequired, zUuid, zMobile, zEmail } from "@/lib/zod";
+import { zOptional, zRequired, zUuid, zEmail } from "@/lib/zod";
 
 /**
  * New Enquiry: captured directly against a Customer (created inline if new).
  * A Project is NOT required at this stage — enquiries start as raw leads and
  * are later converted into projects via the "Convert to Project" action.
  */
-export const enquiryCreateSchema = z.object({
-  // Quick Fill — customer + requirement
-  customer_name: zRequired("Customer name"),
-  mobile: zMobile,
-  email: zEmail,
-  source: zRequired("Lead source"),
-  requirement: zRequired("Requirement"),
-  budget_inr: z.preprocess(
-    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
-    z.number().nonnegative().nullable().optional(),
-  ),
-  notes: zOptional(),
+export const enquiryCreateSchema = z
+  .object({
+    // Existing customer selection (preferred). When provided, customer_name/mobile
+    // are ignored — no new customer is created.
+    customer_id: z.string().uuid().nullable().optional(),
 
-  // Advanced
-  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-  required_delivery_date: zOptional(),
-});
+    // Inline-create fallback (used only when customer_id is null/absent).
+    customer_name: z.string().trim().optional().default(""),
+    mobile: z.string().trim().optional().default(""),
+    email: zEmail,
+    source: zRequired("Lead source"),
+    requirement: zRequired("Requirement"),
+    budget_inr: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+      z.number().nonnegative().nullable().optional(),
+    ),
+    notes: zOptional(),
+
+    // Advanced
+    priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+    required_delivery_date: zOptional(),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.customer_id) {
+      if (!v.customer_name || v.customer_name.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["customer_name"],
+          message: "Customer name is required",
+        });
+      }
+      const mobile = (v.mobile ?? "").replace(/\D/g, "");
+      if (mobile.length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["mobile"],
+          message: "Enter a valid mobile number",
+        });
+      }
+    }
+  });
 
 export type EnquiryCreateInput = z.infer<typeof enquiryCreateSchema>;
 

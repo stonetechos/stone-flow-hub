@@ -56,22 +56,40 @@ export async function getEnquiry(id: string): Promise<EnquiryListItem | null> {
 export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryRow> {
   const parsed = enquiryCreateSchema.parse(input);
 
-  let customer = await findCustomerByPhone(parsed.mobile);
-  if (!customer) {
-    customer = await createCustomer({
-      name: parsed.customer_name,
-      mobile: parsed.mobile,
-      email: parsed.email ?? null,
-      customer_type: "individual",
-      whatsapp: null,
-      city: null,
-      state: null,
-      pincode: null,
-      billing_address: null,
-      gst_number: null,
-      notes: null,
-    });
+  let customer:
+    | Awaited<ReturnType<typeof findCustomerByPhone>>
+    | Awaited<ReturnType<typeof createCustomer>>
+    | null = null;
+
+  if (parsed.customer_id) {
+    // Trust the picker — user chose an existing customer explicitly.
+    const { data, error } = await supabase
+      .from("customers")
+      .select("*")
+      .eq("id", parsed.customer_id)
+      .maybeSingle();
+    if (error) throw new AppError(mapDbError(error));
+    customer = data;
+    if (!customer) throw new AppError("Selected customer no longer exists", "NOT_FOUND", 404);
+  } else {
+    customer = await findCustomerByPhone(parsed.mobile);
+    if (!customer) {
+      customer = await createCustomer({
+        name: parsed.customer_name,
+        mobile: parsed.mobile,
+        email: parsed.email ?? null,
+        customer_type: "individual",
+        whatsapp: null,
+        city: null,
+        state: null,
+        pincode: null,
+        billing_address: null,
+        gst_number: null,
+        notes: null,
+      });
+    }
   }
+
 
   const { data, error } = await supabase
     .from("enquiries")
