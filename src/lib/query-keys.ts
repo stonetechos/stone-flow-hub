@@ -118,4 +118,48 @@ export const qk = {
     all: (filters: Record<string, string | null | undefined>) =>
       ["documents", "all", filters] as const,
   },
+  // Stone-industry masters
+  stoneTypes: {
+    all: ["stone_types"] as const,
+    list: (q?: string) => ["stone_types", "list", q ?? ""] as const,
+    picker: (q?: string) => ["stone_types", "picker", q ?? ""] as const,
+    byId: (id: string) => ["stone_types", "byId", id] as const,
+  },
+  surfaceFinishes: {
+    all: ["surface_finishes"] as const,
+    list: (q?: string) => ["surface_finishes", "list", q ?? ""] as const,
+    picker: (q?: string) => ["surface_finishes", "picker", q ?? ""] as const,
+    byId: (id: string) => ["surface_finishes", "byId", id] as const,
+  },
+  edgeFinishes: {
+    all: ["edge_finishes"] as const,
+    list: (q?: string) => ["edge_finishes", "list", q ?? ""] as const,
+    picker: (q?: string) => ["edge_finishes", "picker", q ?? ""] as const,
+    byId: (id: string) => ["edge_finishes", "byId", id] as const,
+  },
+  productFamilies: {
+    all: ["product_families"] as const,
+    list: (q?: string) => ["product_families", "list", q ?? ""] as const,
+    picker: (q?: string) => ["product_families", "picker", q ?? ""] as const,
+    byId: (id: string) => ["product_families", "byId", id] as const,
+  },
+  manufacturingStages: {
+    all: ["manufacturing_stages"] as const,
+    list: ["manufacturing_stages", "list"] as const,
+    byId: (id: string) => ["manufacturing_stages", "byId", id] as const,
+  },
+  // Manufacturing
+  productionOrders: {
+    all: ["production_orders"] as const,
+    list: (filters?: Record<string, string | null | undefined>) =>
+      ["production_orders", "list", filters ?? {}] as const,
+    byId: (id: string) => ["production_orders", "byId", id] as const,
+    bySalesOrder: (id: string) => ["production_orders", "bySalesOrder", id] as const,
+    stages: (id: string) => ["production_orders", "stages", id] as const,
+  },
+  // Procurement — vendor capabilities
+  vendorCapabilities: {
+    byVendor: (id: string) => ["vendor_capabilities", id] as const,
+  },
 } as const;
+

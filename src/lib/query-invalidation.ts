@@ -27,6 +27,15 @@ function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["projects", "list"] });
   qc.invalidateQueries({ queryKey: ["products", "picker"] });
   qc.invalidateQueries({ queryKey: ["products", "list"] });
+  // Stone-industry masters
+  qc.invalidateQueries({ queryKey: ["stone_types", "picker"] });
+  qc.invalidateQueries({ queryKey: ["stone_types", "list"] });
+  qc.invalidateQueries({ queryKey: ["surface_finishes", "picker"] });
+  qc.invalidateQueries({ queryKey: ["surface_finishes", "list"] });
+  qc.invalidateQueries({ queryKey: ["edge_finishes", "picker"] });
+  qc.invalidateQueries({ queryKey: ["edge_finishes", "list"] });
+  qc.invalidateQueries({ queryKey: ["product_families", "picker"] });
+  qc.invalidateQueries({ queryKey: ["product_families", "list"] });
 }
 
 /**
@@ -187,4 +196,55 @@ export function invalidateFollowup(
   }
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+}
+
+// -------- Stone-industry masters & manufacturing --------
+
+export function invalidateStoneType(qc: QueryClient, id?: string): void {
+  bump(qc, qk.stoneTypes.all);
+  if (id) bump(qc, qk.stoneTypes.byId(id));
+  bumpPickers(qc);
+}
+
+export function invalidateSurfaceFinish(qc: QueryClient, id?: string): void {
+  bump(qc, qk.surfaceFinishes.all);
+  if (id) bump(qc, qk.surfaceFinishes.byId(id));
+  bumpPickers(qc);
+}
+
+export function invalidateEdgeFinish(qc: QueryClient, id?: string): void {
+  bump(qc, qk.edgeFinishes.all);
+  if (id) bump(qc, qk.edgeFinishes.byId(id));
+  bumpPickers(qc);
+}
+
+export function invalidateProductFamily(qc: QueryClient, id?: string): void {
+  bump(qc, qk.productFamilies.all);
+  if (id) bump(qc, qk.productFamilies.byId(id));
+  bumpPickers(qc);
+}
+
+export function invalidateManufacturingStage(qc: QueryClient, id?: string): void {
+  bump(qc, qk.manufacturingStages.all);
+  if (id) bump(qc, qk.manufacturingStages.byId(id));
+}
+
+export function invalidateProductionOrder(
+  qc: QueryClient,
+  id?: string,
+  salesOrderId?: string | null,
+): void {
+  bump(qc, qk.productionOrders.all);
+  if (id) {
+    bump(qc, qk.productionOrders.byId(id));
+    bump(qc, qk.productionOrders.stages(id));
+  }
+  if (salesOrderId) bump(qc, qk.productionOrders.bySalesOrder(salesOrderId));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateVendorCapability(qc: QueryClient, vendorId: string): void {
+  bump(qc, qk.vendorCapabilities.byVendor(vendorId));
+  if (vendorId) bump(qc, qk.vendors.byId(vendorId));
 }
