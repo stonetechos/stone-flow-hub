@@ -319,6 +319,45 @@ export type Database = {
           },
         ]
       }
+      edge_finishes: {
+        Row: {
+          code: string
+          cost_multiplier: number
+          created_at: string
+          id: string
+          is_active: boolean
+          machine_required: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          cost_multiplier?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          machine_required?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          cost_multiplier?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          machine_required?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       enquiries: {
         Row: {
           assigned_to: string | null
@@ -912,6 +951,45 @@ export type Database = {
           },
         ]
       }
+      manufacturing_stages: {
+        Row: {
+          code: string
+          created_at: string
+          default_owner: Database["public"]["Enums"]["stage_owner"]
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          typical_days: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          default_owner?: Database["public"]["Enums"]["stage_owner"]
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          typical_days?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          default_owner?: Database["public"]["Enums"]["stage_owner"]
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          typical_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_deliveries: {
         Row: {
           attempts: number
@@ -1161,6 +1239,51 @@ export type Database = {
           },
         ]
       }
+      product_families: {
+        Row: {
+          code: string
+          created_at: string
+          default_uom: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          requires_artwork: boolean
+          requires_configurator: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          default_uom?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          requires_artwork?: boolean
+          requires_configurator?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          default_uom?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          requires_artwork?: boolean
+          requires_configurator?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           created_at: string
@@ -1199,63 +1322,233 @@ export type Database = {
           },
         ]
       }
+      product_price_history: {
+        Row: {
+          captured_at: string
+          currency: string
+          id: string
+          kind: string
+          price_inr: number
+          product_id: string
+          source_ref: string | null
+        }
+        Insert: {
+          captured_at?: string
+          currency?: string
+          id?: string
+          kind: string
+          price_inr: number
+          product_id: string
+          source_ref?: string | null
+        }
+        Update: {
+          captured_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          price_inr?: number
+          product_id?: string
+          source_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_price_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_similar: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          similar_product_id: string
+          source: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          similar_product_id: string
+          source?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          similar_product_id?: string
+          source?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_similar_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_similar_similar_product_id_fkey"
+            columns: ["similar_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_technical_docs: {
+        Row: {
+          created_at: string
+          file_object_id: string | null
+          id: string
+          kind: string
+          product_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_object_id?: string | null
+          id?: string
+          kind: string
+          product_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_object_id?: string | null
+          id?: string
+          kind?: string
+          product_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_technical_docs_file_object_id_fkey"
+            columns: ["file_object_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_technical_docs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
+          ai_tags: string[]
           category_id: string | null
+          colour: string | null
           company_id: string | null
+          config_hash: string | null
+          config_json: Json | null
           created_at: string
           created_by: string | null
           default_unit: Database["public"]["Enums"]["product_unit"]
           description: string | null
+          edge_finish_id: string | null
           external_ref: Json | null
+          family_id: string | null
           finish: Database["public"]["Enums"]["stone_finish"] | null
           hsn_code: string | null
           id: string
           is_active: boolean
+          is_custom: boolean
+          last_purchase_price_inr: number | null
+          last_selling_price_inr: number | null
+          market_price_inr: number | null
           name: string
           origin_country: string | null
           product_code: string
+          size_length_mm: number | null
+          size_width_mm: number | null
           stone_type: Database["public"]["Enums"]["stone_type"] | null
+          stone_type_id: string | null
+          surface_finish_id: string | null
+          technical_specs: Json
           thickness_mm: number | null
           updated_at: string
+          weight_kg_per_unit: number | null
         }
         Insert: {
+          ai_tags?: string[]
           category_id?: string | null
+          colour?: string | null
           company_id?: string | null
+          config_hash?: string | null
+          config_json?: Json | null
           created_at?: string
           created_by?: string | null
           default_unit?: Database["public"]["Enums"]["product_unit"]
           description?: string | null
+          edge_finish_id?: string | null
           external_ref?: Json | null
+          family_id?: string | null
           finish?: Database["public"]["Enums"]["stone_finish"] | null
           hsn_code?: string | null
           id?: string
           is_active?: boolean
+          is_custom?: boolean
+          last_purchase_price_inr?: number | null
+          last_selling_price_inr?: number | null
+          market_price_inr?: number | null
           name: string
           origin_country?: string | null
           product_code: string
+          size_length_mm?: number | null
+          size_width_mm?: number | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
+          stone_type_id?: string | null
+          surface_finish_id?: string | null
+          technical_specs?: Json
           thickness_mm?: number | null
           updated_at?: string
+          weight_kg_per_unit?: number | null
         }
         Update: {
+          ai_tags?: string[]
           category_id?: string | null
+          colour?: string | null
           company_id?: string | null
+          config_hash?: string | null
+          config_json?: Json | null
           created_at?: string
           created_by?: string | null
           default_unit?: Database["public"]["Enums"]["product_unit"]
           description?: string | null
+          edge_finish_id?: string | null
           external_ref?: Json | null
+          family_id?: string | null
           finish?: Database["public"]["Enums"]["stone_finish"] | null
           hsn_code?: string | null
           id?: string
           is_active?: boolean
+          is_custom?: boolean
+          last_purchase_price_inr?: number | null
+          last_selling_price_inr?: number | null
+          market_price_inr?: number | null
           name?: string
           origin_country?: string | null
           product_code?: string
+          size_length_mm?: number | null
+          size_width_mm?: number | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
+          stone_type_id?: string | null
+          surface_finish_id?: string | null
+          technical_specs?: Json
           thickness_mm?: number | null
           updated_at?: string
+          weight_kg_per_unit?: number | null
         }
         Relationships: [
           {
@@ -1263,6 +1556,34 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_edge_finish_id_fkey"
+            columns: ["edge_finish_id"]
+            isOneToOne: false
+            referencedRelation: "edge_finishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "product_families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_stone_type_id_fkey"
+            columns: ["stone_type_id"]
+            isOneToOne: false
+            referencedRelation: "stone_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_surface_finish_id_fkey"
+            columns: ["surface_finish_id"]
+            isOneToOne: false
+            referencedRelation: "surface_finishes"
             referencedColumns: ["id"]
           },
         ]
@@ -1959,6 +2280,117 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stone_types: {
+        Row: {
+          code: string
+          created_at: string
+          density_kg_m3: number | null
+          id: string
+          indoor_ok: boolean
+          is_active: boolean
+          mohs_hardness: number | null
+          name: string
+          notes: string | null
+          outdoor_ok: boolean
+          recommended_applications: string[]
+          slip_rating: string | null
+          sort_order: number
+          updated_at: string
+          uv_resistance: string | null
+          water_absorption_pct: number | null
+          weather_resistance: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          density_kg_m3?: number | null
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          mohs_hardness?: number | null
+          name: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          recommended_applications?: string[]
+          slip_rating?: string | null
+          sort_order?: number
+          updated_at?: string
+          uv_resistance?: string | null
+          water_absorption_pct?: number | null
+          weather_resistance?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          density_kg_m3?: number | null
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          mohs_hardness?: number | null
+          name?: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          recommended_applications?: string[]
+          slip_rating?: string | null
+          sort_order?: number
+          updated_at?: string
+          uv_resistance?: string | null
+          water_absorption_pct?: number | null
+          weather_resistance?: string | null
+        }
+        Relationships: []
+      }
+      surface_finishes: {
+        Row: {
+          anti_slip: boolean
+          applicable_stone_type_ids: string[]
+          code: string
+          cost_multiplier: number
+          created_at: string
+          id: string
+          indoor_ok: boolean
+          is_active: boolean
+          lead_time_days_delta: number
+          name: string
+          notes: string | null
+          outdoor_ok: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          anti_slip?: boolean
+          applicable_stone_type_ids?: string[]
+          code: string
+          cost_multiplier?: number
+          created_at?: string
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          lead_time_days_delta?: number
+          name: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          anti_slip?: boolean
+          applicable_stone_type_ids?: string[]
+          code?: string
+          cost_multiplier?: number
+          created_at?: string
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          lead_time_days_delta?: number
+          name?: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       tags: {
         Row: {
@@ -2909,6 +3341,7 @@ export type Database = {
         | "delivered"
         | "cancelled"
       site_visit_status: "scheduled" | "completed" | "cancelled" | "rescheduled"
+      stage_owner: "vendor" | "employee" | "either"
       stone_finish:
         | "polished"
         | "honed"
@@ -3238,6 +3671,7 @@ export const Constants = {
         "cancelled",
       ],
       site_visit_status: ["scheduled", "completed", "cancelled", "rescheduled"],
+      stage_owner: ["vendor", "employee", "either"],
       stone_finish: [
         "polished",
         "honed",
