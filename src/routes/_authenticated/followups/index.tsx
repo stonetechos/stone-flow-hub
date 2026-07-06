@@ -42,10 +42,13 @@ import {
 } from "@/lib/followups/api";
 import {
   FOLLOWUP_CHANNELS,
+  FOLLOWUP_ENTITY_TYPES,
   followupCreateSchema,
   type FollowupCreateInput,
 } from "@/lib/followups/schema";
 import { listEnquiries } from "@/lib/enquiries/api";
+import { EntityPicker } from "@/components/forms/EntityPicker";
+import { invalidateFollowup } from "@/lib/query-invalidation";
 
 type Scope = "today" | "pending" | "all";
 
