@@ -29,6 +29,7 @@ import {
   invalidateVendor,
   invalidateProject,
   invalidateProduct,
+  seedPickerCache,
 } from "@/lib/query-invalidation";
 import { createCustomer } from "@/lib/customers/api";
 import { customerCreateSchema, CUSTOMER_TYPES } from "@/lib/customers/schema";
