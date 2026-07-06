@@ -25,6 +25,7 @@ import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
+import { invalidateVendor } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
   createVendor,

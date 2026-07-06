@@ -35,7 +35,8 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
 import { quoteItemInputSchema, type QuoteItemInput } from "@/lib/quotes/schema";
-import { listProjectsForPicker } from "@/lib/projects/api";
+import { EntityPicker } from "@/components/forms/EntityPicker";
+import { invalidateQuote } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
 
 const search = z.object({
@@ -234,7 +235,6 @@ function CreateQuoteDialog({
 }) {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
   const [validUntil, setValidUntil] = useState("");
@@ -267,8 +267,7 @@ function CreateQuoteDialog({
     mutationFn: createQuote,
     onSuccess: (row) => {
       toast.success(`Quote ${row.quote_no} created`);
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateQuote(qc, row.id);
       onOpenChange(false);
       nav({ to: "/quotes/$quoteId", params: { quoteId: row.id } });
     },
@@ -310,18 +309,12 @@ function CreateQuoteDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Project" required className="md:col-span-2">
-              <Select value={projectId} onValueChange={setProjectId} disabled={!!initialProjectId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={projects.isLoading ? "Loading…" : "Select project"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(projects.data ?? []).map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name} — {p.customer?.name ?? "no customer"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <EntityPicker
+                type="project"
+                value={projectId || null}
+                onChange={(id) => setProjectId(id ?? "")}
+                disabled={!!initialProjectId}
+              />
             </Field>
 
             <div className="md:col-span-2">

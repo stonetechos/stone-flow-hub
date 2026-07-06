@@ -17,13 +17,12 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { EntityPicker } from "@/components/forms/EntityPicker";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
+import { invalidateSalesOrder } from "@/lib/query-invalidation";
 import { getSalesOrder, updateSalesOrder } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES, type SalesOrderCreateInput } from "@/lib/sales-orders/schema";
-import { listCustomers } from "@/lib/customers/api";
-import { listProjectsForPicker } from "@/lib/projects/api";
-import { listQuotes } from "@/lib/quotes/api";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id/edit")({
   ssr: false,
@@ -35,9 +34,6 @@ function EditSalesOrderPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
-  const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers() });
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
-  const quotes = useQuery({ queryKey: qk.quotes.list(""), queryFn: () => listQuotes() });
 
   const [form, setForm] = useState<SalesOrderCreateInput | null>(null);
   useEffect(() => {
@@ -59,7 +55,7 @@ function EditSalesOrderPage() {
     mutationFn: (input: SalesOrderCreateInput) => updateSalesOrder(id, input),
     onSuccess: () => {
       toast.success("Sales order updated");
-      qc.invalidateQueries({ queryKey: qk.salesOrders.all });
+      invalidateSalesOrder(qc, id);
       nav({ to: "/sales-orders/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -83,21 +79,11 @@ function EditSalesOrderPage() {
       >
         <QuickForm.QuickFill>
           <Field label="Customer">
-            <Select
-              value={form.customer_id ?? ""}
-              onValueChange={(v) => set("customer_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(customers.data ?? []).map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="customer"
+              value={form.customer_id}
+              onChange={(v) => set("customer_id", v)}
+            />
           </Field>
           <Field label="Order date" required>
             <Input
@@ -110,35 +96,13 @@ function EditSalesOrderPage() {
         </QuickForm.QuickFill>
         <QuickForm.MoreDetails>
           <Field label="Project">
-            <Select
-              value={form.project_id ?? ""}
-              onValueChange={(v) => set("project_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(projects.data ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Source quote">
-            <Select value={form.quote_id ?? ""} onValueChange={(v) => set("quote_id", v || null)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(quotes.data ?? []).map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.quote_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="project"
+              value={form.project_id}
+              onChange={(v) => set("project_id", v)}
+              filter={{ customerId: form.customer_id ?? null }}
+              createDefaults={{ customer_id: form.customer_id ?? "" }}
+            />
           </Field>
           <Field label="Status">
             <Select
