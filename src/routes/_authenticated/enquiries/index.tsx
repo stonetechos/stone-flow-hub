@@ -226,9 +226,9 @@ function NewEnquiryDialog({
     mutationFn: (input: EnquiryCreateInput) => createEnquiry(input),
     onSuccess: (row) => {
       toast.success(`Enquiry ${row.enquiry_no} created`);
-      qc.invalidateQueries({ queryKey: qk.enquiries.all });
-      qc.invalidateQueries({ queryKey: qk.customers.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateEnquiry(qc, row.id);
+      // createEnquiry auto-creates a customer when the phone is new — refresh every picker.
+      invalidateCustomer(qc, row.customer_id ?? undefined);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
