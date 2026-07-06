@@ -28,21 +28,6 @@ export const qk = {
     list: (q?: string) => ["products", "list", q ?? ""] as const,
     picker: (q?: string) => ["products", "picker", q ?? ""] as const,
   },
-  projects: {
-    all: ["projects"] as const,
-    list: (q?: string) => ["projects", "list", q ?? ""] as const,
-    byId: (id: string) => ["projects", "byId", id] as const,
-    byCustomer: (customerId: string) => ["projects", "byCustomer", customerId] as const,
-  },
-  vendors: {
-    all: ["vendors"] as const,
-    list: (q?: string) => ["vendors", "list", q ?? ""] as const,
-    byId: (id: string) => ["vendors", "byId", id] as const,
-  },
-  products: {
-    all: ["products"] as const,
-    list: (q?: string) => ["products", "list", q ?? ""] as const,
-  },
   enquiries: {
     all: ["enquiries"] as const,
     list: (q?: string) => ["enquiries", "list", q ?? ""] as const,
