@@ -79,8 +79,7 @@ function FollowupsPage() {
     mutationFn: (id: string) => completeFollowup({ id }),
     onSuccess: () => {
       toast.success("Follow-up marked done");
-      qc.invalidateQueries({ queryKey: qk.followups.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateFollowup(qc);
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -89,8 +88,7 @@ function FollowupsPage() {
     mutationFn: (id: string) => deleteFollowup(id),
     onSuccess: () => {
       toast.success("Follow-up deleted");
-      qc.invalidateQueries({ queryKey: qk.followups.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateFollowup(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -161,10 +159,16 @@ function FollowupsPage() {
               {query.data!.map((f) => (
                 <TableRow key={f.id}>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(f.scheduled_at).toLocaleString("en-IN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    <Link
+                      to="/followups/$id"
+                      params={{ id: f.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {new Date(f.scheduled_at).toLocaleString("en-IN", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </Link>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {f.enquiry ? (

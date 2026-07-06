@@ -21,16 +21,23 @@ import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInventoryItem, listInventory, type InventoryListItem } from "@/lib/inventory/api";
+import { invalidateInventory } from "@/lib/query-invalidation";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/inventory/")({
   ssr: false,
   component: InventoryPage,
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({
+    q: typeof s.q === "string" ? s.q : undefined,
+  }),
 });
 
 function InventoryPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const [q, setQ] = useState("");
+  const roles = useRoles();
+  const search = Route.useSearch();
+  const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<InventoryListItem | null>(null);
 
@@ -39,11 +46,15 @@ function InventoryPage() {
     mutationFn: (id: string) => deleteInventoryItem(id),
     onSuccess: () => {
       toast.success("Stock item deleted");
-      qc.invalidateQueries({ queryKey: qk.inventory.all });
+      invalidateInventory(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+  const commitSearch = (v: string) => {
+    setQ(v);
+    nav({ to: "/inventory", search: { q: v || undefined } });
+  };
 
   return (
     <div>
@@ -51,20 +62,23 @@ function InventoryPage() {
         title="Inventory"
         subtitle="Track stock positions across locations."
         actions={
-          <Button onClick={() => nav({ to: "/inventory/new" })}>
-            <Plus className="mr-2 h-4 w-4" /> New stock item
-          </Button>
+          roles.canWrite && (
+            <Button onClick={() => nav({ to: "/inventory/new" })}>
+              <Plus className="mr-2 h-4 w-4" /> New stock item
+            </Button>
+          )
         }
       />
 
       <div className="mb-3 flex items-center gap-2">
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => commitSearch(e.target.value)}
           placeholder="Search stock code, location…"
           className="max-w-md"
         />
       </div>
+
 
       {query.isLoading ? (
         <SkeletonTable rows={6} columns={5} />
@@ -76,9 +90,11 @@ function InventoryPage() {
           title="No stock items yet"
           message="Add a stock item to start tracking inventory."
           action={
-            <Button onClick={() => nav({ to: "/inventory/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New stock item
-            </Button>
+            roles.canWrite ? (
+              <Button onClick={() => nav({ to: "/inventory/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New stock item
+              </Button>
+            ) : undefined
           }
         />
       ) : (

@@ -66,7 +66,7 @@ function QuotesPage() {
     mutationFn: (id: string) => deleteQuote(id),
     onSuccess: () => {
       toast.success("Quote deleted");
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      invalidateQuote(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),

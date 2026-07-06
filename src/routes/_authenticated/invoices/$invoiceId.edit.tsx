@@ -14,6 +14,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getInvoice, updateInvoice } from "@/lib/invoices/api";
 import type { InvoiceUpdateInput } from "@/lib/invoices/schema";
+import { invalidateInvoice } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/edit")({
   ssr: false,
@@ -51,8 +52,7 @@ function EditInvoicePage() {
     mutationFn: () => updateInvoice(invoiceId, form),
     onSuccess: () => {
       toast.success("Invoice updated");
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
-      qc.invalidateQueries({ queryKey: qk.invoices.byId(invoiceId) });
+      invalidateInvoice(qc, invoiceId);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

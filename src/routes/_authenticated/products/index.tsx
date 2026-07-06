@@ -84,7 +84,7 @@ function ProductsPage() {
     mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
       toast.success("Product deleted");
-      qc.invalidateQueries({ queryKey: qk.products.all });
+      invalidateProduct(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -265,7 +265,7 @@ function ProductFormDialog({
       editing ? updateProduct(editing.id, input) : createProduct(input),
     onSuccess: (row) => {
       toast.success(editing ? "Product updated" : `Product ${row.product_code} created`);
-      qc.invalidateQueries({ queryKey: qk.products.all });
+      invalidateProduct(qc);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

@@ -146,6 +146,7 @@ function DashboardPage() {
           value={"₹" + formatMoney(data?.outstandingInr ?? 0)}
           icon={<Wallet className="h-4 w-4" />}
           to="/invoices"
+          search={{ status: "overdue" }}
           tone="muted"
           compact
         />

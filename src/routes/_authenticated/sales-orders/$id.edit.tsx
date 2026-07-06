@@ -23,6 +23,7 @@ import { toUserMessage } from "@/lib/errors";
 import { invalidateSalesOrder } from "@/lib/query-invalidation";
 import { getSalesOrder, updateSalesOrder } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES, type SalesOrderCreateInput } from "@/lib/sales-orders/schema";
+import { allowedNextSalesOrderStatuses } from "@/lib/status-transitions";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id/edit")({
   ssr: false,
@@ -113,11 +114,21 @@ function EditSalesOrderPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SALES_ORDER_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
+                {SALES_ORDER_STATUSES.map((s) => {
+                  const allowed = allowedNextSalesOrderStatuses(query.data!.status);
+                  const disabled = !allowed.includes(s);
+                  return (
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      disabled={disabled}
+                      className="capitalize"
+                    >
+                      {s.replace(/_/g, " ")}
+                      {disabled ? " (blocked)" : ""}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </Field>

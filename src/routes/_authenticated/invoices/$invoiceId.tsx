@@ -58,6 +58,7 @@ import { formatInr } from "@/lib/format";
 import type { RecordPaymentInput } from "@/lib/invoices/schema";
 import type { DbTable } from "@/lib/types";
 import { createRazorpayLink, cancelRazorpayLink } from "@/lib/payments/razorpay.functions";
+import { invalidateInvoice, invalidatePayment } from "@/lib/query-invalidation";
 
 type InvoiceStatus = DbTable<"invoices">["status"];
 
@@ -91,11 +92,7 @@ function InvoiceDetailPage() {
   });
 
   const invalidateAll = () => {
-    qc.invalidateQueries({ queryKey: qk.invoices.byId(invoiceId) });
-    qc.invalidateQueries({ queryKey: qk.invoices.payments(invoiceId) });
-    qc.invalidateQueries({ queryKey: qk.invoices.links(invoiceId) });
-    qc.invalidateQueries({ queryKey: qk.invoices.all });
-    qc.invalidateQueries({ queryKey: qk.dashboard });
+    invalidateInvoice(qc, invoiceId);
   };
 
   const statusMut = useMutation({
@@ -134,7 +131,7 @@ function InvoiceDetailPage() {
     mutationFn: () => deleteInvoice(invoiceId),
     onSuccess: () => {
       toast.success("Invoice deleted");
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      invalidateInvoice(qc);
       nav({ to: "/invoices" });
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -470,10 +467,7 @@ function RecordPaymentDialog({
     mutationFn: recordManualPayment,
     onSuccess: () => {
       toast.success("Payment recorded");
-      qc.invalidateQueries({ queryKey: qk.invoices.byId(invoiceId) });
-      qc.invalidateQueries({ queryKey: qk.invoices.payments(invoiceId) });
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidatePayment(qc, undefined, invoiceId);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

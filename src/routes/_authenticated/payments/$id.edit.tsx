@@ -22,6 +22,7 @@ import { toUserMessage } from "@/lib/errors";
 import { getPayment, updatePayment } from "@/lib/payments/crud";
 import { PAYMENT_METHODS, type PaymentCreateInput } from "@/lib/payments/schema";
 import { listInvoices } from "@/lib/invoices/api";
+import { invalidatePayment } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/payments/$id/edit")({
   ssr: false,
@@ -54,7 +55,7 @@ function EditPaymentPage() {
     mutationFn: (input: PaymentCreateInput) => updatePayment(id, input),
     onSuccess: () => {
       toast.success("Payment updated");
-      qc.invalidateQueries({ queryKey: qk.paymentsAll.all });
+      invalidatePayment(qc, id);
       nav({ to: "/payments/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

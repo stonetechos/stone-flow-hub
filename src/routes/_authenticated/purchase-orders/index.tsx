@@ -34,18 +34,26 @@ import {
   type PurchaseOrderListItem,
 } from "@/lib/purchase-orders/api";
 import { PURCHASE_ORDER_STATUSES } from "@/lib/purchase-orders/schema";
+import { invalidatePurchaseOrder } from "@/lib/query-invalidation";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/")({
   ssr: false,
   component: PurchaseOrdersPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; q?: string } => ({
+    status: typeof s.status === "string" ? s.status : undefined,
+    q: typeof s.q === "string" ? s.q : undefined,
+  }),
 });
 
 function PurchaseOrdersPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const [q, setQ] = useState("");
+  const roles = useRoles();
+  const search = Route.useSearch();
+  const status = search.status ?? "";
+  const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
-  const [status, setStatus] = useState<string>("");
   const [toDelete, setToDelete] = useState<PurchaseOrderListItem | null>(null);
 
   const query = useQuery({
@@ -56,11 +64,18 @@ function PurchaseOrdersPage() {
     mutationFn: (id: string) => deletePurchaseOrder(id),
     onSuccess: () => {
       toast.success("PO deleted");
-      qc.invalidateQueries({ queryKey: qk.purchaseOrders.all });
+      invalidatePurchaseOrder(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
+  const setStatus = (v: string) =>
+    nav({ to: "/purchase-orders", search: { status: v || undefined, q: dq || undefined } });
+  const commitSearch = (v: string) => {
+    setQ(v);
+    nav({ to: "/purchase-orders", search: { status: status || undefined, q: v || undefined } });
+  };
 
   return (
     <div>
@@ -68,16 +83,18 @@ function PurchaseOrdersPage() {
         title="Purchase Orders"
         subtitle="Procurement orders raised to vendors."
         actions={
-          <Button onClick={() => nav({ to: "/purchase-orders/new" })}>
-            <Plus className="mr-2 h-4 w-4" /> New PO
-          </Button>
+          roles.canWrite && (
+            <Button onClick={() => nav({ to: "/purchase-orders/new" })}>
+              <Plus className="mr-2 h-4 w-4" /> New PO
+            </Button>
+          )
         }
       />
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => commitSearch(e.target.value)}
           placeholder="Search PO no…"
           className="max-w-md"
         />
@@ -106,9 +123,11 @@ function PurchaseOrdersPage() {
           title="No purchase orders yet"
           message="Raise a PO to your vendors."
           action={
-            <Button onClick={() => nav({ to: "/purchase-orders/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New PO
-            </Button>
+            roles.canWrite ? (
+              <Button onClick={() => nav({ to: "/purchase-orders/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New PO
+              </Button>
+            ) : undefined
           }
         />
       ) : (

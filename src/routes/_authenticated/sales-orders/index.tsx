@@ -30,6 +30,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteSalesOrder, listSalesOrders, type SalesOrderListItem } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES } from "@/lib/sales-orders/schema";
+import { invalidateSalesOrder } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/")({
   ssr: false,
@@ -57,7 +58,7 @@ function SalesOrdersPage() {
     mutationFn: (id: string) => deleteSalesOrder(id),
     onSuccess: () => {
       toast.success("Sales order deleted");
-      qc.invalidateQueries({ queryKey: qk.salesOrders.all });
+      invalidateSalesOrder(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),

@@ -22,16 +22,23 @@ import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deletePayment, listPayments, type PaymentListItem } from "@/lib/payments/crud";
+import { invalidatePayment } from "@/lib/query-invalidation";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
   ssr: false,
   component: PaymentsPage,
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({
+    q: typeof s.q === "string" ? s.q : undefined,
+  }),
 });
 
 function PaymentsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const [q, setQ] = useState("");
+  const roles = useRoles();
+  const search = Route.useSearch();
+  const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<PaymentListItem | null>(null);
 
@@ -40,11 +47,15 @@ function PaymentsPage() {
     mutationFn: (id: string) => deletePayment(id),
     onSuccess: () => {
       toast.success("Payment deleted");
-      qc.invalidateQueries({ queryKey: qk.paymentsAll.all });
+      invalidatePayment(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+  const commitSearch = (v: string) => {
+    setQ(v);
+    nav({ to: "/payments", search: { q: v || undefined } });
+  };
 
   return (
     <div>
@@ -52,16 +63,19 @@ function PaymentsPage() {
         title="Payments"
         subtitle="All customer payments recorded against invoices."
         actions={
-          <Button onClick={() => nav({ to: "/payments/new" })}>
-            <Plus className="mr-2 h-4 w-4" /> New payment
-          </Button>
+          roles.canWrite && (
+            <Button onClick={() => nav({ to: "/payments/new" })}>
+              <Plus className="mr-2 h-4 w-4" /> New payment
+            </Button>
+          )
         }
       />
+
 
       <div className="mb-3 flex items-center gap-2">
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => commitSearch(e.target.value)}
           placeholder="Search payment or reference…"
           className="max-w-md"
         />
@@ -77,9 +91,11 @@ function PaymentsPage() {
           title="No payments yet"
           message="Record a payment received against an invoice."
           action={
-            <Button onClick={() => nav({ to: "/payments/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New payment
-            </Button>
+            roles.canWrite ? (
+              <Button onClick={() => nav({ to: "/payments/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New payment
+              </Button>
+            ) : undefined
           }
         />
       ) : (

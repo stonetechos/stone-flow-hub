@@ -85,6 +85,16 @@ async function enquiryIdsForCustomer(customerId: string): Promise<string[]> {
   return (data ?? []).map((r) => r.id);
 }
 
+export async function getFollowup(id: string): Promise<FollowupWithEnquiry | null> {
+  const { data, error } = await supabase
+    .from("followups")
+    .select(SELECT_WITH_JOINS)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new AppError(mapDbError(error));
+  return (data as FollowupWithEnquiry | null) ?? null;
+}
+
 export async function listFollowupsForEnquiry(enquiryId: string): Promise<FollowupRow[]> {
   const { data, error } = await supabase
     .from("followups")

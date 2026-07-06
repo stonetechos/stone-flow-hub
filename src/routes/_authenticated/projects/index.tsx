@@ -79,7 +79,7 @@ function ProjectsPage() {
     mutationFn: (id: string) => deleteProject(id),
     onSuccess: () => {
       toast.success("Project deleted");
-      qc.invalidateQueries({ queryKey: qk.projects.all });
+      invalidateProject(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),

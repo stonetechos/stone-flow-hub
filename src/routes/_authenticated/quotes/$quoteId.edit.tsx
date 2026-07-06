@@ -14,6 +14,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getQuote, updateQuote } from "@/lib/quotes/api";
 import type { QuoteUpdateInput } from "@/lib/quotes/schema";
+import { invalidateQuote } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   ssr: false,
@@ -48,8 +49,7 @@ function EditQuotePage() {
     mutationFn: () => updateQuote(quoteId, form),
     onSuccess: () => {
       toast.success("Quote updated");
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
-      qc.invalidateQueries({ queryKey: qk.quotes.byId(quoteId) });
+      invalidateQuote(qc, quoteId);
       nav({ to: "/quotes/$quoteId", params: { quoteId } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

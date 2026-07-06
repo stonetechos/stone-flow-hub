@@ -13,6 +13,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getSalesOrder } from "@/lib/sales-orders/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
+import { invalidateInvoice } from "@/lib/query-invalidation";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id")({
   ssr: false,
@@ -29,7 +30,7 @@ function SalesOrderDetailPage() {
     mutationFn: (quoteId: string) => convertQuoteToInvoice({ quote_id: quoteId }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`);
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      invalidateInvoice(qc);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
