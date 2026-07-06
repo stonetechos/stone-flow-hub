@@ -347,3 +347,66 @@ function simpleHash(s: string): string {
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
   return (h >>> 0).toString(16).padStart(8, "0");
 }
+
+function AiClassify(props: {
+  familyName?: string;
+  stoneName?: string;
+  colourName?: string;
+  surfaceName?: string;
+  originName?: string;
+  thicknessMm: number | null;
+  productName: string;
+}) {
+  const [result, setResult] = useState<{
+    hsn: string; hsn_conf: number; hsn_reason?: string;
+    gst: number; gst_conf: number; gst_reason?: string;
+  } | null>(null);
+  const run = useMutation({
+    mutationFn: async () => {
+      const r = await aiServices.suggestHsnGst({
+        product_name: props.productName,
+        family: props.familyName,
+        stone_type: props.stoneName,
+        finish: props.surfaceName,
+        origin: props.originName,
+        thickness_mm: props.thicknessMm,
+      });
+      if (!r) throw new Error("No suggestion");
+      return r;
+    },
+    onSuccess: (r) => setResult({
+      hsn: r.hsn.hsn, hsn_conf: r.hsn.confidence, hsn_reason: r.hsn.reason,
+      gst: r.gst.gst_pct, gst_conf: r.gst.confidence, gst_reason: r.gst.reason,
+    }),
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+  const hsn = result?.hsn ?? heuristicHsn(props.familyName).hsn;
+  const gst = result?.gst ?? heuristicGst(hsn).gst_pct;
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-2">
+      <div className="flex flex-wrap items-center gap-1">
+        <Badge variant="secondary">HSN {hsn}</Badge>
+        <Badge variant="secondary">GST {gst}%</Badge>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="ml-auto h-7 gap-1"
+          onClick={() => run.mutate()}
+          disabled={run.isPending || !props.stoneName}
+        >
+          {run.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          AI Suggest
+        </Button>
+      </div>
+      {result && (
+        <div className="text-xs text-muted-foreground">
+          HSN {Math.round(result.hsn_conf * 100)}% · {result.hsn_reason ?? ""}
+          <br />
+          GST {Math.round(result.gst_conf * 100)}% · {result.gst_reason ?? ""}
+        </div>
+      )}
+    </div>
+  );
+}
+
