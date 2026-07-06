@@ -202,20 +202,21 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <RowActions>
-                      <DropdownMenuItem onClick={() => setEditing(row)}>Edit</DropdownMenuItem>
-                      <Can anyRole={["admin", "sales_manager"]}>
-                        <DropdownMenuItem onClick={() => toggleActive.mutate(row)}>
-                          Mark {row.is_active ? "inactive" : "active"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => setDeleteTarget(row)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </Can>
-                    </RowActions>
+                    <RowActions
+                      onEdit={() => setEditing(row)}
+                      onDelete={
+                        roles.hasAnyRole(["admin", "sales_manager"])
+                          ? () => setDeleteTarget(row)
+                          : undefined
+                      }
+                      extra={
+                        roles.hasAnyRole(["admin", "sales_manager"]) ? (
+                          <DropdownMenuItem onSelect={() => toggleActive.mutate(row)}>
+                            Mark {row.is_active ? "inactive" : "active"}
+                          </DropdownMenuItem>
+                        ) : null
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}
