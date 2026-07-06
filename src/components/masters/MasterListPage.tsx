@@ -69,11 +69,16 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
   const save = useMutation({
     mutationFn: async (payload: Record<string, unknown> & { id?: string }) => {
       const { id, ...rest } = payload;
+      // Generic master writes — schema is validated by DB constraints.
+      const tbl = supabase.from(config.table) as unknown as {
+        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
+        insert: (v: Record<string, unknown>) => Promise<{ error: unknown }>;
+      };
       if (id) {
-        const { error } = await supabase.from(config.table).update(rest).eq("id", id);
+        const { error } = await tbl.update(rest).eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from(config.table).insert(rest as never);
+        const { error } = await tbl.insert(rest);
         if (error) throw error;
       }
     },
