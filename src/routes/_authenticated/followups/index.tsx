@@ -263,7 +263,7 @@ function FollowupFormDialog({
   const enquiries = useQuery({
     queryKey: qk.enquiries.list(""),
     queryFn: () => listEnquiries(""),
-    enabled: open,
+    enabled: open && (form_type === undefined || form_type === "enquiry"),
   });
   const [form, setForm] = useState<FollowupCreateInput>(emptyForm);
 
@@ -292,8 +292,11 @@ function FollowupFormDialog({
     },
     onSuccess: () => {
       toast.success(editing ? "Follow-up updated" : "Follow-up scheduled");
-      qc.invalidateQueries({ queryKey: qk.followups.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateFollowup(qc, {
+        entityType: form.entity_type,
+        entityId: form.entity_id,
+        enquiryId: form.entity_type === "enquiry" ? form.entity_id : null,
+      });
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -308,6 +311,12 @@ function FollowupFormDialog({
   const set = <K extends keyof FollowupCreateInput>(k: K, v: FollowupCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const pickerType: "customer" | "project" | "vendor" | null =
+    form.entity_type === "customer" || form.entity_type === "project" || form.entity_type === "vendor"
+      ? form.entity_type
+      : null;
+  const form_type = form.entity_type;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
@@ -316,26 +325,55 @@ function FollowupFormDialog({
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
-            <Field label="Enquiry" required className="md:col-span-2">
+            <Field label="Attach to" required>
               <Select
-                value={form.entity_type === "enquiry" ? form.entity_id : ""}
+                value={form.entity_type}
                 onValueChange={(v) => {
-                  set("entity_type", "enquiry");
-                  set("entity_id", v);
+                  set("entity_type", v as FollowupCreateInput["entity_type"]);
+                  set("entity_id", "");
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(enquiries.data ?? []).map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.enquiry_no} — {e.customer?.name ?? "—"}
+                  {FOLLOWUP_ENTITY_TYPES.filter((t) =>
+                    ["enquiry", "customer", "project", "vendor"].includes(t.value),
+                  ).map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
+            {form.entity_type === "enquiry" ? (
+              <Field label="Enquiry" required>
+                <Select
+                  value={form.entity_id}
+                  onValueChange={(v) => set("entity_id", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(enquiries.data ?? []).map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.enquiry_no} — {e.customer?.name ?? "—"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            ) : pickerType ? (
+              <Field label={pickerType.charAt(0).toUpperCase() + pickerType.slice(1)} required>
+                <EntityPicker
+                  type={pickerType}
+                  value={form.entity_id || null}
+                  onChange={(id) => set("entity_id", id ?? "")}
+                />
+              </Field>
+            ) : null}
             <Field label="When" required>
               <Input
                 type="datetime-local"
