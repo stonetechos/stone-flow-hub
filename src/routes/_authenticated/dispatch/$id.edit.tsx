@@ -59,7 +59,7 @@ function EditDispatchPage() {
     mutationFn: (input: DispatchCreateInput) => updateDispatch(id, input),
     onSuccess: () => {
       toast.success("Dispatch updated");
-      qc.invalidateQueries({ queryKey: qk.dispatch.all });
+      invalidateDispatch(qc, id);
       nav({ to: "/dispatch/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
