@@ -15,13 +15,15 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { heuristicHsn, heuristicGst } from "@/lib/ai/services";
+import { heuristicHsn, heuristicGst, aiServices } from "@/lib/ai/services";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { invalidateProduct, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
+import { Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/products/configure")({
   component: ProductConfigurator,
@@ -235,10 +237,16 @@ function ProductConfigurator() {
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">Description</dt>
                 <dd className="mt-1 text-sm">{derived.description || "—"}</dd>
               </div>
-              <div className="flex flex-wrap gap-1 pt-2">
-                <Badge variant="secondary">HSN 6802</Badge>
-                <Badge variant="secondary">GST 18%</Badge>
-              </div>
+              <AiClassify
+                familyName={families.data?.find((f) => f.id === familyId)?.name}
+                stoneName={stones.data?.find((s) => s.id === stoneId)?.name}
+                colourName={colours.data?.find((c) => c.id === colourId)?.name}
+                surfaceName={surfaces.data?.find((s) => s.id === surfaceId)?.name}
+                originName={origins.data?.find((o) => o.id === originId)?.name}
+                thicknessMm={(thicknesses.data?.find((t) => t.id === thicknessId) as (MasterOpt & { mm?: number }) | undefined)?.mm ?? null}
+                productName={derived.name}
+              />
+
             </dl>
             <div className="mt-4 flex flex-col gap-2">
               <Button
@@ -339,3 +347,66 @@ function simpleHash(s: string): string {
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
   return (h >>> 0).toString(16).padStart(8, "0");
 }
+
+function AiClassify(props: {
+  familyName?: string;
+  stoneName?: string;
+  colourName?: string;
+  surfaceName?: string;
+  originName?: string;
+  thicknessMm: number | null;
+  productName: string;
+}) {
+  const [result, setResult] = useState<{
+    hsn: string; hsn_conf: number; hsn_reason?: string;
+    gst: number; gst_conf: number; gst_reason?: string;
+  } | null>(null);
+  const run = useMutation({
+    mutationFn: async () => {
+      const r = await aiServices.suggestHsnGst({
+        product_name: props.productName,
+        family: props.familyName,
+        stone_type: props.stoneName,
+        finish: props.surfaceName,
+        origin: props.originName,
+        thickness_mm: props.thicknessMm,
+      });
+      if (!r) throw new Error("No suggestion");
+      return r;
+    },
+    onSuccess: (r) => setResult({
+      hsn: r.hsn.hsn, hsn_conf: r.hsn.confidence, hsn_reason: r.hsn.reason,
+      gst: r.gst.gst_pct, gst_conf: r.gst.confidence, gst_reason: r.gst.reason,
+    }),
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+  const hsn = result?.hsn ?? heuristicHsn(props.familyName).hsn;
+  const gst = result?.gst ?? heuristicGst(hsn).gst_pct;
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-2">
+      <div className="flex flex-wrap items-center gap-1">
+        <Badge variant="secondary">HSN {hsn}</Badge>
+        <Badge variant="secondary">GST {gst}%</Badge>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="ml-auto h-7 gap-1"
+          onClick={() => run.mutate()}
+          disabled={run.isPending || !props.stoneName}
+        >
+          {run.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          AI Suggest
+        </Button>
+      </div>
+      {result && (
+        <div className="text-xs text-muted-foreground">
+          HSN {Math.round(result.hsn_conf * 100)}% · {result.hsn_reason ?? ""}
+          <br />
+          GST {Math.round(result.gst_conf * 100)}% · {result.gst_reason ?? ""}
+        </div>
+      )}
+    </div>
+  );
+}
+
