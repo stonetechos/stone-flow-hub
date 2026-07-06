@@ -311,6 +311,9 @@ function StageCard({ stage, onPatch }: { stage: Stage; onPatch: (p: Record<strin
           }}
         />
       </div>
+      <div className="mt-3">
+        <QcChecklist stageId={stage.id} />
+      </div>
     </div>
   );
 }
