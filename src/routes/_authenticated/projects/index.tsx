@@ -42,7 +42,7 @@ import {
   type ProjectWithCustomer,
 } from "@/lib/projects/api";
 import { EntityPicker } from "@/components/forms/EntityPicker";
-import { invalidateProject } from "@/lib/query-invalidation";
+import { invalidateProject, seedPickerCache } from "@/lib/query-invalidation";
 import { PROJECT_TYPES, projectCreateSchema, type ProjectCreateInput } from "@/lib/projects/schema";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 
