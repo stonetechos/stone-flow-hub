@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +22,26 @@ import { toUserMessage } from "@/lib/errors";
 import { createPayment } from "@/lib/payments/crud";
 import { PAYMENT_METHODS, type PaymentCreateInput } from "@/lib/payments/schema";
 import { listInvoices } from "@/lib/invoices/api";
+import { invalidatePayment } from "@/lib/query-invalidation";
+
+const searchSchema = z.object({
+  invoice: z.string().uuid().optional(),
+});
 
 export const Route = createFileRoute("/_authenticated/payments/new")({
   ssr: false,
+  validateSearch: (s) => searchSchema.parse(s),
   component: NewPaymentPage,
 });
 
 function NewPaymentPage() {
   const nav = useNavigate();
+  const qc = useQueryClient();
+  const params = Route.useSearch();
   const invoices = useQuery({ queryKey: qk.invoices.list(""), queryFn: () => listInvoices() });
 
   const [form, setForm] = useState<PaymentCreateInput>({
-    invoice_id: "",
+    invoice_id: params.invoice ?? "",
     amount: 0,
     method: "bank_transfer",
     paid_at: new Date().toISOString().slice(0, 10),
@@ -42,14 +51,24 @@ function NewPaymentPage() {
   const set = <K extends keyof PaymentCreateInput>(k: K, v: PaymentCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  // When an invoice is pre-selected (or picked), auto-fill amount from balance_due.
+  useEffect(() => {
+    if (!form.invoice_id || form.amount) return;
+    const match = (invoices.data ?? []).find((i) => i.id === form.invoice_id);
+    if (match?.balance_due) set("amount", Number(match.balance_due));
+     
+  }, [form.invoice_id, invoices.data]);
+
   const mut = useMutation({
     mutationFn: createPayment,
     onSuccess: (row) => {
       toast.success(`Payment ${row.payment_no} recorded`);
+      invalidatePayment(qc, row.id, row.invoice_id);
       nav({ to: "/payments/$id", params: { id: row.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
 
   return (
     <div>
