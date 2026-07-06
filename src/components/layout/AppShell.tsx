@@ -40,6 +40,8 @@ import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { Copilot } from "@/components/copilot/Copilot";
+import { DemoProvider } from "@/lib/demo/context";
+import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -293,11 +295,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Search className="h-5 w-5" />
             </Button>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <DemoBadge />
             <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
             <NotificationsBell />
           </div>
         </header>
+
+        <DemoBanner />
 
         <div className="border-b border-border bg-muted/30 px-4 py-2 md:px-6">
           <Breadcrumbs />
