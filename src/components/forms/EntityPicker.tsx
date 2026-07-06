@@ -97,31 +97,24 @@ function useDebounced<T>(value: T, ms = 250): T {
 function toRow(type: EntityType, r: any): EntityRow {
   switch (type) {
     case "customer":
-      return {
-        id: r.id,
-        label: r.name,
-        sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · "),
-      };
+      return { id: r.id, label: r.name, sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · ") };
     case "vendor":
-      return {
-        id: r.id,
-        label: r.company_name,
-        sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · "),
-      };
+      return { id: r.id, label: r.company_name, sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · ") };
     case "project":
-      return {
-        id: r.id,
-        label: r.name,
-        sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · "),
-      };
+      return { id: r.id, label: r.name, sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · ") };
     case "product":
-      return {
-        id: r.id,
-        label: r.name,
-        sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · "),
-      };
+      return { id: r.id, label: r.name, sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · ") };
+    case "stone_type":
+      return { id: r.id, label: r.name, sublabel: [r.code, r.mohs_hardness ? `Mohs ${r.mohs_hardness}` : null].filter(Boolean).join(" · ") };
+    case "surface_finish":
+      return { id: r.id, label: r.name, sublabel: [r.code, r.anti_slip ? "anti-slip" : null].filter(Boolean).join(" · ") };
+    case "edge_finish":
+      return { id: r.id, label: r.name, sublabel: [r.code, r.machine_required ? "machine" : "hand"].filter(Boolean).join(" · ") };
+    case "product_family":
+      return { id: r.id, label: r.name, sublabel: [r.code, r.default_uom].filter(Boolean).join(" · ") };
   }
 }
+
 
 const LABEL: Record<EntityType, { singular: string; placeholder: string }> = {
   customer: { singular: "customer", placeholder: "Select customer" },
