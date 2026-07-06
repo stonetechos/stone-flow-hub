@@ -39,6 +39,7 @@ import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
 import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
+import { Copilot } from "@/components/copilot/Copilot";
 
 const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -308,6 +309,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <Copilot />
     </div>
   );
 }
