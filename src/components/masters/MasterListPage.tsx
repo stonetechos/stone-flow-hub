@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Search, Layers } from "lucide-react";
+import { Plus, Loader2, Search, Layers, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -30,6 +30,7 @@ import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
 import type { MasterConfig, MasterField } from "@/lib/masters/config";
 import { COMMON_FIELDS, COMMON_TRAILING_FIELDS } from "@/lib/masters/config";
+import { BulkImportDialog } from "@/components/masters/BulkImportDialog";
 
 type Row = { id: string; code: string; name: string; is_active: boolean; sort_order: number } & Record<string, unknown>;
 
@@ -42,6 +43,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
   const [editing, setEditing] = useState<Row | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const queryKey = [config.table, "list", tab, q] as const;
   const list = useQuery({
@@ -131,9 +133,14 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         subtitle={config.description}
         actions={
           <Can anyRole={["admin", "sales_manager"]}>
-            <Button size="sm" onClick={() => setCreating(true)}>
-              <Plus className="mr-1.5 h-4 w-4" /> New {config.singular}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setImporting(true)}>
+                <Upload className="mr-1.5 h-4 w-4" /> Bulk import
+              </Button>
+              <Button size="sm" onClick={() => setCreating(true)}>
+                <Plus className="mr-1.5 h-4 w-4" /> New {config.singular}
+              </Button>
+            </div>
           </Can>
         }
       />
@@ -248,6 +255,21 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         confirmLabel="Delete"
         busy={del.isPending}
         onConfirm={() => { if (deleteTarget) del.mutate(deleteTarget); }}
+      />
+
+      <BulkImportDialog
+        open={importing}
+        onOpenChange={setImporting}
+        table={config.table}
+        templateName={config.route}
+        columns={[
+          { key: "code", label: "Code", required: true },
+          { key: "name", label: "Name", required: true },
+          ...config.extraFields.map((f) => ({ key: f.key, label: f.label, type: f.type as "text" | "number" | "boolean" | undefined, required: f.required })),
+          { key: "sort_order", label: "Sort order", type: "number" as const },
+          { key: "notes", label: "Notes" },
+        ]}
+        onDone={() => invalidateAll()}
       />
     </div>
   );

@@ -25,7 +25,8 @@ export type MasterConfig = {
     | "manufacturing_stages"
     | "quality_grades"
     | "packaging_types"
-    | "uoms";
+    | "uoms"
+    | "qc_templates";
   route: string;
   title: string;
   singular: string;
@@ -180,6 +181,17 @@ export const MASTER_CONFIGS: MasterConfig[] = [
       { key: "symbol", label: "Symbol" },
       { key: "dimension", label: "Dimension" },
     ],
+  },
+  {
+    table: "qc_templates",
+    route: "qc-templates",
+    title: "QC Templates",
+    singular: "QC Template",
+    description: "Reusable QC checklists (surface, dimension, thickness, edge, colour, crack, packing, dispatch).",
+    extraFields: [
+      { key: "category", label: "Category", type: "text", required: true, placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch" },
+    ],
+    extraColumns: [{ key: "category", label: "Category" }],
   },
 ];
 

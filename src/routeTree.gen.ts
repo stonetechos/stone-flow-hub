@@ -41,6 +41,7 @@ import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
 import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
 import { Route as AuthenticatedDispatchIndexRouteImport } from './routes/_authenticated/dispatch/index'
+import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_authenticated/dashboards/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
@@ -63,6 +64,7 @@ import { Route as AuthenticatedMastersStoneTypesRouteImport } from './routes/_au
 import { Route as AuthenticatedMastersStoneOriginsRouteImport } from './routes/_authenticated/masters/stone-origins'
 import { Route as AuthenticatedMastersStoneColoursRouteImport } from './routes/_authenticated/masters/stone-colours'
 import { Route as AuthenticatedMastersQualityGradesRouteImport } from './routes/_authenticated/masters/quality-grades'
+import { Route as AuthenticatedMastersQcTemplatesRouteImport } from './routes/_authenticated/masters/qc-templates'
 import { Route as AuthenticatedMastersProductFamiliesRouteImport } from './routes/_authenticated/masters/product-families'
 import { Route as AuthenticatedMastersPackagingTypesRouteImport } from './routes/_authenticated/masters/packaging-types'
 import { Route as AuthenticatedMastersManufacturingStagesRouteImport } from './routes/_authenticated/masters/manufacturing-stages'
@@ -78,6 +80,10 @@ import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEnquiriesEnquiryIdRouteImport } from './routes/_authenticated/enquiries/$enquiryId'
 import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenticated/dispatch/new'
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
+import { Route as AuthenticatedDashboardsSalesRouteImport } from './routes/_authenticated/dashboards/sales'
+import { Route as AuthenticatedDashboardsPurchaseRouteImport } from './routes/_authenticated/dashboards/purchase'
+import { Route as AuthenticatedDashboardsProductionRouteImport } from './routes/_authenticated/dashboards/production'
+import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/_authenticated/dashboards/management'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
@@ -263,6 +269,12 @@ const AuthenticatedDispatchIndexRoute =
     path: '/dispatch/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsIndexRoute =
+  AuthenticatedDashboardsIndexRouteImport.update({
+    id: '/dashboards/',
+    path: '/dashboards/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCustomersIndexRoute =
   AuthenticatedCustomersIndexRouteImport.update({
     id: '/customers/',
@@ -391,6 +403,12 @@ const AuthenticatedMastersQualityGradesRoute =
     path: '/masters/quality-grades',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMastersQcTemplatesRoute =
+  AuthenticatedMastersQcTemplatesRouteImport.update({
+    id: '/masters/qc-templates',
+    path: '/masters/qc-templates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMastersProductFamiliesRoute =
   AuthenticatedMastersProductFamiliesRouteImport.update({
     id: '/masters/product-families',
@@ -480,6 +498,30 @@ const AuthenticatedDispatchIdRoute = AuthenticatedDispatchIdRouteImport.update({
   path: '/dispatch/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardsSalesRoute =
+  AuthenticatedDashboardsSalesRouteImport.update({
+    id: '/dashboards/sales',
+    path: '/dashboards/sales',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsPurchaseRoute =
+  AuthenticatedDashboardsPurchaseRouteImport.update({
+    id: '/dashboards/purchase',
+    path: '/dashboards/purchase',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsProductionRoute =
+  AuthenticatedDashboardsProductionRouteImport.update({
+    id: '/dashboards/production',
+    path: '/dashboards/production',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsManagementRoute =
+  AuthenticatedDashboardsManagementRouteImport.update({
+    id: '/dashboards/management',
+    path: '/dashboards/management',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCustomersCustomerIdRoute =
   AuthenticatedCustomersCustomerIdRouteImport.update({
     id: '/customers/$customerId',
@@ -557,6 +599,10 @@ export interface FileRoutesByFullPath {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
+  '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -572,6 +618,7 @@ export interface FileRoutesByFullPath {
   '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
   '/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
   '/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
   '/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
@@ -594,6 +641,7 @@ export interface FileRoutesByFullPath {
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
@@ -637,6 +685,10 @@ export interface FileRoutesByTo {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
+  '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -652,6 +704,7 @@ export interface FileRoutesByTo {
   '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
   '/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
   '/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
   '/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
@@ -674,6 +727,7 @@ export interface FileRoutesByTo {
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
+  '/dashboards': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
   '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
   '/followups': typeof AuthenticatedFollowupsIndexRoute
@@ -719,6 +773,10 @@ export interface FileRoutesById {
   '/vendor/profile': typeof VendorProfileRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/_authenticated/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/_authenticated/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
+  '/_authenticated/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/_authenticated/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/_authenticated/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -734,6 +792,7 @@ export interface FileRoutesById {
   '/_authenticated/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
   '/_authenticated/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/_authenticated/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/_authenticated/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
   '/_authenticated/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
   '/_authenticated/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
   '/_authenticated/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
@@ -756,6 +815,7 @@ export interface FileRoutesById {
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/_authenticated/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
@@ -801,6 +861,10 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/management'
+    | '/dashboards/production'
+    | '/dashboards/purchase'
+    | '/dashboards/sales'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -816,6 +880,7 @@ export interface FileRouteTypes {
     | '/masters/manufacturing-stages'
     | '/masters/packaging-types'
     | '/masters/product-families'
+    | '/masters/qc-templates'
     | '/masters/quality-grades'
     | '/masters/stone-colours'
     | '/masters/stone-origins'
@@ -838,6 +903,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/customers/'
+    | '/dashboards/'
     | '/dispatch/'
     | '/enquiries/'
     | '/followups/'
@@ -881,6 +947,10 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/management'
+    | '/dashboards/production'
+    | '/dashboards/purchase'
+    | '/dashboards/sales'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -896,6 +966,7 @@ export interface FileRouteTypes {
     | '/masters/manufacturing-stages'
     | '/masters/packaging-types'
     | '/masters/product-families'
+    | '/masters/qc-templates'
     | '/masters/quality-grades'
     | '/masters/stone-colours'
     | '/masters/stone-origins'
@@ -918,6 +989,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/customers'
+    | '/dashboards'
     | '/dispatch'
     | '/enquiries'
     | '/followups'
@@ -962,6 +1034,10 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
+    | '/_authenticated/dashboards/management'
+    | '/_authenticated/dashboards/production'
+    | '/_authenticated/dashboards/purchase'
+    | '/_authenticated/dashboards/sales'
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/new'
     | '/_authenticated/enquiries/$enquiryId'
@@ -977,6 +1053,7 @@ export interface FileRouteTypes {
     | '/_authenticated/masters/manufacturing-stages'
     | '/_authenticated/masters/packaging-types'
     | '/_authenticated/masters/product-families'
+    | '/_authenticated/masters/qc-templates'
     | '/_authenticated/masters/quality-grades'
     | '/_authenticated/masters/stone-colours'
     | '/_authenticated/masters/stone-origins'
@@ -999,6 +1076,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/_authenticated/customers/'
+    | '/_authenticated/dashboards/'
     | '/_authenticated/dispatch/'
     | '/_authenticated/enquiries/'
     | '/_authenticated/followups/'
@@ -1260,6 +1338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDispatchIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/': {
+      id: '/_authenticated/dashboards/'
+      path: '/dashboards'
+      fullPath: '/dashboards/'
+      preLoaderRoute: typeof AuthenticatedDashboardsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/customers/': {
       id: '/_authenticated/customers/'
       path: '/customers'
@@ -1414,6 +1499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMastersQualityGradesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/masters/qc-templates': {
+      id: '/_authenticated/masters/qc-templates'
+      path: '/masters/qc-templates'
+      fullPath: '/masters/qc-templates'
+      preLoaderRoute: typeof AuthenticatedMastersQcTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/masters/product-families': {
       id: '/_authenticated/masters/product-families'
       path: '/masters/product-families'
@@ -1517,6 +1609,34 @@ declare module '@tanstack/react-router' {
       path: '/dispatch/$id'
       fullPath: '/dispatch/$id'
       preLoaderRoute: typeof AuthenticatedDispatchIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/sales': {
+      id: '/_authenticated/dashboards/sales'
+      path: '/dashboards/sales'
+      fullPath: '/dashboards/sales'
+      preLoaderRoute: typeof AuthenticatedDashboardsSalesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/purchase': {
+      id: '/_authenticated/dashboards/purchase'
+      path: '/dashboards/purchase'
+      fullPath: '/dashboards/purchase'
+      preLoaderRoute: typeof AuthenticatedDashboardsPurchaseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/production': {
+      id: '/_authenticated/dashboards/production'
+      path: '/dashboards/production'
+      fullPath: '/dashboards/production'
+      preLoaderRoute: typeof AuthenticatedDashboardsProductionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/management': {
+      id: '/_authenticated/dashboards/management'
+      path: '/dashboards/management'
+      fullPath: '/dashboards/management'
+      preLoaderRoute: typeof AuthenticatedDashboardsManagementRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers/$customerId': {
@@ -1704,6 +1824,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
+  AuthenticatedDashboardsProductionRoute: typeof AuthenticatedDashboardsProductionRoute
+  AuthenticatedDashboardsPurchaseRoute: typeof AuthenticatedDashboardsPurchaseRoute
+  AuthenticatedDashboardsSalesRoute: typeof AuthenticatedDashboardsSalesRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
   AuthenticatedDispatchNewRoute: typeof AuthenticatedDispatchNewRoute
   AuthenticatedEnquiriesEnquiryIdRoute: typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -1719,6 +1843,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMastersManufacturingStagesRoute: typeof AuthenticatedMastersManufacturingStagesRoute
   AuthenticatedMastersPackagingTypesRoute: typeof AuthenticatedMastersPackagingTypesRoute
   AuthenticatedMastersProductFamiliesRoute: typeof AuthenticatedMastersProductFamiliesRoute
+  AuthenticatedMastersQcTemplatesRoute: typeof AuthenticatedMastersQcTemplatesRoute
   AuthenticatedMastersQualityGradesRoute: typeof AuthenticatedMastersQualityGradesRoute
   AuthenticatedMastersStoneColoursRoute: typeof AuthenticatedMastersStoneColoursRoute
   AuthenticatedMastersStoneOriginsRoute: typeof AuthenticatedMastersStoneOriginsRoute
@@ -1740,6 +1865,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
   AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
+  AuthenticatedDashboardsIndexRoute: typeof AuthenticatedDashboardsIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
   AuthenticatedEnquiriesIndexRoute: typeof AuthenticatedEnquiriesIndexRoute
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
@@ -1769,6 +1895,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
+  AuthenticatedDashboardsManagementRoute:
+    AuthenticatedDashboardsManagementRoute,
+  AuthenticatedDashboardsProductionRoute:
+    AuthenticatedDashboardsProductionRoute,
+  AuthenticatedDashboardsPurchaseRoute: AuthenticatedDashboardsPurchaseRoute,
+  AuthenticatedDashboardsSalesRoute: AuthenticatedDashboardsSalesRoute,
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRouteWithChildren,
   AuthenticatedDispatchNewRoute: AuthenticatedDispatchNewRoute,
   AuthenticatedEnquiriesEnquiryIdRoute: AuthenticatedEnquiriesEnquiryIdRoute,
@@ -1788,6 +1920,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedMastersPackagingTypesRoute,
   AuthenticatedMastersProductFamiliesRoute:
     AuthenticatedMastersProductFamiliesRoute,
+  AuthenticatedMastersQcTemplatesRoute: AuthenticatedMastersQcTemplatesRoute,
   AuthenticatedMastersQualityGradesRoute:
     AuthenticatedMastersQualityGradesRoute,
   AuthenticatedMastersStoneColoursRoute: AuthenticatedMastersStoneColoursRoute,
@@ -1812,6 +1945,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
   AuthenticatedVendorsVendorIdRoute: AuthenticatedVendorsVendorIdRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
+  AuthenticatedDashboardsIndexRoute: AuthenticatedDashboardsIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,
   AuthenticatedEnquiriesIndexRoute: AuthenticatedEnquiriesIndexRoute,
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,

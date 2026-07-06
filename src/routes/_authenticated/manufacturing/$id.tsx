@@ -24,6 +24,8 @@ import { EntityPicker } from "@/components/forms/EntityPicker";
 import { qk } from "@/lib/query-keys";
 import { invalidateProductionOrder } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
+import { InstallationTracker } from "@/components/manufacturing/InstallationTracker";
+import { QcChecklist } from "@/components/manufacturing/QcChecklist";
 
 const STAGE_STATUSES = ["pending", "in_progress", "completed", "on_hold", "skipped"] as const;
 const PO_STATUSES = ["planned", "in_progress", "on_hold", "completed", "cancelled"] as const;
@@ -189,6 +191,8 @@ function ProductionOrderDetail() {
           </div>
         )}
       </Card>
+
+      <InstallationTracker orderId={id} projectId={po.projects?.id ?? null} />
     </div>
   );
 }
@@ -306,6 +310,9 @@ function StageCard({ stage, onPatch }: { stage: Stage; onPatch: (p: Record<strin
             if (v !== (stage.notes ?? "")) onPatch({ notes: v || null });
           }}
         />
+      </div>
+      <div className="mt-3">
+        <QcChecklist stageId={stage.id} />
       </div>
     </div>
   );
