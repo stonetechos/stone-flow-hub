@@ -297,52 +297,53 @@ export function EntityPicker({
 
 function pickerKey(type: EntityType, q: string, filter?: EntityPickerFilter) {
   switch (type) {
-    case "customer":
-      return qk.customers.picker(q);
-    case "vendor":
-      return qk.vendors.picker(q);
-    case "project":
-      return qk.projects.picker(q, filter?.customerId ?? null);
-    case "product":
-      return qk.products.picker(q);
+    case "customer": return qk.customers.picker(q);
+    case "vendor": return qk.vendors.picker(q);
+    case "project": return qk.projects.picker(q, filter?.customerId ?? null);
+    case "product": return qk.products.picker(q);
+    case "stone_type": return qk.stoneTypes.picker(q);
+    case "surface_finish": return qk.surfaceFinishes.picker(q);
+    case "edge_finish": return qk.edgeFinishes.picker(q);
+    case "product_family": return qk.productFamilies.picker(q);
   }
 }
 
 function byIdKey(type: EntityType, id: string) {
   switch (type) {
-    case "customer":
-      return qk.customers.byId(id);
-    case "vendor":
-      return qk.vendors.byId(id);
-    case "project":
-      return qk.projects.byId(id);
-    case "product":
-      return ["products", "byId", id] as const;
+    case "customer": return qk.customers.byId(id);
+    case "vendor": return qk.vendors.byId(id);
+    case "project": return qk.projects.byId(id);
+    case "product": return ["products", "byId", id] as const;
+    case "stone_type": return qk.stoneTypes.byId(id);
+    case "surface_finish": return qk.surfaceFinishes.byId(id);
+    case "edge_finish": return qk.edgeFinishes.byId(id);
+    case "product_family": return qk.productFamilies.byId(id);
   }
 }
 
 async function fetchList(type: EntityType, q: string, filter?: EntityPickerFilter) {
   switch (type) {
-    case "customer":
-      return listCustomers(q);
-    case "vendor":
-      return listVendorsForPicker(q);
-    case "project":
-      return listProjectsForPicker({ query: q, customerId: filter?.customerId ?? undefined });
-    case "product":
-      return listProducts(q);
+    case "customer": return listCustomers(q);
+    case "vendor": return listVendorsForPicker(q);
+    case "project": return listProjectsForPicker({ query: q, customerId: filter?.customerId ?? undefined });
+    case "product": return listProducts(q);
+    case "stone_type": return listStoneTypes(q);
+    case "surface_finish": return listSurfaceFinishes(q);
+    case "edge_finish": return listEdgeFinishes(q);
+    case "product_family": return listProductFamilies(q);
   }
 }
 
 async function fetchById(type: EntityType, id: string) {
   switch (type) {
-    case "customer":
-      return getCustomer(id);
-    case "vendor":
-      return getVendor(id);
-    case "project":
-      return getProject(id);
-    case "product":
-      return getProduct(id);
+    case "customer": return getCustomer(id);
+    case "vendor": return getVendor(id);
+    case "project": return getProject(id);
+    case "product": return getProduct(id);
+    case "stone_type": return getStoneType(id);
+    case "surface_finish": return getSurfaceFinish(id);
+    case "edge_finish": return getEdgeFinish(id);
+    case "product_family": return getProductFamily(id);
   }
 }
+
