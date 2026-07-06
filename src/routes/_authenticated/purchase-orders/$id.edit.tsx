@@ -17,15 +17,15 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { EntityPicker } from "@/components/forms/EntityPicker";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
+import { invalidatePurchaseOrder } from "@/lib/query-invalidation";
 import { getPurchaseOrder, updatePurchaseOrder } from "@/lib/purchase-orders/api";
 import {
   PURCHASE_ORDER_STATUSES,
   type PurchaseOrderCreateInput,
 } from "@/lib/purchase-orders/schema";
-import { listVendorsForPicker } from "@/lib/vendors/api";
-import { listProjectsForPicker } from "@/lib/projects/api";
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/$id/edit")({
   ssr: false,
@@ -40,8 +40,6 @@ function EditPurchaseOrderPage() {
     queryKey: qk.purchaseOrders.byId(id),
     queryFn: () => getPurchaseOrder(id),
   });
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
 
   const [form, setForm] = useState<PurchaseOrderCreateInput | null>(null);
   useEffect(() => {
@@ -62,7 +60,7 @@ function EditPurchaseOrderPage() {
     mutationFn: (input: PurchaseOrderCreateInput) => updatePurchaseOrder(id, input),
     onSuccess: () => {
       toast.success("Purchase order updated");
-      qc.invalidateQueries({ queryKey: qk.purchaseOrders.all });
+      invalidatePurchaseOrder(qc, id);
       nav({ to: "/purchase-orders/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -86,18 +84,11 @@ function EditPurchaseOrderPage() {
       >
         <QuickForm.QuickFill>
           <Field label="Vendor" required>
-            <Select value={form.vendor_id ?? ""} onValueChange={(v) => set("vendor_id", v || null)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(vendors.data ?? []).map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="vendor"
+              value={form.vendor_id}
+              onChange={(v) => set("vendor_id", v)}
+            />
           </Field>
           <Field label="Order date" required>
             <Input
@@ -110,21 +101,11 @@ function EditPurchaseOrderPage() {
         </QuickForm.QuickFill>
         <QuickForm.MoreDetails>
           <Field label="Project">
-            <Select
-              value={form.project_id ?? ""}
-              onValueChange={(v) => set("project_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(projects.data ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="project"
+              value={form.project_id}
+              onChange={(v) => set("project_id", v)}
+            />
           </Field>
           <Field label="Status">
             <Select

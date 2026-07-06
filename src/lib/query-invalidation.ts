@@ -18,6 +18,15 @@ function bump(qc: QueryClient, key: readonly unknown[]) {
 /** Invalidate every "picker" and "global search" query — anything that lists many entities. */
 function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["search"] });
+  // EntityPicker & every list-all-rows selector across the app.
+  qc.invalidateQueries({ queryKey: ["customers", "picker"] });
+  qc.invalidateQueries({ queryKey: ["customers", "list"] });
+  qc.invalidateQueries({ queryKey: ["vendors", "picker"] });
+  qc.invalidateQueries({ queryKey: ["vendors", "list"] });
+  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
+  qc.invalidateQueries({ queryKey: ["projects", "list"] });
+  qc.invalidateQueries({ queryKey: ["products", "picker"] });
+  qc.invalidateQueries({ queryKey: ["products", "list"] });
 }
 
 export function invalidateCustomer(qc: QueryClient, id?: string): void {

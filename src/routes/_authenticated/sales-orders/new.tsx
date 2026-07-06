@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -17,13 +17,11 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
-import { qk } from "@/lib/query-keys";
+import { EntityPicker } from "@/components/forms/EntityPicker";
 import { toUserMessage } from "@/lib/errors";
+import { invalidateSalesOrder } from "@/lib/query-invalidation";
 import { createSalesOrder } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES, type SalesOrderCreateInput } from "@/lib/sales-orders/schema";
-import { listCustomers } from "@/lib/customers/api";
-import { listProjectsForPicker } from "@/lib/projects/api";
-import { listQuotes } from "@/lib/quotes/api";
 
 const search = z.object({
   project: z.string().uuid().optional(),
@@ -43,10 +41,8 @@ function today() {
 
 function NewSalesOrderPage() {
   const nav = useNavigate();
+  const qc = useQueryClient();
   const params = Route.useSearch();
-  const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers() });
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
-  const quotes = useQuery({ queryKey: qk.quotes.list(""), queryFn: () => listQuotes() });
 
   const [form, setForm] = useState<SalesOrderCreateInput>({
     quote_id: params.quote ?? null,
@@ -64,6 +60,7 @@ function NewSalesOrderPage() {
     mutationFn: createSalesOrder,
     onSuccess: (row) => {
       toast.success(`Sales order ${row.so_no} created`);
+      invalidateSalesOrder(qc, row.id);
       nav({ to: "/sales-orders/$id", params: { id: row.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -81,21 +78,14 @@ function NewSalesOrderPage() {
       >
         <QuickForm.QuickFill>
           <Field label="Customer">
-            <Select
-              value={form.customer_id ?? ""}
-              onValueChange={(v) => set("customer_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {(customers.data ?? []).map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="customer"
+              value={form.customer_id}
+              onChange={(id) => {
+                set("customer_id", id);
+                if (!id) set("project_id", null);
+              }}
+            />
           </Field>
           <Field label="Order date" required>
             <Input
@@ -109,35 +99,18 @@ function NewSalesOrderPage() {
 
         <QuickForm.MoreDetails>
           <Field label="Project">
-            <Select
-              value={form.project_id ?? ""}
-              onValueChange={(v) => set("project_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select project" />
-              </SelectTrigger>
-              <SelectContent>
-                {(projects.data ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Source quote">
-            <Select value={form.quote_id ?? ""} onValueChange={(v) => set("quote_id", v || null)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Optional" />
-              </SelectTrigger>
-              <SelectContent>
-                {(quotes.data ?? []).map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.quote_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="project"
+              value={form.project_id}
+              onChange={(id, row) => {
+                set("project_id", id);
+                // Auto-fill customer from project when missing.
+                const cust = (row as any)?.raw?.customer_id;
+                if (id && !form.customer_id && cust) set("customer_id", cust);
+              }}
+              filter={{ customerId: form.customer_id ?? null }}
+              createDefaults={{ customer_id: form.customer_id ?? "" }}
+            />
           </Field>
           <Field label="Status">
             <Select

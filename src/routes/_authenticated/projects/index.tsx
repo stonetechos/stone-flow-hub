@@ -41,7 +41,8 @@ import {
   updateProject,
   type ProjectWithCustomer,
 } from "@/lib/projects/api";
-import { listCustomers } from "@/lib/customers/api";
+import { EntityPicker } from "@/components/forms/EntityPicker";
+import { invalidateProject } from "@/lib/query-invalidation";
 import { PROJECT_TYPES, projectCreateSchema, type ProjectCreateInput } from "@/lib/projects/schema";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 
@@ -254,7 +255,6 @@ function ProjectFormDialog({
   editing: ProjectWithCustomer | null;
 }) {
   const qc = useQueryClient();
-  const customers = useQuery({ queryKey: qk.customers.list(""), queryFn: () => listCustomers("") });
   const [form, setForm] = useState<ProjectCreateInput>(emptyForm);
 
   useEffect(() => {
@@ -266,7 +266,7 @@ function ProjectFormDialog({
       editing ? updateProject(editing.id, input) : createProject(input),
     onSuccess: (row) => {
       toast.success(editing ? "Project updated" : `Project ${row.project_code} created`);
-      qc.invalidateQueries({ queryKey: qk.projects.all });
+      invalidateProject(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -290,21 +290,11 @@ function ProjectFormDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Customer" required className="md:col-span-2">
-              <Select value={form.customer_id} onValueChange={(v) => set("customer_id", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={customers.isLoading ? "Loading…" : "Select customer"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(customers.data ?? []).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}{" "}
-                      <span className="ml-2 font-mono text-xs text-muted-foreground">
-                        {c.customer_code}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <EntityPicker
+                type="customer"
+                value={form.customer_id || null}
+                onChange={(id) => set("customer_id", id ?? "")}
+              />
             </Field>
             <Field label="Project name" required>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />

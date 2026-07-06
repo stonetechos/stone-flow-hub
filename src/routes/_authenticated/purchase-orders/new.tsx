@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -17,15 +17,14 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
-import { qk } from "@/lib/query-keys";
+import { EntityPicker } from "@/components/forms/EntityPicker";
 import { toUserMessage } from "@/lib/errors";
+import { invalidatePurchaseOrder } from "@/lib/query-invalidation";
 import { createPurchaseOrder } from "@/lib/purchase-orders/api";
 import {
   PURCHASE_ORDER_STATUSES,
   type PurchaseOrderCreateInput,
 } from "@/lib/purchase-orders/schema";
-import { listVendorsForPicker } from "@/lib/vendors/api";
-import { listProjectsForPicker } from "@/lib/projects/api";
 
 const search = z.object({
   project: z.string().uuid().optional(),
@@ -44,9 +43,8 @@ function today() {
 
 function NewPurchaseOrderPage() {
   const nav = useNavigate();
+  const qc = useQueryClient();
   const params = Route.useSearch();
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
-  const projects = useQuery({ queryKey: qk.projects.list(""), queryFn: () => listProjectsForPicker() });
 
   const [form, setForm] = useState<PurchaseOrderCreateInput>({
     vendor_id: params.vendor ?? null,
@@ -63,6 +61,7 @@ function NewPurchaseOrderPage() {
     mutationFn: createPurchaseOrder,
     onSuccess: (row) => {
       toast.success(`PO ${row.po_no} created`);
+      invalidatePurchaseOrder(qc, row.id);
       nav({ to: "/purchase-orders/$id", params: { id: row.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -80,18 +79,11 @@ function NewPurchaseOrderPage() {
       >
         <QuickForm.QuickFill>
           <Field label="Vendor" required>
-            <Select value={form.vendor_id ?? ""} onValueChange={(v) => set("vendor_id", v || null)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select vendor" />
-              </SelectTrigger>
-              <SelectContent>
-                {(vendors.data ?? []).map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="vendor"
+              value={form.vendor_id}
+              onChange={(v) => set("vendor_id", v)}
+            />
           </Field>
           <Field label="Order date" required>
             <Input
@@ -105,21 +97,11 @@ function NewPurchaseOrderPage() {
 
         <QuickForm.MoreDetails>
           <Field label="Project">
-            <Select
-              value={form.project_id ?? ""}
-              onValueChange={(v) => set("project_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Optional" />
-              </SelectTrigger>
-              <SelectContent>
-                {(projects.data ?? []).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EntityPicker
+              type="project"
+              value={form.project_id}
+              onChange={(v) => set("project_id", v)}
+            />
           </Field>
           <Field label="Status">
             <Select
