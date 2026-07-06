@@ -27,6 +27,15 @@ function bumpPickers(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ["projects", "list"] });
   qc.invalidateQueries({ queryKey: ["products", "picker"] });
   qc.invalidateQueries({ queryKey: ["products", "list"] });
+  // Stone-industry masters
+  qc.invalidateQueries({ queryKey: ["stone_types", "picker"] });
+  qc.invalidateQueries({ queryKey: ["stone_types", "list"] });
+  qc.invalidateQueries({ queryKey: ["surface_finishes", "picker"] });
+  qc.invalidateQueries({ queryKey: ["surface_finishes", "list"] });
+  qc.invalidateQueries({ queryKey: ["edge_finishes", "picker"] });
+  qc.invalidateQueries({ queryKey: ["edge_finishes", "list"] });
+  qc.invalidateQueries({ queryKey: ["product_families", "picker"] });
+  qc.invalidateQueries({ queryKey: ["product_families", "list"] });
 }
 
 /**
