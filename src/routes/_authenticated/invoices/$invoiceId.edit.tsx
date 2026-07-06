@@ -52,8 +52,7 @@ function EditInvoicePage() {
     mutationFn: () => updateInvoice(invoiceId, form),
     onSuccess: () => {
       toast.success("Invoice updated");
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
-      qc.invalidateQueries({ queryKey: qk.invoices.byId(invoiceId) });
+      invalidateInvoice(qc, invoiceId);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
