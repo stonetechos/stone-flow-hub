@@ -94,8 +94,24 @@ function ProductConfigurator() {
 
   const create = useMutation({
     mutationFn: async () => {
+      const family = families.data?.find((f) => f.id === familyId);
+      const hsn = heuristicHsn(family?.name);
+      const gst = heuristicGst(hsn.hsn);
+      const capabilityMap: Record<string, string[]> = {
+        cnc: ["cnc"],
+        artwork: ["cnc"],
+        inlay: ["inlay", "brass_inlay"],
+        waterjet: ["waterjet"],
+        veneer: ["veneer"],
+        mural: ["cnc", "waterjet"],
+        mosaic: ["mosaic"],
+      };
+      const fname = (family?.name ?? "").toLowerCase();
+      const required = Object.entries(capabilityMap).flatMap(([k, v]) => (fname.includes(k) ? v : []));
       const payload = {
         name: derived.name,
+        commercial_name: derived.name,
+        technical_description: derived.description,
         description: derived.description,
         auto_description: derived.description,
         config_hash: derived.config_hash,
@@ -114,8 +130,11 @@ function ProductConfigurator() {
         packaging_type_id: packagingId,
         uom_id: uomId,
         is_custom: true,
-        hsn_code: "6802",   // placeholder — natural stone tariff heading
-        gst_pct: 18,        // placeholder GST
+        hsn_code: hsn.hsn,
+        gst_pct: gst.gst_pct,
+        estimated_mfg_days: fname.includes("artwork") || fname.includes("mural") ? 14 : fname.includes("mosaic") ? 7 : 5,
+        waste_pct: fname.includes("inlay") || fname.includes("artwork") ? 15 : 5,
+        required_capabilities: required,
         is_active: true,
       };
       const { data, error } = await (supabase.from("products") as unknown as {
