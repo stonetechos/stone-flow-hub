@@ -96,14 +96,19 @@ function ProductsPage() {
         title="Products"
         subtitle="Your natural-stone catalogue."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> New product
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link to="/products/configure">Configure</Link>
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" /> New product
+            </Button>
+          </div>
         }
       />
       <div className="mb-3 flex items-center gap-2">
