@@ -237,10 +237,16 @@ function ProductConfigurator() {
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">Description</dt>
                 <dd className="mt-1 text-sm">{derived.description || "—"}</dd>
               </div>
-              <div className="flex flex-wrap gap-1 pt-2">
-                <Badge variant="secondary">HSN 6802</Badge>
-                <Badge variant="secondary">GST 18%</Badge>
-              </div>
+              <AiClassify
+                familyName={families.data?.find((f) => f.id === familyId)?.name}
+                stoneName={stones.data?.find((s) => s.id === stoneId)?.name}
+                colourName={colours.data?.find((c) => c.id === colourId)?.name}
+                surfaceName={surfaces.data?.find((s) => s.id === surfaceId)?.name}
+                originName={origins.data?.find((o) => o.id === originId)?.name}
+                thicknessMm={(thicknesses.data?.find((t) => t.id === thicknessId) as (MasterOpt & { mm?: number }) | undefined)?.mm ?? null}
+                productName={derived.name}
+              />
+
             </dl>
             <div className="mt-4 flex flex-col gap-2">
               <Button
