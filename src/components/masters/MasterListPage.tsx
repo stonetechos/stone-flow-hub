@@ -275,7 +275,7 @@ function MasterFormDialog({
   const [active, setActive] = useState(true);
 
   // Reset when opened.
-  useMemo(() => {
+  useEffect(() => {
     if (open) {
       const seed: Record<string, unknown> = {};
       for (const f of fields) seed[f.key] = initial?.[f.key] ?? (f.type === "number" ? "" : "");
