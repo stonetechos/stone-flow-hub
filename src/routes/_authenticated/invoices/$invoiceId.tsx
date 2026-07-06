@@ -58,6 +58,7 @@ import { formatInr } from "@/lib/format";
 import type { RecordPaymentInput } from "@/lib/invoices/schema";
 import type { DbTable } from "@/lib/types";
 import { createRazorpayLink, cancelRazorpayLink } from "@/lib/payments/razorpay.functions";
+import { invalidateInvoice, invalidatePayment } from "@/lib/query-invalidation";
 
 type InvoiceStatus = DbTable<"invoices">["status"];
 
