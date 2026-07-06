@@ -23,6 +23,7 @@ export type Database = {
           entity_type: string
           field_name: string | null
           id: number
+          is_demo: boolean
           new_value: Json | null
           old_value: Json | null
           project_id: string | null
@@ -36,6 +37,7 @@ export type Database = {
           entity_type: string
           field_name?: string | null
           id?: number
+          is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
           project_id?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           entity_type?: string
           field_name?: string | null
           id?: number
+          is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
           project_id?: string | null
@@ -115,6 +118,7 @@ export type Database = {
           decided_by: string | null
           feedback: string | null
           id: string
+          is_demo: boolean
           status: string
           updated_at: string
         }
@@ -126,6 +130,7 @@ export type Database = {
           decided_by?: string | null
           feedback?: string | null
           id?: string
+          is_demo?: boolean
           status?: string
           updated_at?: string
         }
@@ -137,6 +142,7 @@ export type Database = {
           decided_by?: string | null
           feedback?: string | null
           id?: string
+          is_demo?: boolean
           status?: string
           updated_at?: string
         }
@@ -201,6 +207,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+          is_demo: boolean
           parent_id: string | null
           updated_at: string
         }
@@ -211,6 +218,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
+          is_demo?: boolean
           parent_id?: string | null
           updated_at?: string
         }
@@ -221,6 +229,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
+          is_demo?: boolean
           parent_id?: string | null
           updated_at?: string
         }
@@ -329,6 +338,7 @@ export type Database = {
           gst_number: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           name: string
           notes: string | null
           pan: string | null
@@ -356,6 +366,7 @@ export type Database = {
           gst_number?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           name: string
           notes?: string | null
           pan?: string | null
@@ -383,6 +394,7 @@ export type Database = {
           gst_number?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           name?: string
           notes?: string | null
           pan?: string | null
@@ -406,6 +418,7 @@ export type Database = {
           dispatch_date: string
           dispatch_no: string
           id: string
+          is_demo: boolean
           notes: string | null
           sales_order_id: string | null
           status: Database["public"]["Enums"]["dispatch_status"]
@@ -419,6 +432,7 @@ export type Database = {
           dispatch_date?: string
           dispatch_no: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
           sales_order_id?: string | null
           status?: Database["public"]["Enums"]["dispatch_status"]
@@ -432,6 +446,7 @@ export type Database = {
           dispatch_date?: string
           dispatch_no?: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
           sales_order_id?: string | null
           status?: Database["public"]["Enums"]["dispatch_status"]
@@ -499,6 +514,7 @@ export type Database = {
           enquiry_no: string
           external_ref: Json | null
           id: string
+          is_demo: boolean
           lost_reason: string | null
           notes: string | null
           priority: Database["public"]["Enums"]["enquiry_priority"]
@@ -521,6 +537,7 @@ export type Database = {
           enquiry_no: string
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
@@ -543,6 +560,7 @@ export type Database = {
           enquiry_no?: string
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
@@ -576,6 +594,7 @@ export type Database = {
           created_at: string
           enquiry_id: string
           id: string
+          is_demo: boolean
           product_id: string | null
           product_name_snapshot: string
           quantity: number
@@ -588,6 +607,7 @@ export type Database = {
           created_at?: string
           enquiry_id: string
           id?: string
+          is_demo?: boolean
           product_id?: string | null
           product_name_snapshot: string
           quantity?: number
@@ -600,6 +620,7 @@ export type Database = {
           created_at?: string
           enquiry_id?: string
           id?: string
+          is_demo?: boolean
           product_id?: string | null
           product_name_snapshot?: string
           quantity?: number
@@ -717,6 +738,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+          is_demo: boolean
           label: string | null
           user_id: string
         }
@@ -725,6 +747,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
+          is_demo?: boolean
           label?: string | null
           user_id: string
         }
@@ -733,6 +756,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
+          is_demo?: boolean
           label?: string | null
           user_id?: string
         }
@@ -746,6 +770,7 @@ export type Database = {
           file_name: string
           folder: Database["public"]["Enums"]["file_folder"]
           id: string
+          is_demo: boolean
           mime_type: string | null
           object_path: string
           project_id: string | null
@@ -760,6 +785,7 @@ export type Database = {
           file_name: string
           folder?: Database["public"]["Enums"]["file_folder"]
           id?: string
+          is_demo?: boolean
           mime_type?: string | null
           object_path: string
           project_id?: string | null
@@ -774,6 +800,7 @@ export type Database = {
           file_name?: string
           folder?: Database["public"]["Enums"]["file_folder"]
           id?: string
+          is_demo?: boolean
           mime_type?: string | null
           object_path?: string
           project_id?: string | null
@@ -804,6 +831,7 @@ export type Database = {
           entity_type: string | null
           external_ref: Json | null
           id: string
+          is_demo: boolean
           next_followup_id: string | null
           notes: string | null
           outcome_notes: string | null
@@ -824,6 +852,7 @@ export type Database = {
           entity_type?: string | null
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           next_followup_id?: string | null
           notes?: string | null
           outcome_notes?: string | null
@@ -844,6 +873,7 @@ export type Database = {
           entity_type?: string | null
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           next_followup_id?: string | null
           notes?: string | null
           outcome_notes?: string | null
@@ -885,6 +915,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_demo: boolean
           location: string | null
           lot_no: string | null
           notes: string | null
@@ -908,6 +939,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           lot_no?: string | null
           notes?: string | null
@@ -931,6 +963,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           lot_no?: string | null
           notes?: string | null
@@ -962,6 +995,7 @@ export type Database = {
           description: string
           id: string
           invoice_id: string
+          is_demo: boolean
           line_total: number
           product_id: string | null
           quantity: number
@@ -975,6 +1009,7 @@ export type Database = {
           description: string
           id?: string
           invoice_id: string
+          is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
@@ -988,6 +1023,7 @@ export type Database = {
           description?: string
           id?: string
           invoice_id?: string
+          is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
@@ -1026,6 +1062,7 @@ export type Database = {
           external_ref: string | null
           id: string
           invoice_no: string
+          is_demo: boolean
           issue_date: string
           notes: string | null
           project_id: string
@@ -1050,6 +1087,7 @@ export type Database = {
           external_ref?: string | null
           id?: string
           invoice_no: string
+          is_demo?: boolean
           issue_date?: string
           notes?: string | null
           project_id: string
@@ -1074,6 +1112,7 @@ export type Database = {
           external_ref?: string | null
           id?: string
           invoice_no?: string
+          is_demo?: boolean
           issue_date?: string
           notes?: string | null
           project_id?: string
@@ -1283,6 +1322,7 @@ export type Database = {
           expires_at: string | null
           id: string
           invoice_id: string
+          is_demo: boolean
           link_no: string
           provider: string
           provider_link_id: string | null
@@ -1298,6 +1338,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invoice_id: string
+          is_demo?: boolean
           link_no: string
           provider?: string
           provider_link_id?: string | null
@@ -1313,6 +1354,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invoice_id?: string
+          is_demo?: boolean
           link_no?: string
           provider?: string
           provider_link_id?: string | null
@@ -1337,6 +1379,7 @@ export type Database = {
           currency_code: string
           id: string
           invoice_id: string
+          is_demo: boolean
           method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
           paid_at: string
@@ -1354,6 +1397,7 @@ export type Database = {
           currency_code?: string
           id?: string
           invoice_id: string
+          is_demo?: boolean
           method: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_at?: string
@@ -1371,6 +1415,7 @@ export type Database = {
           currency_code?: string
           id?: string
           invoice_id?: string
+          is_demo?: boolean
           method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_at?: string
@@ -1778,6 +1823,7 @@ export type Database = {
           enquiry_id: string | null
           id: string
           install_sequence: number | null
+          is_demo: boolean
           mfg_no: string
           notes: string | null
           planned_end: string | null
@@ -1806,6 +1852,7 @@ export type Database = {
           enquiry_id?: string | null
           id?: string
           install_sequence?: number | null
+          is_demo?: boolean
           mfg_no?: string
           notes?: string | null
           planned_end?: string | null
@@ -1834,6 +1881,7 @@ export type Database = {
           enquiry_id?: string | null
           id?: string
           install_sequence?: number | null
+          is_demo?: boolean
           mfg_no?: string
           notes?: string | null
           planned_end?: string | null
@@ -1897,6 +1945,7 @@ export type Database = {
           elevation: string | null
           id: string
           install_sequence: number | null
+          is_demo: boolean
           notes: string | null
           piece_no: string
           production_order_id: string
@@ -1916,6 +1965,7 @@ export type Database = {
           elevation?: string | null
           id?: string
           install_sequence?: number | null
+          is_demo?: boolean
           notes?: string | null
           piece_no: string
           production_order_id: string
@@ -1935,6 +1985,7 @@ export type Database = {
           elevation?: string | null
           id?: string
           install_sequence?: number | null
+          is_demo?: boolean
           notes?: string | null
           piece_no?: string
           production_order_id?: string
@@ -2011,6 +2062,7 @@ export type Database = {
           created_at: string
           delay_reason: string | null
           id: string
+          is_demo: boolean
           is_outsourced: boolean
           notes: string | null
           planned_date: string | null
@@ -2031,6 +2083,7 @@ export type Database = {
           created_at?: string
           delay_reason?: string | null
           id?: string
+          is_demo?: boolean
           is_outsourced?: boolean
           notes?: string | null
           planned_date?: string | null
@@ -2051,6 +2104,7 @@ export type Database = {
           created_at?: string
           delay_reason?: string | null
           id?: string
+          is_demo?: boolean
           is_outsourced?: boolean
           notes?: string | null
           planned_date?: string | null
@@ -2113,6 +2167,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_custom: boolean
+          is_demo: boolean
           last_purchase_price_inr: number | null
           last_selling_price_inr: number | null
           market_price_inr: number | null
@@ -2164,6 +2219,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_custom?: boolean
+          is_demo?: boolean
           last_purchase_price_inr?: number | null
           last_selling_price_inr?: number | null
           market_price_inr?: number | null
@@ -2215,6 +2271,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_custom?: boolean
+          is_demo?: boolean
           last_purchase_price_inr?: number | null
           last_selling_price_inr?: number | null
           market_price_inr?: number | null
@@ -2329,6 +2386,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_active: boolean
+          is_demo_mode: boolean
           phone: string | null
           preferences: Json
           updated_at: string
@@ -2340,6 +2398,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_active?: boolean
+          is_demo_mode?: boolean
           phone?: string | null
           preferences?: Json
           updated_at?: string
@@ -2351,6 +2410,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean
+          is_demo_mode?: boolean
           phone?: string | null
           preferences?: Json
           updated_at?: string
@@ -2363,6 +2423,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          is_demo: boolean
           project_id: string
         }
         Insert: {
@@ -2370,6 +2431,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           project_id: string
         }
         Update: {
@@ -2377,6 +2439,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           project_id?: string
         }
         Relationships: [
@@ -2437,6 +2500,7 @@ export type Database = {
           external_ref: Json | null
           id: string
           is_active: boolean
+          is_demo: boolean
           name: string
           notes: string | null
           owner_user_id: string | null
@@ -2467,6 +2531,7 @@ export type Database = {
           external_ref?: Json | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           name: string
           notes?: string | null
           owner_user_id?: string | null
@@ -2497,6 +2562,7 @@ export type Database = {
           external_ref?: Json | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           name?: string
           notes?: string | null
           owner_user_id?: string | null
@@ -2543,6 +2609,7 @@ export type Database = {
           expected_date: string | null
           external_ref: string | null
           id: string
+          is_demo: boolean
           notes: string | null
           order_date: string
           po_no: string
@@ -2561,6 +2628,7 @@ export type Database = {
           expected_date?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           order_date?: string
           po_no: string
@@ -2579,6 +2647,7 @@ export type Database = {
           expected_date?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           order_date?: string
           po_no?: string
@@ -2620,6 +2689,7 @@ export type Database = {
           id: string
           image_urls: string[]
           inspector_id: string | null
+          is_demo: boolean
           item_id: string | null
           label: string
           outcome: Database["public"]["Enums"]["qc_outcome"]
@@ -2634,6 +2704,7 @@ export type Database = {
           id?: string
           image_urls?: string[]
           inspector_id?: string | null
+          is_demo?: boolean
           item_id?: string | null
           label: string
           outcome?: Database["public"]["Enums"]["qc_outcome"]
@@ -2648,6 +2719,7 @@ export type Database = {
           id?: string
           image_urls?: string[]
           inspector_id?: string | null
+          is_demo?: boolean
           item_id?: string | null
           label?: string
           outcome?: Database["public"]["Enums"]["qc_outcome"]
@@ -2819,6 +2891,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_demo: boolean
           line_total: number
           product_id: string | null
           quantity: number
@@ -2832,6 +2905,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
@@ -2845,6 +2919,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
@@ -2881,6 +2956,7 @@ export type Database = {
           enquiry_id: string | null
           external_ref: string | null
           id: string
+          is_demo: boolean
           issue_date: string
           notes: string | null
           project_id: string
@@ -2903,6 +2979,7 @@ export type Database = {
           enquiry_id?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           issue_date?: string
           notes?: string | null
           project_id: string
@@ -2925,6 +3002,7 @@ export type Database = {
           enquiry_id?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           issue_date?: string
           notes?: string | null
           project_id?: string
@@ -2966,6 +3044,7 @@ export type Database = {
         Row: {
           enquiry_item_id: string | null
           id: string
+          is_demo: boolean
           product_id: string | null
           product_name_snapshot: string
           quantity: number
@@ -2977,6 +3056,7 @@ export type Database = {
         Insert: {
           enquiry_item_id?: string | null
           id?: string
+          is_demo?: boolean
           product_id?: string | null
           product_name_snapshot: string
           quantity: number
@@ -2988,6 +3068,7 @@ export type Database = {
         Update: {
           enquiry_item_id?: string | null
           id?: string
+          is_demo?: boolean
           product_id?: string | null
           product_name_snapshot?: string
           quantity?: number
@@ -3030,6 +3111,7 @@ export type Database = {
           enquiry_id: string
           external_ref: Json | null
           id: string
+          is_demo: boolean
           notes: string | null
           project_id: string
           rfq_no: string
@@ -3046,6 +3128,7 @@ export type Database = {
           enquiry_id: string
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           project_id: string
           rfq_no: string
@@ -3062,6 +3145,7 @@ export type Database = {
           enquiry_id?: string
           external_ref?: Json | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           project_id?: string
           rfq_no?: string
@@ -3096,6 +3180,7 @@ export type Database = {
           delivery_date: string | null
           external_ref: string | null
           id: string
+          is_demo: boolean
           notes: string | null
           order_date: string
           project_id: string | null
@@ -3114,6 +3199,7 @@ export type Database = {
           delivery_date?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           order_date?: string
           project_id?: string | null
@@ -3132,6 +3218,7 @@ export type Database = {
           delivery_date?: string | null
           external_ref?: string | null
           id?: string
+          is_demo?: boolean
           notes?: string | null
           order_date?: string
           project_id?: string | null
@@ -3173,6 +3260,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_demo: boolean
           project_id: string
           scheduled_at: string | null
           status: Database["public"]["Enums"]["site_visit_status"]
@@ -3186,6 +3274,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_demo?: boolean
           project_id: string
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["site_visit_status"]
@@ -3199,6 +3288,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_demo?: boolean
           project_id?: string
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["site_visit_status"]
@@ -3436,6 +3526,7 @@ export type Database = {
           entity_id: string | null
           entity_type: string | null
           id: string
+          is_demo: boolean
           priority: Database["public"]["Enums"]["task_priority"]
           status: Database["public"]["Enums"]["task_status"]
           title: string
@@ -3451,6 +3542,7 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string | null
           id?: string
+          is_demo?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
           title: string
@@ -3466,6 +3558,7 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string | null
           id?: string
+          is_demo?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
@@ -3818,6 +3911,7 @@ export type Database = {
       vendor_quote_items: {
         Row: {
           id: string
+          is_demo: boolean
           line_total: number | null
           price_per_unit: number
           product_id: string | null
@@ -3830,6 +3924,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          is_demo?: boolean
           line_total?: number | null
           price_per_unit?: number
           product_id?: string | null
@@ -3842,6 +3937,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          is_demo?: boolean
           line_total?: number | null
           price_per_unit?: number
           product_id?: string | null
@@ -3888,6 +3984,7 @@ export type Database = {
           gst_included: boolean
           id: string
           is_approved: boolean
+          is_demo: boolean
           quote_no: string | null
           quote_pdf_file_id: string | null
           rejected_at: string | null
@@ -3913,6 +4010,7 @@ export type Database = {
           gst_included?: boolean
           id?: string
           is_approved?: boolean
+          is_demo?: boolean
           quote_no?: string | null
           quote_pdf_file_id?: string | null
           rejected_at?: string | null
@@ -3938,6 +4036,7 @@ export type Database = {
           gst_included?: boolean
           id?: string
           is_approved?: boolean
+          is_demo?: boolean
           quote_no?: string | null
           quote_pdf_file_id?: string | null
           rejected_at?: string | null
@@ -3981,6 +4080,7 @@ export type Database = {
           created_at: string
           first_viewed_at: string | null
           id: string
+          is_demo: boolean
           last_reminder_at: string | null
           notes: string | null
           reminder_count: number
@@ -3997,6 +4097,7 @@ export type Database = {
           created_at?: string
           first_viewed_at?: string | null
           id?: string
+          is_demo?: boolean
           last_reminder_at?: string | null
           notes?: string | null
           reminder_count?: number
@@ -4013,6 +4114,7 @@ export type Database = {
           created_at?: string
           first_viewed_at?: string | null
           id?: string
+          is_demo?: boolean
           last_reminder_at?: string | null
           notes?: string | null
           reminder_count?: number
@@ -4191,6 +4293,7 @@ export type Database = {
           id: string
           ifsc: string | null
           is_active: boolean
+          is_demo: boolean
           lead_time_days: number | null
           max_slab_length_mm: number | null
           max_slab_width_mm: number | null
@@ -4227,6 +4330,7 @@ export type Database = {
           id?: string
           ifsc?: string | null
           is_active?: boolean
+          is_demo?: boolean
           lead_time_days?: number | null
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
@@ -4263,6 +4367,7 @@ export type Database = {
           id?: string
           ifsc?: string | null
           is_active?: boolean
+          is_demo?: boolean
           lead_time_days?: number | null
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
@@ -4302,6 +4407,7 @@ export type Database = {
           external_ref: string | null
           id: string
           invoice_no: string
+          is_demo: boolean
           issue_date: string
           notes: string | null
           project_id: string
@@ -4321,6 +4427,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_demo_mode: { Args: never; Returns: boolean }
       current_vendor_id: { Args: never; Returns: string }
       has_any_role: {
         Args: {
@@ -4378,6 +4485,8 @@ export type Database = {
           vendor_id: string
         }[]
       }
+      reset_demo_data: { Args: never; Returns: undefined }
+      seed_demo_data: { Args: never; Returns: undefined }
       send_rfq: {
         Args: {
           p_due_date: string
@@ -4394,6 +4503,7 @@ export type Database = {
           enquiry_id: string
           external_ref: Json | null
           id: string
+          is_demo: boolean
           notes: string | null
           project_id: string
           rfq_no: string
@@ -4422,6 +4532,7 @@ export type Database = {
           enquiry_id: string | null
           id: string
           install_sequence: number | null
+          is_demo: boolean
           mfg_no: string
           notes: string | null
           planned_end: string | null
