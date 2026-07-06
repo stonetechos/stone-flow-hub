@@ -35,14 +35,6 @@ export type MasterConfig = {
   // Extra columns to render in the table (besides code + name + status)
   extraColumns: { key: string; label: string }[];
 };
-  route: string;
-  title: string;
-  singular: string;
-  description: string;
-  extraFields: MasterField[];
-  // Extra columns to render in the table (besides code + name + status)
-  extraColumns: { key: string; label: string }[];
-};
 
 const COMMON = {
   code: { key: "code", label: "Code", type: "text" as const, required: true, hint: "Short unique code (e.g. MARBLE-WHITE)" },
