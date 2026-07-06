@@ -132,6 +132,7 @@ function VendorHub() {
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="attachments">Attachments</TabsTrigger>
           <TabsTrigger value="contacts">Contact Persons</TabsTrigger>
+          <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
