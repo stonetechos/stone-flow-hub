@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { qk } from "@/lib/query-keys";
 import { Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
+import { ManufacturingStats } from "@/components/manufacturing/ManufacturingStats";
 
 const STATUSES = [
   { key: "planned", label: "Planned", tone: "secondary" as const },
@@ -81,6 +82,8 @@ function ManufacturingKanban() {
           </Can>
         }
       />
+
+      <ManufacturingStats />
 
       {q.isLoading ? (
         <SkeletonCards />

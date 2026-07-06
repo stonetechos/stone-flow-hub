@@ -4066,6 +4066,24 @@ export type Database = {
         Args: { _vendor_id: string }
         Returns: undefined
       }
+      recommend_vendors_for_rfq: {
+        Args: { p_rfq_id: string }
+        Returns: {
+          approval_pct: number
+          avg_response_hours: number
+          capability_match_count: number
+          city: string
+          company_name: string
+          is_preferred: boolean
+          lead_time_days: number
+          orders_count: number
+          rating: number
+          score: number
+          stone_match: boolean
+          vendor_code: string
+          vendor_id: string
+        }[]
+      }
       send_rfq: {
         Args: {
           p_due_date: string
@@ -4094,6 +4112,43 @@ export type Database = {
           to: "rfqs"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      send_to_manufacturing: {
+        Args: { p_sales_order_id: string }
+        Returns: {
+          bundle_no: string | null
+          completed_at: string | null
+          crate_no: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          drawing_ref: string | null
+          elevation: string | null
+          enquiry_id: string | null
+          id: string
+          install_sequence: number | null
+          mfg_no: string
+          notes: string | null
+          planned_end: string | null
+          planned_start: string | null
+          product_id: string
+          project_id: string | null
+          quantity: number
+          revision: string | null
+          room: string | null
+          sales_order_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["production_status"]
+          unit: string
+          updated_at: string
+          wall: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "production_orders"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
     }

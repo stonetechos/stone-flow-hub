@@ -71,6 +71,7 @@ import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_
 import { Route as AuthenticatedManufacturingIdRouteImport } from './routes/_authenticated/manufacturing/$id'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
+import { Route as AuthenticatedInventorySlabsRouteImport } from './routes/_authenticated/inventory/slabs'
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenticated/followups/$id'
@@ -438,6 +439,12 @@ const AuthenticatedInvoicesInvoiceIdRoute =
     path: '/invoices/$invoiceId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInventorySlabsRoute =
+  AuthenticatedInventorySlabsRouteImport.update({
+    id: '/inventory/slabs',
+    path: '/inventory/slabs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInventoryNewRoute =
   AuthenticatedInventoryNewRouteImport.update({
     id: '/inventory/new',
@@ -556,6 +563,7 @@ export interface FileRoutesByFullPath {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
+  '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
@@ -635,6 +643,7 @@ export interface FileRoutesByTo {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
+  '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
@@ -716,6 +725,7 @@ export interface FileRoutesById {
   '/_authenticated/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
+  '/_authenticated/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
@@ -797,6 +807,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/inventory/$id'
     | '/inventory/new'
+    | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/manufacturing/$id'
@@ -876,6 +887,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/inventory/$id'
     | '/inventory/new'
+    | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/manufacturing/$id'
@@ -956,6 +968,7 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/new'
+    | '/_authenticated/inventory/slabs'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
     | '/_authenticated/manufacturing/$id'
@@ -1457,6 +1470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory/slabs': {
+      id: '/_authenticated/inventory/slabs'
+      path: '/inventory/slabs'
+      fullPath: '/inventory/slabs'
+      preLoaderRoute: typeof AuthenticatedInventorySlabsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inventory/new': {
       id: '/_authenticated/inventory/new'
       path: '/inventory/new'
@@ -1690,6 +1710,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIdRoute: typeof AuthenticatedFollowupsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
+  AuthenticatedInventorySlabsRoute: typeof AuthenticatedInventorySlabsRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedManufacturingIdRoute: typeof AuthenticatedManufacturingIdRoute
@@ -1754,6 +1775,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIdRoute: AuthenticatedFollowupsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
+  AuthenticatedInventorySlabsRoute: AuthenticatedInventorySlabsRoute,
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
