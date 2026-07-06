@@ -396,6 +396,7 @@ function QuickCreateProduct({
     },
     onSuccess: (row) => {
       toast.success(`Product ${row.product_code} created`);
+      seedPickerCache(qc, "product", row);
       invalidateProduct(qc, row.id);
       onCreated(row);
       onOpenChange(false);
