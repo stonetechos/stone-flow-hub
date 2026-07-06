@@ -1,0 +1,128 @@
+/**
+ * Centralized cache invalidation helpers.
+ *
+ * Every mutation should call one of these instead of `qc.invalidateQueries` ad-hoc, so a
+ * new dependent query key only needs to be wired in once and every mutation instantly
+ * refreshes it.
+ *
+ * Convention: `invalidate<Entity>(qc, id?)` invalidates the list, byId, and every known
+ * dependent selector for that entity.
+ */
+import type { QueryClient } from "@tanstack/react-query";
+import { qk } from "./query-keys";
+
+function bump(qc: QueryClient, key: readonly unknown[]) {
+  qc.invalidateQueries({ queryKey: key });
+}
+
+/** Invalidate every "picker" and "global search" query — anything that lists many entities. */
+function bumpPickers(qc: QueryClient) {
+  qc.invalidateQueries({ queryKey: ["search"] });
+}
+
+export function invalidateCustomer(qc: QueryClient, id?: string): void {
+  bump(qc, qk.customers.all);
+  if (id) bump(qc, qk.customers.byId(id));
+  // Downstream: projects filtered by customer, dashboard KPIs, activity.
+  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
+  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bumpPickers(qc);
+}
+
+export function invalidateProject(qc: QueryClient, id?: string): void {
+  bump(qc, qk.projects.all);
+  if (id) bump(qc, qk.projects.byId(id));
+  qc.invalidateQueries({ queryKey: ["projects", "byCustomer"] });
+  qc.invalidateQueries({ queryKey: ["projects", "picker"] });
+  bump(qc, qk.enquiries.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bumpPickers(qc);
+}
+
+export function invalidateVendor(qc: QueryClient, id?: string): void {
+  bump(qc, qk.vendors.all);
+  if (id) bump(qc, qk.vendors.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bumpPickers(qc);
+}
+
+export function invalidateProduct(qc: QueryClient, id?: string): void {
+  bump(qc, qk.products.all);
+  if (id) qc.invalidateQueries({ queryKey: ["products", "byId", id] });
+  bumpPickers(qc);
+}
+
+export function invalidateEnquiry(qc: QueryClient, id?: string): void {
+  bump(qc, qk.enquiries.all);
+  if (id) bump(qc, qk.enquiries.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.followups.all);
+}
+
+export function invalidateRfq(qc: QueryClient, enquiryId?: string): void {
+  bump(qc, qk.rfqs.all);
+  if (enquiryId) bump(qc, qk.rfqs.byEnquiry(enquiryId));
+  bump(qc, qk.enquiries.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateQuote(qc: QueryClient, id?: string): void {
+  bump(qc, qk.quotes.all);
+  if (id) {
+    bump(qc, qk.quotes.byId(id));
+    bump(qc, qk.quotes.items(id));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidatePurchaseOrder(qc: QueryClient, id?: string): void {
+  bump(qc, qk.purchaseOrders.all);
+  if (id) bump(qc, qk.purchaseOrders.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateSalesOrder(qc: QueryClient, id?: string): void {
+  bump(qc, qk.salesOrders.all);
+  if (id) bump(qc, qk.salesOrders.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateInvoice(qc: QueryClient, id?: string): void {
+  bump(qc, qk.invoices.all);
+  if (id) {
+    bump(qc, qk.invoices.byId(id));
+    bump(qc, qk.invoices.items(id));
+    bump(qc, qk.invoices.payments(id));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateDispatch(qc: QueryClient, id?: string): void {
+  bump(qc, qk.dispatch.all);
+  if (id) bump(qc, qk.dispatch.byId(id));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateFollowup(
+  qc: QueryClient,
+  scope?: { enquiryId?: string | null; entityType?: string | null; entityId?: string | null },
+): void {
+  bump(qc, qk.followups.all);
+  if (scope?.enquiryId) bump(qc, qk.followups.byEnquiry(scope.enquiryId));
+  if (scope?.entityType && scope?.entityId) {
+    bump(qc, qk.followups.byEntity(scope.entityType, scope.entityId));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
