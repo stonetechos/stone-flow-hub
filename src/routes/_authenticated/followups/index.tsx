@@ -79,8 +79,7 @@ function FollowupsPage() {
     mutationFn: (id: string) => completeFollowup({ id }),
     onSuccess: () => {
       toast.success("Follow-up marked done");
-      qc.invalidateQueries({ queryKey: qk.followups.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateFollowup(qc);
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -89,8 +88,7 @@ function FollowupsPage() {
     mutationFn: (id: string) => deleteFollowup(id),
     onSuccess: () => {
       toast.success("Follow-up deleted");
-      qc.invalidateQueries({ queryKey: qk.followups.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateFollowup(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),

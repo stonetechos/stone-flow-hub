@@ -54,7 +54,7 @@ function EditInventoryPage() {
     mutationFn: (input: InventoryCreateInput) => updateInventoryItem(id, input),
     onSuccess: () => {
       toast.success("Stock item updated");
-      qc.invalidateQueries({ queryKey: qk.inventory.all });
+      invalidateInventory(qc, id);
       nav({ to: "/inventory/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

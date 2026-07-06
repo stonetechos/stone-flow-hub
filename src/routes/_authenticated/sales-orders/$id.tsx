@@ -29,7 +29,7 @@ function SalesOrderDetailPage() {
     mutationFn: (quoteId: string) => convertQuoteToInvoice({ quote_id: quoteId }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`);
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      invalidateInvoice(qc);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

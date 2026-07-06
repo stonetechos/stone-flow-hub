@@ -70,7 +70,7 @@ function VendorsPage() {
     mutationFn: (id: string) => deleteVendor(id),
     onSuccess: () => {
       toast.success("Vendor deleted");
-      qc.invalidateQueries({ queryKey: qk.vendors.all });
+      invalidateVendor(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -259,7 +259,7 @@ function VendorFormDialog({
       editing ? updateVendor(editing.id, input) : createVendor(input),
     onSuccess: (row) => {
       toast.success(editing ? "Vendor updated" : `Vendor ${row.vendor_code} created`);
-      qc.invalidateQueries({ queryKey: qk.vendors.all });
+      invalidateVendor(qc);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

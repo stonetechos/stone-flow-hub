@@ -72,8 +72,7 @@ function QuoteDetailPage() {
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
     onSuccess: () => {
       toast.success("Status updated");
-      qc.invalidateQueries({ queryKey: qk.quotes.byId(quoteId) });
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      invalidateQuote(qc, quoteId);
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -82,8 +81,7 @@ function QuoteDetailPage() {
     mutationFn: () => convertQuoteToInvoice({ quote_id: quoteId }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`);
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
-      qc.invalidateQueries({ queryKey: qk.invoices.all });
+      invalidateQuote(qc, quoteId); invalidateInvoice(qc);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (err) => toast.error(toUserMessage(err)),

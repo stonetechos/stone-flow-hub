@@ -81,8 +81,7 @@ function CustomersPage() {
     mutationFn: (id: string) => deleteCustomer(id),
     onSuccess: () => {
       toast.success("Customer deleted");
-      qc.invalidateQueries({ queryKey: qk.customers.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateCustomer(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -268,8 +267,7 @@ function CustomerFormDialog({
       editing ? updateCustomer(editing.id, input) : createCustomer(input),
     onSuccess: (row) => {
       toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
-      qc.invalidateQueries({ queryKey: qk.customers.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateCustomer(qc);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),

@@ -67,8 +67,7 @@ function EnquiryDetailPage() {
     mutationFn: (stage: LeadStage) => updateEnquiryStage(enquiryId, stage),
     onSuccess: () => {
       toast.success("Stage updated");
-      qc.invalidateQueries({ queryKey: qk.enquiries.byId(enquiryId) });
-      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      invalidateEnquiry(qc, enquiryId);
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -266,8 +265,7 @@ function ConvertToProjectDialog({
     mutationFn: (input: ConvertToProjectInput) => convertEnquiryToProject(enquiryId, input),
     onSuccess: ({ project_id }) => {
       toast.success("Project created and linked");
-      qc.invalidateQueries({ queryKey: qk.enquiries.all });
-      qc.invalidateQueries({ queryKey: qk.enquiries.byId(enquiryId) });
+      invalidateEnquiry(qc, enquiryId);
       qc.invalidateQueries({ queryKey: qk.projects.all });
       qc.invalidateQueries({ queryKey: qk.dashboard });
       onOpenChange(false);

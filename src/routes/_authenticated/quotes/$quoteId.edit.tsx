@@ -48,8 +48,7 @@ function EditQuotePage() {
     mutationFn: () => updateQuote(quoteId, form),
     onSuccess: () => {
       toast.success("Quote updated");
-      qc.invalidateQueries({ queryKey: qk.quotes.all });
-      qc.invalidateQueries({ queryKey: qk.quotes.byId(quoteId) });
+      invalidateQuote(qc, quoteId);
       nav({ to: "/quotes/$quoteId", params: { quoteId } });
     },
     onError: (e) => toast.error(toUserMessage(e)),

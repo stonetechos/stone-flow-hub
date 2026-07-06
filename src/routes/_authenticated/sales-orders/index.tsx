@@ -57,7 +57,7 @@ function SalesOrdersPage() {
     mutationFn: (id: string) => deleteSalesOrder(id),
     onSuccess: () => {
       toast.success("Sales order deleted");
-      qc.invalidateQueries({ queryKey: qk.salesOrders.all });
+      invalidateSalesOrder(qc);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
