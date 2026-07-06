@@ -143,7 +143,9 @@ function CompareRfqPage() {
           ) : null
         }
       />
-
+      <div className="mb-4">
+        <RfqVendorRecommendations rfqId={rfqId} />
+      </div>
 
       {bundle.rows.length === 0 ? (
         <Card className="shadow-1">
