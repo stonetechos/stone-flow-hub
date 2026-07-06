@@ -4,6 +4,8 @@ import { Briefcase, TrendingUp, Wallet, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BusinessInsightsCard } from "@/components/copilot/BusinessInsightsCard";
+
 
 export const Route = createFileRoute("/_authenticated/dashboards/management")({ ssr: false, component: ManagementDashboard });
 
@@ -34,9 +36,11 @@ function ManagementDashboard() {
         <Kpi icon={Briefcase} label="Pipeline value" value={s ? money(s.pipeline) : "—"} to="/projects" />
         <Kpi icon={Wallet} label="Est. margin" value={s ? money(s.est_margin) : "—"} to="/projects" />
       </div>
+      <BusinessInsightsCard />
     </div>
   );
 }
+
 
 function Kpi({ icon: Icon, label, value, to }: { icon: React.ComponentType<{ className?: string }>; label: string; value: React.ReactNode; to: string }) {
   return (
