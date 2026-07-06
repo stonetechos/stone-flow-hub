@@ -259,7 +259,8 @@ function VendorFormDialog({
       editing ? updateVendor(editing.id, input) : createVendor(input),
     onSuccess: (row) => {
       toast.success(editing ? "Vendor updated" : `Vendor ${row.vendor_code} created`);
-      invalidateVendor(qc);
+      if (!editing) seedPickerCache(qc, "vendor", row);
+      invalidateVendor(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
