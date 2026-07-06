@@ -37,9 +37,27 @@ import { listCustomers, getCustomer } from "@/lib/customers/api";
 import { listVendorsForPicker, getVendor } from "@/lib/vendors/api";
 import { listProjectsForPicker, getProject } from "@/lib/projects/api";
 import { listProducts, getProduct } from "@/lib/products/api";
+import {
+  listStoneTypes,
+  getStoneType,
+  listSurfaceFinishes,
+  getSurfaceFinish,
+  listEdgeFinishes,
+  getEdgeFinish,
+  listProductFamilies,
+  getProductFamily,
+} from "@/lib/masters/api";
 import { QuickCreateDialog } from "./QuickCreateDialog";
 
-export type EntityType = "customer" | "project" | "vendor" | "product";
+export type EntityType =
+  | "customer"
+  | "project"
+  | "vendor"
+  | "product"
+  | "stone_type"
+  | "surface_finish"
+  | "edge_finish"
+  | "product_family";
 
 export interface EntityPickerFilter {
   /** Project-only: constrain projects to a given customer. */
