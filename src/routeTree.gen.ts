@@ -35,6 +35,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
 import { Route as AuthenticatedMastersIndexRouteImport } from './routes/_authenticated/masters/index'
+import { Route as AuthenticatedManufacturingIndexRouteImport } from './routes/_authenticated/manufacturing/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
@@ -66,6 +67,7 @@ import { Route as AuthenticatedMastersPackagingTypesRouteImport } from './routes
 import { Route as AuthenticatedMastersManufacturingStagesRouteImport } from './routes/_authenticated/masters/manufacturing-stages'
 import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
+import { Route as AuthenticatedManufacturingIdRouteImport } from './routes/_authenticated/manufacturing/$id'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
@@ -221,6 +223,12 @@ const AuthenticatedMastersIndexRoute =
   AuthenticatedMastersIndexRouteImport.update({
     id: '/masters/',
     path: '/masters/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedManufacturingIndexRoute =
+  AuthenticatedManufacturingIndexRouteImport.update({
+    id: '/manufacturing/',
+    path: '/manufacturing/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInvoicesIndexRoute =
@@ -405,6 +413,12 @@ const AuthenticatedMastersApplicationsRoute =
     path: '/masters/applications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedManufacturingIdRoute =
+  AuthenticatedManufacturingIdRouteImport.update({
+    id: '/manufacturing/$id',
+    path: '/manufacturing/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvoicesNewRoute =
   AuthenticatedInvoicesNewRouteImport.update({
     id: '/invoices/new',
@@ -537,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
@@ -568,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
   '/masters/': typeof AuthenticatedMastersIndexRoute
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
@@ -613,6 +629,7 @@ export interface FileRoutesByTo {
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
@@ -644,6 +661,7 @@ export interface FileRoutesByTo {
   '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
+  '/manufacturing': typeof AuthenticatedManufacturingIndexRoute
   '/masters': typeof AuthenticatedMastersIndexRoute
   '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
@@ -691,6 +709,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/_authenticated/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/_authenticated/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
@@ -722,6 +741,7 @@ export interface FileRoutesById {
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/_authenticated/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
   '/_authenticated/masters/': typeof AuthenticatedMastersIndexRoute
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
@@ -769,6 +789,7 @@ export interface FileRouteTypes {
     | '/inventory/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
     | '/masters/manufacturing-stages'
@@ -800,6 +821,7 @@ export interface FileRouteTypes {
     | '/followups/'
     | '/inventory/'
     | '/invoices/'
+    | '/manufacturing/'
     | '/masters/'
     | '/payments/'
     | '/products/'
@@ -845,6 +867,7 @@ export interface FileRouteTypes {
     | '/inventory/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
     | '/masters/manufacturing-stages'
@@ -876,6 +899,7 @@ export interface FileRouteTypes {
     | '/followups'
     | '/inventory'
     | '/invoices'
+    | '/manufacturing'
     | '/masters'
     | '/payments'
     | '/products'
@@ -922,6 +946,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/new'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
+    | '/_authenticated/manufacturing/$id'
     | '/_authenticated/masters/applications'
     | '/_authenticated/masters/edge-finishes'
     | '/_authenticated/masters/manufacturing-stages'
@@ -953,6 +978,7 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/'
     | '/_authenticated/inventory/'
     | '/_authenticated/invoices/'
+    | '/_authenticated/manufacturing/'
     | '/_authenticated/masters/'
     | '/_authenticated/payments/'
     | '/_authenticated/products/'
@@ -1164,6 +1190,13 @@ declare module '@tanstack/react-router' {
       path: '/masters'
       fullPath: '/masters/'
       preLoaderRoute: typeof AuthenticatedMastersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manufacturing/': {
+      id: '/_authenticated/manufacturing/'
+      path: '/manufacturing'
+      fullPath: '/manufacturing/'
+      preLoaderRoute: typeof AuthenticatedManufacturingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invoices/': {
@@ -1381,6 +1414,13 @@ declare module '@tanstack/react-router' {
       path: '/masters/applications'
       fullPath: '/masters/applications'
       preLoaderRoute: typeof AuthenticatedMastersApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manufacturing/$id': {
+      id: '/_authenticated/manufacturing/$id'
+      path: '/manufacturing/$id'
+      fullPath: '/manufacturing/$id'
+      preLoaderRoute: typeof AuthenticatedManufacturingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invoices/new': {
@@ -1632,6 +1672,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
+  AuthenticatedManufacturingIdRoute: typeof AuthenticatedManufacturingIdRoute
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
   AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
   AuthenticatedMastersManufacturingStagesRoute: typeof AuthenticatedMastersManufacturingStagesRoute
@@ -1662,6 +1703,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
+  AuthenticatedManufacturingIndexRoute: typeof AuthenticatedManufacturingIndexRoute
   AuthenticatedMastersIndexRoute: typeof AuthenticatedMastersIndexRoute
   AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
@@ -1694,6 +1736,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
+  AuthenticatedManufacturingIdRoute: AuthenticatedManufacturingIdRoute,
   AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
   AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
   AuthenticatedMastersManufacturingStagesRoute:
@@ -1730,6 +1773,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
+  AuthenticatedManufacturingIndexRoute: AuthenticatedManufacturingIndexRoute,
   AuthenticatedMastersIndexRoute: AuthenticatedMastersIndexRoute,
   AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,

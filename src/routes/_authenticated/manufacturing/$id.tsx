@@ -84,7 +84,9 @@ function ProductionOrderDetail() {
 
   const updateOrder = useMutation({
     mutationFn: async (patch: Record<string, unknown>) => {
-      const { error } = await supabase.from("production_orders").update(patch).eq("id", id);
+      const { error } = await (supabase.from("production_orders") as unknown as {
+        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
+      }).update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -96,7 +98,9 @@ function ProductionOrderDetail() {
 
   const updateStage = useMutation({
     mutationFn: async ({ stageId, patch }: { stageId: string; patch: Record<string, unknown> }) => {
-      const { error } = await supabase.from("production_stages").update(patch).eq("id", stageId);
+      const { error } = await (supabase.from("production_stages") as unknown as {
+        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
+      }).update(patch).eq("id", stageId);
       if (error) throw error;
     },
     onSuccess: () => {
