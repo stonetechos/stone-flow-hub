@@ -38,6 +38,7 @@ import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ProjectFinancials } from "@/components/projects/ProjectFinancials";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   ssr: false,
@@ -190,7 +191,8 @@ function ProjectHub() {
           <TabsTrigger value="photos">Photos</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <ProjectFinancials projectId={projectId} />
           <ProjectOverview
             projectId={projectId}
             project={p}
