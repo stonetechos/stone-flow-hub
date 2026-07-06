@@ -159,12 +159,12 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
       {list.isLoading ? (
         <SkeletonTable />
       ) : list.isError ? (
-        <ErrorBlock error={list.error} onRetry={() => list.refetch()} />
+        <ErrorBlock message={toUserMessage(list.error)} onRetry={() => void list.refetch()} />
       ) : !list.data?.length ? (
         <EmptyState
-          icon={Layers}
+          icon={<Layers className="h-6 w-6" />}
           title={`No ${config.title.toLowerCase()}`}
-          description={
+          message={
             roles.hasAnyRole(["admin", "sales_manager"])
               ? `Create the first ${config.singular.toLowerCase()} to get started.`
               : "Ask an admin to add records."
