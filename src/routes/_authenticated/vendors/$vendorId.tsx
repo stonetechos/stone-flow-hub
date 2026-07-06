@@ -24,6 +24,7 @@ import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { CapabilityMatrix } from "@/components/vendors/CapabilityMatrix";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
   ssr: false,
