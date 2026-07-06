@@ -159,10 +159,16 @@ function FollowupsPage() {
               {query.data!.map((f) => (
                 <TableRow key={f.id}>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(f.scheduled_at).toLocaleString("en-IN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    <Link
+                      to="/followups/$id"
+                      params={{ id: f.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {new Date(f.scheduled_at).toLocaleString("en-IN", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </Link>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {f.enquiry ? (
