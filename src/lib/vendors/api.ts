@@ -12,20 +12,39 @@ export async function listVendors(query = ""): Promise<VendorRow[]> {
   let q = supabase.from("vendors").select("*").order("created_at", { ascending: false }).limit(200);
   const s = sanitizeSearch(query);
   if (s) {
-    q = q.or(`company_name.ilike.%${s}%,vendor_code.ilike.%${s}%,city.ilike.%${s}%`);
+    q = q.or(
+      [
+        `company_name.ilike.%${s}%`,
+        `vendor_code.ilike.%${s}%`,
+        `gst_number.ilike.%${s}%`,
+        `city.ilike.%${s}%`,
+      ].join(","),
+    );
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
 }
 
-export async function listVendorsForPicker(): Promise<VendorRow[]> {
-  const { data, error } = await supabase
+export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
+  let q = supabase
     .from("vendors")
     .select("*")
     .eq("is_active", true)
     .order("company_name", { ascending: true })
     .limit(500);
+  const s = sanitizeSearch(query);
+  if (s) {
+    q = q.or(
+      [
+        `company_name.ilike.%${s}%`,
+        `vendor_code.ilike.%${s}%`,
+        `gst_number.ilike.%${s}%`,
+        `city.ilike.%${s}%`,
+      ].join(","),
+    );
+  }
+  const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
 }
