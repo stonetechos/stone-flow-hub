@@ -1,0 +1,11 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { MasterListPage } from "@/components/masters/MasterListPage";
+import { masterByRoute } from "@/lib/masters/config";
+
+export const Route = createFileRoute("/_authenticated/masters/thicknesses")({
+  component: () => {
+    const cfg = masterByRoute("thicknesses");
+    if (!cfg) return null;
+    return <MasterListPage config={cfg} />;
+  },
+});

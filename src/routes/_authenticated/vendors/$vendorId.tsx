@@ -24,6 +24,7 @@ import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { CapabilityMatrix } from "@/components/vendors/CapabilityMatrix";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
   ssr: false,
@@ -132,6 +133,7 @@ function VendorHub() {
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="attachments">Attachments</TabsTrigger>
           <TabsTrigger value="contacts">Contact Persons</TabsTrigger>
+          <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -238,6 +240,9 @@ function VendorHub() {
               },
             ]}
           />
+        </TabsContent>
+        <TabsContent value="capabilities" className="mt-4">
+          <CapabilityMatrix vendorId={vendorId} />
         </TabsContent>
       </Tabs>
     </div>
