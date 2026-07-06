@@ -242,12 +242,12 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
         title={`Delete ${config.singular.toLowerCase()}?`}
         description={`"${deleteTarget?.name ?? ""}" will be removed. This cannot be undone.`}
         confirmLabel="Delete"
-        variant="destructive"
-        onConfirm={() => deleteTarget && del.mutate(deleteTarget)}
+        busy={del.isPending}
+        onConfirm={() => { if (deleteTarget) del.mutate(deleteTarget); }}
       />
     </div>
   );
