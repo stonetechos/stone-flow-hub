@@ -157,6 +157,42 @@ export type Database = {
           },
         ]
       }
+      bulk_imports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_count: number
+          errors: Json
+          filename: string | null
+          id: string
+          row_count: number
+          success_count: number
+          target_table: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_count?: number
+          errors?: Json
+          filename?: string | null
+          id?: string
+          row_count?: number
+          success_count?: number
+          target_table: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_count?: number
+          errors?: Json
+          filename?: string | null
+          id?: string
+          row_count?: number
+          success_count?: number
+          target_table?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           body: string
@@ -1852,6 +1888,81 @@ export type Database = {
           },
         ]
       }
+      production_pieces: {
+        Row: {
+          bundle_no: string | null
+          crate_no: string | null
+          created_at: string
+          drawing_ref: string | null
+          elevation: string | null
+          id: string
+          install_sequence: number | null
+          notes: string | null
+          piece_no: string
+          production_order_id: string
+          project_id: string | null
+          revision: string | null
+          room: string | null
+          status: Database["public"]["Enums"]["installation_status"]
+          status_at: string
+          updated_at: string
+          wall: string | null
+        }
+        Insert: {
+          bundle_no?: string | null
+          crate_no?: string | null
+          created_at?: string
+          drawing_ref?: string | null
+          elevation?: string | null
+          id?: string
+          install_sequence?: number | null
+          notes?: string | null
+          piece_no: string
+          production_order_id: string
+          project_id?: string | null
+          revision?: string | null
+          room?: string | null
+          status?: Database["public"]["Enums"]["installation_status"]
+          status_at?: string
+          updated_at?: string
+          wall?: string | null
+        }
+        Update: {
+          bundle_no?: string | null
+          crate_no?: string | null
+          created_at?: string
+          drawing_ref?: string | null
+          elevation?: string | null
+          id?: string
+          install_sequence?: number | null
+          notes?: string | null
+          piece_no?: string
+          production_order_id?: string
+          project_id?: string | null
+          revision?: string | null
+          room?: string | null
+          status?: Database["public"]["Enums"]["installation_status"]
+          status_at?: string
+          updated_at?: string
+          wall?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_pieces_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_pieces_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_stage_files: {
         Row: {
           caption: string | null
@@ -1984,6 +2095,7 @@ export type Database = {
           category_id: string | null
           colour: string | null
           colour_id: string | null
+          commercial_name: string | null
           company_id: string | null
           config_hash: string | null
           config_json: Json | null
@@ -1992,9 +2104,11 @@ export type Database = {
           default_unit: Database["public"]["Enums"]["product_unit"]
           description: string | null
           edge_finish_id: string | null
+          estimated_mfg_days: number | null
           external_ref: Json | null
           family_id: string | null
           finish: Database["public"]["Enums"]["stone_finish"] | null
+          gst_pct: number | null
           hsn_code: string | null
           id: string
           is_active: boolean
@@ -2009,17 +2123,20 @@ export type Database = {
           processing: Json
           product_code: string
           quality_grade_id: string | null
+          required_capabilities: string[]
           size_length_mm: number | null
           size_width_mm: number | null
           sku: string | null
           stone_type: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id: string | null
           surface_finish_id: string | null
+          technical_description: string | null
           technical_specs: Json
           thickness_id: string | null
           thickness_mm: number | null
           uom_id: string | null
           updated_at: string
+          waste_pct: number | null
           weight_kg_per_unit: number | null
         }
         Insert: {
@@ -2029,6 +2146,7 @@ export type Database = {
           category_id?: string | null
           colour?: string | null
           colour_id?: string | null
+          commercial_name?: string | null
           company_id?: string | null
           config_hash?: string | null
           config_json?: Json | null
@@ -2037,9 +2155,11 @@ export type Database = {
           default_unit?: Database["public"]["Enums"]["product_unit"]
           description?: string | null
           edge_finish_id?: string | null
+          estimated_mfg_days?: number | null
           external_ref?: Json | null
           family_id?: string | null
           finish?: Database["public"]["Enums"]["stone_finish"] | null
+          gst_pct?: number | null
           hsn_code?: string | null
           id?: string
           is_active?: boolean
@@ -2054,17 +2174,20 @@ export type Database = {
           processing?: Json
           product_code: string
           quality_grade_id?: string | null
+          required_capabilities?: string[]
           size_length_mm?: number | null
           size_width_mm?: number | null
           sku?: string | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id?: string | null
           surface_finish_id?: string | null
+          technical_description?: string | null
           technical_specs?: Json
           thickness_id?: string | null
           thickness_mm?: number | null
           uom_id?: string | null
           updated_at?: string
+          waste_pct?: number | null
           weight_kg_per_unit?: number | null
         }
         Update: {
@@ -2074,6 +2197,7 @@ export type Database = {
           category_id?: string | null
           colour?: string | null
           colour_id?: string | null
+          commercial_name?: string | null
           company_id?: string | null
           config_hash?: string | null
           config_json?: Json | null
@@ -2082,9 +2206,11 @@ export type Database = {
           default_unit?: Database["public"]["Enums"]["product_unit"]
           description?: string | null
           edge_finish_id?: string | null
+          estimated_mfg_days?: number | null
           external_ref?: Json | null
           family_id?: string | null
           finish?: Database["public"]["Enums"]["stone_finish"] | null
+          gst_pct?: number | null
           hsn_code?: string | null
           id?: string
           is_active?: boolean
@@ -2099,17 +2225,20 @@ export type Database = {
           processing?: Json
           product_code?: string
           quality_grade_id?: string | null
+          required_capabilities?: string[]
           size_length_mm?: number | null
           size_width_mm?: number | null
           sku?: string | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id?: string | null
           surface_finish_id?: string | null
+          technical_description?: string | null
           technical_specs?: Json
           thickness_id?: string | null
           thickness_mm?: number | null
           uom_id?: string | null
           updated_at?: string
+          waste_pct?: number | null
           weight_kg_per_unit?: number | null
         }
         Relationships: [
@@ -2480,6 +2609,171 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qc_results: {
+        Row: {
+          checked_at: string | null
+          created_at: string
+          id: string
+          image_urls: string[]
+          inspector_id: string | null
+          item_id: string | null
+          label: string
+          outcome: Database["public"]["Enums"]["qc_outcome"]
+          production_stage_id: string
+          remarks: string | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          checked_at?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          inspector_id?: string | null
+          item_id?: string | null
+          label: string
+          outcome?: Database["public"]["Enums"]["qc_outcome"]
+          production_stage_id: string
+          remarks?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checked_at?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          inspector_id?: string | null
+          item_id?: string | null
+          label?: string
+          outcome?: Database["public"]["Enums"]["qc_outcome"]
+          production_stage_id?: string
+          remarks?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_results_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "qc_template_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_results_production_stage_id_fkey"
+            columns: ["production_stage_id"]
+            isOneToOne: false
+            referencedRelation: "production_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_results_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "qc_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qc_template_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_required: boolean
+          label: string
+          sort_order: number
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          label: string
+          sort_order?: number
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_required?: boolean
+          label?: string
+          sort_order?: number
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "qc_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qc_templates: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          family_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          stage_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          family_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          stage_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          family_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          stage_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_templates_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "product_families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_templates_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturing_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -4204,6 +4498,17 @@ export type Database = {
         | "other"
       followup_channel: "call" | "whatsapp" | "email" | "meeting" | "site_visit"
       followup_status: "pending" | "done" | "snoozed" | "missed" | "cancelled"
+      installation_status:
+        | "ready"
+        | "packed"
+        | "loaded"
+        | "dispatched"
+        | "delivered"
+        | "installed"
+        | "damaged"
+        | "replacement_required"
+        | "replaced"
+        | "returned"
       invoice_status:
         | "draft"
         | "sent"
@@ -4288,6 +4593,13 @@ export type Database = {
         | "partially_received"
         | "received"
         | "cancelled"
+      qc_outcome:
+        | "pass"
+        | "fail"
+        | "rework"
+        | "approved"
+        | "rejected"
+        | "not_checked"
       quote_status:
         | "draft"
         | "sent"
@@ -4550,6 +4862,18 @@ export const Constants = {
       ],
       followup_channel: ["call", "whatsapp", "email", "meeting", "site_visit"],
       followup_status: ["pending", "done", "snoozed", "missed", "cancelled"],
+      installation_status: [
+        "ready",
+        "packed",
+        "loaded",
+        "dispatched",
+        "delivered",
+        "installed",
+        "damaged",
+        "replacement_required",
+        "replaced",
+        "returned",
+      ],
       invoice_status: [
         "draft",
         "sent",
@@ -4642,6 +4966,14 @@ export const Constants = {
         "partially_received",
         "received",
         "cancelled",
+      ],
+      qc_outcome: [
+        "pass",
+        "fail",
+        "rework",
+        "approved",
+        "rejected",
+        "not_checked",
       ],
       quote_status: [
         "draft",
