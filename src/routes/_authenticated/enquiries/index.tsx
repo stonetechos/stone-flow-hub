@@ -198,6 +198,7 @@ function EnquiriesPage() {
 
 function emptyNew(): EnquiryCreateInput {
   return {
+    customer_id: null,
     customer_name: "",
     mobile: "",
     email: null,
