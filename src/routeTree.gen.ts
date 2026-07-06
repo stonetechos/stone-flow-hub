@@ -53,6 +53,18 @@ import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_au
 import { Route as AuthenticatedProductsProductIdRouteImport } from './routes/_authenticated/products/$productId'
 import { Route as AuthenticatedPaymentsNewRouteImport } from './routes/_authenticated/payments/new'
 import { Route as AuthenticatedPaymentsIdRouteImport } from './routes/_authenticated/payments/$id'
+import { Route as AuthenticatedMastersUomsRouteImport } from './routes/_authenticated/masters/uoms'
+import { Route as AuthenticatedMastersThicknessesRouteImport } from './routes/_authenticated/masters/thicknesses'
+import { Route as AuthenticatedMastersSurfaceFinishesRouteImport } from './routes/_authenticated/masters/surface-finishes'
+import { Route as AuthenticatedMastersStoneTypesRouteImport } from './routes/_authenticated/masters/stone-types'
+import { Route as AuthenticatedMastersStoneOriginsRouteImport } from './routes/_authenticated/masters/stone-origins'
+import { Route as AuthenticatedMastersStoneColoursRouteImport } from './routes/_authenticated/masters/stone-colours'
+import { Route as AuthenticatedMastersQualityGradesRouteImport } from './routes/_authenticated/masters/quality-grades'
+import { Route as AuthenticatedMastersProductFamiliesRouteImport } from './routes/_authenticated/masters/product-families'
+import { Route as AuthenticatedMastersPackagingTypesRouteImport } from './routes/_authenticated/masters/packaging-types'
+import { Route as AuthenticatedMastersManufacturingStagesRouteImport } from './routes/_authenticated/masters/manufacturing-stages'
+import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
+import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
@@ -314,6 +326,78 @@ const AuthenticatedPaymentsIdRoute = AuthenticatedPaymentsIdRouteImport.update({
   path: '/payments/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMastersUomsRoute =
+  AuthenticatedMastersUomsRouteImport.update({
+    id: '/masters/uoms',
+    path: '/masters/uoms',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersThicknessesRoute =
+  AuthenticatedMastersThicknessesRouteImport.update({
+    id: '/masters/thicknesses',
+    path: '/masters/thicknesses',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersSurfaceFinishesRoute =
+  AuthenticatedMastersSurfaceFinishesRouteImport.update({
+    id: '/masters/surface-finishes',
+    path: '/masters/surface-finishes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersStoneTypesRoute =
+  AuthenticatedMastersStoneTypesRouteImport.update({
+    id: '/masters/stone-types',
+    path: '/masters/stone-types',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersStoneOriginsRoute =
+  AuthenticatedMastersStoneOriginsRouteImport.update({
+    id: '/masters/stone-origins',
+    path: '/masters/stone-origins',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersStoneColoursRoute =
+  AuthenticatedMastersStoneColoursRouteImport.update({
+    id: '/masters/stone-colours',
+    path: '/masters/stone-colours',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersQualityGradesRoute =
+  AuthenticatedMastersQualityGradesRouteImport.update({
+    id: '/masters/quality-grades',
+    path: '/masters/quality-grades',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersProductFamiliesRoute =
+  AuthenticatedMastersProductFamiliesRouteImport.update({
+    id: '/masters/product-families',
+    path: '/masters/product-families',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersPackagingTypesRoute =
+  AuthenticatedMastersPackagingTypesRouteImport.update({
+    id: '/masters/packaging-types',
+    path: '/masters/packaging-types',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersManufacturingStagesRoute =
+  AuthenticatedMastersManufacturingStagesRouteImport.update({
+    id: '/masters/manufacturing-stages',
+    path: '/masters/manufacturing-stages',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersEdgeFinishesRoute =
+  AuthenticatedMastersEdgeFinishesRouteImport.update({
+    id: '/masters/edge-finishes',
+    path: '/masters/edge-finishes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersApplicationsRoute =
+  AuthenticatedMastersApplicationsRouteImport.update({
+    id: '/masters/applications',
+    path: '/masters/applications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvoicesNewRoute =
   AuthenticatedInvoicesNewRouteImport.update({
     id: '/invoices/new',
@@ -446,6 +530,18 @@ export interface FileRoutesByFullPath {
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
+  '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
+  '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
+  '/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
+  '/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
+  '/masters/stone-types': typeof AuthenticatedMastersStoneTypesRoute
+  '/masters/surface-finishes': typeof AuthenticatedMastersSurfaceFinishesRoute
+  '/masters/thicknesses': typeof AuthenticatedMastersThicknessesRoute
+  '/masters/uoms': typeof AuthenticatedMastersUomsRoute
   '/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/products/$productId': typeof AuthenticatedProductsProductIdRoute
@@ -509,6 +605,18 @@ export interface FileRoutesByTo {
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
+  '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
+  '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
+  '/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
+  '/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
+  '/masters/stone-types': typeof AuthenticatedMastersStoneTypesRoute
+  '/masters/surface-finishes': typeof AuthenticatedMastersSurfaceFinishesRoute
+  '/masters/thicknesses': typeof AuthenticatedMastersThicknessesRoute
+  '/masters/uoms': typeof AuthenticatedMastersUomsRoute
   '/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/products/$productId': typeof AuthenticatedProductsProductIdRoute
@@ -574,6 +682,18 @@ export interface FileRoutesById {
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/_authenticated/masters/manufacturing-stages': typeof AuthenticatedMastersManufacturingStagesRoute
+  '/_authenticated/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
+  '/_authenticated/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
+  '/_authenticated/masters/quality-grades': typeof AuthenticatedMastersQualityGradesRoute
+  '/_authenticated/masters/stone-colours': typeof AuthenticatedMastersStoneColoursRoute
+  '/_authenticated/masters/stone-origins': typeof AuthenticatedMastersStoneOriginsRoute
+  '/_authenticated/masters/stone-types': typeof AuthenticatedMastersStoneTypesRoute
+  '/_authenticated/masters/surface-finishes': typeof AuthenticatedMastersSurfaceFinishesRoute
+  '/_authenticated/masters/thicknesses': typeof AuthenticatedMastersThicknessesRoute
+  '/_authenticated/masters/uoms': typeof AuthenticatedMastersUomsRoute
   '/_authenticated/payments/$id': typeof AuthenticatedPaymentsIdRouteWithChildren
   '/_authenticated/payments/new': typeof AuthenticatedPaymentsNewRoute
   '/_authenticated/products/$productId': typeof AuthenticatedProductsProductIdRoute
@@ -639,6 +759,18 @@ export interface FileRouteTypes {
     | '/inventory/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/masters/applications'
+    | '/masters/edge-finishes'
+    | '/masters/manufacturing-stages'
+    | '/masters/packaging-types'
+    | '/masters/product-families'
+    | '/masters/quality-grades'
+    | '/masters/stone-colours'
+    | '/masters/stone-origins'
+    | '/masters/stone-types'
+    | '/masters/surface-finishes'
+    | '/masters/thicknesses'
+    | '/masters/uoms'
     | '/payments/$id'
     | '/payments/new'
     | '/products/$productId'
@@ -702,6 +834,18 @@ export interface FileRouteTypes {
     | '/inventory/new'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/masters/applications'
+    | '/masters/edge-finishes'
+    | '/masters/manufacturing-stages'
+    | '/masters/packaging-types'
+    | '/masters/product-families'
+    | '/masters/quality-grades'
+    | '/masters/stone-colours'
+    | '/masters/stone-origins'
+    | '/masters/stone-types'
+    | '/masters/surface-finishes'
+    | '/masters/thicknesses'
+    | '/masters/uoms'
     | '/payments/$id'
     | '/payments/new'
     | '/products/$productId'
@@ -766,6 +910,18 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/new'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
+    | '/_authenticated/masters/applications'
+    | '/_authenticated/masters/edge-finishes'
+    | '/_authenticated/masters/manufacturing-stages'
+    | '/_authenticated/masters/packaging-types'
+    | '/_authenticated/masters/product-families'
+    | '/_authenticated/masters/quality-grades'
+    | '/_authenticated/masters/stone-colours'
+    | '/_authenticated/masters/stone-origins'
+    | '/_authenticated/masters/stone-types'
+    | '/_authenticated/masters/surface-finishes'
+    | '/_authenticated/masters/thicknesses'
+    | '/_authenticated/masters/uoms'
     | '/_authenticated/payments/$id'
     | '/_authenticated/payments/new'
     | '/_authenticated/products/$productId'
@@ -1123,6 +1279,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/masters/uoms': {
+      id: '/_authenticated/masters/uoms'
+      path: '/masters/uoms'
+      fullPath: '/masters/uoms'
+      preLoaderRoute: typeof AuthenticatedMastersUomsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/thicknesses': {
+      id: '/_authenticated/masters/thicknesses'
+      path: '/masters/thicknesses'
+      fullPath: '/masters/thicknesses'
+      preLoaderRoute: typeof AuthenticatedMastersThicknessesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/surface-finishes': {
+      id: '/_authenticated/masters/surface-finishes'
+      path: '/masters/surface-finishes'
+      fullPath: '/masters/surface-finishes'
+      preLoaderRoute: typeof AuthenticatedMastersSurfaceFinishesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/stone-types': {
+      id: '/_authenticated/masters/stone-types'
+      path: '/masters/stone-types'
+      fullPath: '/masters/stone-types'
+      preLoaderRoute: typeof AuthenticatedMastersStoneTypesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/stone-origins': {
+      id: '/_authenticated/masters/stone-origins'
+      path: '/masters/stone-origins'
+      fullPath: '/masters/stone-origins'
+      preLoaderRoute: typeof AuthenticatedMastersStoneOriginsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/stone-colours': {
+      id: '/_authenticated/masters/stone-colours'
+      path: '/masters/stone-colours'
+      fullPath: '/masters/stone-colours'
+      preLoaderRoute: typeof AuthenticatedMastersStoneColoursRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/quality-grades': {
+      id: '/_authenticated/masters/quality-grades'
+      path: '/masters/quality-grades'
+      fullPath: '/masters/quality-grades'
+      preLoaderRoute: typeof AuthenticatedMastersQualityGradesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/product-families': {
+      id: '/_authenticated/masters/product-families'
+      path: '/masters/product-families'
+      fullPath: '/masters/product-families'
+      preLoaderRoute: typeof AuthenticatedMastersProductFamiliesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/packaging-types': {
+      id: '/_authenticated/masters/packaging-types'
+      path: '/masters/packaging-types'
+      fullPath: '/masters/packaging-types'
+      preLoaderRoute: typeof AuthenticatedMastersPackagingTypesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/manufacturing-stages': {
+      id: '/_authenticated/masters/manufacturing-stages'
+      path: '/masters/manufacturing-stages'
+      fullPath: '/masters/manufacturing-stages'
+      preLoaderRoute: typeof AuthenticatedMastersManufacturingStagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/edge-finishes': {
+      id: '/_authenticated/masters/edge-finishes'
+      path: '/masters/edge-finishes'
+      fullPath: '/masters/edge-finishes'
+      preLoaderRoute: typeof AuthenticatedMastersEdgeFinishesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/applications': {
+      id: '/_authenticated/masters/applications'
+      path: '/masters/applications'
+      fullPath: '/masters/applications'
+      preLoaderRoute: typeof AuthenticatedMastersApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/invoices/new': {
       id: '/_authenticated/invoices/new'
       path: '/invoices/new'
@@ -1372,6 +1612,18 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
+  AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
+  AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
+  AuthenticatedMastersManufacturingStagesRoute: typeof AuthenticatedMastersManufacturingStagesRoute
+  AuthenticatedMastersPackagingTypesRoute: typeof AuthenticatedMastersPackagingTypesRoute
+  AuthenticatedMastersProductFamiliesRoute: typeof AuthenticatedMastersProductFamiliesRoute
+  AuthenticatedMastersQualityGradesRoute: typeof AuthenticatedMastersQualityGradesRoute
+  AuthenticatedMastersStoneColoursRoute: typeof AuthenticatedMastersStoneColoursRoute
+  AuthenticatedMastersStoneOriginsRoute: typeof AuthenticatedMastersStoneOriginsRoute
+  AuthenticatedMastersStoneTypesRoute: typeof AuthenticatedMastersStoneTypesRoute
+  AuthenticatedMastersSurfaceFinishesRoute: typeof AuthenticatedMastersSurfaceFinishesRoute
+  AuthenticatedMastersThicknessesRoute: typeof AuthenticatedMastersThicknessesRoute
+  AuthenticatedMastersUomsRoute: typeof AuthenticatedMastersUomsRoute
   AuthenticatedPaymentsIdRoute: typeof AuthenticatedPaymentsIdRouteWithChildren
   AuthenticatedPaymentsNewRoute: typeof AuthenticatedPaymentsNewRoute
   AuthenticatedProductsProductIdRoute: typeof AuthenticatedProductsProductIdRoute
@@ -1421,6 +1673,23 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
+  AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
+  AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
+  AuthenticatedMastersManufacturingStagesRoute:
+    AuthenticatedMastersManufacturingStagesRoute,
+  AuthenticatedMastersPackagingTypesRoute:
+    AuthenticatedMastersPackagingTypesRoute,
+  AuthenticatedMastersProductFamiliesRoute:
+    AuthenticatedMastersProductFamiliesRoute,
+  AuthenticatedMastersQualityGradesRoute:
+    AuthenticatedMastersQualityGradesRoute,
+  AuthenticatedMastersStoneColoursRoute: AuthenticatedMastersStoneColoursRoute,
+  AuthenticatedMastersStoneOriginsRoute: AuthenticatedMastersStoneOriginsRoute,
+  AuthenticatedMastersStoneTypesRoute: AuthenticatedMastersStoneTypesRoute,
+  AuthenticatedMastersSurfaceFinishesRoute:
+    AuthenticatedMastersSurfaceFinishesRoute,
+  AuthenticatedMastersThicknessesRoute: AuthenticatedMastersThicknessesRoute,
+  AuthenticatedMastersUomsRoute: AuthenticatedMastersUomsRoute,
   AuthenticatedPaymentsIdRoute: AuthenticatedPaymentsIdRouteWithChildren,
   AuthenticatedPaymentsNewRoute: AuthenticatedPaymentsNewRoute,
   AuthenticatedProductsProductIdRoute: AuthenticatedProductsProductIdRoute,
