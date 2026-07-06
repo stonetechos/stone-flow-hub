@@ -318,7 +318,7 @@ function FollowupFormDialog({
     form.entity_type === "customer" || form.entity_type === "project" || form.entity_type === "vendor"
       ? form.entity_type
       : null;
-  const form_type = form.entity_type;
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
