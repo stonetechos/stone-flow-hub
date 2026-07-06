@@ -299,6 +299,7 @@ function QuickCreateProject({
     },
     onSuccess: (row) => {
       toast.success(`Project ${row.project_code} created`);
+      seedPickerCache(qc, "project", row);
       invalidateProject(qc, row.id);
       onCreated(row);
       onOpenChange(false);
