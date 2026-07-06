@@ -242,7 +242,8 @@ function toLocalInputValue(iso: string): string {
 function emptyForm(): FollowupCreateInput {
   const in1h = new Date(Date.now() + 60 * 60 * 1000);
   return {
-    enquiry_id: "",
+    entity_type: "enquiry",
+    entity_id: "",
     scheduled_at: toLocalInputValue(in1h.toISOString()),
     channel: "call",
     notes: null,
@@ -269,8 +270,11 @@ function FollowupFormDialog({
   useEffect(() => {
     if (!open) return;
     if (editing) {
+      const et = (editing.entity_type as FollowupCreateInput["entity_type"] | null) ?? "enquiry";
+      const eid = editing.entity_id ?? editing.enquiry_id ?? "";
       setForm({
-        enquiry_id: editing.enquiry_id ?? "",
+        entity_type: et,
+        entity_id: eid,
         scheduled_at: toLocalInputValue(editing.scheduled_at),
         channel: editing.channel,
         notes: editing.notes,
@@ -282,7 +286,6 @@ function FollowupFormDialog({
 
   const mutation = useMutation({
     mutationFn: (input: FollowupCreateInput) => {
-      // Convert local datetime input value back to ISO
       const iso = new Date(input.scheduled_at).toISOString();
       const payload = { ...input, scheduled_at: iso };
       return editing ? updateFollowup(editing.id, payload) : createFollowup(payload);
@@ -314,7 +317,13 @@ function FollowupFormDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
             <Field label="Enquiry" required className="md:col-span-2">
-              <Select value={form.enquiry_id} onValueChange={(v) => set("enquiry_id", v)}>
+              <Select
+                value={form.entity_type === "enquiry" ? form.entity_id : ""}
+                onValueChange={(v) => {
+                  set("entity_type", "enquiry");
+                  set("entity_id", v);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} />
                 </SelectTrigger>
