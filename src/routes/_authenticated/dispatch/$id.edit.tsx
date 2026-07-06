@@ -118,11 +118,16 @@ function EditDispatchPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DISPATCH_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
+                {DISPATCH_STATUSES.map((s) => {
+                  const allowed = allowedNextDispatchStatuses(query.data!.status);
+                  const disabled = !allowed.includes(s);
+                  return (
+                    <SelectItem key={s} value={s} disabled={disabled} className="capitalize">
+                      {s.replace(/_/g, " ")}
+                      {disabled ? " (blocked)" : ""}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </Field>
