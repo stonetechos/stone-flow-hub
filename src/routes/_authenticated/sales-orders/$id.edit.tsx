@@ -23,6 +23,7 @@ import { toUserMessage } from "@/lib/errors";
 import { invalidateSalesOrder } from "@/lib/query-invalidation";
 import { getSalesOrder, updateSalesOrder } from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES, type SalesOrderCreateInput } from "@/lib/sales-orders/schema";
+import { allowedNextSalesOrderStatuses } from "@/lib/status-transitions";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id/edit")({
   ssr: false,
