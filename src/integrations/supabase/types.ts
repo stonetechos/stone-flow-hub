@@ -64,6 +64,48 @@ export type Database = {
           },
         ]
       }
+      applications: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          indoor_ok: boolean
+          is_active: boolean
+          name: string
+          notes: string | null
+          outdoor_ok: boolean
+          sort_order: number
+          updated_at: string
+          wet_area_ok: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          sort_order?: number
+          updated_at?: string
+          wet_area_ok?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          indoor_ok?: boolean
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          outdoor_ok?: boolean
+          sort_order?: number
+          updated_at?: string
+          wet_area_ok?: boolean
+        }
+        Relationships: []
+      }
       artwork_approvals: {
         Row: {
           artwork_id: string
@@ -1157,6 +1199,45 @@ export type Database = {
         }
         Relationships: []
       }
+      packaging_types: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_export_ok: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          typical_weight_kg: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_export_ok?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          typical_weight_kg?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_export_ok?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          typical_weight_kg?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_links: {
         Row: {
           amount: number
@@ -1393,6 +1474,7 @@ export type Database = {
       product_families: {
         Row: {
           code: string
+          configurable_attributes: Json
           created_at: string
           default_uom: string
           icon: string | null
@@ -1407,6 +1489,7 @@ export type Database = {
         }
         Insert: {
           code: string
+          configurable_attributes?: Json
           created_at?: string
           default_uom?: string
           icon?: string | null
@@ -1421,6 +1504,7 @@ export type Database = {
         }
         Update: {
           code?: string
+          configurable_attributes?: Json
           created_at?: string
           default_uom?: string
           icon?: string | null
@@ -1647,10 +1731,17 @@ export type Database = {
       }
       production_orders: {
         Row: {
+          bundle_no: string | null
           completed_at: string | null
+          crate_no: string | null
           created_at: string
           created_by: string | null
+          customer_id: string | null
+          drawing_ref: string | null
+          elevation: string | null
+          enquiry_id: string | null
           id: string
+          install_sequence: number | null
           mfg_no: string
           notes: string | null
           planned_end: string | null
@@ -1658,17 +1749,27 @@ export type Database = {
           product_id: string
           project_id: string | null
           quantity: number
+          revision: string | null
+          room: string | null
           sales_order_id: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["production_status"]
           unit: string
           updated_at: string
+          wall: string | null
         }
         Insert: {
+          bundle_no?: string | null
           completed_at?: string | null
+          crate_no?: string | null
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
+          drawing_ref?: string | null
+          elevation?: string | null
+          enquiry_id?: string | null
           id?: string
+          install_sequence?: number | null
           mfg_no?: string
           notes?: string | null
           planned_end?: string | null
@@ -1676,17 +1777,27 @@ export type Database = {
           product_id: string
           project_id?: string | null
           quantity: number
+          revision?: string | null
+          room?: string | null
           sales_order_id?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["production_status"]
           unit?: string
           updated_at?: string
+          wall?: string | null
         }
         Update: {
+          bundle_no?: string | null
           completed_at?: string | null
+          crate_no?: string | null
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
+          drawing_ref?: string | null
+          elevation?: string | null
+          enquiry_id?: string | null
           id?: string
+          install_sequence?: number | null
           mfg_no?: string
           notes?: string | null
           planned_end?: string | null
@@ -1694,13 +1805,30 @@ export type Database = {
           product_id?: string
           project_id?: string | null
           quantity?: number
+          revision?: string | null
+          room?: string | null
           sales_order_id?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["production_status"]
           unit?: string
           updated_at?: string
+          wall?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "production_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "production_orders_product_id_fkey"
             columns: ["product_id"]
@@ -1766,14 +1894,18 @@ export type Database = {
       production_stages: {
         Row: {
           actual_completed_at: string | null
+          actual_start: string | null
           assigned_user_id: string | null
           assigned_vendor_id: string | null
           created_at: string
           delay_reason: string | null
           id: string
+          is_outsourced: boolean
           notes: string | null
           planned_date: string | null
+          planned_start: string | null
           production_order_id: string
+          qc_checklist: Json
           sort_order: number
           stage_id: string
           started_at: string | null
@@ -1782,14 +1914,18 @@ export type Database = {
         }
         Insert: {
           actual_completed_at?: string | null
+          actual_start?: string | null
           assigned_user_id?: string | null
           assigned_vendor_id?: string | null
           created_at?: string
           delay_reason?: string | null
           id?: string
+          is_outsourced?: boolean
           notes?: string | null
           planned_date?: string | null
+          planned_start?: string | null
           production_order_id: string
+          qc_checklist?: Json
           sort_order?: number
           stage_id: string
           started_at?: string | null
@@ -1798,14 +1934,18 @@ export type Database = {
         }
         Update: {
           actual_completed_at?: string | null
+          actual_start?: string | null
           assigned_user_id?: string | null
           assigned_vendor_id?: string | null
           created_at?: string
           delay_reason?: string | null
           id?: string
+          is_outsourced?: boolean
           notes?: string | null
           planned_date?: string | null
+          planned_start?: string | null
           production_order_id?: string
+          qc_checklist?: Json
           sort_order?: number
           stage_id?: string
           started_at?: string | null
@@ -1839,8 +1979,11 @@ export type Database = {
       products: {
         Row: {
           ai_tags: string[]
+          application_ids: string[]
+          auto_description: string | null
           category_id: string | null
           colour: string | null
+          colour_id: string | null
           company_id: string | null
           config_hash: string | null
           config_json: Json | null
@@ -1861,21 +2004,31 @@ export type Database = {
           market_price_inr: number | null
           name: string
           origin_country: string | null
+          origin_id: string | null
+          packaging_type_id: string | null
+          processing: Json
           product_code: string
+          quality_grade_id: string | null
           size_length_mm: number | null
           size_width_mm: number | null
+          sku: string | null
           stone_type: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id: string | null
           surface_finish_id: string | null
           technical_specs: Json
+          thickness_id: string | null
           thickness_mm: number | null
+          uom_id: string | null
           updated_at: string
           weight_kg_per_unit: number | null
         }
         Insert: {
           ai_tags?: string[]
+          application_ids?: string[]
+          auto_description?: string | null
           category_id?: string | null
           colour?: string | null
+          colour_id?: string | null
           company_id?: string | null
           config_hash?: string | null
           config_json?: Json | null
@@ -1896,21 +2049,31 @@ export type Database = {
           market_price_inr?: number | null
           name: string
           origin_country?: string | null
+          origin_id?: string | null
+          packaging_type_id?: string | null
+          processing?: Json
           product_code: string
+          quality_grade_id?: string | null
           size_length_mm?: number | null
           size_width_mm?: number | null
+          sku?: string | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id?: string | null
           surface_finish_id?: string | null
           technical_specs?: Json
+          thickness_id?: string | null
           thickness_mm?: number | null
+          uom_id?: string | null
           updated_at?: string
           weight_kg_per_unit?: number | null
         }
         Update: {
           ai_tags?: string[]
+          application_ids?: string[]
+          auto_description?: string | null
           category_id?: string | null
           colour?: string | null
+          colour_id?: string | null
           company_id?: string | null
           config_hash?: string | null
           config_json?: Json | null
@@ -1931,14 +2094,21 @@ export type Database = {
           market_price_inr?: number | null
           name?: string
           origin_country?: string | null
+          origin_id?: string | null
+          packaging_type_id?: string | null
+          processing?: Json
           product_code?: string
+          quality_grade_id?: string | null
           size_length_mm?: number | null
           size_width_mm?: number | null
+          sku?: string | null
           stone_type?: Database["public"]["Enums"]["stone_type"] | null
           stone_type_id?: string | null
           surface_finish_id?: string | null
           technical_specs?: Json
+          thickness_id?: string | null
           thickness_mm?: number | null
+          uom_id?: string | null
           updated_at?: string
           weight_kg_per_unit?: number | null
         }
@@ -1948,6 +2118,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_colour_id_fkey"
+            columns: ["colour_id"]
+            isOneToOne: false
+            referencedRelation: "stone_colours"
             referencedColumns: ["id"]
           },
           {
@@ -1965,6 +2142,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "products_origin_id_fkey"
+            columns: ["origin_id"]
+            isOneToOne: false
+            referencedRelation: "stone_origins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_packaging_type_id_fkey"
+            columns: ["packaging_type_id"]
+            isOneToOne: false
+            referencedRelation: "packaging_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_quality_grade_id_fkey"
+            columns: ["quality_grade_id"]
+            isOneToOne: false
+            referencedRelation: "quality_grades"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "products_stone_type_id_fkey"
             columns: ["stone_type_id"]
             isOneToOne: false
@@ -1976,6 +2174,20 @@ export type Database = {
             columns: ["surface_finish_id"]
             isOneToOne: false
             referencedRelation: "surface_finishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_thickness_id_fkey"
+            columns: ["thickness_id"]
+            isOneToOne: false
+            referencedRelation: "thicknesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_uom_id_fkey"
+            columns: ["uom_id"]
+            isOneToOne: false
+            referencedRelation: "uoms"
             referencedColumns: ["id"]
           },
         ]
@@ -2271,6 +2483,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quality_grades: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          rank: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          rank?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          rank?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       quote_items: {
         Row: {
@@ -2673,6 +2921,84 @@ export type Database = {
           },
         ]
       }
+      stone_colours: {
+        Row: {
+          code: string
+          created_at: string
+          family: string | null
+          hex: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          family?: string | null
+          hex?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          family?: string | null
+          hex?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stone_origins: {
+        Row: {
+          code: string
+          country: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          region: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          region?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          region?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stone_types: {
         Row: {
           code: string
@@ -2849,6 +3175,90 @@ export type Database = {
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thicknesses: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_slab_std: boolean
+          is_veneer: boolean
+          mm: number
+          name: string
+          notes: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_slab_std?: boolean
+          is_veneer?: boolean
+          mm: number
+          name: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_slab_std?: boolean
+          is_veneer?: boolean
+          mm?: number
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      uoms: {
+        Row: {
+          code: string
+          created_at: string
+          dimension: string
+          factor_to_base: number | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          sort_order: number
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          dimension: string
+          factor_to_base?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          sort_order?: number
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          dimension?: string
+          factor_to_base?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          symbol?: string
           updated_at?: string
         }
         Relationships: []
@@ -3885,6 +4295,17 @@ export type Database = {
         | "polishing"
         | "metal_inlay"
         | "sculpture"
+        | "rockface"
+        | "splitface"
+        | "shot_blast"
+        | "bush_hammer"
+        | "polished"
+        | "honed"
+        | "leather"
+        | "bevel"
+        | "bullnose"
+        | "brass_inlay"
+        | "semi_precious_inlay"
       vendor_portal_role: "vendor_owner" | "vendor_member"
       vendor_request_status:
         | "pending"
@@ -4235,6 +4656,17 @@ export const Constants = {
         "polishing",
         "metal_inlay",
         "sculpture",
+        "rockface",
+        "splitface",
+        "shot_blast",
+        "bush_hammer",
+        "polished",
+        "honed",
+        "leather",
+        "bevel",
+        "bullnose",
+        "brass_inlay",
+        "semi_precious_inlay",
       ],
       vendor_portal_role: ["vendor_owner", "vendor_member"],
       vendor_request_status: [
