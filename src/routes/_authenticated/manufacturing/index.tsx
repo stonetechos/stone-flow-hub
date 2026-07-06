@@ -83,6 +83,8 @@ function ManufacturingKanban() {
         }
       />
 
+      <ManufacturingStats />
+
       {q.isLoading ? (
         <SkeletonCards />
       ) : q.isError ? (
