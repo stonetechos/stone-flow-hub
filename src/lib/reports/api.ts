@@ -67,10 +67,10 @@ export const REPORTS = {
   },
   async followups(): Promise<Report> {
     const rows = await sel<Array<Record<string, unknown>>>(
-      supabase.from("followups").select("id, due_date, notes, is_done, project:project_id(name)").eq("is_done", false).order("due_date").limit(2000) as never,
+      supabase.from("followups").select("id, scheduled_at, status, project:project_id(name)").eq("status", "pending").order("scheduled_at").limit(2000) as never,
     );
     return {
-      headers: ["due_date", "project", "notes"],
+      headers: ["scheduled_at", "project", "status"],
       rows: rows.map((r) => ({ ...r, project: (r.project as { name?: string } | null)?.name ?? "" })),
     };
   },
@@ -85,15 +85,11 @@ export const REPORTS = {
   },
   async projectProfitability(): Promise<Report> {
     const rows = await sel<Array<Record<string, unknown>>>(
-      supabase.from("projects").select("project_code, name, stage, total_value, budget_cost, customer:customer_id(name)").order("created_at", { ascending: false }).limit(2000) as never,
+      supabase.from("projects").select("project_code, name, stage, expected_value_inr, customer:customer_id(name)").order("created_at", { ascending: false }).limit(2000) as never,
     );
     return {
-      headers: ["project_code", "name", "customer", "stage", "total_value", "budget_cost", "est_margin"],
-      rows: rows.map((r) => ({
-        ...r,
-        customer: (r.customer as { name?: string } | null)?.name ?? "",
-        est_margin: ((Number(r.total_value ?? 0) || 0) - (Number(r.budget_cost ?? 0) || 0)).toFixed(2),
-      })),
+      headers: ["project_code", "name", "customer", "stage", "expected_value_inr"],
+      rows: rows.map((r) => ({ ...r, customer: (r.customer as { name?: string } | null)?.name ?? "" })),
     };
   },
 } as const;

@@ -13,7 +13,7 @@ export function ProjectFinancials({ projectId }: { projectId: string }) {
     queryKey: ["project_360_finance", projectId],
     queryFn: async () => {
       const [proj, invs, pays] = await Promise.all([
-        supabase.from("projects").select("total_value, budget_cost").eq("id", projectId).maybeSingle(),
+        supabase.from("projects").select("expected_value_inr").eq("id", projectId).maybeSingle(),
         supabase.from("invoices").select("total, balance_due").eq("project_id", projectId),
         supabase.from("payments").select("amount, invoice_id, invoice:invoice_id(project_id)").limit(2000),
       ]);
@@ -23,12 +23,12 @@ export function ProjectFinancials({ projectId }: { projectId: string }) {
       const collected = (pays.data ?? [])
         .filter((p) => (p.invoice as { project_id?: string } | null)?.project_id === projectId)
         .reduce((s, p) => s + Number(p.amount ?? 0), 0);
-      const pipeline = Number(proj.data?.total_value ?? 0);
-      const cost = Number(proj.data?.budget_cost ?? 0);
+      const pipeline = Number((proj.data as { expected_value_inr?: number } | null)?.expected_value_inr ?? 0);
+      const estMargin = invoiced - 0; // Placeholder — hook up PO cost totals when budgeting lands.
       return {
         pipeline, invoiced, collected, outstanding,
-        estMargin: pipeline - cost,
-        marginPct: pipeline > 0 ? ((pipeline - cost) / pipeline) * 100 : 0,
+        estMargin,
+        marginPct: pipeline > 0 ? (estMargin / pipeline) * 100 : 0,
       };
     },
   });

@@ -13,15 +13,14 @@ function ManagementDashboard() {
     queryFn: async () => {
       const [inv, proj] = await Promise.all([
         supabase.from("invoices").select("total, balance_due").limit(5000),
-        supabase.from("projects").select("total_value, budget_cost").limit(5000),
+        supabase.from("projects").select("expected_value_inr").limit(5000),
       ]);
       const invoices = inv.data ?? [];
       const projects = proj.data ?? [];
       const revenue = invoices.reduce((s, i) => s + Number(i.total ?? 0), 0);
       const outstanding = invoices.reduce((s, i) => s + Number(i.balance_due ?? 0), 0);
-      const pipeline = projects.reduce((s, p) => s + Number(p.total_value ?? 0), 0);
-      const cost = projects.reduce((s, p) => s + Number(p.budget_cost ?? 0), 0);
-      return { revenue, outstanding, pipeline, est_margin: pipeline - cost };
+      const pipeline = projects.reduce((s, p) => s + Number((p as { expected_value_inr?: number }).expected_value_inr ?? 0), 0);
+      return { revenue, outstanding, pipeline, est_margin: pipeline - revenue };
     },
   });
   const s = stats.data;

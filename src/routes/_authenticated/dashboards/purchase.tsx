@@ -21,7 +21,7 @@ function PurchaseDashboard() {
       const plist = pos.data ?? [];
       return {
         rfqs_open: rlist.filter((r) => r.status === "sent" || r.status === "draft").length,
-        po_open: plist.filter((p) => p.status !== "closed" && p.status !== "cancelled").length,
+        po_open: plist.filter((p) => p.status !== "received" && p.status !== "cancelled").length,
         vendors: vend.count ?? 0,
         top: top.data ?? [],
       };

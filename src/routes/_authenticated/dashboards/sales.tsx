@@ -14,7 +14,7 @@ function SalesDashboard() {
       const [enq, quo, foll, inv] = await Promise.all([
         supabase.from("enquiries").select("id, stage", { count: "exact", head: false }).limit(2000),
         supabase.from("quotes").select("id, total, status").limit(2000),
-        supabase.from("followups").select("id").eq("is_done", false).limit(2000),
+        supabase.from("followups").select("id").eq("status", "pending").limit(2000),
         supabase.from("invoices").select("total, balance_due").limit(2000),
       ]);
       const quotes = quo.data ?? [];
