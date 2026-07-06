@@ -137,7 +137,8 @@ function VendorHub() {
           <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <VendorScorecard vendorId={vendorId} />
           <Card className="shadow-1">
             <CardHeader>
               <CardTitle className="text-sm">Overview</CardTitle>
