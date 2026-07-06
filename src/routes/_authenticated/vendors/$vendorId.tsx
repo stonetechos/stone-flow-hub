@@ -240,6 +240,9 @@ function VendorHub() {
             ]}
           />
         </TabsContent>
+        <TabsContent value="capabilities" className="mt-4">
+          <CapabilityMatrix vendorId={vendorId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
