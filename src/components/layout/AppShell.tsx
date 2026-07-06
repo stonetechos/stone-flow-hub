@@ -51,6 +51,7 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardCheck },
   { to: "/manufacturing", label: "Manufacturing", icon: Factory },
   { to: "/inventory", label: "Inventory", icon: Warehouse },
+  { to: "/inventory/slabs", label: "Slab Register", icon: Layers },
   { to: "/masters", label: "Masters", icon: Gem },
   { to: "/dispatch", label: "Dispatch", icon: Truck },
   { to: "/invoices", label: "Invoices", icon: Receipt },
