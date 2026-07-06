@@ -263,12 +263,12 @@ function FollowupFormDialog({
   editing: FollowupWithEnquiry | null;
 }) {
   const qc = useQueryClient();
+  const [form, setForm] = useState<FollowupCreateInput>(emptyForm);
   const enquiries = useQuery({
     queryKey: qk.enquiries.list(""),
     queryFn: () => listEnquiries(""),
-    enabled: open && (form_type === undefined || form_type === "enquiry"),
+    enabled: open && form.entity_type === "enquiry",
   });
-  const [form, setForm] = useState<FollowupCreateInput>(emptyForm);
 
   useEffect(() => {
     if (!open) return;
