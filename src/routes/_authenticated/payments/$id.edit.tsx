@@ -54,7 +54,7 @@ function EditPaymentPage() {
     mutationFn: (input: PaymentCreateInput) => updatePayment(id, input),
     onSuccess: () => {
       toast.success("Payment updated");
-      qc.invalidateQueries({ queryKey: qk.paymentsAll.all });
+      invalidatePayment(qc, id);
       nav({ to: "/payments/$id", params: { id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
