@@ -16,7 +16,16 @@ export async function listProducts(query = ""): Promise<ProductRow[]> {
     .order("created_at", { ascending: false })
     .limit(200);
   const s = sanitizeSearch(query);
-  if (s) q = q.or(`name.ilike.%${s}%,product_code.ilike.%${s}%`);
+  if (s) {
+    q = q.or(
+      [
+        `name.ilike.%${s}%`,
+        `product_code.ilike.%${s}%`,
+        `hsn_code.ilike.%${s}%`,
+        `stone_type.ilike.%${s}%`,
+      ].join(","),
+    );
+  }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];

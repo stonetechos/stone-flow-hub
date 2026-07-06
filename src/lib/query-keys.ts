@@ -7,21 +7,26 @@ export const qk = {
     all: ["customers"] as const,
     list: (q?: string) => ["customers", "list", q ?? ""] as const,
     byId: (id: string) => ["customers", "byId", id] as const,
+    picker: (q?: string) => ["customers", "picker", q ?? ""] as const,
   },
   projects: {
     all: ["projects"] as const,
     list: (q?: string) => ["projects", "list", q ?? ""] as const,
     byId: (id: string) => ["projects", "byId", id] as const,
     byCustomer: (customerId: string) => ["projects", "byCustomer", customerId] as const,
+    picker: (q?: string, customerId?: string | null) =>
+      ["projects", "picker", q ?? "", customerId ?? ""] as const,
   },
   vendors: {
     all: ["vendors"] as const,
     list: (q?: string) => ["vendors", "list", q ?? ""] as const,
     byId: (id: string) => ["vendors", "byId", id] as const,
+    picker: (q?: string) => ["vendors", "picker", q ?? ""] as const,
   },
   products: {
     all: ["products"] as const,
     list: (q?: string) => ["products", "list", q ?? ""] as const,
+    picker: (q?: string) => ["products", "picker", q ?? ""] as const,
   },
   enquiries: {
     all: ["enquiries"] as const,
@@ -37,6 +42,8 @@ export const qk = {
     all: ["followups"] as const,
     scope: (scope: "pending" | "today" | "all") => ["followups", "scope", scope] as const,
     byEnquiry: (id: string) => ["followups", "byEnquiry", id] as const,
+    byEntity: (entityType: string, entityId: string) =>
+      ["followups", "byEntity", entityType, entityId] as const,
   },
   activity: {
     recent: ["activity", "recent"] as const,

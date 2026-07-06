@@ -632,6 +632,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           enquiry_id: string | null
+          entity_id: string | null
+          entity_type: string | null
           external_ref: Json | null
           id: string
           next_followup_id: string | null
@@ -650,6 +652,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           enquiry_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           external_ref?: Json | null
           id?: string
           next_followup_id?: string | null
@@ -668,6 +672,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           enquiry_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           external_ref?: Json | null
           id?: string
           next_followup_id?: string | null

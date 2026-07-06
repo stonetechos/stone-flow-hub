@@ -1,6 +1,6 @@
 /** Recent items — localStorage based, per user context. */
 const KEY = "st.recent";
-const MAX = 20;
+const MAX = 40;
 
 export interface RecentItem {
   entityType: string;
@@ -8,6 +8,8 @@ export interface RecentItem {
   label: string;
   href: string;
   at: number;
+  /** Optional sublabel — e.g. the customer code on a project row. */
+  sub?: string;
 }
 
 function read(): RecentItem[] {
@@ -40,8 +42,10 @@ export function pushRecent(item: Omit<RecentItem, "at">): void {
   write(items);
 }
 
-export function listRecent(): RecentItem[] {
-  return read();
+/** List recents, optionally filtered by one entity type (for EntityPicker recents). */
+export function listRecent(entityType?: string): RecentItem[] {
+  const items = read();
+  return entityType ? items.filter((i) => i.entityType === entityType) : items;
 }
 
 export function clearRecent(): void {

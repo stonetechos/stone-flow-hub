@@ -1,118 +1,220 @@
-# Module 2 — Vendor Collaboration & Procurement
 
-Additive extension of Module 1. Nothing existing changes structurally; new schema, new routes under a separate `_vendor` layout, plus internal comparison views inside existing RFQ pages.
+# Workflow Integration & Data Synchronization Pass
 
-## 1. Additive Database Migration
+Goal: make Stone Tech OS behave like one connected ERP. No page refreshes, no duplicate records, no re-entering known context, no missing dropdown entries.
 
-New enums, tables, and helper functions — **no** renames, drops, or column removals. All new tables follow the four-step pattern (CREATE → GRANT → ENABLE RLS → POLICY).
+Nothing in this pass changes existing UI beyond replacing today's `<Select>` selectors with a richer picker of the same visual weight. No new modules. No security changes.
 
-**New enum**
-- `vendor_portal_role` (`vendor_owner`, `vendor_member`)
-- `notification_event` (10 events listed in brief)
-- `notification_channel` (`email`, `whatsapp`, `sms`, `push`) — future-ready
-- `notification_status` (`pending`, `sent`, `failed`)
+---
 
-**New tables**
-- `vendor_users` — links `auth.users` ↔ `vendors` with a portal role; a user can only belong to one vendor.
-- `vendor_rfq_views` — one row per (rfq_vendor, user) with `viewed_at` for "unread" state and Vendor Viewed timeline event.
-- `notification_events` — event ledger (event, entity, payload jsonb, actor, created_at). Written by triggers + server fns.
-- `notification_deliveries` — one row per (event, channel, recipient) with status, provider_id, error, sent_at. Worker table for the delivery layer.
-- `vendor_performance_cache` — nightly / on-write snapshot: avg_response_hours, avg_dispatch_days, completion_pct, delay_pct, purchase_value, approval_pct, last_order_at, last_rfq_at, score, is_preferred. Recomputed by a SECURITY DEFINER function called from triggers.
+## 1. Shared `EntityPicker` (SmartSearch)
 
-**Extend existing tables (additive columns only)**
-- `rfq_vendors`: `first_viewed_at timestamptz`, `submitted_at timestamptz`, `revision_requested_at timestamptz`, `revision_note text`.
-- `vendor_quotes`: `freight_amount numeric`, `dispatch_days int`, `gst_included boolean`, `stock_available boolean`, `quote_pdf_file_id uuid` (fk `file_objects`), `submitted_at`, `approved_at`, `rejected_at`, `revision_of uuid` (self-fk).
+New primitive at `src/components/forms/EntityPicker.tsx`.
 
-**Helper functions**
-- `public.is_vendor_user(_user_id uuid, _vendor_id uuid) returns boolean` — SECURITY DEFINER, used inside vendor-scoped RLS to avoid recursion.
-- `public.current_vendor_id() returns uuid` — reads vendor_users for `auth.uid()`.
-- `public.recalc_vendor_performance(_vendor_id uuid)` — writes cache row.
-- `public.log_notification_event(_event, _entity_type, _entity_id, _payload)` — inserts into `notification_events`.
+Public API (stable so Contacts / Tags can migrate later without changes):
 
-**RLS**
-- Staff (`has_staff_access`) keeps existing broad access on all new/extended rows.
-- Vendor users: SELECT on their `rfqs`/`rfq_vendors`/`rfq_items`/`enquiries` (via `rfq_vendors.vendor_id = current_vendor_id()`), SELECT/INSERT/UPDATE their own `vendor_quotes` while `status in ('draft','submitted')` and `due_date >= today`, SELECT on `purchase_orders` where `vendor_id = current_vendor_id()`, SELECT on `dispatches` linked to their POs, SELECT on `file_objects` attached to any of the above (RLS via joins in policy).
-- `vendor_users` self-read only, admin write.
+```ts
+<EntityPicker
+  entity="customer" | "project" | "vendor" | "product"
+  value={id | null}
+  onChange={(id, row) => …}
+  disabled?
+  required?
+  placeholder?
+  filter?: (row) => boolean         // e.g. projects by customer_id
+  allowClear?
+  allowQuickCreate?                 // default true; hides if user lacks role
+  quickCreateContext?: Partial<CreateInput>   // seed values for QuickCreate
+/>
+```
 
-## 2. Server Functions (`createServerFn` + `requireSupabaseAuth`)
+Behavior:
+- Popover + `cmdk` command list (matches GlobalSearchDialog styling).
+- Debounced remote search (250ms) via existing `listCustomers / listVendors / listProducts / listProjectsForPicker` — no new backend API.
+- Search fields:
+  - Customer: `name`, `email`, `phone`, `gst_number`, `customer_code`.
+  - Vendor: `name`, `email`, `phone`, `gst_number`, `vendor_code`.
+  - Project: `name`, `project_code`, `site_address`, customer name.
+  - Product: `name`, `product_code`, `hsn_code`.
+- Recently-used items (top 5) from `src/lib/recent/store.ts` filtered to the picker's entity type. New store method `listRecent(entityType)`.
+- Full keyboard nav: Arrow up/down, Enter selects, Esc closes, `/` focuses filter, `Ctrl+N` triggers Quick Create.
+- Empty state renders a `+ Create <entity> "query"` row that opens the inline QuickCreate dialog with the search string pre-filled as `name`.
+- On successful create: dialog closes, `onChange(newRow.id, newRow)` fires, related list query gets `invalidateQueries`, parent form retains all other state (dialog is portalled, so the parent form does not remount).
 
-Grouped by domain, each with Zod validators. All internal actions verify `has_staff_access`; vendor actions verify `current_vendor_id()`.
+Backend list queries need one column widening to support the extra search fields:
 
-- `src/lib/vendor-portal/session.functions.ts` — `getVendorContext` (vendor id, role, company).
-- `src/lib/vendor-portal/rfq.functions.ts` — `listVendorRfqs(filters)`, `getVendorRfq(id)`, `markRfqViewed(rfqVendorId)`.
-- `src/lib/vendor-portal/quote.functions.ts` — `submitVendorQuote(input)`, `updateVendorQuote(id, input)`, `withdrawVendorQuote(id)`.
-- `src/lib/vendor-portal/orders.functions.ts` — `listVendorOrders`, `getVendorOrder`, `listVendorDispatches`.
-- `src/lib/procurement/comparison.functions.ts` — `getQuoteComparison(rfqId)` returns normalized rows w/ perf cache.
-- `src/lib/procurement/decision.functions.ts` — `approveVendorQuote`, `rejectVendorQuote`, `requestQuoteRevision` (all emit notification events, log activity).
-- `src/lib/procurement/performance.functions.ts` — `getVendorPerformance(vendorId)`, `recalcVendorPerformance(vendorId)`.
-- `src/lib/notifications/events.functions.ts` — `listNotificationEvents`, `enqueueDelivery`.
-- `src/lib/notifications/dispatcher.server.ts` — pure server module; email adapter (Brevo connector if present, else no-op logger) + registry (`channel → adapter`). Extensible for WhatsApp/SMS/push.
+- `listCustomers(query)` → also `.or(...)` on `email`, `phone`, `gst_number`, `customer_code`.
+- `listVendors(query)` → same.
+- `listProducts(query)` → also `product_code`, `hsn_code`.
+- `listProjectsForPicker(query, opts?)` → accept optional `customerId` filter and search `project_code`.
 
-Vendor invitation: `src/lib/vendor-portal/invite.functions.ts` — `inviteVendorUser({vendorId,email})` uses `supabaseAdmin.auth.admin.inviteUserByEmail`, then inserts `vendor_users`. Staff/admin only.
+No RLS or schema changes — these are additional `ilike` filters only.
 
-## 3. Routes
+## 2. Inline QuickCreate
 
-**Internal (staff) — additions only, no Module 1 route removed**
-- `/_authenticated/procurement/rfqs/$rfqId/compare` — Quote comparison screen with highlight chips (lowest price, fastest, best-rated, recommended), approve/reject/revise actions.
-- `/_authenticated/procurement/vendors/$vendorId/performance` — perf dashboard using cache.
-- `/_authenticated/procurement/notifications` — event ledger + delivery log (admin).
-- `/_authenticated/vendors/$vendorId` — existing hub gains a "Portal Users" tab with invite form + `Preferred` badge from cache.
-- Existing RFQ detail (`enquiries/$enquiryId` RFQ section) gets a "Compare Quotes" primary action linking to `/procurement/rfqs/$rfqId/compare`.
+New primitive at `src/components/forms/QuickCreateDialog.tsx` used by `EntityPicker` and directly reusable:
 
-**Vendor portal — new layout `src/routes/_vendor/`**
-Separate pathless layout with its own `beforeLoad` that redirects staff away and requires `current_vendor_id()`.
-- `_vendor/route.tsx` — gate + shell (top bar, sidebar: Dashboard, RFQs, Orders, Dispatches, Profile).
-- `_vendor/dashboard.tsx`
-- `_vendor/rfqs/index.tsx` — inbox with search, filters, unread badge.
-- `_vendor/rfqs/$rfqId.tsx` — RFQ detail, marks viewed on mount.
-- `_vendor/rfqs/$rfqId.quote.tsx` — QuickForm (Quick Fill → More → Advanced) using existing `QuickForm`.
-- `_vendor/orders/index.tsx` + `_vendor/orders/$id.tsx`.
-- `_vendor/dispatches/index.tsx`.
-- `_vendor/profile.tsx`.
+```tsx
+<QuickCreateDialog
+  entity="customer" | "vendor" | "project" | "product"
+  open onOpenChange
+  defaults={{...}}
+  onCreated={(row) => …}
+/>
+```
 
-**Auth** — reuse `/auth`. After sign-in, `AppShell` decides: if `vendor_users` row exists, redirect to `/_vendor/dashboard`; else `/dashboard`.
+Under the hood it renders the smallest possible form for each entity (same `QuickForm.QuickFill` fields the "New …" pages use for their Quick Fill zone) and calls the existing `createCustomer / createVendor / createProject / createProduct`. On success it invalidates the entity's list keys and calls `onCreated`, which lets the picker auto-select the row.
 
-## 4. Components (reuse-first)
+Existing "New …" full pages continue to work unchanged for the "Advanced" flows.
 
-New (only where needed):
-- `src/components/vendor-portal/VendorShell.tsx` — sidebar + top bar variant of `AppShell`.
-- `src/components/procurement/QuoteComparisonTable.tsx` — comparison grid using `Table` primitives.
-- `src/components/procurement/VendorPerformanceCard.tsx`.
-- `src/components/vendor-portal/RfqInboxTable.tsx`.
-- `src/components/notifications/EventList.tsx`.
+## 3. Follow-ups → Polymorphic
 
-Reused as-is: `QuickForm`, `SmartCombobox`, `DetailActionBar`, `FilePicker`/attachments, `TimelineFeed` (extended to render new procurement events via existing activity_log → new events also written via `log_activity`).
+Migration (schema only — the underlying `entity_type` / `entity_id` idea):
 
-## 5. Notification Engine
+```sql
+ALTER TABLE public.followups
+  ADD COLUMN IF NOT EXISTS entity_type text
+    CHECK (entity_type IN ('customer','project','enquiry','vendor','rfq','purchase_order','dispatch')),
+  ADD COLUMN IF NOT EXISTS entity_id uuid;
 
-- Domain code calls `logNotificationEvent(event, entityType, entityId, payload)` which inserts into `notification_events` and enqueues `notification_deliveries` rows for subscribed channels.
-- `dispatcher.server.ts` exposes `sendPending()` (called from a server route `/api/public/cron/notifications` guarded by shared secret; also invocable from a manual "Retry" button in the admin ledger).
-- Adapters: `emailAdapter` (Brevo connector when linked, otherwise writes `failed` with "no adapter"). WhatsApp/SMS/push adapters are stubs with a TODO.
-- Templates keyed by event; simple `{{token}}` substitution — no third-party template engine.
+-- Backfill existing rows (all today's rows belong to an enquiry)
+UPDATE public.followups
+   SET entity_type = 'enquiry', entity_id = enquiry_id
+ WHERE entity_type IS NULL AND enquiry_id IS NOT NULL;
 
-## 6. Vendor Performance
+CREATE INDEX IF NOT EXISTS followups_entity_idx
+  ON public.followups (entity_type, entity_id, scheduled_at DESC);
+```
 
-Recomputed by triggers on `vendor_quotes`, `rfq_vendors`, `purchase_orders`, `dispatches`. Reads only from cache in UI to keep list pages fast.
+`enquiry_id`, `project_id`, `customer_id` columns stay in place — new inserts keep them populated as **derived context** (denormalized for query performance / RLS) but the primary link is `entity_type`+`entity_id`. On insert, the API derives project/customer/vendor from the chosen entity so timelines can aggregate without extra joins.
 
-## 7. Procurement Timeline
+- `followupCreateSchema` → replace `enquiry_id` with `entity_type` + `entity_id`; derivation happens in `createFollowup`.
+- `listFollowups` gains an `entity?: { type, id }` filter used by Project Hub, Customer detail, Vendor detail, Enquiry detail timeline panels (which today read only enquiry-scoped follow-ups).
+- Existing `listFollowupsForEnquiry` stays as a thin wrapper.
 
-Reuses `activity_log`. Adds new `activity_action` values via a lookup only if enum extension is safe; otherwise inserts free-form `summary` rows. The timeline card on RFQ/PO pages filters activity_log for the entity chain (`enquiry → rfq → rfq_vendor → vendor_quote → purchase_order → dispatch`).
+RLS: policy stays staff-only from the earlier hardening pass, no change needed.
 
-## 8. Milestones (pause after each for review)
+## 4. Centralized query keys + surgical invalidation
 
-1. **Schema + RLS** — migration only. Nothing UI. ← ship first.
-2. **Vendor session + portal shell + dashboard + RFQ inbox/detail (read-only).**
-3. **Vendor quote submission (QuickForm).**
-4. **Internal Quote Comparison + approve/reject/revise + activity.**
-5. **Vendor performance cache + UI cards.**
-6. **Notification engine + email adapter + admin ledger + cron route.**
-7. **Vendor orders/dispatches views + invitations UI.**
+New file `src/lib/query-invalidation.ts` exports one function per master entity:
 
-Each milestone ends with: build passes, tsgo clean, short status report (DB changes, routes, components, server fns, RLS, notification events, files touched, remaining milestones).
+```ts
+export function invalidateCustomer(qc, id?: string) {
+  qc.invalidateQueries({ queryKey: qk.customers.all });
+  if (id) qc.invalidateQueries({ queryKey: qk.customers.byId(id) });
+  // downstream selectors that filter by customer
+  qc.invalidateQueries({ queryKey: ["projects", "byCustomer", id] }, { exact: false });
+  qc.invalidateQueries({ queryKey: qk.search.global(""), }, { exact: false });
+}
+// invalidateProject, invalidateVendor, invalidateProduct, invalidateEnquiry,
+// invalidateRfq, invalidatePurchaseOrder, invalidateQuote, invalidateFollowup, …
+```
 
-## Guarantees
+Every mutation in the app (audited during this pass) uses these helpers instead of ad-hoc `invalidateQueries`. This gives us one place to add a downstream key when a new selector uses one.
 
-- No Module 1 file removed, renamed, or business-rule changed.
-- All migrations additive; no destructive SQL.
-- Strict TS, Zod validators on every server fn, TanStack Query for reads/mutations, RLS on every new table.
-- Vendor RLS uses SECURITY DEFINER helpers to prevent recursion and cross-vendor leaks.
+Add missing keys to `qk`:
+- `qk.followups.byEntity(type, id)`
+- `qk.followups.list(filters)` (replaces the current three-scope helper; keep old helper as a wrapper for one release)
+- `qk.recent(entityType)` (client-only, for EntityPicker recents)
+
+## 5. Cross-form context propagation
+
+Every `_authenticated/*/new.tsx` route already accepts URL search params. Standardize the propagation using `validateSearch` + Zod so the target form pre-selects the known entity and locks it read-only (with a "change" affordance):
+
+| From                    | To                       | Passed params                                    |
+| ----------------------- | ------------------------ | ------------------------------------------------ |
+| Customer detail         | `/projects/new`          | `customerId`                                     |
+| Customer detail         | `/enquiries/new`         | `customerId`                                     |
+| Project detail          | `/enquiries/new`         | `projectId`, `customerId`                        |
+| Project detail          | `/quotes/new`            | `projectId`, `customerId`                        |
+| Enquiry detail          | `/rfqs/…` (existing)     | already handled                                  |
+| Enquiry detail          | `/quotes/new`            | `enquiryId`, `projectId`, `customerId`           |
+| RFQ / vendor quote      | `/purchase-orders/new`   | `vendorId`, `vendorQuoteId`, `projectId`, `enquiryId` |
+| PO detail               | `/dispatch/new`          | `poId`, `vendorId`, `projectId`                  |
+| Dispatch detail         | `/invoices/new`          | `dispatchId`, `salesOrderId`, `projectId`, `customerId` |
+| Quote detail (approved) | `/invoices/new`          | `quoteId`, `projectId`, `customerId`             |
+| Sales order detail      | `/dispatch/new`          | `salesOrderId`, `projectId`, `customerId`        |
+
+Only wire up the ones missing today; the ones already implemented from Milestones 3/4 stay.
+
+## 6. Selectors migrated in this pass (Option 2)
+
+High-traffic forms only:
+
+- `enquiries/index.tsx` – customer, project filters
+- `enquiries/$enquiryId.tsx` – project change
+- `projects/index.tsx` – customer filter + new-project customer
+- `projects/$projectId.tsx` – customer change
+- `quotes/new.tsx` + `quotes/$quoteId.edit.tsx` – customer, project
+- `sales-orders/new.tsx` + edit – customer, project
+- `purchase-orders/new.tsx` + edit + `index.tsx` – vendor, project
+- `invoices/new.tsx` + edit + `index.tsx` – customer, project
+- `dispatch/new.tsx` + edit + `index.tsx` – sales-order, vendor
+- `payments/new.tsx` + edit – invoice, customer
+- `followups/index.tsx` – entity picker (new polymorphic UI)
+- `inventory/new.tsx` + edit – product
+
+Leave alone in this pass (open as needed):
+- Admin Users role selector (`<Select>` is fine — fixed enum).
+- Documents filter selects (enum filters).
+- Status / priority / channel selects across the app (enums).
+
+## 7. Verification workflow
+
+Playwright script that runs end-to-end using the injected admin session:
+
+1. Create Customer → confirm shows in Customers list without reload.
+2. From that customer, click "New project" → customer pre-selected & locked.
+3. From that project, "New enquiry" → project + customer pre-selected.
+4. From enquiry, send RFQ to a vendor → RFQ visible on Enquiry.
+5. As vendor (fresh context, seeded vendor user) submit a vendor quote → visible in Quote Comparison.
+6. Approve vendor quote → convert to PO from that vendor quote → vendor + project + quote pre-selected.
+7. Return to first customer detail → see the whole chain in the timeline.
+
+Screenshots at each step land under `/tmp/browser/workflow/`.
+
+---
+
+## Technical layout
+
+```text
+src/
+  components/
+    forms/
+      EntityPicker.tsx            (new)
+      QuickCreateDialog.tsx       (new)
+      pickers/
+        CustomerPicker.tsx        (thin wrapper)
+        ProjectPicker.tsx
+        VendorPicker.tsx
+        ProductPicker.tsx
+  lib/
+    query-keys.ts                 (extended)
+    query-invalidation.ts         (new)
+    recent/store.ts               (add entityType filter)
+    followups/
+      api.ts                      (polymorphic filters + create derivation)
+      schema.ts                   (entity_type/entity_id fields)
+    customers/api.ts              (widen listCustomers search columns)
+    vendors/api.ts                (widen listVendors search columns)
+    products/api.ts               (widen listProducts search columns)
+    projects/api.ts               (add search + customerId opts)
+supabase/migrations/
+  <ts>_followups_polymorphic.sql  (only schema change in this pass)
+```
+
+## Non-goals for this pass
+
+- No Milestone 5 work. Vendor Performance & Analytics stays queued.
+- No new tables besides the two nullable columns on `followups`.
+- No auth/RLS changes; picker only queries what the caller can already see.
+- No visual redesign — picker uses today's `Popover`/`Command` primitives.
+- No global search rewrite; the picker uses the existing list APIs, not `globalSearch`.
+
+## Completion report will include
+
+- Workflow fixes completed
+- Cache invalidations added (per entity)
+- Components standardized (list of migrated selectors)
+- Remaining issues discovered
+- Verification results (Playwright screenshots referenced)

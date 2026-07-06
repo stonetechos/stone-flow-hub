@@ -21,22 +21,55 @@ export async function listProjects(query = ""): Promise<ProjectWithCustomer[]> {
     .limit(200);
 
   const s = sanitizeSearch(query);
-  if (s) q = q.or(`name.ilike.%${s}%,project_code.ilike.%${s}%,city.ilike.%${s}%`);
+  if (s) {
+    q = q.or(
+      [
+        `name.ilike.%${s}%`,
+        `project_code.ilike.%${s}%`,
+        `city.ilike.%${s}%`,
+        `site_address.ilike.%${s}%`,
+      ].join(","),
+    );
+  }
 
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return (data ?? []) as ProjectWithCustomer[];
 }
 
-export async function listProjectsForPicker(): Promise<ProjectWithCustomer[]> {
-  const { data, error } = await supabase
+export interface ProjectPickerOptions {
+  query?: string;
+  customerId?: string;
+}
+
+export async function listProjectsForPicker(
+  opts: ProjectPickerOptions = {},
+): Promise<ProjectWithCustomer[]> {
+  let q = supabase
     .from("projects")
     .select(SELECT_WITH_CUSTOMER)
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(500);
+  if (opts.customerId) q = q.eq("customer_id", opts.customerId);
+  const s = sanitizeSearch(opts.query ?? "");
+  if (s) {
+    q = q.or(
+      [
+        `name.ilike.%${s}%`,
+        `project_code.ilike.%${s}%`,
+        `city.ilike.%${s}%`,
+        `site_address.ilike.%${s}%`,
+      ].join(","),
+    );
+  }
+  const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return (data ?? []) as ProjectWithCustomer[];
+}
+
+export async function listProjectsByCustomer(customerId: string): Promise<ProjectWithCustomer[]> {
+  return listProjectsForPicker({ customerId });
 }
 
 export async function getProject(id: string): Promise<ProjectWithCustomer | null> {

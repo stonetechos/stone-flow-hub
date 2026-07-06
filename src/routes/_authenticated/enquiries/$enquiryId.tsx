@@ -387,7 +387,7 @@ function SendRfqDialog({
   enquiryId: string;
 }) {
   const qc = useQueryClient();
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: listVendorsForPicker });
+  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
   const [selected, setSelected] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
