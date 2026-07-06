@@ -90,9 +90,11 @@ function InventoryPage() {
           title="No stock items yet"
           message="Add a stock item to start tracking inventory."
           action={
-            <Button onClick={() => nav({ to: "/inventory/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New stock item
-            </Button>
+            roles.canWrite ? (
+              <Button onClick={() => nav({ to: "/inventory/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New stock item
+              </Button>
+            ) : undefined
           }
         />
       ) : (
