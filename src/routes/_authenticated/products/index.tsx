@@ -265,7 +265,8 @@ function ProductFormDialog({
       editing ? updateProduct(editing.id, input) : createProduct(input),
     onSuccess: (row) => {
       toast.success(editing ? "Product updated" : `Product ${row.product_code} created`);
-      invalidateProduct(qc);
+      if (!editing) seedPickerCache(qc, "product", row);
+      invalidateProduct(qc, row.id);
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
