@@ -219,5 +219,23 @@ export const qk = {
   },
   procurementCalendar: (from: string, to: string) =>
     ["procurement_calendar", from, to] as const,
+  // Slice 6 — Installation & Field Service
+  installations: {
+    all: ["installations"] as const,
+    list: (q?: string, status?: string) => ["installations", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["installations", "byId", id] as const,
+    bySalesOrder: (id: string) => ["installations", "bySalesOrder", id] as const,
+    progress: (id: string) => ["installations", "progress", id] as const,
+    materials: (id: string) => ["installations", "materials", id] as const,
+    signoff: (id: string) => ["installations", "signoff", id] as const,
+    kpis: ["installations", "kpis"] as const,
+  },
+  installationTeams: {
+    all: ["installation_teams"] as const,
+    list: (q?: string) => ["installation_teams", "list", q ?? ""] as const,
+    picker: ["installation_teams", "picker"] as const,
+    byId: (id: string) => ["installation_teams", "byId", id] as const,
+  },
 } as const;
+
 
