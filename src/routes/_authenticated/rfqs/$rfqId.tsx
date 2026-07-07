@@ -131,24 +131,18 @@ function CompareRfqPage() {
         title={`Compare quotes · ${bundle.rfqNo}`}
         subtitle={`${bundle.projectName ?? "—"} · ${bundle.rows.length} vendor${bundle.rows.length === 1 ? "" : "s"} · ${submittedCount} submitted${bundle.dueDate ? ` · due ${bundle.dueDate}` : ""}`}
         actions={
-          approvedRow ? (
-            <Link
-              to="/purchase-orders/new"
-              search={{
-                vendor: approvedRow.vendor.id,
-                project: bundle.projectId ?? undefined,
-              }}
-            >
-              <Button size="sm">
-                <ShoppingCart className="mr-1.5 h-4 w-4" />
-                Convert to Purchase Order
-              </Button>
-            </Link>
+          approvedRow?.quote?.id ? (
+            <Button size="sm" onClick={() => setPoQuoteId(approvedRow.quote!.id)}>
+              <ShoppingCart className="mr-1.5 h-4 w-4" />
+              Create Purchase Order
+            </Button>
           ) : null
         }
       />
-      <div className="mb-4">
+      <div className="mb-4 space-y-4">
         <RfqVendorRecommendations rfqId={rfqId} />
+        <ProcurementIntelligencePanel rows={bundle.rows} />
+        <CustomerRequirementAttachments enquiryId={bundle.enquiryId} projectId={bundle.projectId} />
       </div>
 
       {bundle.rows.length === 0 ? (
