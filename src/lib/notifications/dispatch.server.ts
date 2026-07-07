@@ -204,16 +204,69 @@ export async function checkProvider(
     return { ok: true };
   }
   if (channel === "whatsapp") {
-    const token = pickSecret(s.whatsapp.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+    const c = resolveWaCfg(s.whatsapp);
+    const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
     if (!token) return { ok: false, reason: "Missing WHATSAPP_ACCESS_TOKEN secret" };
-    if (!s.whatsapp.phone_number_id) return { ok: false, reason: "Phone Number ID not configured" };
-    const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(s.whatsapp.phone_number_id)}?fields=display_phone_number,verified_name`;
+    if (!c.phone_number_id) return { ok: false, reason: "Phone Number ID not configured" };
+    const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}?fields=display_phone_number,verified_name`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (res.status === 401 || res.status === 403) return { ok: false, reason: "Invalid access token" };
+    if (res.status === 404) return { ok: false, reason: "Invalid Phone Number ID" };
     if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
     return { ok: true };
   }
   return { ok: false, reason: "Unsupported channel" };
+}
+
+/**
+ * Full WhatsApp connection test: validates the access token, phone number ID,
+ * WABA ID, and messaging endpoint reachability.
+ */
+export async function runWhatsappConnectionTest(
+  supabase: SupabaseClient,
+): Promise<{
+  ok: boolean;
+  checks: {
+    access_token: { ok: boolean; detail?: string };
+    phone_number_id: { ok: boolean; detail?: string };
+    business_account_id: { ok: boolean; detail?: string };
+    messaging_endpoint: { ok: boolean; detail?: string };
+  };
+}> {
+  const s = await getSettings(supabase);
+  const c = resolveWaCfg(s.whatsapp);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  const checks = {
+    access_token: { ok: false } as { ok: boolean; detail?: string },
+    phone_number_id: { ok: false } as { ok: boolean; detail?: string },
+    business_account_id: { ok: false } as { ok: boolean; detail?: string },
+    messaging_endpoint: { ok: false } as { ok: boolean; detail?: string },
+  };
+
+  if (!token) { checks.access_token.detail = "Missing WHATSAPP_ACCESS_TOKEN secret"; return { ok: false, checks }; }
+  checks.access_token.ok = true;
+
+  if (!c.phone_number_id) checks.phone_number_id.detail = "Not configured";
+  else {
+    const r = await fetch(`https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}?fields=display_phone_number,verified_name`, { headers: { Authorization: `Bearer ${token}` } });
+    const j = (await r.json().catch(() => ({}))) as { display_phone_number?: string; verified_name?: string; error?: { message?: string } };
+    if (r.status === 401 || r.status === 403) { checks.access_token.ok = false; checks.access_token.detail = "Invalid access token"; }
+    else if (r.status === 404) { checks.phone_number_id.detail = "Invalid Phone Number ID"; }
+    else if (!r.ok) { checks.phone_number_id.detail = j.error?.message || `HTTP ${r.status}`; }
+    else { checks.phone_number_id.ok = true; checks.phone_number_id.detail = `${j.verified_name ?? ""} ${j.display_phone_number ?? ""}`.trim(); checks.messaging_endpoint.ok = true; checks.messaging_endpoint.detail = "Reachable"; }
+  }
+
+  if (!c.business_account_id) checks.business_account_id.detail = "Not configured";
+  else {
+    const r = await fetch(`https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.business_account_id)}?fields=name,timezone_id`, { headers: { Authorization: `Bearer ${token}` } });
+    const j = (await r.json().catch(() => ({}))) as { name?: string; error?: { message?: string } };
+    if (r.status === 404) checks.business_account_id.detail = "Invalid WABA ID";
+    else if (!r.ok) checks.business_account_id.detail = j.error?.message || `HTTP ${r.status}`;
+    else { checks.business_account_id.ok = true; checks.business_account_id.detail = j.name ?? "OK"; }
+  }
+
+  const ok = checks.access_token.ok && checks.phone_number_id.ok && checks.business_account_id.ok && checks.messaging_endpoint.ok;
+  return { ok, checks };
 }
 
 /** Public: send a one-off test message honouring TEST/LIVE mode. */
