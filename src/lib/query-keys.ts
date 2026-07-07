@@ -58,6 +58,15 @@ export const qk = {
     byProject: (id: string) => ["quotes", "byProject", id] as const,
     items: (id: string) => ["quotes", "items", id] as const,
   },
+  estimates: {
+    all: ["estimates"] as const,
+    list: (q?: string) => ["estimates", "list", q ?? ""] as const,
+    byId: (id: string) => ["estimates", "byId", id] as const,
+    items: (id: string) => ["estimates", "items", id] as const,
+    components: (id: string) => ["estimates", "components", id] as const,
+    schedule: (id: string) => ["estimates", "schedule", id] as const,
+    documents: (id: string) => ["estimates", "documents", id] as const,
+  },
   invoices: {
     all: ["invoices"] as const,
     list: (q?: string) => ["invoices", "list", q ?? ""] as const,

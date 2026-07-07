@@ -1,170 +1,93 @@
+# Estimation Studio & Customer Receipts — Build Plan
 
-# Module 3 — Stone-Industry Redesign
+This is a large, multi-week expansion of the frozen v1.0.0-beta.1. It touches DB schema, ~40 new files, and two external integrations (WhatsApp Cloud API, email provider). I'll ship it in phases so each phase is independently testable and existing Quotes/Payments keep working untouched.
 
-Redesign Inventory / Manufacturing / Procurement for architectural natural stone instead of a generic stock ERP. Module 1 architecture (EntityPicker, centralized invalidation, design system, status system, progressive disclosure) is preserved.
+## Guiding rules
+- **Non-breaking**: existing `quotes`, `quote_items`, `payments`, `invoices` tables and routes stay as-is. New capabilities live in new tables and new routes (`/estimates`, `/receipts`). A feature flag toggles the new UI in nav.
+- Existing quotations remain viewable/editable via the current `/quotes` module.
+- All new tables get RLS + GRANT per project convention. All entity pickers use `EntityPicker`. All mutations use `src/lib/query-invalidation.ts`.
 
-## 1. Database — new masters
+---
 
-Every table follows the mandatory pattern: `CREATE TABLE` → `GRANT` → `ALTER … ENABLE RLS` → `CREATE POLICY`. All get `has_staff_access(auth.uid())` read/write policies unless noted. All get `created_at` / `updated_at` + `set_updated_at` trigger.
+## Phase 1 — Estimation Studio (data + UI)
 
-**Masters (new)**
+### DB (one migration)
+- `estimates` — supersedes-optional wrapper: `estimate_no`, `template` enum (`material_supply`, `material_install`, `custom_articles`, `custom_manufacturing`), project_id, customer_id, status, currency, valid_until, notes, terms, totals (material_cost, manufacturing_cost, installation_cost, adhesives, chemicals, sealer, packing, freight, gst_amount, margin_pct, margin_amount, subtotal, total), payment_schedule jsonb, created_by, timestamps, is_demo.
+- `estimate_items` — line items with `category` (material/manufacturing/installation/consumable/other), product_id, description, qty, unit, rate, tax_pct, line_total, sort_order.
+- `estimate_cost_components` — per-estimate overrides for adhesives/chemicals/sealer/packing/freight (rate + qty + total).
+- `estimate_payment_schedules` — label, pct, amount, due_offset_days.
+- `estimate_documents` — generated artifacts (customer_pdf, cost_sheet_pdf, whatsapp_text, email_html) with version history.
+- Trigger: recompute totals on item/component change (mirrors `recalc_quote_totals`).
+- Optional link: `estimates.source_quote_id` and `quotes.estimate_id` for migration of legacy quotes on demand.
 
-| Table | Purpose | Key columns |
-| --- | --- | --- |
-| `stone_types` | Sandstone / Marble / Onyx / Flexible Stone / … | code, name, density_kg_m3, water_absorption_pct, mohs_hardness, indoor_ok, outdoor_ok, slip_rating, weather_resistance, uv_resistance, recommended_applications[], notes |
-| `surface_finishes` | Polished, Honed, Bush Hammered, Leather, Antique, … | code, name, anti_slip, indoor_ok, outdoor_ok, cost_multiplier, lead_time_days_delta, applicable_stone_type_ids[] |
-| `edge_finishes` | Straight, Bevel, Bullnose, Half Bullnose, Chamfer, Rockface, Hand Chiselled, Machine Cut, Mitred | code, name, cost_multiplier, machine_required |
-| `product_families` | Stone Mosaic / Panel / Wall Cladding / Veneer / Slab / Custom / CNC Engraving / Mural / Inlay / Waterjet / Table Top / Stair / Countertop / Fountain / Sculpture / Architectural Feature | code, name, requires_artwork, requires_configurator, default_uom, icon |
-| `manufacturing_stages` | Raw Stone → Cutting → Calibration → Surface Finishing → Edge Processing → CNC Engraving → Waterjet → Inlay → QC → Packing → Dispatch | code, name, sort_order, default_owner (`vendor`/`employee`), typical_days |
+### API layer (`src/lib/estimates/`)
+- `schema.ts` — zod schemas per template (fields conditionally required).
+- `api.ts` — list/get/create/update/delete/status/duplicate; `convertEstimateToQuote` and `convertEstimateToInvoice` reuse existing RPC pattern.
+- `calc.ts` — pure calculation engine: takes items + components + margin + gst → totals; used both client-side (live preview) and server-side (persist).
+- `templates.ts` — template config: which categories/fields/components are visible per template.
 
-`stone_types`, `surface_finishes`, `edge_finishes`, `product_families`, `manufacturing_stages` are seeded in the same migration with the full lists from the spec.
+### Routes / UI
+- `/estimates` list, `/estimates/new?template=…`, `/estimates/$id`, `/estimates/$id/edit`.
+- New Estimate wizard: Step 1 pick template → Step 2 customer/project (EntityPicker) → Step 3 items + auto components → Step 4 margin/GST/schedule → Step 5 preview & save.
+- Live cost breakdown side panel using `calc.ts`.
+- Payment schedule presets 75/25, 80/20, custom (rows must sum to 100%).
+- "Convert to Quote/Invoice" buttons preserve existing downstream workflows.
 
-## 2. Products — extend, don't replace
+### Document generation
+- `src/lib/estimates/render/` — `customerPdf.ts`, `costSheetPdf.ts` (reuse `src/lib/pdf/generator.ts`), `whatsapp.ts`, `emailHtml.ts`.
+- Editable preview dialog before send; final text stored in `estimate_documents` with version.
 
-Extend `products` (do NOT create a parallel table) with columns nullable so existing rows are unaffected:
+---
 
-```
-family_id, stone_type_id, surface_finish_id, edge_finish_id,
-colour, origin, thickness_mm, size_length_mm, size_width_mm,
-weight_kg_per_unit, technical_specs jsonb,
-market_price_inr, last_purchase_price_inr, last_selling_price_inr,
-ai_tags text[]
-```
+## Phase 2 — Customer Receipts
 
-Existing `stone_type` / `finish` free-text columns are kept and back-filled from the new FK columns during migration; the app reads the FK first, falls back to the string.
+### DB
+- `receipts` — receipt_no, customer_id, received_at, amount, mode enum (`cash`,`upi`,`neft`,`rtgs`,`imps`,`cheque`,`card`,`gateway`), reference_no, bank_ref, notes, unallocated_amount, is_demo.
+- `receipt_allocations` — receipt_id, invoice_id, amount; trigger updates invoice `amount_paid`/`balance_due` (reuses `recalc_invoice_totals`).
+- View `customer_ledger_v` — union of invoices (debit) and receipts (credit) ordered by date, running balance.
 
-Add child tables:
-- `product_technical_docs` (product_id, file_object_id, kind: `datasheet|installation|care`)
-- `product_similar` (product_id, similar_product_id, weight) — future AI similarity
-- `product_price_history` (product_id, kind: `purchase|selling|market`, price_inr, currency, source_ref, captured_at)
+### API + UI
+- `src/lib/receipts/{schema,api}.ts`.
+- Routes `/receipts`, `/receipts/new`, `/receipts/$id`, and `/customers/$id` gets a Ledger tab + Unallocated Advances chip.
+- Multi-invoice allocation UI: pick customer → list open invoices with allocation inputs; remainder auto-stored as unallocated advance.
+- Existing `/payments` module remains for invoice-scoped quick payments; a helper migrates payments↔receipts as needed but no destructive change.
 
-## 3. Flexible Stone Veneer sub-profile
+---
 
-Rather than a separate table, a `product_veneer_specs` 1:1 child holds the veneer-only fields (sheet_size_length_mm, sheet_size_width_mm, backing_type, form `roll|sheet`, bend_radius_mm, fire_rating, weight_kg_m2, indoor_ok, outdoor_ok). Loaded eagerly when `family.code = 'STONE_VENEER'`.
+## Phase 3 — Notification queue + WhatsApp/Email delivery
 
-## 4. Manufacturing workflow
+### DB
+- `message_templates` — key, channel (`whatsapp`|`email`), estimate_template scope, subject, body (handlebars-ish `{{customer.name}}`), version, is_active.
+- `message_queue` — id, channel, to_address, template_key, rendered_subject, rendered_body, entity_type, entity_id, status (`pending`,`sending`,`sent`,`failed`,`retry`), attempts, last_error, provider_message_id, scheduled_at, sent_at.
+- `message_events` — provider webhook events (delivered/read/bounced).
 
-Two tables layered on top of Sales Orders (the point where the shop floor starts producing):
+### Server routes / functions
+- `createServerFn` `enqueueMessage`, `retryMessage`, `cancelMessage`.
+- `/api/public/webhooks/whatsapp` — verify Meta signature, update `message_events`.
+- `/api/public/webhooks/email` — Resend/SMTP bounce/complaint handler.
+- Cron via pg_cron → `/api/public/cron/process-messages` every minute; drains queue with backoff (max 5 attempts).
+- Secrets required (requested via `add_secret` when Phase 3 starts): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `RESEND_API_KEY` (or SMTP creds). Publishable/anon keys stay in code.
 
-- `production_orders` (id, code `MFG-####`, sales_order_id nullable, project_id, product_id, quantity, unit, status: `planned|in_progress|on_hold|completed|cancelled`, started_at, completed_at, notes)
-- `production_stages` (production_order_id, stage_id → `manufacturing_stages`, sort_order, assigned_vendor_id, assigned_user_id, planned_date, actual_completed_at, delay_reason, notes, sort_order)
-- `production_stage_files` (stage_id, file_object_id) — stage photos.
+### UI
+- Send dialog per estimate: choose channel → template preselected by estimate template → user edits rendered message → enqueue.
+- `/settings/messaging` — manage templates + view queue with retry.
+- Message history tab on Estimate detail (all versions, status pills).
 
-Trigger `next_code('MFG')`. Sales-order detail page gets a new "Production" tab that lists / creates production orders and stage timeline.
+---
 
-## 5. Procurement — vendor capabilities
+## Rollout
+1. Phase 1 behind nav flag; existing `/quotes` untouched.
+2. Phase 2 ships with cross-link from Estimates → Convert → Invoice → Receipt.
+3. Phase 3 last; without secrets, "Save & Copy" fallback still works.
 
-New matrix tables so RFQ routing and future scoring can filter vendors by capability:
+## Out of scope for this plan
+- Migrating existing quotes into estimates automatically (opt-in "Clone as Estimate" button only).
+- Rewriting the current Payments module UI.
 
-- `vendor_stone_types` (vendor_id, stone_type_id)
-- `vendor_finishes` (vendor_id, surface_finish_id)
-- `vendor_capabilities` (vendor_id, capability: enum `cnc|waterjet|inlay|flexible_stone|calibration|edge_processing|polishing`, notes)
-- Extend `vendors`: max_slab_size_mm_length, max_slab_size_mm_width, daily_capacity, lead_time_days, moq, quality_rating (1–5).
+## What I need from you before I start
+1. **Approve phased scope**, or tell me to compress phases.
+2. **Email provider**: Resend (recommended, built-in connector) or SMTP creds?
+3. **WhatsApp**: confirm you have a Meta WhatsApp Business Cloud app + phone number ID ready — I'll request the tokens via `add_secret` when Phase 3 begins.
+4. **Currency/GST**: assume INR + Indian GST (CGST/SGST/IGST split on invoice, single GST% on estimate line) — OK?
 
-Vendor detail page grows a Capabilities panel; RFQ create dialog filters vendor picker by `capability = 'cnc'` etc. when the enquiry has CNC items.
-
-## 6. Artworks & murals
-
-- `product_artworks` (product_id or production_order_id, file_object_id, kind: `stl|dxf|cad|ai|pdf|toolpath|render`, revision int, is_approved, approved_by, approved_at, notes)
-- `artwork_approvals` (artwork_id, customer_id, status: `pending|approved|rejected`, feedback, decided_at)
-
-Uses existing `file_objects` bucket — no new storage bucket.
-
-## 7. Custom Product Builder
-
-Single new route `src/routes/_authenticated/products/configure.tsx`. Stepper: Family → Stone → Finish → Edge → Thickness → Size → Engraving/Inlay (conditional on family) → Quantity → Packing → Price.
-
-On submit calls a new `configureProduct` server-fn that:
-1. Computes a canonical hash of the config
-2. If a product with that hash already exists (`products.config_hash`) → returns it
-3. Else inserts a new product with `family_id`, all FK columns filled, `is_custom = true`, `config_hash`, computed price = base × finish.cost_multiplier × edge.cost_multiplier × quantity.
-
-New column: `products.is_custom`, `products.config_hash`, `products.config_json`.
-
-Then `seedPickerCache(qc, "product", row)` + `invalidateProduct` so the new custom SKU is instantly available in Quote / SO line-item pickers.
-
-## 8. Inventory — stone-aware
-
-Extend `inventory_items` (already exists):
-- `lot_no`, `slab_no`, `block_no` (natural-stone traceability)
-- `size_length_mm`, `size_width_mm`, `thickness_mm`
-- `bundle_qty`, `bundle_uom`
-- `origin_country`, `arrival_date`
-
-New sub-list on Inventory detail: "Slab register" grouping items by lot.
-
-## 9. Routes added
-
-- `/masters/stone-types` (list + create/edit dialog)
-- `/masters/surface-finishes`
-- `/masters/edge-finishes`
-- `/masters/product-families`
-- `/masters/manufacturing-stages`
-- `/products/configure` — configurator
-- `/manufacturing` — production order list + Kanban by stage
-- `/manufacturing/$id` — production order detail w/ stage timeline
-- New tab on `/vendors/$id` — Capabilities
-- New tab on `/sales-orders/$id` — Production
-- New tab on `/products/$id` — Artworks, Price history, Similar
-
-All routes share `PageHeader`, `EmptyState`, `StatusPill`, `RowActions`, `EntityPicker`, `<Can>`.
-
-## 10. Components added
-
-- `<StoneTypePicker>`, `<SurfaceFinishPicker>`, `<EdgeFinishPicker>`, `<ProductFamilyPicker>` — thin wrappers around a new generic `<MasterPicker type="stone_type|...">` (extends EntityPicker registry instead of duplicating).
-- `<ProductionStageTimeline>` (reused on SO detail + Production detail).
-- `<CapabilityChips>` (vendor cards + RFQ picker).
-- `<ProductConfigurator>` (multi-step; reuses `QuickForm`).
-- `<ArtworkUploader>` + `<ArtworkRevisionList>` (reuses attachments panel).
-
-No duplicate pickers — the existing `EntityPicker` gains new registry entries; only routes that need master CRUD get their own list view.
-
-## 11. Centralized invalidation
-
-Add helpers to `src/lib/query-invalidation.ts`:
-`invalidateStoneType`, `invalidateSurfaceFinish`, `invalidateEdgeFinish`, `invalidateProductFamily`, `invalidateManufacturingStage`, `invalidateProductionOrder`, `invalidateVendorCapability`. Each also calls `bumpPickers` where relevant. New picker keys added to `bumpPickers`.
-
-## 12. Status system
-
-Register in `src/lib/status-transitions.ts`:
-- `production_order`: `planned → in_progress → completed`, `* → on_hold → in_progress`, `* → cancelled`
-- `artwork_approval`: `pending → approved | rejected`
-
-UI reuses `<StatusPill>`.
-
-## 13. AI foundation (data only)
-
-Columns added, no logic: `products.ai_tags text[]`, `product_similar`, `product_price_history`, `vendor_performance_cache` already exists. Populated by future workers.
-
-## Technical notes
-
-- Two migrations to keep review manageable:
-  1. Masters + product FK columns + seeds
-  2. Manufacturing + procurement matrices + artwork + configurator columns
-- After each migration, TS types regenerate and dependent code lands in a follow-up code batch.
-- All new tables are `has_staff_access`-gated. Vendors do NOT see manufacturing internals (no vendor-portal policies added).
-- No new storage bucket — reuse `stonetech-files`.
-- No changes to sales / invoicing / payments / dashboards.
-
-## Deliverables at completion
-
-- Updated ERD (mermaid diagram)
-- New tables listed above
-- Masters listed above
-- Manufacturing workflow doc (stages + who owns)
-- Procurement workflow doc (capability-filtered RFQ)
-- Inventory workflow (lot/slab register)
-- Components list
-- Routes list
-- Production readiness bump target: 74% → ~80% overall (Module 3 rewritten, still no notifications worker / vendor invitations)
-
-## Sequencing
-
-1. Migration 1 (masters + seeds + product FKs)
-2. Wire master pickers into product form and existing pickers
-3. Migration 2 (production + procurement matrices + artwork + configurator hash)
-4. Build manufacturing routes and production tab
-5. Build configurator route
-6. Build vendor capabilities tab + RFQ filtering
-7. Extend inventory schema + slab register
-8. Verify: `tsgo --noEmit`, spot-check key flows
+Reply "go" (plus answers to 2–4) and I'll start Phase 1 migration.

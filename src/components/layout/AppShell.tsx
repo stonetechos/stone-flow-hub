@@ -51,6 +51,7 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboa
   { to: "/followups", label: "Follow-ups", icon: CalendarClock },
   { to: "/tasks", label: "Tasks", icon: CheckSquare },
   { to: "/calendar", label: "Calendar", icon: Calendar },
+  { to: "/estimates", label: "Estimation Studio", icon: FileText },
   { to: "/quotes", label: "Quotations", icon: FileText },
   { to: "/sales-orders", label: "Sales Orders", icon: ShoppingCart },
   { to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardCheck },

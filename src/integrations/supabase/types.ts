@@ -732,6 +732,345 @@ export type Database = {
         }
         Relationships: []
       }
+      estimate_cost_components: {
+        Row: {
+          amount: number
+          estimate_id: string
+          id: string
+          is_demo: boolean
+          kind: string
+          label: string | null
+          quantity: number
+          sort_order: number
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          amount?: number
+          estimate_id: string
+          id?: string
+          is_demo?: boolean
+          kind: string
+          label?: string | null
+          quantity?: number
+          sort_order?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          amount?: number
+          estimate_id?: string
+          id?: string
+          is_demo?: boolean
+          kind?: string
+          label?: string | null
+          quantity?: number
+          sort_order?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_cost_components_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_documents: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          created_at: string
+          created_by: string | null
+          estimate_id: string
+          file_id: string | null
+          id: string
+          is_demo: boolean
+          kind: Database["public"]["Enums"]["estimate_document_kind"]
+          subject: string | null
+          version: number
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimate_id: string
+          file_id?: string | null
+          id?: string
+          is_demo?: boolean
+          kind: Database["public"]["Enums"]["estimate_document_kind"]
+          subject?: string | null
+          version?: number
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimate_id?: string
+          file_id?: string | null
+          id?: string
+          is_demo?: boolean
+          kind?: Database["public"]["Enums"]["estimate_document_kind"]
+          subject?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_documents_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_documents_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_items: {
+        Row: {
+          category: Database["public"]["Enums"]["estimate_item_category"]
+          description: string
+          estimate_id: string
+          id: string
+          is_demo: boolean
+          line_total: number
+          product_id: string | null
+          quantity: number
+          sort_order: number
+          tax_pct: number
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["estimate_item_category"]
+          description: string
+          estimate_id: string
+          id?: string
+          is_demo?: boolean
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["estimate_item_category"]
+          description?: string
+          estimate_id?: string
+          id?: string
+          is_demo?: boolean
+          line_total?: number
+          product_id?: string | null
+          quantity?: number
+          sort_order?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_items_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_payment_schedules: {
+        Row: {
+          amount: number
+          due_offset_days: number
+          estimate_id: string
+          id: string
+          is_demo: boolean
+          label: string
+          pct: number
+          sort_order: number
+        }
+        Insert: {
+          amount?: number
+          due_offset_days?: number
+          estimate_id: string
+          id?: string
+          is_demo?: boolean
+          label: string
+          pct: number
+          sort_order?: number
+        }
+        Update: {
+          amount?: number
+          due_offset_days?: number
+          estimate_id?: string
+          id?: string
+          is_demo?: boolean
+          label?: string
+          pct?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_payment_schedules_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          adhesives_cost: number
+          chemicals_cost: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string | null
+          enquiry_id: string | null
+          estimate_no: string
+          freight_cost: number
+          gst_amount: number
+          gst_pct: number
+          id: string
+          installation_cost: number
+          is_demo: boolean
+          manufacturing_cost: number
+          margin_amount: number
+          margin_pct: number
+          material_cost: number
+          notes: string | null
+          other_cost: number
+          packing_cost: number
+          payment_schedule_kind: string
+          project_id: string | null
+          sealer_cost: number
+          source_quote_id: string | null
+          status: Database["public"]["Enums"]["estimate_status"]
+          subtotal: number
+          template: Database["public"]["Enums"]["estimate_template"]
+          terms: string | null
+          total: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          adhesives_cost?: number
+          chemicals_cost?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id?: string | null
+          enquiry_id?: string | null
+          estimate_no?: string
+          freight_cost?: number
+          gst_amount?: number
+          gst_pct?: number
+          id?: string
+          installation_cost?: number
+          is_demo?: boolean
+          manufacturing_cost?: number
+          margin_amount?: number
+          margin_pct?: number
+          material_cost?: number
+          notes?: string | null
+          other_cost?: number
+          packing_cost?: number
+          payment_schedule_kind?: string
+          project_id?: string | null
+          sealer_cost?: number
+          source_quote_id?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          template: Database["public"]["Enums"]["estimate_template"]
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          adhesives_cost?: number
+          chemicals_cost?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id?: string | null
+          enquiry_id?: string | null
+          estimate_no?: string
+          freight_cost?: number
+          gst_amount?: number
+          gst_pct?: number
+          id?: string
+          installation_cost?: number
+          is_demo?: boolean
+          manufacturing_cost?: number
+          margin_amount?: number
+          margin_pct?: number
+          material_cost?: number
+          notes?: string | null
+          other_cost?: number
+          packing_cost?: number
+          payment_schedule_kind?: string
+          project_id?: string | null
+          sealer_cost?: number
+          source_quote_id?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          template?: Database["public"]["Enums"]["estimate_template"]
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -2954,6 +3293,7 @@ export type Database = {
           currency_code: string
           customer_id: string
           enquiry_id: string | null
+          estimate_id: string | null
           external_ref: string | null
           id: string
           is_demo: boolean
@@ -2977,6 +3317,7 @@ export type Database = {
           currency_code?: string
           customer_id: string
           enquiry_id?: string | null
+          estimate_id?: string | null
           external_ref?: string | null
           id?: string
           is_demo?: boolean
@@ -3000,6 +3341,7 @@ export type Database = {
           currency_code?: string
           customer_id?: string
           enquiry_id?: string | null
+          estimate_id?: string | null
           external_ref?: string | null
           id?: string
           is_demo?: boolean
@@ -3029,6 +3371,13 @@ export type Database = {
             columns: ["enquiry_id"]
             isOneToOne: false
             referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
             referencedColumns: ["id"]
           },
           {
@@ -4458,6 +4807,10 @@ export type Database = {
         Returns: string
       }
       next_code: { Args: { _prefix: string }; Returns: string }
+      recalc_estimate_totals: {
+        Args: { _estimate_id: string }
+        Returns: undefined
+      }
       recalc_invoice_totals: {
         Args: { _invoice_id: string }
         Returns: undefined
@@ -4594,6 +4947,30 @@ export type Database = {
         | "other"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
       enquiry_priority: "low" | "normal" | "high" | "urgent"
+      estimate_document_kind:
+        | "customer_pdf"
+        | "cost_sheet_pdf"
+        | "whatsapp_text"
+        | "email_html"
+      estimate_item_category:
+        | "material"
+        | "manufacturing"
+        | "installation"
+        | "consumable"
+        | "other"
+      estimate_status:
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "converted"
+        | "cancelled"
+      estimate_template:
+        | "material_supply"
+        | "material_install"
+        | "custom_articles"
+        | "custom_manufacturing"
       file_folder:
         | "product_image"
         | "site_image"
@@ -4957,6 +5334,34 @@ export const Constants = {
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
       enquiry_priority: ["low", "normal", "high", "urgent"],
+      estimate_document_kind: [
+        "customer_pdf",
+        "cost_sheet_pdf",
+        "whatsapp_text",
+        "email_html",
+      ],
+      estimate_item_category: [
+        "material",
+        "manufacturing",
+        "installation",
+        "consumable",
+        "other",
+      ],
+      estimate_status: [
+        "draft",
+        "sent",
+        "accepted",
+        "rejected",
+        "expired",
+        "converted",
+        "cancelled",
+      ],
+      estimate_template: [
+        "material_supply",
+        "material_install",
+        "custom_articles",
+        "custom_manufacturing",
+      ],
       file_folder: [
         "product_image",
         "site_image",
