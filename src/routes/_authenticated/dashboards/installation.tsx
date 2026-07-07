@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { qk } from "@/lib/query-keys";
 import { getInstallationKpis } from "@/lib/installation/dashboard";
-import { formatCurrencyINR } from "@/lib/format";
+import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/dashboards/installation")({
   ssr: false,
@@ -25,7 +25,7 @@ function InstallationDashboard() {
     { label: "Avg progress", value: `${Math.round(k?.avg_progress_pct ?? 0)}%`, icon: TrendingUp, to: "/installations" },
     { label: "Material shortages", value: String(k?.material_shortages ?? "—"), icon: PackageMinus, to: "/installations" },
     { label: "Sign-offs pending", value: String(k?.signoffs_pending ?? "—"), icon: PenSquare, to: "/installations" },
-    { label: "Installation revenue", value: formatCurrencyINR(Number(k?.installation_revenue ?? 0)), icon: IndianRupee },
+    { label: "Installation revenue", value: formatInr(Number(k?.installation_revenue ?? 0)), icon: IndianRupee },
   ];
 
   return (

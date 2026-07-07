@@ -54,7 +54,7 @@ function InstallationsPage() {
       </div>
       {query.isLoading ? <SkeletonTable /> :
         query.error ? <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} /> :
-        !query.data?.length ? <EmptyState icon={Wrench} title="No installations yet" description="Set a sales order supply scope to Supply + Installation to auto-create one." /> : (
+        !query.data?.length ? <EmptyState icon={<Wrench className="h-6 w-6" />} title="No installations yet" message="Set a sales order supply scope to Supply + Installation to auto-create one." /> : (
         <Table>
           <TableHeader>
             <TableRow>
@@ -80,7 +80,7 @@ function InstallationsPage() {
                   {r.planned_start_date ?? "—"} → {r.planned_end_date ?? "—"}
                 </TableCell>
                 <TableCell>{Number(r.progress_pct).toFixed(0)}%</TableCell>
-                <TableCell><StatusPill value={r.status} /></TableCell>
+                <TableCell><StatusPill status={r.status} /></TableCell>
               </TableRow>
             ))}
           </TableBody>

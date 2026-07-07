@@ -61,7 +61,7 @@ function TeamsPage() {
       </div>
       {query.isLoading ? <SkeletonTable /> :
        query.error ? <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} /> :
-       !query.data?.length ? <EmptyState icon={Users} title="No teams yet" description="Create a team to assign to installations." /> : (
+       !query.data?.length ? <EmptyState icon={<Users className="h-6 w-6" />} title="No teams yet" message="Create a team to assign to installations." /> : (
         <Card>
           <CardContent className="p-0">
             <Table>

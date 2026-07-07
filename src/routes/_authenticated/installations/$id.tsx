@@ -134,7 +134,7 @@ function InstallationDetailPage() {
         subtitle={`${r.customer?.name ?? ""} · ${r.project?.name ?? ""} · SO ${r.sales_order?.so_no ?? ""}`}
         actions={
           <div className="flex flex-wrap gap-2">
-            <StatusPill value={r.status} />
+            <StatusPill status={r.status} />
             <DailyProgressDialog installationId={id} />
             <RecordMaterialDialog installationId={id} />
             <SignoffDialog installationId={id} disabled={!!signoffQ.data} />
