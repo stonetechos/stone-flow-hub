@@ -6,7 +6,8 @@ export type AppSettingKey =
   | "notifications.email"
   | "notifications.whatsapp"
   | "notifications.sms"
-  | "payments.gateways";
+  | "payments.gateways"
+  | "communication.mode";
 
 export async function getAppSetting<T = Record<string, unknown>>(
   key: AppSettingKey,
