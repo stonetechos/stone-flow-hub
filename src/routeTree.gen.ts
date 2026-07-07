@@ -100,18 +100,27 @@ import { Route as AuthenticatedEstimatesEstimateIdRouteImport } from './routes/_
 import { Route as AuthenticatedEnquiriesEnquiryIdRouteImport } from './routes/_authenticated/enquiries/$enquiryId'
 import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenticated/dispatch/new'
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
+import { Route as AuthenticatedDashboardsVendorIntelligenceRouteImport } from './routes/_authenticated/dashboards/vendor-intelligence'
 import { Route as AuthenticatedDashboardsSalesRouteImport } from './routes/_authenticated/dashboards/sales'
 import { Route as AuthenticatedDashboardsPurchaseRouteImport } from './routes/_authenticated/dashboards/purchase'
+import { Route as AuthenticatedDashboardsProfitabilityRouteImport } from './routes/_authenticated/dashboards/profitability'
 import { Route as AuthenticatedDashboardsProductionRouteImport } from './routes/_authenticated/dashboards/production'
 import { Route as AuthenticatedDashboardsProcurementHealthRouteImport } from './routes/_authenticated/dashboards/procurement-health'
 import { Route as AuthenticatedDashboardsProcurementCalendarRouteImport } from './routes/_authenticated/dashboards/procurement-calendar'
 import { Route as AuthenticatedDashboardsProcurementRouteImport } from './routes/_authenticated/dashboards/procurement'
 import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/_authenticated/dashboards/management'
 import { Route as AuthenticatedDashboardsInstallationRouteImport } from './routes/_authenticated/dashboards/installation'
+import { Route as AuthenticatedDashboardsForecastRouteImport } from './routes/_authenticated/dashboards/forecast'
+import { Route as AuthenticatedDashboardsExecutiveRouteImport } from './routes/_authenticated/dashboards/executive'
+import { Route as AuthenticatedDashboardsCustomerIntelligenceRouteImport } from './routes/_authenticated/dashboards/customer-intelligence'
+import { Route as AuthenticatedDashboardsControlCentreRouteImport } from './routes/_authenticated/dashboards/control-centre'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
+import { Route as AuthenticatedDashboardsBusinessIntelligenceRouteImport } from './routes/_authenticated/dashboards/business-intelligence'
+import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
 import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './routes/_authenticated/vendors/$vendorId.timeline'
 import { Route as AuthenticatedVendorsVendorIdLedgerRouteImport } from './routes/_authenticated/vendors/$vendorId.ledger'
@@ -643,6 +652,12 @@ const AuthenticatedDispatchIdRoute = AuthenticatedDispatchIdRouteImport.update({
   path: '/dispatch/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardsVendorIntelligenceRoute =
+  AuthenticatedDashboardsVendorIntelligenceRouteImport.update({
+    id: '/dashboards/vendor-intelligence',
+    path: '/dashboards/vendor-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsSalesRoute =
   AuthenticatedDashboardsSalesRouteImport.update({
     id: '/dashboards/sales',
@@ -653,6 +668,12 @@ const AuthenticatedDashboardsPurchaseRoute =
   AuthenticatedDashboardsPurchaseRouteImport.update({
     id: '/dashboards/purchase',
     path: '/dashboards/purchase',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsProfitabilityRoute =
+  AuthenticatedDashboardsProfitabilityRouteImport.update({
+    id: '/dashboards/profitability',
+    path: '/dashboards/profitability',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardsProductionRoute =
@@ -691,10 +712,46 @@ const AuthenticatedDashboardsInstallationRoute =
     path: '/dashboards/installation',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsForecastRoute =
+  AuthenticatedDashboardsForecastRouteImport.update({
+    id: '/dashboards/forecast',
+    path: '/dashboards/forecast',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsExecutiveRoute =
+  AuthenticatedDashboardsExecutiveRouteImport.update({
+    id: '/dashboards/executive',
+    path: '/dashboards/executive',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsCustomerIntelligenceRoute =
+  AuthenticatedDashboardsCustomerIntelligenceRouteImport.update({
+    id: '/dashboards/customer-intelligence',
+    path: '/dashboards/customer-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsControlCentreRoute =
+  AuthenticatedDashboardsControlCentreRouteImport.update({
+    id: '/dashboards/control-centre',
+    path: '/dashboards/control-centre',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsCollectionsRoute =
   AuthenticatedDashboardsCollectionsRouteImport.update({
     id: '/dashboards/collections',
     path: '/dashboards/collections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsBusinessIntelligenceRoute =
+  AuthenticatedDashboardsBusinessIntelligenceRouteImport.update({
+    id: '/dashboards/business-intelligence',
+    path: '/dashboards/business-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsAnalyticsRoute =
+  AuthenticatedDashboardsAnalyticsRouteImport.update({
+    id: '/dashboards/analytics',
+    path: '/dashboards/analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCustomersCustomerIdRoute =
@@ -712,6 +769,12 @@ const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
     path: '/api/public/webhooks/razorpay',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksDailyDigestRoute =
+  ApiPublicHooksDailyDigestRouteImport.update({
+    id: '/api/public/hooks/daily-digest',
+    path: '/api/public/hooks/daily-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksCustomerPaymentRemindersRoute =
@@ -801,15 +864,23 @@ export interface FileRoutesByFullPath {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
+  '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
+  '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
   '/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
   '/dashboards/procurement-health': typeof AuthenticatedDashboardsProcurementHealthRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/dashboards/profitability': typeof AuthenticatedDashboardsProfitabilityRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
+  '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -894,6 +965,7 @@ export interface FileRoutesByFullPath {
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
@@ -916,15 +988,23 @@ export interface FileRoutesByTo {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
+  '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
+  '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
   '/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
   '/dashboards/procurement-health': typeof AuthenticatedDashboardsProcurementHealthRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/dashboards/profitability': typeof AuthenticatedDashboardsProfitabilityRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
+  '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -1009,6 +1089,7 @@ export interface FileRoutesByTo {
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
@@ -1033,15 +1114,23 @@ export interface FileRoutesById {
   '/vendor/profile': typeof VendorProfileRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/_authenticated/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/_authenticated/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
+  '/_authenticated/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/_authenticated/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
+  '/_authenticated/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
   '/_authenticated/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/_authenticated/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/_authenticated/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
   '/_authenticated/dashboards/procurement-health': typeof AuthenticatedDashboardsProcurementHealthRoute
   '/_authenticated/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
+  '/_authenticated/dashboards/profitability': typeof AuthenticatedDashboardsProfitabilityRoute
   '/_authenticated/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/_authenticated/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
+  '/_authenticated/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/_authenticated/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/_authenticated/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -1126,6 +1215,7 @@ export interface FileRoutesById {
   '/_authenticated/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/_authenticated/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
@@ -1150,15 +1240,23 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/analytics'
+    | '/dashboards/business-intelligence'
     | '/dashboards/collections'
+    | '/dashboards/control-centre'
+    | '/dashboards/customer-intelligence'
+    | '/dashboards/executive'
+    | '/dashboards/forecast'
     | '/dashboards/installation'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
     | '/dashboards/procurement-health'
     | '/dashboards/production'
+    | '/dashboards/profitability'
     | '/dashboards/purchase'
     | '/dashboards/sales'
+    | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -1243,6 +1341,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1265,15 +1364,23 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/analytics'
+    | '/dashboards/business-intelligence'
     | '/dashboards/collections'
+    | '/dashboards/control-centre'
+    | '/dashboards/customer-intelligence'
+    | '/dashboards/executive'
+    | '/dashboards/forecast'
     | '/dashboards/installation'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
     | '/dashboards/procurement-health'
     | '/dashboards/production'
+    | '/dashboards/profitability'
     | '/dashboards/purchase'
     | '/dashboards/sales'
+    | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
@@ -1358,6 +1465,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/webhooks/razorpay'
   id:
     | '__root__'
@@ -1381,15 +1489,23 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
+    | '/_authenticated/dashboards/analytics'
+    | '/_authenticated/dashboards/business-intelligence'
     | '/_authenticated/dashboards/collections'
+    | '/_authenticated/dashboards/control-centre'
+    | '/_authenticated/dashboards/customer-intelligence'
+    | '/_authenticated/dashboards/executive'
+    | '/_authenticated/dashboards/forecast'
     | '/_authenticated/dashboards/installation'
     | '/_authenticated/dashboards/management'
     | '/_authenticated/dashboards/procurement'
     | '/_authenticated/dashboards/procurement-calendar'
     | '/_authenticated/dashboards/procurement-health'
     | '/_authenticated/dashboards/production'
+    | '/_authenticated/dashboards/profitability'
     | '/_authenticated/dashboards/purchase'
     | '/_authenticated/dashboards/sales'
+    | '/_authenticated/dashboards/vendor-intelligence'
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/new'
     | '/_authenticated/enquiries/$enquiryId'
@@ -1474,6 +1590,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendors/$vendorId/ledger'
     | '/_authenticated/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
@@ -1484,6 +1601,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
+  ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -2126,6 +2244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDispatchIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/vendor-intelligence': {
+      id: '/_authenticated/dashboards/vendor-intelligence'
+      path: '/dashboards/vendor-intelligence'
+      fullPath: '/dashboards/vendor-intelligence'
+      preLoaderRoute: typeof AuthenticatedDashboardsVendorIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/sales': {
       id: '/_authenticated/dashboards/sales'
       path: '/dashboards/sales'
@@ -2138,6 +2263,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboards/purchase'
       fullPath: '/dashboards/purchase'
       preLoaderRoute: typeof AuthenticatedDashboardsPurchaseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/profitability': {
+      id: '/_authenticated/dashboards/profitability'
+      path: '/dashboards/profitability'
+      fullPath: '/dashboards/profitability'
+      preLoaderRoute: typeof AuthenticatedDashboardsProfitabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboards/production': {
@@ -2182,11 +2314,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsInstallationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/forecast': {
+      id: '/_authenticated/dashboards/forecast'
+      path: '/dashboards/forecast'
+      fullPath: '/dashboards/forecast'
+      preLoaderRoute: typeof AuthenticatedDashboardsForecastRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/executive': {
+      id: '/_authenticated/dashboards/executive'
+      path: '/dashboards/executive'
+      fullPath: '/dashboards/executive'
+      preLoaderRoute: typeof AuthenticatedDashboardsExecutiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/customer-intelligence': {
+      id: '/_authenticated/dashboards/customer-intelligence'
+      path: '/dashboards/customer-intelligence'
+      fullPath: '/dashboards/customer-intelligence'
+      preLoaderRoute: typeof AuthenticatedDashboardsCustomerIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/control-centre': {
+      id: '/_authenticated/dashboards/control-centre'
+      path: '/dashboards/control-centre'
+      fullPath: '/dashboards/control-centre'
+      preLoaderRoute: typeof AuthenticatedDashboardsControlCentreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/collections': {
       id: '/_authenticated/dashboards/collections'
       path: '/dashboards/collections'
       fullPath: '/dashboards/collections'
       preLoaderRoute: typeof AuthenticatedDashboardsCollectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/business-intelligence': {
+      id: '/_authenticated/dashboards/business-intelligence'
+      path: '/dashboards/business-intelligence'
+      fullPath: '/dashboards/business-intelligence'
+      preLoaderRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/analytics': {
+      id: '/_authenticated/dashboards/analytics'
+      path: '/dashboards/analytics'
+      fullPath: '/dashboards/analytics'
+      preLoaderRoute: typeof AuthenticatedDashboardsAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers/$customerId': {
@@ -2208,6 +2382,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/webhooks/razorpay'
       fullPath: '/api/public/webhooks/razorpay'
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/daily-digest': {
+      id: '/api/public/hooks/daily-digest'
+      path: '/api/public/hooks/daily-digest'
+      fullPath: '/api/public/hooks/daily-digest'
+      preLoaderRoute: typeof ApiPublicHooksDailyDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/customer-payment-reminders': {
@@ -2437,15 +2618,23 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  AuthenticatedDashboardsAnalyticsRoute: typeof AuthenticatedDashboardsAnalyticsRoute
+  AuthenticatedDashboardsBusinessIntelligenceRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
+  AuthenticatedDashboardsControlCentreRoute: typeof AuthenticatedDashboardsControlCentreRoute
+  AuthenticatedDashboardsCustomerIntelligenceRoute: typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  AuthenticatedDashboardsExecutiveRoute: typeof AuthenticatedDashboardsExecutiveRoute
+  AuthenticatedDashboardsForecastRoute: typeof AuthenticatedDashboardsForecastRoute
   AuthenticatedDashboardsInstallationRoute: typeof AuthenticatedDashboardsInstallationRoute
   AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
   AuthenticatedDashboardsProcurementRoute: typeof AuthenticatedDashboardsProcurementRoute
   AuthenticatedDashboardsProcurementCalendarRoute: typeof AuthenticatedDashboardsProcurementCalendarRoute
   AuthenticatedDashboardsProcurementHealthRoute: typeof AuthenticatedDashboardsProcurementHealthRoute
   AuthenticatedDashboardsProductionRoute: typeof AuthenticatedDashboardsProductionRoute
+  AuthenticatedDashboardsProfitabilityRoute: typeof AuthenticatedDashboardsProfitabilityRoute
   AuthenticatedDashboardsPurchaseRoute: typeof AuthenticatedDashboardsPurchaseRoute
   AuthenticatedDashboardsSalesRoute: typeof AuthenticatedDashboardsSalesRoute
+  AuthenticatedDashboardsVendorIntelligenceRoute: typeof AuthenticatedDashboardsVendorIntelligenceRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
   AuthenticatedDispatchNewRoute: typeof AuthenticatedDispatchNewRoute
   AuthenticatedEnquiriesEnquiryIdRoute: typeof AuthenticatedEnquiriesEnquiryIdRoute
@@ -2534,8 +2723,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedCustomersCustomerIdRoute:
     AuthenticatedCustomersCustomerIdRouteWithChildren,
+  AuthenticatedDashboardsAnalyticsRoute: AuthenticatedDashboardsAnalyticsRoute,
+  AuthenticatedDashboardsBusinessIntelligenceRoute:
+    AuthenticatedDashboardsBusinessIntelligenceRoute,
   AuthenticatedDashboardsCollectionsRoute:
     AuthenticatedDashboardsCollectionsRoute,
+  AuthenticatedDashboardsControlCentreRoute:
+    AuthenticatedDashboardsControlCentreRoute,
+  AuthenticatedDashboardsCustomerIntelligenceRoute:
+    AuthenticatedDashboardsCustomerIntelligenceRoute,
+  AuthenticatedDashboardsExecutiveRoute: AuthenticatedDashboardsExecutiveRoute,
+  AuthenticatedDashboardsForecastRoute: AuthenticatedDashboardsForecastRoute,
   AuthenticatedDashboardsInstallationRoute:
     AuthenticatedDashboardsInstallationRoute,
   AuthenticatedDashboardsManagementRoute:
@@ -2548,8 +2746,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardsProcurementHealthRoute,
   AuthenticatedDashboardsProductionRoute:
     AuthenticatedDashboardsProductionRoute,
+  AuthenticatedDashboardsProfitabilityRoute:
+    AuthenticatedDashboardsProfitabilityRoute,
   AuthenticatedDashboardsPurchaseRoute: AuthenticatedDashboardsPurchaseRoute,
   AuthenticatedDashboardsSalesRoute: AuthenticatedDashboardsSalesRoute,
+  AuthenticatedDashboardsVendorIntelligenceRoute:
+    AuthenticatedDashboardsVendorIntelligenceRoute,
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRouteWithChildren,
   AuthenticatedDispatchNewRoute: AuthenticatedDispatchNewRoute,
   AuthenticatedEnquiriesEnquiryIdRoute: AuthenticatedEnquiriesEnquiryIdRoute,
@@ -2662,6 +2864,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayLinkIdRoute: PayLinkIdRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,
+  ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport

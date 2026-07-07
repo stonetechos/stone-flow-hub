@@ -9,6 +9,12 @@ import {
   Sparkles,
   CircleDollarSign,
   Wrench,
+  Crown,
+  LineChart as LineChartIcon,
+  Wallet,
+  Users,
+  AlertTriangle,
+  Gauge,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -20,6 +26,54 @@ export const Route = createFileRoute("/_authenticated/dashboards/")({
 });
 
 const ROLES = [
+  {
+    to: "/dashboards/executive",
+    title: "Executive",
+    desc: "Owner KPI cockpit — pipeline, cash, ops, deep-links to every module.",
+    icon: Crown,
+  },
+  {
+    to: "/dashboards/control-centre",
+    title: "Control Centre",
+    desc: "One-screen: sales, finance, procurement, production, installation, alerts.",
+    icon: Gauge,
+  },
+  {
+    to: "/dashboards/analytics",
+    title: "Business Analytics",
+    desc: "Interactive charts — trends, aging, revenue mix, custom date range.",
+    icon: LineChartIcon,
+  },
+  {
+    to: "/dashboards/business-intelligence",
+    title: "AI Business Intelligence",
+    desc: "Daily / weekly / monthly briefs with sourced numbers and actions.",
+    icon: Sparkles,
+  },
+  {
+    to: "/dashboards/forecast",
+    title: "Cash Forecast",
+    desc: "Inflow, outflow, net position with confidence over 30–180 days.",
+    icon: Wallet,
+  },
+  {
+    to: "/dashboards/profitability",
+    title: "Project Profitability",
+    desc: "Per-project P&L: estimate, sales, costs, gross, net, margin %.",
+    icon: Briefcase,
+  },
+  {
+    to: "/dashboards/customer-intelligence",
+    title: "Customer Intelligence",
+    desc: "Top, profitable, repeat, at-risk, inactive, potential high-value.",
+    icon: Users,
+  },
+  {
+    to: "/dashboards/vendor-intelligence",
+    title: "Vendor Intelligence",
+    desc: "Reliability, quality, cost, risk, dependency analysis.",
+    icon: AlertTriangle,
+  },
   {
     to: "/dashboards/sales",
     title: "Sales",
