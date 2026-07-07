@@ -18,7 +18,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getAppSetting, upsertAppSetting } from "@/lib/app-settings/api";
 import { invalidateAppSetting } from "@/lib/query-invalidation";
-import { checkProviderStatus, sendTestMessage } from "@/lib/notifications/dispatch.functions";
+import { checkProviderStatus, sendTestMessage, sendWhatsappTestTemplate, runWhatsappConnectionTest, getWhatsappHealth } from "@/lib/notifications/dispatch.functions";
 
 export const Route = createFileRoute("/_authenticated/notification-settings")({
   ssr: false,
