@@ -365,6 +365,13 @@ export async function dispatchQueueBatch(
         provider_ref: res.providerMessageId ?? null,
         payload: (res.raw ?? {}) as never,
       });
+      if (m.channel === "whatsapp") {
+        await updateWhatsappStatus(supabase, {
+          last_send_at: new Date().toISOString(),
+          last_send_to: redirectedTo,
+          last_send_wamid: res.providerMessageId ?? undefined,
+        });
+      }
     } else {
       failed++;
       const done = attempts >= m.max_attempts;
