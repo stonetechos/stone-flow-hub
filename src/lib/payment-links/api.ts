@@ -43,19 +43,23 @@ export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<
   // Manual mode: the ERP itself hosts /pay/$token and shows bank/UPI details.
   // Gateway providers would exchange the token for a hosted URL — implemented
   // lazily inside their adapters once secrets are configured.
-  const { data, error } = await supabase
-    .from("payment_links")
+  const { data, error } = await (supabase.from as unknown as (t: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    insert: (v: unknown) => any;
+  })("payment_links")
     .insert({
       provider: input.provider,
       entity_type: input.entityType,
       entity_id: input.entityId,
+      invoice_id: input.entityType === "invoice" ? input.entityId : null,
       amount: input.amount,
       currency: input.currency ?? "INR",
+      currency_code: input.currency ?? "INR",
       token,
-      url,
+      short_url: url,
       status: "created",
       expires_at: input.expiresAt ?? null,
-      meta: { ...(input.meta ?? {}), customer_id: input.customerId ?? null } as never,
+      meta: { ...(input.meta ?? {}), customer_id: input.customerId ?? null, url },
     })
     .select("*")
     .single();
