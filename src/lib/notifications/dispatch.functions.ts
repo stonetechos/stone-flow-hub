@@ -78,11 +78,6 @@ export const sendWhatsappTestTemplate = createServerFn({ method: "POST" })
     await assertAdmin({ supabase: context.supabase, userId: context.userId });
     const supabase = context.supabase as never as import("@supabase/supabase-js").SupabaseClient;
     const { sendWhatsappTemplate, updateWhatsappStatus } = await import("./dispatch.server");
-    const { data: settings } = await supabase.from("app_settings").select("value").in("key", ["notifications.whatsapp", "communication.mode"]);
-    const map = new Map<string, unknown>();
-    for (const r of (settings ?? []) as Array<{ value: unknown }>) {
-      // key not returned in single select; re-query per key for correctness
-    }
     const wa = (await supabase.from("app_settings").select("value").eq("key", "notifications.whatsapp").maybeSingle()).data?.value ?? {};
     const mode = ((await supabase.from("app_settings").select("value").eq("key", "communication.mode").maybeSingle()).data?.value ?? { mode: "test" }) as { mode?: string; test_phone?: string };
     const to = (mode.mode ?? "test") === "test" ? (mode.test_phone || data.to) : data.to;
