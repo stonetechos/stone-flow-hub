@@ -153,6 +153,8 @@ function SalesOrderDetailPage() {
             </CardContent>
           </Card>
           <ProductionOrdersPanel salesOrderId={r.id} />
+          <SalesOrderInstallationPanel salesOrderId={r.id} />
+
           <NotesPanel
             table="sales_orders"
             id={r.id}
