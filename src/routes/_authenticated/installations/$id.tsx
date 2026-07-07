@@ -138,26 +138,30 @@ function InstallationDetailPage() {
             <DailyProgressDialog installationId={id} />
             <RecordMaterialDialog installationId={id} />
             <SignoffDialog installationId={id} disabled={!!signoffQ.data} />
-            {signoffQ.data && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  printCompletionCertificate({
-                    installation_no: r.installation_no ?? "",
-                    customer_name: r.customer?.name ?? "",
-                    project_name: r.project?.name ?? null,
-                    site_address: r.site_address,
-                    actual_start_date: r.actual_start_date,
-                    actual_end_date: r.actual_end_date,
-                    rating: signoffQ.data.customer_rating,
-                    remarks: signoffQ.data.remarks,
-                  })
-                }
-              >
-                <Printer className="mr-1 h-4 w-4" /> Certificate
-              </Button>
-            )}
+            {signoffQ.data && (() => {
+              const so = signoffQ.data;
+              return (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    printCompletionCertificate({
+                      installation_no: r.installation_no ?? "",
+                      customer_name: r.customer?.name ?? "",
+                      project_name: r.project?.name ?? null,
+                      site_address: r.site_address,
+                      actual_start_date: r.actual_start_date,
+                      actual_end_date: r.actual_end_date,
+                      rating: so.customer_rating,
+                      remarks: so.remarks,
+                    })
+                  }
+                >
+                  <Printer className="mr-1 h-4 w-4" /> Certificate
+                </Button>
+              );
+            })()}
+
           </div>
         }
       />
