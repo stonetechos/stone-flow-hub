@@ -4,8 +4,13 @@ export const PAYMENT_METHODS = [
   "razorpay",
   "bank_transfer",
   "upi_manual",
+  "neft",
+  "rtgs",
+  "imps",
   "cheque",
   "cash",
+  "card",
+  "gateway",
   "other",
 ] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];

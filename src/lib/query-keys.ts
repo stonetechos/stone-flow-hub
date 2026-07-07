@@ -102,6 +102,33 @@ export const qk = {
     list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,
     byId: (id: string) => ["paymentsAll", "byId", id] as const,
   },
+  receipts: {
+    all: ["receipts"] as const,
+    list: (q?: string) => ["receipts", "list", q ?? ""] as const,
+    byId: (id: string) => ["receipts", "byId", id] as const,
+    byCustomer: (id: string) => ["receipts", "byCustomer", id] as const,
+    allocations: (id: string) => ["receipts", "allocations", id] as const,
+    openInvoices: (customerId: string) => ["receipts", "openInvoices", customerId] as const,
+  },
+  customerLedger: {
+    byCustomer: (id: string) => ["customer_ledger", id] as const,
+    summary: (id: string) => ["customer_ledger", "summary", id] as const,
+  },
+  messages: {
+    all: ["messages"] as const,
+    list: (q?: string, channel?: string) => ["messages", "list", q ?? "", channel ?? ""] as const,
+    byId: (id: string) => ["messages", "byId", id] as const,
+    byEntity: (type: string, id: string) => ["messages", "byEntity", type, id] as const,
+    events: (id: string) => ["messages", "events", id] as const,
+  },
+  messageTemplates: {
+    all: ["message_templates"] as const,
+    byCode: (code: string) => ["message_templates", "byCode", code] as const,
+  },
+  appSettings: {
+    all: ["app_settings"] as const,
+    byKey: (key: string) => ["app_settings", "byKey", key] as const,
+  },
   tags: ["tags"] as const,
   productCategories: ["product_categories"] as const,
 

@@ -19,6 +19,8 @@ import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedNotificationSettingsRouteImport } from './routes/_authenticated/notification-settings'
+import { Route as AuthenticatedMessageTemplatesRouteImport } from './routes/_authenticated/message-templates'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -29,11 +31,13 @@ import { Route as VendorOrdersIndexRouteImport } from './routes/vendor/orders/in
 import { Route as AuthenticatedVendorsIndexRouteImport } from './routes/_authenticated/vendors/index'
 import { Route as AuthenticatedSalesOrdersIndexRouteImport } from './routes/_authenticated/sales-orders/index'
 import { Route as AuthenticatedRfqsIndexRouteImport } from './routes/_authenticated/rfqs/index'
+import { Route as AuthenticatedReceiptsIndexRouteImport } from './routes/_authenticated/receipts/index'
 import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes/index'
 import { Route as AuthenticatedPurchaseOrdersIndexRouteImport } from './routes/_authenticated/purchase-orders/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
+import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages/index'
 import { Route as AuthenticatedMastersIndexRouteImport } from './routes/_authenticated/masters/index'
 import { Route as AuthenticatedManufacturingIndexRouteImport } from './routes/_authenticated/manufacturing/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
@@ -49,6 +53,8 @@ import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders/new'
 import { Route as AuthenticatedSalesOrdersIdRouteImport } from './routes/_authenticated/sales-orders/$id'
 import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authenticated/rfqs/$rfqId'
+import { Route as AuthenticatedReceiptsNewRouteImport } from './routes/_authenticated/receipts/new'
+import { Route as AuthenticatedReceiptsReceiptIdRouteImport } from './routes/_authenticated/receipts/$receiptId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes/new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes/$quoteId'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders/new'
@@ -72,6 +78,7 @@ import { Route as AuthenticatedMastersManufacturingStagesRouteImport } from './r
 import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
 import { Route as AuthenticatedManufacturingIdRouteImport } from './routes/_authenticated/manufacturing/$id'
+import { Route as AuthenticatedLedgerCustomerIdRouteImport } from './routes/_authenticated/ledger/$customerId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventorySlabsRouteImport } from './routes/_authenticated/inventory/slabs'
@@ -148,6 +155,18 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedNotificationSettingsRoute =
+  AuthenticatedNotificationSettingsRouteImport.update({
+    id: '/notification-settings',
+    path: '/notification-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMessageTemplatesRoute =
+  AuthenticatedMessageTemplatesRouteImport.update({
+    id: '/message-templates',
+    path: '/message-templates',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFavoritesRoute = AuthenticatedFavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -200,6 +219,12 @@ const AuthenticatedRfqsIndexRoute = AuthenticatedRfqsIndexRouteImport.update({
   path: '/rfqs/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReceiptsIndexRoute =
+  AuthenticatedReceiptsIndexRouteImport.update({
+    id: '/receipts/',
+    path: '/receipts/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesIndexRoute =
   AuthenticatedQuotesIndexRouteImport.update({
     id: '/quotes/',
@@ -228,6 +253,12 @@ const AuthenticatedPaymentsIndexRoute =
   AuthenticatedPaymentsIndexRouteImport.update({
     id: '/payments/',
     path: '/payments/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMessagesIndexRoute =
+  AuthenticatedMessagesIndexRouteImport.update({
+    id: '/messages/',
+    path: '/messages/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMastersIndexRoute =
@@ -318,6 +349,18 @@ const AuthenticatedRfqsRfqIdRoute = AuthenticatedRfqsRfqIdRouteImport.update({
   path: '/rfqs/$rfqId',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReceiptsNewRoute =
+  AuthenticatedReceiptsNewRouteImport.update({
+    id: '/receipts/new',
+    path: '/receipts/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReceiptsReceiptIdRoute =
+  AuthenticatedReceiptsReceiptIdRouteImport.update({
+    id: '/receipts/$receiptId',
+    path: '/receipts/$receiptId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   id: '/quotes/new',
   path: '/quotes/new',
@@ -452,6 +495,12 @@ const AuthenticatedManufacturingIdRoute =
   AuthenticatedManufacturingIdRouteImport.update({
     id: '/manufacturing/$id',
     path: '/manufacturing/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLedgerCustomerIdRoute =
+  AuthenticatedLedgerCustomerIdRouteImport.update({
+    id: '/ledger/$customerId',
+    path: '/ledger/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInvoicesNewRoute =
@@ -612,6 +661,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -635,6 +686,7 @@ export interface FileRoutesByFullPath {
   '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -658,6 +710,8 @@ export interface FileRoutesByFullPath {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
+  '/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -673,11 +727,13 @@ export interface FileRoutesByFullPath {
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
   '/masters/': typeof AuthenticatedMastersIndexRoute
+  '/messages/': typeof AuthenticatedMessagesIndexRoute
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
+  '/receipts/': typeof AuthenticatedReceiptsIndexRoute
   '/rfqs/': typeof AuthenticatedRfqsIndexRoute
   '/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendors/': typeof AuthenticatedVendorsIndexRoute
@@ -701,6 +757,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -724,6 +782,7 @@ export interface FileRoutesByTo {
   '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -747,6 +806,8 @@ export interface FileRoutesByTo {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
+  '/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -762,11 +823,13 @@ export interface FileRoutesByTo {
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/manufacturing': typeof AuthenticatedManufacturingIndexRoute
   '/masters': typeof AuthenticatedMastersIndexRoute
+  '/messages': typeof AuthenticatedMessagesIndexRoute
   '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/purchase-orders': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/quotes': typeof AuthenticatedQuotesIndexRoute
+  '/receipts': typeof AuthenticatedReceiptsIndexRoute
   '/rfqs': typeof AuthenticatedRfqsIndexRoute
   '/sales-orders': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendors': typeof AuthenticatedVendorsIndexRoute
@@ -792,6 +855,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
+  '/_authenticated/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/_authenticated/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -815,6 +880,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/_authenticated/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/_authenticated/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -838,6 +904,8 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/_authenticated/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
+  '/_authenticated/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
@@ -853,11 +921,13 @@ export interface FileRoutesById {
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
   '/_authenticated/masters/': typeof AuthenticatedMastersIndexRoute
+  '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
+  '/_authenticated/receipts/': typeof AuthenticatedReceiptsIndexRoute
   '/_authenticated/rfqs/': typeof AuthenticatedRfqsIndexRoute
   '/_authenticated/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/_authenticated/vendors/': typeof AuthenticatedVendorsIndexRoute
@@ -883,6 +953,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/message-templates'
+    | '/notification-settings'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -906,6 +978,7 @@ export interface FileRouteTypes {
     | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/ledger/$customerId'
     | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
@@ -929,6 +1002,8 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/receipts/$receiptId'
+    | '/receipts/new'
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
@@ -944,11 +1019,13 @@ export interface FileRouteTypes {
     | '/invoices/'
     | '/manufacturing/'
     | '/masters/'
+    | '/messages/'
     | '/payments/'
     | '/products/'
     | '/projects/'
     | '/purchase-orders/'
     | '/quotes/'
+    | '/receipts/'
     | '/rfqs/'
     | '/sales-orders/'
     | '/vendors/'
@@ -972,6 +1049,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/message-templates'
+    | '/notification-settings'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -995,6 +1074,7 @@ export interface FileRouteTypes {
     | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/ledger/$customerId'
     | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
@@ -1018,6 +1098,8 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/receipts/$receiptId'
+    | '/receipts/new'
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
@@ -1033,11 +1115,13 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/manufacturing'
     | '/masters'
+    | '/messages'
     | '/payments'
     | '/products'
     | '/projects'
     | '/purchase-orders'
     | '/quotes'
+    | '/receipts'
     | '/rfqs'
     | '/sales-orders'
     | '/vendors'
@@ -1062,6 +1146,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/favorites'
+    | '/_authenticated/message-templates'
+    | '/_authenticated/notification-settings'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
@@ -1085,6 +1171,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/slabs'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
+    | '/_authenticated/ledger/$customerId'
     | '/_authenticated/manufacturing/$id'
     | '/_authenticated/masters/applications'
     | '/_authenticated/masters/edge-finishes'
@@ -1108,6 +1195,8 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-orders/new'
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/quotes/new'
+    | '/_authenticated/receipts/$receiptId'
+    | '/_authenticated/receipts/new'
     | '/_authenticated/rfqs/$rfqId'
     | '/_authenticated/sales-orders/$id'
     | '/_authenticated/sales-orders/new'
@@ -1123,11 +1212,13 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices/'
     | '/_authenticated/manufacturing/'
     | '/_authenticated/masters/'
+    | '/_authenticated/messages/'
     | '/_authenticated/payments/'
     | '/_authenticated/products/'
     | '/_authenticated/projects/'
     | '/_authenticated/purchase-orders/'
     | '/_authenticated/quotes/'
+    | '/_authenticated/receipts/'
     | '/_authenticated/rfqs/'
     | '/_authenticated/sales-orders/'
     | '/_authenticated/vendors/'
@@ -1223,6 +1314,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notification-settings': {
+      id: '/_authenticated/notification-settings'
+      path: '/notification-settings'
+      fullPath: '/notification-settings'
+      preLoaderRoute: typeof AuthenticatedNotificationSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/message-templates': {
+      id: '/_authenticated/message-templates'
+      path: '/message-templates'
+      fullPath: '/message-templates'
+      preLoaderRoute: typeof AuthenticatedMessageTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/favorites': {
       id: '/_authenticated/favorites'
       path: '/favorites'
@@ -1293,6 +1398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRfqsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/receipts/': {
+      id: '/_authenticated/receipts/'
+      path: '/receipts'
+      fullPath: '/receipts/'
+      preLoaderRoute: typeof AuthenticatedReceiptsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/quotes/': {
       id: '/_authenticated/quotes/'
       path: '/quotes'
@@ -1326,6 +1438,13 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/payments/'
       preLoaderRoute: typeof AuthenticatedPaymentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/messages/': {
+      id: '/_authenticated/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof AuthenticatedMessagesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/masters/': {
@@ -1431,6 +1550,20 @@ declare module '@tanstack/react-router' {
       path: '/rfqs/$rfqId'
       fullPath: '/rfqs/$rfqId'
       preLoaderRoute: typeof AuthenticatedRfqsRfqIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/receipts/new': {
+      id: '/_authenticated/receipts/new'
+      path: '/receipts/new'
+      fullPath: '/receipts/new'
+      preLoaderRoute: typeof AuthenticatedReceiptsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/receipts/$receiptId': {
+      id: '/_authenticated/receipts/$receiptId'
+      path: '/receipts/$receiptId'
+      fullPath: '/receipts/$receiptId'
+      preLoaderRoute: typeof AuthenticatedReceiptsReceiptIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quotes/new': {
@@ -1592,6 +1725,13 @@ declare module '@tanstack/react-router' {
       path: '/manufacturing/$id'
       fullPath: '/manufacturing/$id'
       preLoaderRoute: typeof AuthenticatedManufacturingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ledger/$customerId': {
+      id: '/_authenticated/ledger/$customerId'
+      path: '/ledger/$customerId'
+      fullPath: '/ledger/$customerId'
+      preLoaderRoute: typeof AuthenticatedLedgerCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invoices/new': {
@@ -1878,6 +2018,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
+  AuthenticatedMessageTemplatesRoute: typeof AuthenticatedMessageTemplatesRoute
+  AuthenticatedNotificationSettingsRoute: typeof AuthenticatedNotificationSettingsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -1899,6 +2041,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventorySlabsRoute: typeof AuthenticatedInventorySlabsRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
+  AuthenticatedLedgerCustomerIdRoute: typeof AuthenticatedLedgerCustomerIdRoute
   AuthenticatedManufacturingIdRoute: typeof AuthenticatedManufacturingIdRoute
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
   AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
@@ -1922,6 +2065,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
+  AuthenticatedReceiptsReceiptIdRoute: typeof AuthenticatedReceiptsReceiptIdRoute
+  AuthenticatedReceiptsNewRoute: typeof AuthenticatedReceiptsNewRoute
   AuthenticatedRfqsRfqIdRoute: typeof AuthenticatedRfqsRfqIdRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
@@ -1936,11 +2081,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
   AuthenticatedManufacturingIndexRoute: typeof AuthenticatedManufacturingIndexRoute
   AuthenticatedMastersIndexRoute: typeof AuthenticatedMastersIndexRoute
+  AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
   AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedPurchaseOrdersIndexRoute: typeof AuthenticatedPurchaseOrdersIndexRoute
   AuthenticatedQuotesIndexRoute: typeof AuthenticatedQuotesIndexRoute
+  AuthenticatedReceiptsIndexRoute: typeof AuthenticatedReceiptsIndexRoute
   AuthenticatedRfqsIndexRoute: typeof AuthenticatedRfqsIndexRoute
   AuthenticatedSalesOrdersIndexRoute: typeof AuthenticatedSalesOrdersIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
@@ -1952,6 +2099,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
+  AuthenticatedMessageTemplatesRoute: AuthenticatedMessageTemplatesRoute,
+  AuthenticatedNotificationSettingsRoute:
+    AuthenticatedNotificationSettingsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -1976,6 +2126,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
+  AuthenticatedLedgerCustomerIdRoute: AuthenticatedLedgerCustomerIdRoute,
   AuthenticatedManufacturingIdRoute: AuthenticatedManufacturingIdRoute,
   AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
   AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
@@ -2005,6 +2156,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRouteWithChildren,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
+  AuthenticatedReceiptsReceiptIdRoute: AuthenticatedReceiptsReceiptIdRoute,
+  AuthenticatedReceiptsNewRoute: AuthenticatedReceiptsNewRoute,
   AuthenticatedRfqsRfqIdRoute: AuthenticatedRfqsRfqIdRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
@@ -2019,11 +2172,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
   AuthenticatedManufacturingIndexRoute: AuthenticatedManufacturingIndexRoute,
   AuthenticatedMastersIndexRoute: AuthenticatedMastersIndexRoute,
+  AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,
   AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedPurchaseOrdersIndexRoute: AuthenticatedPurchaseOrdersIndexRoute,
   AuthenticatedQuotesIndexRoute: AuthenticatedQuotesIndexRoute,
+  AuthenticatedReceiptsIndexRoute: AuthenticatedReceiptsIndexRoute,
   AuthenticatedRfqsIndexRoute: AuthenticatedRfqsIndexRoute,
   AuthenticatedSalesOrdersIndexRoute: AuthenticatedSalesOrdersIndexRoute,
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
