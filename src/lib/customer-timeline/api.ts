@@ -5,7 +5,9 @@ import { AppError, mapDbError } from "@/lib/errors";
 export type TimelineKind =
   | "enquiry" | "estimate" | "quote" | "sales_order"
   | "invoice" | "receipt" | "payment" | "dispatch"
-  | "site_visit" | "followup" | "message" | "comment" | "task";
+  | "site_visit" | "followup" | "message" | "comment" | "task"
+  | "installation";
+
 
 export interface TimelineEvent {
   id: string;
