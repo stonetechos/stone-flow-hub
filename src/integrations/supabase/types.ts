@@ -613,6 +613,60 @@ export type Database = {
           },
         ]
       }
+      document_lineage: {
+        Row: {
+          converted_at: string
+          converted_by: string | null
+          customer_id: string | null
+          id: string
+          meta: Json
+          project_id: string | null
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          converted_at?: string
+          converted_by?: string | null
+          customer_id?: string | null
+          id?: string
+          meta?: Json
+          project_id?: string | null
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          converted_at?: string
+          converted_by?: string | null
+          customer_id?: string | null
+          id?: string
+          meta?: Json
+          project_id?: string | null
+          source_id?: string
+          source_type?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_lineage_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_lineage_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       edge_finishes: {
         Row: {
           code: string
@@ -1725,6 +1779,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           customer_id: string | null
+          failed_reason: string | null
           id: string
           last_error: string | null
           max_attempts: number
@@ -1732,6 +1787,7 @@ export type Database = {
           next_retry_at: string | null
           provider: string | null
           provider_message_id: string | null
+          read_at: string | null
           related_id: string | null
           related_type: string | null
           sent_at: string | null
@@ -1751,6 +1807,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
+          failed_reason?: string | null
           id?: string
           last_error?: string | null
           max_attempts?: number
@@ -1758,6 +1815,7 @@ export type Database = {
           next_retry_at?: string | null
           provider?: string | null
           provider_message_id?: string | null
+          read_at?: string | null
           related_id?: string | null
           related_type?: string | null
           sent_at?: string | null
@@ -1777,6 +1835,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_id?: string | null
+          failed_reason?: string | null
           id?: string
           last_error?: string | null
           max_attempts?: number
@@ -1784,6 +1843,7 @@ export type Database = {
           next_retry_at?: string | null
           provider?: string | null
           provider_message_id?: string | null
+          read_at?: string | null
           related_id?: string | null
           related_type?: string | null
           sent_at?: string | null
@@ -1811,10 +1871,12 @@ export type Database = {
           channel: string
           code: string
           created_at: string
+          entity_type: string | null
           id: string
           is_active: boolean
           name: string
           subject: string | null
+          template_kind: string
           updated_at: string
           variables: Json
         }
@@ -1824,10 +1886,12 @@ export type Database = {
           channel: string
           code: string
           created_at?: string
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name: string
           subject?: string | null
+          template_kind?: string
           updated_at?: string
           variables?: Json
         }
@@ -1837,10 +1901,12 @@ export type Database = {
           channel?: string
           code?: string
           created_at?: string
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name?: string
           subject?: string | null
+          template_kind?: string
           updated_at?: string
           variables?: Json
         }
@@ -1976,48 +2042,66 @@ export type Database = {
           amount: number
           created_at: string
           created_by: string | null
+          currency: string
           currency_code: string
+          entity_id: string | null
+          entity_type: string | null
           expires_at: string | null
           id: string
           invoice_id: string
           is_demo: boolean
           link_no: string
+          meta: Json
           provider: string
           provider_link_id: string | null
+          provider_ref: string | null
           short_url: string | null
           status: Database["public"]["Enums"]["payment_link_status"]
+          token: string | null
           updated_at: string
         }
         Insert: {
           amount: number
           created_at?: string
           created_by?: string | null
+          currency?: string
           currency_code?: string
+          entity_id?: string | null
+          entity_type?: string | null
           expires_at?: string | null
           id?: string
           invoice_id: string
           is_demo?: boolean
           link_no: string
+          meta?: Json
           provider?: string
           provider_link_id?: string | null
+          provider_ref?: string | null
           short_url?: string | null
           status?: Database["public"]["Enums"]["payment_link_status"]
+          token?: string | null
           updated_at?: string
         }
         Update: {
           amount?: number
           created_at?: string
           created_by?: string | null
+          currency?: string
           currency_code?: string
+          entity_id?: string | null
+          entity_type?: string | null
           expires_at?: string | null
           id?: string
           invoice_id?: string
           is_demo?: boolean
           link_no?: string
+          meta?: Json
           provider?: string
           provider_link_id?: string | null
+          provider_ref?: string | null
           short_url?: string | null
           status?: Database["public"]["Enums"]["payment_link_status"]
+          token?: string | null
           updated_at?: string
         }
         Relationships: [

@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VendorProfileRouteImport } from './routes/vendor/profile'
 import { Route as VendorDashboardRouteImport } from './routes/vendor/dashboard'
+import { Route as PayLinkIdRouteImport } from './routes/pay.$linkId'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -104,6 +105,7 @@ import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authe
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices/$invoiceId.edit'
 import { Route as AuthenticatedInventoryIdEditRouteImport } from './routes/_authenticated/inventory/$id.edit'
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
+import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -133,6 +135,11 @@ const VendorDashboardRoute = VendorDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => VendorRouteRoute,
+} as any)
+const PayLinkIdRoute = PayLinkIdRouteImport.update({
+  id: '/pay/$linkId',
+  path: '/pay/$linkId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   id: '/tasks',
@@ -651,6 +658,12 @@ const AuthenticatedDispatchIdEditRoute =
     path: '/edit',
     getParentRoute: () => AuthenticatedDispatchIdRoute,
   } as any)
+const AuthenticatedCustomersCustomerIdTimelineRoute =
+  AuthenticatedCustomersCustomerIdTimelineRouteImport.update({
+    id: '/timeline',
+    path: '/timeline',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -667,10 +680,11 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
+  '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
@@ -739,6 +753,7 @@ export interface FileRoutesByFullPath {
   '/vendors/': typeof AuthenticatedVendorsIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
+  '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
@@ -763,10 +778,11 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
+  '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
@@ -835,6 +851,7 @@ export interface FileRoutesByTo {
   '/vendors': typeof AuthenticatedVendorsIndexRoute
   '/vendor/orders': typeof VendorOrdersIndexRoute
   '/vendor/rfqs': typeof VendorRfqsIndexRoute
+  '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
@@ -861,10 +878,11 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
+  '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/_authenticated/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/_authenticated/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
@@ -933,6 +951,7 @@ export interface FileRoutesById {
   '/_authenticated/vendors/': typeof AuthenticatedVendorsIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
+  '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/_authenticated/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/_authenticated/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
@@ -959,6 +978,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/tasks'
+    | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/admin/users'
@@ -1031,6 +1051,7 @@ export interface FileRouteTypes {
     | '/vendors/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
+    | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
@@ -1055,6 +1076,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/tasks'
+    | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/admin/users'
@@ -1127,6 +1149,7 @@ export interface FileRouteTypes {
     | '/vendors'
     | '/vendor/orders'
     | '/vendor/rfqs'
+    | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
@@ -1152,6 +1175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
+    | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/_authenticated/admin/users'
@@ -1224,6 +1248,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendors/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
+    | '/_authenticated/customers/$customerId/timeline'
     | '/_authenticated/dispatch/$id/edit'
     | '/_authenticated/inventory/$id/edit'
     | '/_authenticated/invoices/$invoiceId/edit'
@@ -1239,6 +1264,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PayLinkIdRoute: typeof PayLinkIdRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -1285,6 +1311,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/dashboard'
       preLoaderRoute: typeof VendorDashboardRouteImport
       parentRoute: typeof VendorRouteRoute
+    }
+    '/pay/$linkId': {
+      id: '/pay/$linkId'
+      path: '/pay/$linkId'
+      fullPath: '/pay/$linkId'
+      preLoaderRoute: typeof PayLinkIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/tasks': {
       id: '/_authenticated/tasks'
@@ -1909,8 +1942,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDispatchIdEditRouteImport
       parentRoute: typeof AuthenticatedDispatchIdRoute
     }
+    '/_authenticated/customers/$customerId/timeline': {
+      id: '/_authenticated/customers/$customerId/timeline'
+      path: '/timeline'
+      fullPath: '/customers/$customerId/timeline'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdTimelineRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRoute
+    }
   }
 }
+
+interface AuthenticatedCustomersCustomerIdRouteChildren {
+  AuthenticatedCustomersCustomerIdTimelineRoute: typeof AuthenticatedCustomersCustomerIdTimelineRoute
+}
+
+const AuthenticatedCustomersCustomerIdRouteChildren: AuthenticatedCustomersCustomerIdRouteChildren =
+  {
+    AuthenticatedCustomersCustomerIdTimelineRoute:
+      AuthenticatedCustomersCustomerIdTimelineRoute,
+  }
+
+const AuthenticatedCustomersCustomerIdRouteWithChildren =
+  AuthenticatedCustomersCustomerIdRoute._addFileChildren(
+    AuthenticatedCustomersCustomerIdRouteChildren,
+  )
 
 interface AuthenticatedDispatchIdRouteChildren {
   AuthenticatedDispatchIdEditRoute: typeof AuthenticatedDispatchIdEditRoute
@@ -2025,7 +2080,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
-  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
   AuthenticatedDashboardsProductionRoute: typeof AuthenticatedDashboardsProductionRoute
   AuthenticatedDashboardsPurchaseRoute: typeof AuthenticatedDashboardsPurchaseRoute
@@ -2107,7 +2162,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
-  AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
+  AuthenticatedCustomersCustomerIdRoute:
+    AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsManagementRoute:
     AuthenticatedDashboardsManagementRoute,
   AuthenticatedDashboardsProductionRoute:
@@ -2212,6 +2268,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PayLinkIdRoute: PayLinkIdRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
