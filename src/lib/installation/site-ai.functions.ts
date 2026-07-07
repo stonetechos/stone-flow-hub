@@ -45,8 +45,9 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
         damaged: acc.damaged + Number(m.qty_damaged ?? 0),
         returned: acc.returned + Number(m.qty_returned ?? 0),
       }),
-      { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 },
+      { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 } as { dispatched: number; received: number; installed: number; damaged: number; returned: number },
     );
+
 
     const summary = {
       installation_no: i.installation_no,
