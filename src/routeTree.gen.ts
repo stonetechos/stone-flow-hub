@@ -19,6 +19,8 @@ import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedNotificationSettingsRouteImport } from './routes/_authenticated/notification-settings'
+import { Route as AuthenticatedMessageTemplatesRouteImport } from './routes/_authenticated/message-templates'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -48,8 +50,6 @@ import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
-import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
-import { Route as AuthenticatedSettingsMessageTemplatesRouteImport } from './routes/_authenticated/settings/message-templates'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders/new'
 import { Route as AuthenticatedSalesOrdersIdRouteImport } from './routes/_authenticated/sales-orders/$id'
 import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authenticated/rfqs/$rfqId'
@@ -153,6 +153,18 @@ const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificationSettingsRoute =
+  AuthenticatedNotificationSettingsRouteImport.update({
+    id: '/notification-settings',
+    path: '/notification-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMessageTemplatesRoute =
+  AuthenticatedMessageTemplatesRouteImport.update({
+    id: '/message-templates',
+    path: '/message-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFavoritesRoute = AuthenticatedFavoritesRouteImport.update({
@@ -319,18 +331,6 @@ const AuthenticatedVendorsVendorIdRoute =
     id: '/vendors/$vendorId',
     path: '/vendors/$vendorId',
     getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSettingsNotificationsRoute =
-  AuthenticatedSettingsNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any)
-const AuthenticatedSettingsMessageTemplatesRoute =
-  AuthenticatedSettingsMessageTemplatesRouteImport.update({
-    id: '/message-templates',
-    path: '/message-templates',
-    getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
 const AuthenticatedSalesOrdersNewRoute =
   AuthenticatedSalesOrdersNewRouteImport.update({
@@ -661,9 +661,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
@@ -713,8 +715,6 @@ export interface FileRoutesByFullPath {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/settings/message-templates': typeof AuthenticatedSettingsMessageTemplatesRoute
-  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -757,9 +757,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
@@ -809,8 +811,6 @@ export interface FileRoutesByTo {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/settings/message-templates': typeof AuthenticatedSettingsMessageTemplatesRoute
-  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -855,9 +855,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
+  '/_authenticated/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/_authenticated/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
@@ -907,8 +909,6 @@ export interface FileRoutesById {
   '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/_authenticated/settings/message-templates': typeof AuthenticatedSettingsMessageTemplatesRoute
-  '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -953,6 +953,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/message-templates'
+    | '/notification-settings'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -1005,8 +1007,6 @@ export interface FileRouteTypes {
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
-    | '/settings/message-templates'
-    | '/settings/notifications'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/customers/'
@@ -1049,6 +1049,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/message-templates'
+    | '/notification-settings'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -1101,8 +1103,6 @@ export interface FileRouteTypes {
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
-    | '/settings/message-templates'
-    | '/settings/notifications'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/customers'
@@ -1146,6 +1146,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/favorites'
+    | '/_authenticated/message-templates'
+    | '/_authenticated/notification-settings'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
@@ -1198,8 +1200,6 @@ export interface FileRouteTypes {
     | '/_authenticated/rfqs/$rfqId'
     | '/_authenticated/sales-orders/$id'
     | '/_authenticated/sales-orders/new'
-    | '/_authenticated/settings/message-templates'
-    | '/_authenticated/settings/notifications'
     | '/_authenticated/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
     | '/_authenticated/customers/'
@@ -1312,6 +1312,20 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notification-settings': {
+      id: '/_authenticated/notification-settings'
+      path: '/notification-settings'
+      fullPath: '/notification-settings'
+      preLoaderRoute: typeof AuthenticatedNotificationSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/message-templates': {
+      id: '/_authenticated/message-templates'
+      path: '/message-templates'
+      fullPath: '/message-templates'
+      preLoaderRoute: typeof AuthenticatedMessageTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/favorites': {
@@ -1516,20 +1530,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendors/$vendorId'
       preLoaderRoute: typeof AuthenticatedVendorsVendorIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings/notifications': {
-      id: '/_authenticated/settings/notifications'
-      path: '/notifications'
-      fullPath: '/settings/notifications'
-      preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
-    }
-    '/_authenticated/settings/message-templates': {
-      id: '/_authenticated/settings/message-templates'
-      path: '/message-templates'
-      fullPath: '/settings/message-templates'
-      preLoaderRoute: typeof AuthenticatedSettingsMessageTemplatesRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
     }
     '/_authenticated/sales-orders/new': {
       id: '/_authenticated/sales-orders/new'
@@ -1912,23 +1912,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedSettingsRouteChildren {
-  AuthenticatedSettingsMessageTemplatesRoute: typeof AuthenticatedSettingsMessageTemplatesRoute
-  AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
-}
-
-const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
-  AuthenticatedSettingsMessageTemplatesRoute:
-    AuthenticatedSettingsMessageTemplatesRoute,
-  AuthenticatedSettingsNotificationsRoute:
-    AuthenticatedSettingsNotificationsRoute,
-}
-
-const AuthenticatedSettingsRouteWithChildren =
-  AuthenticatedSettingsRoute._addFileChildren(
-    AuthenticatedSettingsRouteChildren,
-  )
-
 interface AuthenticatedDispatchIdRouteChildren {
   AuthenticatedDispatchIdEditRoute: typeof AuthenticatedDispatchIdEditRoute
 }
@@ -2035,9 +2018,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
+  AuthenticatedMessageTemplatesRoute: typeof AuthenticatedMessageTemplatesRoute
+  AuthenticatedNotificationSettingsRoute: typeof AuthenticatedNotificationSettingsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
@@ -2114,9 +2099,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
+  AuthenticatedMessageTemplatesRoute: AuthenticatedMessageTemplatesRoute,
+  AuthenticatedNotificationSettingsRoute:
+    AuthenticatedNotificationSettingsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedCustomersCustomerIdRoute: AuthenticatedCustomersCustomerIdRoute,
