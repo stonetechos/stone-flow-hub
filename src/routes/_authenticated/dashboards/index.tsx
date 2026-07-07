@@ -68,7 +68,14 @@ const ROLES = [
     desc: "Customer payment schedules, overdue, AI collection priority.",
     icon: CircleDollarSign,
   },
+  {
+    to: "/dashboards/installation",
+    title: "Installation",
+    desc: "Active sites, teams, delays, material shortages, sign-offs.",
+    icon: Wrench,
+  },
 ] as const;
+
 
 function DashboardsIndex() {
   return (
