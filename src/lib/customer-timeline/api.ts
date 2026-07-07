@@ -1,4 +1,4 @@
-/** Customer Timeline — unified chronological feed across every module. Read-only. */
+/** Customer Timeline — unified chronological feed across every module. Read-only, best-effort. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 
@@ -10,157 +10,125 @@ export type TimelineKind =
 export interface TimelineEvent {
   id: string;
   kind: TimelineKind;
-  at: string;             // ISO
+  at: string;
   title: string;
   subtitle?: string | null;
   amount?: number | null;
   status?: string | null;
   refNo?: string | null;
   href?: string | null;
-  meta?: Record<string, unknown>;
 }
 
-interface Row { [k: string]: unknown }
-function s(r: Row, k: string): string | null { const v = r[k]; return v == null ? null : String(v); }
-function n(r: Row, k: string): number | null { const v = r[k]; return v == null ? null : Number(v); }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
 
 export async function getCustomerTimeline(customerId: string, limit = 400): Promise<TimelineEvent[]> {
   const events: TimelineEvent[] = [];
-
-  // Simple parallel fetches; each is optional (best-effort — a table failure just skips it).
+  const from = (tbl: string) => (supabase.from as unknown as (t: string) => Any)(tbl);
   const runs: Promise<void>[] = [];
-
   const push = (fn: () => Promise<TimelineEvent[]>) =>
     runs.push(fn().then((rows) => { events.push(...rows); }).catch(() => {}));
 
   push(async () => {
-    const { data, error } = await supabase.from("enquiries").select("id,enquiry_no,subject,status,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `enq-${s(r,"id")}`, kind: "enquiry" as const,
-      at: s(r,"created_at") ?? "", title: `Enquiry ${s(r,"enquiry_no") ?? ""}`,
-      subtitle: s(r,"subject"), status: s(r,"status"), refNo: s(r,"enquiry_no"),
-      href: `/enquiries/${s(r,"id")}`,
+    const { data } = await from("enquiries").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `enq-${r.id}`, kind: "enquiry" as const, at: r.created_at ?? "",
+      title: `Enquiry ${r.enquiry_no ?? ""}`, subtitle: r.requirement ?? null,
+      status: r.stage ?? null, refNo: r.enquiry_no ?? null, href: `/enquiries/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("estimates").select("id,estimate_no,template,status,total,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `est-${s(r,"id")}`, kind: "estimate" as const,
-      at: s(r,"created_at") ?? "", title: `Estimate ${s(r,"estimate_no") ?? ""}`,
-      subtitle: s(r,"template"), amount: n(r,"total"), status: s(r,"status"), refNo: s(r,"estimate_no"),
-      href: `/estimates/${s(r,"id")}`,
+    const { data } = await from("estimates").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `est-${r.id}`, kind: "estimate" as const, at: r.created_at ?? "",
+      title: `Estimate ${r.estimate_no ?? ""}`, subtitle: r.template ?? null,
+      amount: r.total != null ? Number(r.total) : null, status: r.status ?? null,
+      refNo: r.estimate_no ?? null, href: `/estimates/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("quotes").select("id,quote_no,status,total,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `qt-${s(r,"id")}`, kind: "quote" as const,
-      at: s(r,"created_at") ?? "", title: `Quotation ${s(r,"quote_no") ?? ""}`,
-      amount: n(r,"total"), status: s(r,"status"), refNo: s(r,"quote_no"),
-      href: `/quotes/${s(r,"id")}`,
+    const { data } = await from("quotes").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `qt-${r.id}`, kind: "quote" as const, at: r.created_at ?? "",
+      title: `Quotation ${r.quote_no ?? ""}`, amount: r.total != null ? Number(r.total) : null,
+      status: r.status ?? null, refNo: r.quote_no ?? null, href: `/quotes/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("sales_orders").select("id,so_no,status,total,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `so-${s(r,"id")}`, kind: "sales_order" as const,
-      at: s(r,"created_at") ?? "", title: `Sales Order ${s(r,"so_no") ?? ""}`,
-      amount: n(r,"total"), status: s(r,"status"), refNo: s(r,"so_no"),
-      href: `/sales-orders/${s(r,"id")}`,
+    const { data } = await from("sales_orders").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `so-${r.id}`, kind: "sales_order" as const, at: r.created_at ?? "",
+      title: `Sales Order ${r.so_no ?? ""}`, status: r.status ?? null,
+      refNo: r.so_no ?? null, href: `/sales-orders/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("invoices").select("id,invoice_no,status,total,balance_due,issue_date,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `inv-${s(r,"id")}`, kind: "invoice" as const,
-      at: s(r,"issue_date") ?? s(r,"created_at") ?? "", title: `Invoice ${s(r,"invoice_no") ?? ""}`,
-      amount: n(r,"total"), status: s(r,"status"), refNo: s(r,"invoice_no"),
-      subtitle: n(r,"balance_due") ? `Balance ₹${n(r,"balance_due")}` : "Paid",
-      href: `/invoices/${s(r,"id")}`,
+    const { data } = await from("invoices").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `inv-${r.id}`, kind: "invoice" as const,
+      at: r.issue_date ?? r.created_at ?? "",
+      title: `Invoice ${r.invoice_no ?? ""}`, amount: r.total != null ? Number(r.total) : null,
+      status: r.status ?? null, refNo: r.invoice_no ?? null,
+      subtitle: r.balance_due != null && Number(r.balance_due) > 0 ? `Balance ₹${r.balance_due}` : "Paid",
+      href: `/invoices/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("receipts").select("id,receipt_no,status,net_amount,received_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `rcp-${s(r,"id")}`, kind: "receipt" as const,
-      at: s(r,"received_at") ?? "", title: `Receipt ${s(r,"receipt_no") ?? ""}`,
-      amount: n(r,"net_amount"), status: s(r,"status"), refNo: s(r,"receipt_no"),
-      href: `/receipts/${s(r,"id")}`,
+    const { data } = await from("receipts").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `rcp-${r.id}`, kind: "receipt" as const, at: r.received_at ?? "",
+      title: `Receipt ${r.receipt_no ?? ""}`, amount: r.net_amount != null ? Number(r.net_amount) : null,
+      status: r.status ?? null, refNo: r.receipt_no ?? null, href: `/receipts/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("payments").select("id,amount,method,paid_at,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `pay-${s(r,"id")}`, kind: "payment" as const,
-      at: s(r,"paid_at") ?? s(r,"created_at") ?? "", title: `Payment received`,
-      amount: n(r,"amount"), subtitle: s(r,"method"),
+    // payments only join via invoice.customer_id
+    const { data } = await from("payments").select("*, invoice:invoices!inner(customer_id)").eq("invoice.customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `pay-${r.id}`, kind: "payment" as const, at: r.paid_at ?? r.created_at ?? "",
+      title: `Payment received`, amount: r.amount != null ? Number(r.amount) : null, subtitle: r.method ?? null,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("dispatches").select("id,dispatch_no,status,dispatched_at,created_at,customer_id").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `dsp-${s(r,"id")}`, kind: "dispatch" as const,
-      at: s(r,"dispatched_at") ?? s(r,"created_at") ?? "",
-      title: `Dispatch ${s(r,"dispatch_no") ?? ""}`, status: s(r,"status"), refNo: s(r,"dispatch_no"),
-      href: `/dispatch/${s(r,"id")}`,
+    const { data } = await from("dispatches").select("*, sales_order:sales_orders!inner(customer_id)").eq("sales_order.customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `dsp-${r.id}`, kind: "dispatch" as const, at: r.dispatch_date ?? r.created_at ?? "",
+      title: `Dispatch ${r.dispatch_no ?? ""}`, status: r.status ?? null,
+      refNo: r.dispatch_no ?? null, href: `/dispatch/${r.id}`,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("site_visits").select("id,visit_date,purpose,status,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `sv-${s(r,"id")}`, kind: "site_visit" as const,
-      at: s(r,"visit_date") ?? s(r,"created_at") ?? "", title: `Site visit`,
-      subtitle: s(r,"purpose"), status: s(r,"status"),
+    const { data } = await from("site_visits").select("*, project:projects!inner(customer_id)").eq("project.customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `sv-${r.id}`, kind: "site_visit" as const,
+      at: r.conducted_at ?? r.scheduled_at ?? r.created_at ?? "",
+      title: `Site visit`, subtitle: r.summary ?? null, status: r.status ?? null,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("followups").select("id,subject,due_at,status,channel,created_at").eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `fu-${s(r,"id")}`, kind: "followup" as const,
-      at: s(r,"due_at") ?? s(r,"created_at") ?? "",
-      title: `Follow-up: ${s(r,"subject") ?? ""}`, status: s(r,"status"), subtitle: s(r,"channel"),
+    const { data } = await from("followups").select("*").eq("entity_type", "customer").eq("entity_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `fu-${r.id}`, kind: "followup" as const,
+      at: r.scheduled_at ?? r.created_at ?? "",
+      title: `Follow-up`, status: r.status ?? null, subtitle: r.channel ?? r.notes ?? null,
     }));
   });
-
   push(async () => {
-    const { data, error } = await supabase.from("message_queue")
-      .select("id,channel,to_address,subject,body,status,created_at,read_at")
-      .eq("customer_id", customerId).limit(limit);
-    if (error) throw error;
-    return (data ?? []).map((r: Row) => ({
-      id: `msg-${s(r,"id")}`, kind: "message" as const,
-      at: s(r,"created_at") ?? "", title: `${String(s(r,"channel") ?? "").toUpperCase()} → ${s(r,"to_address")}`,
-      subtitle: s(r,"subject") ?? String(r["body"] ?? "").slice(0, 80),
-      status: s(r,"status"),
+    const { data } = await from("message_queue").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `msg-${r.id}`, kind: "message" as const, at: r.created_at ?? "",
+      title: `${String(r.channel ?? "").toUpperCase()} → ${r.to_address ?? ""}`,
+      subtitle: r.subject ?? String(r.body ?? "").slice(0, 80),
+      status: r.status ?? null,
     }));
   });
 
   await Promise.all(runs);
-
   events.sort((a, b) => (a.at < b.at ? 1 : -1));
   return events.slice(0, limit);
 }
 
-export async function getCustomerHeader(customerId: string): Promise<{ id: string; name: string; customer_code: string } | null> {
+export async function getCustomerHeader(customerId: string) {
   const { data, error } = await supabase.from("customers").select("id,name,customer_code").eq("id", customerId).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
