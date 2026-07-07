@@ -94,6 +94,7 @@ import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardsSalesRouteImport } from './routes/_authenticated/dashboards/sales'
 import { Route as AuthenticatedDashboardsPurchaseRouteImport } from './routes/_authenticated/dashboards/purchase'
 import { Route as AuthenticatedDashboardsProductionRouteImport } from './routes/_authenticated/dashboards/production'
+import { Route as AuthenticatedDashboardsProcurementRouteImport } from './routes/_authenticated/dashboards/procurement'
 import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/_authenticated/dashboards/management'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -595,6 +596,12 @@ const AuthenticatedDashboardsProductionRoute =
     path: '/dashboards/production',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsProcurementRoute =
+  AuthenticatedDashboardsProcurementRouteImport.update({
+    id: '/dashboards/procurement',
+    path: '/dashboards/procurement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsManagementRoute =
   AuthenticatedDashboardsManagementRouteImport.update({
     id: '/dashboards/management',
@@ -700,6 +707,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
@@ -800,6 +808,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
@@ -902,6 +911,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
+  '/_authenticated/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/_authenticated/dashboards/production': typeof AuthenticatedDashboardsProductionRoute
   '/_authenticated/dashboards/purchase': typeof AuthenticatedDashboardsPurchaseRoute
   '/_authenticated/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
@@ -1004,6 +1014,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/management'
+    | '/dashboards/procurement'
     | '/dashboards/production'
     | '/dashboards/purchase'
     | '/dashboards/sales'
@@ -1104,6 +1115,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/management'
+    | '/dashboards/procurement'
     | '/dashboards/production'
     | '/dashboards/purchase'
     | '/dashboards/sales'
@@ -1205,6 +1217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/management'
+    | '/_authenticated/dashboards/procurement'
     | '/_authenticated/dashboards/production'
     | '/_authenticated/dashboards/purchase'
     | '/_authenticated/dashboards/sales'
@@ -1891,6 +1904,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsProductionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/procurement': {
+      id: '/_authenticated/dashboards/procurement'
+      path: '/dashboards/procurement'
+      fullPath: '/dashboards/procurement'
+      preLoaderRoute: typeof AuthenticatedDashboardsProcurementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/management': {
       id: '/_authenticated/dashboards/management'
       path: '/dashboards/management'
@@ -2140,6 +2160,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
+  AuthenticatedDashboardsProcurementRoute: typeof AuthenticatedDashboardsProcurementRoute
   AuthenticatedDashboardsProductionRoute: typeof AuthenticatedDashboardsProductionRoute
   AuthenticatedDashboardsPurchaseRoute: typeof AuthenticatedDashboardsPurchaseRoute
   AuthenticatedDashboardsSalesRoute: typeof AuthenticatedDashboardsSalesRoute
@@ -2224,6 +2245,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsManagementRoute:
     AuthenticatedDashboardsManagementRoute,
+  AuthenticatedDashboardsProcurementRoute:
+    AuthenticatedDashboardsProcurementRoute,
   AuthenticatedDashboardsProductionRoute:
     AuthenticatedDashboardsProductionRoute,
   AuthenticatedDashboardsPurchaseRoute: AuthenticatedDashboardsPurchaseRoute,
