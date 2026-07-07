@@ -75,6 +75,7 @@ import { Route as AuthenticatedMastersManufacturingStagesRouteImport } from './r
 import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
 import { Route as AuthenticatedManufacturingIdRouteImport } from './routes/_authenticated/manufacturing/$id'
+import { Route as AuthenticatedLedgerCustomerIdRouteImport } from './routes/_authenticated/ledger/$customerId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventorySlabsRouteImport } from './routes/_authenticated/inventory/slabs'
@@ -475,6 +476,12 @@ const AuthenticatedManufacturingIdRoute =
     path: '/manufacturing/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLedgerCustomerIdRoute =
+  AuthenticatedLedgerCustomerIdRouteImport.update({
+    id: '/ledger/$customerId',
+    path: '/ledger/$customerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvoicesNewRoute =
   AuthenticatedInvoicesNewRouteImport.update({
     id: '/invoices/new',
@@ -656,6 +663,7 @@ export interface FileRoutesByFullPath {
   '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -748,6 +756,7 @@ export interface FileRoutesByTo {
   '/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -842,6 +851,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/slabs': typeof AuthenticatedInventorySlabsRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
+  '/_authenticated/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/_authenticated/manufacturing/$id': typeof AuthenticatedManufacturingIdRoute
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
@@ -936,6 +946,7 @@ export interface FileRouteTypes {
     | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/ledger/$customerId'
     | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
@@ -1028,6 +1039,7 @@ export interface FileRouteTypes {
     | '/inventory/slabs'
     | '/invoices/$invoiceId'
     | '/invoices/new'
+    | '/ledger/$customerId'
     | '/manufacturing/$id'
     | '/masters/applications'
     | '/masters/edge-finishes'
@@ -1121,6 +1133,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/slabs'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
+    | '/_authenticated/ledger/$customerId'
     | '/_authenticated/manufacturing/$id'
     | '/_authenticated/masters/applications'
     | '/_authenticated/masters/edge-finishes'
@@ -1654,6 +1667,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManufacturingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ledger/$customerId': {
+      id: '/_authenticated/ledger/$customerId'
+      path: '/ledger/$customerId'
+      fullPath: '/ledger/$customerId'
+      preLoaderRoute: typeof AuthenticatedLedgerCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/invoices/new': {
       id: '/_authenticated/invoices/new'
       path: '/invoices/new'
@@ -1959,6 +1979,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventorySlabsRoute: typeof AuthenticatedInventorySlabsRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
+  AuthenticatedLedgerCustomerIdRoute: typeof AuthenticatedLedgerCustomerIdRoute
   AuthenticatedManufacturingIdRoute: typeof AuthenticatedManufacturingIdRoute
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
   AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
@@ -2039,6 +2060,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
+  AuthenticatedLedgerCustomerIdRoute: AuthenticatedLedgerCustomerIdRoute,
   AuthenticatedManufacturingIdRoute: AuthenticatedManufacturingIdRoute,
   AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
   AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
