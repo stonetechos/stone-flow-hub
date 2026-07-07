@@ -134,6 +134,19 @@ export function invalidateQuote(qc: QueryClient, id?: string): void {
   bump(qc, qk.activity.recent);
 }
 
+export function invalidateEstimate(qc: QueryClient, id?: string): void {
+  bump(qc, qk.estimates.all);
+  if (id) {
+    bump(qc, qk.estimates.byId(id));
+    bump(qc, qk.estimates.items(id));
+    bump(qc, qk.estimates.components(id));
+    bump(qc, qk.estimates.schedule(id));
+    bump(qc, qk.estimates.documents(id));
+  }
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
 export function invalidatePurchaseOrder(qc: QueryClient, id?: string): void {
   bump(qc, qk.purchaseOrders.all);
   if (id) bump(qc, qk.purchaseOrders.byId(id));
