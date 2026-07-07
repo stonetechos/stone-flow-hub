@@ -326,3 +326,31 @@ export function invalidateVendorCapability(qc: QueryClient, vendorId: string): v
   bump(qc, qk.vendorCapabilities.byVendor(vendorId));
   if (vendorId) bump(qc, qk.vendors.byId(vendorId));
 }
+
+// -------- Slice 6: Installation & Field Service --------
+
+export function invalidateInstallation(
+  qc: QueryClient,
+  id?: string,
+  salesOrderId?: string | null,
+): void {
+  bump(qc, qk.installations.all);
+  if (id) {
+    bump(qc, qk.installations.byId(id));
+    bump(qc, qk.installations.progress(id));
+    bump(qc, qk.installations.materials(id));
+    bump(qc, qk.installations.signoff(id));
+  }
+  if (salesOrderId) bump(qc, qk.installations.bySalesOrder(salesOrderId));
+  bump(qc, qk.installations.kpis);
+  bump(qc, qk.inventoryMovements.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateInstallationTeam(qc: QueryClient, id?: string): void {
+  bump(qc, qk.installationTeams.all);
+  bump(qc, qk.installationTeams.picker);
+  if (id) bump(qc, qk.installationTeams.byId(id));
+}
+
