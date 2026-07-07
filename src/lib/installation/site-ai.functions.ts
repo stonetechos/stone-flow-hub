@@ -71,7 +71,8 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
     const mats = ((materials.data ?? []) as Row[]);
     const sign = (signoff.data ?? null) as Row | null;
 
-    const totals = mats.reduce(
+    type Totals = { dispatched: number; received: number; installed: number; damaged: number; returned: number };
+    const totals: Totals = mats.reduce<Totals>(
       (acc, m) => ({
         dispatched: acc.dispatched + n(m.qty_dispatched),
         received: acc.received + n(m.qty_received),
@@ -81,6 +82,7 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
       }),
       { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 },
     );
+
 
     const snapshot: Snapshot = {
       installation_no: s(i.installation_no),
