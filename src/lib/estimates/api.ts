@@ -290,6 +290,7 @@ export async function convertEstimateToQuote(estimateId: string) {
   const est = await getEstimate(estimateId);
   if (!est) throw new AppError("Estimate not found", "NOT_FOUND", 404);
   if (!est.project_id) throw new AppError("Estimate has no project to convert.", "BAD_REQUEST", 400);
+  if (!est.customer_id) throw new AppError("Estimate has no customer to convert.", "BAD_REQUEST", 400);
   const items = await getEstimateItems(estimateId);
 
   const { data: quote, error } = await supabase
