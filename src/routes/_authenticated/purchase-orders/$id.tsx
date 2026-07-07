@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Printer } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History, Printer, Truck, Banknote } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
