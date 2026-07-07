@@ -32,7 +32,7 @@ export function mapDbError(err: { code?: string; message?: string } | null): str
     case "23505":
       return "A record with the same details already exists.";
     case "23503":
-      return "Cannot complete: a linked record is missing.";
+      return "This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.";
     case "23514":
       return "That value doesn't meet a required rule. Check the highlighted fields.";
     case "22P02":

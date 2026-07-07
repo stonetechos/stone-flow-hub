@@ -5148,6 +5148,63 @@ export type Database = {
           },
         ]
       }
+      vendor_service_categories: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      vendor_service_links: {
+        Row: {
+          category_id: string
+          vendor_id: string
+        }
+        Insert: {
+          category_id: string
+          vendor_id: string
+        }
+        Update: {
+          category_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_service_links_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_service_links_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_stone_types: {
         Row: {
           stone_type_id: string
@@ -5257,21 +5314,25 @@ export type Database = {
           city: string | null
           company_id: string | null
           company_name: string
+          contact_person: string | null
           country: string | null
           created_at: string
           created_by: string | null
           currency_code: string
           daily_capacity: number | null
           daily_capacity_uom: string | null
+          email: string | null
           external_ref: Json | null
           gst_number: string | null
           id: string
           ifsc: string | null
           is_active: boolean
           is_demo: boolean
+          is_preferred: boolean
           lead_time_days: number | null
           max_slab_length_mm: number | null
           max_slab_width_mm: number | null
+          mobile_number: string | null
           moq: number | null
           moq_uom: string | null
           notes: string | null
@@ -5286,6 +5347,7 @@ export type Database = {
           state: string | null
           updated_at: string
           vendor_code: string
+          whatsapp_number: string | null
         }
         Insert: {
           address?: string | null
@@ -5294,21 +5356,25 @@ export type Database = {
           city?: string | null
           company_id?: string | null
           company_name: string
+          contact_person?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           daily_capacity?: number | null
           daily_capacity_uom?: string | null
+          email?: string | null
           external_ref?: Json | null
           gst_number?: string | null
           id?: string
           ifsc?: string | null
           is_active?: boolean
           is_demo?: boolean
+          is_preferred?: boolean
           lead_time_days?: number | null
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
+          mobile_number?: string | null
           moq?: number | null
           moq_uom?: string | null
           notes?: string | null
@@ -5323,6 +5389,7 @@ export type Database = {
           state?: string | null
           updated_at?: string
           vendor_code: string
+          whatsapp_number?: string | null
         }
         Update: {
           address?: string | null
@@ -5331,21 +5398,25 @@ export type Database = {
           city?: string | null
           company_id?: string | null
           company_name?: string
+          contact_person?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           daily_capacity?: number | null
           daily_capacity_uom?: string | null
+          email?: string | null
           external_ref?: Json | null
           gst_number?: string | null
           id?: string
           ifsc?: string | null
           is_active?: boolean
           is_demo?: boolean
+          is_preferred?: boolean
           lead_time_days?: number | null
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
+          mobile_number?: string | null
           moq?: number | null
           moq_uom?: string | null
           notes?: string | null
@@ -5360,6 +5431,7 @@ export type Database = {
           state?: string | null
           updated_at?: string
           vendor_code?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
@@ -5416,6 +5488,14 @@ export type Database = {
       }
       current_demo_mode: { Args: never; Returns: boolean }
       current_vendor_id: { Args: never; Returns: string }
+      dependency_summary: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: {
+          count: number
+          module: string
+          route: string
+        }[]
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
