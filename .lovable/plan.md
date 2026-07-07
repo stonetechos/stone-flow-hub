@@ -1,93 +1,96 @@
-# Estimation Studio & Customer Receipts — Build Plan
+# Phase 3 — Commercial Automation & Customer Communication
 
-This is a large, multi-week expansion of the frozen v1.0.0-beta.1. It touches DB schema, ~40 new files, and two external integrations (WhatsApp Cloud API, email provider). I'll ship it in phases so each phase is independently testable and existing Quotes/Payments keep working untouched.
+Additive only. No existing schema, API, or route is broken. Every new UI surface is either fully wired or hidden behind a `coming_soon` flag (no placeholder UIs).
 
-## Guiding rules
-- **Non-breaking**: existing `quotes`, `quote_items`, `payments`, `invoices` tables and routes stay as-is. New capabilities live in new tables and new routes (`/estimates`, `/receipts`). A feature flag toggles the new UI in nav.
-- Existing quotations remain viewable/editable via the current `/quotes` module.
-- All new tables get RLS + GRANT per project convention. All entity pickers use `EntityPicker`. All mutations use `src/lib/query-invalidation.ts`.
+## 1. Conversion pipeline (Estimate → … → Payment)
 
----
+Reuse existing modules; add explicit converters + a shared `document_lineage` table so every conversion preserves history, attachments, comments, revisions, and communications.
 
-## Phase 1 — Estimation Studio (data + UI)
+```text
+estimate ─▶ quote ─▶ sales_order ─▶ production_order ─▶ dispatch ─▶ invoice ─▶ receipt/payment
+```
 
-### DB (one migration)
-- `estimates` — supersedes-optional wrapper: `estimate_no`, `template` enum (`material_supply`, `material_install`, `custom_articles`, `custom_manufacturing`), project_id, customer_id, status, currency, valid_until, notes, terms, totals (material_cost, manufacturing_cost, installation_cost, adhesives, chemicals, sealer, packing, freight, gst_amount, margin_pct, margin_amount, subtotal, total), payment_schedule jsonb, created_by, timestamps, is_demo.
-- `estimate_items` — line items with `category` (material/manufacturing/installation/consumable/other), product_id, description, qty, unit, rate, tax_pct, line_total, sort_order.
-- `estimate_cost_components` — per-estimate overrides for adhesives/chemicals/sealer/packing/freight (rate + qty + total).
-- `estimate_payment_schedules` — label, pct, amount, due_offset_days.
-- `estimate_documents` — generated artifacts (customer_pdf, cost_sheet_pdf, whatsapp_text, email_html) with version history.
-- Trigger: recompute totals on item/component change (mirrors `recalc_quote_totals`).
-- Optional link: `estimates.source_quote_id` and `quotes.estimate_id` for migration of legacy quotes on demand.
+- New table `document_lineage(source_type, source_id, target_type, target_id, converted_by, converted_at, meta)`.
+- New server functions in `src/lib/lineage/api.ts`:
+  - `convertEstimateToQuote(estimateId)` — already partially exists; standardize + write lineage.
+  - `convertQuoteToSalesOrder(quoteId)` — exists in `sales-orders/api.ts`; add lineage.
+  - `convertSalesOrderToProduction(soId)`, `convertDispatchToInvoice(dispatchId)` — add lineage rows.
+- Attachments/comments/messages queried by `(entity_type, entity_id)` union across the lineage chain, so opening any document shows the full history.
+- "Related documents" panel added to Estimate / Quote / SO / Invoice detail pages (read-only, no workflow change).
 
-### API layer (`src/lib/estimates/`)
-- `schema.ts` — zod schemas per template (fields conditionally required).
-- `api.ts` — list/get/create/update/delete/status/duplicate; `convertEstimateToQuote` and `convertEstimateToInvoice` reuse existing RPC pattern.
-- `calc.ts` — pure calculation engine: takes items + components + margin + gst → totals; used both client-side (live preview) and server-side (persist).
-- `templates.ts` — template config: which categories/fields/components are visible per template.
+## 2. Send-from-ERP (WhatsApp + Email)
 
-### Routes / UI
-- `/estimates` list, `/estimates/new?template=…`, `/estimates/$id`, `/estimates/$id/edit`.
-- New Estimate wizard: Step 1 pick template → Step 2 customer/project (EntityPicker) → Step 3 items + auto components → Step 4 margin/GST/schedule → Step 5 preview & save.
-- Live cost breakdown side panel using `calc.ts`.
-- Payment schedule presets 75/25, 80/20, custom (rows must sum to 100%).
-- "Convert to Quote/Invoice" buttons preserve existing downstream workflows.
+One shared `<SendDocumentDialog />` component wired into detail pages for: Estimate, Quotation, Purchase Order, Sales Order, Invoice, Receipt, Dispatch. Uses the existing `message_queue` + provider registry from Phase 2.
 
-### Document generation
-- `src/lib/estimates/render/` — `customerPdf.ts`, `costSheetPdf.ts` (reuse `src/lib/pdf/generator.ts`), `whatsapp.ts`, `emailHtml.ts`.
-- Editable preview dialog before send; final text stored in `estimate_documents` with version.
+- Server fn `enqueueDocumentMessage({ entity_type, entity_id, channel, template_id, to, overrides })` renders the template with the document context, allows user edit before send, then enqueues via existing queue.
+- Logs every send into `message_queue` (already has date/user/recipient/channel/status/body). Add columns if missing: `read_at`, `failed_reason`, `provider_message_id`.
+- Delivery/read webhooks: `/api/public/webhooks/whatsapp` and `/api/public/webhooks/email` update `message_delivery_events` (already exists) and roll status forward.
+- Payment/Follow-up reminders: extends the existing followups + payments modules with a "Send Reminder" action that uses the same dialog.
 
----
+## 3. Dynamic templates with Stone Tech placeholders
 
-## Phase 2 — Customer Receipts
+- Extend `message_templates` with `entity_type` (estimate|quote|so|invoice|receipt|dispatch|reminder|followup) and `template_kind` (supplier_only|supplier_installer|custom_articles|veneers|panels|murals|sculptures|generic).
+- Handlebars-style resolver `src/lib/notifications/render.ts` implementing the full placeholder set: `{{CustomerName}} {{ProjectName}} {{EstimateNo}} {{QuotationNo}} {{Material}} {{StoneType}} {{SurfaceFinish}} {{EdgeFinish}} {{Area}} {{SqFt}} {{Quantity}} {{InstallationCost}} {{MaterialCost}} {{GST}} {{Advance}} {{Outstanding}} {{DispatchDate}} {{InvoiceAmount}} {{PaymentLink}}` etc.
+- Seed the 7 Stone Tech templates (Supplier Only, Supplier + Installer, Custom Stone Articles, Veneers, Panels, Murals, Sculptures) as editable rows on `/message-templates`.
+- Preview + test-send inside the templates editor (no code changes needed to tweak wording).
 
-### DB
-- `receipts` — receipt_no, customer_id, received_at, amount, mode enum (`cash`,`upi`,`neft`,`rtgs`,`imps`,`cheque`,`card`,`gateway`), reference_no, bank_ref, notes, unallocated_amount, is_demo.
-- `receipt_allocations` — receipt_id, invoice_id, amount; trigger updates invoice `amount_paid`/`balance_due` (reuses `recalc_invoice_totals`).
-- View `customer_ledger_v` — union of invoices (debit) and receipts (credit) ordered by date, running balance.
+## 4. Customer Timeline
 
-### API + UI
-- `src/lib/receipts/{schema,api}.ts`.
-- Routes `/receipts`, `/receipts/new`, `/receipts/$id`, and `/customers/$id` gets a Ledger tab + Unallocated Advances chip.
-- Multi-invoice allocation UI: pick customer → list open invoices with allocation inputs; remainder auto-stored as unallocated advance.
-- Existing `/payments` module remains for invoice-scoped quick payments; a helper migrates payments↔receipts as needed but no destructive change.
+New route `/customers/$customerId/timeline` (add tab on customer detail — non-invasive). Union query across:
+`enquiries, estimates, quotes, sales_orders, invoices, receipts, payments, dispatches, site_visits, followups, message_queue, comments, tasks`.
 
----
+- `src/lib/customer-timeline/api.ts` — returns a normalized `TimelineEvent[]` sorted desc.
+- Filters by channel / type. Read-only feed.
 
-## Phase 3 — Notification queue + WhatsApp/Email delivery
+## 5. Payment links
 
-### DB
-- `message_templates` — key, channel (`whatsapp`|`email`), estimate_template scope, subject, body (handlebars-ish `{{customer.name}}`), version, is_active.
-- `message_queue` — id, channel, to_address, template_key, rendered_subject, rendered_body, entity_type, entity_id, status (`pending`,`sending`,`sent`,`failed`,`retry`), attempts, last_error, provider_message_id, scheduled_at, sent_at.
-- `message_events` — provider webhook events (delivered/read/bounced).
+- New table `payment_links(id, provider, entity_type, entity_id, customer_id, amount, currency, status, url, provider_ref, created_by, created_at, expires_at)`.
+- Provider interface already exists (`src/lib/payments-provider/types.ts`). Add adapters:
+  - `razorpay.ts`, `cashfree.ts`, `stripe.ts` — each `createPaymentLink()`. Adapters are behind `coming_soon` flag until credentials are configured under `/notification-settings` → new Payments tab.
+  - Manual mode (no gateway): system generates an ERP-hosted link that just shows bank details + UPI QR (fully functional).
+- `SendDocumentDialog` gets an "Attach payment link" toggle that resolves `{{PaymentLink}}`.
+- Webhooks: `/api/public/webhooks/payments/$provider` mark link paid and auto-create a `receipt` row via existing receipts API.
 
-### Server routes / functions
-- `createServerFn` `enqueueMessage`, `retryMessage`, `cancelMessage`.
-- `/api/public/webhooks/whatsapp` — verify Meta signature, update `message_events`.
-- `/api/public/webhooks/email` — Resend/SMTP bounce/complaint handler.
-- Cron via pg_cron → `/api/public/cron/process-messages` every minute; drains queue with backoff (max 5 attempts).
-- Secrets required (requested via `add_secret` when Phase 3 starts): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `RESEND_API_KEY` (or SMTP creds). Publishable/anon keys stay in code.
+## 6. Branding — Stone Tech (Granite & Teal)
 
-### UI
-- Send dialog per estimate: choose channel → template preselected by estimate template → user edits rendered message → enqueue.
-- `/settings/messaging` — manage templates + view queue with retry.
-- Message history tab on Estimate detail (all versions, status pills).
+- New `src/lib/branding/index.ts` centralizing brand tokens (colors, typography, logo URL) sourced from `app_settings`.
+- PDF renderer (`src/lib/pdf/`) gets a Stone Tech header/footer template — applied to all document PDFs.
+- Email renderer gains a shared HTML shell (`src/lib/notifications/email-shell.tsx`) with the brand.
+- WhatsApp previews in `SendDocumentDialog` render brand chrome around the message body.
 
----
+## 7. Production rule
 
-## Rollout
-1. Phase 1 behind nav flag; existing `/quotes` untouched.
-2. Phase 2 ships with cross-link from Estimates → Convert → Invoice → Receipt.
-3. Phase 3 last; without secrets, "Save & Copy" fallback still works.
+- No placeholder screens. Every new button either performs its action or is disabled with a `Coming Soon` badge (drives off a `feature_flags` map in `app_settings`).
+- Flags initially ON: send-email, send-whatsapp (Meta Cloud), customer timeline, manual payment links, conversion buttons, lineage panel.
+- Flags initially OFF (`Coming Soon`): Razorpay, Cashfree, Stripe live gateways (until secrets configured), WhatsApp read receipts on providers that don't support them.
 
-## Out of scope for this plan
-- Migrating existing quotes into estimates automatically (opt-in "Clone as Estimate" button only).
-- Rewriting the current Payments module UI.
+## Technical additions
 
-## What I need from you before I start
-1. **Approve phased scope**, or tell me to compress phases.
-2. **Email provider**: Resend (recommended, built-in connector) or SMTP creds?
-3. **WhatsApp**: confirm you have a Meta WhatsApp Business Cloud app + phone number ID ready — I'll request the tokens via `add_secret` when Phase 3 begins.
-4. **Currency/GST**: assume INR + Indian GST (CGST/SGST/IGST split on invoice, single GST% on estimate line) — OK?
+**New tables** (single migration): `document_lineage`, `payment_links`. Alter `message_queue` (add `read_at`, `failed_reason`, `provider_message_id` if absent). Alter `message_templates` (add `entity_type`, `template_kind`). RLS + GRANTs included; owner-read + service_role write.
 
-Reply "go" (plus answers to 2–4) and I'll start Phase 1 migration.
+**New routes:**
+- `/customers/$customerId/timeline`
+- `/settings/branding`
+- `/settings/payment-providers`
+- `/api/public/webhooks/whatsapp`
+- `/api/public/webhooks/email`
+- `/api/public/webhooks/payments/$provider`
+- `/pay/$linkId` (public payment landing)
+
+**New server functions** (in `src/lib/*/api.ts`):
+- `lineage.recordConversion`, `lineage.getChain`
+- `notifications.enqueueDocumentMessage`, `notifications.retry`, `notifications.markRead`
+- `paymentLinks.create`, `paymentLinks.get`, `paymentLinks.markPaid`
+- `customerTimeline.list`
+
+**New components:** `SendDocumentDialog`, `RelatedDocumentsPanel`, `CustomerTimeline`, `TemplateEditor` (extends existing), `PaymentLinkChip`.
+
+**Automations:** conversion buttons write lineage; payment webhook auto-creates receipt; delivery webhooks update message status; failed messages retried by existing pg_cron.
+
+## Deliverable
+
+Completion report at the end listing every new route, table, API, server function, automation, and any residual v1.0.0 blockers (e.g. gateway credentials still required from user).
+
+## Confirm to proceed
+
+Reply **go** and I ship it in one pass. Otherwise tell me which sections to trim.
