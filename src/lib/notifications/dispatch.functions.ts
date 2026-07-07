@@ -27,7 +27,7 @@ async function assertAdmin(ctx: { supabase: unknown; userId: string }) {
 export const checkProviderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ channel: z.enum(["email", "whatsapp"]) }).parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ ok: boolean; reason?: string }> => {
     await assertAdmin({ supabase: context.supabase, userId: context.userId });
     const { checkProvider } = await import("./dispatch.server");
     return checkProvider(data.channel, context.supabase as never);
@@ -45,14 +45,15 @@ export const sendTestMessage = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ ok: boolean; providerMessageId?: string | null; error?: string; status?: number }> => {
     await assertAdmin({ supabase: context.supabase, userId: context.userId });
     const { sendTest } = await import("./dispatch.server");
-    return sendTest(data.channel, context.supabase as never, {
+    const r = await sendTest(data.channel, context.supabase as never, {
       to: data.to,
       subject: data.subject,
       body: data.body,
     });
+    return { ok: r.ok, providerMessageId: r.providerMessageId ?? null, error: r.error, status: r.status };
   });
 
 export const dispatchQueueNow = createServerFn({ method: "POST" })
