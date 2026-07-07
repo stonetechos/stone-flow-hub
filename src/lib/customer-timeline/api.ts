@@ -100,6 +100,18 @@ export async function getCustomerTimeline(customerId: string, limit = 400): Prom
     }));
   });
   push(async () => {
+    const { data } = await from("installations").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `ins-${r.id}`, kind: "installation" as const,
+      at: r.actual_end_date ?? r.actual_start_date ?? r.planned_start_date ?? r.created_at ?? "",
+      title: `Installation ${r.installation_no ?? ""}`,
+      subtitle: r.site_address ?? null,
+      status: r.status ?? null, refNo: r.installation_no ?? null,
+      href: `/installations/${r.id}`,
+    }));
+  });
+
+  push(async () => {
     const { data } = await from("site_visits").select("*, project:projects!inner(customer_id)").eq("project.customer_id", customerId).limit(limit);
     return (data ?? []).map((r: Any) => ({
       id: `sv-${r.id}`, kind: "site_visit" as const,
