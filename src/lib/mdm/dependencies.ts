@@ -2,14 +2,23 @@
  * Master Data dependency scanner.
  *
  * Wraps the `dependency_summary(entity_type, entity_id)` Postgres RPC that
- * returns per-module reference counts for a master record (customer, vendor,
- * project, product). Used by SafeDeleteDialog to explain why a delete is
- * blocked and to offer clickable shortcuts to the linked records.
+ * returns per-module reference counts for any core business record. This is
+ * the reusable delete-validation service used by SafeDeleteDialog and by the
+ * admin-only `purge_entity` RPC. Each new entity kind added on the SQL side
+ * is picked up automatically here by widening `MdmEntityType`.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 
-export type MdmEntityType = "customer" | "vendor" | "project" | "product";
+export type MdmEntityType =
+  | "customer"
+  | "vendor"
+  | "project"
+  | "product"
+  | "estimate"
+  | "quote"
+  | "sales_order"
+  | "purchase_order";
 
 export interface DependencyRow {
   /** Human-readable module name, e.g. "Projects", "Invoices". */
@@ -42,11 +51,14 @@ const BLOCKING_MODULES = new Set([
   "Refunds",
   "Production Orders",
   "RFQ Requests",
+  "Vendor Quotes",
   "Quote Items",
   "Invoice Items",
   "RFQ Items",
   "Estimate Items",
   "Inventory Items",
+  "Dispatches",
+  "Ledger Entries",
 ]);
 
 export async function scanDependencies(

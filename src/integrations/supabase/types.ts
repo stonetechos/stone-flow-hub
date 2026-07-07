@@ -412,6 +412,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          archived_at: string | null
           billing_address: string | null
           city: string | null
           company_id: string | null
@@ -421,11 +422,14 @@ export type Database = {
           currency_code: string
           customer_code: string
           customer_type: Database["public"]["Enums"]["customer_type"]
+          deleted_at: string | null
+          deleted_by: string | null
           external_ref: Json | null
           gst_number: string | null
           id: string
           is_active: boolean
           is_demo: boolean
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes: string | null
           pan: string | null
@@ -440,6 +444,7 @@ export type Database = {
           workflow_state: Json | null
         }
         Insert: {
+          archived_at?: string | null
           billing_address?: string | null
           city?: string | null
           company_id?: string | null
@@ -449,11 +454,14 @@ export type Database = {
           currency_code?: string
           customer_code: string
           customer_type?: Database["public"]["Enums"]["customer_type"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           external_ref?: Json | null
           gst_number?: string | null
           id?: string
           is_active?: boolean
           is_demo?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes?: string | null
           pan?: string | null
@@ -468,6 +476,7 @@ export type Database = {
           workflow_state?: Json | null
         }
         Update: {
+          archived_at?: string | null
           billing_address?: string | null
           city?: string | null
           company_id?: string | null
@@ -477,11 +486,14 @@ export type Database = {
           currency_code?: string
           customer_code?: string
           customer_type?: Database["public"]["Enums"]["customer_type"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           external_ref?: Json | null
           gst_number?: string | null
           id?: string
           is_active?: boolean
           is_demo?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name?: string
           notes?: string | null
           pan?: string | null
@@ -2887,6 +2899,7 @@ export type Database = {
         Row: {
           ai_tags: string[]
           application_ids: string[]
+          archived_at: string | null
           auto_description: string | null
           category_id: string | null
           colour: string | null
@@ -2898,6 +2911,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           default_unit: Database["public"]["Enums"]["product_unit"]
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           edge_finish_id: string | null
           estimated_mfg_days: number | null
@@ -2912,6 +2927,7 @@ export type Database = {
           is_demo: boolean
           last_purchase_price_inr: number | null
           last_selling_price_inr: number | null
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           market_price_inr: number | null
           name: string
           origin_country: string | null
@@ -2939,6 +2955,7 @@ export type Database = {
         Insert: {
           ai_tags?: string[]
           application_ids?: string[]
+          archived_at?: string | null
           auto_description?: string | null
           category_id?: string | null
           colour?: string | null
@@ -2950,6 +2967,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           default_unit?: Database["public"]["Enums"]["product_unit"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           edge_finish_id?: string | null
           estimated_mfg_days?: number | null
@@ -2964,6 +2983,7 @@ export type Database = {
           is_demo?: boolean
           last_purchase_price_inr?: number | null
           last_selling_price_inr?: number | null
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           market_price_inr?: number | null
           name: string
           origin_country?: string | null
@@ -2991,6 +3011,7 @@ export type Database = {
         Update: {
           ai_tags?: string[]
           application_ids?: string[]
+          archived_at?: string | null
           auto_description?: string | null
           category_id?: string | null
           colour?: string | null
@@ -3002,6 +3023,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           default_unit?: Database["public"]["Enums"]["product_unit"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           edge_finish_id?: string | null
           estimated_mfg_days?: number | null
@@ -3016,6 +3039,7 @@ export type Database = {
           is_demo?: boolean
           last_purchase_price_inr?: number | null
           last_selling_price_inr?: number | null
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           market_price_inr?: number | null
           name?: string
           origin_country?: string | null
@@ -3228,6 +3252,7 @@ export type Database = {
         Row: {
           architect_contact_id: string | null
           architect_name: string | null
+          archived_at: string | null
           area_sqft: number | null
           city: string | null
           company_id: string | null
@@ -3236,6 +3261,8 @@ export type Database = {
           created_by: string | null
           currency_code: string
           customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
           expected_completion_date: string | null
           expected_start_date: string | null
           expected_value_inr: number | null
@@ -3243,6 +3270,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_demo: boolean
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes: string | null
           owner_user_id: string | null
@@ -3259,6 +3287,7 @@ export type Database = {
         Insert: {
           architect_contact_id?: string | null
           architect_name?: string | null
+          archived_at?: string | null
           area_sqft?: number | null
           city?: string | null
           company_id?: string | null
@@ -3267,6 +3296,8 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           customer_id: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           expected_completion_date?: string | null
           expected_start_date?: string | null
           expected_value_inr?: number | null
@@ -3274,6 +3305,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_demo?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes?: string | null
           owner_user_id?: string | null
@@ -3290,6 +3322,7 @@ export type Database = {
         Update: {
           architect_contact_id?: string | null
           architect_name?: string | null
+          archived_at?: string | null
           area_sqft?: number | null
           city?: string | null
           company_id?: string | null
@@ -3298,6 +3331,8 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           customer_id?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           expected_completion_date?: string | null
           expected_start_date?: string | null
           expected_value_inr?: number | null
@@ -3305,6 +3340,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_demo?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name?: string
           notes?: string | null
           owner_user_id?: string | null
@@ -4749,6 +4785,68 @@ export type Database = {
           },
         ]
       }
+      vendor_ledger_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credit: number
+          currency_code: string
+          debit: number
+          description: string | null
+          entry_date: string
+          id: string
+          metadata: Json
+          ref_no: string | null
+          route: string | null
+          source_id: string | null
+          source_type: string
+          status: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credit?: number
+          currency_code?: string
+          debit?: number
+          description?: string | null
+          entry_date?: string
+          id?: string
+          metadata?: Json
+          ref_no?: string | null
+          route?: string | null
+          source_id?: string | null
+          source_type: string
+          status?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credit?: number
+          currency_code?: string
+          debit?: number
+          description?: string | null
+          entry_date?: string
+          id?: string
+          metadata?: Json
+          ref_no?: string | null
+          route?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_ledger_entries_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_performance_cache: {
         Row: {
           approval_pct: number
@@ -5309,6 +5407,7 @@ export type Database = {
       vendors: {
         Row: {
           address: string | null
+          archived_at: string | null
           bank_account: string | null
           bank_name: string | null
           city: string | null
@@ -5321,6 +5420,8 @@ export type Database = {
           currency_code: string
           daily_capacity: number | null
           daily_capacity_uom: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           external_ref: Json | null
           gst_number: string | null
@@ -5330,6 +5431,7 @@ export type Database = {
           is_demo: boolean
           is_preferred: boolean
           lead_time_days: number | null
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           max_slab_length_mm: number | null
           max_slab_width_mm: number | null
           mobile_number: string | null
@@ -5351,6 +5453,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
           bank_account?: string | null
           bank_name?: string | null
           city?: string | null
@@ -5363,6 +5466,8 @@ export type Database = {
           currency_code?: string
           daily_capacity?: number | null
           daily_capacity_uom?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           external_ref?: Json | null
           gst_number?: string | null
@@ -5372,6 +5477,7 @@ export type Database = {
           is_demo?: boolean
           is_preferred?: boolean
           lead_time_days?: number | null
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
           mobile_number?: string | null
@@ -5393,6 +5499,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
           bank_account?: string | null
           bank_name?: string | null
           city?: string | null
@@ -5405,6 +5512,8 @@ export type Database = {
           currency_code?: string
           daily_capacity?: number | null
           daily_capacity_uom?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           external_ref?: Json | null
           gst_number?: string | null
@@ -5414,6 +5523,7 @@ export type Database = {
           is_demo?: boolean
           is_preferred?: boolean
           lead_time_days?: number | null
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           max_slab_length_mm?: number | null
           max_slab_width_mm?: number | null
           mobile_number?: string | null
@@ -5449,6 +5559,34 @@ export type Database = {
           status: string | null
         }
         Relationships: []
+      }
+      vendor_ledger: {
+        Row: {
+          created_at: string | null
+          credit: number | null
+          currency_code: string | null
+          debit: number | null
+          description: string | null
+          entry_date: string | null
+          id: string | null
+          metadata: Json | null
+          ref_no: string | null
+          route: string | null
+          running_balance: number | null
+          source_id: string | null
+          source_type: string | null
+          status: string | null
+          vendor_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_ledger_entries_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -5525,6 +5663,10 @@ export type Database = {
         Returns: string
       }
       next_code: { Args: { _prefix: string }; Returns: string }
+      purge_entity: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: undefined
+      }
       recalc_estimate_totals: {
         Args: { _estimate_id: string }
         Returns: undefined
@@ -5630,6 +5772,23 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      vendor_ledger_upsert: {
+        Args: {
+          _credit: number
+          _currency_code: string
+          _debit: number
+          _description: string
+          _entry_date: string
+          _metadata: Json
+          _ref_no: string
+          _route: string
+          _source_id: string
+          _source_type: string
+          _status: string
+          _vendor_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
@@ -5743,6 +5902,7 @@ export type Database = {
         | "completed"
         | "lost"
         | "cancelled"
+      mdm_lifecycle_status: "active" | "inactive" | "archived" | "deleted"
       notification_channel: "email" | "whatsapp" | "sms" | "push"
       notification_event:
         | "RFQ_CREATED"
@@ -6143,6 +6303,7 @@ export const Constants = {
         "lost",
         "cancelled",
       ],
+      mdm_lifecycle_status: ["active", "inactive", "archived", "deleted"],
       notification_channel: ["email", "whatsapp", "sms", "push"],
       notification_event: [
         "RFQ_CREATED",

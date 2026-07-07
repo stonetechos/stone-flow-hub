@@ -31,7 +31,7 @@ import {
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { invalidateProduct, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -207,15 +207,16 @@ function ProductsPage() {
       )}
 
       <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete product?"
-        description={
-          toDelete ? `${toDelete.name} (${toDelete.product_code}) will be permanently removed.` : ""
+        entityType="product"
+        entityId={toDelete?.id ?? null}
+        entityLabel={
+          toDelete ? `${toDelete.name} (${toDelete.product_code})` : ""
         }
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
     </div>
   );

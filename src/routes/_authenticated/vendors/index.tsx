@@ -23,7 +23,11 @@ import {
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
+import { LifecycleMenuItems } from "@/components/mdm/LifecycleMenu";
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
 import { qk } from "@/lib/query-keys";
 import { invalidateVendor, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -131,68 +135,75 @@ function VendorsPage() {
                 <TableHead>City</TableHead>
                 <TableHead>GST</TableHead>
                 <TableHead>Payment terms</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((v) => (
-                <TableRow key={v.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/vendors/$vendorId"
-                      params={{ vendorId: v.id }}
-                      className="hover:underline"
-                    >
-                      {v.vendor_code}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link
-                      to="/vendors/$vendorId"
-                      params={{ vendorId: v.id }}
-                      className="hover:underline"
-                    >
-                      {v.company_name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{v.city ?? "—"}</TableCell>
-                  <TableCell>{v.gst_number ?? "—"}</TableCell>
-                  <TableCell>{v.payment_terms ?? "—"}</TableCell>
-                  <TableCell>
-                    <RowActions
-                      extra={
-                        <DropdownMenuItem asChild>
-                          <Link to="/vendors/$vendorId" params={{ vendorId: v.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> Open
-                          </Link>
-                        </DropdownMenuItem>
-                      }
-                      onEdit={() => {
-                        setEditing(v);
-                        setFormOpen(true);
-                      }}
-                      onDelete={() => setToDelete(v)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {query.data!.map((v) => {
+                const status = ((v as unknown as { lifecycle_status?: LifecycleStatus })
+                  .lifecycle_status ?? (v.is_active ? "active" : "inactive")) as LifecycleStatus;
+                return (
+                  <TableRow key={v.id}>
+                    <TableCell className="font-mono text-xs">
+                      <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                        {v.vendor_code}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                        {v.company_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{v.city ?? "—"}</TableCell>
+                    <TableCell>{v.gst_number ?? "—"}</TableCell>
+                    <TableCell>{v.payment_terms ?? "—"}</TableCell>
+                    <TableCell>
+                      <LifecycleBadge status={status} />
+                    </TableCell>
+                    <TableCell>
+                      <RowActions
+                        extra={
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link to="/vendors/$vendorId" params={{ vendorId: v.id }}>
+                                <ExternalLink className="mr-2 h-4 w-4" /> Open
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <LifecycleMenuItems
+                              entityType="vendor"
+                              entityId={v.id}
+                              currentStatus={status}
+                            />
+                          </>
+                        }
+                        onEdit={() => {
+                          setEditing(v);
+                          setFormOpen(true);
+                        }}
+                        onDelete={() => setToDelete(v)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
 
       <VendorFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete vendor?"
-        description={
-          toDelete
-            ? `${toDelete.company_name} (${toDelete.vendor_code}) will be permanently removed.`
-            : ""
+        entityType="vendor"
+        entityId={toDelete?.id ?? null}
+        entityLabel={
+          toDelete ? `${toDelete.company_name} (${toDelete.vendor_code})` : ""
         }
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
     </div>
   );

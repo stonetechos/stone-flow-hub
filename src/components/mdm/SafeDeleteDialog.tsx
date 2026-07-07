@@ -162,13 +162,14 @@ export function SafeDeleteDialog({
 
 function entityLabelHeading(t: MdmEntityType): string {
   switch (t) {
-    case "customer":
-      return "customer";
-    case "vendor":
-      return "vendor";
-    case "project":
-      return "project";
-    case "product":
-      return "product";
+    case "customer":       return "customer";
+    case "vendor":         return "vendor";
+    case "project":        return "project";
+    case "product":        return "product";
+    case "estimate":       return "estimate";
+    case "quote":          return "quotation";
+    case "sales_order":    return "sales order";
+    case "purchase_order": return "purchase order";
+    default:               return t;
   }
 }
