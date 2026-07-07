@@ -104,9 +104,11 @@ import { Route as AuthenticatedDashboardsProcurementHealthRouteImport } from './
 import { Route as AuthenticatedDashboardsProcurementCalendarRouteImport } from './routes/_authenticated/dashboards/procurement-calendar'
 import { Route as AuthenticatedDashboardsProcurementRouteImport } from './routes/_authenticated/dashboards/procurement'
 import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/_authenticated/dashboards/management'
+import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
 import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './routes/_authenticated/vendors/$vendorId.timeline'
 import { Route as AuthenticatedVendorsVendorIdLedgerRouteImport } from './routes/_authenticated/vendors/$vendorId.ledger'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
@@ -661,6 +663,12 @@ const AuthenticatedDashboardsManagementRoute =
     path: '/dashboards/management',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsCollectionsRoute =
+  AuthenticatedDashboardsCollectionsRouteImport.update({
+    id: '/dashboards/collections',
+    path: '/dashboards/collections',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCustomersCustomerIdRoute =
   AuthenticatedCustomersCustomerIdRouteImport.update({
     id: '/customers/$customerId',
@@ -676,6 +684,12 @@ const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
     path: '/api/public/webhooks/razorpay',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksCustomerPaymentRemindersRoute =
+  ApiPublicHooksCustomerPaymentRemindersRouteImport.update({
+    id: '/api/public/hooks/customer-payment-reminders',
+    path: '/api/public/hooks/customer-payment-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedVendorsVendorIdTimelineRoute =
@@ -759,6 +773,7 @@ export interface FileRoutesByFullPath {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -846,6 +861,7 @@ export interface FileRoutesByFullPath {
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
@@ -868,6 +884,7 @@ export interface FileRoutesByTo {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -955,6 +972,7 @@ export interface FileRoutesByTo {
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
@@ -979,6 +997,7 @@ export interface FileRoutesById {
   '/vendor/profile': typeof VendorProfileRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/_authenticated/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/_authenticated/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -1066,6 +1085,7 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/_authenticated/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/_authenticated/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
@@ -1090,6 +1110,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/collections'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
@@ -1177,6 +1198,7 @@ export interface FileRouteTypes {
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
+    | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1199,6 +1221,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/users'
     | '/customers/$customerId'
+    | '/dashboards/collections'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
@@ -1286,6 +1309,7 @@ export interface FileRouteTypes {
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
+    | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/webhooks/razorpay'
   id:
     | '__root__'
@@ -1309,6 +1333,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
+    | '/_authenticated/dashboards/collections'
     | '/_authenticated/dashboards/management'
     | '/_authenticated/dashboards/procurement'
     | '/_authenticated/dashboards/procurement-calendar'
@@ -1396,6 +1421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders/$id/edit'
     | '/_authenticated/vendors/$vendorId/ledger'
     | '/_authenticated/vendors/$vendorId/timeline'
+    | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
@@ -1405,6 +1431,7 @@ export interface RootRouteChildren {
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
+  ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -2075,6 +2102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsManagementRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/collections': {
+      id: '/_authenticated/dashboards/collections'
+      path: '/dashboards/collections'
+      fullPath: '/dashboards/collections'
+      preLoaderRoute: typeof AuthenticatedDashboardsCollectionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/customers/$customerId': {
       id: '/_authenticated/customers/$customerId'
       path: '/customers/$customerId'
@@ -2094,6 +2128,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/webhooks/razorpay'
       fullPath: '/api/public/webhooks/razorpay'
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/customer-payment-reminders': {
+      id: '/api/public/hooks/customer-payment-reminders'
+      path: '/api/public/hooks/customer-payment-reminders'
+      fullPath: '/api/public/hooks/customer-payment-reminders'
+      preLoaderRoute: typeof ApiPublicHooksCustomerPaymentRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vendors/$vendorId/timeline': {
@@ -2316,6 +2357,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
   AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
   AuthenticatedDashboardsProcurementRoute: typeof AuthenticatedDashboardsProcurementRoute
   AuthenticatedDashboardsProcurementCalendarRoute: typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -2408,6 +2450,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedCustomersCustomerIdRoute:
     AuthenticatedCustomersCustomerIdRouteWithChildren,
+  AuthenticatedDashboardsCollectionsRoute:
+    AuthenticatedDashboardsCollectionsRoute,
   AuthenticatedDashboardsManagementRoute:
     AuthenticatedDashboardsManagementRoute,
   AuthenticatedDashboardsProcurementRoute:
@@ -2526,6 +2570,8 @@ const rootRouteChildren: RootRouteChildren = {
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PayLinkIdRoute: PayLinkIdRoute,
+  ApiPublicHooksCustomerPaymentRemindersRoute:
+    ApiPublicHooksCustomerPaymentRemindersRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport

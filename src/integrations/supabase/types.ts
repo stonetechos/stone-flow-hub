@@ -380,6 +380,85 @@ export type Database = {
           },
         ]
       }
+      customer_payment_schedules: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          due_date: string | null
+          estimate_id: string | null
+          id: string
+          label: string
+          last_reminder_at: string | null
+          last_reminder_stage: string | null
+          milestone_no: number
+          notes: string | null
+          paid_amount: number
+          pct: number
+          project_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          customer_id: string
+          due_date?: string | null
+          estimate_id?: string | null
+          id?: string
+          label: string
+          last_reminder_at?: string | null
+          last_reminder_stage?: string | null
+          milestone_no: number
+          notes?: string | null
+          paid_amount?: number
+          pct?: number
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          due_date?: string | null
+          estimate_id?: string | null
+          id?: string
+          label?: string
+          last_reminder_at?: string | null
+          last_reminder_stage?: string | null
+          milestone_no?: number
+          notes?: string | null
+          paid_amount?: number
+          pct?: number
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_payment_schedules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payment_schedules_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payment_schedules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_tags: {
         Row: {
           customer_id: string
@@ -6065,6 +6144,52 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_payment_dashboard: {
+        Row: {
+          amount: number | null
+          balance_due: number | null
+          bucket: string | null
+          customer_code: string | null
+          customer_id: string | null
+          customer_name: string | null
+          days_to_due: number | null
+          due_date: string | null
+          estimate_id: string | null
+          estimate_no: string | null
+          id: string | null
+          label: string | null
+          last_reminder_at: string | null
+          last_reminder_stage: string | null
+          milestone_no: number | null
+          paid_amount: number | null
+          project_id: string | null
+          project_name: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_payment_schedules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payment_schedules_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payment_schedules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_stock_ledger: {
         Row: {
           inventory_item_id: string | null
@@ -6149,6 +6274,33 @@ export type Database = {
       }
     }
     Functions: {
+      approve_estimate: {
+        Args: { _estimate_id: string; _override_schedule?: Json }
+        Returns: {
+          amount: number
+          created_at: string
+          customer_id: string
+          due_date: string | null
+          estimate_id: string | null
+          id: string
+          label: string
+          last_reminder_at: string | null
+          last_reminder_stage: string | null
+          milestone_no: number
+          notes: string | null
+          paid_amount: number
+          pct: number
+          project_id: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "customer_payment_schedules"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       convert_quote_to_invoice: {
         Args: { p_due_date?: string; p_quote_id: string }
         Returns: {
@@ -6198,6 +6350,10 @@ export type Database = {
         Args: { _customer_id: string; _since: string }
         Returns: number
       }
+      default_customer_payment_schedule: {
+        Args: { _template: string; _total: number }
+        Returns: Json
+      }
       default_payment_schedule_for: {
         Args: { _template: string; _total: number }
         Returns: Json
@@ -6210,6 +6366,7 @@ export type Database = {
           route: string
         }[]
       }
+      generate_customer_payment_reminders: { Args: never; Returns: number }
       generate_overdue_procurement_followups: { Args: never; Returns: number }
       has_any_role: {
         Args: {
@@ -6279,6 +6436,33 @@ export type Database = {
           vendor_code: string
           vendor_id: string
         }[]
+      }
+      record_schedule_payment: {
+        Args: { _amount: number; _receipt_no?: string; _schedule_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          customer_id: string
+          due_date: string | null
+          estimate_id: string | null
+          id: string
+          label: string
+          last_reminder_at: string | null
+          last_reminder_stage: string | null
+          milestone_no: number
+          notes: string | null
+          paid_amount: number
+          pct: number
+          project_id: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customer_payment_schedules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       reset_demo_data: { Args: never; Returns: undefined }
       seed_demo_data: { Args: never; Returns: undefined }
