@@ -207,15 +207,16 @@ function ProductsPage() {
       )}
 
       <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete product?"
-        description={
-          toDelete ? `${toDelete.name} (${toDelete.product_code}) will be permanently removed.` : ""
+        entityType="product"
+        entityId={toDelete?.id ?? null}
+        entityLabel={
+          toDelete ? `${toDelete.name} (${toDelete.product_code})` : ""
         }
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
     </div>
   );
