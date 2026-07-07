@@ -233,6 +233,12 @@ function CompareRfqPage() {
         }
         loading={reviseMut.isPending}
       />
+
+      <CreatePoFromQuoteDialog
+        quoteId={poQuoteId}
+        open={!!poQuoteId}
+        onOpenChange={(o) => !o && setPoQuoteId(null)}
+      />
     </div>
   );
 }
