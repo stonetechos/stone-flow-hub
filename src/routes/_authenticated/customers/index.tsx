@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { invalidateCustomer, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
