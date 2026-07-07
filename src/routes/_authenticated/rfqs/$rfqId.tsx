@@ -44,6 +44,9 @@ import {
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { RfqVendorRecommendations } from "@/components/rfqs/RfqVendorRecommendations";
+import { ProcurementIntelligencePanel } from "@/components/procurement/ProcurementIntelligencePanel";
+import { CustomerRequirementAttachments } from "@/components/rfqs/CustomerRequirementAttachments";
+import { CreatePoFromQuoteDialog } from "@/components/procurement/CreatePoFromQuoteDialog";
 
 export const Route = createFileRoute("/_authenticated/rfqs/$rfqId")({
   ssr: false,
@@ -61,6 +64,7 @@ function CompareRfqPage() {
   const [revisionFor, setRevisionFor] = useState<QuoteComparisonRow | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [poQuoteId, setPoQuoteId] = useState<string | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["rfq-compare", rfqId] });
 
@@ -127,24 +131,18 @@ function CompareRfqPage() {
         title={`Compare quotes · ${bundle.rfqNo}`}
         subtitle={`${bundle.projectName ?? "—"} · ${bundle.rows.length} vendor${bundle.rows.length === 1 ? "" : "s"} · ${submittedCount} submitted${bundle.dueDate ? ` · due ${bundle.dueDate}` : ""}`}
         actions={
-          approvedRow ? (
-            <Link
-              to="/purchase-orders/new"
-              search={{
-                vendor: approvedRow.vendor.id,
-                project: bundle.projectId ?? undefined,
-              }}
-            >
-              <Button size="sm">
-                <ShoppingCart className="mr-1.5 h-4 w-4" />
-                Convert to Purchase Order
-              </Button>
-            </Link>
+          approvedRow?.quote?.id ? (
+            <Button size="sm" onClick={() => setPoQuoteId(approvedRow.quote!.id)}>
+              <ShoppingCart className="mr-1.5 h-4 w-4" />
+              Create Purchase Order
+            </Button>
           ) : null
         }
       />
-      <div className="mb-4">
+      <div className="mb-4 space-y-4">
         <RfqVendorRecommendations rfqId={rfqId} />
+        <ProcurementIntelligencePanel rows={bundle.rows} />
+        <CustomerRequirementAttachments enquiryId={bundle.enquiryId} projectId={bundle.projectId} />
       </div>
 
       {bundle.rows.length === 0 ? (
@@ -234,6 +232,12 @@ function CompareRfqPage() {
           revisionFor && reviseMut.mutate({ requestId: revisionFor.request.id, note })
         }
         loading={reviseMut.isPending}
+      />
+
+      <CreatePoFromQuoteDialog
+        quoteId={poQuoteId}
+        open={!!poQuoteId}
+        onOpenChange={(o) => !o && setPoQuoteId(null)}
       />
     </div>
   );
