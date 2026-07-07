@@ -1,5 +1,5 @@
 /** Completion certificate — reuses branded PDF generator via print dialog. */
-import { renderDocHtml, printHtml, type PdfDoc } from "@/lib/pdf/generator";
+import { printPdf, type PdfDoc } from "@/lib/pdf/generator";
 
 export function printCompletionCertificate(input: {
   installation_no: string;
