@@ -190,6 +190,43 @@ export function invalidatePayment(qc: QueryClient, id?: string, invoiceId?: stri
   bump(qc, qk.activity.recent);
 }
 
+export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: string): void {
+  bump(qc, qk.receipts.all);
+  if (id) {
+    bump(qc, qk.receipts.byId(id));
+    bump(qc, qk.receipts.allocations(id));
+  }
+  if (customerId) {
+    bump(qc, qk.receipts.byCustomer(customerId));
+    bump(qc, qk.customerLedger.byCustomer(customerId));
+    bump(qc, qk.customerLedger.summary(customerId));
+    bump(qc, qk.receipts.openInvoices(customerId));
+  }
+  // Allocations touch invoice totals + status.
+  bump(qc, qk.invoices.all);
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
+export function invalidateMessage(qc: QueryClient, id?: string, entity?: { type: string; id: string }): void {
+  bump(qc, qk.messages.all);
+  if (id) {
+    bump(qc, qk.messages.byId(id));
+    bump(qc, qk.messages.events(id));
+  }
+  if (entity) bump(qc, qk.messages.byEntity(entity.type, entity.id));
+}
+
+export function invalidateMessageTemplate(qc: QueryClient, code?: string): void {
+  bump(qc, qk.messageTemplates.all);
+  if (code) bump(qc, qk.messageTemplates.byCode(code));
+}
+
+export function invalidateAppSetting(qc: QueryClient, key?: string): void {
+  bump(qc, qk.appSettings.all);
+  if (key) bump(qc, qk.appSettings.byKey(key));
+}
+
 export function invalidateInventory(qc: QueryClient, id?: string): void {
   bump(qc, qk.inventory.all);
   if (id) bump(qc, qk.inventory.byId(id));
