@@ -8,7 +8,9 @@ import {
   CalendarClock,
   Sparkles,
   CircleDollarSign,
+  Wrench,
 } from "lucide-react";
+
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
@@ -66,7 +68,14 @@ const ROLES = [
     desc: "Customer payment schedules, overdue, AI collection priority.",
     icon: CircleDollarSign,
   },
+  {
+    to: "/dashboards/installation",
+    title: "Installation",
+    desc: "Active sites, teams, delays, material shortages, sign-offs.",
+    icon: Wrench,
+  },
 ] as const;
+
 
 function DashboardsIndex() {
   return (

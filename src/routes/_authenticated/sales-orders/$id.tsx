@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { ProductionOrdersPanel } from "@/components/manufacturing/ProductionOrdersPanel";
+import { SalesOrderInstallationPanel } from "@/components/installation/SalesOrderInstallationPanel";
+
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getSalesOrder } from "@/lib/sales-orders/api";
@@ -151,6 +153,8 @@ function SalesOrderDetailPage() {
             </CardContent>
           </Card>
           <ProductionOrdersPanel salesOrderId={r.id} />
+          <SalesOrderInstallationPanel salesOrderId={r.id} />
+
           <NotesPanel
             table="sales_orders"
             id={r.id}

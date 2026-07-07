@@ -5,7 +5,9 @@ import { AppError, mapDbError } from "@/lib/errors";
 export type TimelineKind =
   | "enquiry" | "estimate" | "quote" | "sales_order"
   | "invoice" | "receipt" | "payment" | "dispatch"
-  | "site_visit" | "followup" | "message" | "comment" | "task";
+  | "site_visit" | "followup" | "message" | "comment" | "task"
+  | "installation";
+
 
 export interface TimelineEvent {
   id: string;
@@ -97,6 +99,18 @@ export async function getCustomerTimeline(customerId: string, limit = 400): Prom
       refNo: r.dispatch_no ?? null, href: `/dispatch/${r.id}`,
     }));
   });
+  push(async () => {
+    const { data } = await from("installations").select("*").eq("customer_id", customerId).limit(limit);
+    return (data ?? []).map((r: Any) => ({
+      id: `ins-${r.id}`, kind: "installation" as const,
+      at: r.actual_end_date ?? r.actual_start_date ?? r.planned_start_date ?? r.created_at ?? "",
+      title: `Installation ${r.installation_no ?? ""}`,
+      subtitle: r.site_address ?? null,
+      status: r.status ?? null, refNo: r.installation_no ?? null,
+      href: `/installations/${r.id}`,
+    }));
+  });
+
   push(async () => {
     const { data } = await from("site_visits").select("*, project:projects!inner(customer_id)").eq("project.customer_id", customerId).limit(limit);
     return (data ?? []).map((r: Any) => ({

@@ -44,6 +44,8 @@ import { Route as AuthenticatedMastersIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedManufacturingIndexRouteImport } from './routes/_authenticated/manufacturing/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
+import { Route as AuthenticatedInstallationsIndexRouteImport } from './routes/_authenticated/installations/index'
+import { Route as AuthenticatedInstallationTeamsIndexRouteImport } from './routes/_authenticated/installation-teams/index'
 import { Route as AuthenticatedGrnsIndexRouteImport } from './routes/_authenticated/grns/index'
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
 import { Route as AuthenticatedEstimatesIndexRouteImport } from './routes/_authenticated/estimates/index'
@@ -89,6 +91,7 @@ import { Route as AuthenticatedInventorySlabsRouteImport } from './routes/_authe
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_authenticated/inventory/movements'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
+import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_authenticated/installations/$id'
 import { Route as AuthenticatedGrnsNewRouteImport } from './routes/_authenticated/grns/new'
 import { Route as AuthenticatedGrnsIdRouteImport } from './routes/_authenticated/grns/$id'
 import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenticated/followups/$id'
@@ -104,6 +107,7 @@ import { Route as AuthenticatedDashboardsProcurementHealthRouteImport } from './
 import { Route as AuthenticatedDashboardsProcurementCalendarRouteImport } from './routes/_authenticated/dashboards/procurement-calendar'
 import { Route as AuthenticatedDashboardsProcurementRouteImport } from './routes/_authenticated/dashboards/procurement'
 import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/_authenticated/dashboards/management'
+import { Route as AuthenticatedDashboardsInstallationRouteImport } from './routes/_authenticated/dashboards/installation'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -309,6 +313,18 @@ const AuthenticatedInventoryIndexRoute =
   AuthenticatedInventoryIndexRouteImport.update({
     id: '/inventory/',
     path: '/inventory/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInstallationsIndexRoute =
+  AuthenticatedInstallationsIndexRouteImport.update({
+    id: '/installations/',
+    path: '/installations/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInstallationTeamsIndexRoute =
+  AuthenticatedInstallationTeamsIndexRouteImport.update({
+    id: '/installation-teams/',
+    path: '/installation-teams/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedGrnsIndexRoute = AuthenticatedGrnsIndexRouteImport.update({
@@ -576,6 +592,12 @@ const AuthenticatedInventoryIdRoute =
     path: '/inventory/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInstallationsIdRoute =
+  AuthenticatedInstallationsIdRouteImport.update({
+    id: '/installations/$id',
+    path: '/installations/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGrnsNewRoute = AuthenticatedGrnsNewRouteImport.update({
   id: '/grns/new',
   path: '/grns/new',
@@ -661,6 +683,12 @@ const AuthenticatedDashboardsManagementRoute =
   AuthenticatedDashboardsManagementRouteImport.update({
     id: '/dashboards/management',
     path: '/dashboards/management',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsInstallationRoute =
+  AuthenticatedDashboardsInstallationRouteImport.update({
+    id: '/dashboards/installation',
+    path: '/dashboards/installation',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardsCollectionsRoute =
@@ -774,6 +802,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -789,6 +818,7 @@ export interface FileRoutesByFullPath {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -834,6 +864,8 @@ export interface FileRoutesByFullPath {
   '/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/grns/': typeof AuthenticatedGrnsIndexRoute
+  '/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
+  '/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
@@ -885,6 +917,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -900,6 +933,7 @@ export interface FileRoutesByTo {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -945,6 +979,8 @@ export interface FileRoutesByTo {
   '/estimates': typeof AuthenticatedEstimatesIndexRoute
   '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/grns': typeof AuthenticatedGrnsIndexRoute
+  '/installation-teams': typeof AuthenticatedInstallationTeamsIndexRoute
+  '/installations': typeof AuthenticatedInstallationsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/manufacturing': typeof AuthenticatedManufacturingIndexRoute
@@ -998,6 +1034,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/_authenticated/dashboards/installation': typeof AuthenticatedDashboardsInstallationRoute
   '/_authenticated/dashboards/management': typeof AuthenticatedDashboardsManagementRoute
   '/_authenticated/dashboards/procurement': typeof AuthenticatedDashboardsProcurementRoute
   '/_authenticated/dashboards/procurement-calendar': typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -1013,6 +1050,7 @@ export interface FileRoutesById {
   '/_authenticated/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/_authenticated/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/_authenticated/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/_authenticated/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -1058,6 +1096,8 @@ export interface FileRoutesById {
   '/_authenticated/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/grns/': typeof AuthenticatedGrnsIndexRoute
+  '/_authenticated/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
+  '/_authenticated/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/manufacturing/': typeof AuthenticatedManufacturingIndexRoute
@@ -1111,6 +1151,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/collections'
+    | '/dashboards/installation'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
@@ -1126,6 +1167,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/movements'
     | '/inventory/new'
@@ -1171,6 +1213,8 @@ export interface FileRouteTypes {
     | '/estimates/'
     | '/followups/'
     | '/grns/'
+    | '/installation-teams/'
+    | '/installations/'
     | '/inventory/'
     | '/invoices/'
     | '/manufacturing/'
@@ -1222,6 +1266,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/collections'
+    | '/dashboards/installation'
     | '/dashboards/management'
     | '/dashboards/procurement'
     | '/dashboards/procurement-calendar'
@@ -1237,6 +1282,7 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/movements'
     | '/inventory/new'
@@ -1282,6 +1328,8 @@ export interface FileRouteTypes {
     | '/estimates'
     | '/followups'
     | '/grns'
+    | '/installation-teams'
+    | '/installations'
     | '/inventory'
     | '/invoices'
     | '/manufacturing'
@@ -1334,6 +1382,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/collections'
+    | '/_authenticated/dashboards/installation'
     | '/_authenticated/dashboards/management'
     | '/_authenticated/dashboards/procurement'
     | '/_authenticated/dashboards/procurement-calendar'
@@ -1349,6 +1398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/$id'
     | '/_authenticated/grns/$id'
     | '/_authenticated/grns/new'
+    | '/_authenticated/installations/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/movements'
     | '/_authenticated/inventory/new'
@@ -1394,6 +1444,8 @@ export interface FileRouteTypes {
     | '/_authenticated/estimates/'
     | '/_authenticated/followups/'
     | '/_authenticated/grns/'
+    | '/_authenticated/installation-teams/'
+    | '/_authenticated/installations/'
     | '/_authenticated/inventory/'
     | '/_authenticated/invoices/'
     | '/_authenticated/manufacturing/'
@@ -1680,6 +1732,20 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory/'
       preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/installations/': {
+      id: '/_authenticated/installations/'
+      path: '/installations'
+      fullPath: '/installations/'
+      preLoaderRoute: typeof AuthenticatedInstallationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/installation-teams/': {
+      id: '/_authenticated/installation-teams/'
+      path: '/installation-teams'
+      fullPath: '/installation-teams/'
+      preLoaderRoute: typeof AuthenticatedInstallationTeamsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/grns/': {
@@ -1997,6 +2063,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/installations/$id': {
+      id: '/_authenticated/installations/$id'
+      path: '/installations/$id'
+      fullPath: '/installations/$id'
+      preLoaderRoute: typeof AuthenticatedInstallationsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/grns/new': {
       id: '/_authenticated/grns/new'
       path: '/grns/new'
@@ -2100,6 +2173,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboards/management'
       fullPath: '/dashboards/management'
       preLoaderRoute: typeof AuthenticatedDashboardsManagementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/installation': {
+      id: '/_authenticated/dashboards/installation'
+      path: '/dashboards/installation'
+      fullPath: '/dashboards/installation'
+      preLoaderRoute: typeof AuthenticatedDashboardsInstallationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboards/collections': {
@@ -2358,6 +2438,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
+  AuthenticatedDashboardsInstallationRoute: typeof AuthenticatedDashboardsInstallationRoute
   AuthenticatedDashboardsManagementRoute: typeof AuthenticatedDashboardsManagementRoute
   AuthenticatedDashboardsProcurementRoute: typeof AuthenticatedDashboardsProcurementRoute
   AuthenticatedDashboardsProcurementCalendarRoute: typeof AuthenticatedDashboardsProcurementCalendarRoute
@@ -2373,6 +2454,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIdRoute: typeof AuthenticatedFollowupsIdRoute
   AuthenticatedGrnsIdRoute: typeof AuthenticatedGrnsIdRoute
   AuthenticatedGrnsNewRoute: typeof AuthenticatedGrnsNewRoute
+  AuthenticatedInstallationsIdRoute: typeof AuthenticatedInstallationsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
@@ -2417,6 +2499,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEstimatesIndexRoute: typeof AuthenticatedEstimatesIndexRoute
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedGrnsIndexRoute: typeof AuthenticatedGrnsIndexRoute
+  AuthenticatedInstallationTeamsIndexRoute: typeof AuthenticatedInstallationTeamsIndexRoute
+  AuthenticatedInstallationsIndexRoute: typeof AuthenticatedInstallationsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
   AuthenticatedManufacturingIndexRoute: typeof AuthenticatedManufacturingIndexRoute
@@ -2452,6 +2536,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsCollectionsRoute:
     AuthenticatedDashboardsCollectionsRoute,
+  AuthenticatedDashboardsInstallationRoute:
+    AuthenticatedDashboardsInstallationRoute,
   AuthenticatedDashboardsManagementRoute:
     AuthenticatedDashboardsManagementRoute,
   AuthenticatedDashboardsProcurementRoute:
@@ -2472,6 +2558,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIdRoute: AuthenticatedFollowupsIdRoute,
   AuthenticatedGrnsIdRoute: AuthenticatedGrnsIdRoute,
   AuthenticatedGrnsNewRoute: AuthenticatedGrnsNewRoute,
+  AuthenticatedInstallationsIdRoute: AuthenticatedInstallationsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
@@ -2524,6 +2611,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEstimatesIndexRoute: AuthenticatedEstimatesIndexRoute,
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedGrnsIndexRoute: AuthenticatedGrnsIndexRoute,
+  AuthenticatedInstallationTeamsIndexRoute:
+    AuthenticatedInstallationTeamsIndexRoute,
+  AuthenticatedInstallationsIndexRoute: AuthenticatedInstallationsIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
   AuthenticatedManufacturingIndexRoute: AuthenticatedManufacturingIndexRoute,
