@@ -67,6 +67,30 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           code: string
@@ -243,6 +267,69 @@ export type Database = {
           },
         ]
       }
+      credit_notes: {
+        Row: {
+          amount: number
+          cn_no: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          id: string
+          invoice_id: string | null
+          is_demo: boolean
+          issued_at: string
+          reason: string | null
+          remarks: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          cn_no?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          invoice_id?: string | null
+          is_demo?: boolean
+          issued_at?: string
+          reason?: string | null
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cn_no?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          invoice_id?: string | null
+          is_demo?: boolean
+          issued_at?: string
+          reason?: string | null
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_contacts: {
         Row: {
           created_at: string
@@ -409,6 +496,69 @@ export type Database = {
           workflow_state?: Json | null
         }
         Relationships: []
+      }
+      debit_notes: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          dn_no: string
+          id: string
+          invoice_id: string | null
+          is_demo: boolean
+          issued_at: string
+          reason: string | null
+          remarks: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          dn_no?: string
+          id?: string
+          invoice_id?: string | null
+          is_demo?: boolean
+          issued_at?: string
+          reason?: string | null
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          dn_no?: string
+          id?: string
+          invoice_id?: string | null
+          is_demo?: boolean
+          issued_at?: string
+          reason?: string | null
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debit_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dispatches: {
         Row: {
@@ -1524,6 +1674,175 @@ export type Database = {
           sort_order?: number
           typical_days?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      message_delivery_events: {
+        Row: {
+          event: string
+          id: string
+          message_id: string
+          occurred_at: string
+          payload: Json
+          provider: string | null
+          provider_ref: string | null
+        }
+        Insert: {
+          event: string
+          id?: string
+          message_id: string
+          occurred_at?: string
+          payload?: Json
+          provider?: string | null
+          provider_ref?: string | null
+        }
+        Update: {
+          event?: string
+          id?: string
+          message_id?: string
+          occurred_at?: string
+          payload?: Json
+          provider?: string | null
+          provider_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_delivery_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "message_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_queue: {
+        Row: {
+          attempts: number
+          bcc_address: string | null
+          body: string
+          cc_address: string | null
+          channel: string
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          last_error: string | null
+          max_attempts: number
+          message_no: string
+          next_retry_at: string | null
+          provider: string | null
+          provider_message_id: string | null
+          related_id: string | null
+          related_type: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_code: string | null
+          to_address: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          attempts?: number
+          bcc_address?: string | null
+          body: string
+          cc_address?: string | null
+          channel: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          message_no?: string
+          next_retry_at?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_code?: string | null
+          to_address: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          attempts?: number
+          bcc_address?: string | null
+          body?: string
+          cc_address?: string | null
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          message_no?: string
+          next_retry_at?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_code?: string | null
+          to_address?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_queue_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          body: string
+          category: string
+          channel: string
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          subject: string | null
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          body: string
+          category?: string
+          channel: string
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          subject?: string | null
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          body?: string
+          category?: string
+          channel?: string
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject?: string | null
+          updated_at?: string
+          variables?: Json
         }
         Relationships: []
       }
@@ -3389,6 +3708,229 @@ export type Database = {
           },
         ]
       }
+      receipt_allocations: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          receipt_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          receipt_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          receipt_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_allocations_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_allocations_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipts: {
+        Row: {
+          account_used: string | null
+          allocated_amount: number
+          amount: number
+          attachment_file_id: string | null
+          bank_charges: number
+          bank_name: string | null
+          cheque_date: string | null
+          cheque_no: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string
+          id: string
+          is_demo: boolean
+          method: Database["public"]["Enums"]["payment_method"]
+          net_amount: number | null
+          provider: string | null
+          provider_ref: string | null
+          receipt_no: string
+          received_at: string
+          received_by: string | null
+          reference_no: string | null
+          remarks: string | null
+          status: string
+          tds_amount: number
+          unallocated_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          account_used?: string | null
+          allocated_amount?: number
+          amount: number
+          attachment_file_id?: string | null
+          bank_charges?: number
+          bank_name?: string | null
+          cheque_date?: string | null
+          cheque_no?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id: string
+          id?: string
+          is_demo?: boolean
+          method: Database["public"]["Enums"]["payment_method"]
+          net_amount?: number | null
+          provider?: string | null
+          provider_ref?: string | null
+          receipt_no?: string
+          received_at?: string
+          received_by?: string | null
+          reference_no?: string | null
+          remarks?: string | null
+          status?: string
+          tds_amount?: number
+          unallocated_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          account_used?: string | null
+          allocated_amount?: number
+          amount?: number
+          attachment_file_id?: string | null
+          bank_charges?: number
+          bank_name?: string | null
+          cheque_date?: string | null
+          cheque_no?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          customer_id?: string
+          id?: string
+          is_demo?: boolean
+          method?: Database["public"]["Enums"]["payment_method"]
+          net_amount?: number | null
+          provider?: string | null
+          provider_ref?: string | null
+          receipt_no?: string
+          received_at?: string
+          received_by?: string | null
+          reference_no?: string | null
+          remarks?: string | null
+          status?: string
+          tds_amount?: number
+          unallocated_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_attachment_file_id_fkey"
+            columns: ["attachment_file_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refunds: {
+        Row: {
+          amount: number
+          bank_name: string | null
+          created_at: string
+          created_by: string | null
+          credit_note_id: string | null
+          customer_id: string
+          id: string
+          is_demo: boolean
+          method: Database["public"]["Enums"]["payment_method"]
+          receipt_id: string | null
+          reference_no: string | null
+          refund_no: string
+          refunded_at: string
+          remarks: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_note_id?: string | null
+          customer_id: string
+          id?: string
+          is_demo?: boolean
+          method: Database["public"]["Enums"]["payment_method"]
+          receipt_id?: string | null
+          reference_no?: string | null
+          refund_no?: string
+          refunded_at?: string
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_note_id?: string | null
+          customer_id?: string
+          id?: string
+          is_demo?: boolean
+          method?: Database["public"]["Enums"]["payment_method"]
+          receipt_id?: string | null
+          reference_no?: string | null
+          refund_no?: string
+          refunded_at?: string
+          remarks?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_credit_note_id_fkey"
+            columns: ["credit_note_id"]
+            isOneToOne: false
+            referencedRelation: "credit_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfq_items: {
         Row: {
           enquiry_item_id: string | null
@@ -4739,7 +5281,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      customer_ledger: {
+        Row: {
+          credit: number | null
+          customer_id: string | null
+          debit: number | null
+          entry_date: string | null
+          entry_type: string | null
+          ref_id: string | null
+          ref_no: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       convert_quote_to_invoice: {
@@ -4812,6 +5366,10 @@ export type Database = {
         Returns: undefined
       }
       recalc_invoice_totals: {
+        Args: { _invoice_id: string }
+        Returns: undefined
+      }
+      recalc_invoice_with_receipts: {
         Args: { _invoice_id: string }
         Returns: undefined
       }
@@ -5049,6 +5607,11 @@ export type Database = {
         | "cheque"
         | "cash"
         | "other"
+        | "neft"
+        | "rtgs"
+        | "imps"
+        | "card"
+        | "gateway"
       preferred_transport: "road" | "rail" | "sea" | "air" | "mixed"
       product_unit:
         | "sqft"
@@ -5446,6 +6009,11 @@ export const Constants = {
         "cheque",
         "cash",
         "other",
+        "neft",
+        "rtgs",
+        "imps",
+        "card",
+        "gateway",
       ],
       preferred_transport: ["road", "rail", "sea", "air", "mixed"],
       product_unit: [

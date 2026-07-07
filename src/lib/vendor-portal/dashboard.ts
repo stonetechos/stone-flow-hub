@@ -11,9 +11,11 @@ export interface VendorKpis {
   dispatchDue: number;
 }
 
-async function count(table: "vendor_requests" | "vendor_quotes" | "purchase_orders",
-  build: (q: ReturnType<typeof supabase.from>) => ReturnType<typeof supabase.from>): Promise<number> {
-  // Simple exact count.
+async function count(
+  table: "vendor_requests" | "vendor_quotes" | "purchase_orders",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  build: (q: any) => any,
+): Promise<number> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const base: any = supabase.from(table).select("*", { count: "exact", head: true });
   const { count: c, error } = await build(base);
