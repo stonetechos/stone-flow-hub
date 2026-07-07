@@ -19,22 +19,41 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
         const token = url.searchParams.get("hub.verify_token");
         const challenge = url.searchParams.get("hub.challenge");
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: setting } = await supabaseAdmin
-          .from("app_settings")
-          .select("value")
-          .eq("key", "notifications.whatsapp")
-          .maybeSingle();
-        const cfg = ((setting as { value?: { verify_token?: string } } | null)?.value ?? {}) as { verify_token?: string };
-        const expected = cfg.verify_token || process.env.WHATSAPP_VERIFY_TOKEN;
+        // Prefer the env-var secret; fall back to the app_settings row.
+        // Any DB failure MUST NOT break the handshake — Meta only cares about
+        // 200 + challenge (or 403). Wrap the fallback lookup defensively.
+        let expected: string | undefined = process.env.WHATSAPP_VERIFY_TOKEN;
+        if (!expected) {
+          try {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data: setting } = await supabaseAdmin
+              .from("app_settings")
+              .select("value")
+              .eq("key", "notifications.whatsapp")
+              .maybeSingle();
+            const cfg = ((setting as { value?: { verify_token?: string } } | null)?.value ?? {}) as { verify_token?: string };
+            expected = cfg.verify_token;
+          } catch {
+            // ignore — expected stays undefined, we'll 403 below
+          }
+        }
 
         if (mode === "subscribe" && token && expected && token === expected && challenge) {
-          // Record verification success (idempotent)
-          const { updateWhatsappStatus } = await import("@/lib/notifications/dispatch.server");
-          await updateWhatsappStatus(supabaseAdmin as never, { webhook_verified_at: new Date().toISOString() });
-          return new Response(challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
+          // Best-effort audit — never block the handshake on a DB failure.
+          try {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { updateWhatsappStatus } = await import("@/lib/notifications/dispatch.server");
+            await updateWhatsappStatus(supabaseAdmin as never, { webhook_verified_at: new Date().toISOString() });
+          } catch { /* ignore */ }
+          return new Response(challenge, {
+            status: 200,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          });
         }
-        return new Response("Forbidden", { status: 403 });
+        return new Response("Forbidden", {
+          status: 403,
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
       },
 
       POST: async ({ request }) => {
