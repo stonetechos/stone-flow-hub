@@ -109,12 +109,19 @@ export const runWhatsappConnectionTest = createServerFn({ method: "POST" })
 
 export const getWhatsappHealth = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ status: Record<string, unknown>; webhookUrl: string }> => {
+  .handler(async ({ context }) => {
     await assertAdmin({ supabase: context.supabase, userId: context.userId });
     const supabase = context.supabase as never as import("@supabase/supabase-js").SupabaseClient;
     const { data } = await supabase.from("app_settings").select("value").eq("key", "communication.whatsapp.status").maybeSingle();
-    return {
-      status: ((data as { value?: Record<string, unknown> } | null)?.value ?? {}) as Record<string, unknown>,
-      webhookUrl: "/api/public/hooks/whatsapp",
+    const value = ((data as { value?: Record<string, string | undefined> } | null)?.value ?? {}) as {
+      last_send_at?: string;
+      last_send_to?: string;
+      last_send_wamid?: string;
+      last_incoming_at?: string;
+      last_incoming_from?: string;
+      last_incoming_body?: string;
+      last_incoming_wamid?: string;
+      webhook_verified_at?: string;
     };
+    return { status: value, webhookUrl: "/api/public/hooks/whatsapp" };
   });
