@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BarChart3, ShoppingCart, Factory, Briefcase, Truck } from "lucide-react";
+import { BarChart3, ShoppingCart, Factory, Briefcase, Truck, CalendarClock, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
@@ -14,6 +14,8 @@ const ROLES = [
   { to: "/dashboards/production", title: "Production", desc: "Live status, QC, delays, installation.", icon: Factory },
   { to: "/dashboards/management", title: "Management", desc: "Revenue, outstanding, project profit.", icon: Briefcase },
   { to: "/dashboards/procurement", title: "Procurement", desc: "RFQ pipeline, PO deliveries, vendor payments.", icon: Truck },
+  { to: "/dashboards/procurement-calendar", title: "Procurement Calendar", desc: "Follow-ups, commitments, arrivals, payments, dispatch.", icon: CalendarClock },
+  { to: "/dashboards/procurement-health", title: "AI Procurement Health", desc: "AI grades vendor reliability, quality, cash flow, risk.", icon: Sparkles },
 ] as const;
 
 function DashboardsIndex() {

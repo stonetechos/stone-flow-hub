@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Printer } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History, Printer, Truck, Banknote } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -45,12 +45,32 @@ function PurchaseOrderDetailPage() {
           <DetailActionBar
             pin={{ entityType: "purchase_order", entityId: id, label: r.po_no }}
             primary={
-              <Button
-                size="sm"
-                onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}
-              >
-                <Pencil className="mr-2 h-4 w-4" /> Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    nav({ to: "/grns/new", search: { po: id, vendor: r.vendor_id ?? undefined, project: r.project_id ?? undefined } })
+                  }
+                >
+                  <Truck className="mr-2 h-4 w-4" /> Receive (GRN)
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    nav({ to: "/vendor-payments/new", search: { po: id, vendor: r.vendor_id ?? undefined } })
+                  }
+                >
+                  <Banknote className="mr-2 h-4 w-4" /> Pay vendor
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => nav({ to: "/purchase-orders/$id/edit", params: { id } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+              </div>
             }
             overflow={[
               {

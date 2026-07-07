@@ -234,6 +234,34 @@ export function invalidateInventory(qc: QueryClient, id?: string): void {
   bump(qc, qk.activity.recent);
 }
 
+export function invalidateGrn(qc: QueryClient, id?: string): void {
+  bump(qc, qk.grns.all);
+  if (id) {
+    bump(qc, qk.grns.byId(id));
+    bump(qc, qk.grns.items(id));
+    bump(qc, qk.grns.inspections(id));
+  }
+  bump(qc, qk.inventoryMovements.all);
+  bump(qc, qk.inventoryMovements.stockLedger);
+  bump(qc, ["vendor_ledger"]);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.dashboard);
+}
+
+export function invalidateVendorPayment(qc: QueryClient, vendorId?: string): void {
+  bump(qc, qk.vendorPayments.all);
+  if (vendorId) bump(qc, qk.vendorPayments.byVendor(vendorId));
+  bump(qc, ["vendor_ledger"]);
+  bump(qc, qk.activity.recent);
+  bump(qc, qk.dashboard);
+}
+
+export function invalidateInventoryMovements(qc: QueryClient): void {
+  bump(qc, qk.inventoryMovements.all);
+  bump(qc, qk.inventoryMovements.stockLedger);
+}
+
+
 
 export function invalidateFollowup(
   qc: QueryClient,
