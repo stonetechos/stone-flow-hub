@@ -44,6 +44,9 @@ import {
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { RfqVendorRecommendations } from "@/components/rfqs/RfqVendorRecommendations";
+import { ProcurementIntelligencePanel } from "@/components/procurement/ProcurementIntelligencePanel";
+import { CustomerRequirementAttachments } from "@/components/rfqs/CustomerRequirementAttachments";
+import { CreatePoFromQuoteDialog } from "@/components/procurement/CreatePoFromQuoteDialog";
 
 export const Route = createFileRoute("/_authenticated/rfqs/$rfqId")({
   ssr: false,
