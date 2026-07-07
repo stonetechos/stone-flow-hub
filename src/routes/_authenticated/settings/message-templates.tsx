@@ -83,7 +83,7 @@ function TemplatesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <EditTemplateDialog
-                        template={t}
+                        template={{ ...t, channel: t.channel as "email" | "whatsapp" | "sms" }}
                         trigger={<Button variant="ghost" size="sm">Edit</Button>}
                       />
                     </TableCell>
