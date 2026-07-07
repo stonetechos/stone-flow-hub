@@ -90,11 +90,12 @@ export async function sendWhatsappViaMeta(
   to: string,
   body: string,
 ): Promise<DispatchResult> {
-  const token = pickSecret(cfg.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  const c = resolveWaCfg(cfg);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
   if (!token) return { ok: false, error: "WHATSAPP_ACCESS_TOKEN secret not set" };
-  if (!cfg.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
+  if (!c.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
 
-  const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(cfg.phone_number_id)}/messages`;
+  const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}/messages`;
   const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -115,18 +116,74 @@ export async function sendWhatsappViaMeta(
   return { ok: true, providerMessageId: json.messages?.[0]?.id ?? null, raw: json };
 }
 
+/** Send an approved WhatsApp template (e.g. Meta's `hello_world` sample). */
+export async function sendWhatsappTemplate(
+  cfg: WaCfg,
+  to: string,
+  templateName = "hello_world",
+  languageCode = "en_US",
+): Promise<DispatchResult> {
+  const c = resolveWaCfg(cfg);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  if (!token) return { ok: false, error: "WHATSAPP_ACCESS_TOKEN secret not set" };
+  if (!c.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
+  const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}/messages`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: to.replace(/[^0-9]/g, ""),
+      type: "template",
+      template: { name: templateName, language: { code: languageCode } },
+    }),
+  });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown> & {
+    messages?: Array<{ id?: string }>;
+    error?: { message?: string; type?: string };
+  };
+  if (!res.ok) return { ok: false, status: res.status, error: json.error?.message || `HTTP ${res.status}`, raw: json };
+  return { ok: true, providerMessageId: json.messages?.[0]?.id ?? null, raw: json };
+}
+
 async function getSettings(supabase: SupabaseClient) {
   const rows = await supabase
     .from("app_settings")
     .select("key,value")
-    .in("key", ["notifications.email", "notifications.whatsapp", "communication.mode"]);
+    .in("key", ["notifications.email", "notifications.whatsapp", "communication.mode", "communication.whatsapp.status"]);
   const map = new Map<string, unknown>();
   for (const r of rows.data ?? []) map.set((r as { key: string }).key, (r as { value: unknown }).value);
   return {
     email: (map.get("notifications.email") ?? {}) as EmailCfg,
     whatsapp: (map.get("notifications.whatsapp") ?? {}) as WaCfg,
     mode: (map.get("communication.mode") ?? { mode: "test" }) as ModeCfg,
+    whatsappStatus: (map.get("communication.whatsapp.status") ?? {}) as WhatsappStatus,
   };
+}
+
+export interface WhatsappStatus {
+  last_send_at?: string;
+  last_send_to?: string;
+  last_send_wamid?: string;
+  last_incoming_at?: string;
+  last_incoming_from?: string;
+  last_incoming_body?: string;
+  last_incoming_wamid?: string;
+  webhook_verified_at?: string;
+}
+
+/** Merge-patch the WhatsApp status singleton in app_settings. */
+export async function updateWhatsappStatus(
+  supabase: SupabaseClient,
+  patch: Partial<WhatsappStatus>,
+): Promise<void> {
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "communication.whatsapp.status").maybeSingle();
+  const current = ((data as { value?: WhatsappStatus } | null)?.value ?? {}) as WhatsappStatus;
+  const merged = { ...current, ...patch };
+  await supabase.from("app_settings").upsert(
+    { key: "communication.whatsapp.status", value: merged as unknown as Record<string, unknown> },
+    { onConflict: "key" },
+  );
 }
 
 /** Public: verify provider credentials with a small no-op call. */
