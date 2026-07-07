@@ -6748,6 +6748,7 @@ export type Database = {
         Returns: boolean
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
+      is_staff: { Args: { _uid: string }; Returns: boolean }
       is_vendor_of: {
         Args: { _user_id: string; _vendor_id: string }
         Returns: boolean

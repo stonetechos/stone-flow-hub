@@ -11,6 +11,8 @@ import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   // Fully client-rendered: session check depends on browser storage.
+  // No pendingComponent — a differing SSR shell caused a hydration mismatch
+  // that discarded the whole tree on every visit (RC-1 audit fix).
   ssr: false,
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
@@ -18,34 +20,7 @@ export const Route = createFileRoute("/auth")({
     if (data.session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
-  // Render the same shell during SSR/hydration so React doesn't see a mismatch
-  // when the client swaps in the full AuthPage.
-  pendingComponent: AuthShell,
 });
-
-function AuthShell() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-            Stone Tech <span className="text-primary">OS</span>
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">ERP for the natural stone industry</p>
-        </div>
-        <Card className="shadow-3">
-          <CardHeader>
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription>Loading…</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-40" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
 
 function AuthPage() {
   return (
