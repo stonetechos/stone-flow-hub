@@ -67,7 +67,7 @@ export async function getExecutiveKpis(): Promise<ExecutiveKpis> {
   ] = await Promise.all([
     supabase.from("quotes").select("total").in("status", ["draft", "sent"]),
     supabase.from("estimates").select("id", { count: "exact", head: true })
-      .in("status", ["draft", "under_review"]),
+      .in("status", ["draft", "sent"]),
     supabase.from("quotes").select("id", { count: "exact", head: true }).in("status", ["draft", "sent"]),
     supabase.from("sales_orders").select("id", { count: "exact", head: true }).eq("status", "confirmed"),
     supabase.from("projects").select("id", { count: "exact", head: true })
@@ -78,14 +78,14 @@ export async function getExecutiveKpis(): Promise<ExecutiveKpis> {
       .lt("planned_end_at", nowIso).neq("status", "completed"),
     supabase.from("procurement_kpis" as never).select("*").maybeSingle(),
     supabase.from("installation_dashboard_kpis" as never).select("*").maybeSingle(),
-    supabase.from("dispatches").select("id", { count: "exact", head: true }).in("status", ["planned", "loading"]),
+    supabase.from("dispatches").select("id", { count: "exact", head: true }).eq("status", "planned"),
     supabase.from("customer_ledger").select("debit,credit"),
     supabase.from("vendor_ledger").select("debit,credit"),
     supabase.from("invoices").select("total").gte("issue_date", monthStart.slice(0, 10)),
     supabase.from("vendor_payments").select("amount").gte("paid_at", monthStart),
     supabase.from("payments").select("amount").gte("paid_at", monthStart),
     supabase.from("customer_payment_dashboard" as never).select("balance_due, due_date").lte("due_date", soon.slice(0, 10)),
-    supabase.from("purchase_orders").select("id,expected_date").lte("expected_date", soon.slice(0, 10)).neq("status", "cancelled").neq("status", "closed"),
+    supabase.from("purchase_orders").select("id,expected_date").lte("expected_date", soon.slice(0, 10)).not("status", "in", '("cancelled")'),
   ]);
 
   for (const r of [quotesPipeline, estPending, quotesPending, ordersConfirmed, projActive, prodInProg, prodDelayed, procKpiRow, installKpiRow, dispatchPending, customerLedger, vendorLedger, monthlySales, monthlyPurchases, monthlyCollections, inflow30, outflow30]) {

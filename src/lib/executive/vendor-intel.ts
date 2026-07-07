@@ -31,12 +31,12 @@ export interface VendorIntel {
 export async function getVendorIntel(): Promise<VendorIntel> {
   const [perfRes, vendRes, ledRes] = await Promise.all([
     supabase.from("vendor_performance_cache").select("*"),
-    supabase.from("vendors").select("id,name").eq("is_active", true),
+    supabase.from("vendors").select("id,company_name").eq("is_active", true),
     supabase.from("vendor_ledger").select("vendor_id,debit,credit"),
   ]);
   for (const r of [perfRes, vendRes, ledRes]) if (r.error) throw new AppError(mapDbError(r.error));
 
-  const nameMap = new Map<string, string>((vendRes.data ?? []).map((v) => [v.id, v.name] as const));
+  const nameMap = new Map<string, string>((vendRes.data ?? []).map((v) => [v.id, (v as { company_name: string }).company_name] as const));
   const outMap = new Map<string, number>();
   for (const r of (ledRes.data ?? []) as Array<{ vendor_id: string | null; debit: number | null; credit: number | null }>) {
     if (!r.vendor_id) continue;

@@ -40,7 +40,7 @@ export async function getForecast(horizonDays = 90, grain: ForecastGrain = "week
       .gt("balance_due", 0).lte("due_date", horizonEnd.toISOString().slice(0, 10)),
     supabase.from("purchase_orders").select("expected_date,id").not("expected_date", "is", null)
       .lte("expected_date", horizonEnd.toISOString().slice(0, 10))
-      .neq("status", "cancelled").neq("status", "closed"),
+      .not("status", "in", '("cancelled")'),
     supabase.from("payments").select("amount,paid_at").gte("paid_at", new Date(today.getTime() - 90 * 86_400_000).toISOString()),
   ]);
   for (const r of [inflowRes, outflowRes, historicPay]) if (r.error) throw new AppError(mapDbError(r.error));

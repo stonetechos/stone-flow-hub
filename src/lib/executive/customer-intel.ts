@@ -29,7 +29,7 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
     supabase.from("customers").select("id,name,created_at").eq("is_active", true).limit(2000),
     supabase.from("invoices").select("customer_id,total,balance_due,issue_date,due_date"),
     supabase.from("payments").select("invoice_id,paid_at,amount"),
-    supabase.from("enquiries").select("customer_id,expected_value_inr,created_at").limit(5000),
+    supabase.from("enquiries").select("customer_id,budget_inr,created_at").limit(5000),
   ]);
   for (const r of [custs, invs, pays, enqs]) if (r.error) throw new AppError(mapDbError(r.error));
 
@@ -66,9 +66,9 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
   }
 
   const enqPot = new Map<string, number>();
-  for (const e of (enqs.data ?? []) as Array<{ customer_id: string; expected_value_inr: number | null }>) {
+  for (const e of (enqs.data ?? []) as Array<{ customer_id: string; budget_inr: number | null }>) {
     if (!e.customer_id) continue;
-    enqPot.set(e.customer_id, (enqPot.get(e.customer_id) ?? 0) + Number(e.expected_value_inr ?? 0));
+    enqPot.set(e.customer_id, (enqPot.get(e.customer_id) ?? 0) + Number(e.budget_inr ?? 0));
   }
   const inactiveCutoff = now - 180 * 86_400_000;
 
