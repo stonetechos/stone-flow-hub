@@ -30,5 +30,5 @@ export function printCompletionCertificate(input: {
       "This is to certify that the above installation has been completed and inspected by the customer, and all works are accepted as per specification.",
     footer: "Customer signature captured electronically on file.",
   };
-  printHtml(renderDocHtml(doc));
+  printPdf(doc);
 }
