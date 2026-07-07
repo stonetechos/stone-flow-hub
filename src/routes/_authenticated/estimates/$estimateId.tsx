@@ -2,8 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, Loader2, Trash2, ArrowRightCircle, MessageCircle, Mail, FileText, History,
+  ArrowLeft,
+  Loader2,
+  Trash2,
+  ArrowRightCircle,
+  MessageCircle,
+  Mail,
+  FileText,
+  History,
+  CheckCircle2,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -14,24 +23,46 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { invalidateEstimate, invalidateQuote } from "@/lib/query-invalidation";
 import {
-  convertEstimateToQuote, deleteEstimate, getEstimate, getEstimateComponents,
-  getEstimateDocuments, getEstimateItems, getEstimateSchedule,
-  saveEstimateDocument, setEstimateStatus,
+  convertEstimateToQuote,
+  deleteEstimate,
+  getEstimate,
+  getEstimateComponents,
+  getEstimateDocuments,
+  getEstimateItems,
+  getEstimateSchedule,
+  saveEstimateDocument,
+  setEstimateStatus,
 } from "@/lib/estimates/api";
 import { renderEmailHtml, renderWhatsappText } from "@/lib/estimates/render";
 import { COST_COMPONENT_LABEL, ESTIMATE_TEMPLATES } from "@/lib/estimates/templates";
 import { formatInr } from "@/lib/format";
+import { ApproveEstimateDialog } from "@/components/customer-payments/ApproveEstimateDialog";
 import type { DbTable } from "@/lib/types";
 
 type EstStatus = DbTable<"estimates">["status"];
@@ -47,6 +78,7 @@ function EstimateDetailPage() {
   const nav = useNavigate();
   const [confirmDel, setConfirmDel] = useState(false);
   const [sendChan, setSendChan] = useState<null | "whatsapp" | "email">(null);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [draftSubject, setDraftSubject] = useState("");
   const [draftBody, setDraftBody] = useState("");
   const [draftHtml, setDraftHtml] = useState("");
@@ -172,6 +204,11 @@ function EstimateDetailPage() {
             <Button size="sm" variant="outline" onClick={() => window.print()}>
               <FileText className="mr-2 h-4 w-4" /> Print PDF
             </Button>
+            {estimate.status !== "accepted" && estimate.status !== "converted" && (
+              <Button size="sm" variant="secondary" onClick={() => setApproveOpen(true)}>
+                <CheckCircle2 className="mr-2 h-4 w-4" /> Approve &amp; create schedule
+              </Button>
+            )}
             <Button
               size="sm"
               onClick={() => convertMut.mutate()}
@@ -238,7 +275,10 @@ function EstimateDetailPage() {
                   <TableBody>
                     {(comps.data ?? []).map((c) => (
                       <TableRow key={c.id}>
-                        <TableCell>{COST_COMPONENT_LABEL[c.kind as keyof typeof COST_COMPONENT_LABEL] ?? c.kind}</TableCell>
+                        <TableCell>
+                          {COST_COMPONENT_LABEL[c.kind as keyof typeof COST_COMPONENT_LABEL] ??
+                            c.kind}
+                        </TableCell>
                         <TableCell>{c.label ?? "—"}</TableCell>
                         <TableCell className="text-right">{formatInr(c.amount)}</TableCell>
                       </TableRow>
@@ -293,7 +333,10 @@ function EstimateDetailPage() {
               ) : (
                 <ul className="space-y-1 text-sm">
                   {(docs.data ?? []).map((d) => (
-                    <li key={d.id} className="flex items-center justify-between border-b border-border/50 py-1">
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between border-b border-border/50 py-1"
+                    >
                       <span className="capitalize">
                         {d.kind.replace(/_/g, " ")} v{d.version}
                       </span>
@@ -379,10 +422,7 @@ function EstimateDetailPage() {
           {sendChan === "email" && (
             <div>
               <Label>Subject</Label>
-              <Input
-                value={draftSubject}
-                onChange={(e) => setDraftSubject(e.target.value)}
-              />
+              <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} />
             </div>
           )}
           <div className="mt-2">
@@ -397,8 +437,8 @@ function EstimateDetailPage() {
               }
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Delivery integration (WhatsApp Business Cloud / Resend) ships in Phase 3. For now,
-              the message is saved to history and ready to send.
+              Delivery integration (WhatsApp Business Cloud / Resend) ships in Phase 3. For now, the
+              message is saved to history and ready to send.
             </p>
           </div>
           <DialogFooter>
@@ -407,7 +447,9 @@ function EstimateDetailPage() {
             </Button>
             <Button
               onClick={async () => {
-                await navigator.clipboard.writeText(sendChan === "whatsapp" ? draftBody : draftHtml);
+                await navigator.clipboard.writeText(
+                  sendChan === "whatsapp" ? draftBody : draftHtml,
+                );
                 toast.success("Copied to clipboard");
               }}
             >
@@ -429,12 +471,33 @@ function EstimateDetailPage() {
         busy={delMut.isPending}
         onConfirm={() => delMut.mutate()}
       />
+
+      <ApproveEstimateDialog
+        open={approveOpen}
+        onOpenChange={setApproveOpen}
+        estimateId={estimateId}
+        estimateTotal={Number(estimate.total ?? 0)}
+        template={estimate.template}
+        currentSchedule={(sched.data ?? []).map((s) => ({
+          label: s.label,
+          pct: Number(s.pct),
+          due_offset_days: Number(s.due_offset_days),
+        }))}
+        onApproved={() => {
+          if (estimate.customer_id) {
+            nav({ to: "/customers/$customerId", params: { customerId: estimate.customer_id } });
+          }
+        }}
+      />
     </div>
   );
 }
 
 function SumRow({
-  k, v, strong, big,
+  k,
+  v,
+  strong,
+  big,
 }: {
   k: string;
   v: number | string | null;
@@ -442,7 +505,9 @@ function SumRow({
   big?: boolean;
 }) {
   return (
-    <div className={`flex items-center justify-between ${strong ? "font-semibold" : ""} ${big ? "text-base" : ""}`}>
+    <div
+      className={`flex items-center justify-between ${strong ? "font-semibold" : ""} ${big ? "text-base" : ""}`}
+    >
       <span className="text-muted-foreground">{k}</span>
       <span>{formatInr(v ?? 0)}</span>
     </div>

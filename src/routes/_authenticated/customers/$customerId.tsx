@@ -28,6 +28,7 @@ import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/Relat
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
+import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   ssr: false,
@@ -280,9 +281,13 @@ function CustomerHub() {
           />
         </TabsContent>
 
-        <TabsContent value="payments" className="mt-4">
+        <TabsContent value="payments" className="mt-4 space-y-4">
+          <CustomerPaymentCentre
+            customerId={customerId}
+            defaultTo={{ email: c.primary_email, whatsapp: c.whatsapp ?? c.primary_phone }}
+          />
           <RelatedList
-            title="Payments"
+            title="Receipts &amp; payments"
             queryKey={["hub", "customer", customerId, "payments"]}
             queryFn={() => hub.customerPayments(customerId)}
             columns={[
