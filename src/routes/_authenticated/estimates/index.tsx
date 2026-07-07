@@ -88,7 +88,7 @@ function EstimatesListPage() {
         <EmptyState
           icon={<FileText className="h-6 w-6" />}
           title="No estimates yet"
-          description="Create your first stone estimate — pick a template above."
+          message="Create your first stone estimate — pick a template above."
         />
       ) : (
         <div className="rounded-md border border-border">

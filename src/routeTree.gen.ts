@@ -39,6 +39,7 @@ import { Route as AuthenticatedManufacturingIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
+import { Route as AuthenticatedEstimatesIndexRouteImport } from './routes/_authenticated/estimates/index'
 import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
 import { Route as AuthenticatedDispatchIndexRouteImport } from './routes/_authenticated/dispatch/index'
 import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_authenticated/dashboards/index'
@@ -77,6 +78,8 @@ import { Route as AuthenticatedInventorySlabsRouteImport } from './routes/_authe
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenticated/followups/$id'
+import { Route as AuthenticatedEstimatesNewRouteImport } from './routes/_authenticated/estimates/new'
+import { Route as AuthenticatedEstimatesEstimateIdRouteImport } from './routes/_authenticated/estimates/$estimateId'
 import { Route as AuthenticatedEnquiriesEnquiryIdRouteImport } from './routes/_authenticated/enquiries/$enquiryId'
 import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenticated/dispatch/new'
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
@@ -255,6 +258,12 @@ const AuthenticatedFollowupsIndexRoute =
   AuthenticatedFollowupsIndexRouteImport.update({
     id: '/followups/',
     path: '/followups/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEstimatesIndexRoute =
+  AuthenticatedEstimatesIndexRouteImport.update({
+    id: '/estimates/',
+    path: '/estimates/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEnquiriesIndexRoute =
@@ -481,6 +490,18 @@ const AuthenticatedFollowupsIdRoute =
     path: '/followups/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEstimatesNewRoute =
+  AuthenticatedEstimatesNewRouteImport.update({
+    id: '/estimates/new',
+    path: '/estimates/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEstimatesEstimateIdRoute =
+  AuthenticatedEstimatesEstimateIdRouteImport.update({
+    id: '/estimates/$estimateId',
+    path: '/estimates/$estimateId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnquiriesEnquiryIdRoute =
   AuthenticatedEnquiriesEnquiryIdRouteImport.update({
     id: '/enquiries/$enquiryId',
@@ -606,6 +627,8 @@ export interface FileRoutesByFullPath {
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/estimates/$estimateId': typeof AuthenticatedEstimatesEstimateIdRoute
+  '/estimates/new': typeof AuthenticatedEstimatesNewRoute
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -644,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
@@ -692,6 +716,8 @@ export interface FileRoutesByTo {
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/estimates/$estimateId': typeof AuthenticatedEstimatesEstimateIdRoute
+  '/estimates/new': typeof AuthenticatedEstimatesNewRoute
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -730,6 +756,7 @@ export interface FileRoutesByTo {
   '/dashboards': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
   '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
+  '/estimates': typeof AuthenticatedEstimatesIndexRoute
   '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
@@ -780,6 +807,8 @@ export interface FileRoutesById {
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
   '/_authenticated/dispatch/new': typeof AuthenticatedDispatchNewRoute
   '/_authenticated/enquiries/$enquiryId': typeof AuthenticatedEnquiriesEnquiryIdRoute
+  '/_authenticated/estimates/$estimateId': typeof AuthenticatedEstimatesEstimateIdRoute
+  '/_authenticated/estimates/new': typeof AuthenticatedEstimatesNewRoute
   '/_authenticated/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -818,6 +847,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
+  '/_authenticated/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
@@ -868,6 +898,8 @@ export interface FileRouteTypes {
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
+    | '/estimates/$estimateId'
+    | '/estimates/new'
     | '/followups/$id'
     | '/inventory/$id'
     | '/inventory/new'
@@ -906,6 +938,7 @@ export interface FileRouteTypes {
     | '/dashboards/'
     | '/dispatch/'
     | '/enquiries/'
+    | '/estimates/'
     | '/followups/'
     | '/inventory/'
     | '/invoices/'
@@ -954,6 +987,8 @@ export interface FileRouteTypes {
     | '/dispatch/$id'
     | '/dispatch/new'
     | '/enquiries/$enquiryId'
+    | '/estimates/$estimateId'
+    | '/estimates/new'
     | '/followups/$id'
     | '/inventory/$id'
     | '/inventory/new'
@@ -992,6 +1027,7 @@ export interface FileRouteTypes {
     | '/dashboards'
     | '/dispatch'
     | '/enquiries'
+    | '/estimates'
     | '/followups'
     | '/inventory'
     | '/invoices'
@@ -1041,6 +1077,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/new'
     | '/_authenticated/enquiries/$enquiryId'
+    | '/_authenticated/estimates/$estimateId'
+    | '/_authenticated/estimates/new'
     | '/_authenticated/followups/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/new'
@@ -1079,6 +1117,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboards/'
     | '/_authenticated/dispatch/'
     | '/_authenticated/enquiries/'
+    | '/_authenticated/estimates/'
     | '/_authenticated/followups/'
     | '/_authenticated/inventory/'
     | '/_authenticated/invoices/'
@@ -1322,6 +1361,13 @@ declare module '@tanstack/react-router' {
       path: '/followups'
       fullPath: '/followups/'
       preLoaderRoute: typeof AuthenticatedFollowupsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estimates/': {
+      id: '/_authenticated/estimates/'
+      path: '/estimates'
+      fullPath: '/estimates/'
+      preLoaderRoute: typeof AuthenticatedEstimatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/enquiries/': {
@@ -1590,6 +1636,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFollowupsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/estimates/new': {
+      id: '/_authenticated/estimates/new'
+      path: '/estimates/new'
+      fullPath: '/estimates/new'
+      preLoaderRoute: typeof AuthenticatedEstimatesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/estimates/$estimateId': {
+      id: '/_authenticated/estimates/$estimateId'
+      path: '/estimates/$estimateId'
+      fullPath: '/estimates/$estimateId'
+      preLoaderRoute: typeof AuthenticatedEstimatesEstimateIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/enquiries/$enquiryId': {
       id: '/_authenticated/enquiries/$enquiryId'
       path: '/enquiries/$enquiryId'
@@ -1831,6 +1891,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
   AuthenticatedDispatchNewRoute: typeof AuthenticatedDispatchNewRoute
   AuthenticatedEnquiriesEnquiryIdRoute: typeof AuthenticatedEnquiriesEnquiryIdRoute
+  AuthenticatedEstimatesEstimateIdRoute: typeof AuthenticatedEstimatesEstimateIdRoute
+  AuthenticatedEstimatesNewRoute: typeof AuthenticatedEstimatesNewRoute
   AuthenticatedFollowupsIdRoute: typeof AuthenticatedFollowupsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
@@ -1868,6 +1930,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardsIndexRoute: typeof AuthenticatedDashboardsIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
   AuthenticatedEnquiriesIndexRoute: typeof AuthenticatedEnquiriesIndexRoute
+  AuthenticatedEstimatesIndexRoute: typeof AuthenticatedEstimatesIndexRoute
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
@@ -1904,6 +1967,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRouteWithChildren,
   AuthenticatedDispatchNewRoute: AuthenticatedDispatchNewRoute,
   AuthenticatedEnquiriesEnquiryIdRoute: AuthenticatedEnquiriesEnquiryIdRoute,
+  AuthenticatedEstimatesEstimateIdRoute: AuthenticatedEstimatesEstimateIdRoute,
+  AuthenticatedEstimatesNewRoute: AuthenticatedEstimatesNewRoute,
   AuthenticatedFollowupsIdRoute: AuthenticatedFollowupsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
@@ -1948,6 +2013,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardsIndexRoute: AuthenticatedDashboardsIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,
   AuthenticatedEnquiriesIndexRoute: AuthenticatedEnquiriesIndexRoute,
+  AuthenticatedEstimatesIndexRoute: AuthenticatedEstimatesIndexRoute,
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
