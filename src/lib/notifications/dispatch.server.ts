@@ -46,6 +46,19 @@ function pickSecret(name: string | undefined, fallback: string): string | undefi
   return process.env[key];
 }
 
+/** WhatsApp Graph API version — bumped centrally. */
+const WA_GRAPH_VERSION = "v25.0";
+
+/** Merge env-provided WhatsApp identifiers as fallbacks over app_settings. */
+export function resolveWaCfg(cfg: WaCfg): WaCfg {
+  return {
+    ...cfg,
+    phone_number_id: cfg.phone_number_id || process.env.WHATSAPP_PHONE_NUMBER_ID,
+    business_account_id: cfg.business_account_id || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
+    verify_token: cfg.verify_token || process.env.WHATSAPP_VERIFY_TOKEN,
+  };
+}
+
 /** Send one email via Resend. */
 export async function sendEmailViaResend(
   cfg: EmailCfg,
@@ -77,11 +90,12 @@ export async function sendWhatsappViaMeta(
   to: string,
   body: string,
 ): Promise<DispatchResult> {
-  const token = pickSecret(cfg.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  const c = resolveWaCfg(cfg);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
   if (!token) return { ok: false, error: "WHATSAPP_ACCESS_TOKEN secret not set" };
-  if (!cfg.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
+  if (!c.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
 
-  const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(cfg.phone_number_id)}/messages`;
+  const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}/messages`;
   const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -102,18 +116,74 @@ export async function sendWhatsappViaMeta(
   return { ok: true, providerMessageId: json.messages?.[0]?.id ?? null, raw: json };
 }
 
+/** Send an approved WhatsApp template (e.g. Meta's `hello_world` sample). */
+export async function sendWhatsappTemplate(
+  cfg: WaCfg,
+  to: string,
+  templateName = "hello_world",
+  languageCode = "en_US",
+): Promise<DispatchResult> {
+  const c = resolveWaCfg(cfg);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  if (!token) return { ok: false, error: "WHATSAPP_ACCESS_TOKEN secret not set" };
+  if (!c.phone_number_id) return { ok: false, error: "Phone Number ID not configured" };
+  const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}/messages`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: to.replace(/[^0-9]/g, ""),
+      type: "template",
+      template: { name: templateName, language: { code: languageCode } },
+    }),
+  });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown> & {
+    messages?: Array<{ id?: string }>;
+    error?: { message?: string; type?: string };
+  };
+  if (!res.ok) return { ok: false, status: res.status, error: json.error?.message || `HTTP ${res.status}`, raw: json };
+  return { ok: true, providerMessageId: json.messages?.[0]?.id ?? null, raw: json };
+}
+
 async function getSettings(supabase: SupabaseClient) {
   const rows = await supabase
     .from("app_settings")
     .select("key,value")
-    .in("key", ["notifications.email", "notifications.whatsapp", "communication.mode"]);
+    .in("key", ["notifications.email", "notifications.whatsapp", "communication.mode", "communication.whatsapp.status"]);
   const map = new Map<string, unknown>();
   for (const r of rows.data ?? []) map.set((r as { key: string }).key, (r as { value: unknown }).value);
   return {
     email: (map.get("notifications.email") ?? {}) as EmailCfg,
     whatsapp: (map.get("notifications.whatsapp") ?? {}) as WaCfg,
     mode: (map.get("communication.mode") ?? { mode: "test" }) as ModeCfg,
+    whatsappStatus: (map.get("communication.whatsapp.status") ?? {}) as WhatsappStatus,
   };
+}
+
+export interface WhatsappStatus {
+  last_send_at?: string;
+  last_send_to?: string;
+  last_send_wamid?: string;
+  last_incoming_at?: string;
+  last_incoming_from?: string;
+  last_incoming_body?: string;
+  last_incoming_wamid?: string;
+  webhook_verified_at?: string;
+}
+
+/** Merge-patch the WhatsApp status singleton in app_settings. */
+export async function updateWhatsappStatus(
+  supabase: SupabaseClient,
+  patch: Partial<WhatsappStatus>,
+): Promise<void> {
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "communication.whatsapp.status").maybeSingle();
+  const current = ((data as { value?: WhatsappStatus } | null)?.value ?? {}) as WhatsappStatus;
+  const merged = { ...current, ...patch };
+  await supabase.from("app_settings").upsert(
+    { key: "communication.whatsapp.status", value: merged as unknown as Record<string, unknown> },
+    { onConflict: "key" },
+  );
 }
 
 /** Public: verify provider credentials with a small no-op call. */
@@ -134,16 +204,69 @@ export async function checkProvider(
     return { ok: true };
   }
   if (channel === "whatsapp") {
-    const token = pickSecret(s.whatsapp.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+    const c = resolveWaCfg(s.whatsapp);
+    const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
     if (!token) return { ok: false, reason: "Missing WHATSAPP_ACCESS_TOKEN secret" };
-    if (!s.whatsapp.phone_number_id) return { ok: false, reason: "Phone Number ID not configured" };
-    const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(s.whatsapp.phone_number_id)}?fields=display_phone_number,verified_name`;
+    if (!c.phone_number_id) return { ok: false, reason: "Phone Number ID not configured" };
+    const url = `https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}?fields=display_phone_number,verified_name`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (res.status === 401 || res.status === 403) return { ok: false, reason: "Invalid access token" };
+    if (res.status === 404) return { ok: false, reason: "Invalid Phone Number ID" };
     if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
     return { ok: true };
   }
   return { ok: false, reason: "Unsupported channel" };
+}
+
+/**
+ * Full WhatsApp connection test: validates the access token, phone number ID,
+ * WABA ID, and messaging endpoint reachability.
+ */
+export async function runWhatsappConnectionTest(
+  supabase: SupabaseClient,
+): Promise<{
+  ok: boolean;
+  checks: {
+    access_token: { ok: boolean; detail?: string };
+    phone_number_id: { ok: boolean; detail?: string };
+    business_account_id: { ok: boolean; detail?: string };
+    messaging_endpoint: { ok: boolean; detail?: string };
+  };
+}> {
+  const s = await getSettings(supabase);
+  const c = resolveWaCfg(s.whatsapp);
+  const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+  const checks = {
+    access_token: { ok: false } as { ok: boolean; detail?: string },
+    phone_number_id: { ok: false } as { ok: boolean; detail?: string },
+    business_account_id: { ok: false } as { ok: boolean; detail?: string },
+    messaging_endpoint: { ok: false } as { ok: boolean; detail?: string },
+  };
+
+  if (!token) { checks.access_token.detail = "Missing WHATSAPP_ACCESS_TOKEN secret"; return { ok: false, checks }; }
+  checks.access_token.ok = true;
+
+  if (!c.phone_number_id) checks.phone_number_id.detail = "Not configured";
+  else {
+    const r = await fetch(`https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.phone_number_id)}?fields=display_phone_number,verified_name`, { headers: { Authorization: `Bearer ${token}` } });
+    const j = (await r.json().catch(() => ({}))) as { display_phone_number?: string; verified_name?: string; error?: { message?: string } };
+    if (r.status === 401 || r.status === 403) { checks.access_token.ok = false; checks.access_token.detail = "Invalid access token"; }
+    else if (r.status === 404) { checks.phone_number_id.detail = "Invalid Phone Number ID"; }
+    else if (!r.ok) { checks.phone_number_id.detail = j.error?.message || `HTTP ${r.status}`; }
+    else { checks.phone_number_id.ok = true; checks.phone_number_id.detail = `${j.verified_name ?? ""} ${j.display_phone_number ?? ""}`.trim(); checks.messaging_endpoint.ok = true; checks.messaging_endpoint.detail = "Reachable"; }
+  }
+
+  if (!c.business_account_id) checks.business_account_id.detail = "Not configured";
+  else {
+    const r = await fetch(`https://graph.facebook.com/${WA_GRAPH_VERSION}/${encodeURIComponent(c.business_account_id)}?fields=name,timezone_id`, { headers: { Authorization: `Bearer ${token}` } });
+    const j = (await r.json().catch(() => ({}))) as { name?: string; error?: { message?: string } };
+    if (r.status === 404) checks.business_account_id.detail = "Invalid WABA ID";
+    else if (!r.ok) checks.business_account_id.detail = j.error?.message || `HTTP ${r.status}`;
+    else { checks.business_account_id.ok = true; checks.business_account_id.detail = j.name ?? "OK"; }
+  }
+
+  const ok = checks.access_token.ok && checks.phone_number_id.ok && checks.business_account_id.ok && checks.messaging_endpoint.ok;
+  return { ok, checks };
 }
 
 /** Public: send a one-off test message honouring TEST/LIVE mode. */
@@ -242,6 +365,13 @@ export async function dispatchQueueBatch(
         provider_ref: res.providerMessageId ?? null,
         payload: (res.raw ?? {}) as never,
       });
+      if (m.channel === "whatsapp") {
+        await updateWhatsappStatus(supabase, {
+          last_send_at: new Date().toISOString(),
+          last_send_to: redirectedTo,
+          last_send_wamid: res.providerMessageId ?? undefined,
+        });
+      }
     } else {
       failed++;
       const done = attempts >= m.max_attempts;
