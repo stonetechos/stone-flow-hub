@@ -9,6 +9,12 @@ import {
   Sparkles,
   CircleDollarSign,
   Wrench,
+  Crown,
+  LineChart as LineChartIcon,
+  Wallet,
+  Users,
+  AlertTriangle,
+  Gauge,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
