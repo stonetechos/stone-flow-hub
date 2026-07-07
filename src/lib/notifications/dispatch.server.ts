@@ -18,7 +18,7 @@ export interface DispatchResult {
   providerMessageId?: string | null;
   error?: string;
   status?: number;
-  raw?: unknown;
+  raw?: Record<string, unknown> | null;
 }
 
 interface EmailCfg {
@@ -66,7 +66,7 @@ export async function sendEmailViaResend(
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const json = (await res.json().catch(() => ({}))) as { id?: string; message?: string; name?: string };
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown> & { id?: string; message?: string; name?: string };
   if (!res.ok) return { ok: false, status: res.status, error: json.message || json.name || `HTTP ${res.status}`, raw: json };
   return { ok: true, providerMessageId: json.id ?? null, raw: json };
 }
@@ -92,7 +92,7 @@ export async function sendWhatsappViaMeta(
       text: { body },
     }),
   });
-  const json = (await res.json().catch(() => ({}))) as {
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown> & {
     messages?: Array<{ id?: string }>;
     error?: { message?: string; type?: string };
   };
