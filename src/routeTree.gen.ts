@@ -51,6 +51,7 @@ import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authe
 import { Route as AuthenticatedSalesOrdersIdRouteImport } from './routes/_authenticated/sales-orders/$id'
 import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authenticated/rfqs/$rfqId'
 import { Route as AuthenticatedReceiptsNewRouteImport } from './routes/_authenticated/receipts/new'
+import { Route as AuthenticatedReceiptsReceiptIdRouteImport } from './routes/_authenticated/receipts/$receiptId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes/new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes/$quoteId'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders/new'
@@ -330,6 +331,12 @@ const AuthenticatedReceiptsNewRoute =
   AuthenticatedReceiptsNewRouteImport.update({
     id: '/receipts/new',
     path: '/receipts/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReceiptsReceiptIdRoute =
+  AuthenticatedReceiptsReceiptIdRouteImport.update({
+    id: '/receipts/$receiptId',
+    path: '/receipts/$receiptId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
@@ -672,6 +679,7 @@ export interface FileRoutesByFullPath {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
@@ -763,6 +771,7 @@ export interface FileRoutesByTo {
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
@@ -856,6 +865,7 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/_authenticated/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/_authenticated/receipts/new': typeof AuthenticatedReceiptsNewRoute
   '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
@@ -949,6 +959,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/receipts/$receiptId'
     | '/receipts/new'
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
@@ -1040,6 +1051,7 @@ export interface FileRouteTypes {
     | '/purchase-orders/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/receipts/$receiptId'
     | '/receipts/new'
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
@@ -1132,6 +1144,7 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-orders/new'
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/quotes/new'
+    | '/_authenticated/receipts/$receiptId'
     | '/_authenticated/receipts/new'
     | '/_authenticated/rfqs/$rfqId'
     | '/_authenticated/sales-orders/$id'
@@ -1471,6 +1484,13 @@ declare module '@tanstack/react-router' {
       path: '/receipts/new'
       fullPath: '/receipts/new'
       preLoaderRoute: typeof AuthenticatedReceiptsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/receipts/$receiptId': {
+      id: '/_authenticated/receipts/$receiptId'
+      path: '/receipts/$receiptId'
+      fullPath: '/receipts/$receiptId'
+      preLoaderRoute: typeof AuthenticatedReceiptsReceiptIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/quotes/new': {
@@ -1962,6 +1982,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
+  AuthenticatedReceiptsReceiptIdRoute: typeof AuthenticatedReceiptsReceiptIdRoute
   AuthenticatedReceiptsNewRoute: typeof AuthenticatedReceiptsNewRoute
   AuthenticatedRfqsRfqIdRoute: typeof AuthenticatedRfqsRfqIdRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
@@ -2047,6 +2068,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRouteWithChildren,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
+  AuthenticatedReceiptsReceiptIdRoute: AuthenticatedReceiptsReceiptIdRoute,
   AuthenticatedReceiptsNewRoute: AuthenticatedReceiptsNewRoute,
   AuthenticatedRfqsRfqIdRoute: AuthenticatedRfqsRfqIdRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
