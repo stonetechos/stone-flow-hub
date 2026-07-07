@@ -249,11 +249,48 @@ function WhatsAppProviderCard() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const templateFn = useServerFn(sendWhatsappTestTemplate);
+  const templateTest = useMutation({
+    mutationFn: () => templateFn({ data: { template: "hello_world", language: "en_US" } }),
+    onSuccess: (r) => r.ok ? toast.success(`WhatsApp template sent (id ${r.providerMessageId ?? "n/a"})`) : toast.error(r.error ?? "Template send failed"),
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const connFn = useServerFn(runWhatsappConnectionTest);
+  const conn = useMutation({
+    mutationFn: () => connFn({ data: {} }),
+    onSuccess: (r) => {
+      const parts = [
+        `Token ${r.checks.access_token.ok ? "✓" : "✗"}`,
+        `Phone ID ${r.checks.phone_number_id.ok ? "✓" : "✗"}`,
+        `WABA ${r.checks.business_account_id.ok ? "✓" : "✗"}`,
+        `Endpoint ${r.checks.messaging_endpoint.ok ? "✓" : "✗"}`,
+      ].join(" · ");
+      r.ok ? toast.success(parts) : toast.error(parts);
+      status.refetch();
+      health.refetch();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const healthFn = useServerFn(getWhatsappHealth);
+  const health = useQuery({
+    queryKey: ["whatsapp-health"],
+    queryFn: () => healthFn(),
+    staleTime: 15_000,
+  });
+  const st = health.data?.status ?? {};
+
   return (
     <Card className="shadow-1">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-sm">WhatsApp</CardTitle>
-        <ProviderStatusBadge query={status} />
+        <div className="flex items-center gap-2">
+          <WhatsappStatusBadge query={status} />
+          <Badge variant={st.webhook_verified_at ? "default" : "outline"}>
+            {st.webhook_verified_at ? "Webhook verified" : "Webhook pending"}
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
@@ -268,31 +305,58 @@ function WhatsAppProviderCard() {
         </div>
         <div className="space-y-1.5">
           <Label>Phone Number ID</Label>
-          <Input value={cfg.phone_number_id ?? ""} onChange={(e) => setCfg({ ...cfg, phone_number_id: e.target.value })} />
+          <Input value={cfg.phone_number_id ?? ""} onChange={(e) => setCfg({ ...cfg, phone_number_id: e.target.value })} placeholder="from WHATSAPP_PHONE_NUMBER_ID secret" />
         </div>
         <div className="space-y-1.5">
           <Label>Business Account ID</Label>
-          <Input value={cfg.business_account_id ?? ""} onChange={(e) => setCfg({ ...cfg, business_account_id: e.target.value })} />
+          <Input value={cfg.business_account_id ?? ""} onChange={(e) => setCfg({ ...cfg, business_account_id: e.target.value })} placeholder="from WHATSAPP_BUSINESS_ACCOUNT_ID secret" />
         </div>
         <div className="space-y-1.5">
           <Label>Webhook Verify Token</Label>
-          <Input value={cfg.verify_token ?? ""} onChange={(e) => setCfg({ ...cfg, verify_token: e.target.value })} />
+          <Input value={cfg.verify_token ?? ""} onChange={(e) => setCfg({ ...cfg, verify_token: e.target.value })} placeholder="from WHATSAPP_VERIFY_TOKEN secret" />
         </div>
         <div className="space-y-1.5 md:col-span-2">
           <Label>Permanent access token secret name</Label>
           <Input value={cfg.access_token_secret_name ?? ""} onChange={(e) => setCfg({ ...cfg, access_token_secret_name: e.target.value })} placeholder="WHATSAPP_ACCESS_TOKEN" />
         </div>
+
+        <div className="md:col-span-2 grid gap-2 rounded-md border p-3 text-xs text-muted-foreground">
+          <div><strong>Webhook URL:</strong> <code>/api/public/hooks/whatsapp</code></div>
+          <div><strong>Last successful send:</strong> {st.last_send_at ? `${new Date(st.last_send_at).toLocaleString()} → ${st.last_send_to ?? ""}` : "—"}</div>
+          <div><strong>Last incoming message:</strong> {st.last_incoming_at ? `${new Date(st.last_incoming_at).toLocaleString()} from ${st.last_incoming_from ?? ""} — "${(st.last_incoming_body ?? "").slice(0, 80)}"` : "—"}</div>
+          {st.webhook_verified_at && <div><strong>Webhook verified:</strong> {new Date(st.webhook_verified_at).toLocaleString()}</div>}
+        </div>
+
         <div className="md:col-span-2 flex flex-wrap gap-2">
           <Button onClick={() => save.mutate()} disabled={save.isPending}><Save className="mr-2 h-4 w-4" /> Save</Button>
+          <Button variant="outline" onClick={() => templateTest.mutate()} disabled={templateTest.isPending}>
+            {templateTest.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+            Send WhatsApp Test
+          </Button>
           <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending}>
             {test.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-            Send test WhatsApp
+            Send text test
           </Button>
-          <Button variant="ghost" onClick={() => status.refetch()}>Re-check connection</Button>
+          <Button variant="outline" onClick={() => conn.mutate()} disabled={conn.isPending}>
+            {conn.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+            Run Connection Test
+          </Button>
+          <Button variant="ghost" onClick={() => { status.refetch(); health.refetch(); }}>Refresh</Button>
         </div>
       </CardContent>
     </Card>
   );
+}
+
+function WhatsappStatusBadge({ query }: { query: { data?: { ok: boolean; reason?: string }; isFetching: boolean; isError: boolean } }) {
+  if (query.isFetching) return <Badge variant="outline"><Loader2 className="mr-1 h-3 w-3 animate-spin" /> checking</Badge>;
+  if (query.isError) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> error</Badge>;
+  if (!query.data) return <Badge variant="outline">not configured</Badge>;
+  if (query.data.ok) return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30"><CheckCircle2 className="mr-1 h-3 w-3" /> Connected</Badge>;
+  const r = query.data.reason ?? "";
+  if (/invalid access token|401|403/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Token</Badge>;
+  if (/invalid phone number id|404/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Phone Number ID</Badge>;
+  return <Badge variant="outline"><XCircle className="mr-1 h-3 w-3" /> {r || "disconnected"}</Badge>;
 }
 
 // ---------------- SMS provider (unchanged) ----------------
