@@ -25,6 +25,7 @@ import { Route as AuthenticatedMessageTemplatesRouteImport } from './routes/_aut
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCommunicationRouteImport } from './routes/_authenticated/communication'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as VendorRfqsIndexRouteImport } from './routes/vendor/rfqs/index'
@@ -120,6 +121,7 @@ import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/public/hooks/dispatch-queue'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
 import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './routes/_authenticated/vendors/$vendorId.timeline'
@@ -215,6 +217,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommunicationRoute =
+  AuthenticatedCommunicationRouteImport.update({
+    id: '/communication',
+    path: '/communication',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -771,6 +779,12 @@ const ApiPublicWebhooksRazorpayRoute =
     path: '/api/public/webhooks/razorpay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksDispatchQueueRoute =
+  ApiPublicHooksDispatchQueueRouteImport.update({
+    id: '/api/public/hooks/dispatch-queue',
+    path: '/api/public/hooks/dispatch-queue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksDailyDigestRoute =
   ApiPublicHooksDailyDigestRouteImport.update({
     id: '/api/public/hooks/daily-digest',
@@ -850,6 +864,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
@@ -966,6 +981,7 @@ export interface FileRoutesByFullPath {
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
+  '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
@@ -974,6 +990,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
@@ -1090,6 +1107,7 @@ export interface FileRoutesByTo {
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
+  '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
@@ -1100,6 +1118,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/communication': typeof AuthenticatedCommunicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
@@ -1216,6 +1235,7 @@ export interface FileRoutesById {
   '/_authenticated/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
+  '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
@@ -1226,6 +1246,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/activity'
     | '/calendar'
+    | '/communication'
     | '/dashboard'
     | '/documents'
     | '/favorites'
@@ -1342,6 +1363,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
+    | '/api/public/hooks/dispatch-queue'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1350,6 +1372,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/activity'
     | '/calendar'
+    | '/communication'
     | '/dashboard'
     | '/documents'
     | '/favorites'
@@ -1466,6 +1489,7 @@ export interface FileRouteTypes {
     | '/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
+    | '/api/public/hooks/dispatch-queue'
     | '/api/public/webhooks/razorpay'
   id:
     | '__root__'
@@ -1475,6 +1499,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/activity'
     | '/_authenticated/calendar'
+    | '/_authenticated/communication'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/favorites'
@@ -1591,6 +1616,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendors/$vendorId/timeline'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
+    | '/api/public/hooks/dispatch-queue'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
@@ -1602,6 +1628,7 @@ export interface RootRouteChildren {
   PayLinkIdRoute: typeof PayLinkIdRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
+  ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -1717,6 +1744,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/communication': {
+      id: '/_authenticated/communication'
+      path: '/communication'
+      fullPath: '/communication'
+      preLoaderRoute: typeof AuthenticatedCommunicationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
@@ -2384,6 +2418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/dispatch-queue': {
+      id: '/api/public/hooks/dispatch-queue'
+      path: '/api/public/hooks/dispatch-queue'
+      fullPath: '/api/public/hooks/dispatch-queue'
+      preLoaderRoute: typeof ApiPublicHooksDispatchQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/daily-digest': {
       id: '/api/public/hooks/daily-digest'
       path: '/api/public/hooks/daily-digest'
@@ -2607,6 +2648,7 @@ const AuthenticatedVendorsVendorIdRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedCommunicationRoute: typeof AuthenticatedCommunicationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
@@ -2710,6 +2752,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedCommunicationRoute: AuthenticatedCommunicationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
@@ -2865,6 +2908,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
+  ApiPublicHooksDispatchQueueRoute: ApiPublicHooksDispatchQueueRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
