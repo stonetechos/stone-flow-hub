@@ -197,5 +197,27 @@ export const qk = {
   vendorCapabilities: {
     byVendor: (id: string) => ["vendor_capabilities", id] as const,
   },
+  // Slice 4 — Procurement execution
+  grns: {
+    all: ["grns"] as const,
+    list: (q?: string) => ["grns", "list", q ?? ""] as const,
+    byId: (id: string) => ["grns", "byId", id] as const,
+    items: (grnId: string) => ["grns", "items", grnId] as const,
+    inspections: (grnId: string) => ["grns", "inspections", grnId] as const,
+  },
+  vendorPayments: {
+    all: ["vendor_payments"] as const,
+    list: (q?: string) => ["vendor_payments", "list", q ?? ""] as const,
+    byId: (id: string) => ["vendor_payments", "byId", id] as const,
+    byVendor: (id: string) => ["vendor_payments", "byVendor", id] as const,
+  },
+  inventoryMovements: {
+    all: ["inventory_movements"] as const,
+    list: (productId?: string | null) =>
+      ["inventory_movements", "list", productId ?? ""] as const,
+    stockLedger: ["inventory_movements", "stock_ledger"] as const,
+  },
+  procurementCalendar: (from: string, to: string) =>
+    ["procurement_calendar", from, to] as const,
 } as const;
 

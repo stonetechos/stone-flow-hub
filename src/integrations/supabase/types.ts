@@ -1461,6 +1461,241 @@ export type Database = {
           },
         ]
       }
+      grn_inspections: {
+        Row: {
+          breakage_count: number | null
+          chips_count: number | null
+          cracks_count: number | null
+          edge_finish_ok: boolean | null
+          grn_item_id: string
+          id: string
+          inspected_at: string | null
+          inspector_id: string | null
+          moisture_pct: number | null
+          outcome: string
+          packaging_condition: string | null
+          remarks: string | null
+          shade_ok: boolean | null
+          size_ok: boolean | null
+          surface_finish_ok: boolean | null
+          thickness_ok: boolean | null
+        }
+        Insert: {
+          breakage_count?: number | null
+          chips_count?: number | null
+          cracks_count?: number | null
+          edge_finish_ok?: boolean | null
+          grn_item_id: string
+          id?: string
+          inspected_at?: string | null
+          inspector_id?: string | null
+          moisture_pct?: number | null
+          outcome?: string
+          packaging_condition?: string | null
+          remarks?: string | null
+          shade_ok?: boolean | null
+          size_ok?: boolean | null
+          surface_finish_ok?: boolean | null
+          thickness_ok?: boolean | null
+        }
+        Update: {
+          breakage_count?: number | null
+          chips_count?: number | null
+          cracks_count?: number | null
+          edge_finish_ok?: boolean | null
+          grn_item_id?: string
+          id?: string
+          inspected_at?: string | null
+          inspector_id?: string | null
+          moisture_pct?: number | null
+          outcome?: string
+          packaging_condition?: string | null
+          remarks?: string | null
+          shade_ok?: boolean | null
+          size_ok?: boolean | null
+          surface_finish_ok?: boolean | null
+          thickness_ok?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grn_inspections_grn_item_id_fkey"
+            columns: ["grn_item_id"]
+            isOneToOne: true
+            referencedRelation: "grn_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grn_items: {
+        Row: {
+          batch_no: string | null
+          bundle_no: string | null
+          crate_no: string | null
+          created_at: string
+          description: string | null
+          grn_id: string
+          id: string
+          inventory_item_id: string | null
+          location: string | null
+          lot_no: string | null
+          notes: string | null
+          product_id: string | null
+          quantity_accepted: number
+          quantity_ordered: number | null
+          quantity_received: number
+          quantity_rejected: number
+          slab_no: string | null
+          unit: string | null
+          unit_cost: number
+        }
+        Insert: {
+          batch_no?: string | null
+          bundle_no?: string | null
+          crate_no?: string | null
+          created_at?: string
+          description?: string | null
+          grn_id: string
+          id?: string
+          inventory_item_id?: string | null
+          location?: string | null
+          lot_no?: string | null
+          notes?: string | null
+          product_id?: string | null
+          quantity_accepted?: number
+          quantity_ordered?: number | null
+          quantity_received?: number
+          quantity_rejected?: number
+          slab_no?: string | null
+          unit?: string | null
+          unit_cost?: number
+        }
+        Update: {
+          batch_no?: string | null
+          bundle_no?: string | null
+          crate_no?: string | null
+          created_at?: string
+          description?: string | null
+          grn_id?: string
+          id?: string
+          inventory_item_id?: string | null
+          location?: string | null
+          lot_no?: string | null
+          notes?: string | null
+          product_id?: string | null
+          quantity_accepted?: number
+          quantity_ordered?: number | null
+          quantity_received?: number
+          quantity_rejected?: number
+          slab_no?: string | null
+          unit?: string | null
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grn_items_grn_id_fkey"
+            columns: ["grn_id"]
+            isOneToOne: false
+            referencedRelation: "grns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grn_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grn_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delivery_challan_no: string | null
+          driver_name: string | null
+          driver_phone: string | null
+          grn_no: string
+          id: string
+          notes: string | null
+          overall_acceptance: string
+          project_id: string | null
+          purchase_order_id: string | null
+          received_by: string | null
+          received_date: string
+          status: string
+          updated_at: string
+          vehicle_no: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delivery_challan_no?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          grn_no: string
+          id?: string
+          notes?: string | null
+          overall_acceptance?: string
+          project_id?: string | null
+          purchase_order_id?: string | null
+          received_by?: string | null
+          received_date?: string
+          status?: string
+          updated_at?: string
+          vehicle_no?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delivery_challan_no?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          grn_no?: string
+          id?: string
+          notes?: string | null
+          overall_acceptance?: string
+          project_id?: string | null
+          purchase_order_id?: string | null
+          received_by?: string | null
+          received_date?: string
+          status?: string
+          updated_at?: string
+          vehicle_no?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grns_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grns_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grns_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           arrival_date: string | null
@@ -1537,6 +1772,78 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "inventory_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          direction: string
+          from_location: string | null
+          id: string
+          inventory_item_id: string | null
+          moved_at: string
+          movement_type: string
+          notes: string | null
+          product_id: string | null
+          quantity: number
+          ref_no: string | null
+          source_id: string | null
+          source_type: string | null
+          to_location: string | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          direction: string
+          from_location?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          moved_at?: string
+          movement_type: string
+          notes?: string | null
+          product_id?: string | null
+          quantity: number
+          ref_no?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          to_location?: string | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          from_location?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          moved_at?: string
+          movement_type?: string
+          notes?: string | null
+          product_id?: string | null
+          quantity?: number
+          ref_no?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          to_location?: string | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -4959,6 +5266,92 @@ export type Database = {
           },
         ]
       }
+      vendor_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          grn_id: string | null
+          id: string
+          method: string | null
+          notes: string | null
+          paid_at: string
+          payment_no: string
+          payment_type: string
+          project_id: string | null
+          purchase_order_id: string | null
+          reference_no: string | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          grn_id?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string
+          payment_no: string
+          payment_type: string
+          project_id?: string | null
+          purchase_order_id?: string | null
+          reference_no?: string | null
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          grn_id?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string
+          payment_no?: string
+          payment_type?: string
+          project_id?: string | null
+          purchase_order_id?: string | null
+          reference_no?: string | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payments_grn_id_fkey"
+            columns: ["grn_id"]
+            isOneToOne: false
+            referencedRelation: "grns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_payments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_payments_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_payments_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_performance_cache: {
         Row: {
           approval_pct: number
@@ -5669,6 +6062,44 @@ export type Database = {
           ref_id: string | null
           ref_no: string | null
           status: string | null
+        }
+        Relationships: []
+      }
+      inventory_stock_ledger: {
+        Row: {
+          inventory_item_id: string | null
+          last_moved_at: string | null
+          on_hand: number | null
+          product_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procurement_calendar: {
+        Row: {
+          enquiry_id: string | null
+          event_date: string | null
+          event_type: string | null
+          id: string | null
+          project_id: string | null
+          purchase_order_id: string | null
+          status: string | null
+          title: string | null
+          vendor_id: string | null
         }
         Relationships: []
       }
