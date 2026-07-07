@@ -27,6 +27,8 @@ import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { CapabilityMatrix } from "@/components/vendors/CapabilityMatrix";
 import { VendorScorecard } from "@/components/vendors/VendorScorecard";
 import { VendorCategoryPicker } from "@/components/vendors/VendorCategoryPicker";
+import { VendorHealthBadge } from "@/components/vendors/VendorHealthBadge";
+import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
   ssr: false,
@@ -63,9 +65,30 @@ function VendorHub() {
       <PageHeader
         title={v.company_name}
         subtitle={
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs">{v.vendor_code}</span>
             {v.city && <Badge variant="secondary">{v.city}</Badge>}
+            <VendorHealthBadge vendorId={vendorId} />
+            <LifecycleBadge
+              status={
+                (v as unknown as { lifecycle_status?: string }).lifecycle_status ??
+                (v.is_active ? "active" : "inactive")
+              }
+            />
+            <Link
+              to="/vendors/$vendorId/ledger"
+              params={{ vendorId }}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Ledger →
+            </Link>
+            <Link
+              to="/vendors/$vendorId/timeline"
+              params={{ vendorId }}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Timeline →
+            </Link>
           </span>
         }
         actions={

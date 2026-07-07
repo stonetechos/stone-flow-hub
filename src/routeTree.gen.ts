@@ -98,6 +98,8 @@ import { Route as AuthenticatedDashboardsManagementRouteImport } from './routes/
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './routes/_authenticated/vendors/$vendorId.timeline'
+import { Route as AuthenticatedVendorsVendorIdLedgerRouteImport } from './routes/_authenticated/vendors/$vendorId.ledger'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes/$quoteId.edit'
 import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/_authenticated/purchase-orders/$id.edit'
@@ -616,6 +618,18 @@ const ApiPublicWebhooksRazorpayRoute =
     path: '/api/public/webhooks/razorpay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedVendorsVendorIdTimelineRoute =
+  AuthenticatedVendorsVendorIdTimelineRouteImport.update({
+    id: '/timeline',
+    path: '/timeline',
+    getParentRoute: () => AuthenticatedVendorsVendorIdRoute,
+  } as any)
+const AuthenticatedVendorsVendorIdLedgerRoute =
+  AuthenticatedVendorsVendorIdLedgerRouteImport.update({
+    id: '/ledger',
+    path: '/ledger',
+    getParentRoute: () => AuthenticatedVendorsVendorIdRoute,
+  } as any)
 const AuthenticatedSalesOrdersIdEditRoute =
   AuthenticatedSalesOrdersIdEditRouteImport.update({
     id: '/edit',
@@ -729,7 +743,7 @@ export interface FileRoutesByFullPath {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
+  '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/dashboards/': typeof AuthenticatedDashboardsIndexRoute
@@ -761,6 +775,8 @@ export interface FileRoutesByFullPath {
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
+  '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
+  '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesByTo {
@@ -827,7 +843,7 @@ export interface FileRoutesByTo {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
+  '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/dashboards': typeof AuthenticatedDashboardsIndexRoute
@@ -859,6 +875,8 @@ export interface FileRoutesByTo {
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
+  '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
+  '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRoutesById {
@@ -927,7 +945,7 @@ export interface FileRoutesById {
   '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
-  '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRoute
+  '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/dashboards/': typeof AuthenticatedDashboardsIndexRoute
@@ -959,6 +977,8 @@ export interface FileRoutesById {
   '/_authenticated/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
   '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/_authenticated/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
+  '/_authenticated/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
+  '/_authenticated/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
 }
 export interface FileRouteTypes {
@@ -1059,6 +1079,8 @@ export interface FileRouteTypes {
     | '/purchase-orders/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
+    | '/vendors/$vendorId/ledger'
+    | '/vendors/$vendorId/timeline'
     | '/api/public/webhooks/razorpay'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1157,6 +1179,8 @@ export interface FileRouteTypes {
     | '/purchase-orders/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
+    | '/vendors/$vendorId/ledger'
+    | '/vendors/$vendorId/timeline'
     | '/api/public/webhooks/razorpay'
   id:
     | '__root__'
@@ -1256,6 +1280,8 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-orders/$id/edit'
     | '/_authenticated/quotes/$quoteId/edit'
     | '/_authenticated/sales-orders/$id/edit'
+    | '/_authenticated/vendors/$vendorId/ledger'
+    | '/_authenticated/vendors/$vendorId/timeline'
     | '/api/public/webhooks/razorpay'
   fileRoutesById: FileRoutesById
 }
@@ -1893,6 +1919,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vendors/$vendorId/timeline': {
+      id: '/_authenticated/vendors/$vendorId/timeline'
+      path: '/timeline'
+      fullPath: '/vendors/$vendorId/timeline'
+      preLoaderRoute: typeof AuthenticatedVendorsVendorIdTimelineRouteImport
+      parentRoute: typeof AuthenticatedVendorsVendorIdRoute
+    }
+    '/_authenticated/vendors/$vendorId/ledger': {
+      id: '/_authenticated/vendors/$vendorId/ledger'
+      path: '/ledger'
+      fullPath: '/vendors/$vendorId/ledger'
+      preLoaderRoute: typeof AuthenticatedVendorsVendorIdLedgerRouteImport
+      parentRoute: typeof AuthenticatedVendorsVendorIdRoute
+    }
     '/_authenticated/sales-orders/$id/edit': {
       id: '/_authenticated/sales-orders/$id/edit'
       path: '/edit'
@@ -2067,6 +2107,24 @@ const AuthenticatedSalesOrdersIdRouteWithChildren =
     AuthenticatedSalesOrdersIdRouteChildren,
   )
 
+interface AuthenticatedVendorsVendorIdRouteChildren {
+  AuthenticatedVendorsVendorIdLedgerRoute: typeof AuthenticatedVendorsVendorIdLedgerRoute
+  AuthenticatedVendorsVendorIdTimelineRoute: typeof AuthenticatedVendorsVendorIdTimelineRoute
+}
+
+const AuthenticatedVendorsVendorIdRouteChildren: AuthenticatedVendorsVendorIdRouteChildren =
+  {
+    AuthenticatedVendorsVendorIdLedgerRoute:
+      AuthenticatedVendorsVendorIdLedgerRoute,
+    AuthenticatedVendorsVendorIdTimelineRoute:
+      AuthenticatedVendorsVendorIdTimelineRoute,
+  }
+
+const AuthenticatedVendorsVendorIdRouteWithChildren =
+  AuthenticatedVendorsVendorIdRoute._addFileChildren(
+    AuthenticatedVendorsVendorIdRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
@@ -2125,7 +2183,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRfqsRfqIdRoute: typeof AuthenticatedRfqsRfqIdRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
-  AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRoute
+  AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRouteWithChildren
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedDashboardsIndexRoute: typeof AuthenticatedDashboardsIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
@@ -2217,7 +2275,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRfqsRfqIdRoute: AuthenticatedRfqsRfqIdRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
-  AuthenticatedVendorsVendorIdRoute: AuthenticatedVendorsVendorIdRoute,
+  AuthenticatedVendorsVendorIdRoute:
+    AuthenticatedVendorsVendorIdRouteWithChildren,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedDashboardsIndexRoute: AuthenticatedDashboardsIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,
