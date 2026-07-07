@@ -1775,6 +1775,356 @@ export type Database = {
           },
         ]
       }
+      installation_materials: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          installation_id: string
+          notes: string | null
+          product_id: string | null
+          qty_damaged: number
+          qty_dispatched: number
+          qty_installed: number
+          qty_received: number
+          qty_returned: number
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          installation_id: string
+          notes?: string | null
+          product_id?: string | null
+          qty_damaged?: number
+          qty_dispatched?: number
+          qty_installed?: number
+          qty_received?: number
+          qty_returned?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          installation_id?: string
+          notes?: string | null
+          product_id?: string | null
+          qty_damaged?: number
+          qty_dispatched?: number
+          qty_installed?: number
+          qty_received?: number
+          qty_returned?: number
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_materials_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_materials_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installation_progress: {
+        Row: {
+          area_completed_sqft: number | null
+          balance_work: string | null
+          created_at: string
+          customer_remarks: string | null
+          id: string
+          installation_id: string
+          labour_present: number | null
+          material_consumed: string | null
+          material_shortage: string | null
+          progress_pct: number | null
+          report_date: string
+          reported_by: string | null
+          safety_observations: string | null
+          supervisor_remarks: string | null
+          work_completed: string | null
+        }
+        Insert: {
+          area_completed_sqft?: number | null
+          balance_work?: string | null
+          created_at?: string
+          customer_remarks?: string | null
+          id?: string
+          installation_id: string
+          labour_present?: number | null
+          material_consumed?: string | null
+          material_shortage?: string | null
+          progress_pct?: number | null
+          report_date?: string
+          reported_by?: string | null
+          safety_observations?: string | null
+          supervisor_remarks?: string | null
+          work_completed?: string | null
+        }
+        Update: {
+          area_completed_sqft?: number | null
+          balance_work?: string | null
+          created_at?: string
+          customer_remarks?: string | null
+          id?: string
+          installation_id?: string
+          labour_present?: number | null
+          material_consumed?: string | null
+          material_shortage?: string | null
+          progress_pct?: number | null
+          report_date?: string
+          reported_by?: string | null
+          safety_observations?: string | null
+          supervisor_remarks?: string | null
+          work_completed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_progress_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installation_signoffs: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customer_rating: number | null
+          id: string
+          installation_id: string
+          remarks: string | null
+          signature_file_id: string | null
+          signed_at: string
+          signed_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customer_rating?: number | null
+          id?: string
+          installation_id: string
+          remarks?: string | null
+          signature_file_id?: string | null
+          signed_at?: string
+          signed_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customer_rating?: number | null
+          id?: string
+          installation_id?: string
+          remarks?: string | null
+          signature_file_id?: string | null
+          signed_at?: string
+          signed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_signoffs_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: true
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_signoffs_signature_file_id_fkey"
+            columns: ["signature_file_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installation_teams: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          daily_capacity_sqft: number | null
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          members: Json
+          name: string
+          notes: string | null
+          skills: string[]
+          supervisor_name: string | null
+          supervisor_phone: string | null
+          team_code: string | null
+          updated_at: string
+          vehicle: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          daily_capacity_sqft?: number | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          members?: Json
+          name: string
+          notes?: string | null
+          skills?: string[]
+          supervisor_name?: string | null
+          supervisor_phone?: string | null
+          team_code?: string | null
+          updated_at?: string
+          vehicle?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          daily_capacity_sqft?: number | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          members?: Json
+          name?: string
+          notes?: string | null
+          skills?: string[]
+          supervisor_name?: string | null
+          supervisor_phone?: string | null
+          team_code?: string | null
+          updated_at?: string
+          vehicle?: string | null
+        }
+        Relationships: []
+      }
+      installations: {
+        Row: {
+          actual_end_date: string | null
+          actual_start_date: string | null
+          archived_at: string | null
+          created_at: string
+          customer_id: string | null
+          deleted_at: string | null
+          estimate_id: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          installation_no: string | null
+          is_active: boolean
+          lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          notes: string | null
+          planned_end_date: string | null
+          planned_start_date: string | null
+          progress_pct: number
+          project_id: string | null
+          sales_order_id: string
+          site_address: string | null
+          status: string
+          supervisor_name: string | null
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          actual_start_date?: string | null
+          archived_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          deleted_at?: string | null
+          estimate_id?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          installation_no?: string | null
+          is_active?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          notes?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          progress_pct?: number
+          project_id?: string | null
+          sales_order_id: string
+          site_address?: string | null
+          status?: string
+          supervisor_name?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          actual_start_date?: string | null
+          archived_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          deleted_at?: string | null
+          estimate_id?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          installation_no?: string | null
+          is_active?: boolean
+          lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          notes?: string | null
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          progress_pct?: number
+          project_id?: string | null
+          sales_order_id?: string
+          site_address?: string | null
+          status?: string
+          supervisor_name?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "installation_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           arrival_date: string | null
@@ -4696,6 +5046,7 @@ export type Database = {
           quote_id: string | null
           so_no: string
           status: Database["public"]["Enums"]["sales_order_status"]
+          supply_scope: string
           updated_at: string
           workflow_state: string | null
         }
@@ -4715,6 +5066,7 @@ export type Database = {
           quote_id?: string | null
           so_no: string
           status?: Database["public"]["Enums"]["sales_order_status"]
+          supply_scope?: string
           updated_at?: string
           workflow_state?: string | null
         }
@@ -4734,6 +5086,7 @@ export type Database = {
           quote_id?: string | null
           so_no?: string
           status?: Database["public"]["Enums"]["sales_order_status"]
+          supply_scope?: string
           updated_at?: string
           workflow_state?: string | null
         }
@@ -6190,6 +6543,18 @@ export type Database = {
           },
         ]
       }
+      installation_dashboard_kpis: {
+        Row: {
+          active_installations: number | null
+          avg_progress_pct: number | null
+          delayed_sites: number | null
+          installation_revenue: number | null
+          material_shortages: number | null
+          signoffs_pending: number | null
+          teams_on_site: number | null
+        }
+        Relationships: []
+      }
       inventory_stock_ledger: {
         Row: {
           inventory_item_id: string | null
@@ -6436,6 +6801,18 @@ export type Database = {
           vendor_code: string
           vendor_id: string
         }[]
+      }
+      record_installation_material: {
+        Args: {
+          p_description?: string
+          p_installation_id: string
+          p_kind: string
+          p_notes?: string
+          p_product_id: string
+          p_qty: number
+          p_unit?: string
+        }
+        Returns: string
       }
       record_schedule_payment: {
         Args: { _amount: number; _receipt_no?: string; _schedule_id: string }
