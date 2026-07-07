@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           subject: `Stone Tech OS — Daily digest ${snapshot.date}`,
           body,
           status: "pending",
-          entity_type: "daily_digest",
+          related_type: "daily_digest",
         }));
         const { error: qErr } = await supabase.from("message_queue").insert(rows);
         if (qErr) return new Response(qErr.message, { status: 500 });

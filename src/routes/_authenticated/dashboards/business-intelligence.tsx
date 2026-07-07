@@ -43,7 +43,7 @@ function BusinessIntel() {
         subject,
         body: brief.data.brief,
         status: "pending",
-        entity_type: "business_brief",
+        related_type: "business_brief",
       } as never);
       if (error) throw error;
     },
