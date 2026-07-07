@@ -31,7 +31,7 @@ import {
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -199,15 +199,16 @@ function ProjectsPage() {
       )}
 
       <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete project?"
-        description={
-          toDelete ? `${toDelete.name} (${toDelete.project_code}) will be permanently removed.` : ""
+        entityType="project"
+        entityId={toDelete?.id ?? null}
+        entityLabel={
+          toDelete ? `${toDelete.name} (${toDelete.project_code})` : ""
         }
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
     </div>
   );
