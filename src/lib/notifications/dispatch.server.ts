@@ -46,6 +46,19 @@ function pickSecret(name: string | undefined, fallback: string): string | undefi
   return process.env[key];
 }
 
+/** WhatsApp Graph API version — bumped centrally. */
+const WA_GRAPH_VERSION = "v25.0";
+
+/** Merge env-provided WhatsApp identifiers as fallbacks over app_settings. */
+export function resolveWaCfg(cfg: WaCfg): WaCfg {
+  return {
+    ...cfg,
+    phone_number_id: cfg.phone_number_id || process.env.WHATSAPP_PHONE_NUMBER_ID,
+    business_account_id: cfg.business_account_id || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
+    verify_token: cfg.verify_token || process.env.WHATSAPP_VERIFY_TOKEN,
+  };
+}
+
 /** Send one email via Resend. */
 export async function sendEmailViaResend(
   cfg: EmailCfg,
