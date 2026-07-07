@@ -54,7 +54,7 @@ export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<
       currency: input.currency ?? "INR",
       token,
       url,
-      status: "active",
+      status: "created",
       expires_at: input.expiresAt ?? null,
       meta: (input.meta ?? {}) as never,
     })
