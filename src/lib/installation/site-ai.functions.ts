@@ -5,10 +5,44 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const input = z.object({ installation_id: z.string().uuid() });
 
+type Snapshot = {
+  installation_no: string | null;
+  status: string | null;
+  progress_pct: number;
+  planned_start_date: string | null;
+  planned_end_date: string | null;
+  actual_start_date: string | null;
+  actual_end_date: string | null;
+  reports_count: number;
+  recent_labour: Array<number | null>;
+  recent_progress: Array<number | null>;
+  recent_shortages: string[];
+  material_totals: {
+    dispatched: number;
+    received: number;
+    installed: number;
+    damaged: number;
+    returned: number;
+  };
+  customer_rating: number | null;
+  customer_remarks: string | null;
+};
+
+type AiResult = {
+  scores?: Record<string, number>;
+  summary?: string;
+  recommendations?: Array<{ category: string; action: string; explanation: string }>;
+};
+
+type Row = Record<string, unknown>;
+const s = (v: unknown): string | null => (v == null ? null : String(v));
+const n = (v: unknown): number => (v == null ? 0 : Number(v));
+const nOrNull = (v: unknown): number | null => (v == null ? null : Number(v));
+
 export const analyzeInstallationSite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => input.parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<{ snapshot: Snapshot; ai: AiResult }> => {
     const { chat } = await import("@/lib/ai/gateway.server");
     const { supabase } = context;
 
@@ -31,39 +65,41 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
         .maybeSingle(),
     ]);
 
-    const i = inst.data as Record<string, unknown> | null;
+    const i = (inst.data ?? null) as Row | null;
     if (!i) throw new Error("installation not found");
-    const reports = (progress.data ?? []) as Array<Record<string, unknown>>;
-    const mats = (materials.data ?? []) as Array<Record<string, number | string | null>>;
-    const s = signoff.data as Record<string, unknown> | null;
+    const reports = ((progress.data ?? []) as Row[]);
+    const mats = ((materials.data ?? []) as Row[]);
+    const sign = (signoff.data ?? null) as Row | null;
 
     const totals = mats.reduce(
       (acc, m) => ({
-        dispatched: acc.dispatched + Number(m.qty_dispatched ?? 0),
-        received: acc.received + Number(m.qty_received ?? 0),
-        installed: acc.installed + Number(m.qty_installed ?? 0),
-        damaged: acc.damaged + Number(m.qty_damaged ?? 0),
-        returned: acc.returned + Number(m.qty_returned ?? 0),
+        dispatched: acc.dispatched + n(m.qty_dispatched),
+        received: acc.received + n(m.qty_received),
+        installed: acc.installed + n(m.qty_installed),
+        damaged: acc.damaged + n(m.qty_damaged),
+        returned: acc.returned + n(m.qty_returned),
       }),
-      { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 } as { dispatched: number; received: number; installed: number; damaged: number; returned: number },
+      { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 },
     );
 
-
-    const summary = {
-      installation_no: i.installation_no,
-      status: i.status,
-      progress_pct: i.progress_pct,
-      planned_start_date: i.planned_start_date,
-      planned_end_date: i.planned_end_date,
-      actual_start_date: i.actual_start_date,
-      actual_end_date: i.actual_end_date,
+    const snapshot: Snapshot = {
+      installation_no: s(i.installation_no),
+      status: s(i.status),
+      progress_pct: n(i.progress_pct),
+      planned_start_date: s(i.planned_start_date),
+      planned_end_date: s(i.planned_end_date),
+      actual_start_date: s(i.actual_start_date),
+      actual_end_date: s(i.actual_end_date),
       reports_count: reports.length,
-      recent_labour: reports.slice(0, 7).map((r) => r.labour_present),
-      recent_progress: reports.slice(0, 7).map((r) => r.progress_pct),
-      recent_shortages: reports.slice(0, 7).map((r) => r.material_shortage).filter(Boolean),
+      recent_labour: reports.slice(0, 7).map((r) => nOrNull(r.labour_present)),
+      recent_progress: reports.slice(0, 7).map((r) => nOrNull(r.progress_pct)),
+      recent_shortages: reports
+        .slice(0, 7)
+        .map((r) => s(r.material_shortage))
+        .filter((x): x is string => Boolean(x)),
       material_totals: totals,
-      customer_rating: s?.customer_rating ?? null,
-      customer_remarks: s?.remarks ?? null,
+      customer_rating: nOrNull(sign?.customer_rating),
+      customer_remarks: s(sign?.remarks ?? null),
     };
 
     const system = [
@@ -78,17 +114,17 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
     const reply = await chat(
       [
         { role: "system", content: system },
-        { role: "user", content: `Installation snapshot:\n${JSON.stringify(summary, null, 2)}` },
+        { role: "user", content: `Installation snapshot:\n${JSON.stringify(snapshot, null, 2)}` },
       ],
       { temperature: 0.2 },
     );
 
-    let parsed: unknown = null;
+    let parsed: AiResult;
     try {
       const match = reply.match(/\{[\s\S]*\}$/);
-      parsed = JSON.parse(match ? match[0] : reply);
+      parsed = JSON.parse(match ? match[0] : reply) as AiResult;
     } catch {
       parsed = { summary: reply, scores: {}, recommendations: [] };
     }
-    return { snapshot: summary, ai: parsed };
+    return { snapshot, ai: parsed };
   });
