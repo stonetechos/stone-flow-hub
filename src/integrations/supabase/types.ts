@@ -2198,6 +2198,64 @@ export type Database = {
           },
         ]
       }
+      procurement_lock_overrides: {
+        Row: {
+          advance_received: number | null
+          advance_required: number | null
+          estimate_id: string | null
+          id: string
+          overridden_at: string
+          overridden_by: string
+          po_id: string | null
+          reason: string
+          vendor_quote_id: string | null
+        }
+        Insert: {
+          advance_received?: number | null
+          advance_required?: number | null
+          estimate_id?: string | null
+          id?: string
+          overridden_at?: string
+          overridden_by: string
+          po_id?: string | null
+          reason: string
+          vendor_quote_id?: string | null
+        }
+        Update: {
+          advance_received?: number | null
+          advance_required?: number | null
+          estimate_id?: string | null
+          id?: string
+          overridden_at?: string
+          overridden_by?: string
+          po_id?: string | null
+          reason?: string
+          vendor_quote_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procurement_lock_overrides_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procurement_lock_overrides_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procurement_lock_overrides_vendor_quote_id_fkey"
+            columns: ["vendor_quote_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_artworks: {
         Row: {
           approved_at: string | null
@@ -3380,63 +3438,110 @@ export type Database = {
       }
       purchase_orders: {
         Row: {
+          commercial_scenario: string | null
           company_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string | null
+          customer_delivery_date: string | null
+          customer_id: string | null
+          delivery_risk: string
+          estimate_id: string | null
           expected_date: string | null
           external_ref: string | null
           id: string
           is_demo: boolean
+          lock_override_at: string | null
+          lock_override_by: string | null
+          lock_override_reason: string | null
           notes: string | null
           order_date: string
+          payment_schedule: Json
           po_no: string
           project_id: string | null
           rfq_id: string | null
           status: Database["public"]["Enums"]["purchase_order_status"]
           updated_at: string
+          vendor_delivery_date: string | null
           vendor_id: string | null
+          vendor_quote_id: string | null
           workflow_state: string | null
         }
         Insert: {
+          commercial_scenario?: string | null
           company_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
+          customer_delivery_date?: string | null
+          customer_id?: string | null
+          delivery_risk?: string
+          estimate_id?: string | null
           expected_date?: string | null
           external_ref?: string | null
           id?: string
           is_demo?: boolean
+          lock_override_at?: string | null
+          lock_override_by?: string | null
+          lock_override_reason?: string | null
           notes?: string | null
           order_date?: string
+          payment_schedule?: Json
           po_no: string
           project_id?: string | null
           rfq_id?: string | null
           status?: Database["public"]["Enums"]["purchase_order_status"]
           updated_at?: string
+          vendor_delivery_date?: string | null
           vendor_id?: string | null
+          vendor_quote_id?: string | null
           workflow_state?: string | null
         }
         Update: {
+          commercial_scenario?: string | null
           company_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string | null
+          customer_delivery_date?: string | null
+          customer_id?: string | null
+          delivery_risk?: string
+          estimate_id?: string | null
           expected_date?: string | null
           external_ref?: string | null
           id?: string
           is_demo?: boolean
+          lock_override_at?: string | null
+          lock_override_by?: string | null
+          lock_override_reason?: string | null
           notes?: string | null
           order_date?: string
+          payment_schedule?: Json
           po_no?: string
           project_id?: string | null
           rfq_id?: string | null
           status?: Database["public"]["Enums"]["purchase_order_status"]
           updated_at?: string
+          vendor_delivery_date?: string | null
           vendor_id?: string | null
+          vendor_quote_id?: string | null
           workflow_state?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "purchase_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "purchase_orders_project_id_fkey"
             columns: ["project_id"]
@@ -3456,6 +3561,13 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_vendor_quote_id_fkey"
+            columns: ["vendor_quote_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -5560,6 +5672,22 @@ export type Database = {
         }
         Relationships: []
       }
+      procurement_kpis: {
+        Row: {
+          material_awaiting_dispatch: number | null
+          material_received: number | null
+          procurement_pipeline: number | null
+          purchase_orders_delayed: number | null
+          purchase_orders_pending: number | null
+          quotations_pending_approval: number | null
+          rfqs_awaiting_response: number | null
+          vendor_advances: number | null
+          vendor_outstanding: number | null
+          vendor_quotations_received: number | null
+          vendors_awaiting_payment: number | null
+        }
+        Relationships: []
+      }
       vendor_ledger: {
         Row: {
           created_at: string | null
@@ -5624,8 +5752,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_po_from_vendor_quote: {
+        Args: {
+          p_override_reason?: string
+          p_payment_schedule?: Json
+          p_quote_id: string
+          p_vendor_delivery?: string
+        }
+        Returns: string
+      }
       current_demo_mode: { Args: never; Returns: boolean }
       current_vendor_id: { Args: never; Returns: string }
+      customer_receipts_since: {
+        Args: { _customer_id: string; _since: string }
+        Returns: number
+      }
+      default_payment_schedule_for: {
+        Args: { _template: string; _total: number }
+        Returns: Json
+      }
       dependency_summary: {
         Args: { _entity_id: string; _entity_type: string }
         Returns: {
@@ -5634,6 +5779,7 @@ export type Database = {
           route: string
         }[]
       }
+      generate_overdue_procurement_followups: { Args: never; Returns: number }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -5663,6 +5809,7 @@ export type Database = {
         Returns: string
       }
       next_code: { Args: { _prefix: string }; Returns: string }
+      procurement_lock_check: { Args: { p_quote_id: string }; Returns: Json }
       purge_entity: {
         Args: { _entity_id: string; _entity_type: string }
         Returns: undefined
