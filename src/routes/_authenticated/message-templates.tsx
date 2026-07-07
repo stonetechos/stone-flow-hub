@@ -26,7 +26,7 @@ import { listMessageTemplates, upsertMessageTemplate } from "@/lib/notifications
 import { extractPlaceholders } from "@/lib/notifications/templates";
 import { invalidateMessageTemplate } from "@/lib/query-invalidation";
 
-export const Route = createFileRoute("/_authenticated/settings/message-templates")({
+export const Route = createFileRoute("/_authenticated/message-templates")({
   ssr: false,
   component: TemplatesPage,
 });
@@ -45,7 +45,7 @@ function TemplatesPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/settings/notifications"><ArrowLeft className="mr-2 h-4 w-4" /> Providers</Link>
+              <Link to="/notification-settings"><ArrowLeft className="mr-2 h-4 w-4" /> Providers</Link>
             </Button>
             <EditTemplateDialog trigger={<Button size="sm"><Plus className="mr-2 h-4 w-4" /> New template</Button>} />
           </div>

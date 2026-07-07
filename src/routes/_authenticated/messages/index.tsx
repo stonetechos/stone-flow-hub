@@ -63,7 +63,7 @@ function MessagesQueuePage() {
         subtitle="Every outbound email, WhatsApp and SMS message with delivery status and retry controls."
         actions={
           <Button variant="outline" size="sm" asChild>
-            <Link to="/settings/notifications">Configure providers</Link>
+            <Link to="/notification-settings">Configure providers</Link>
           </Button>
         }
       />

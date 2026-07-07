@@ -17,7 +17,7 @@ import { toUserMessage } from "@/lib/errors";
 import { getAppSetting, upsertAppSetting } from "@/lib/app-settings/api";
 import { invalidateAppSetting } from "@/lib/query-invalidation";
 
-export const Route = createFileRoute("/_authenticated/settings/notifications")({
+export const Route = createFileRoute("/_authenticated/notification-settings")({
   ssr: false,
   component: NotificationSettingsPage,
 });
@@ -55,7 +55,7 @@ function TemplatesLink() {
         <p className="text-sm text-muted-foreground">
           Edit the WhatsApp / Email templates used by Estimates, Receipts, Invoices and more.
         </p>
-        <Button asChild variant="outline"><Link to="/settings/message-templates">Manage templates</Link></Button>
+        <Button asChild variant="outline"><Link to="/message-templates">Manage templates</Link></Button>
       </CardContent>
     </Card>
   );
