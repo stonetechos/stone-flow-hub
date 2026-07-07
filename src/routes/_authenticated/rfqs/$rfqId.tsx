@@ -64,6 +64,7 @@ function CompareRfqPage() {
   const [revisionFor, setRevisionFor] = useState<QuoteComparisonRow | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [poQuoteId, setPoQuoteId] = useState<string | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["rfq-compare", rfqId] });
 
