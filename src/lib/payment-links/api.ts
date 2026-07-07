@@ -49,14 +49,13 @@ export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<
       provider: input.provider,
       entity_type: input.entityType,
       entity_id: input.entityId,
-      customer_id: input.customerId ?? null,
       amount: input.amount,
       currency: input.currency ?? "INR",
       token,
       url,
       status: "created",
       expires_at: input.expiresAt ?? null,
-      meta: (input.meta ?? {}) as never,
+      meta: { ...(input.meta ?? {}), customer_id: input.customerId ?? null } as never,
     })
     .select("*")
     .single();
