@@ -22,7 +22,7 @@ import {
   sourceLabel,
   summariseLedger,
 } from "@/lib/vendors/ledger";
-import { formatMoney } from "@/lib/format";
+import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId/ledger")({
   ssr: false,
@@ -115,13 +115,13 @@ function VendorLedgerPage() {
                       {row.description ?? "—"}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {row.debit ? formatMoney(row.debit, row.currency_code) : "—"}
+                      {row.debit ? formatInr(row.debit) : "—"}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {row.credit ? formatMoney(row.credit, row.currency_code) : "—"}
+                      {row.credit ? formatInr(row.credit) : "—"}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
-                      {formatMoney(row.running_balance, row.currency_code)}
+                      {formatInr(row.running_balance)}
                     </TableCell>
                   </TableRow>
                 );
@@ -153,7 +153,7 @@ function SummaryCard({
       <CardContent>
         <div className="flex items-baseline gap-2">
           <Badge variant={tone} className="tabular-nums text-sm">
-            {formatMoney(value, "INR")}
+            {formatInr(value)}
           </Badge>
         </div>
       </CardContent>

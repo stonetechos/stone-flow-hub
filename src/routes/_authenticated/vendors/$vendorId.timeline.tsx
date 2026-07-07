@@ -16,7 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toUserMessage } from "@/lib/errors";
 import { getVendor } from "@/lib/vendors/api";
 import { getVendorTimeline, type TimelineEvent } from "@/lib/vendors/timeline";
-import { formatMoney } from "@/lib/format";
+import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId/timeline")({
   ssr: false,
@@ -95,7 +95,7 @@ function EventCard({ ev }: { ev: TimelineEvent }) {
             {ev.status && <Badge variant="outline">{ev.status}</Badge>}
             {ev.amount != null && ev.amount !== 0 && (
               <Badge variant="secondary" className="tabular-nums">
-                {formatMoney(ev.amount, "INR")}
+                {formatInr(ev.amount)}
               </Badge>
             )}
           </div>
