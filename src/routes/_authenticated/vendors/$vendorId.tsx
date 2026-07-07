@@ -26,6 +26,7 @@ import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { CapabilityMatrix } from "@/components/vendors/CapabilityMatrix";
 import { VendorScorecard } from "@/components/vendors/VendorScorecard";
+import { VendorCategoryPicker } from "@/components/vendors/VendorCategoryPicker";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId")({
   ssr: false,
@@ -139,6 +140,7 @@ function VendorHub() {
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <VendorScorecard vendorId={vendorId} />
+          <VendorCategoryPicker vendorId={vendorId} />
           <Card className="shadow-1">
             <CardHeader>
               <CardTitle className="text-sm">Overview</CardTitle>
