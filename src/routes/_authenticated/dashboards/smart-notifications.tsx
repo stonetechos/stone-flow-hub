@@ -47,6 +47,7 @@ async function loadNotices(): Promise<Notice[]> {
   ]);
   for (const v of visits.data ?? []) {
     if (v.status === "completed" || v.status === "cancelled") continue;
+    if (!v.scheduled_at) continue;
     notices.push({
       key: `sv-${v.id}`, category: "upcoming site visit", severity: "info",
       title: "Upcoming site visit", detail: `Scheduled ${new Date(v.scheduled_at).toLocaleString()}`,

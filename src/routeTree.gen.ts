@@ -103,6 +103,7 @@ import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
 import { Route as AuthenticatedDashboardsVendorIntelligenceRouteImport } from './routes/_authenticated/dashboards/vendor-intelligence'
 import { Route as AuthenticatedDashboardsTeamPerformanceRouteImport } from './routes/_authenticated/dashboards/team-performance'
+import { Route as AuthenticatedDashboardsSmartNotificationsRouteImport } from './routes/_authenticated/dashboards/smart-notifications'
 import { Route as AuthenticatedDashboardsSalesFunnelRouteImport } from './routes/_authenticated/dashboards/sales-funnel'
 import { Route as AuthenticatedDashboardsSalesRouteImport } from './routes/_authenticated/dashboards/sales'
 import { Route as AuthenticatedDashboardsRevenueCrmRouteImport } from './routes/_authenticated/dashboards/revenue-crm'
@@ -682,6 +683,12 @@ const AuthenticatedDashboardsTeamPerformanceRoute =
     path: '/dashboards/team-performance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsSmartNotificationsRoute =
+  AuthenticatedDashboardsSmartNotificationsRouteImport.update({
+    id: '/dashboards/smart-notifications',
+    path: '/dashboards/smart-notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsSalesFunnelRoute =
   AuthenticatedDashboardsSalesFunnelRouteImport.update({
     id: '/dashboards/sales-funnel',
@@ -972,6 +979,7 @@ export interface FileRoutesByFullPath {
   '/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1108,6 +1116,7 @@ export interface FileRoutesByTo {
   '/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1246,6 +1255,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/_authenticated/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/_authenticated/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/_authenticated/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/_authenticated/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/_authenticated/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1384,6 +1394,7 @@ export interface FileRouteTypes {
     | '/dashboards/revenue-crm'
     | '/dashboards/sales'
     | '/dashboards/sales-funnel'
+    | '/dashboards/smart-notifications'
     | '/dashboards/team-performance'
     | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
@@ -1520,6 +1531,7 @@ export interface FileRouteTypes {
     | '/dashboards/revenue-crm'
     | '/dashboards/sales'
     | '/dashboards/sales-funnel'
+    | '/dashboards/smart-notifications'
     | '/dashboards/team-performance'
     | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
@@ -1657,6 +1669,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboards/revenue-crm'
     | '/_authenticated/dashboards/sales'
     | '/_authenticated/dashboards/sales-funnel'
+    | '/_authenticated/dashboards/smart-notifications'
     | '/_authenticated/dashboards/team-performance'
     | '/_authenticated/dashboards/vendor-intelligence'
     | '/_authenticated/dispatch/$id'
@@ -2422,6 +2435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsTeamPerformanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/smart-notifications': {
+      id: '/_authenticated/dashboards/smart-notifications'
+      path: '/dashboards/smart-notifications'
+      fullPath: '/dashboards/smart-notifications'
+      preLoaderRoute: typeof AuthenticatedDashboardsSmartNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/sales-funnel': {
       id: '/_authenticated/dashboards/sales-funnel'
       path: '/dashboards/sales-funnel'
@@ -2884,6 +2904,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardsRevenueCrmRoute: typeof AuthenticatedDashboardsRevenueCrmRoute
   AuthenticatedDashboardsSalesRoute: typeof AuthenticatedDashboardsSalesRoute
   AuthenticatedDashboardsSalesFunnelRoute: typeof AuthenticatedDashboardsSalesFunnelRoute
+  AuthenticatedDashboardsSmartNotificationsRoute: typeof AuthenticatedDashboardsSmartNotificationsRoute
   AuthenticatedDashboardsTeamPerformanceRoute: typeof AuthenticatedDashboardsTeamPerformanceRoute
   AuthenticatedDashboardsVendorIntelligenceRoute: typeof AuthenticatedDashboardsVendorIntelligenceRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
@@ -3017,6 +3038,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardsSalesRoute: AuthenticatedDashboardsSalesRoute,
   AuthenticatedDashboardsSalesFunnelRoute:
     AuthenticatedDashboardsSalesFunnelRoute,
+  AuthenticatedDashboardsSmartNotificationsRoute:
+    AuthenticatedDashboardsSmartNotificationsRoute,
   AuthenticatedDashboardsTeamPerformanceRoute:
     AuthenticatedDashboardsTeamPerformanceRoute,
   AuthenticatedDashboardsVendorIntelligenceRoute:
