@@ -29,6 +29,8 @@ import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
+import { listFollowups } from "@/lib/followups/api";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   ssr: false,
