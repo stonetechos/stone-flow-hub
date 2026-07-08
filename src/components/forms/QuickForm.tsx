@@ -6,7 +6,7 @@
  *   3. Advanced (collapsed by default)
  * Used by every "create / edit" form to keep first-time UX under 30–60 seconds.
  */
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +19,23 @@ export function QuickForm({
   children: ReactNode;
   busy?: boolean;
 }) {
+  // Split off the Actions slot so it can stick to the dialog footer while the
+  // rest of the form scrolls independently. Without this the entire form is a
+  // single non-scrolling block inside DialogContent's `flex-col overflow-hidden`
+  // shell, which is why long forms (e.g. New Enquiry) were clipped on Safari.
+  const items = Children.toArray(children);
+  const actions = items.find((c) => isValidElement(c) && c.type === QuickForm.Actions);
+  const body = items.filter((c) => c !== actions);
   return (
-    <form onSubmit={onSubmit} aria-busy={busy} className="space-y-4">
-      {children}
+    <form
+      onSubmit={onSubmit}
+      aria-busy={busy}
+      className="flex min-h-0 flex-1 flex-col gap-4"
+    >
+      <div className="-mx-6 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]">
+        {body}
+      </div>
+      {actions}
     </form>
   );
 }
