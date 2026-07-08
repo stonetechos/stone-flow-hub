@@ -182,13 +182,14 @@ function InvoicesPage() {
         </div>
       )}
 
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete invoice?"
-        description={toDelete ? `${toDelete.invoice_no} will be removed.` : ""}
+        entityType="invoice"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.invoice_no : ""}
         busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && del.mutate(toDelete.id)}
       />
     </div>
   );
