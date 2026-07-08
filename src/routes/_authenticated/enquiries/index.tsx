@@ -51,6 +51,7 @@ import {
 import {
   LEAD_STAGES,
   LEAD_UMBRELLAS,
+  LOST_REASONS,
   STAGE_TO_UMBRELLA,
   UMBRELLA_BY_ID,
   stageToUmbrella,
