@@ -405,8 +405,11 @@ function EnquiryDetailPage() {
         </Card>
       </div>
 
-      <div className="mt-4">
-        <OperationalProgress projectId={enq.project_id ?? null} />
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <OperationalProgress projectId={enq.project_id ?? null} />
+        </div>
+        <NextBestAction actions={intelQ.data?.actions ?? []} loading={intelQ.isLoading} />
       </div>
 
       <LostReasonDialog
