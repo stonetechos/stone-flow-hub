@@ -120,6 +120,7 @@ import { Route as AuthenticatedDashboardsInstallationRouteImport } from './route
 import { Route as AuthenticatedDashboardsForecastRouteImport } from './routes/_authenticated/dashboards/forecast'
 import { Route as AuthenticatedDashboardsFollowupsRouteImport } from './routes/_authenticated/dashboards/followups'
 import { Route as AuthenticatedDashboardsExecutiveRouteImport } from './routes/_authenticated/dashboards/executive'
+import { Route as AuthenticatedDashboardsDailyActionRouteImport } from './routes/_authenticated/dashboards/daily-action'
 import { Route as AuthenticatedDashboardsCustomerIntelligenceRouteImport } from './routes/_authenticated/dashboards/customer-intelligence'
 import { Route as AuthenticatedDashboardsControlCentreRouteImport } from './routes/_authenticated/dashboards/control-centre'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
@@ -782,6 +783,12 @@ const AuthenticatedDashboardsExecutiveRoute =
     path: '/dashboards/executive',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsDailyActionRoute =
+  AuthenticatedDashboardsDailyActionRouteImport.update({
+    id: '/dashboards/daily-action',
+    path: '/dashboards/daily-action',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsCustomerIntelligenceRoute =
   AuthenticatedDashboardsCustomerIntelligenceRouteImport.update({
     id: '/dashboards/customer-intelligence',
@@ -939,6 +946,7 @@ export interface FileRoutesByFullPath {
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -1073,6 +1081,7 @@ export interface FileRoutesByTo {
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -1209,6 +1218,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/_authenticated/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/_authenticated/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/_authenticated/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/_authenticated/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/_authenticated/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/_authenticated/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -1345,6 +1355,7 @@ export interface FileRouteTypes {
     | '/dashboards/collections'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
+    | '/dashboards/daily-action'
     | '/dashboards/executive'
     | '/dashboards/followups'
     | '/dashboards/forecast'
@@ -1479,6 +1490,7 @@ export interface FileRouteTypes {
     | '/dashboards/collections'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
+    | '/dashboards/daily-action'
     | '/dashboards/executive'
     | '/dashboards/followups'
     | '/dashboards/forecast'
@@ -1614,6 +1626,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboards/collections'
     | '/_authenticated/dashboards/control-centre'
     | '/_authenticated/dashboards/customer-intelligence'
+    | '/_authenticated/dashboards/daily-action'
     | '/_authenticated/dashboards/executive'
     | '/_authenticated/dashboards/followups'
     | '/_authenticated/dashboards/forecast'
@@ -2515,6 +2528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsExecutiveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/daily-action': {
+      id: '/_authenticated/dashboards/daily-action'
+      path: '/dashboards/daily-action'
+      fullPath: '/dashboards/daily-action'
+      preLoaderRoute: typeof AuthenticatedDashboardsDailyActionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/customer-intelligence': {
       id: '/_authenticated/dashboards/customer-intelligence'
       path: '/dashboards/customer-intelligence'
@@ -2825,6 +2845,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
   AuthenticatedDashboardsControlCentreRoute: typeof AuthenticatedDashboardsControlCentreRoute
   AuthenticatedDashboardsCustomerIntelligenceRoute: typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  AuthenticatedDashboardsDailyActionRoute: typeof AuthenticatedDashboardsDailyActionRoute
   AuthenticatedDashboardsExecutiveRoute: typeof AuthenticatedDashboardsExecutiveRoute
   AuthenticatedDashboardsFollowupsRoute: typeof AuthenticatedDashboardsFollowupsRoute
   AuthenticatedDashboardsForecastRoute: typeof AuthenticatedDashboardsForecastRoute
@@ -2942,6 +2963,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardsControlCentreRoute,
   AuthenticatedDashboardsCustomerIntelligenceRoute:
     AuthenticatedDashboardsCustomerIntelligenceRoute,
+  AuthenticatedDashboardsDailyActionRoute:
+    AuthenticatedDashboardsDailyActionRoute,
   AuthenticatedDashboardsExecutiveRoute: AuthenticatedDashboardsExecutiveRoute,
   AuthenticatedDashboardsFollowupsRoute: AuthenticatedDashboardsFollowupsRoute,
   AuthenticatedDashboardsForecastRoute: AuthenticatedDashboardsForecastRoute,
