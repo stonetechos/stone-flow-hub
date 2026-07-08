@@ -157,7 +157,7 @@ function EnquiryDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => stageMut.mutate("completed")}
+                  onClick={() => attemptStageChange("completed")}
                   disabled={enq.stage === "completed" || stageMut.isPending}
                 >
                   <CheckCircle2 className="mr-2 h-4 w-4" /> Mark won
@@ -165,7 +165,7 @@ function EnquiryDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => stageMut.mutate("lost")}
+                  onClick={() => attemptStageChange("lost")}
                   disabled={enq.stage === "lost" || stageMut.isPending}
                 >
                   <XCircle className="mr-2 h-4 w-4" /> Mark lost
