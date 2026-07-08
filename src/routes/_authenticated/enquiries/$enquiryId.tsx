@@ -299,6 +299,7 @@ function EnquiryDetailPage() {
                       </Badge>
                       <StageAgeChip stage={enq.stage} days={daysInStage} />
                       <LeadHealthBadge health={health} />
+                      {intelQ.data && <LeadScoreBadge score={intelQ.data.score} />}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Operational stage: {LEAD_STAGE_LABEL[enq.stage]}
