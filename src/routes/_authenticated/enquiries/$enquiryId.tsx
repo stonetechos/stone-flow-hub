@@ -223,31 +223,128 @@ function EnquiryDetailPage() {
 
         <Card className="shadow-1">
           <CardHeader>
-            <CardTitle className="text-sm">Stage</CardTitle>
+            <CardTitle className="text-sm">Lead Stage</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Badge variant="outline" className="text-sm">
-              {LEAD_STAGE_LABEL[enq.stage]}
-            </Badge>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Advance to</label>
-              <Select value={enq.stage} onValueChange={(v) => stageMut.mutate(v as LeadStage)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LEAD_STAGES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {stageMut.isPending && <p className="mt-1 text-xs text-muted-foreground">Saving…</p>}
-            </div>
+          <CardContent className="space-y-4">
+            {(() => {
+              const umb = stageToUmbrella(enq.stage);
+              const suggested = suggestNextStage(enq.stage);
+              return (
+                <>
+                  <div>
+                    <Badge
+                      variant="outline"
+                      className="border-primary/40 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary"
+                    >
+                      {umb.label}
+                    </Badge>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Operational stage: {LEAD_STAGE_LABEL[enq.stage]}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Move to stage
+                    </label>
+                    <Select
+                      value={umb.id}
+                      onValueChange={(v) => {
+                        const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
+                        if (target.stages.includes(enq.stage)) return;
+                        attemptStageChange(target.stages[0]);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEAD_UMBRELLAS.map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {stageMut.isPending && (
+                      <p className="mt-1 text-xs text-muted-foreground">Saving…</p>
+                    )}
+                  </div>
+
+                  {suggested && (
+                    <button
+                      type="button"
+                      onClick={() => attemptStageChange(suggested)}
+                      className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs text-primary hover:bg-primary/10"
+                    >
+                      Suggested next: {LEAD_STAGE_LABEL[suggested]} →
+                    </button>
+                  )}
+
+                  {/* Operational milestones inside the current umbrella */}
+                  {umb.milestones.length > 1 && (
+                    <div className="space-y-1 border-t border-border pt-3">
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Milestones
+                      </div>
+                      <ul className="space-y-1">
+                        {umb.milestones.map((m) => {
+                          const done = visited.data?.has(m.stage) || enq.stage === m.stage;
+                          const isCurrent = enq.stage === m.stage;
+                          return (
+                            <li
+                              key={m.stage}
+                              className="flex items-center justify-between gap-2 text-xs"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className={`inline-block h-2 w-2 rounded-full ${done ? "bg-success" : "bg-muted-foreground/40"}`}
+                                />
+                                <span className={isCurrent ? "font-medium" : ""}>{m.label}</span>
+                              </span>
+                              {!done && (
+                                <button
+                                  type="button"
+                                  onClick={() => attemptStageChange(m.stage)}
+                                  className="text-primary hover:underline"
+                                >
+                                  Set
+                                </button>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  {(enq.stage === "lost" || enq.stage === "cancelled") && enq.lost_reason && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
+                      <div className="font-medium text-destructive">
+                        {enq.stage === "cancelled" ? "Cancelled" : "Lost"} — {enq.lost_reason}
+                      </div>
+                      {enq.lost_notes && (
+                        <div className="mt-0.5 text-muted-foreground">{enq.lost_notes}</div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
       </div>
+
+      <LostReasonDialog
+        open={!!lostFor}
+        onOpenChange={(o) => !o && setLostFor(null)}
+        stage={lostFor ?? "lost"}
+        onConfirm={(reason, notes) => {
+          if (!lostFor) return;
+          stageMut.mutate({ stage: lostFor, lost_reason: reason, lost_notes: notes });
+          setLostFor(null);
+        }}
+      />
 
       <div className="mt-4">
         <RfqsForEnquiry enquiryId={enquiryId} />
