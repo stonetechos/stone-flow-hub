@@ -140,6 +140,21 @@ function EnquiriesPage() {
     umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true,
   );
 
+  const rowIds = rows.map((r) => r.id);
+  const signalsQ = useQuery({
+    queryKey: ["enquiry-signals-batch", rowIds.join(",")],
+    queryFn: () =>
+      listEnquirySignals(
+        rowIds,
+        Object.fromEntries(
+          rows.map((r) => [r.id, { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null }]),
+        ),
+      ),
+    enabled: rowIds.length > 0,
+    staleTime: 30_000,
+  });
+  const signals = signalsQ.data ?? {};
+
   return (
     <div>
       <PageHeader
