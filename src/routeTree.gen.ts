@@ -55,6 +55,7 @@ import { Route as AuthenticatedDispatchIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_authenticated/dashboards/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
+import { Route as ApiPublicDebugWaTokenRouteImport } from './routes/api/public/_debug-wa-token'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
 import { Route as AuthenticatedVendorPaymentsNewRouteImport } from './routes/_authenticated/vendor-payments/new'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders/new'
@@ -390,6 +391,11 @@ const VendorRfqsRfqIdRoute = VendorRfqsRfqIdRouteImport.update({
   id: '/rfqs/$rfqId',
   path: '/rfqs/$rfqId',
   getParentRoute: () => VendorRouteRoute,
+} as any)
+const ApiPublicDebugWaTokenRoute = ApiPublicDebugWaTokenRouteImport.update({
+  id: '/api/public/_debug-wa-token',
+  path: '/api/public',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVendorsVendorIdRoute =
   AuthenticatedVendorsVendorIdRouteImport.update({
@@ -948,6 +954,7 @@ export interface FileRoutesByFullPath {
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public': typeof ApiPublicDebugWaTokenRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/dashboards/': typeof AuthenticatedDashboardsIndexRoute
@@ -1075,6 +1082,7 @@ export interface FileRoutesByTo {
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public': typeof ApiPublicDebugWaTokenRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/dashboards': typeof AuthenticatedDashboardsIndexRoute
@@ -1204,6 +1212,7 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
   '/_authenticated/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  '/api/public/_debug-wa-token': typeof ApiPublicDebugWaTokenRoute
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/dashboards/': typeof AuthenticatedDashboardsIndexRoute
@@ -1333,6 +1342,7 @@ export interface FileRouteTypes {
     | '/sales-orders/new'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
+    | '/api/public'
     | '/vendor/rfqs/$rfqId'
     | '/customers/'
     | '/dashboards/'
@@ -1460,6 +1470,7 @@ export interface FileRouteTypes {
     | '/sales-orders/new'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
+    | '/api/public'
     | '/vendor/rfqs/$rfqId'
     | '/customers'
     | '/dashboards'
@@ -1588,6 +1599,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders/new'
     | '/_authenticated/vendor-payments/new'
     | '/_authenticated/vendors/$vendorId'
+    | '/api/public/_debug-wa-token'
     | '/vendor/rfqs/$rfqId'
     | '/_authenticated/customers/'
     | '/_authenticated/dashboards/'
@@ -1638,6 +1650,7 @@ export interface RootRouteChildren {
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
+  ApiPublicDebugWaTokenRoute: typeof ApiPublicDebugWaTokenRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
@@ -1968,6 +1981,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/rfqs/$rfqId'
       preLoaderRoute: typeof VendorRfqsRfqIdRouteImport
       parentRoute: typeof VendorRouteRoute
+    }
+    '/api/public/_debug-wa-token': {
+      id: '/api/public/_debug-wa-token'
+      path: '/api/public'
+      fullPath: '/api/public'
+      preLoaderRoute: typeof ApiPublicDebugWaTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vendors/$vendorId': {
       id: '/_authenticated/vendors/$vendorId'
@@ -2925,6 +2945,7 @@ const rootRouteChildren: RootRouteChildren = {
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PayLinkIdRoute: PayLinkIdRoute,
+  ApiPublicDebugWaTokenRoute: ApiPublicDebugWaTokenRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
@@ -2935,13 +2956,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
