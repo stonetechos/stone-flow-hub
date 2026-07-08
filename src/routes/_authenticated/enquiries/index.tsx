@@ -220,7 +220,9 @@ function EnquiriesPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Requirement</TableHead>
                 <TableHead>Project</TableHead>
-                <TableHead className="min-w-[180px]">Lead Stage</TableHead>
+                <TableHead className="min-w-[200px]">Lead Stage</TableHead>
+                <TableHead>Health</TableHead>
+                <TableHead className="min-w-[140px]">Next follow-up</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Budget (INR)</TableHead>
                 <TableHead className="w-12" />
