@@ -257,19 +257,42 @@ function EnquiryDetailPage() {
             {(() => {
               const umb = stageToUmbrella(enq.stage);
               const suggested = suggestNextStage(enq.stage);
+              const sig = signalQ.data ?? null;
+              const daysInStage = daysSince(sig?.stage_entered_at ?? enq.updated_at ?? enq.created_at);
+              const nextFup = sig?.next_followup ?? null;
+              const daysSinceLastFup = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
+              const followupOverdue = !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+              const health = computeLeadHealth({
+                stage: enq.stage,
+                daysInStage,
+                daysSinceFollowup: daysSinceLastFup,
+                followupOverdue,
+                isTerminalLost: enq.stage === "lost" || enq.stage === "cancelled",
+              });
               return (
                 <>
-                  <div>
-                    <Badge
-                      variant="outline"
-                      className="border-primary/40 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary"
-                    >
-                      {umb.label}
-                    </Badge>
-                    <div className="mt-1 text-xs text-muted-foreground">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className="border-primary/40 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary"
+                      >
+                        {umb.label}
+                      </Badge>
+                      <StageAgeChip stage={enq.stage} days={daysInStage} />
+                      <LeadHealthBadge health={health} />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
                       Operational stage: {LEAD_STAGE_LABEL[enq.stage]}
                     </div>
+                    <NextFollowupChip
+                      next={nextFup}
+                      assigneeName={nextFup?.assigned_to ? userNameById.get(nextFup.assigned_to) ?? null : null}
+                    />
                   </div>
+
+                  <SuggestedRecommendations enquiryId={enquiryId} />
+
 
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">
