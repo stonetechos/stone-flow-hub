@@ -34,6 +34,8 @@ const TABLE_FOR: Record<MdmEntityType, string | null> = {
   quote: null,
   sales_order: null,
   purchase_order: null,
+  enquiry: null,
+  invoice: null,
 };
 
 export async function setLifecycleStatus(
