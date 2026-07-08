@@ -57,6 +57,7 @@ import {
 } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
 import { invalidateEnquiry } from "@/lib/query-invalidation";
+import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
