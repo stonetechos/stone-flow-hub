@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
