@@ -47,6 +47,7 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
 
   const [
     customers,
+    contacts,
     projects,
     vendors,
     products,
@@ -58,19 +59,28 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     invoices,
     payments,
     dispatch,
+    salespeople,
+    architects,
   ] = await Promise.all([
     safe(
       supabase
         .from("customers")
-        .select("id,name,customer_code,primary_phone")
-        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p}`)
+        .select("id,name,customer_code,primary_phone,primary_email,city")
+        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("customer_contacts")
+        .select("id,name,phone,email,whatsapp,customer_id")
+        .or(`name.ilike.${p},phone.ilike.${p},email.ilike.${p},whatsapp.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
       supabase
         .from("projects")
-        .select("id,name,city")
-        .or(`name.ilike.${p},city.ilike.${p}`)
+        .select("id,name,city,project_code,site_address")
+        .or(`name.ilike.${p},city.ilike.${p},project_code.ilike.${p},site_address.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
@@ -90,8 +100,8 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     safe(
       supabase
         .from("enquiries")
-        .select("id,enquiry_no,notes")
-        .or(`enquiry_no.ilike.${p},notes.ilike.${p}`)
+        .select("id,enquiry_no,notes,architect_name,contractor_name")
+        .or(`enquiry_no.ilike.${p},notes.ilike.${p},architect_name.ilike.${p},contractor_name.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
@@ -141,6 +151,21 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .from("dispatches")
         .select("id,dispatch_no,tracking_no")
         .or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("profiles")
+        .select("id,full_name,email,phone")
+        .or(`full_name.ilike.${p},email.ilike.${p},phone.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("customers")
+        .select("id,name,customer_code,customer_type,city")
+        .in("customer_type", ["architect", "interior_designer", "contractor"])
+        .or(`name.ilike.${p},customer_code.ilike.${p},city.ilike.${p}`)
         .limit(LIMIT),
     ),
   ]);
