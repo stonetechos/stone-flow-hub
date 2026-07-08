@@ -109,6 +109,25 @@ function EnquiryDetailPage() {
     queryFn: () => listEnquiryVisitedStages(enquiryId),
   });
 
+  const signalQ = useQuery({
+    queryKey: ["enquiry-signals", enquiryId],
+    queryFn: () =>
+      getEnquirySignal(
+        enquiryId,
+        query.data!.stage,
+        query.data!.updated_at ?? query.data!.created_at ?? null,
+      ),
+    enabled: !!query.data,
+  });
+  const usersQ = useQuery({
+    queryKey: ["assignable-users"],
+    queryFn: listAssignableUsers,
+    staleTime: 5 * 60_000,
+  });
+  const userNameById = new Map(
+    (usersQ.data ?? []).map((u) => [u.id, u.full_name ?? u.email ?? "User"]),
+  );
+
   function attemptStageChange(stage: LeadStage) {
     if (LOST_LIKE_STAGES.includes(stage)) {
       setLostFor(stage);
