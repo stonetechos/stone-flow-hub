@@ -66,6 +66,9 @@ import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 import { SuggestedRecommendations } from "@/components/enquiry/SuggestedRecommendations";
 import { OperationalProgress } from "@/components/enquiry/OperationalProgress";
 import { listAssignableUsers } from "@/lib/tasks/api";
+import { getEnquiryIntelligence } from "@/lib/intelligence/enquiry-context";
+import { NextBestAction } from "@/components/enquiry/NextBestAction";
+import { LeadScoreBadge } from "@/components/enquiry/LeadScoreBadge";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
