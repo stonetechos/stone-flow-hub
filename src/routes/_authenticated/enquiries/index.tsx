@@ -32,6 +32,7 @@ import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
+import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
