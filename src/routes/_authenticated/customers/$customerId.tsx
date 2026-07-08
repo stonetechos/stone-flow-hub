@@ -168,7 +168,30 @@ function CustomerHub() {
           <TabsTrigger value="stats">Statistics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <Card className="shadow-1">
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-sm">Next Follow-up</CardTitle>
+              <Link to="/followups" className="text-xs text-primary hover:underline">
+                View all
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <NextFollowupChip
+                next={
+                  nextFupRow
+                    ? {
+                        id: nextFupRow.id,
+                        scheduled_at: nextFupRow.scheduled_at,
+                        assigned_to: nextFupRow.assigned_to ?? null,
+                        channel: nextFupRow.channel ?? null,
+                      }
+                    : null
+                }
+              />
+            </CardContent>
+          </Card>
+
           <Card className="shadow-1">
             <CardHeader>
               <CardTitle className="text-sm">Overview</CardTitle>
