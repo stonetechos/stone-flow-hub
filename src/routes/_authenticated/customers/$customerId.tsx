@@ -48,6 +48,12 @@ function CustomerHub() {
     queryKey: ["hub", "customer", customerId, "stats"],
     queryFn: () => hub.customerStats(customerId),
   });
+  const nextFupQ = useQuery({
+    queryKey: ["customer-next-followup", customerId],
+    queryFn: () => listFollowups({ customerId, scope: "pending", limit: 1 }),
+    staleTime: 30_000,
+  });
+  const nextFupRow = (nextFupQ.data ?? [])[0] ?? null;
 
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
