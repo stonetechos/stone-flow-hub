@@ -255,13 +255,18 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
 
       <ConfirmDialog
         open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
+        onOpenChange={(o) => {
+          if (!o) setToDelete(null);
+        }}
         title="Delete task?"
         description={toDelete ? `“${toDelete.title}” will be permanently removed.` : ""}
         confirmLabel="Delete"
-        destructive
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        busy={del.isPending}
+        onConfirm={() => {
+          if (toDelete) del.mutate(toDelete.id);
+        }}
       />
+
     </Card>
   );
 }
