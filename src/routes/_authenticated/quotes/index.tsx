@@ -30,7 +30,7 @@ import {
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
