@@ -27,6 +27,48 @@ export const Route = createFileRoute("/_authenticated/dashboards/")({
 
 const ROLES = [
   {
+    to: "/dashboards/lead-executive",
+    title: "Lead Executive",
+    desc: "13 umbrella stages — total leads, revenue, avg days. Deep-linked to the CRM.",
+    icon: Crown,
+  },
+  {
+    to: "/dashboards/sales-funnel",
+    title: "Sales Funnel",
+    desc: "Conversion, drop-offs, avg quotation & order value.",
+    icon: BarChart3,
+  },
+  {
+    to: "/dashboards/revenue-crm",
+    title: "Revenue",
+    desc: "Expected, confirmed, collected, outstanding, dispatch/install pending.",
+    icon: CircleDollarSign,
+  },
+  {
+    to: "/dashboards/followups",
+    title: "Follow-ups",
+    desc: "Today, overdue, upcoming, high-priority, un-scheduled leads.",
+    icon: CalendarClock,
+  },
+  {
+    to: "/dashboards/lead-health",
+    title: "Lead Health",
+    desc: "Healthy / warning / critical / cold / inactive / silent >30 days.",
+    icon: Gauge,
+  },
+  {
+    to: "/dashboards/team-performance",
+    title: "Team Performance",
+    desc: "Per salesperson: leads, quotations, conversions, revenue.",
+    icon: Users,
+  },
+  {
+    to: "/dashboards/lead-analytics",
+    title: "Lead Analytics",
+    desc: "Source, lost reasons, product/vendor/city/architect/contractor breakdowns.",
+    icon: LineChartIcon,
+  },
+  {
     to: "/dashboards/executive",
     title: "Executive",
     desc: "Owner KPI cockpit — pipeline, cash, ops, deep-links to every module.",
