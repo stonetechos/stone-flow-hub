@@ -10,7 +10,7 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -287,18 +287,16 @@ function CustomerFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
-        <DialogHeader className="shrink-0 border-b border-border bg-background px-6 py-4">
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.name}` : "New customer"}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={onSubmit}
           aria-busy={mutation.isPending}
-          className="flex min-h-0 flex-1 flex-col"
+          className="flex min-h-0 flex-1 flex-col gap-4"
         >
-          <div
-            className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-4 [-webkit-overflow-scrolling:touch]"
-          >
+          <DialogBody className="space-y-4">
             <QuickForm.QuickFill>
               <Field label="Customer name" required>
                 <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
@@ -374,9 +372,9 @@ function CustomerFormDialog({
                 />
               </Field>
             </QuickForm.Advanced>
-          </div>
+          </DialogBody>
 
-          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-background px-6 py-4">
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -384,9 +382,8 @@ function CustomerFormDialog({
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save" : "Create"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-
       </DialogContent>
     </Dialog>
   );
