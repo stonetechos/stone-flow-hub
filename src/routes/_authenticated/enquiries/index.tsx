@@ -59,6 +59,11 @@ import {
   type LeadUmbrellaId,
 } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
+import { computeLeadHealth, daysSince } from "@/lib/lead-stage/health";
+import { listEnquirySignals } from "@/lib/lead-stage/signals";
+import { LeadHealthBadge } from "@/components/enquiry/LeadHealthBadge";
+import { StageAgeChip } from "@/components/enquiry/StageAgeChip";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 
 const UMBRELLA_IDS = LEAD_UMBRELLAS.map((u) => u.id) as ReadonlyArray<LeadUmbrellaId>;
 
@@ -135,6 +140,21 @@ function EnquiriesPage() {
     umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true,
   );
 
+  const rowIds = rows.map((r) => r.id);
+  const signalsQ = useQuery({
+    queryKey: ["enquiry-signals-batch", rowIds.join(",")],
+    queryFn: () =>
+      listEnquirySignals(
+        rowIds,
+        Object.fromEntries(
+          rows.map((r) => [r.id, { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null }]),
+        ),
+      ),
+    enabled: rowIds.length > 0,
+    staleTime: 30_000,
+  });
+  const signals = signalsQ.data ?? {};
+
   return (
     <div>
       <PageHeader
@@ -177,7 +197,7 @@ function EnquiriesPage() {
       </div>
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={8} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -200,7 +220,9 @@ function EnquiriesPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Requirement</TableHead>
                 <TableHead>Project</TableHead>
-                <TableHead className="min-w-[180px]">Lead Stage</TableHead>
+                <TableHead className="min-w-[200px]">Lead Stage</TableHead>
+                <TableHead>Health</TableHead>
+                <TableHead className="min-w-[140px]">Next follow-up</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Budget (INR)</TableHead>
                 <TableHead className="w-12" />
@@ -209,6 +231,18 @@ function EnquiriesPage() {
             <TableBody>
               {rows.map((e) => {
                 const currentUmbrella = stageToUmbrella(e.stage);
+                const sig = signals[e.id] ?? null;
+                const daysInStage = daysSince(sig?.stage_entered_at ?? e.updated_at ?? e.created_at);
+                const nextFup = sig?.next_followup ?? null;
+                const followupOverdue = !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+                const daysSinceLast = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
+                const health = computeLeadHealth({
+                  stage: e.stage,
+                  daysInStage,
+                  daysSinceFollowup: daysSinceLast,
+                  followupOverdue,
+                  isTerminalLost: e.stage === "lost" || e.stage === "cancelled",
+                });
                 return (
                   <TableRow key={e.id}>
                     <TableCell className="font-mono text-xs">
@@ -230,31 +264,39 @@ function EnquiriesPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={currentUmbrella.id}
-                        onValueChange={(v) => {
-                          const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
-                          const primary = target.stages[0];
-                          // If already inside this umbrella, don't churn.
-                          if (target.stages.includes(e.stage)) return;
-                          if (primary === "lost" || primary === "cancelled") {
-                            setLostFor({ id: e.id, stage: primary });
-                            return;
-                          }
-                          stageMut.mutate({ id: e.id, stage: primary });
-                        }}
-                      >
-                        <SelectTrigger className="h-8 w-full text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LEAD_UMBRELLAS.map((u) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              {u.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-1">
+                        <Select
+                          value={currentUmbrella.id}
+                          onValueChange={(v) => {
+                            const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
+                            const primary = target.stages[0];
+                            if (target.stages.includes(e.stage)) return;
+                            if (primary === "lost" || primary === "cancelled") {
+                              setLostFor({ id: e.id, stage: primary });
+                              return;
+                            }
+                            stageMut.mutate({ id: e.id, stage: primary });
+                          }}
+                        >
+                          <SelectTrigger className="h-8 w-full text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LEAD_UMBRELLAS.map((u) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <StageAgeChip stage={e.stage} days={daysInStage} compact />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <LeadHealthBadge health={health} compact />
+                    </TableCell>
+                    <TableCell>
+                      <NextFollowupChip next={nextFup} compact />
                     </TableCell>
                     <TableCell className="capitalize">{e.priority}</TableCell>
                     <TableCell>

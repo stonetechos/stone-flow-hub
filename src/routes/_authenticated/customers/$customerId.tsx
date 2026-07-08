@@ -29,6 +29,8 @@ import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
+import { listFollowups } from "@/lib/followups/api";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   ssr: false,
@@ -46,6 +48,12 @@ function CustomerHub() {
     queryKey: ["hub", "customer", customerId, "stats"],
     queryFn: () => hub.customerStats(customerId),
   });
+  const nextFupQ = useQuery({
+    queryKey: ["customer-next-followup", customerId],
+    queryFn: () => listFollowups({ customerId, scope: "pending", limit: 1 }),
+    staleTime: 30_000,
+  });
+  const nextFupRow = (nextFupQ.data ?? [])[0] ?? null;
 
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
@@ -160,7 +168,30 @@ function CustomerHub() {
           <TabsTrigger value="stats">Statistics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <Card className="shadow-1">
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-sm">Next Follow-up</CardTitle>
+              <Link to="/followups" className="text-xs text-primary hover:underline">
+                View all
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <NextFollowupChip
+                next={
+                  nextFupRow
+                    ? {
+                        id: nextFupRow.id,
+                        scheduled_at: nextFupRow.scheduled_at,
+                        assigned_to: nextFupRow.assigned_to ?? null,
+                        channel: nextFupRow.channel ?? null,
+                      }
+                    : null
+                }
+              />
+            </CardContent>
+          </Card>
+
           <Card className="shadow-1">
             <CardHeader>
               <CardTitle className="text-sm">Overview</CardTitle>

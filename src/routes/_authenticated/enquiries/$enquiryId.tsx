@@ -58,6 +58,14 @@ import {
 import type { LeadStage } from "@/lib/types";
 import { invalidateEnquiry } from "@/lib/query-invalidation";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
+import { getEnquirySignal } from "@/lib/lead-stage/signals";
+import { computeLeadHealth, daysSince } from "@/lib/lead-stage/health";
+import { LeadHealthBadge } from "@/components/enquiry/LeadHealthBadge";
+import { StageAgeChip } from "@/components/enquiry/StageAgeChip";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+import { SuggestedRecommendations } from "@/components/enquiry/SuggestedRecommendations";
+import { OperationalProgress } from "@/components/enquiry/OperationalProgress";
+import { listAssignableUsers } from "@/lib/tasks/api";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
@@ -100,6 +108,25 @@ function EnquiryDetailPage() {
     queryKey: ["enquiry_stage_history", enquiryId],
     queryFn: () => listEnquiryVisitedStages(enquiryId),
   });
+
+  const signalQ = useQuery({
+    queryKey: ["enquiry-signals", enquiryId],
+    queryFn: () =>
+      getEnquirySignal(
+        enquiryId,
+        query.data!.stage,
+        query.data!.updated_at ?? query.data!.created_at ?? null,
+      ),
+    enabled: !!query.data,
+  });
+  const usersQ = useQuery({
+    queryKey: ["assignable-users"],
+    queryFn: listAssignableUsers,
+    staleTime: 5 * 60_000,
+  });
+  const userNameById = new Map(
+    (usersQ.data ?? []).map((u) => [u.id, u.full_name ?? u.email ?? "User"]),
+  );
 
   function attemptStageChange(stage: LeadStage) {
     if (LOST_LIKE_STAGES.includes(stage)) {
@@ -230,19 +257,42 @@ function EnquiryDetailPage() {
             {(() => {
               const umb = stageToUmbrella(enq.stage);
               const suggested = suggestNextStage(enq.stage);
+              const sig = signalQ.data ?? null;
+              const daysInStage = daysSince(sig?.stage_entered_at ?? enq.updated_at ?? enq.created_at);
+              const nextFup = sig?.next_followup ?? null;
+              const daysSinceLastFup = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
+              const followupOverdue = !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+              const health = computeLeadHealth({
+                stage: enq.stage,
+                daysInStage,
+                daysSinceFollowup: daysSinceLastFup,
+                followupOverdue,
+                isTerminalLost: enq.stage === "lost" || enq.stage === "cancelled",
+              });
               return (
                 <>
-                  <div>
-                    <Badge
-                      variant="outline"
-                      className="border-primary/40 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary"
-                    >
-                      {umb.label}
-                    </Badge>
-                    <div className="mt-1 text-xs text-muted-foreground">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className="border-primary/40 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary"
+                      >
+                        {umb.label}
+                      </Badge>
+                      <StageAgeChip stage={enq.stage} days={daysInStage} />
+                      <LeadHealthBadge health={health} />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
                       Operational stage: {LEAD_STAGE_LABEL[enq.stage]}
                     </div>
+                    <NextFollowupChip
+                      next={nextFup}
+                      assigneeName={nextFup?.assigned_to ? userNameById.get(nextFup.assigned_to) ?? null : null}
+                    />
                   </div>
+
+                  <SuggestedRecommendations enquiryId={enquiryId} />
+
 
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">
@@ -334,6 +384,10 @@ function EnquiryDetailPage() {
             })()}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4">
+        <OperationalProgress projectId={enq.project_id ?? null} />
       </div>
 
       <LostReasonDialog
