@@ -30,7 +30,7 @@ import {
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
@@ -186,13 +186,14 @@ function QuotesPage() {
         </div>
       )}
 
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete quote?"
-        description={toDelete ? `${toDelete.quote_no} will be removed.` : ""}
+        entityType="quote"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.quote_no : ""}
         busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && del.mutate(toDelete.id)}
       />
 
       <CreateQuoteDialog

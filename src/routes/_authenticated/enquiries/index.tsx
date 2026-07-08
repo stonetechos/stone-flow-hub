@@ -30,7 +30,7 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
@@ -106,8 +106,7 @@ function EnquiriesPage() {
     mutationFn: (id: string) => deleteEnquiry(id),
     onSuccess: () => {
       toast.success("Enquiry deleted");
-      qc.invalidateQueries({ queryKey: qk.enquiries.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateEnquiry(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -319,13 +318,14 @@ function EnquiriesPage() {
         onOpenChange={(o) => !o && setEditing(null)}
         editing={editing}
       />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete enquiry?"
-        description={toDelete ? `${toDelete.enquiry_no} will be permanently removed.` : ""}
+        entityType="enquiry"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.enquiry_no : ""}
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
       <LostReasonDialog
         open={!!lostFor}

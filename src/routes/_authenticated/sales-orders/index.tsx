@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -159,13 +159,14 @@ function SalesOrdersPage() {
         </div>
       )}
 
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete sales order?"
-        description={toDelete ? `${toDelete.so_no} will be removed.` : ""}
+        entityType="sales_order"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.so_no : ""}
         busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && del.mutate(toDelete.id)}
       />
     </div>
   );

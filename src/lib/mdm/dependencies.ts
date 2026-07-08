@@ -22,7 +22,9 @@ export type MdmEntityType =
   | "estimate"
   | "quote"
   | "sales_order"
-  | "purchase_order";
+  | "purchase_order"
+  | "enquiry"
+  | "invoice";
 
 export interface DependencyRow {
   /** Human-readable module name, e.g. "Projects", "Invoices". */
