@@ -30,7 +30,7 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
-import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
