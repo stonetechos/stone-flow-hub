@@ -125,6 +125,7 @@ import { Route as AuthenticatedDashboardsCustomerIntelligenceRouteImport } from 
 import { Route as AuthenticatedDashboardsControlCentreRouteImport } from './routes/_authenticated/dashboards/control-centre'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
 import { Route as AuthenticatedDashboardsBusinessIntelligenceRouteImport } from './routes/_authenticated/dashboards/business-intelligence'
+import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './routes/_authenticated/dashboards/business-health'
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -813,6 +814,12 @@ const AuthenticatedDashboardsBusinessIntelligenceRoute =
     path: '/dashboards/business-intelligence',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsBusinessHealthRoute =
+  AuthenticatedDashboardsBusinessHealthRouteImport.update({
+    id: '/dashboards/business-health',
+    path: '/dashboards/business-health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsAnalyticsRoute =
   AuthenticatedDashboardsAnalyticsRouteImport.update({
     id: '/dashboards/analytics',
@@ -942,6 +949,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
@@ -1077,6 +1085,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
@@ -1214,6 +1223,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/_authenticated/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/_authenticated/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/_authenticated/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
@@ -1351,6 +1361,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
+    | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
     | '/dashboards/control-centre'
@@ -1486,6 +1497,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
+    | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
     | '/dashboards/control-centre'
@@ -1622,6 +1634,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/analytics'
+    | '/_authenticated/dashboards/business-health'
     | '/_authenticated/dashboards/business-intelligence'
     | '/_authenticated/dashboards/collections'
     | '/_authenticated/dashboards/control-centre'
@@ -2563,6 +2576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/business-health': {
+      id: '/_authenticated/dashboards/business-health'
+      path: '/dashboards/business-health'
+      fullPath: '/dashboards/business-health'
+      preLoaderRoute: typeof AuthenticatedDashboardsBusinessHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/analytics': {
       id: '/_authenticated/dashboards/analytics'
       path: '/dashboards/analytics'
@@ -2841,6 +2861,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsAnalyticsRoute: typeof AuthenticatedDashboardsAnalyticsRoute
+  AuthenticatedDashboardsBusinessHealthRoute: typeof AuthenticatedDashboardsBusinessHealthRoute
   AuthenticatedDashboardsBusinessIntelligenceRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
   AuthenticatedDashboardsControlCentreRoute: typeof AuthenticatedDashboardsControlCentreRoute
@@ -2955,6 +2976,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomersCustomerIdRoute:
     AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsAnalyticsRoute: AuthenticatedDashboardsAnalyticsRoute,
+  AuthenticatedDashboardsBusinessHealthRoute:
+    AuthenticatedDashboardsBusinessHealthRoute,
   AuthenticatedDashboardsBusinessIntelligenceRoute:
     AuthenticatedDashboardsBusinessIntelligenceRoute,
   AuthenticatedDashboardsCollectionsRoute:
