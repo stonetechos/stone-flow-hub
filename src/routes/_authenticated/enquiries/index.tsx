@@ -59,6 +59,11 @@ import {
   type LeadUmbrellaId,
 } from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
+import { computeLeadHealth, daysSince } from "@/lib/lead-stage/health";
+import { listEnquirySignals } from "@/lib/lead-stage/signals";
+import { LeadHealthBadge } from "@/components/enquiry/LeadHealthBadge";
+import { StageAgeChip } from "@/components/enquiry/StageAgeChip";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 
 const UMBRELLA_IDS = LEAD_UMBRELLAS.map((u) => u.id) as ReadonlyArray<LeadUmbrellaId>;
 
