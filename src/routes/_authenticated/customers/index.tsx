@@ -287,88 +287,96 @@ function CustomerFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-border bg-background px-6 py-4">
           <DialogTitle>{editing ? `Edit ${editing.name}` : "New customer"}</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
-          <QuickForm.QuickFill>
-            <Field label="Customer name" required>
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
-            </Field>
-            <Field label="Mobile" required hint="10 digits, +91 optional">
-              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
-            </Field>
-          </QuickForm.QuickFill>
+        <form
+          onSubmit={onSubmit}
+          aria-busy={mutation.isPending}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div
+            className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-4 [-webkit-overflow-scrolling:touch]"
+          >
+            <QuickForm.QuickFill>
+              <Field label="Customer name" required>
+                <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
+              </Field>
+              <Field label="Mobile" required hint="10 digits, +91 optional">
+                <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
+              </Field>
+            </QuickForm.QuickFill>
 
-          <QuickForm.MoreDetails>
-            <Field label="Email">
-              <Input
-                type="email"
-                value={form.email ?? ""}
-                onChange={(e) => set("email", e.target.value)}
-              />
-            </Field>
-            <Field label="City">
-              <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
-            </Field>
-            <Field label="Type">
-              <Select
-                value={form.customer_type}
-                onValueChange={(v) =>
-                  set("customer_type", v as CustomerCreateInput["customer_type"])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CUSTOMER_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="WhatsApp">
-              <Input
-                value={form.whatsapp ?? ""}
-                onChange={(e) => set("whatsapp", e.target.value)}
-              />
-            </Field>
-          </QuickForm.MoreDetails>
+            <QuickForm.MoreDetails>
+              <Field label="Email">
+                <Input
+                  type="email"
+                  value={form.email ?? ""}
+                  onChange={(e) => set("email", e.target.value)}
+                />
+              </Field>
+              <Field label="City">
+                <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
+              </Field>
+              <Field label="Type">
+                <Select
+                  value={form.customer_type}
+                  onValueChange={(v) =>
+                    set("customer_type", v as CustomerCreateInput["customer_type"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CUSTOMER_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="WhatsApp">
+                <Input
+                  value={form.whatsapp ?? ""}
+                  onChange={(e) => set("whatsapp", e.target.value)}
+                />
+              </Field>
+            </QuickForm.MoreDetails>
 
-          <QuickForm.Advanced>
-            <Field label="Billing address" className="md:col-span-2">
-              <Textarea
-                rows={2}
-                value={form.billing_address ?? ""}
-                onChange={(e) => set("billing_address", e.target.value)}
-              />
-            </Field>
-            <Field label="State">
-              <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
-            </Field>
-            <Field label="Pincode">
-              <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
-            </Field>
-            <Field label="GST number">
-              <Input
-                value={form.gst_number ?? ""}
-                onChange={(e) => set("gst_number", e.target.value)}
-              />
-            </Field>
-            <Field label="Notes" className="md:col-span-2">
-              <Textarea
-                rows={2}
-                value={form.notes ?? ""}
-                onChange={(e) => set("notes", e.target.value)}
-              />
-            </Field>
-          </QuickForm.Advanced>
+            <QuickForm.Advanced>
+              <Field label="Billing address" className="md:col-span-2">
+                <Textarea
+                  rows={2}
+                  value={form.billing_address ?? ""}
+                  onChange={(e) => set("billing_address", e.target.value)}
+                />
+              </Field>
+              <Field label="State">
+                <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
+              </Field>
+              <Field label="Pincode">
+                <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
+              </Field>
+              <Field label="GST number">
+                <Input
+                  value={form.gst_number ?? ""}
+                  onChange={(e) => set("gst_number", e.target.value)}
+                />
+              </Field>
+              <Field label="Notes" className="md:col-span-2">
+                <Textarea
+                  rows={2}
+                  value={form.notes ?? ""}
+                  onChange={(e) => set("notes", e.target.value)}
+                />
+              </Field>
+            </QuickForm.Advanced>
+          </div>
 
-          <QuickForm.Actions>
+          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-background px-6 py-4">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -376,8 +384,9 @@ function CustomerFormDialog({
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save" : "Create"}
             </Button>
-          </QuickForm.Actions>
-        </QuickForm>
+          </div>
+        </form>
+
       </DialogContent>
     </Dialog>
   );
