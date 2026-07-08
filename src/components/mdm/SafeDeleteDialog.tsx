@@ -220,6 +220,8 @@ function entityLabelHeading(t: MdmEntityType): string {
     case "quote":          return "quotation";
     case "sales_order":    return "sales order";
     case "purchase_order": return "purchase order";
+    case "enquiry":        return "enquiry";
+    case "invoice":        return "invoice";
     default:               return t;
   }
 }
