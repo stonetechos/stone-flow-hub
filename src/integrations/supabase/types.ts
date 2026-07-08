@@ -6639,6 +6639,13 @@ export type Database = {
       }
     }
     Functions: {
+      _mdm_module_label: {
+        Args: { _tbl: string }
+        Returns: {
+          label: string
+          route: string
+        }[]
+      }
       approve_estimate: {
         Args: { _estimate_id: string; _override_schedule?: Json }
         Returns: {
@@ -6726,6 +6733,7 @@ export type Database = {
       dependency_summary: {
         Args: { _entity_id: string; _entity_type: string }
         Returns: {
+          blocking: boolean
           count: number
           module: string
           route: string

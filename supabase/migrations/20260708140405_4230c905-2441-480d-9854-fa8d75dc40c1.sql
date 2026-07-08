@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.dependency_summary(text, uuid);

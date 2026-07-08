@@ -80,6 +80,8 @@ export function invalidateCustomer(qc: QueryClient, id?: string): void {
   qc.invalidateQueries({ queryKey: ["projects", "picker"] });
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  // Any open SafeDeleteDialog for this or any parent must re-scan.
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
 }
 
@@ -91,6 +93,7 @@ export function invalidateProject(qc: QueryClient, id?: string): void {
   bump(qc, qk.enquiries.all);
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
 }
 
@@ -99,14 +102,17 @@ export function invalidateVendor(qc: QueryClient, id?: string): void {
   if (id) bump(qc, qk.vendors.byId(id));
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
 }
 
 export function invalidateProduct(qc: QueryClient, id?: string): void {
   bump(qc, qk.products.all);
   if (id) qc.invalidateQueries({ queryKey: ["products", "byId", id] });
+  qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
 }
+
 
 export function invalidateEnquiry(qc: QueryClient, id?: string): void {
   bump(qc, qk.enquiries.all);
