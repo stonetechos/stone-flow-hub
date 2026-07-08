@@ -27,6 +27,24 @@ export const Route = createFileRoute("/_authenticated/dashboards/")({
 
 const ROLES = [
   {
+    to: "/dashboards/daily-action",
+    title: "Daily Action",
+    desc: "Today's priorities, top risks, hot/cold/high-value leads — all in one screen.",
+    icon: Sparkles,
+  },
+  {
+    to: "/dashboards/business-health",
+    title: "Business Health",
+    desc: "Composite 0-100 score across sales, cash, ops, vendors and customers.",
+    icon: Gauge,
+  },
+  {
+    to: "/dashboards/smart-notifications",
+    title: "Smart Notifications",
+    desc: "System-generated alerts — never executed automatically.",
+    icon: AlertTriangle,
+  },
+  {
     to: "/dashboards/lead-executive",
     title: "Lead Executive",
     desc: "13 umbrella stages — total leads, revenue, avg days. Deep-linked to the CRM.",
