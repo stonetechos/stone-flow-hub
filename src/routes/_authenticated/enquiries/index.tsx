@@ -318,13 +318,14 @@ function EnquiriesPage() {
         onOpenChange={(o) => !o && setEditing(null)}
         editing={editing}
       />
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete enquiry?"
-        description={toDelete ? `${toDelete.enquiry_no} will be permanently removed.` : ""}
+        entityType="enquiry"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.enquiry_no : ""}
         busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
       <LostReasonDialog
         open={!!lostFor}
