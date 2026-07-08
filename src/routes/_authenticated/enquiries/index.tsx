@@ -106,8 +106,7 @@ function EnquiriesPage() {
     mutationFn: (id: string) => deleteEnquiry(id),
     onSuccess: () => {
       toast.success("Enquiry deleted");
-      qc.invalidateQueries({ queryKey: qk.enquiries.all });
-      qc.invalidateQueries({ queryKey: qk.dashboard });
+      invalidateEnquiry(qc);
       setToDelete(null);
     },
     onError: (err) => toast.error(toUserMessage(err)),
