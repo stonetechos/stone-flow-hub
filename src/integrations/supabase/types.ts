@@ -19,6 +19,7 @@ export type Database = {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id: string | null
           created_at: string
+          dedupe_key: string | null
           entity_id: string
           entity_type: string
           field_name: string | null
@@ -33,6 +34,7 @@ export type Database = {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
           created_at?: string
+          dedupe_key?: string | null
           entity_id: string
           entity_type: string
           field_name?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           action?: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
           created_at?: string
+          dedupe_key?: string | null
           entity_id?: string
           entity_type?: string
           field_name?: string | null
@@ -3980,6 +3983,62 @@ export type Database = {
         }
         Relationships: []
       }
+      project_milestones: {
+        Row: {
+          completed_at: string
+          completed_by: string | null
+          created_at: string
+          id: string
+          is_demo: boolean
+          is_manual_override: boolean
+          milestone_key: string
+          notes: string | null
+          project_id: string
+          source: string
+          source_ref_id: string | null
+          source_ref_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          is_manual_override?: boolean
+          milestone_key: string
+          notes?: string | null
+          project_id: string
+          source?: string
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          is_manual_override?: boolean
+          milestone_key?: string
+          notes?: string | null
+          project_id?: string
+          source?: string
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_notes: {
         Row: {
           author_id: string | null
@@ -5163,6 +5222,72 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_visits_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stage_recommendations: {
+        Row: {
+          created_at: string
+          enquiry_id: string
+          id: string
+          is_demo: boolean
+          project_id: string | null
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          source_event: string
+          source_ref_id: string | null
+          source_ref_type: string | null
+          status: string
+          suggested_stage: Database["public"]["Enums"]["lead_stage"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enquiry_id: string
+          id?: string
+          is_demo?: boolean
+          project_id?: string | null
+          reason: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_event: string
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          status?: string
+          suggested_stage: Database["public"]["Enums"]["lead_stage"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enquiry_id?: string
+          id?: string
+          is_demo?: boolean
+          project_id?: string | null
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_event?: string
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          status?: string
+          suggested_stage?: Database["public"]["Enums"]["lead_stage"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_recommendations_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stage_recommendations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -6826,6 +6951,17 @@ export type Database = {
         }
         Returns: string
       }
+      record_project_milestone: {
+        Args: {
+          _completed_at: string
+          _milestone_key: string
+          _project_id: string
+          _source_ref_id: string
+          _source_ref_type: string
+          _summary: string
+        }
+        Returns: undefined
+      }
       record_schedule_payment: {
         Args: { _amount: number; _receipt_no?: string; _schedule_id: string }
         Returns: {
@@ -6923,6 +7059,29 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      suggest_stage: {
+        Args: {
+          _enquiry_id: string
+          _project_id: string
+          _reason: string
+          _source_event: string
+          _source_ref_id: string
+          _source_ref_type: string
+          _suggested: Database["public"]["Enums"]["lead_stage"]
+        }
+        Returns: undefined
+      }
+      suggest_stage_for_project: {
+        Args: {
+          _project_id: string
+          _reason: string
+          _source_event: string
+          _source_ref_id: string
+          _source_ref_type: string
+          _suggested: Database["public"]["Enums"]["lead_stage"]
+        }
+        Returns: undefined
       }
       vendor_ledger_upsert: {
         Args: {
