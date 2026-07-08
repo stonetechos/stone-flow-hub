@@ -75,13 +75,38 @@ function EnquiryDetailPage() {
   });
 
   const stageMut = useMutation({
-    mutationFn: (stage: LeadStage) => updateEnquiryStage(enquiryId, stage),
+    mutationFn: (input: {
+      stage: LeadStage;
+      lost_reason?: string | null;
+      lost_notes?: string | null;
+    }) =>
+      updateEnquiryStage(enquiryId, input.stage, {
+        lost_reason: input.lost_reason,
+        lost_notes: input.lost_notes,
+      }),
     onSuccess: () => {
       toast.success("Stage updated");
       invalidateEnquiry(qc, enquiryId);
+      qc.invalidateQueries({ queryKey: qk.enquiries.pipeline });
+      qc.invalidateQueries({ queryKey: ["enquiry_stage_history", enquiryId] });
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
+
+  const [lostFor, setLostFor] = useState<LeadStage | null>(null);
+
+  const visited = useQuery({
+    queryKey: ["enquiry_stage_history", enquiryId],
+    queryFn: () => listEnquiryVisitedStages(enquiryId),
+  });
+
+  function attemptStageChange(stage: LeadStage) {
+    if (LOST_LIKE_STAGES.includes(stage)) {
+      setLostFor(stage);
+      return;
+    }
+    stageMut.mutate({ stage });
+  }
 
   if (query.isLoading) return <LoadingBlock />;
   if (query.error)
