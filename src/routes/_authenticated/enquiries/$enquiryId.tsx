@@ -131,6 +131,21 @@ function EnquiryDetailPage() {
     (usersQ.data ?? []).map((u) => [u.id, u.full_name ?? u.email ?? "User"]),
   );
 
+  const intelQ = useQuery({
+    queryKey: ["enquiry-intelligence", enquiryId],
+    queryFn: () => getEnquiryIntelligence({
+      id: enquiryId,
+      stage: query.data!.stage,
+      projectId: query.data!.project_id ?? null,
+      assignedTo: query.data!.assigned_to ?? null,
+      budgetInr: query.data!.budget_inr ?? null,
+      createdAt: query.data!.created_at ?? null,
+      updatedAt: query.data!.updated_at ?? null,
+    }),
+    enabled: !!query.data,
+    staleTime: 60_000,
+  });
+
   function attemptStageChange(stage: LeadStage) {
     if (LOST_LIKE_STAGES.includes(stage)) {
       setLostFor(stage);
