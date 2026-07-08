@@ -100,7 +100,13 @@ export async function upsertManualMilestone(input: {
   completedAt?: string;
   notes?: string;
 }) {
-  const { error } = await supabase.from("project_milestones" as never).upsert(
+  // Cast: types.ts hasn't regenerated for the new table yet; runtime is fine.
+  const client = supabase as unknown as {
+    from: (t: string) => {
+      upsert: (row: Record<string, unknown>, opts?: { onConflict?: string }) => Promise<{ error: unknown }>;
+    };
+  };
+  const { error } = await client.from("project_milestones").upsert(
     {
       project_id: input.projectId,
       milestone_key: input.key,
@@ -111,7 +117,7 @@ export async function upsertManualMilestone(input: {
     },
     { onConflict: "project_id,milestone_key" },
   );
-  if (error) throw error;
+  if (error) throw error as Error;
 }
 
 /** Resolve a recommendation. Accepting also updates the enquiry stage. */
@@ -125,15 +131,22 @@ export async function resolveRecommendation(input: {
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData.user?.id ?? null;
 
-  const { error: recErr } = await supabase
-    .from("stage_recommendations" as never)
+  const client = supabase as unknown as {
+    from: (t: string) => {
+      update: (row: Record<string, unknown>) => {
+        eq: (col: string, val: string) => Promise<{ error: unknown }>;
+      };
+    };
+  };
+  const { error: recErr } = await client
+    .from("stage_recommendations")
     .update({
       status: input.accept ? "accepted" : "rejected",
       resolved_by: userId,
       resolved_at: nowIso,
     })
     .eq("id", input.recommendationId);
-  if (recErr) throw recErr;
+  if (recErr) throw recErr as Error;
 
   if (input.accept) {
     const { error: enqErr } = await supabase
