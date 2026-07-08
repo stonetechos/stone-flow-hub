@@ -197,8 +197,8 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   };
 
   const hits: SearchHit[] = [];
-  push(customers, "customers", "Customers", "/customers", "name", "customer_code", "Customer");
-  push(projects, "projects", "Projects", "/projects", "name", "city", "Project");
+  push(customers, "customers", "Customers", "/customers", "name", "primary_phone", "Customer");
+  push(projects, "projects", "Projects", "/projects", "name", "site_address", "Project");
   push(vendors, "vendors", "Vendors", "/vendors", "company_name", "vendor_code", "Vendor");
   push(products, "products", "Products", "/products", "name", "product_code", "Product");
   push(enquiries, "enquiries", "Enquiries", "/enquiries", "enquiry_no", "notes", "Enquiry");
@@ -217,6 +217,20 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   push(invoices, "invoices", "Invoices", "/invoices", "invoice_no", "notes", "Invoice");
   push(payments, "payments", "Payments", "/payments", "payment_no", "reference_no", "Payment");
   push(dispatch, "dispatch", "Dispatch", "/dispatch", "dispatch_no", "tracking_no", "Dispatch");
+  // Contacts route into their parent customer detail page.
+  for (const r of contacts as Array<Record<string, unknown> & { id: string; customer_id?: string | null }>) {
+    const cid = typeof r.customer_id === "string" ? r.customer_id : "";
+    hits.push({
+      id: r.id,
+      label: (val(r as Row, "name") ?? "Contact"),
+      sublabel: val(r as Row, "phone") ?? val(r as Row, "email"),
+      href: cid ? `/customers/${cid}` : `/customers`,
+      group: "contacts",
+      groupLabel: "Contacts",
+    });
+  }
+  push(salespeople, "salespeople", "Salespeople", "/admin", "full_name", "email", "User");
+  push(architects, "architects", "Architects / Designers / Contractors", "/customers", "name", "city", "Partner");
 
   return hits;
 }
