@@ -1,11 +1,15 @@
 /**
  * Master Data dependency scanner.
  *
- * Wraps the `dependency_summary(entity_type, entity_id)` Postgres RPC that
- * returns per-module reference counts for any core business record. This is
- * the reusable delete-validation service used by SafeDeleteDialog and by the
- * admin-only `purge_entity` RPC. Each new entity kind added on the SQL side
- * is picked up automatically here by widening `MdmEntityType`.
+ * Wraps `dependency_summary(entity_type, entity_id)`, which enumerates every
+ * table that references the given master row via a foreign key and returns
+ * per-module counts plus a `blocking` flag. `blocking` mirrors the actual
+ * Postgres FK ON DELETE action, so the confirmation dialog and the eventual
+ * DELETE always agree.
+ *
+ * Blocking → FK is RESTRICT / NO ACTION. Delete is refused.
+ * Non-blocking → FK is CASCADE / SET NULL / SET DEFAULT. Delete succeeds and
+ * the child rows will be removed or detached.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
@@ -23,43 +27,22 @@ export type MdmEntityType =
 export interface DependencyRow {
   /** Human-readable module name, e.g. "Projects", "Invoices". */
   module: string;
-  /** Reference count in that module. */
+  /** Row count in that module. */
   count: number;
   /** Preview route to open the module list; empty when there is no listing surface. */
   route: string;
+  /** True when this reference will block the delete (FK RESTRICT / NO ACTION). */
+  blocking: boolean;
 }
 
 export interface DependencyReport {
   rows: DependencyRow[];
+  blockingRows: DependencyRow[];
+  cascadingRows: DependencyRow[];
   totalBlocking: number;
   totalReferences: number;
   canDelete: boolean;
 }
-
-/** Modules whose presence blocks a hard delete (financial + transactional). */
-const BLOCKING_MODULES = new Set([
-  "Projects",
-  "Enquiries",
-  "Estimates",
-  "Quotations",
-  "Sales Orders",
-  "Purchase Orders",
-  "Invoices",
-  "Receipts",
-  "Credit Notes",
-  "Debit Notes",
-  "Refunds",
-  "Production Orders",
-  "RFQ Requests",
-  "Vendor Quotes",
-  "Quote Items",
-  "Invoice Items",
-  "RFQ Items",
-  "Estimate Items",
-  "Inventory Items",
-  "Dispatches",
-  "Ledger Entries",
-]);
 
 export async function scanDependencies(
   entityType: MdmEntityType,
@@ -72,17 +55,24 @@ export async function scanDependencies(
   if (error) throw new AppError(mapDbError(error));
 
   const rows: DependencyRow[] = ((data ?? []) as DependencyRow[])
-    .map((r) => ({ module: r.module, count: Number(r.count) || 0, route: r.route ?? "" }))
+    .map((r) => ({
+      module: r.module,
+      count: Number(r.count) || 0,
+      route: r.route ?? "",
+      blocking: !!r.blocking,
+    }))
     .filter((r) => r.count > 0)
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => Number(b.blocking) - Number(a.blocking) || b.count - a.count);
 
-  const totalBlocking = rows
-    .filter((r) => BLOCKING_MODULES.has(r.module))
-    .reduce((acc, r) => acc + r.count, 0);
+  const blockingRows = rows.filter((r) => r.blocking);
+  const cascadingRows = rows.filter((r) => !r.blocking);
+  const totalBlocking = blockingRows.reduce((acc, r) => acc + r.count, 0);
   const totalReferences = rows.reduce((acc, r) => acc + r.count, 0);
 
   return {
     rows,
+    blockingRows,
+    cascadingRows,
     totalBlocking,
     totalReferences,
     canDelete: totalBlocking === 0,
