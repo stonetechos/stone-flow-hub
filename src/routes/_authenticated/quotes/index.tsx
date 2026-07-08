@@ -186,13 +186,14 @@ function QuotesPage() {
         </div>
       )}
 
-      <ConfirmDialog
+      <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete quote?"
-        description={toDelete ? `${toDelete.quote_no} will be removed.` : ""}
+        entityType="quote"
+        entityId={toDelete?.id ?? null}
+        entityLabel={toDelete ? toDelete.quote_no : ""}
         busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        onConfirmDelete={() => toDelete && del.mutate(toDelete.id)}
       />
 
       <CreateQuoteDialog
