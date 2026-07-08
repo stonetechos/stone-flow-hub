@@ -66,6 +66,9 @@ import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 import { SuggestedRecommendations } from "@/components/enquiry/SuggestedRecommendations";
 import { OperationalProgress } from "@/components/enquiry/OperationalProgress";
 import { listAssignableUsers } from "@/lib/tasks/api";
+import { getEnquiryIntelligence } from "@/lib/intelligence/enquiry-context";
+import { NextBestAction } from "@/components/enquiry/NextBestAction";
+import { LeadScoreBadge } from "@/components/enquiry/LeadScoreBadge";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
@@ -127,6 +130,21 @@ function EnquiryDetailPage() {
   const userNameById = new Map(
     (usersQ.data ?? []).map((u) => [u.id, u.full_name ?? u.email ?? "User"]),
   );
+
+  const intelQ = useQuery({
+    queryKey: ["enquiry-intelligence", enquiryId],
+    queryFn: () => getEnquiryIntelligence({
+      id: enquiryId,
+      stage: query.data!.stage,
+      projectId: query.data!.project_id ?? null,
+      assignedTo: query.data!.assigned_to ?? null,
+      budgetInr: query.data!.budget_inr ?? null,
+      createdAt: query.data!.created_at ?? null,
+      updatedAt: query.data!.updated_at ?? null,
+    }),
+    enabled: !!query.data,
+    staleTime: 60_000,
+  });
 
   function attemptStageChange(stage: LeadStage) {
     if (LOST_LIKE_STAGES.includes(stage)) {
@@ -281,6 +299,7 @@ function EnquiryDetailPage() {
                       </Badge>
                       <StageAgeChip stage={enq.stage} days={daysInStage} />
                       <LeadHealthBadge health={health} />
+                      {intelQ.data && <LeadScoreBadge score={intelQ.data.score} />}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Operational stage: {LEAD_STAGE_LABEL[enq.stage]}
@@ -386,8 +405,11 @@ function EnquiryDetailPage() {
         </Card>
       </div>
 
-      <div className="mt-4">
-        <OperationalProgress projectId={enq.project_id ?? null} />
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <OperationalProgress projectId={enq.project_id ?? null} />
+        </div>
+        <NextBestAction actions={intelQ.data?.actions ?? []} loading={intelQ.isLoading} />
       </div>
 
       <LostReasonDialog

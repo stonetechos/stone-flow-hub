@@ -103,6 +103,7 @@ import { Route as AuthenticatedDispatchNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch/$id'
 import { Route as AuthenticatedDashboardsVendorIntelligenceRouteImport } from './routes/_authenticated/dashboards/vendor-intelligence'
 import { Route as AuthenticatedDashboardsTeamPerformanceRouteImport } from './routes/_authenticated/dashboards/team-performance'
+import { Route as AuthenticatedDashboardsSmartNotificationsRouteImport } from './routes/_authenticated/dashboards/smart-notifications'
 import { Route as AuthenticatedDashboardsSalesFunnelRouteImport } from './routes/_authenticated/dashboards/sales-funnel'
 import { Route as AuthenticatedDashboardsSalesRouteImport } from './routes/_authenticated/dashboards/sales'
 import { Route as AuthenticatedDashboardsRevenueCrmRouteImport } from './routes/_authenticated/dashboards/revenue-crm'
@@ -120,10 +121,12 @@ import { Route as AuthenticatedDashboardsInstallationRouteImport } from './route
 import { Route as AuthenticatedDashboardsForecastRouteImport } from './routes/_authenticated/dashboards/forecast'
 import { Route as AuthenticatedDashboardsFollowupsRouteImport } from './routes/_authenticated/dashboards/followups'
 import { Route as AuthenticatedDashboardsExecutiveRouteImport } from './routes/_authenticated/dashboards/executive'
+import { Route as AuthenticatedDashboardsDailyActionRouteImport } from './routes/_authenticated/dashboards/daily-action'
 import { Route as AuthenticatedDashboardsCustomerIntelligenceRouteImport } from './routes/_authenticated/dashboards/customer-intelligence'
 import { Route as AuthenticatedDashboardsControlCentreRouteImport } from './routes/_authenticated/dashboards/control-centre'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
 import { Route as AuthenticatedDashboardsBusinessIntelligenceRouteImport } from './routes/_authenticated/dashboards/business-intelligence'
+import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './routes/_authenticated/dashboards/business-health'
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -680,6 +683,12 @@ const AuthenticatedDashboardsTeamPerformanceRoute =
     path: '/dashboards/team-performance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsSmartNotificationsRoute =
+  AuthenticatedDashboardsSmartNotificationsRouteImport.update({
+    id: '/dashboards/smart-notifications',
+    path: '/dashboards/smart-notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsSalesFunnelRoute =
   AuthenticatedDashboardsSalesFunnelRouteImport.update({
     id: '/dashboards/sales-funnel',
@@ -782,6 +791,12 @@ const AuthenticatedDashboardsExecutiveRoute =
     path: '/dashboards/executive',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsDailyActionRoute =
+  AuthenticatedDashboardsDailyActionRouteImport.update({
+    id: '/dashboards/daily-action',
+    path: '/dashboards/daily-action',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsCustomerIntelligenceRoute =
   AuthenticatedDashboardsCustomerIntelligenceRouteImport.update({
     id: '/dashboards/customer-intelligence',
@@ -804,6 +819,12 @@ const AuthenticatedDashboardsBusinessIntelligenceRoute =
   AuthenticatedDashboardsBusinessIntelligenceRouteImport.update({
     id: '/dashboards/business-intelligence',
     path: '/dashboards/business-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardsBusinessHealthRoute =
+  AuthenticatedDashboardsBusinessHealthRouteImport.update({
+    id: '/dashboards/business-health',
+    path: '/dashboards/business-health',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardsAnalyticsRoute =
@@ -935,10 +956,12 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -956,6 +979,7 @@ export interface FileRoutesByFullPath {
   '/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1069,10 +1093,12 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -1090,6 +1116,7 @@ export interface FileRoutesByTo {
   '/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1205,10 +1232,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
+  '/_authenticated/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/_authenticated/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
   '/_authenticated/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/_authenticated/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  '/_authenticated/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
   '/_authenticated/dashboards/executive': typeof AuthenticatedDashboardsExecutiveRoute
   '/_authenticated/dashboards/followups': typeof AuthenticatedDashboardsFollowupsRoute
   '/_authenticated/dashboards/forecast': typeof AuthenticatedDashboardsForecastRoute
@@ -1226,6 +1255,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboards/revenue-crm': typeof AuthenticatedDashboardsRevenueCrmRoute
   '/_authenticated/dashboards/sales': typeof AuthenticatedDashboardsSalesRoute
   '/_authenticated/dashboards/sales-funnel': typeof AuthenticatedDashboardsSalesFunnelRoute
+  '/_authenticated/dashboards/smart-notifications': typeof AuthenticatedDashboardsSmartNotificationsRoute
   '/_authenticated/dashboards/team-performance': typeof AuthenticatedDashboardsTeamPerformanceRoute
   '/_authenticated/dashboards/vendor-intelligence': typeof AuthenticatedDashboardsVendorIntelligenceRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRouteWithChildren
@@ -1341,10 +1371,12 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
+    | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
+    | '/dashboards/daily-action'
     | '/dashboards/executive'
     | '/dashboards/followups'
     | '/dashboards/forecast'
@@ -1362,6 +1394,7 @@ export interface FileRouteTypes {
     | '/dashboards/revenue-crm'
     | '/dashboards/sales'
     | '/dashboards/sales-funnel'
+    | '/dashboards/smart-notifications'
     | '/dashboards/team-performance'
     | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
@@ -1475,10 +1508,12 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
+    | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
+    | '/dashboards/daily-action'
     | '/dashboards/executive'
     | '/dashboards/followups'
     | '/dashboards/forecast'
@@ -1496,6 +1531,7 @@ export interface FileRouteTypes {
     | '/dashboards/revenue-crm'
     | '/dashboards/sales'
     | '/dashboards/sales-funnel'
+    | '/dashboards/smart-notifications'
     | '/dashboards/team-performance'
     | '/dashboards/vendor-intelligence'
     | '/dispatch/$id'
@@ -1610,10 +1646,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/analytics'
+    | '/_authenticated/dashboards/business-health'
     | '/_authenticated/dashboards/business-intelligence'
     | '/_authenticated/dashboards/collections'
     | '/_authenticated/dashboards/control-centre'
     | '/_authenticated/dashboards/customer-intelligence'
+    | '/_authenticated/dashboards/daily-action'
     | '/_authenticated/dashboards/executive'
     | '/_authenticated/dashboards/followups'
     | '/_authenticated/dashboards/forecast'
@@ -1631,6 +1669,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboards/revenue-crm'
     | '/_authenticated/dashboards/sales'
     | '/_authenticated/dashboards/sales-funnel'
+    | '/_authenticated/dashboards/smart-notifications'
     | '/_authenticated/dashboards/team-performance'
     | '/_authenticated/dashboards/vendor-intelligence'
     | '/_authenticated/dispatch/$id'
@@ -2396,6 +2435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsTeamPerformanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/smart-notifications': {
+      id: '/_authenticated/dashboards/smart-notifications'
+      path: '/dashboards/smart-notifications'
+      fullPath: '/dashboards/smart-notifications'
+      preLoaderRoute: typeof AuthenticatedDashboardsSmartNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/sales-funnel': {
       id: '/_authenticated/dashboards/sales-funnel'
       path: '/dashboards/sales-funnel'
@@ -2515,6 +2561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsExecutiveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/daily-action': {
+      id: '/_authenticated/dashboards/daily-action'
+      path: '/dashboards/daily-action'
+      fullPath: '/dashboards/daily-action'
+      preLoaderRoute: typeof AuthenticatedDashboardsDailyActionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/customer-intelligence': {
       id: '/_authenticated/dashboards/customer-intelligence'
       path: '/dashboards/customer-intelligence'
@@ -2541,6 +2594,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboards/business-intelligence'
       fullPath: '/dashboards/business-intelligence'
       preLoaderRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboards/business-health': {
+      id: '/_authenticated/dashboards/business-health'
+      path: '/dashboards/business-health'
+      fullPath: '/dashboards/business-health'
+      preLoaderRoute: typeof AuthenticatedDashboardsBusinessHealthRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboards/analytics': {
@@ -2821,10 +2881,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedDashboardsAnalyticsRoute: typeof AuthenticatedDashboardsAnalyticsRoute
+  AuthenticatedDashboardsBusinessHealthRoute: typeof AuthenticatedDashboardsBusinessHealthRoute
   AuthenticatedDashboardsBusinessIntelligenceRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
   AuthenticatedDashboardsControlCentreRoute: typeof AuthenticatedDashboardsControlCentreRoute
   AuthenticatedDashboardsCustomerIntelligenceRoute: typeof AuthenticatedDashboardsCustomerIntelligenceRoute
+  AuthenticatedDashboardsDailyActionRoute: typeof AuthenticatedDashboardsDailyActionRoute
   AuthenticatedDashboardsExecutiveRoute: typeof AuthenticatedDashboardsExecutiveRoute
   AuthenticatedDashboardsFollowupsRoute: typeof AuthenticatedDashboardsFollowupsRoute
   AuthenticatedDashboardsForecastRoute: typeof AuthenticatedDashboardsForecastRoute
@@ -2842,6 +2904,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardsRevenueCrmRoute: typeof AuthenticatedDashboardsRevenueCrmRoute
   AuthenticatedDashboardsSalesRoute: typeof AuthenticatedDashboardsSalesRoute
   AuthenticatedDashboardsSalesFunnelRoute: typeof AuthenticatedDashboardsSalesFunnelRoute
+  AuthenticatedDashboardsSmartNotificationsRoute: typeof AuthenticatedDashboardsSmartNotificationsRoute
   AuthenticatedDashboardsTeamPerformanceRoute: typeof AuthenticatedDashboardsTeamPerformanceRoute
   AuthenticatedDashboardsVendorIntelligenceRoute: typeof AuthenticatedDashboardsVendorIntelligenceRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRouteWithChildren
@@ -2934,6 +2997,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomersCustomerIdRoute:
     AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedDashboardsAnalyticsRoute: AuthenticatedDashboardsAnalyticsRoute,
+  AuthenticatedDashboardsBusinessHealthRoute:
+    AuthenticatedDashboardsBusinessHealthRoute,
   AuthenticatedDashboardsBusinessIntelligenceRoute:
     AuthenticatedDashboardsBusinessIntelligenceRoute,
   AuthenticatedDashboardsCollectionsRoute:
@@ -2942,6 +3007,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardsControlCentreRoute,
   AuthenticatedDashboardsCustomerIntelligenceRoute:
     AuthenticatedDashboardsCustomerIntelligenceRoute,
+  AuthenticatedDashboardsDailyActionRoute:
+    AuthenticatedDashboardsDailyActionRoute,
   AuthenticatedDashboardsExecutiveRoute: AuthenticatedDashboardsExecutiveRoute,
   AuthenticatedDashboardsFollowupsRoute: AuthenticatedDashboardsFollowupsRoute,
   AuthenticatedDashboardsForecastRoute: AuthenticatedDashboardsForecastRoute,
@@ -2971,6 +3038,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardsSalesRoute: AuthenticatedDashboardsSalesRoute,
   AuthenticatedDashboardsSalesFunnelRoute:
     AuthenticatedDashboardsSalesFunnelRoute,
+  AuthenticatedDashboardsSmartNotificationsRoute:
+    AuthenticatedDashboardsSmartNotificationsRoute,
   AuthenticatedDashboardsTeamPerformanceRoute:
     AuthenticatedDashboardsTeamPerformanceRoute,
   AuthenticatedDashboardsVendorIntelligenceRoute:

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SearchGroupKey =
   | "customers"
+  | "contacts"
   | "projects"
   | "vendors"
   | "products"
@@ -13,7 +14,9 @@ export type SearchGroupKey =
   | "inventory"
   | "invoices"
   | "payments"
-  | "dispatch";
+  | "dispatch"
+  | "salespeople"
+  | "architects";
 
 export interface SearchHit {
   id: string;
@@ -44,6 +47,7 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
 
   const [
     customers,
+    contacts,
     projects,
     vendors,
     products,
@@ -55,19 +59,28 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     invoices,
     payments,
     dispatch,
+    salespeople,
+    architects,
   ] = await Promise.all([
     safe(
       supabase
         .from("customers")
-        .select("id,name,customer_code,primary_phone")
-        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p}`)
+        .select("id,name,customer_code,primary_phone,primary_email,city")
+        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("customer_contacts")
+        .select("id,name,phone,email,whatsapp,customer_id")
+        .or(`name.ilike.${p},phone.ilike.${p},email.ilike.${p},whatsapp.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
       supabase
         .from("projects")
-        .select("id,name,city")
-        .or(`name.ilike.${p},city.ilike.${p}`)
+        .select("id,name,city,project_code,site_address")
+        .or(`name.ilike.${p},city.ilike.${p},project_code.ilike.${p},site_address.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
@@ -87,8 +100,8 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     safe(
       supabase
         .from("enquiries")
-        .select("id,enquiry_no,notes")
-        .or(`enquiry_no.ilike.${p},notes.ilike.${p}`)
+        .select("id,enquiry_no,notes,architect_name,contractor_name")
+        .or(`enquiry_no.ilike.${p},notes.ilike.${p},architect_name.ilike.${p},contractor_name.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
@@ -140,6 +153,21 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`)
         .limit(LIMIT),
     ),
+    safe(
+      supabase
+        .from("profiles")
+        .select("id,full_name,email,phone")
+        .or(`full_name.ilike.${p},email.ilike.${p},phone.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      supabase
+        .from("customers")
+        .select("id,name,customer_code,customer_type,city")
+        .in("customer_type", ["architect", "interior_designer", "contractor"])
+        .or(`name.ilike.${p},customer_code.ilike.${p},city.ilike.${p}`)
+        .limit(LIMIT),
+    ),
   ]);
 
   type Row = Record<string, unknown> & { id: string };
@@ -169,8 +197,8 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   };
 
   const hits: SearchHit[] = [];
-  push(customers, "customers", "Customers", "/customers", "name", "customer_code", "Customer");
-  push(projects, "projects", "Projects", "/projects", "name", "city", "Project");
+  push(customers, "customers", "Customers", "/customers", "name", "primary_phone", "Customer");
+  push(projects, "projects", "Projects", "/projects", "name", "site_address", "Project");
   push(vendors, "vendors", "Vendors", "/vendors", "company_name", "vendor_code", "Vendor");
   push(products, "products", "Products", "/products", "name", "product_code", "Product");
   push(enquiries, "enquiries", "Enquiries", "/enquiries", "enquiry_no", "notes", "Enquiry");
@@ -189,6 +217,20 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   push(invoices, "invoices", "Invoices", "/invoices", "invoice_no", "notes", "Invoice");
   push(payments, "payments", "Payments", "/payments", "payment_no", "reference_no", "Payment");
   push(dispatch, "dispatch", "Dispatch", "/dispatch", "dispatch_no", "tracking_no", "Dispatch");
+  // Contacts route into their parent customer detail page.
+  for (const r of contacts as Array<Record<string, unknown> & { id: string; customer_id?: string | null }>) {
+    const cid = typeof r.customer_id === "string" ? r.customer_id : "";
+    hits.push({
+      id: r.id,
+      label: (val(r as Row, "name") ?? "Contact"),
+      sublabel: val(r as Row, "phone") ?? val(r as Row, "email"),
+      href: cid ? `/customers/${cid}` : `/customers`,
+      group: "contacts",
+      groupLabel: "Contacts",
+    });
+  }
+  push(salespeople, "salespeople", "Salespeople", "/admin", "full_name", "email", "User");
+  push(architects, "architects", "Architects / Designers / Contractors", "/customers", "name", "city", "Partner");
 
   return hits;
 }
