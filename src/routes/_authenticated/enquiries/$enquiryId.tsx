@@ -39,12 +39,22 @@ import { toUserMessage } from "@/lib/errors";
 import {
   convertEnquiryToProject,
   getEnquiry,
+  listEnquiryVisitedStages,
   sendRfq,
   updateEnquiryStage,
 } from "@/lib/enquiries/api";
 import { convertToProjectSchema, type ConvertToProjectInput } from "@/lib/enquiries/schema";
 import { listVendorsForPicker } from "@/lib/vendors/api";
-import { LEAD_STAGES, LEAD_STAGE_LABEL } from "@/lib/constants";
+import {
+  LEAD_STAGE_LABEL,
+  LEAD_UMBRELLAS,
+  LOST_LIKE_STAGES,
+  LOST_REASONS,
+  UMBRELLA_BY_ID,
+  stageToUmbrella,
+  suggestNextStage,
+  type LeadUmbrellaId,
+} from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
 import { invalidateEnquiry } from "@/lib/query-invalidation";
 
