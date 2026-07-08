@@ -1,9 +1,8 @@
-/** Tasks panel — either entity-scoped or global. Progressive-disclosure form. */
+/** Tasks panel — either entity-scoped or global. Row click/dblclick opens editor. */
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -13,21 +12,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { TaskDialog } from "./TaskDialog";
 import { qk } from "@/lib/query-keys";
 import {
   createTask,
   deleteTask,
   listTasks,
-  TASK_PRIORITIES,
   TASK_STATUSES,
   updateTaskStatus,
   type TaskPriority,
+  type TaskRow,
   type TaskStatus,
 } from "@/lib/tasks/api";
 import { toUserMessage } from "@/lib/errors";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
-import { ChevronDown, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 interface Props {
   entityType?: string;
@@ -44,12 +45,11 @@ const priorityTone: Record<TaskPriority, string> = {
 
 export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
   const qc = useQueryClient();
-  const [expanded, setExpanded] = useState(false);
-  const [t, setT] = useState("");
-  const [desc, setDesc] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
-  const [due, setDue] = useState("");
+  const [quickTitle, setQuickTitle] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<TaskRow | null>(null);
+  const [toDelete, setToDelete] = useState<TaskRow | null>(null);
 
   const filters = {
     entityType,
@@ -69,23 +69,17 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
     queryFn: () => listTasks(filters),
   });
 
-  const create = useMutation({
+  const quickCreate = useMutation({
     mutationFn: () =>
       createTask({
-        title: t,
-        description: desc || null,
+        title: quickTitle,
         entity_type: entityType ?? null,
         entity_id: entityId ?? null,
-        priority,
+        priority: "medium",
         status: "pending",
-        due_at: due ? new Date(due).toISOString() : null,
       }),
     onSuccess: () => {
-      setT("");
-      setDesc("");
-      setDue("");
-      setPriority("medium");
-      setExpanded(false);
+      setQuickTitle("");
       void qc.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -99,87 +93,72 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
 
   const del = useMutation({
     mutationFn: (id: string) => deleteTask(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      toast.success("Task deleted");
+      setToDelete(null);
+      void qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
+  function openEdit(task: TaskRow) {
+    setEditing(task);
+    setDialogOpen(true);
+  }
+
+  function openCreate() {
+    setEditing(null);
+    setDialogOpen(true);
+  }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base">{title}</CardTitle>
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as TaskStatus | "all")}
-        >
-          <SelectTrigger className="h-8 w-36 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {TASK_STATUSES.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {s.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v as TaskStatus | "all")}
+          >
+            <SelectTrigger className="h-8 w-36 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {TASK_STATUSES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            New task
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-2 rounded-sm border border-border p-2">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Quick add a task…"
-              value={t}
-              onChange={(e) => setT(e.target.value)}
-              className="h-9"
-            />
-            <Button
-              size="sm"
-              disabled={!t.trim() || create.isPending}
-              onClick={() => create.mutate()}
-            >
-              Add
-            </Button>
-          </div>
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        <div className="flex gap-2 rounded-sm border border-border p-2">
+          <Input
+            placeholder="Quick add a task…"
+            value={quickTitle}
+            onChange={(e) => setQuickTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && quickTitle.trim()) {
+                e.preventDefault();
+                quickCreate.mutate();
+              }
+            }}
+            className="h-9"
+          />
+          <Button
+            size="sm"
+            disabled={!quickTitle.trim() || quickCreate.isPending}
+            onClick={() => quickCreate.mutate()}
           >
-            <ChevronDown
-              className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
-            />
-            {expanded ? "Hide" : "More"} details
-          </button>
-          {expanded && (
-            <div className="grid grid-cols-2 gap-2">
-              <Textarea
-                rows={2}
-                placeholder="Description"
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                className="col-span-2"
-              />
-              <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TASK_PRIORITIES.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                type="datetime-local"
-                value={due}
-                onChange={(e) => setDue(e.target.value)}
-                className="h-9"
-              />
-            </div>
-          )}
+            Add
+          </Button>
         </div>
 
         {tasks.length === 0 ? (
@@ -189,22 +168,38 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
         ) : (
           <ul className="divide-y divide-border rounded-sm border border-border">
             {tasks.map((task) => (
-              <li key={task.id} className="flex items-center gap-2 px-2 py-2">
-                <Select
-                  value={task.status}
-                  onValueChange={(v) => setStatus.mutate({ id: task.id, status: v as TaskStatus })}
-                >
-                  <SelectTrigger className="h-7 w-32 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TASK_STATUSES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <li
+                key={task.id}
+                role="button"
+                tabIndex={0}
+                onDoubleClick={() => openEdit(task)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openEdit(task);
+                  }
+                }}
+                className="group flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-muted/40 focus:bg-muted/60 focus:outline-none"
+              >
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={task.status}
+                    onValueChange={(v) =>
+                      setStatus.mutate({ id: task.id, status: v as TaskStatus })
+                    }
+                  >
+                    <SelectTrigger className="h-7 w-32 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TASK_STATUSES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm">{task.title}</div>
                   {task.description && (
@@ -223,8 +218,23 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEdit(task);
+                  }}
+                  aria-label="Edit"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7"
-                  onClick={() => del.mutate(task.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setToDelete(task);
+                  }}
                   aria-label="Delete"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -234,6 +244,29 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
           </ul>
         )}
       </CardContent>
+
+      <TaskDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        task={editing}
+        defaultEntityType={entityType}
+        defaultEntityId={entityId}
+      />
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => {
+          if (!o) setToDelete(null);
+        }}
+        title="Delete task?"
+        description={toDelete ? `“${toDelete.title}” will be permanently removed.` : ""}
+        confirmLabel="Delete"
+        busy={del.isPending}
+        onConfirm={() => {
+          if (toDelete) del.mutate(toDelete.id);
+        }}
+      />
+
     </Card>
   );
 }

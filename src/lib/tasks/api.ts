@@ -34,8 +34,12 @@ export const taskCreateSchema = z.object({
     .default("pending"),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   due_at: z.string().nullable().optional(),
+  assigned_to: z.string().uuid().nullable().optional(),
 });
 export type TaskCreateInput = z.infer<typeof taskCreateSchema>;
+
+export const taskUpdateSchema = taskCreateSchema.partial();
+export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;
 
 export async function listTasks(
   filters: {
@@ -73,6 +77,21 @@ export async function createTask(input: TaskCreateInput): Promise<TaskRow> {
   return data;
 }
 
+export async function updateTask(id: string, input: TaskUpdateInput): Promise<TaskRow> {
+  const parsed = taskUpdateSchema.parse(input);
+  const patch: Partial<TaskRow> = { ...parsed };
+  if (parsed.status === "completed") patch.completed_at = new Date().toISOString();
+  else if (parsed.status) patch.completed_at = null;
+  const { data, error } = await supabase
+    .from("tasks")
+    .update(patch)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
 export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
   const patch: Partial<TaskRow> = { status };
   if (status === "completed") patch.completed_at = new Date().toISOString();
@@ -83,4 +102,19 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
 export async function deleteTask(id: string): Promise<void> {
   const { error } = await supabase.from("tasks").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
+}
+
+export interface AssignableUser {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+}
+
+export async function listAssignableUsers(): Promise<AssignableUser[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .order("full_name", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? [];
 }
