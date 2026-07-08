@@ -8,7 +8,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHash } from "crypto";
 
-export const Route = createFileRoute("/api/public/_debug-wa-token")({
+export const Route = createFileRoute("/api/public/debug-wa-token")({
   server: {
     handlers: {
       GET: async () => {
