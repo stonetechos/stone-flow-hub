@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.next_code(text) TO authenticated;
