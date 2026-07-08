@@ -81,7 +81,7 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
   const parsed = taskUpdateSchema.parse(input);
   const patch: Partial<TaskRow> = { ...parsed };
   if (parsed.status === "completed") patch.completed_at = new Date().toISOString();
-  else if (parsed.status && parsed.status !== "completed") patch.completed_at = null;
+  else if (parsed.status) patch.completed_at = null;
   const { data, error } = await supabase
     .from("tasks")
     .update(patch)
