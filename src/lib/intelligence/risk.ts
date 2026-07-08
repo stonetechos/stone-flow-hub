@@ -57,7 +57,7 @@ export async function getRiskSummary(quoteStaleDays = 14): Promise<RiskSummary> 
     from("invoices").select("id,invoice_no,status,due_date,balance_due,customer_id").limit(2000),
     from("dispatches").select("id,dispatch_no,status,dispatch_date").limit(2000),
     from("installations").select("id,installation_no,status,planned_end_date,actual_end_date").limit(2000),
-    from("purchase_orders").select("id,po_no,status,expected_delivery_date").limit(2000),
+    from("purchase_orders").select("id,po_no,status,expected_date").limit(2000),
     from("rfqs").select("id,rfq_no,status,due_date").limit(2000),
   ]);
 
@@ -105,10 +105,10 @@ export async function getRiskSummary(quoteStaleDays = 14): Promise<RiskSummary> 
     }
   }
 
-  for (const p of (poRes.data ?? []) as Array<{ id: string; po_no: string; status: string; expected_delivery_date: string | null }>) {
+  for (const p of (poRes.data ?? []) as Array<{ id: string; po_no: string; status: string; expected_date: string | null }>) {
     if (["received", "closed", "cancelled"].includes(String(p.status))) continue;
-    if (p.expected_delivery_date && new Date(p.expected_delivery_date).getTime() < now()) {
-      const od = days(p.expected_delivery_date);
+    if (p.expected_date && new Date(p.expected_date).getTime() < now()) {
+      const od = days(p.expected_date);
       add({ key: "vendor_delay", severity: od > 14 ? "high" : "medium", entity: "po", entityId: p.id, label: p.po_no, reason: `Vendor delivery late ${od} days`, daysOverdue: od, href: `/purchase-orders/${p.id}` });
     }
   }

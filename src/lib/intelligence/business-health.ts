@@ -38,7 +38,7 @@ export async function getBusinessHealth(): Promise<BusinessHealth> {
     supabase.from("receipts").select("id,net_amount,received_at,created_at").limit(3000),
     supabase.from("dispatches").select("id,status,dispatch_date").limit(3000),
     supabase.from("installations").select("id,status,planned_end_date,actual_end_date").limit(3000),
-    supabase.from("purchase_orders").select("id,status,expected_delivery_date").limit(3000),
+    supabase.from("purchase_orders").select("id,status,expected_date").limit(3000),
   ]);
 
   const enqs = enqRes.data ?? [];
