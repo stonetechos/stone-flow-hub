@@ -111,15 +111,87 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
   return data;
 }
 
-export async function updateEnquiryStage(id: string, stage: LeadStage): Promise<EnquiryRow> {
+export async function updateEnquiryStage(
+  id: string,
+  stage: LeadStage,
+  opts?: { lost_reason?: string | null; lost_notes?: string | null },
+): Promise<EnquiryRow> {
+  const patch: {
+    stage: LeadStage;
+    lost_reason?: string | null;
+    lost_notes?: string | null;
+  } = { stage };
+  if (opts && (stage === "lost" || stage === "cancelled")) {
+    if (opts.lost_reason !== undefined) patch.lost_reason = opts.lost_reason ?? null;
+    if (opts.lost_notes !== undefined) patch.lost_notes = opts.lost_notes ?? null;
+  }
   const { data, error } = await supabase
     .from("enquiries")
-    .update({ stage })
+    .update(patch)
     .eq("id", id)
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+/** Bulk-advance many enquiries to a stage. Non-lost only (no reason capture). */
+export async function bulkUpdateEnquiryStage(
+  ids: string[],
+  stage: LeadStage,
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const { error, count } = await supabase
+    .from("enquiries")
+    .update({ stage }, { count: "exact" })
+    .in("id", ids);
+  if (error) throw new AppError(mapDbError(error));
+  return count ?? 0;
+}
+
+/**
+ * Lightweight aggregate for the dashboard pipeline widget.
+ * Returns one row per underlying stage; UI groups into umbrellas.
+ */
+export type StageAggregate = {
+  stage: LeadStage;
+  count: number;
+  revenue_inr: number;
+  avg_days_in_stage: number;
+};
+
+export async function getEnquiryPipeline(): Promise<StageAggregate[]> {
+  const { data, error } = await supabase
+    .from("enquiries")
+    .select("stage, budget_inr, updated_at, created_at");
+  if (error) throw new AppError(mapDbError(error));
+  const now = Date.now();
+  const buckets = new Map<string, { count: number; rev: number; days: number }>();
+  for (const r of data ?? []) {
+    const s = r.stage as LeadStage;
+    const b = buckets.get(s) ?? { count: 0, rev: 0, days: 0 };
+    b.count += 1;
+    b.rev += Number(r.budget_inr ?? 0);
+    const since = new Date(r.updated_at ?? r.created_at ?? now).getTime();
+    b.days += Math.max(0, (now - since) / (1000 * 60 * 60 * 24));
+    buckets.set(s, b);
+  }
+  return Array.from(buckets.entries()).map(([stage, b]) => ({
+    stage: stage as LeadStage,
+    count: b.count,
+    revenue_inr: b.rev,
+    avg_days_in_stage: b.count === 0 ? 0 : b.days / b.count,
+  }));
+}
+
+/** Which underlying stages this enquiry has ever passed through. */
+export async function listEnquiryVisitedStages(enquiryId: string): Promise<Set<LeadStage>> {
+  const { data, error } = await supabase
+    .from("enquiry_stage_history")
+    .select("to_stage")
+    .eq("enquiry_id", enquiryId);
+  if (error) throw new AppError(mapDbError(error));
+  return new Set((data ?? []).map((r) => r.to_stage as LeadStage));
 }
 
 export async function updateEnquiry(id: string, input: EnquiryUpdateInput): Promise<EnquiryRow> {

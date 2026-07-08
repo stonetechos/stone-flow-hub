@@ -26,6 +26,7 @@ import { qk } from "@/lib/query-keys";
 import { getDashboardKpis } from "@/lib/dashboard/api";
 import { listRecentActivity } from "@/lib/activity/api";
 import { listFollowups } from "@/lib/followups/api";
+import { LeadPipelineWidget } from "@/components/dashboard/LeadPipelineWidget";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -166,6 +167,11 @@ function DashboardPage() {
           tone="muted"
           compact
         />
+      </div>
+
+      {/* Lead Pipeline — the heartbeat of the sales workflow. */}
+      <div className="mt-4">
+        <LeadPipelineWidget />
       </div>
 
       {/* Today's follow-ups — actionable panel. */}

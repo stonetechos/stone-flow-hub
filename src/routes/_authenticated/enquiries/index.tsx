@@ -32,6 +32,7 @@ import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
+import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -39,6 +40,7 @@ import {
   deleteEnquiry,
   listEnquiries,
   updateEnquiry,
+  updateEnquiryStage,
   type EnquiryListItem,
 } from "@/lib/enquiries/api";
 import {
@@ -47,19 +49,37 @@ import {
   type EnquiryCreateInput,
   type EnquiryUpdateInput,
 } from "@/lib/enquiries/schema";
-import { LEAD_STAGE_LABEL } from "@/lib/constants";
+import {
+  LEAD_STAGES,
+  LEAD_UMBRELLAS,
+  LOST_REASONS,
+  STAGE_TO_UMBRELLA,
+  UMBRELLA_BY_ID,
+  stageToUmbrella,
+  type LeadUmbrellaId,
+} from "@/lib/constants";
+import type { LeadStage } from "@/lib/types";
+
+const UMBRELLA_IDS = LEAD_UMBRELLAS.map((u) => u.id) as ReadonlyArray<LeadUmbrellaId>;
 
 export const Route = createFileRoute("/_authenticated/enquiries/")({
   ssr: false,
   component: EnquiriesPage,
-  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
-    typeof s.edit === "string" ? { edit: s.edit } : {},
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { edit?: string; umbrella?: LeadUmbrellaId } => {
+    const out: { edit?: string; umbrella?: LeadUmbrellaId } = {};
+    if (typeof s.edit === "string") out.edit = s.edit;
+    if (typeof s.umbrella === "string" && (UMBRELLA_IDS as readonly string[]).includes(s.umbrella))
+      out.umbrella = s.umbrella as LeadUmbrellaId;
+    return out;
+  },
 });
 
 function EnquiriesPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit } = Route.useSearch();
+  const { edit, umbrella } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [newOpen, setNewOpen] = useState(false);
@@ -73,7 +93,7 @@ function EnquiriesPage() {
     const row = (query.data ?? []).find((r) => r.id === edit);
     if (row) {
       setEditing(row);
-      nav({ to: "/enquiries", search: {}, replace: true });
+      nav({ to: "/enquiries", search: (s: Record<string, unknown>) => ({ ...s, edit: undefined }), replace: true });
     }
   }, [edit, query.data, nav]);
 
@@ -88,6 +108,33 @@ function EnquiriesPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const stageMut = useMutation({
+    mutationFn: ({
+      id,
+      stage,
+      lost_reason,
+      lost_notes,
+    }: {
+      id: string;
+      stage: LeadStage;
+      lost_reason?: string | null;
+      lost_notes?: string | null;
+    }) => updateEnquiryStage(id, stage, { lost_reason, lost_notes }),
+    onSuccess: () => {
+      toast.success("Stage updated");
+      qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      qc.invalidateQueries({ queryKey: qk.enquiries.pipeline });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const [lostFor, setLostFor] = useState<{ id: string; stage: LeadStage } | null>(null);
+
+  const rows = (query.data ?? []).filter((r) =>
+    umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true,
+  );
+
   return (
     <div>
       <PageHeader
@@ -99,24 +146,45 @@ function EnquiriesPage() {
           </Button>
         }
       />
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by enquiry no, requirement, or notes…"
           className="max-w-md"
         />
+        <div className="flex flex-wrap items-center gap-1">
+          <button
+            type="button"
+            onClick={() => nav({ to: "/enquiries", search: {}, replace: true })}
+            className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${!umbrella ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+          >
+            All
+          </button>
+          {LEAD_UMBRELLAS.map((u) => (
+            <button
+              key={u.id}
+              type="button"
+              onClick={() =>
+                nav({ to: "/enquiries", search: { umbrella: u.id }, replace: true })
+              }
+              className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${umbrella === u.id ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+            >
+              {u.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {query.isLoading ? (
         <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<ClipboardList className="h-6 w-6" />}
-          title="No enquiries yet"
-          message="Log your first lead — you can convert it into a project later."
+          title={umbrella ? "No enquiries in this stage" : "No enquiries yet"}
+          message={umbrella ? "Try a different stage or clear the filter." : "Log your first lead — you can convert it into a project later."}
           action={
             <Button onClick={() => setNewOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> New enquiry
@@ -132,45 +200,72 @@ function EnquiriesPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Requirement</TableHead>
                 <TableHead>Project</TableHead>
-                <TableHead>Stage</TableHead>
+                <TableHead className="min-w-[180px]">Lead Stage</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Budget (INR)</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/enquiries/$enquiryId"
-                      params={{ enquiryId: e.id }}
-                      className="text-primary hover:underline"
-                    >
-                      {e.enquiry_no}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
-                  <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
-                  <TableCell>
-                    {e.project ? (
-                      e.project.name
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Unassigned</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{LEAD_STAGE_LABEL[e.stage]}</Badge>
-                  </TableCell>
-                  <TableCell className="capitalize">{e.priority}</TableCell>
-                  <TableCell>
-                    {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rows.map((e) => {
+                const currentUmbrella = stageToUmbrella(e.stage);
+                return (
+                  <TableRow key={e.id}>
+                    <TableCell className="font-mono text-xs">
+                      <Link
+                        to="/enquiries/$enquiryId"
+                        params={{ enquiryId: e.id }}
+                        className="text-primary hover:underline"
+                      >
+                        {e.enquiry_no}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
+                    <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
+                    <TableCell>
+                      {e.project ? (
+                        e.project.name
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Unassigned</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={currentUmbrella.id}
+                        onValueChange={(v) => {
+                          const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
+                          const primary = target.stages[0];
+                          // If already inside this umbrella, don't churn.
+                          if (target.stages.includes(e.stage)) return;
+                          if (primary === "lost" || primary === "cancelled") {
+                            setLostFor({ id: e.id, stage: primary });
+                            return;
+                          }
+                          stageMut.mutate({ id: e.id, stage: primary });
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-full text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LEAD_UMBRELLAS.map((u) => (
+                            <SelectItem key={u.id} value={u.id}>
+                              {u.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="capitalize">{e.priority}</TableCell>
+                    <TableCell>
+                      {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -190,11 +285,27 @@ function EnquiriesPage() {
         busy={delMut.isPending}
         onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
       />
+      <LostReasonDialog
+        open={!!lostFor}
+        onOpenChange={(o) => !o && setLostFor(null)}
+        onConfirm={(reason, notes) => {
+          if (!lostFor) return;
+          stageMut.mutate({
+            id: lostFor.id,
+            stage: lostFor.stage,
+            lost_reason: reason,
+            lost_notes: notes,
+          });
+          setLostFor(null);
+        }}
+        stage={lostFor?.stage ?? "lost"}
+      />
     </div>
   );
 }
 
-// ---------- New enquiry ----------
+
+
 
 function emptyNew(): EnquiryCreateInput {
   return {

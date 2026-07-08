@@ -810,6 +810,7 @@ export type Database = {
           external_ref: Json | null
           id: string
           is_demo: boolean
+          lost_notes: string | null
           lost_reason: string | null
           notes: string | null
           priority: Database["public"]["Enums"]["enquiry_priority"]
@@ -833,6 +834,7 @@ export type Database = {
           external_ref?: Json | null
           id?: string
           is_demo?: boolean
+          lost_notes?: string | null
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
@@ -856,6 +858,7 @@ export type Database = {
           external_ref?: Json | null
           id?: string
           is_demo?: boolean
+          lost_notes?: string | null
           lost_reason?: string | null
           notes?: string | null
           priority?: Database["public"]["Enums"]["enquiry_priority"]
@@ -7050,6 +7053,8 @@ export type Database = {
         | "completed"
         | "lost"
         | "cancelled"
+        | "qualified"
+        | "after_sales"
       mdm_lifecycle_status: "active" | "inactive" | "archived" | "deleted"
       notification_channel: "email" | "whatsapp" | "sms" | "push"
       notification_event:
@@ -7450,6 +7455,8 @@ export const Constants = {
         "completed",
         "lost",
         "cancelled",
+        "qualified",
+        "after_sales",
       ],
       mdm_lifecycle_status: ["active", "inactive", "archived", "deleted"],
       notification_channel: ["email", "whatsapp", "sms", "push"],
