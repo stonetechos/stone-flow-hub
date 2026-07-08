@@ -386,6 +386,10 @@ function EnquiryDetailPage() {
         </Card>
       </div>
 
+      <div className="mt-4">
+        <OperationalProgress projectId={enq.project_id ?? null} />
+      </div>
+
       <LostReasonDialog
         open={!!lostFor}
         onOpenChange={(o) => !o && setLostFor(null)}
