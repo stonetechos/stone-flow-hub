@@ -58,6 +58,14 @@ import {
 import type { LeadStage } from "@/lib/types";
 import { invalidateEnquiry } from "@/lib/query-invalidation";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
+import { getEnquirySignal } from "@/lib/lead-stage/signals";
+import { computeLeadHealth, daysSince } from "@/lib/lead-stage/health";
+import { LeadHealthBadge } from "@/components/enquiry/LeadHealthBadge";
+import { StageAgeChip } from "@/components/enquiry/StageAgeChip";
+import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+import { SuggestedRecommendations } from "@/components/enquiry/SuggestedRecommendations";
+import { OperationalProgress } from "@/components/enquiry/OperationalProgress";
+import { listAssignableUsers } from "@/lib/tasks/api";
 
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
