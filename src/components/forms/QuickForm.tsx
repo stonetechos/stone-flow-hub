@@ -30,7 +30,7 @@ export function QuickForm({
     <form
       onSubmit={onSubmit}
       aria-busy={busy}
-      className="flex min-h-0 flex-1 flex-col gap-4"
+      className="flex h-full min-h-0 flex-1 flex-col gap-4"
     >
       <div className="-mx-6 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]">
         {body}
