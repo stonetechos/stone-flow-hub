@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SearchGroupKey =
   | "customers"
+  | "contacts"
   | "projects"
   | "vendors"
   | "products"
@@ -13,7 +14,9 @@ export type SearchGroupKey =
   | "inventory"
   | "invoices"
   | "payments"
-  | "dispatch";
+  | "dispatch"
+  | "salespeople"
+  | "architects";
 
 export interface SearchHit {
   id: string;
