@@ -92,7 +92,7 @@ function EnquiriesPage() {
     const row = (query.data ?? []).find((r) => r.id === edit);
     if (row) {
       setEditing(row);
-      nav({ to: "/enquiries", search: (s) => ({ ...s, edit: undefined }), replace: true });
+      nav({ to: "/enquiries", search: (s: Record<string, unknown>) => ({ ...s, edit: undefined }), replace: true });
     }
   }, [edit, query.data, nav]);
 
