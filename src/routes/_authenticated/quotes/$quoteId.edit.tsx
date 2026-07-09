@@ -115,6 +115,24 @@ function EditQuotePage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
+          <Field label="Category">
+            <Select
+              value={form.category ?? "none"}
+              onValueChange={(v) => set("category", v === "none" ? null : (v as QuoteCategory))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
+                {QUOTE_CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {QUOTE_CATEGORY_LABELS[c]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Valid until">
             <Input
               type="date"
@@ -123,6 +141,7 @@ function EditQuotePage() {
             />
           </Field>
         </QuickForm.QuickFill>
+
         <QuickForm.MoreDetails>
           <Field label="Notes" className="md:col-span-2">
             <Textarea
