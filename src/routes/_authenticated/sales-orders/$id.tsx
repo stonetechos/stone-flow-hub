@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History } from "lucide-react";
+import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History, UserCheck } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
