@@ -378,70 +378,99 @@ function CreateQuoteDialog({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setItems((p) => [...p, emptyItem()])}
+                  onClick={() => setItems((p) => [...p, emptyItem(category)])}
                 >
                   <Plus className="mr-1 h-3 w-3" /> Add line
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {items.map((it) => (
                   <div
                     key={it.key}
-                    className="grid grid-cols-12 gap-2 rounded-sm border border-border bg-background p-2"
+                    className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
                   >
-                    <Input
-                      className="col-span-12 md:col-span-4"
-                      placeholder="Description"
-                      value={it.description}
-                      onChange={(e) => updateItem(it.key, { description: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-4 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      placeholder="Qty"
-                      value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-3 md:col-span-1"
-                      placeholder="Unit"
-                      value={it.unit ?? ""}
-                      onChange={(e) => updateItem(it.key, { unit: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-5 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="Rate"
-                      value={it.unit_price}
-                      onChange={(e) => updateItem(it.key, { unit_price: Number(e.target.value) })}
-                    />
-                    <Input
-                      className="col-span-8 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="Tax %"
-                      value={it.tax_pct}
-                      onChange={(e) => updateItem(it.key, { tax_pct: Number(e.target.value) })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="col-span-4 md:col-span-1"
-                      aria-label="Remove line item"
-                      onClick={() => removeItem(it.key)}
-                      disabled={items.length === 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <LineField label="Description" className="col-span-12 md:col-span-4">
+                      <Input
+                        placeholder="e.g. Monsoon Black Crazy"
+                        value={it.description}
+                        onChange={(e) => updateItem(it.key, { description: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Quantity" className="col-span-6 md:col-span-1">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.quantity}
+                        onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Unit" className="col-span-6 md:col-span-1">
+                      <Input
+                        placeholder="sqft"
+                        value={it.unit ?? ""}
+                        onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.unit_price}
+                        onChange={(e) => updateItem(it.key, { unit_price: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="GST %" className="col-span-6 md:col-span-1">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.tax_pct}
+                        onChange={(e) => updateItem(it.key, { tax_pct: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
+                      <Select
+                        value={it.fulfilment || "inherit"}
+                        onValueChange={(v) =>
+                          updateItem(it.key, {
+                            fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inherit">— Inherit quote —</SelectItem>
+                          {QUOTE_CATEGORIES.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {QUOTE_CATEGORY_LABELS[c]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </LineField>
+                    <div className="col-span-2 md:col-span-1 flex items-end justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove line item"
+                        onClick={() => removeItem(it.key)}
+                        disabled={items.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-
                 ))}
               </div>
               <div className="mt-2 flex justify-end gap-6 text-sm">
