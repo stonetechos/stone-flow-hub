@@ -8,13 +8,21 @@ type DbErrorShape = {
 type RecordedDbError = {
   error: DbErrorShape;
   stack?: string;
+  context?: BackendFailureContext;
   at: number;
 };
 
 type ToastMethod = (...args: unknown[]) => unknown;
+type BackendFailureContext = {
+  method: string;
+  url: string;
+  table: string | null;
+  rpcOrFunctionName: string | null;
+};
 
 const RECENT_DB_ERROR_TTL_MS = 5_000;
 const PATCHED_FLAG = "__stoneTechToastDiagnosticsInstalled";
+const FETCH_PATCHED_FLAG = "__stoneTechFetchDiagnosticsInstalled";
 let recentDbError: RecordedDbError | null = null;
 
 function getPage() {
@@ -54,6 +62,26 @@ function inferTable(stack: string) {
   return fromMatch?.[1] ?? null;
 }
 
+function inferBackendContext(input: RequestInfo | URL, init?: RequestInit): BackendFailureContext {
+  const request = typeof Request !== "undefined" && input instanceof Request ? input : null;
+  const url = request?.url ?? String(input);
+  const method = init?.method ?? request?.method ?? "GET";
+  let table: string | null = null;
+  let rpcOrFunctionName: string | null = null;
+
+  try {
+    const parsed = new URL(url, typeof window !== "undefined" ? window.location.origin : undefined);
+    const restMatch = parsed.pathname.match(/\/rest\/v1\/([^/?]+)/);
+    const rpcMatch = parsed.pathname.match(/\/rest\/v1\/rpc\/([^/?]+)/);
+    table = restMatch?.[1] && restMatch[1] !== "rpc" ? decodeURIComponent(restMatch[1]) : null;
+    rpcOrFunctionName = rpcMatch?.[1] ? decodeURIComponent(rpcMatch[1]) : null;
+  } catch {
+    // Keep best-effort diagnostics non-invasive.
+  }
+
+  return { method, url, table, rpcOrFunctionName };
+}
+
 function inferConstraint(details = "", message = "") {
   const combined = `${details}\n${message}`;
   const match = combined.match(/constraint\s+["']?([a-zA-Z0-9_]+)["']?/i);
@@ -74,16 +102,65 @@ function consumeRecentDbError(): RecordedDbError | null {
   return recentDbError;
 }
 
-export function recordDbErrorForDiagnostics(error: DbErrorShape) {
+export function recordDbErrorForDiagnostics(error: DbErrorShape, context?: BackendFailureContext) {
   recentDbError = {
     error,
     stack: getStack(),
+    context,
     at: Date.now(),
   };
 }
 
+function installFetchDiagnostics() {
+  if (typeof window === "undefined") return;
+  const w = window as typeof window & { [FETCH_PATCHED_FLAG]?: boolean };
+  if (w[FETCH_PATCHED_FLAG]) return;
+  w[FETCH_PATCHED_FLAG] = true;
+
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const context = inferBackendContext(input, init);
+    const response = await originalFetch(input, init);
+
+    if (!response.ok && context.url.includes("/rest/v1/")) {
+      const clone = response.clone();
+      let body: DbErrorShape | null = null;
+      try {
+        body = (await clone.json()) as DbErrorShape;
+      } catch {
+        body = null;
+      }
+
+      if (body?.code || body?.message) {
+        recordDbErrorForDiagnostics(body, context);
+        console.info("[backend diagnostics]", {
+          module: null,
+          page: getPage(),
+          mutationOrQueryName: null,
+          rpcOrFunctionName: context.rpcOrFunctionName ?? inferRpcFunctionName(body.message ?? "", ""),
+          table: context.table,
+          sqlstate: body.code ?? null,
+          postgresMessage: body.message ?? null,
+          constraintName: inferConstraint(body.details ?? "", body.message ?? ""),
+          triggerName: inferTrigger(body.message ?? ""),
+          functionName: inferRpcFunctionName(body.message ?? "", ""),
+          request: {
+            method: context.method,
+            url: context.url,
+            status: response.status,
+          },
+          stackTrace: getStack(),
+        });
+      }
+    }
+
+    return response;
+  }) as typeof window.fetch;
+}
+
 export async function installToastDiagnostics() {
   if (typeof window === "undefined") return;
+  installFetchDiagnostics();
   const w = window as typeof window & { [PATCHED_FLAG]?: boolean };
   if (w[PATCHED_FLAG]) return;
   w[PATCHED_FLAG] = true;
@@ -108,13 +185,16 @@ export async function installToastDiagnostics() {
         module: inferModule(stack),
         page: getPage(),
         mutationOrQueryName: inferMutationOrQuery(stack),
-        rpcOrFunctionName: inferRpcFunctionName(dbMessage || message, db?.stack || stack),
-        table: inferTable(db?.stack || stack),
+        rpcOrFunctionName:
+          db?.context?.rpcOrFunctionName ?? inferRpcFunctionName(dbMessage || message, db?.stack || stack),
+        table: db?.context?.table ?? inferTable(db?.stack || stack),
         sqlstate: db?.error.code ?? null,
         postgresMessage: db?.error.message ?? null,
         constraintName: inferConstraint(dbDetails, dbMessage),
         triggerName: inferTrigger(dbMessage),
-        functionName: inferRpcFunctionName(dbMessage || message, db?.stack || stack),
+        functionName:
+          db?.context?.rpcOrFunctionName ?? inferRpcFunctionName(dbMessage || message, db?.stack || stack),
+        request: db?.context ?? null,
         stackTrace: stack,
         dbStackTrace: db?.stack ?? null,
       });
