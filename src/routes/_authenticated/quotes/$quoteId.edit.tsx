@@ -46,6 +46,7 @@ function EditQuotePage() {
   const canReassign = roles.isAdmin || roles.isSalesManager;
   const [reassignOpen, setReassignOpen] = useState(false);
   const [form, setForm] = useState<QuoteUpdateInput>({
+    category: null,
     valid_until: null,
     notes: null,
     terms: null,
@@ -53,13 +54,19 @@ function EditQuotePage() {
 
   useEffect(() => {
     if (query.data) {
+      const raw = (query.data as { category?: string | null }).category ?? null;
+      const cat = (QUOTE_CATEGORIES as readonly string[]).includes(raw ?? "")
+        ? (raw as QuoteCategory)
+        : null;
       setForm({
+        category: cat,
         valid_until: query.data.valid_until ?? null,
         notes: query.data.notes ?? null,
         terms: query.data.terms ?? null,
       });
     }
   }, [query.data]);
+
 
   const set = <K extends keyof QuoteUpdateInput>(k: K, v: QuoteUpdateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
