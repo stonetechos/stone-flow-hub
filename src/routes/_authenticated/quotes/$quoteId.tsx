@@ -187,6 +187,16 @@ function QuoteDetailPage() {
                     .getElementById("quote-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(canReassign
+                ? [
+                    {
+                      label: "Change customer",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setReassignOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
               {
                 label: "Delete quote",
                 icon: <Trash2 className="h-4 w-4" />,
