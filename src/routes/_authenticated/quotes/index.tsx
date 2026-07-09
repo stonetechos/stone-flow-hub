@@ -355,11 +355,14 @@ function CreateQuoteDialog({
                     <Input
                       className="col-span-1"
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
+                      min="0"
                       placeholder="Qty"
                       value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) })}
+                      onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
                     />
+
                     <Input
                       className="col-span-1"
                       placeholder="Unit"
