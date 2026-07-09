@@ -3,6 +3,7 @@
  * Single helper keeps message normalization out of every catch block.
  */
 import { ZodError } from "zod";
+import { recordDbErrorForDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
 
 export class AppError extends Error {
   readonly code: string;
@@ -37,6 +38,7 @@ export function mapDbError(
 
   // Log the raw error so devs can see the real reason regardless of what we surface.
   if (typeof console !== "undefined") {
+    recordDbErrorForDiagnostics(err);
     console.error("[db error]", { code: err.code, message: msg, details, hint });
   }
 
