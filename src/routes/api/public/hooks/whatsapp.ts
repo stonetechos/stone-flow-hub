@@ -61,6 +61,21 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
 
       POST: async ({ request }) => {
         const raw = await request.text();
+
+        // Verify Meta's X-Hub-Signature-256 HMAC before trusting any payload.
+        const appSecret = process.env.WHATSAPP_APP_SECRET;
+        if (!appSecret) {
+          return new Response("App secret not configured", { status: 500 });
+        }
+        const sig = request.headers.get("x-hub-signature-256") ?? "";
+        const expected =
+          "sha256=" + createHmac("sha256", appSecret).update(raw).digest("hex");
+        const sigBuf = Buffer.from(sig);
+        const expBuf = Buffer.from(expected);
+        if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+          return new Response("Invalid signature", { status: 401 });
+        }
+
         let payload: unknown;
         try { payload = JSON.parse(raw); } catch { return new Response("Bad JSON", { status: 400 }); }
 
