@@ -13,7 +13,10 @@ import {
   Mail,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
