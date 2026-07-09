@@ -7401,6 +7401,8 @@ export type Database = {
         | "imps"
         | "card"
         | "gateway"
+        | "upi_bob_current"
+        | "upi_personal"
       preferred_transport: "road" | "rail" | "sea" | "air" | "mixed"
       product_unit:
         | "sqft"
@@ -7806,6 +7808,8 @@ export const Constants = {
         "imps",
         "card",
         "gateway",
+        "upi_bob_current",
+        "upi_personal",
       ],
       preferred_transport: ["road", "rail", "sea", "air", "mixed"],
       product_unit: [
