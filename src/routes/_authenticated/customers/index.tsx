@@ -163,13 +163,21 @@ function CustomersPage() {
                     </Link>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <Link
-                      to="/customers/$customerId"
-                      params={{ customerId: c.id }}
-                      className="hover:underline"
-                    >
-                      {c.name}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/customers/$customerId"
+                        params={{ customerId: c.id }}
+                        className="hover:underline"
+                      >
+                        {c.name}
+                      </Link>
+                      <LifecycleBadge
+                        status={
+                          (c as unknown as { lifecycle_status?: LifecycleStatus })
+                            .lifecycle_status
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
