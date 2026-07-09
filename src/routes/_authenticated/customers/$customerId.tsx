@@ -13,7 +13,10 @@ import {
   Mail,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -40,6 +43,9 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 function CustomerHub() {
   const { customerId } = Route.useParams();
   const [tab, setTab] = useState("overview");
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
+  const [transferOpen, setTransferOpen] = useState(false);
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
@@ -145,10 +151,31 @@ function CustomerHub() {
                 icon: <History className="h-4 w-4" />,
                 onSelect: () => setTab("timeline"),
               },
+              ...(canTransfer
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="customer"
+          sourceId={customerId}
+          sourceLabel={c.name}
+          fromCustomerId={customerId}
+        />
+      )}
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">

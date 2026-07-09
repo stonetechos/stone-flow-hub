@@ -12,7 +12,10 @@ import {
   XCircle,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
@@ -80,6 +83,9 @@ function EnquiryDetailPage() {
   const qc = useQueryClient();
   const [rfqOpen, setRfqOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
 
   const query = useQuery({
     queryKey: qk.enquiries.byId(enquiryId),
@@ -241,10 +247,31 @@ function EnquiryDetailPage() {
                     .getElementById("enquiry-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(canTransfer && enq.customer_id
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && enq.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="enquiry"
+          sourceId={enquiryId}
+          sourceLabel={enq.enquiry_no}
+          fromCustomerId={enq.customer_id}
+        />
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">

@@ -2362,6 +2362,7 @@ export type Database = {
           is_demo: boolean
           issue_date: string
           notes: string | null
+          original_customer_id: string | null
           project_id: string
           quote_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
@@ -2387,6 +2388,7 @@ export type Database = {
           is_demo?: boolean
           issue_date?: string
           notes?: string | null
+          original_customer_id?: string | null
           project_id: string
           quote_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
@@ -2412,6 +2414,7 @@ export type Database = {
           is_demo?: boolean
           issue_date?: string
           notes?: string | null
+          original_customer_id?: string | null
           project_id?: string
           quote_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
@@ -2426,6 +2429,13 @@ export type Database = {
           {
             foreignKeyName: "invoices_customer_id_fkey"
             columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_original_customer_id_fkey"
+            columns: ["original_customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
@@ -2751,6 +2761,66 @@ export type Database = {
           payload?: Json
         }
         Relationships: []
+      }
+      ownership_transfers: {
+        Row: {
+          counts: Json
+          created_at: string
+          created_by: string | null
+          from_customer_id: string | null
+          id: string
+          reversed_at: string | null
+          reversed_by: string | null
+          scope: Json
+          source_id: string
+          source_type: string
+          to_customer_id: string | null
+          warnings: Json
+        }
+        Insert: {
+          counts?: Json
+          created_at?: string
+          created_by?: string | null
+          from_customer_id?: string | null
+          id?: string
+          reversed_at?: string | null
+          reversed_by?: string | null
+          scope?: Json
+          source_id: string
+          source_type: string
+          to_customer_id?: string | null
+          warnings?: Json
+        }
+        Update: {
+          counts?: Json
+          created_at?: string
+          created_by?: string | null
+          from_customer_id?: string | null
+          id?: string
+          reversed_at?: string | null
+          reversed_by?: string | null
+          scope?: Json
+          source_id?: string
+          source_type?: string
+          to_customer_id?: string | null
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ownership_transfers_from_customer_id_fkey"
+            columns: ["from_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ownership_transfers_to_customer_id_fkey"
+            columns: ["to_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       packaging_types: {
         Row: {
@@ -4129,6 +4199,7 @@ export type Database = {
           lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes: string | null
+          original_customer_id: string | null
           owner_user_id: string | null
           pincode: string | null
           project_code: string
@@ -4164,6 +4235,7 @@ export type Database = {
           lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
           notes?: string | null
+          original_customer_id?: string | null
           owner_user_id?: string | null
           pincode?: string | null
           project_code: string
@@ -4199,6 +4271,7 @@ export type Database = {
           lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name?: string
           notes?: string | null
+          original_customer_id?: string | null
           owner_user_id?: string | null
           pincode?: string | null
           project_code?: string
@@ -4221,6 +4294,13 @@ export type Database = {
           {
             foreignKeyName: "projects_customer_id_fkey"
             columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_original_customer_id_fkey"
+            columns: ["original_customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
@@ -4648,6 +4728,7 @@ export type Database = {
           is_demo: boolean
           issue_date: string
           notes: string | null
+          original_customer_id: string | null
           project_id: string
           quote_no: string
           status: Database["public"]["Enums"]["quote_status"]
@@ -4672,6 +4753,7 @@ export type Database = {
           is_demo?: boolean
           issue_date?: string
           notes?: string | null
+          original_customer_id?: string | null
           project_id: string
           quote_no: string
           status?: Database["public"]["Enums"]["quote_status"]
@@ -4696,6 +4778,7 @@ export type Database = {
           is_demo?: boolean
           issue_date?: string
           notes?: string | null
+          original_customer_id?: string | null
           project_id?: string
           quote_no?: string
           status?: Database["public"]["Enums"]["quote_status"]
@@ -4727,6 +4810,13 @@ export type Database = {
             columns: ["estimate_id"]
             isOneToOne: false
             referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_original_customer_id_fkey"
+            columns: ["original_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
           {
@@ -5104,6 +5194,7 @@ export type Database = {
           is_demo: boolean
           notes: string | null
           order_date: string
+          original_customer_id: string | null
           project_id: string | null
           quote_id: string | null
           so_no: string
@@ -5124,6 +5215,7 @@ export type Database = {
           is_demo?: boolean
           notes?: string | null
           order_date?: string
+          original_customer_id?: string | null
           project_id?: string | null
           quote_id?: string | null
           so_no: string
@@ -5144,6 +5236,7 @@ export type Database = {
           is_demo?: boolean
           notes?: string | null
           order_date?: string
+          original_customer_id?: string | null
           project_id?: string | null
           quote_id?: string | null
           so_no?: string
@@ -5156,6 +5249,13 @@ export type Database = {
           {
             foreignKeyName: "sales_orders_customer_id_fkey"
             columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_original_customer_id_fkey"
+            columns: ["original_customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
@@ -6818,6 +6918,7 @@ export type Database = {
           is_demo: boolean
           issue_date: string
           notes: string | null
+          original_customer_id: string | null
           project_id: string
           quote_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
@@ -6899,6 +7000,10 @@ export type Database = {
         Returns: string
       }
       next_code: { Args: { _prefix: string }; Returns: string }
+      preview_ownership_transfer: {
+        Args: { p_from_customer_id: string; p_to_customer_id: string }
+        Returns: Json
+      }
       procurement_lock_check: { Args: { p_quote_id: string }; Returns: Json }
       purge_entity: {
         Args: { _entity_id: string; _entity_type: string }
@@ -6919,6 +7024,7 @@ export type Database = {
           is_demo: boolean
           issue_date: string
           notes: string | null
+          original_customer_id: string | null
           project_id: string
           quote_no: string
           status: Database["public"]["Enums"]["quote_status"]
@@ -7023,6 +7129,10 @@ export type Database = {
         }
       }
       reset_demo_data: { Args: never; Returns: undefined }
+      rollback_ownership_transfer: {
+        Args: { p_transfer_id: string }
+        Returns: undefined
+      }
       seed_demo_data: { Args: never; Returns: undefined }
       send_rfq: {
         Args: {
@@ -7115,6 +7225,16 @@ export type Database = {
           _suggested: Database["public"]["Enums"]["lead_stage"]
         }
         Returns: undefined
+      }
+      transfer_commercial_ownership: {
+        Args: {
+          p_from_customer_id: string
+          p_scope: Json
+          p_source_id: string
+          p_source_type: string
+          p_to_customer_id: string
+        }
+        Returns: string
       }
       vendor_ledger_upsert: {
         Args: {

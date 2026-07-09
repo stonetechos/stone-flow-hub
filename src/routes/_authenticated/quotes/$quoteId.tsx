@@ -14,6 +14,7 @@ import {
   History,
   UserCheck,
 } from "lucide-react";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
@@ -66,6 +67,7 @@ function QuoteDetailPage() {
   const nav = useNavigate();
   const [confirmDel, setConfirmDel] = useState(false);
   const [reassignOpen, setReassignOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
 
@@ -195,6 +197,11 @@ function QuoteDetailPage() {
                       onSelect: () => setReassignOpen(true),
                       separatorBefore: true,
                     },
+                    {
+                      label: "Transfer ownership (wizard)",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                    },
                   ]
                 : []),
               {
@@ -322,6 +329,17 @@ function QuoteDetailPage() {
           quoteId={quoteId}
           quoteNo={quote.quote_no}
           currentCustomerId={quote.customer_id}
+        />
+      )}
+
+      {canReassign && quote.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="quote"
+          sourceId={quoteId}
+          sourceLabel={quote.quote_no}
+          fromCustomerId={quote.customer_id}
         />
       )}
     </div>

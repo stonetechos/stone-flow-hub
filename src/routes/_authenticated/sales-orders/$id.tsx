@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History } from "lucide-react";
+import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History, UserCheck } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -27,6 +30,9 @@ function SalesOrderDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
+  const [transferOpen, setTransferOpen] = useState(false);
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
 
   const convertMut = useMutation({
@@ -111,10 +117,31 @@ function SalesOrderDetailPage() {
                     .getElementById("so-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(canTransfer && r.customer_id
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && r.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="sales_order"
+          sourceId={id}
+          sourceLabel={r.so_no}
+          fromCustomerId={r.customer_id}
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
