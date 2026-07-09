@@ -263,6 +263,8 @@ function EnquiryDetailPage() {
         }
       />
 
+      <GuidedNextStep entity="enquiry" entityId={enquiryId} />
+
       {canTransfer && enq.customer_id && (
         <TransferOwnershipDialog
           open={transferOpen}
