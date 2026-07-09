@@ -137,7 +137,8 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       valid_until: parsed.valid_until ?? null,
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
-    })
+      category: parsed.category ?? null,
+    } as never)
     .eq("id", id)
     .select("*")
     .single();
