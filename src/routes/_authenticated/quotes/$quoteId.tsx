@@ -197,6 +197,11 @@ function QuoteDetailPage() {
                       onSelect: () => setReassignOpen(true),
                       separatorBefore: true,
                     },
+                    {
+                      label: "Transfer ownership (wizard)",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                    },
                   ]
                 : []),
               {
