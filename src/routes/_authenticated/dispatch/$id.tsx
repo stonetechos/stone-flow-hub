@@ -74,7 +74,9 @@ function DispatchDetailPage() {
           />
         }
       />
+      <GuidedNextStep entity="dispatch" entityId={id} />
       <div className="grid gap-4 lg:grid-cols-3">
+
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>
