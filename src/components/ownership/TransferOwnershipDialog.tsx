@@ -411,7 +411,7 @@ function PreviewPanel({
 
       <div className="rounded-md border border-border">
         {rows.map((r) => {
-          const willMove = r.key in scope ? (scope as Record<string, boolean>)[r.key] : false;
+          const willMove = r.key in scope ? (scope as unknown as Record<string, boolean>)[r.key] : false;
           const count = p.counts[r.countKey] ?? 0;
           return (
             <div
