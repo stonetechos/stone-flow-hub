@@ -81,7 +81,8 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
       valid_until: parsed.valid_until ?? null,
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
-    })
+      ...(parsed.category ? { category: parsed.category } : {}),
+    } as never)
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
