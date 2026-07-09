@@ -31,6 +31,8 @@ import { RecordMaterialDialog } from "@/components/installation/RecordMaterialDi
 import { SignoffDialog } from "@/components/installation/SignoffDialog";
 import { SiteAiPanel } from "@/components/installation/SiteAiPanel";
 import { printCompletionCertificate } from "@/lib/installation/certificate";
+import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+
 
 export const Route = createFileRoute("/_authenticated/installations/$id")({
   ssr: false,
