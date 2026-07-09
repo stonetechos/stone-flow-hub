@@ -147,6 +147,9 @@ function ProductionOrderDetail() {
           </Select>
         }
       />
+      <GuidedNextStep entity="production_order" entityId={id} />
+
+
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <LinkCard label="Customer" value={po.customers?.name} to={po.customers ? `/customers/${po.customers.id}` : undefined} />
