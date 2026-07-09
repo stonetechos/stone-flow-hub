@@ -12,7 +12,10 @@ import {
   XCircle,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { useRoles } from "@/hooks/use-roles";
+import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
