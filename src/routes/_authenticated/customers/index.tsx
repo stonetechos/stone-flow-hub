@@ -181,11 +181,24 @@ function CustomersPage() {
                   <TableCell>
                     <RowActions
                       extra={
-                        <DropdownMenuItem asChild>
-                          <Link to="/customers/$customerId" params={{ customerId: c.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> Open
-                          </Link>
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link to="/customers/$customerId" params={{ customerId: c.id }}>
+                              <ExternalLink className="mr-2 h-4 w-4" /> Open
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <LifecycleMenuItems
+                            entityType="customer"
+                            entityId={c.id}
+                            currentStatus={
+                              ((c as unknown as { lifecycle_status?: LifecycleStatus })
+                                .lifecycle_status ??
+                                (c.is_active ? "active" : "inactive")) as LifecycleStatus
+                            }
+                            allowPurge={false}
+                          />
+                        </>
                       }
                       onEdit={() => {
                         setEditing(c);
