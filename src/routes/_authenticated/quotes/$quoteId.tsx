@@ -331,6 +331,17 @@ function QuoteDetailPage() {
           currentCustomerId={quote.customer_id}
         />
       )}
+
+      {canReassign && quote.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="quote"
+          sourceId={quoteId}
+          sourceLabel={quote.quote_no}
+          fromCustomerId={quote.customer_id}
+        />
+      )}
     </div>
   );
 }
