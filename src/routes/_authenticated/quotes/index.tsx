@@ -333,6 +333,26 @@ function CreateQuoteDialog({
               />
             </Field>
 
+            <Field label="Category" className="md:col-span-2">
+              <Select
+                value={category || "none"}
+                onValueChange={(v) => setCategory(v === "none" ? "" : (v as QuoteCategory))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {QUOTE_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {QUOTE_CATEGORY_LABELS[c]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+
             <div className="md:col-span-2">
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium">Line items</label>
