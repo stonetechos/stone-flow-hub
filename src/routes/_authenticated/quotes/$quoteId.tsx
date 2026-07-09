@@ -12,7 +12,10 @@ import {
   Share2,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
+import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -62,6 +65,9 @@ function QuoteDetailPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [confirmDel, setConfirmDel] = useState(false);
+  const [reassignOpen, setReassignOpen] = useState(false);
+  const roles = useRoles();
+  const canReassign = roles.isAdmin || roles.isSalesManager;
 
   const q = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
   const items = useQuery({
@@ -181,6 +187,16 @@ function QuoteDetailPage() {
                     .getElementById("quote-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(canReassign
+                ? [
+                    {
+                      label: "Change customer",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setReassignOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
               {
                 label: "Delete quote",
                 icon: <Trash2 className="h-4 w-4" />,
@@ -298,6 +314,16 @@ function QuoteDetailPage() {
         busy={delMut.isPending}
         onConfirm={() => delMut.mutate()}
       />
+
+      {canReassign && (
+        <ReassignCustomerDialog
+          open={reassignOpen}
+          onOpenChange={setReassignOpen}
+          quoteId={quoteId}
+          quoteNo={quote.quote_no}
+          currentCustomerId={quote.customer_id}
+        />
+      )}
     </div>
   );
 }

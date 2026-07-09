@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, UserCheck } from "lucide-react";
+import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
+import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -26,6 +28,9 @@ function EditQuotePage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
+  const roles = useRoles();
+  const canReassign = roles.isAdmin || roles.isSalesManager;
+  const [reassignOpen, setReassignOpen] = useState(false);
   const [form, setForm] = useState<QuoteUpdateInput>({
     valid_until: null,
     notes: null,
@@ -66,12 +71,19 @@ function EditQuotePage() {
         title={`Edit ${query.data.quote_no}`}
         subtitle="Update quote metadata."
         actions={
-          <Button
-            variant="ghost"
-            onClick={() => nav({ to: "/quotes/$quoteId", params: { quoteId } })}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
+          <div className="flex items-center gap-2">
+            {canReassign && (
+              <Button variant="outline" size="sm" onClick={() => setReassignOpen(true)}>
+                <UserCheck className="mr-2 h-4 w-4" /> Change customer
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={() => nav({ to: "/quotes/$quoteId", params: { quoteId } })}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+          </div>
         }
       />
       <QuickForm
@@ -119,6 +131,16 @@ function EditQuotePage() {
           </Button>
         </QuickForm.Actions>
       </QuickForm>
+
+      {canReassign && (
+        <ReassignCustomerDialog
+          open={reassignOpen}
+          onOpenChange={setReassignOpen}
+          quoteId={quoteId}
+          quoteNo={query.data.quote_no}
+          currentCustomerId={query.data.customer_id}
+        />
+      )}
     </div>
   );
 }

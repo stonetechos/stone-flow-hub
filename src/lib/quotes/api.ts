@@ -148,3 +148,24 @@ export async function deleteQuote(id: string): Promise<void> {
   const { error } = await supabase.from("quotes").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
+
+/**
+ * Reassign the commercial ownership of a quotation to a different customer.
+ * Server-side RPC enforces:
+ *  - caller has role admin or sales_manager,
+ *  - no finalised (non-draft, non-cancelled) tax invoice exists,
+ *  - full audit trail written to activity_log.
+ * Draft invoices attached to the quote are moved to the new customer so future
+ * documents flow through automatically — no duplication of quotes/projects/enquiries.
+ */
+export async function reassignQuoteCustomer(
+  quoteId: string,
+  newCustomerId: string,
+): Promise<QuoteRow> {
+  const { data, error } = await supabase.rpc("reassign_quote_customer", {
+    p_quote_id: quoteId,
+    p_new_customer_id: newCustomerId,
+  });
+  if (error) throw new AppError(mapDbError(error));
+  return data as QuoteRow;
+}
