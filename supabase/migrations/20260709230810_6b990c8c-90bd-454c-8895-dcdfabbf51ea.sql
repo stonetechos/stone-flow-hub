@@ -1,0 +1,1 @@
+alter table public.quote_items add column if not exists fulfilment text;
