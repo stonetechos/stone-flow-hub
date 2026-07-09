@@ -314,6 +314,16 @@ function QuoteDetailPage() {
         busy={delMut.isPending}
         onConfirm={() => delMut.mutate()}
       />
+
+      {canReassign && (
+        <ReassignCustomerDialog
+          open={reassignOpen}
+          onOpenChange={setReassignOpen}
+          quoteId={quoteId}
+          quoteNo={quote.quote_no}
+          currentCustomerId={quote.customer_id}
+        />
+      )}
     </div>
   );
 }
