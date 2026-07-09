@@ -98,7 +98,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
   }));
-  const { error: itemErr } = await supabase.from("quote_items").insert(rows);
+  const { error: itemErr } = await supabase.from("quote_items").insert(rows as never);
   if (itemErr) throw new AppError(mapDbError(itemErr));
 
   // Reload to reflect totals
