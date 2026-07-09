@@ -215,20 +215,30 @@ function QuotesPage() {
   );
 }
 
-// Quantity is kept as a raw string in local form state so users can type freely
+// Numeric line-item fields are stored as raw strings so users can type freely
 // (decimals, backspaced values, empty state) without a numeric coerce hijacking
-// the cursor or dropping the trailing decimal point.
-type FormItem = Omit<QuoteItemInput, "quantity"> & { key: string; quantity: string };
+// the cursor, dropping trailing decimals, or forcing a leading zero.
+type FormItem = {
+  key: string;
+  product_id: string | null;
+  description: string;
+  quantity: string;
+  unit: string | null;
+  unit_price: string;
+  tax_pct: string;
+  fulfilment: QuoteCategory | "";
+};
 
-function emptyItem(): FormItem {
+function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
   return {
     key: Math.random().toString(36).slice(2),
     product_id: null,
     description: "",
-    quantity: "1",
+    quantity: "",
     unit: "sqft",
-    unit_price: 0,
-    tax_pct: 18,
+    unit_price: "",
+    tax_pct: "18",
+    fulfilment: defaultFulfilment,
   };
 }
 
