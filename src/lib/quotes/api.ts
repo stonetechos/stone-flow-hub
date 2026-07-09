@@ -152,6 +152,119 @@ export async function deleteQuote(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
+/* ------------------------------------------------------------------ */
+/* Draft-only line item editing                                        */
+/* ------------------------------------------------------------------ */
+/** Only the writable fields of a quote line item. */
+export type QuoteItemPatch = {
+  description?: string;
+  quantity?: number;
+  unit?: string | null;
+  unit_price?: number;
+  tax_pct?: number;
+  fulfilment?: string | null;
+  sort_order?: number;
+};
+
+export async function addQuoteItem(
+  quoteId: string,
+  patch: QuoteItemPatch & { description: string; quantity: number; unit_price: number },
+): Promise<QuoteItemRow> {
+  const { data: existing, error: exErr } = await supabase
+    .from("quote_items")
+    .select("sort_order")
+    .eq("quote_id", quoteId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  if (exErr) throw new AppError(mapDbError(exErr));
+  const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
+  const { data, error } = await supabase
+    .from("quote_items")
+    .insert({
+      quote_id: quoteId,
+      description: patch.description,
+      quantity: patch.quantity,
+      unit: patch.unit ?? null,
+      unit_price: patch.unit_price,
+      tax_pct: patch.tax_pct ?? 0,
+      sort_order: patch.sort_order ?? nextSort,
+      ...(patch.fulfilment ? { fulfilment: patch.fulfilment } : {}),
+    } as never)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function updateQuoteItem(itemId: string, patch: QuoteItemPatch): Promise<QuoteItemRow> {
+  const { data, error } = await supabase
+    .from("quote_items")
+    .update(patch as never)
+    .eq("id", itemId)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteQuoteItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from("quote_items").delete().eq("id", itemId);
+  if (error) throw new AppError(mapDbError(error));
+}
+
+export async function reorderQuoteItems(orderedIds: string[]): Promise<void> {
+  // Two-phase reorder to avoid unique-index conflicts if one exists.
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from("quote_items").update({ sort_order: idx + 1000 } as never).eq("id", id),
+    ),
+  );
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from("quote_items").update({ sort_order: idx } as never).eq("id", id),
+    ),
+  );
+}
+
+/**
+ * Duplicate an accepted quote into a new draft quote (revision).
+ * The original quote is preserved untouched for audit; the new draft carries
+ * the same project, customer, category, terms, notes and line items and can
+ * then be edited freely.
+ */
+export async function reviseQuote(quoteId: string): Promise<QuoteRow> {
+  const src = await getQuote(quoteId);
+  if (!src) throw new AppError("Quote not found", "NOT_FOUND", 404);
+  const items = await getQuoteItems(quoteId);
+  if (items.length === 0) {
+    throw new AppError("Cannot revise a quote with no line items.", "VALIDATION", 400);
+  }
+  const srcAny = src as unknown as {
+    enquiry_id?: string | null;
+    category?: string | null;
+  };
+  return createQuote({
+    project_id: src.project_id,
+    enquiry_id: srcAny.enquiry_id ?? null,
+    category: (srcAny.category as never) ?? null,
+    valid_until: src.valid_until ?? null,
+    notes: src.notes ? `Revision of ${src.quote_no}\n\n${src.notes}` : `Revision of ${src.quote_no}`,
+    terms: src.terms ?? null,
+    items: items.map((it) => {
+      const anyIt = it as unknown as { fulfilment?: string | null };
+      return {
+        product_id: it.product_id ?? null,
+        description: it.description,
+        quantity: Number(it.quantity),
+        unit: it.unit ?? null,
+        unit_price: Number(it.unit_price),
+        tax_pct: Number(it.tax_pct),
+        fulfilment: (anyIt.fulfilment as never) ?? null,
+      };
+    }),
+  });
+}
+
 /**
  * Reassign the commercial ownership of a quotation to a different customer.
  * Server-side RPC enforces:

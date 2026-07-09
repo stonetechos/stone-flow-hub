@@ -13,6 +13,7 @@ import {
   FolderOpen,
   History,
   UserCheck,
+  Copy,
 } from "lucide-react";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
@@ -49,6 +50,7 @@ import {
   deleteQuote,
   getQuote,
   getQuoteItems,
+  reviseQuote,
   setQuoteStatus,
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
@@ -107,12 +109,24 @@ function QuoteDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const reviseMut = useMutation({
+    mutationFn: () => reviseQuote(quoteId),
+    onSuccess: (rev) => {
+      toast.success(`Revision ${rev.quote_no} created as draft`);
+      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      nav({ to: "/quotes/$quoteId/edit", params: { quoteId: rev.id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Quote not found." />;
 
   const quote = q.data;
   const canConvert = quote.status === "accepted";
+  const isDraft = quote.status === "draft";
+  const isAccepted = quote.status === "accepted";
 
   return (
     <div>
@@ -133,12 +147,27 @@ function QuoteDetailPage() {
             pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
             primary={
               <>
-                <Button
-                  size="sm"
-                  onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-                >
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </Button>
+                {isDraft && (
+                  <Button
+                    size="sm"
+                    onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                )}
+                {isAccepted && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => reviseMut.mutate()}
+                    disabled={reviseMut.isPending}
+                  >
+                    {reviseMut.isPending
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : <Copy className="mr-2 h-4 w-4" />}
+                    Create revision
+                  </Button>
+                )}
                 <Link
                   to="/sales-orders/new"
                   search={{
