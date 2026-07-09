@@ -28,6 +28,9 @@ function EditQuotePage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
+  const roles = useRoles();
+  const canReassign = roles.isAdmin || roles.isSalesManager;
+  const [reassignOpen, setReassignOpen] = useState(false);
   const [form, setForm] = useState<QuoteUpdateInput>({
     valid_until: null,
     notes: null,
