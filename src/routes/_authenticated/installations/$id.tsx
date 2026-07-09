@@ -167,8 +167,10 @@ function InstallationDetailPage() {
           </div>
         }
       />
+      <GuidedNextStep entity="installation" entityId={id} />
 
       <div className="grid gap-4 md:grid-cols-3">
+
         <div className="space-y-4 md:col-span-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
