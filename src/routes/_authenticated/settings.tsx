@@ -111,6 +111,42 @@ function SettingsPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="preferences" className="mt-4">
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Guided Workflow Assistant</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm">Enable Guided Workflow Assistant</Label>
+                  <p className="max-w-prose text-xs text-muted-foreground">
+                    Suggests the next logical step in the business lifecycle
+                    (Customer → Enquiry → Project → Quotation → Sales Order →
+                    Procurement → Production → Dispatch → Installation → Invoice
+                    → Receipt → Follow-up) on each detail page. Recommendations
+                    only — nothing happens automatically, and you can always Skip
+                    for now. When disabled, Stone Tech OS behaves exactly as
+                    before with no prompts.
+                  </p>
+                </div>
+                <Switch
+                  checked={guidedEnabled}
+                  onCheckedChange={(v) => {
+                    setGuidedEnabled(v);
+                    toast.success(
+                      v ? "Guided Workflow Assistant enabled" : "Guided Workflow Assistant disabled",
+                    );
+                  }}
+                  aria-label="Enable Guided Workflow Assistant"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+
+
         <TabsContent value="company" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
