@@ -32,6 +32,10 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { LifecycleMenuItems } from "@/components/mdm/LifecycleMenu";
+import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
+import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { qk } from "@/lib/query-keys";
 import { invalidateCustomer, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -159,13 +163,21 @@ function CustomersPage() {
                     </Link>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <Link
-                      to="/customers/$customerId"
-                      params={{ customerId: c.id }}
-                      className="hover:underline"
-                    >
-                      {c.name}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/customers/$customerId"
+                        params={{ customerId: c.id }}
+                        className="hover:underline"
+                      >
+                        {c.name}
+                      </Link>
+                      <LifecycleBadge
+                        status={
+                          (c as unknown as { lifecycle_status?: LifecycleStatus })
+                            .lifecycle_status
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
@@ -177,11 +189,24 @@ function CustomersPage() {
                   <TableCell>
                     <RowActions
                       extra={
-                        <DropdownMenuItem asChild>
-                          <Link to="/customers/$customerId" params={{ customerId: c.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> Open
-                          </Link>
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link to="/customers/$customerId" params={{ customerId: c.id }}>
+                              <ExternalLink className="mr-2 h-4 w-4" /> Open
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <LifecycleMenuItems
+                            entityType="customer"
+                            entityId={c.id}
+                            currentStatus={
+                              ((c as unknown as { lifecycle_status?: LifecycleStatus })
+                                .lifecycle_status ??
+                                (c.is_active ? "active" : "inactive")) as LifecycleStatus
+                            }
+                            allowPurge={false}
+                          />
+                        </>
                       }
                       onEdit={() => {
                         setEditing(c);
