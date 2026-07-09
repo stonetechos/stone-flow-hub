@@ -57,6 +57,11 @@ function SettingsPage() {
             <User className="mr-2 h-4 w-4" />
             Profile
           </TabsTrigger>
+          <TabsTrigger value="preferences">
+            <Compass className="mr-2 h-4 w-4" />
+            Preferences
+          </TabsTrigger>
+
           <TabsTrigger value="company">
             <Building2 className="mr-2 h-4 w-4" />
             Company
