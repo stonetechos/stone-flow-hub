@@ -217,6 +217,8 @@ function QuoteDetailPage() {
         }
       />
 
+      <GuidedNextStep entity="quote" entityId={quoteId} />
+
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
           <CardHeader>
