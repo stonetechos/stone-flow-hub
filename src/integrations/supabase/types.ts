@@ -6904,6 +6904,39 @@ export type Database = {
         Args: { _entity_id: string; _entity_type: string }
         Returns: undefined
       }
+      reassign_quote_customer: {
+        Args: { p_new_customer_id: string; p_quote_id: string }
+        Returns: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          customer_id: string
+          enquiry_id: string | null
+          estimate_id: string | null
+          external_ref: string | null
+          id: string
+          is_demo: boolean
+          issue_date: string
+          notes: string | null
+          project_id: string
+          quote_no: string
+          status: Database["public"]["Enums"]["quote_status"]
+          subtotal: number
+          tax_amount: number
+          terms: string | null
+          total: number
+          updated_at: string
+          valid_until: string | null
+          workflow_state: Json | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       recalc_estimate_totals: {
         Args: { _estimate_id: string }
         Returns: undefined
