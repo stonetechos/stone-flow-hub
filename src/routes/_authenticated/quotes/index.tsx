@@ -34,7 +34,13 @@ import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
-import { quoteItemInputSchema, type QuoteItemInput } from "@/lib/quotes/schema";
+import {
+  quoteItemInputSchema,
+  QUOTE_CATEGORIES,
+  QUOTE_CATEGORY_LABELS,
+  type QuoteCategory,
+  type QuoteItemInput,
+} from "@/lib/quotes/schema";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { invalidateQuote } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
@@ -209,19 +215,23 @@ function QuotesPage() {
   );
 }
 
-type FormItem = QuoteItemInput & { key: string };
+// Quantity is kept as a raw string in local form state so users can type freely
+// (decimals, backspaced values, empty state) without a numeric coerce hijacking
+// the cursor or dropping the trailing decimal point.
+type FormItem = Omit<QuoteItemInput, "quantity"> & { key: string; quantity: string };
 
 function emptyItem(): FormItem {
   return {
     key: Math.random().toString(36).slice(2),
     product_id: null,
     description: "",
-    quantity: 1,
+    quantity: "1",
     unit: "sqft",
     unit_price: 0,
     tax_pct: 18,
   };
 }
+
 
 function CreateQuoteDialog({
   open,
@@ -238,6 +248,7 @@ function CreateQuoteDialog({
   const nav = useNavigate();
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
+  const [category, setCategory] = useState<QuoteCategory | "">("");
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
@@ -246,12 +257,14 @@ function CreateQuoteDialog({
   useEffect(() => {
     if (open) {
       setProjectId(initialProjectId ?? "");
+      setCategory("");
       setValidUntil("");
       setNotes("");
       setTerms("");
       setItems([emptyItem()]);
     }
   }, [open, initialProjectId]);
+
 
   const totals = useMemo(() => {
     let sub = 0,
@@ -294,12 +307,14 @@ function CreateQuoteDialog({
     mutation.mutate({
       project_id: projectId,
       enquiry_id: initialEnquiryId,
+      category: category || null,
       valid_until: validUntil || null,
       notes: notes || null,
       terms: terms || null,
       items: parsedItems,
     });
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -317,6 +332,26 @@ function CreateQuoteDialog({
                 disabled={!!initialProjectId}
               />
             </Field>
+
+            <Field label="Category" className="md:col-span-2">
+              <Select
+                value={category || "none"}
+                onValueChange={(v) => setCategory(v === "none" ? "" : (v as QuoteCategory))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {QUOTE_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {QUOTE_CATEGORY_LABELS[c]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
 
             <div className="md:col-span-2">
               <div className="mb-2 flex items-center justify-between">
@@ -345,11 +380,14 @@ function CreateQuoteDialog({
                     <Input
                       className="col-span-1"
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
+                      min="0"
                       placeholder="Qty"
                       value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) })}
+                      onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
                     />
+
                     <Input
                       className="col-span-1"
                       placeholder="Unit"

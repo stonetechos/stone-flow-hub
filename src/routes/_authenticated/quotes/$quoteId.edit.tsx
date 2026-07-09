@@ -10,13 +10,27 @@ import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getQuote, updateQuote } from "@/lib/quotes/api";
-import type { QuoteUpdateInput } from "@/lib/quotes/schema";
+import {
+  QUOTE_CATEGORIES,
+  QUOTE_CATEGORY_LABELS,
+  type QuoteCategory,
+  type QuoteUpdateInput,
+} from "@/lib/quotes/schema";
 import { invalidateQuote } from "@/lib/query-invalidation";
+
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   ssr: false,
@@ -32,6 +46,7 @@ function EditQuotePage() {
   const canReassign = roles.isAdmin || roles.isSalesManager;
   const [reassignOpen, setReassignOpen] = useState(false);
   const [form, setForm] = useState<QuoteUpdateInput>({
+    category: null,
     valid_until: null,
     notes: null,
     terms: null,
@@ -39,13 +54,19 @@ function EditQuotePage() {
 
   useEffect(() => {
     if (query.data) {
+      const raw = (query.data as { category?: string | null }).category ?? null;
+      const cat = (QUOTE_CATEGORIES as readonly string[]).includes(raw ?? "")
+        ? (raw as QuoteCategory)
+        : null;
       setForm({
+        category: cat,
         valid_until: query.data.valid_until ?? null,
         notes: query.data.notes ?? null,
         terms: query.data.terms ?? null,
       });
     }
   }, [query.data]);
+
 
   const set = <K extends keyof QuoteUpdateInput>(k: K, v: QuoteUpdateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -94,6 +115,24 @@ function EditQuotePage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
+          <Field label="Category">
+            <Select
+              value={form.category ?? "none"}
+              onValueChange={(v) => set("category", v === "none" ? null : (v as QuoteCategory))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
+                {QUOTE_CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {QUOTE_CATEGORY_LABELS[c]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Valid until">
             <Input
               type="date"
@@ -102,6 +141,7 @@ function EditQuotePage() {
             />
           </Field>
         </QuickForm.QuickFill>
+
         <QuickForm.MoreDetails>
           <Field label="Notes" className="md:col-span-2">
             <Textarea
