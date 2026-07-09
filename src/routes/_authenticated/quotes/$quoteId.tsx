@@ -65,6 +65,9 @@ function QuoteDetailPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const [confirmDel, setConfirmDel] = useState(false);
+  const [reassignOpen, setReassignOpen] = useState(false);
+  const roles = useRoles();
+  const canReassign = roles.isAdmin || roles.isSalesManager;
 
   const q = useQuery({ queryKey: qk.quotes.byId(quoteId), queryFn: () => getQuote(quoteId) });
   const items = useQuery({
