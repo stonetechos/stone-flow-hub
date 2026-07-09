@@ -1,15 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { User, Building2, Palette, Shield, Bell } from "lucide-react";
+import { User, Building2, Palette, Shield, Bell, Compass } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   ssr: false,
@@ -21,6 +24,8 @@ function SettingsPage() {
   const [userId, setUserId] = useState("");
   const [fullName, setFullName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
+
 
   useEffect(() => {
     void (async () => {
@@ -52,6 +57,11 @@ function SettingsPage() {
             <User className="mr-2 h-4 w-4" />
             Profile
           </TabsTrigger>
+          <TabsTrigger value="preferences">
+            <Compass className="mr-2 h-4 w-4" />
+            Preferences
+          </TabsTrigger>
+
           <TabsTrigger value="company">
             <Building2 className="mr-2 h-4 w-4" />
             Company
@@ -100,6 +110,42 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="preferences" className="mt-4">
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Guided Workflow Assistant</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm">Enable Guided Workflow Assistant</Label>
+                  <p className="max-w-prose text-xs text-muted-foreground">
+                    Suggests the next logical step in the business lifecycle
+                    (Customer → Enquiry → Project → Quotation → Sales Order →
+                    Procurement → Production → Dispatch → Installation → Invoice
+                    → Receipt → Follow-up) on each detail page. Recommendations
+                    only — nothing happens automatically, and you can always Skip
+                    for now. When disabled, Stone Tech OS behaves exactly as
+                    before with no prompts.
+                  </p>
+                </div>
+                <Switch
+                  checked={guidedEnabled}
+                  onCheckedChange={(v) => {
+                    setGuidedEnabled(v);
+                    toast.success(
+                      v ? "Guided Workflow Assistant enabled" : "Guided Workflow Assistant disabled",
+                    );
+                  }}
+                  aria-label="Enable Guided Workflow Assistant"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+
 
         <TabsContent value="company" className="mt-4">
           <Card className="shadow-1">

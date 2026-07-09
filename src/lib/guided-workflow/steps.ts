@@ -4,13 +4,18 @@
  * Given a source entity that the user has just landed on (or completed), this
  * returns the recommended next step in the Stone Tech OS lifecycle:
  *
- *   Customer → Enquiry → Project → Quotation → Sales Order → Invoice
- *          → Payment / Receipt → Installation
+ *   Customer → Enquiry → Project → Quotation → Sales Order
+ *     → Purchase Order → Production → Dispatch → Installation
+ *     → Invoice → Receipt → After-sales
  *
  * The assistant is UI-only: it never mutates data, never changes stages, never
  * bypasses permissions. It only *suggests* creating the next artefact. If the
  * corresponding artefact already exists it stays silent — the existence check
- * is done in the component using the same query keys the rest of the app uses.
+ * is done in the component via the `hasNext` prop using the same query keys
+ * the rest of the app already uses.
+ *
+ * To plug a new module into the assistant, add a new `GuidedEntity` value and
+ * a matching `case` below — no changes required in existing modules.
  */
 
 export type GuidedEntity =
@@ -19,9 +24,12 @@ export type GuidedEntity =
   | "project"
   | "quote"
   | "sales_order"
+  | "purchase_order"
+  | "production_order"
+  | "dispatch"
+  | "installation"
   | "invoice"
-  | "receipt"
-  | "installation";
+  | "receipt";
 
 export interface GuidedStep {
   /** Label shown as the card title. */
@@ -82,12 +90,48 @@ export function nextGuidedStep(entity: GuidedEntity, entityId: string): GuidedSt
       };
     case "sales_order":
       return {
+        title: "Begin procurement",
+        description:
+          "Sales order is confirmed. Raise a purchase order or float an RFQ so material and services are lined up on time.",
+        ctaLabel: "Continue — New purchase order",
+        href: "/purchase-orders",
+        skipKey: `gwa:sales_order:${entityId}:purchase_order`,
+      };
+    case "purchase_order":
+      return {
+        title: "Kick off production",
+        description:
+          "Purchase order is in place. Open (or create) the matching production order to schedule stages, QC and material prep.",
+        ctaLabel: "Continue — Production",
+        href: "/manufacturing",
+        skipKey: `gwa:purchase_order:${entityId}:production_order`,
+      };
+    case "production_order":
+      return {
+        title: "Create a dispatch",
+        description:
+          "Production is progressing. When pieces are ready, creating a dispatch coordinates packing, vehicle and delivery paperwork.",
+        ctaLabel: "Continue — New dispatch",
+        href: "/dispatch/new",
+        skipKey: `gwa:production_order:${entityId}:dispatch`,
+      };
+    case "dispatch":
+      return {
+        title: "Schedule the installation",
+        description:
+          "Dispatch is on its way. If this order needs on-site fitting, plan the site visit, team and materials next.",
+        ctaLabel: "Continue — Installations",
+        href: "/installations",
+        skipKey: `gwa:dispatch:${entityId}:installation`,
+      };
+    case "installation":
+      return {
         title: "Raise an invoice",
         description:
-          "Sales order is confirmed. Raising an invoice — advance, proforma or final — starts the receivables workflow.",
+          "Installation is under way. Raising the invoice — advance, proforma or final — starts the receivables workflow.",
         ctaLabel: "Continue — New invoice",
         href: "/invoices/new",
-        skipKey: `gwa:sales_order:${entityId}:invoice`,
+        skipKey: `gwa:installation:${entityId}:invoice`,
       };
     case "invoice":
       return {
@@ -100,15 +144,13 @@ export function nextGuidedStep(entity: GuidedEntity, entityId: string): GuidedSt
       };
     case "receipt":
       return {
-        title: "Schedule the installation",
+        title: "Follow up with the customer",
         description:
-          "Payment received. If this order needs on-site installation, plan the site visit, team and materials next.",
-        ctaLabel: "Continue — Installations",
-        href: "/installations",
-        skipKey: `gwa:receipt:${entityId}:installation`,
+          "Payment received. Schedule a follow-up, request a Google review or capture a referral to keep the relationship warm.",
+        ctaLabel: "Continue — Follow-ups",
+        href: "/followups",
+        skipKey: `gwa:receipt:${entityId}:followup`,
       };
-    case "installation":
-      return null;
     default:
       return null;
   }

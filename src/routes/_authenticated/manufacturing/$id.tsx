@@ -26,6 +26,8 @@ import { invalidateProductionOrder } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import { InstallationTracker } from "@/components/manufacturing/InstallationTracker";
 import { QcChecklist } from "@/components/manufacturing/QcChecklist";
+import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+
 
 const STAGE_STATUSES = ["pending", "in_progress", "completed", "on_hold", "skipped"] as const;
 const PO_STATUSES = ["planned", "in_progress", "on_hold", "completed", "cancelled"] as const;
@@ -147,6 +149,9 @@ function ProductionOrderDetail() {
           </Select>
         }
       />
+      <GuidedNextStep entity="production_order" entityId={id} />
+
+
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <LinkCard label="Customer" value={po.customers?.name} to={po.customers ? `/customers/${po.customers.id}` : undefined} />

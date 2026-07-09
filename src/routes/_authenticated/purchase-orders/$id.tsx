@@ -11,6 +11,8 @@ import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getPurchaseOrder } from "@/lib/purchase-orders/api";
+import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/$id")({
   ssr: false,
@@ -98,7 +100,9 @@ function PurchaseOrderDetailPage() {
           />
         }
       />
+      <GuidedNextStep entity="purchase_order" entityId={id} />
       <div className="grid gap-4 lg:grid-cols-3">
+
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>
