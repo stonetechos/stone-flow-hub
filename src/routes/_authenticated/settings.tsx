@@ -24,6 +24,8 @@ function SettingsPage() {
   const [userId, setUserId] = useState("");
   const [fullName, setFullName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
+
 
   useEffect(() => {
     void (async () => {
