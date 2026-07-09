@@ -4,6 +4,8 @@ export const PAYMENT_METHODS = [
   "razorpay",
   "bank_transfer",
   "upi_manual",
+  "upi_bob_current",
+  "upi_personal",
   "neft",
   "rtgs",
   "imps",
@@ -14,6 +16,22 @@ export const PAYMENT_METHODS = [
   "other",
 ] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  razorpay: "Razorpay",
+  bank_transfer: "Bank Transfer",
+  upi_manual: "UPI",
+  upi_bob_current: "UPI – Stone Tech BOB Current A/c",
+  upi_personal: "UPI – Personal Account",
+  neft: "NEFT",
+  rtgs: "RTGS",
+  imps: "IMPS",
+  cheque: "Cheque",
+  cash: "Cash Received",
+  card: "Card",
+  gateway: "Gateway",
+  other: "Other",
+};
 
 export const paymentCreateSchema = z.object({
   invoice_id: z.string().uuid("Pick an invoice"),
