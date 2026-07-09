@@ -133,6 +133,8 @@ function SalesOrderDetailPage() {
         }
       />
 
+      <GuidedNextStep entity="sales_order" entityId={id} />
+
       {canTransfer && r.customer_id && (
         <TransferOwnershipDialog
           open={transferOpen}
