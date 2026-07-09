@@ -248,6 +248,7 @@ function CreateQuoteDialog({
   const nav = useNavigate();
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
+  const [category, setCategory] = useState<QuoteCategory | "">("");
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
@@ -256,12 +257,14 @@ function CreateQuoteDialog({
   useEffect(() => {
     if (open) {
       setProjectId(initialProjectId ?? "");
+      setCategory("");
       setValidUntil("");
       setNotes("");
       setTerms("");
       setItems([emptyItem()]);
     }
   }, [open, initialProjectId]);
+
 
   const totals = useMemo(() => {
     let sub = 0,
