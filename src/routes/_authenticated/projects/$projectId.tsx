@@ -172,10 +172,32 @@ function ProjectHub() {
                 icon: <Receipt className="h-4 w-4" />,
                 href: "/invoices/new",
               },
+              ...(canTransfer && p.customer_id
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && p.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="project"
+          sourceId={projectId}
+          sourceLabel={p.name}
+          fromCustomerId={p.customer_id}
+        />
+      )}
+
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex h-auto flex-wrap">
