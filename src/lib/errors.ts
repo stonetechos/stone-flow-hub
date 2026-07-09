@@ -26,33 +26,69 @@ export function toUserMessage(err: unknown): string {
 }
 
 /** Map Postgres / PostgREST errors to friendly text. */
-export function mapDbError(err: { code?: string; message?: string } | null): string {
+export function mapDbError(
+  err: { code?: string; message?: string; details?: string | null; hint?: string | null } | null,
+): string {
   if (!err) return "Unknown database error";
+  const msg = err.message ?? "";
+  const details = err.details ?? "";
+  const hint = err.hint ?? "";
+  const combined = `${msg} ${details} ${hint}`.toLowerCase();
+
+  // Log the raw error so devs can see the real reason regardless of what we surface.
+  if (typeof console !== "undefined") {
+    console.error("[db error]", { code: err.code, message: msg, details, hint });
+  }
+
   switch (err.code) {
     case "23505":
-      return "A record with the same details already exists.";
+      return details ? `Duplicate value: ${details}` : "A record with the same details already exists.";
     case "23503":
       return "This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.";
+    case "23502":
+      return details ? `Required field missing: ${details}` : "A required field is missing.";
     case "23514":
-      return "That value doesn't meet a required rule. Check the highlighted fields.";
+      return details ? `Constraint violation: ${details}` : "That value doesn't meet a required rule. Check the highlighted fields.";
     case "22P02":
-      return "One of the fields has an invalid value.";
+      return msg || "One of the fields has an invalid value.";
+    case "22001":
+      return "One of the values is too long for its field.";
+    case "22007":
+    case "22008":
+      return "Invalid date or time value.";
+    case "40001":
+    case "40P01":
+      return "The database is busy. Please try again.";
+    case "57014":
+      return "The operation timed out. Please try again.";
     case "42501":
-      // Distinguish real permission denials from a stale/missing session.
-      // The auth gate + attacher will redirect on missing session.
-      return "Permission denied. Your role does not allow this action.";
+      // RLS row-violation on insert/update also uses 42501 — surface distinctly.
+      if (/new row violates row-level security/i.test(combined)) {
+        return "This record can't be saved with the current values (row-level security). Check owner/user fields.";
+      }
+      if (/permission denied|insufficient_privilege/i.test(combined)) {
+        return "Permission denied. Your role does not allow this action.";
+      }
+      // Some triggers RAISE with SQLSTATE 42501 but a custom message — show it.
+      return msg || "Permission denied.";
+    case "P0001":
+      // RAISE EXCEPTION from a trigger/function — the message is the real reason.
+      return msg || "Operation blocked by a database rule.";
     case "PGRST301":
     case "PGRST302":
       return "Your session has expired. Please sign in again.";
     case "PGRST116":
       return "Record not found.";
+    case "PGRST204":
+      return msg || "Requested column or field does not exist.";
     default:
-      if (/JWT|jwt|token/i.test(err.message ?? "")) {
+      if (/jwt|token expired|invalid token/i.test(msg)) {
         return "Your session has expired. Please sign in again.";
       }
-      if (/Failed to fetch|NetworkError/i.test(err.message ?? "")) {
+      if (/failed to fetch|networkerror|network request failed/i.test(msg)) {
         return "Network error. Check your connection and try again.";
       }
-      return err.message || "Database error";
+      // Preserve the actual database/RPC/trigger message rather than a generic label.
+      return msg || "Unexpected error. Please try again.";
   }
 }
