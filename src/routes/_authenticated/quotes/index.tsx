@@ -215,20 +215,30 @@ function QuotesPage() {
   );
 }
 
-// Quantity is kept as a raw string in local form state so users can type freely
+// Numeric line-item fields are stored as raw strings so users can type freely
 // (decimals, backspaced values, empty state) without a numeric coerce hijacking
-// the cursor or dropping the trailing decimal point.
-type FormItem = Omit<QuoteItemInput, "quantity"> & { key: string; quantity: string };
+// the cursor, dropping trailing decimals, or forcing a leading zero.
+type FormItem = {
+  key: string;
+  product_id: string | null;
+  description: string;
+  quantity: string;
+  unit: string | null;
+  unit_price: string;
+  tax_pct: string;
+  fulfilment: QuoteCategory | "";
+};
 
-function emptyItem(): FormItem {
+function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
   return {
     key: Math.random().toString(36).slice(2),
     product_id: null,
     description: "",
-    quantity: "1",
+    quantity: "",
     unit: "sqft",
-    unit_price: 0,
-    tax_pct: 18,
+    unit_price: "",
+    tax_pct: "18",
+    fulfilment: defaultFulfilment,
   };
 }
 
@@ -252,7 +262,7 @@ function CreateQuoteDialog({
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
-  const [items, setItems] = useState<FormItem[]>([emptyItem()]);
+  const [items, setItems] = useState<FormItem[]>([emptyItem("")]);
 
   useEffect(() => {
     if (open) {
@@ -261,7 +271,7 @@ function CreateQuoteDialog({
       setValidUntil("");
       setNotes("");
       setTerms("");
-      setItems([emptyItem()]);
+      setItems([emptyItem("")]);
     }
   }, [open, initialProjectId]);
 
@@ -300,7 +310,15 @@ function CreateQuoteDialog({
     if (!projectId) return toast.error("Pick a project");
     const parsedItems: QuoteItemInput[] = [];
     for (const it of items) {
-      const r = quoteItemInputSchema.safeParse(it);
+      const r = quoteItemInputSchema.safeParse({
+        product_id: it.product_id,
+        description: it.description,
+        quantity: it.quantity,
+        unit: it.unit,
+        unit_price: it.unit_price === "" ? 0 : it.unit_price,
+        tax_pct: it.tax_pct === "" ? 0 : it.tax_pct,
+        fulfilment: it.fulfilment || null,
+      });
       if (!r.success) return toast.error(r.error.issues[0]?.message ?? "Invalid line item");
       parsedItems.push(r.data);
     }
@@ -360,70 +378,99 @@ function CreateQuoteDialog({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setItems((p) => [...p, emptyItem()])}
+                  onClick={() => setItems((p) => [...p, emptyItem(category)])}
                 >
                   <Plus className="mr-1 h-3 w-3" /> Add line
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {items.map((it) => (
                   <div
                     key={it.key}
-                    className="grid grid-cols-12 gap-2 rounded-sm border border-border bg-background p-2"
+                    className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
                   >
-                    <Input
-                      className="col-span-12 md:col-span-4"
-                      placeholder="Description"
-                      value={it.description}
-                      onChange={(e) => updateItem(it.key, { description: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-4 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      placeholder="Qty"
-                      value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-3 md:col-span-1"
-                      placeholder="Unit"
-                      value={it.unit ?? ""}
-                      onChange={(e) => updateItem(it.key, { unit: e.target.value })}
-                    />
-                    <Input
-                      className="col-span-5 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="Rate"
-                      value={it.unit_price}
-                      onChange={(e) => updateItem(it.key, { unit_price: Number(e.target.value) })}
-                    />
-                    <Input
-                      className="col-span-8 md:col-span-2"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="Tax %"
-                      value={it.tax_pct}
-                      onChange={(e) => updateItem(it.key, { tax_pct: Number(e.target.value) })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="col-span-4 md:col-span-1"
-                      aria-label="Remove line item"
-                      onClick={() => removeItem(it.key)}
-                      disabled={items.length === 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <LineField label="Description" className="col-span-12 md:col-span-4">
+                      <Input
+                        placeholder="e.g. Monsoon Black Crazy"
+                        value={it.description}
+                        onChange={(e) => updateItem(it.key, { description: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Quantity" className="col-span-6 md:col-span-1">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.quantity}
+                        onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Unit" className="col-span-6 md:col-span-1">
+                      <Input
+                        placeholder="sqft"
+                        value={it.unit ?? ""}
+                        onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.unit_price}
+                        onChange={(e) => updateItem(it.key, { unit_price: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="GST %" className="col-span-6 md:col-span-1">
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        value={it.tax_pct}
+                        onChange={(e) => updateItem(it.key, { tax_pct: e.target.value })}
+                      />
+                    </LineField>
+                    <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
+                      <Select
+                        value={it.fulfilment || "inherit"}
+                        onValueChange={(v) =>
+                          updateItem(it.key, {
+                            fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inherit">— Inherit quote —</SelectItem>
+                          {QUOTE_CATEGORIES.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {QUOTE_CATEGORY_LABELS[c]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </LineField>
+                    <div className="col-span-2 md:col-span-1 flex items-end justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove line item"
+                        onClick={() => removeItem(it.key)}
+                        disabled={items.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-
                 ))}
               </div>
               <div className="mt-2 flex justify-end gap-6 text-sm">
@@ -468,5 +515,22 @@ function CreateQuoteDialog({
         </QuickForm>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function LineField({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
+      {children}
+    </div>
   );
 }

@@ -4658,6 +4658,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          fulfilment: string | null
           id: string
           is_demo: boolean
           line_total: number
@@ -4672,6 +4673,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          fulfilment?: string | null
           id?: string
           is_demo?: boolean
           line_total?: number
@@ -4686,6 +4688,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          fulfilment?: string | null
           id?: string
           is_demo?: boolean
           line_total?: number
