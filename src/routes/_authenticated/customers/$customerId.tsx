@@ -151,10 +151,31 @@ function CustomerHub() {
                 icon: <History className="h-4 w-4" />,
                 onSelect: () => setTab("timeline"),
               },
+              ...(canTransfer
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="customer"
+          sourceId={customerId}
+          sourceLabel={c.name}
+          fromCustomerId={customerId}
+        />
+      )}
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
