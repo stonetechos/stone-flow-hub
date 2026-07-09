@@ -517,3 +517,20 @@ function CreateQuoteDialog({
     </Dialog>
   );
 }
+
+function LineField({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
+      {children}
+    </div>
+  );
+}
