@@ -34,7 +34,13 @@ import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
-import { quoteItemInputSchema, type QuoteItemInput } from "@/lib/quotes/schema";
+import {
+  quoteItemInputSchema,
+  QUOTE_CATEGORIES,
+  QUOTE_CATEGORY_LABELS,
+  type QuoteCategory,
+  type QuoteItemInput,
+} from "@/lib/quotes/schema";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { invalidateQuote } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
