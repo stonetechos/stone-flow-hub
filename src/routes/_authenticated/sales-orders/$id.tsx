@@ -117,10 +117,31 @@ function SalesOrderDetailPage() {
                     .getElementById("so-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(canTransfer && r.customer_id
+                ? [
+                    {
+                      label: "Transfer ownership",
+                      icon: <UserCheck className="h-4 w-4" />,
+                      onSelect: () => setTransferOpen(true),
+                      separatorBefore: true,
+                    },
+                  ]
+                : []),
             ]}
           />
         }
       />
+
+      {canTransfer && r.customer_id && (
+        <TransferOwnershipDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          sourceType="sales_order"
+          sourceId={id}
+          sourceLabel={r.so_no}
+          fromCustomerId={r.customer_id}
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
