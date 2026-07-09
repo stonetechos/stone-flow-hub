@@ -147,12 +147,27 @@ function QuoteDetailPage() {
             pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
             primary={
               <>
-                <Button
-                  size="sm"
-                  onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-                >
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </Button>
+                {isDraft && (
+                  <Button
+                    size="sm"
+                    onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                )}
+                {isAccepted && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => reviseMut.mutate()}
+                    disabled={reviseMut.isPending}
+                  >
+                    {reviseMut.isPending
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : <Copy className="mr-2 h-4 w-4" />}
+                    Create revision
+                  </Button>
+                )}
                 <Link
                   to="/sales-orders/new"
                   search={{
