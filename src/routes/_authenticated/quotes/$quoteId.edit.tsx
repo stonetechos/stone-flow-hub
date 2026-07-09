@@ -71,12 +71,19 @@ function EditQuotePage() {
         title={`Edit ${query.data.quote_no}`}
         subtitle="Update quote metadata."
         actions={
-          <Button
-            variant="ghost"
-            onClick={() => nav({ to: "/quotes/$quoteId", params: { quoteId } })}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
+          <div className="flex items-center gap-2">
+            {canReassign && (
+              <Button variant="outline" size="sm" onClick={() => setReassignOpen(true)}>
+                <UserCheck className="mr-2 h-4 w-4" /> Change customer
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={() => nav({ to: "/quotes/$quoteId", params: { quoteId } })}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+          </div>
         }
       />
       <QuickForm
