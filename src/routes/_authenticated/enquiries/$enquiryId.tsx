@@ -83,6 +83,9 @@ function EnquiryDetailPage() {
   const qc = useQueryClient();
   const [rfqOpen, setRfqOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
 
   const query = useQuery({
     queryKey: qk.enquiries.byId(enquiryId),
