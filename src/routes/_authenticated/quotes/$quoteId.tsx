@@ -109,12 +109,24 @@ function QuoteDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const reviseMut = useMutation({
+    mutationFn: () => reviseQuote(quoteId),
+    onSuccess: (rev) => {
+      toast.success(`Revision ${rev.quote_no} created as draft`);
+      qc.invalidateQueries({ queryKey: qk.quotes.all });
+      nav({ to: "/quotes/$quoteId/edit", params: { quoteId: rev.id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Quote not found." />;
 
   const quote = q.data;
   const canConvert = quote.status === "accepted";
+  const isDraft = quote.status === "draft";
+  const isAccepted = quote.status === "accepted";
 
   return (
     <div>
