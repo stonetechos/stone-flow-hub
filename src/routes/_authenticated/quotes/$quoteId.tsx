@@ -12,7 +12,10 @@ import {
   Share2,
   FolderOpen,
   History,
+  UserCheck,
 } from "lucide-react";
+import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
+import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
