@@ -5,10 +5,13 @@
  *  POST → delivery events (sent/delivered/read/failed) and inbound customer replies
  *
  * The verify token is read from the `WHATSAPP_VERIFY_TOKEN` secret and
- * (as a fallback) the `communication.whatsapp` app setting. Every event is
- * de-duplicated so re-deliveries by Meta never create duplicate rows.
+ * (as a fallback) the `communication.whatsapp` app setting. POSTs are
+ * authenticated via Meta's `X-Hub-Signature-256` HMAC using the
+ * `WHATSAPP_APP_SECRET` environment secret. Every event is de-duplicated so
+ * re-deliveries by Meta never create duplicate rows.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "crypto";
 
 export const Route = createFileRoute("/api/public/hooks/whatsapp")({
   server: {
