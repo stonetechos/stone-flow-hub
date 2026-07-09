@@ -215,19 +215,23 @@ function QuotesPage() {
   );
 }
 
-type FormItem = QuoteItemInput & { key: string };
+// Quantity is kept as a raw string in local form state so users can type freely
+// (decimals, backspaced values, empty state) without a numeric coerce hijacking
+// the cursor or dropping the trailing decimal point.
+type FormItem = Omit<QuoteItemInput, "quantity"> & { key: string; quantity: string };
 
 function emptyItem(): FormItem {
   return {
     key: Math.random().toString(36).slice(2),
     product_id: null,
     description: "",
-    quantity: 1,
+    quantity: "1",
     unit: "sqft",
     unit_price: 0,
     tax_pct: 18,
   };
 }
+
 
 function CreateQuoteDialog({
   open,
