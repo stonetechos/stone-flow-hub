@@ -307,12 +307,14 @@ function CreateQuoteDialog({
     mutation.mutate({
       project_id: projectId,
       enquiry_id: initialEnquiryId,
+      category: category || null,
       valid_until: validUntil || null,
       notes: notes || null,
       terms: terms || null,
       items: parsedItems,
     });
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
