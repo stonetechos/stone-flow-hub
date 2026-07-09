@@ -51,6 +51,9 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
 function ProjectHub() {
   const { projectId } = Route.useParams();
   const [tab, setTab] = useState("overview");
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
+  const [transferOpen, setTransferOpen] = useState(false);
   const q = useQuery({
     queryKey: qk.projects.byId(projectId),
     queryFn: () => getProject(projectId),
