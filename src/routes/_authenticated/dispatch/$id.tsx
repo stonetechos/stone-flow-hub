@@ -11,6 +11,8 @@ import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getDispatch } from "@/lib/dispatch/api";
+import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+
 
 export const Route = createFileRoute("/_authenticated/dispatch/$id")({
   ssr: false,
