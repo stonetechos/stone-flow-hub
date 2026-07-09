@@ -10,8 +10,16 @@ import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getQuote, updateQuote } from "@/lib/quotes/api";
