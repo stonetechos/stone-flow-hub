@@ -167,6 +167,8 @@ function CustomerHub() {
         }
       />
 
+      <GuidedNextStep entity="customer" entityId={customerId} />
+
       {canTransfer && (
         <TransferOwnershipDialog
           open={transferOpen}
