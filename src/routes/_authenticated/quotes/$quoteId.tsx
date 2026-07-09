@@ -67,6 +67,7 @@ function QuoteDetailPage() {
   const nav = useNavigate();
   const [confirmDel, setConfirmDel] = useState(false);
   const [reassignOpen, setReassignOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
 
