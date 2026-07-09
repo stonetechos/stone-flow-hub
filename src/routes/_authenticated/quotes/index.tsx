@@ -310,7 +310,15 @@ function CreateQuoteDialog({
     if (!projectId) return toast.error("Pick a project");
     const parsedItems: QuoteItemInput[] = [];
     for (const it of items) {
-      const r = quoteItemInputSchema.safeParse(it);
+      const r = quoteItemInputSchema.safeParse({
+        product_id: it.product_id,
+        description: it.description,
+        quantity: it.quantity,
+        unit: it.unit,
+        unit_price: it.unit_price === "" ? 0 : it.unit_price,
+        tax_pct: it.tax_pct === "" ? 0 : it.tax_pct,
+        fulfilment: it.fulfilment || null,
+      });
       if (!r.success) return toast.error(r.error.issues[0]?.message ?? "Invalid line item");
       parsedItems.push(r.data);
     }
