@@ -288,8 +288,9 @@ function NewPaymentPage() {
               type="number"
               min={0}
               step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              inputMode="decimal"
+              value={amount ? amount : ""}
+              onChange={(e) => setAmount(e.target.value === "" ? 0 : Number(e.target.value))}
               required
             />
           </Field>
