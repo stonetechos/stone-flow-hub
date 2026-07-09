@@ -30,6 +30,9 @@ function SalesOrderDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
+  const [transferOpen, setTransferOpen] = useState(false);
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
 
   const convertMut = useMutation({
