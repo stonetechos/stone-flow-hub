@@ -19,6 +19,7 @@ import { ArrowRight, Compass, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGuidedSkip } from "@/hooks/use-guided-skip";
+import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { nextGuidedStep, type GuidedEntity } from "@/lib/guided-workflow/steps";
 
 interface Props {
@@ -36,10 +37,12 @@ interface Props {
 }
 
 export function GuidedNextStep({ entity, entityId, hasNext, reasonOverride }: Props) {
+  const [enabled] = useGuidedEnabled();
   const step = nextGuidedStep(entity, entityId);
   const { skipped, skip } = useGuidedSkip(step?.skipKey);
 
-  if (!step || hasNext || skipped) return null;
+  if (!enabled || !step || hasNext || skipped) return null;
+
 
   return (
     <Card className="border-primary/30 bg-primary/[0.04] shadow-1">
