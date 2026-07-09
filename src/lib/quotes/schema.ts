@@ -26,6 +26,10 @@ export const quoteItemInputSchema = z.object({
   unit: zOptional(),
   unit_price: z.coerce.number().nonnegative(),
   tax_pct: z.coerce.number().min(0).max(100).default(0),
+  fulfilment: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.enum(QUOTE_CATEGORIES).nullable().optional(),
+  ),
 });
 export type QuoteItemInput = z.infer<typeof quoteItemInputSchema>;
 
