@@ -131,6 +131,16 @@ function EditQuotePage() {
           </Button>
         </QuickForm.Actions>
       </QuickForm>
+
+      {canReassign && (
+        <ReassignCustomerDialog
+          open={reassignOpen}
+          onOpenChange={setReassignOpen}
+          quoteId={quoteId}
+          quoteNo={query.data.quote_no}
+          currentCustomerId={query.data.customer_id}
+        />
+      )}
     </div>
   );
 }
