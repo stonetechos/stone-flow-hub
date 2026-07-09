@@ -3,6 +3,8 @@ import { z } from "zod";
 export const RECEIPT_METHODS = [
   "cash",
   "upi_manual",
+  "upi_bob_current",
+  "upi_personal",
   "neft",
   "rtgs",
   "imps",
@@ -14,6 +16,22 @@ export const RECEIPT_METHODS = [
   "other",
 ] as const;
 export type ReceiptMethod = (typeof RECEIPT_METHODS)[number];
+
+export const RECEIPT_METHOD_LABELS: Record<ReceiptMethod, string> = {
+  cash: "Cash Received",
+  upi_manual: "UPI",
+  upi_bob_current: "UPI – Stone Tech BOB Current A/c",
+  upi_personal: "UPI – Personal Account",
+  neft: "NEFT",
+  rtgs: "RTGS",
+  imps: "IMPS",
+  bank_transfer: "Bank Transfer",
+  cheque: "Cheque",
+  card: "Card",
+  razorpay: "Razorpay",
+  gateway: "Gateway",
+  other: "Other",
+};
 
 export const receiptAllocationSchema = z.object({
   invoice_id: z.string().uuid(),
