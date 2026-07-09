@@ -43,6 +43,9 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 function CustomerHub() {
   const { customerId } = Route.useParams();
   const [tab, setTab] = useState("overview");
+  const roles = useRoles();
+  const canTransfer = roles.isAdmin || roles.isSalesManager;
+  const [transferOpen, setTransferOpen] = useState(false);
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
