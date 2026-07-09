@@ -262,7 +262,7 @@ function CreateQuoteDialog({
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
-  const [items, setItems] = useState<FormItem[]>([emptyItem()]);
+  const [items, setItems] = useState<FormItem[]>([emptyItem("")]);
 
   useEffect(() => {
     if (open) {
@@ -271,7 +271,7 @@ function CreateQuoteDialog({
       setValidUntil("");
       setNotes("");
       setTerms("");
-      setItems([emptyItem()]);
+      setItems([emptyItem("")]);
     }
   }, [open, initialProjectId]);
 
