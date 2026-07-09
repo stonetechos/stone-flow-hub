@@ -372,13 +372,13 @@ function CreateQuoteDialog({
                     className="grid grid-cols-12 gap-2 rounded-sm border border-border bg-background p-2"
                   >
                     <Input
-                      className="col-span-5"
+                      className="col-span-12 md:col-span-4"
                       placeholder="Description"
                       value={it.description}
                       onChange={(e) => updateItem(it.key, { description: e.target.value })}
                     />
                     <Input
-                      className="col-span-1"
+                      className="col-span-4 md:col-span-2"
                       type="number"
                       inputMode="decimal"
                       step="0.01"
@@ -387,24 +387,25 @@ function CreateQuoteDialog({
                       value={it.quantity}
                       onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
                     />
-
                     <Input
-                      className="col-span-1"
+                      className="col-span-3 md:col-span-1"
                       placeholder="Unit"
                       value={it.unit ?? ""}
                       onChange={(e) => updateItem(it.key, { unit: e.target.value })}
                     />
                     <Input
-                      className="col-span-2"
+                      className="col-span-5 md:col-span-2"
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
                       placeholder="Rate"
                       value={it.unit_price}
                       onChange={(e) => updateItem(it.key, { unit_price: Number(e.target.value) })}
                     />
                     <Input
-                      className="col-span-2"
+                      className="col-span-8 md:col-span-2"
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
                       placeholder="Tax %"
                       value={it.tax_pct}
@@ -414,7 +415,7 @@ function CreateQuoteDialog({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="col-span-1"
+                      className="col-span-4 md:col-span-1"
                       aria-label="Remove line item"
                       onClick={() => removeItem(it.key)}
                       disabled={items.length === 1}
@@ -422,6 +423,7 @@ function CreateQuoteDialog({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+
                 ))}
               </div>
               <div className="mt-2 flex justify-end gap-6 text-sm">
