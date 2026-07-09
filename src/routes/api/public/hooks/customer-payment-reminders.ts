@@ -1,22 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "crypto";
 
 /**
- * Cron endpoint — pg_cron POSTs here daily to run the reminder generator.
- * Public prefix, but SUPABASE anon key required in the `apikey` header.
- * All privileged work happens inside the SQL SECURITY DEFINER function.
+ * Cron endpoint — pg_cron / external scheduler POSTs here daily to run the
+ * reminder generator. Auth is enforced via a shared CRON_SECRET bearer token;
+ * the underlying SECURITY DEFINER RPC is only granted to `service_role`, so
+ * the handler uses the service-role admin client after the bearer is verified.
  */
 export const Route = createFileRoute("/api/public/hooks/customer-payment-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const auth = request.headers.get("apikey") ?? request.headers.get("authorization");
-        if (!auth) return new Response("Missing apikey", { status: 401 });
+        const cronSecret = process.env.CRON_SECRET;
+        if (!cronSecret) {
+          return new Response("Cron secret not configured", { status: 500 });
+        }
+        const header =
+          request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+          request.headers.get("x-cron-secret") ??
+          "";
+        const a = Buffer.from(header);
+        const b = Buffer.from(cronSecret);
+        if (a.length !== b.length || !timingSafeEqual(a, b)) {
+          // Prevent length-based side channel by hashing both sides
+          const ha = createHmac("sha256", cronSecret).update(header).digest();
+          const hb = createHmac("sha256", cronSecret).update(cronSecret).digest();
+          if (!timingSafeEqual(ha, hb)) {
+            return new Response("Unauthorized", { status: 401 });
+          }
+        }
 
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(process.env.SUPABASE_URL!, auth.replace(/^Bearer\s+/i, ""), {
-          auth: { autoRefreshToken: false, persistSession: false },
-        });
-        const { data, error } = await supabase.rpc("generate_customer_payment_reminders");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data, error } = await supabaseAdmin.rpc("generate_customer_payment_reminders");
         if (error) {
           return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
