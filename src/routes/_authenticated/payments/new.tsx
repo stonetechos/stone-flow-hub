@@ -168,8 +168,9 @@ function NewPaymentPage() {
               type="number"
               min={0}
               step="0.01"
-              value={form.amount}
-              onChange={(e) => set("amount", Number(e.target.value))}
+              inputMode="decimal"
+              value={form.amount ? form.amount : ""}
+              onChange={(e) => set("amount", e.target.value === "" ? 0 : Number(e.target.value))}
               required
             />
           </Field>
@@ -287,8 +288,9 @@ function NewPaymentPage() {
               type="number"
               min={0}
               step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              inputMode="decimal"
+              value={amount ? amount : ""}
+              onChange={(e) => setAmount(e.target.value === "" ? 0 : Number(e.target.value))}
               required
             />
           </Field>
