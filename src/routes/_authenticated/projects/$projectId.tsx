@@ -27,6 +27,7 @@ import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -186,6 +187,8 @@ function ProjectHub() {
           />
         }
       />
+
+      <GuidedNextStep entity="project" entityId={projectId} />
 
       {canTransfer && p.customer_id && (
         <TransferOwnershipDialog
