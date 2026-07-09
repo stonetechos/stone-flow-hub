@@ -13,6 +13,7 @@ import {
   FolderOpen,
   History,
   UserCheck,
+  Copy,
 } from "lucide-react";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
