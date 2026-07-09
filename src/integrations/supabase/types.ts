@@ -4716,6 +4716,7 @@ export type Database = {
       }
       quotes: {
         Row: {
+          category: string | null
           company_id: string | null
           created_at: string
           created_by: string | null
@@ -4741,6 +4742,7 @@ export type Database = {
           workflow_state: Json | null
         }
         Insert: {
+          category?: string | null
           company_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -4766,6 +4768,7 @@ export type Database = {
           workflow_state?: Json | null
         }
         Update: {
+          category?: string | null
           company_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -7012,6 +7015,7 @@ export type Database = {
       reassign_quote_customer: {
         Args: { p_new_customer_id: string; p_quote_id: string }
         Returns: {
+          category: string | null
           company_id: string | null
           created_at: string
           created_by: string | null
