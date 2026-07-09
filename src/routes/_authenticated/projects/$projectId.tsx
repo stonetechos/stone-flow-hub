@@ -188,6 +188,8 @@ function ProjectHub() {
         }
       />
 
+      <GuidedNextStep entity="project" entityId={projectId} />
+
       {canTransfer && p.customer_id && (
         <TransferOwnershipDialog
           open={transferOpen}
