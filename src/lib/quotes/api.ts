@@ -152,6 +152,86 @@ export async function deleteQuote(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
+/** 1-click conversion: create a Sales Order from an existing Quote (all header fields
+ *  copied; line items remain linked via the SO's quote_id reference). */
+export async function convertQuoteToSalesOrder(
+  quoteId: string,
+): Promise<DbTable<"sales_orders">> {
+  const quote = await getQuote(quoteId);
+  if (!quote) throw new AppError("Quote not found", "NOT_FOUND", 404);
+
+  // Return the existing SO if one has already been created from this quote.
+  const { data: existing } = await supabase
+    .from("sales_orders")
+    .select("*")
+    .eq("quote_id", quoteId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (existing) return existing;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from("sales_orders")
+    .insert({
+      so_no: "",
+      quote_id: quote.id,
+      project_id: quote.project_id ?? null,
+      customer_id: quote.customer_id ?? null,
+      status: "draft",
+      order_date: today,
+      delivery_date: quote.valid_until ?? null,
+      notes: quote.notes ?? null,
+    })
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+/** Look up the sales order created from a given quote, if any. */
+export async function getSalesOrderForQuote(
+  quoteId: string,
+): Promise<Pick<DbTable<"sales_orders">, "id" | "so_no"> | null> {
+  const { data, error } = await supabase
+    .from("sales_orders")
+    .select("id, so_no")
+    .eq("quote_id", quoteId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? null;
+}
+
+/** Look up the (latest) quote created from a given estimate, if any. */
+export async function getQuoteForEstimate(
+  estimateId: string,
+): Promise<Pick<QuoteRow, "id" | "quote_no" | "status"> | null> {
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, quote_no, status")
+    .eq("estimate_id", estimateId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? null;
+}
+
+/** Look up the source estimate for a quote (header fields only). */
+export async function getEstimateForQuote(
+  estimateId: string,
+): Promise<{ id: string; estimate_no: string } | null> {
+  const { data, error } = await supabase
+    .from("estimates")
+    .select("id, estimate_no")
+    .eq("id", estimateId)
+    .maybeSingle();
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? null;
+}
+
 /* ------------------------------------------------------------------ */
 /* Draft-only line item editing                                        */
 /* ------------------------------------------------------------------ */
