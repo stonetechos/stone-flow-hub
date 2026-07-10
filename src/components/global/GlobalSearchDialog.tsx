@@ -1,5 +1,5 @@
 /** Global command-palette search. Cmd/Ctrl+K opens. */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -14,7 +14,9 @@ import {
 import { qk } from "@/lib/query-keys";
 import { globalSearch, type SearchGroupKey, type SearchHit } from "@/lib/search/api";
 import { listRecent, subscribeRecent } from "@/lib/recent/store";
-import { Clock } from "lucide-react";
+import { Clock, Compass } from "lucide-react";
+import { resolveNav, useNavPreferences, useRecentNav } from "@/lib/nav/preferences";
+import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 
 const GROUP_ORDER: ReadonlyArray<SearchGroupKey> = [
   "customers",
