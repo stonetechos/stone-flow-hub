@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Building2, ExternalLink } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -12,26 +12,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -62,8 +55,24 @@ function ProjectsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProjectWithCustomer | null>(null);
   const [toDelete, setToDelete] = useState<ProjectWithCustomer | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("projects");
+
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "code", label: "Code", required: true },
+      { key: "name", label: "Name", required: true },
+      { key: "customer", label: "Customer" },
+      { key: "type", label: "Type" },
+      { key: "city", label: "City" },
+      { key: "stage", label: "Stage" },
+    ],
+    [],
+  );
 
   const query = useQuery({ queryKey: qk.projects.list(dq), queryFn: () => listProjects(dq) });
+  useEffect(() => setPage(1), [dq]);
 
   useEffect(() => {
     if (!edit) return;
@@ -85,96 +94,93 @@ function ProjectsPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const rows = query.data ?? [];
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const openCreate = () => { setEditing(null); setFormOpen(true); };
+
   return (
     <div>
-      <PageHeader
-        title="Projects"
-        subtitle="Every enquiry lives inside a project."
-        actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> New project
+      <PageHeader title="Projects" subtitle="Every enquiry lives inside a project." />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Search by name, code, city…"
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={openCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New project
           </Button>
         }
       />
-      <div className="mb-3 flex items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, code, city…"
-          className="max-w-md"
-        />
-      </div>
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<Building2 className="h-6 w-6" />}
           title="No projects yet"
           message="Create a project against a customer to start tracking enquiries."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+            <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> New project
             </Button>
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Stage</TableHead>
+                {!isHidden("code") && <TableHead>Code</TableHead>}
+                {!isHidden("name") && <TableHead>Name</TableHead>}
+                {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                {!isHidden("type") && <TableHead>Type</TableHead>}
+                {!isHidden("city") && <TableHead>City</TableHead>}
+                {!isHidden("stage") && <TableHead>Stage</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((p) => (
+              {pageRows.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/projects/$projectId"
-                      params={{ projectId: p.id }}
-                      className="hover:underline"
-                    >
-                      {p.project_code}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link
-                      to="/projects/$projectId"
-                      params={{ projectId: p.id }}
-                      className="hover:underline"
-                    >
-                      {p.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{p.customer?.name ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="capitalize">
-                      {p.project_type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{p.city ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge>
-                  </TableCell>
+                  {!isHidden("code") && (
+                    <TableCell className="font-mono text-xs">
+                      <Link to="/projects/$projectId" params={{ projectId: p.id }} className="hover:underline">
+                        {p.project_code}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {!isHidden("name") && (
+                    <TableCell className="font-medium">
+                      <Link to="/projects/$projectId" params={{ projectId: p.id }} className="hover:underline">
+                        {p.name}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {!isHidden("customer") && <TableCell>{p.customer?.name ?? "—"}</TableCell>}
+                  {!isHidden("type") && (
+                    <TableCell><Badge variant="secondary" className="capitalize">{p.project_type}</Badge></TableCell>
+                  )}
+                  {!isHidden("city") && <TableCell>{p.city ?? "—"}</TableCell>}
+                  {!isHidden("stage") && (
+                    <TableCell><Badge variant="outline">{LEAD_STAGE_LABEL[p.stage]}</Badge></TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       extra={
@@ -184,10 +190,7 @@ function ProjectsPage() {
                           </Link>
                         </DropdownMenuItem>
                       }
-                      onEdit={() => {
-                        setEditing(p);
-                        setFormOpen(true);
-                      }}
+                      onEdit={() => { setEditing(p); setFormOpen(true); }}
                       onDelete={() => setToDelete(p)}
                     />
                   </TableCell>
@@ -195,7 +198,7 @@ function ProjectsPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
       <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
@@ -204,9 +207,7 @@ function ProjectsPage() {
         onOpenChange={(o) => !o && setToDelete(null)}
         entityType="project"
         entityId={toDelete?.id ?? null}
-        entityLabel={
-          toDelete ? `${toDelete.name} (${toDelete.project_code})` : ""
-        }
+        entityLabel={toDelete ? `${toDelete.name} (${toDelete.project_code})` : ""}
         busy={delMut.isPending}
         onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />

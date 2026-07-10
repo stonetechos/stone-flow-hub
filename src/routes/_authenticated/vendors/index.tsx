@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Factory, ExternalLink } from "lucide-react";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -12,21 +12,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
 import { LifecycleMenuItems } from "@/components/mdm/LifecycleMenu";
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
 import { qk } from "@/lib/query-keys";
 import { invalidateVendor, seedPickerCache } from "@/lib/query-invalidation";
@@ -57,8 +55,24 @@ function VendorsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<VendorRow | null>(null);
   const [toDelete, setToDelete] = useState<VendorRow | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("vendors");
+
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "code", label: "Code", required: true },
+      { key: "company", label: "Company", required: true },
+      { key: "city", label: "City" },
+      { key: "gst", label: "GST" },
+      { key: "terms", label: "Payment terms" },
+      { key: "status", label: "Status" },
+    ],
+    [],
+  );
 
   const query = useQuery({ queryKey: qk.vendors.list(dq), queryFn: () => listVendors(dq) });
+  useEffect(() => setPage(1), [dq]);
 
   useEffect(() => {
     if (!edit) return;
@@ -80,87 +94,92 @@ function VendorsPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const rows = query.data ?? [];
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const openCreate = () => { setEditing(null); setFormOpen(true); };
+
   return (
     <div>
-      <PageHeader
-        title="Vendors"
-        subtitle="Suppliers you send RFQs to."
-        actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> New vendor
+      <PageHeader title="Vendors" subtitle="Suppliers you send RFQs to." />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Search by company, code, city…"
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={openCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New vendor
           </Button>
         }
       />
-      <div className="mb-3 flex items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by company, code, city…"
-          className="max-w-md"
-        />
-      </div>
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<Factory className="h-6 w-6" />}
           title="No vendors yet"
           message="Add your first vendor to start sending RFQs."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+            <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> New vendor
             </Button>
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>GST</TableHead>
-                <TableHead>Payment terms</TableHead>
-                <TableHead>Status</TableHead>
+                {!isHidden("code") && <TableHead>Code</TableHead>}
+                {!isHidden("company") && <TableHead>Company</TableHead>}
+                {!isHidden("city") && <TableHead>City</TableHead>}
+                {!isHidden("gst") && <TableHead>GST</TableHead>}
+                {!isHidden("terms") && <TableHead>Payment terms</TableHead>}
+                {!isHidden("status") && <TableHead>Status</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((v) => {
+              {pageRows.map((v) => {
                 const status = ((v as unknown as { lifecycle_status?: LifecycleStatus })
                   .lifecycle_status ?? (v.is_active ? "active" : "inactive")) as LifecycleStatus;
                 return (
                   <TableRow key={v.id}>
-                    <TableCell className="font-mono text-xs">
-                      <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
-                        {v.vendor_code}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
-                        {v.company_name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{v.city ?? "—"}</TableCell>
-                    <TableCell>{v.gst_number ?? "—"}</TableCell>
-                    <TableCell>{v.payment_terms ?? "—"}</TableCell>
-                    <TableCell>
-                      <LifecycleBadge status={status} />
-                    </TableCell>
+                    {!isHidden("code") && (
+                      <TableCell className="font-mono text-xs">
+                        <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                          {v.vendor_code}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("company") && (
+                      <TableCell className="font-medium">
+                        <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                          {v.company_name}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}
+                    {!isHidden("gst") && <TableCell>{v.gst_number ?? "—"}</TableCell>}
+                    {!isHidden("terms") && <TableCell>{v.payment_terms ?? "—"}</TableCell>}
+                    {!isHidden("status") && <TableCell><LifecycleBadge status={status} /></TableCell>}
                     <TableCell>
                       <RowActions
                         extra={
@@ -171,17 +190,10 @@ function VendorsPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <LifecycleMenuItems
-                              entityType="vendor"
-                              entityId={v.id}
-                              currentStatus={status}
-                            />
+                            <LifecycleMenuItems entityType="vendor" entityId={v.id} currentStatus={status} />
                           </>
                         }
-                        onEdit={() => {
-                          setEditing(v);
-                          setFormOpen(true);
-                        }}
+                        onEdit={() => { setEditing(v); setFormOpen(true); }}
                         onDelete={() => setToDelete(v)}
                       />
                     </TableCell>
@@ -190,7 +202,7 @@ function VendorsPage() {
               })}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
       <VendorFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
@@ -199,9 +211,7 @@ function VendorsPage() {
         onOpenChange={(o) => !o && setToDelete(null)}
         entityType="vendor"
         entityId={toDelete?.id ?? null}
-        entityLabel={
-          toDelete ? `${toDelete.company_name} (${toDelete.vendor_code})` : ""
-        }
+        entityLabel={toDelete ? `${toDelete.company_name} (${toDelete.vendor_code})` : ""}
         busy={delMut.isPending}
         onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />

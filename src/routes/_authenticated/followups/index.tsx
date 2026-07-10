@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, CalendarClock, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -9,27 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -68,12 +61,24 @@ function FollowupsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FollowupWithEnquiry | null>(null);
   const [toDelete, setToDelete] = useState<FollowupWithEnquiry | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("followups");
 
-  const query = useQuery({
-    queryKey: qk.followups.scope(scope),
-    queryFn: () => listFollowups(scope),
-  });
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "when", label: "When", required: true },
+      { key: "enquiry", label: "Enquiry" },
+      { key: "customer", label: "Customer" },
+      { key: "channel", label: "Channel" },
+      { key: "status", label: "Status" },
+      { key: "notes", label: "Notes" },
+    ],
+    [],
+  );
 
+  const query = useQuery({ queryKey: qk.followups.scope(scope), queryFn: () => listFollowups(scope) });
+  useEffect(() => setPage(1), [scope]);
 
   const completeMut = useMutation({
     mutationFn: (id: string) => completeFollowup({ id }),
@@ -94,108 +99,101 @@ function FollowupsPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const rows = query.data ?? [];
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const openCreate = () => { setEditing(null); setFormOpen(true); };
+
   return (
     <div>
-      <PageHeader
-        title="Follow-ups"
-        subtitle="Keep every lead moving."
-        actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> New follow-up
+      <PageHeader title="Follow-ups" subtitle="Keep every lead moving." />
+
+      <DataToolbar
+        count={rows.length}
+        primaryFilter={
+          <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
+            <TabsList className="h-8">
+              <TabsTrigger value="today" className="h-7 text-xs">Today</TabsTrigger>
+              <TabsTrigger value="pending" className="h-7 text-xs">All pending</TabsTrigger>
+              <TabsTrigger value="all" className="h-7 text-xs">All</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={openCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New follow-up
           </Button>
         }
       />
 
-      <div className="mb-3">
-        <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
-          <TabsList>
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="pending">All pending</TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<CalendarClock className="h-6 w-6" />}
           title="Nothing scheduled"
           message="Add a follow-up so nothing slips through the cracks."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+            <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> New follow-up
             </Button>
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>When</TableHead>
-                <TableHead>Enquiry</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
+                {!isHidden("when") && <TableHead>When</TableHead>}
+                {!isHidden("enquiry") && <TableHead>Enquiry</TableHead>}
+                {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                {!isHidden("channel") && <TableHead>Channel</TableHead>}
+                {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("notes") && <TableHead>Notes</TableHead>}
                 <TableHead className="w-24" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((f) => (
+              {pageRows.map((f) => (
                 <TableRow key={f.id}>
-                  <TableCell className="whitespace-nowrap">
-                    <Link
-                      to="/followups/$id"
-                      params={{ id: f.id }}
-                      className="text-primary hover:underline"
-                    >
-                      {new Date(f.scheduled_at).toLocaleString("en-IN", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {f.enquiry ? (
-                      <Link
-                        to="/enquiries/$enquiryId"
-                        params={{ enquiryId: f.enquiry.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {f.enquiry.enquiry_no}
+                  {!isHidden("when") && (
+                    <TableCell className="whitespace-nowrap">
+                      <Link to="/followups/$id" params={{ id: f.id }} className="text-primary hover:underline">
+                        {new Date(f.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                       </Link>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>{f.enquiry?.customer?.name ?? "—"}</TableCell>
-                  <TableCell className="capitalize">{f.channel.replace("_", " ")}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={f.status === "done" ? "secondary" : "outline"}
-                      className="capitalize"
-                    >
-                      {f.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">
-                    {f.notes ?? "—"}
-                  </TableCell>
+                    </TableCell>
+                  )}
+                  {!isHidden("enquiry") && (
+                    <TableCell className="font-mono text-xs">
+                      {f.enquiry ? (
+                        <Link to="/enquiries/$enquiryId" params={{ enquiryId: f.enquiry.id }} className="text-primary hover:underline">
+                          {f.enquiry.enquiry_no}
+                        </Link>
+                      ) : "—"}
+                    </TableCell>
+                  )}
+                  {!isHidden("customer") && <TableCell>{f.enquiry?.customer?.name ?? "—"}</TableCell>}
+                  {!isHidden("channel") && <TableCell className="capitalize">{f.channel.replace("_", " ")}</TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <Badge variant={f.status === "done" ? "secondary" : "outline"} className="capitalize">{f.status}</Badge>
+                    </TableCell>
+                  )}
+                  {!isHidden("notes") && <TableCell className="max-w-xs truncate text-muted-foreground">{f.notes ?? "—"}</TableCell>}
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {f.status === "pending" && (
@@ -212,10 +210,7 @@ function FollowupsPage() {
                         </Button>
                       )}
                       <RowActions
-                        onEdit={() => {
-                          setEditing(f);
-                          setFormOpen(true);
-                        }}
+                        onEdit={() => { setEditing(f); setFormOpen(true); }}
                         onDelete={() => setToDelete(f)}
                       />
                     </div>
@@ -224,7 +219,7 @@ function FollowupsPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
       <FollowupFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />

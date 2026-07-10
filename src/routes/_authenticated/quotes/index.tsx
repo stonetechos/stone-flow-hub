@@ -11,26 +11,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createQuote, deleteQuote, listQuotes, type QuoteListItem } from "@/lib/quotes/api";
@@ -65,8 +58,24 @@ function QuotesPage() {
   const [statusFilter, setStatusFilter] = useState<string>(params.status ?? "all");
   const [open, setOpen] = useState(false);
   const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("quotes");
   const nav = useNavigate();
   const qc = useQueryClient();
+
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "no", label: "No.", required: true },
+      { key: "project", label: "Project" },
+      { key: "customer", label: "Customer" },
+      { key: "status", label: "Status" },
+      { key: "total", label: "Total" },
+      { key: "valid", label: "Valid until" },
+    ],
+    [],
+  );
+
   const query = useQuery({ queryKey: qk.quotes.list(dq), queryFn: () => listQuotes(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteQuote(id),
@@ -80,57 +89,52 @@ function QuotesPage() {
   const rows = (query.data ?? []).filter(
     (r) => statusFilter === "all" || r.status === statusFilter,
   );
+  useEffect(() => setPage(1), [dq, statusFilter]);
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
-    if (params.new) {
-      setOpen(true);
-    }
+    if (params.new) setOpen(true);
   }, [params.new]);
   useEffect(() => {
-    if (params.status && params.status !== statusFilter) {
-      setStatusFilter(params.status);
-    }
+    if (params.status && params.status !== statusFilter) setStatusFilter(params.status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.status]);
 
-
   return (
     <div>
-      <PageHeader
-        title="Quotes"
-        subtitle="Send priced offers, then convert to invoice."
-        actions={
-          <Button onClick={() => setOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New quote
+      <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Search by quote no…"
+        primaryFilter={
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-40 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="accepted">Accepted</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="converted">Converted</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New quote
           </Button>
         }
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by quote no…"
-          className="max-w-md"
-        />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-            <SelectItem value="accepted">Accepted</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="converted">Converted</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -145,40 +149,47 @@ function QuotesPage() {
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>No.</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Valid Until</TableHead>
+                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("project") && <TableHead>Project</TableHead>}
+                {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
+                {!isHidden("valid") && <TableHead>Valid until</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((r) => (
+              {pageRows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/quotes/$quoteId"
-                      params={{ quoteId: r.id }}
-                      className="text-primary hover:underline"
-                    >
-                      {r.quote_no}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
-                  <TableCell>{r.customer?.name ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {r.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{formatInr(r.total)}</TableCell>
-                  <TableCell>{r.valid_until ?? "—"}</TableCell>
+                  {!isHidden("no") && (
+                    <TableCell className="font-mono text-xs">
+                      <Link to="/quotes/$quoteId" params={{ quoteId: r.id }} className="text-primary hover:underline">
+                        {r.quote_no}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {!isHidden("project") && <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
+                  )}
+                  {!isHidden("total") && <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>}
+                  {!isHidden("valid") && <TableCell>{r.valid_until ?? "—"}</TableCell>}
                   <TableCell>
                     <RowActions
                       onEdit={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })}
@@ -189,7 +200,7 @@ function QuotesPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
       <SafeDeleteDialog
