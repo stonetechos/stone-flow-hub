@@ -101,3 +101,79 @@ export async function listSalesOrdersForPicker(): Promise<
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
 }
+
+/* ------------------------------------------------------------------ */
+/* Sales order line items (independent snapshot)                       */
+/* ------------------------------------------------------------------ */
+export type SalesOrderItemRow = DbTable<"sales_order_items">;
+
+export async function listSalesOrderItems(salesOrderId: string): Promise<SalesOrderItemRow[]> {
+  const { data, error } = await supabase
+    .from("sales_order_items")
+    .select("*")
+    .eq("sales_order_id", salesOrderId)
+    .order("sort_order", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? [];
+}
+
+export type SalesOrderItemPatch = Partial<{
+  product_id: string | null;
+  product_name: string | null;
+  description: string;
+  category: string | null;
+  stone_type: string | null;
+  finish: string | null;
+  size: string | null;
+  unit: string | null;
+  quantity: number;
+  unit_price: number;
+  discount_pct: number;
+  tax_pct: number;
+  fulfilment: string | null;
+  sort_order: number;
+}>;
+
+export async function addSalesOrderItem(
+  salesOrderId: string,
+  patch: SalesOrderItemPatch & { description: string; quantity: number; unit_price: number },
+): Promise<SalesOrderItemRow> {
+  const { data: existing, error: exErr } = await supabase
+    .from("sales_order_items")
+    .select("sort_order")
+    .eq("sales_order_id", salesOrderId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  if (exErr) throw new AppError(mapDbError(exErr));
+  const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
+  const { data, error } = await supabase
+    .from("sales_order_items")
+    .insert({
+      sales_order_id: salesOrderId,
+      sort_order: patch.sort_order ?? nextSort,
+      ...patch,
+    } as never)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function updateSalesOrderItem(
+  itemId: string,
+  patch: SalesOrderItemPatch,
+): Promise<SalesOrderItemRow> {
+  const { data, error } = await supabase
+    .from("sales_order_items")
+    .update(patch as never)
+    .eq("id", itemId)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteSalesOrderItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from("sales_order_items").delete().eq("id", itemId);
+  if (error) throw new AppError(mapDbError(error));
+}
