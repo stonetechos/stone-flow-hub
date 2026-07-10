@@ -26,6 +26,71 @@ export function toUserMessage(err: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
+/** True in dev / preview / non-production builds — diagnostics are appended then. */
+function isDiagnosticsMode(): boolean {
+  try {
+    if (typeof import.meta !== "undefined" && import.meta.env) {
+      if (import.meta.env.DEV) return true;
+      if (import.meta.env.MODE && import.meta.env.MODE !== "production") return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location?.hostname ?? "";
+    if (/localhost|127\.0\.0\.1|lovable\.app|lovableproject\.com/.test(host)) return true;
+  }
+  return false;
+}
+
+/**
+ * Extract the failing database object (function, trigger, relation, constraint)
+ * from a raw Postgres error so users see the *actual* cause, not a generic
+ * "Permission denied".
+ */
+function extractDbObject(msg: string, details = "", hint = ""): string | null {
+  const all = `${msg}\n${details}\n${hint}`;
+  const patterns: Array<[RegExp, string]> = [
+    [/permission denied for function\s+([a-zA-Z0-9_.]+)/i, "function"],
+    [/permission denied for table\s+([a-zA-Z0-9_.]+)/i, "table"],
+    [/permission denied for relation\s+([a-zA-Z0-9_.]+)/i, "relation"],
+    [/permission denied for schema\s+([a-zA-Z0-9_.]+)/i, "schema"],
+    [/permission denied for sequence\s+([a-zA-Z0-9_.]+)/i, "sequence"],
+    [/function\s+([a-zA-Z0-9_.]+\([^)]*\))\s+does not exist/i, "function"],
+    [/relation\s+"?([a-zA-Z0-9_.]+)"?\s+does not exist/i, "relation"],
+    [/violates foreign key constraint\s+"([^"]+)"/i, "fk"],
+    [/violates unique constraint\s+"([^"]+)"/i, "unique"],
+    [/violates check constraint\s+"([^"]+)"/i, "check"],
+    [/violates not-null constraint.*column\s+"([^"]+)"/is, "column"],
+    [/null value in column\s+"([^"]+)"/i, "column"],
+    [/new row violates row-level security policy(?:\s+for table\s+"([^"]+)")?/i, "rls"],
+    [/in function\s+([a-zA-Z0-9_.]+)/i, "function"],
+    [/in trigger\s+([a-zA-Z0-9_.]+)/i, "trigger"],
+  ];
+  for (const [re, kind] of patterns) {
+    const m = all.match(re);
+    if (m?.[1]) return `${kind}: ${m[1]}`;
+    if (m && kind === "rls") return "rls policy";
+  }
+  return null;
+}
+
+/** Compact diagnostic suffix so devs immediately see the real DB object. */
+function buildDiagnostic(err: {
+  code?: string;
+  message?: string;
+  details?: string | null;
+  hint?: string | null;
+}): string {
+  const parts: string[] = [];
+  if (err.code) parts.push(`SQLSTATE ${err.code}`);
+  const obj = extractDbObject(err.message ?? "", err.details ?? "", err.hint ?? "");
+  if (obj) parts.push(obj);
+  if (err.details) parts.push(`detail: ${err.details}`);
+  if (err.hint) parts.push(`hint: ${err.hint}`);
+  return parts.length ? ` [${parts.join(" | ")}]` : "";
+}
+
 /** Map Postgres / PostgREST errors to friendly text. */
 export function mapDbError(
   err: { code?: string; message?: string; details?: string | null; hint?: string | null } | null,
@@ -39,50 +104,83 @@ export function mapDbError(
   // Log the raw error so devs can see the real reason regardless of what we surface.
   if (typeof console !== "undefined") {
     recordDbErrorForDiagnostics(err);
-    console.error("[db error]", { code: err.code, message: msg, details, hint });
+    console.error("[db error]", {
+      code: err.code,
+      message: msg,
+      details,
+      hint,
+      object: extractDbObject(msg, details, hint),
+    });
   }
+
+  const diag = isDiagnosticsMode() ? buildDiagnostic(err) : "";
+  const withDiag = (base: string) => `${base}${diag}`;
 
   switch (err.code) {
     case "23505":
-      return details ? `Duplicate value: ${details}` : "A record with the same details already exists.";
+      return withDiag(details ? `Duplicate value: ${details}` : "A record with the same details already exists.");
     case "23503":
-      return "This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.";
+      return withDiag("This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.");
     case "23502":
-      return details ? `Required field missing: ${details}` : "A required field is missing.";
+      return withDiag(details ? `Required field missing: ${details}` : "A required field is missing.");
     case "23514":
-      return details ? `Constraint violation: ${details}` : "That value doesn't meet a required rule. Check the highlighted fields.";
+      return withDiag(details ? `Constraint violation: ${details}` : "That value doesn't meet a required rule.");
     case "22P02":
-      return msg || "One of the fields has an invalid value.";
+      return withDiag(msg || "One of the fields has an invalid value.");
     case "22001":
-      return "One of the values is too long for its field.";
+      return withDiag("One of the values is too long for its field.");
     case "22007":
     case "22008":
-      return "Invalid date or time value.";
+      return withDiag("Invalid date or time value.");
     case "40001":
     case "40P01":
-      return "The database is busy. Please try again.";
+      return withDiag("The database is busy. Please try again.");
     case "57014":
-      return "The operation timed out. Please try again.";
-    case "42501":
-      // RLS row-violation on insert/update also uses 42501 — surface distinctly.
+      return withDiag("The operation timed out. Please try again.");
+    case "42883":
+      // undefined_function — often a missing overload; surface the raw message
+      return withDiag(msg || "A required database function is missing.");
+    case "42P01":
+      return withDiag(msg || "A referenced table does not exist.");
+    case "42703":
+      return withDiag(msg || "A referenced column does not exist.");
+    case "42501": {
+      // 42501 conflates THREE distinct failures. Distinguish them precisely
+      // and always include the failing object so we never hide the real cause.
+      const obj = extractDbObject(msg, details, hint);
       if (/new row violates row-level security/i.test(combined)) {
-        return "This record can't be saved with the current values (row-level security). Check owner/user fields.";
+        return withDiag(
+          obj
+            ? `Row-level security blocked this write (${obj}). Check owner/user fields.`
+            : "Row-level security blocked this write. Check owner/user fields.",
+        );
+      }
+      if (/permission denied for function/i.test(combined)) {
+        return withDiag(
+          obj
+            ? `Database ${obj} is not executable by your role (missing EXECUTE grant or SECURITY DEFINER).`
+            : "A database function is not executable by your role.",
+        );
       }
       if (/permission denied|insufficient_privilege/i.test(combined)) {
-        return "Permission denied. Your role does not allow this action.";
+        return withDiag(
+          obj
+            ? `Permission denied on ${obj}.`
+            : msg || "Permission denied.",
+        );
       }
-      // Some triggers RAISE with SQLSTATE 42501 but a custom message — show it.
-      return msg || "Permission denied.";
+      // Trigger RAISE with SQLSTATE 42501 and a custom message — surface it.
+      return withDiag(msg || "Permission denied.");
+    }
     case "P0001":
-      // RAISE EXCEPTION from a trigger/function — the message is the real reason.
-      return msg || "Operation blocked by a database rule.";
+      return withDiag(msg || "Operation blocked by a database rule.");
     case "PGRST301":
     case "PGRST302":
       return "Your session has expired. Please sign in again.";
     case "PGRST116":
-      return "Record not found.";
+      return withDiag("Record not found.");
     case "PGRST204":
-      return msg || "Requested column or field does not exist.";
+      return withDiag(msg || "Requested column or field does not exist.");
     default:
       if (/jwt|token expired|invalid token/i.test(msg)) {
         return "Your session has expired. Please sign in again.";
@@ -90,7 +188,6 @@ export function mapDbError(
       if (/failed to fetch|networkerror|network request failed/i.test(msg)) {
         return "Network error. Check your connection and try again.";
       }
-      // Preserve the actual database/RPC/trigger message rather than a generic label.
-      return msg || "Unexpected error. Please try again.";
+      return withDiag(msg || "Unexpected error. Please try again.");
   }
 }
