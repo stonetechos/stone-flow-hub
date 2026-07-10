@@ -59,7 +59,7 @@ import { invalidateQuote, invalidateInvoice } from "@/lib/query-invalidation";
 
 type QuoteStatus = DbTable<"quotes">["status"];
 
-export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
+export const Route = createFileRoute("/_authenticated/quotes/$quoteId/")({
   ssr: false,
   component: QuoteDetailPage,
 });
