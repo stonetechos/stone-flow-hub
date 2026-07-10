@@ -99,32 +99,65 @@ export function GlobalSearchDialog({
       <CommandList>
         {query.trim().length < 2 ? (
           <>
-            {recent.length === 0 ? (
-              <CommandEmpty>Start typing to search across all modules.</CommandEmpty>
-            ) : (
-              <CommandGroup heading="Recent">
-                {recent.slice(0, 8).map((r) => (
+            {recentNavItems.length > 0 && (
+              <CommandGroup heading="Recently used modules">
+                {recentNavItems.map((item) => (
                   <CommandItem
-                    key={`${r.entityType}:${r.entityId}`}
-                    value={`recent-${r.label}`}
-                    onSelect={() => go(r.href)}
+                    key={`nav-recent-${item.id}`}
+                    value={`nav-recent-${item.label}`}
+                    onSelect={() => go(item.to)}
                   >
-                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">{r.label}</span>
-                    <span className="ml-auto text-xs text-muted-foreground capitalize">
-                      {r.entityType}
-                    </span>
+                    <item.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span className="truncate">{item.label}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
             )}
+            {recent.length === 0 && recentNavItems.length === 0 ? (
+              <CommandEmpty>Start typing to search across all modules.</CommandEmpty>
+            ) : recent.length > 0 ? (
+              <>
+                {recentNavItems.length > 0 && <CommandSeparator />}
+                <CommandGroup heading="Recent">
+                  {recent.slice(0, 8).map((r) => (
+                    <CommandItem
+                      key={`${r.entityType}:${r.entityId}`}
+                      value={`recent-${r.label}`}
+                      onSelect={() => go(r.href)}
+                    >
+                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span className="truncate">{r.label}</span>
+                      <span className="ml-auto text-xs text-muted-foreground capitalize">
+                        {r.entityType}
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            ) : null}
           </>
         ) : (
           <>
+            {navMatches.length > 0 && (
+              <CommandGroup heading="Navigation">
+                {navMatches.map((item) => (
+                  <CommandItem
+                    key={`nav-${item.id}`}
+                    value={`nav-${item.label}`}
+                    onSelect={() => go(item.to)}
+                  >
+                    <Compass className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span className="truncate">{item.label}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
             {isFetching && (
               <div className="px-3 py-2 text-xs text-muted-foreground">Searching…</div>
             )}
-            {!isFetching && (data?.length ?? 0) === 0 && <CommandEmpty>No matches.</CommandEmpty>}
+            {!isFetching && navMatches.length === 0 && (data?.length ?? 0) === 0 && (
+              <CommandEmpty>No matches.</CommandEmpty>
+            )}
             {GROUP_ORDER.map((g) => {
               const items = grouped.get(g);
               if (!items || items.length === 0) return null;
