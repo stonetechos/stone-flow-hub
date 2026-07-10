@@ -114,12 +114,12 @@ function TodayPage() {
                 <TableCell>
                   <div className="font-medium">{t.title}</div>
                   {t.source_deep_link && (
-                    <Link
-                      to={t.source_deep_link}
+                    <a
+                      href={t.source_deep_link}
                       className="text-xs text-muted-foreground hover:underline"
                     >
                       Open source →
-                    </Link>
+                    </a>
                   )}
                 </TableCell>
                 <TableCell>
