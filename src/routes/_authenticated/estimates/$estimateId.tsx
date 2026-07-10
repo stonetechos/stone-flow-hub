@@ -218,10 +218,12 @@ function EstimateDetailPage() {
             <Button
               size="sm"
               onClick={() => convertMut.mutate()}
-              disabled={!canConvert || convertMut.isPending}
+              disabled={convertMut.isPending}
+              title={converted ? `Already converted to ${converted.quote_no}` : undefined}
             >
               {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to Quote
+              <ArrowRightCircle className="mr-2 h-4 w-4" />
+              {converted ? "Convert again" : "Convert to Quote"}
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setConfirmDel(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
