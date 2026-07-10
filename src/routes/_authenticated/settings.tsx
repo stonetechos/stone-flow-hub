@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
+import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
 
 
 export const Route = createFileRoute("/_authenticated/settings")({
