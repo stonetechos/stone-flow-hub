@@ -278,7 +278,18 @@ function LineItemsEditor({
 
   const [rows, setRows] = useState<DraftRow[]>([]);
   useEffect(() => {
-    if (itemsQuery.data) setRows(itemsQuery.data.map(toDraft));
+    if (!itemsQuery.data) return;
+    setRows((prev) => {
+      const serverIds = itemsQuery.data.map((r) => r.id);
+      const prevIds = prev.map((r) => r.id);
+      const idsChanged =
+        serverIds.length !== prevIds.length || serverIds.some((id, i) => id !== prevIds[i]);
+      if (idsChanged) return itemsQuery.data.map(toDraft);
+      // Preserve local uncommitted edits; only backfill rows we haven't touched
+      // (identity by id + description).
+      const byId = new Map(prev.map((r) => [r.id, r]));
+      return itemsQuery.data.map((server) => byId.get(server.id) ?? toDraft(server));
+    });
   }, [itemsQuery.data]);
 
   const invalidate = () => {
