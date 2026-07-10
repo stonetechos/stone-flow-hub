@@ -30,6 +30,7 @@ import {
   Star,
   ShieldCheck,
   Layers,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 
