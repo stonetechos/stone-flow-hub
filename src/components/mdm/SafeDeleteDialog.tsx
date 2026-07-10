@@ -1,33 +1,24 @@
 /**
  * SafeDeleteDialog
  *
- * Runs the shared `dependency_summary` scanner (same one `purge_entity` uses
- * server-side) and:
+ * Composes the shared ConfirmDialog foundation with a dependency scan.
+ * Behaviour preserved from the previous implementation:
+ *   - refuses the delete when any blocking FK reference exists and lists them
+ *     with clickable shortcuts;
+ *   - warns about cascading references (CASCADE / SET NULL);
+ *   - allows the delete when nothing blocks;
+ *   - `staleTime: 0` + `refetchOnMount: "always"` guarantees a fresh scan.
  *
- *  - refuses the delete when any blocking FK reference exists (RESTRICT /
- *    NO ACTION) and lists them with clickable shortcuts;
- *  - warns about cascading references (CASCADE / SET NULL) so the user knows
- *    what will be removed or detached;
- *  - allows the delete when nothing blocks.
- *
- * `staleTime: 0` + `refetchOnMount: "always"` guarantees a fresh scan every
- * time the dialog opens, and mutations across the app invalidate
- * `["mdm","dependencies"]` so the next open sees up-to-date counts.
+ * The visual chrome (AlertDialog shell, footer buttons, keyboard handling)
+ * comes from ConfirmDialog so SafeDelete stays consistent with every other
+ * confirmation surface in the app.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ExternalLink, ShieldAlert, CheckCircle2, Info } from "lucide-react";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import {
   scanDependencies,
   type MdmEntityType,
@@ -39,13 +30,9 @@ import { toUserMessage } from "@/lib/errors";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  /** Master entity kind — routed through the Postgres scanner. */
   entityType: MdmEntityType;
-  /** Master record id. When null, the dialog stays idle. */
   entityId: string | null;
-  /** Human label used in headings / copy, e.g. "ABC Builders". */
   entityLabel: string;
-  /** Fired only when the scan reports no blocking references and the user confirms. */
   onConfirmDelete: () => void;
   busy?: boolean;
 }
@@ -72,91 +59,90 @@ export function SafeDeleteDialog({
   const blockingRows = useMemo(() => report?.blockingRows ?? [], [report]);
   const cascadingRows = useMemo(() => report?.cascadingRows ?? [], [report]);
   const canDelete = !!report && report.canDelete;
+  const noun = entityLabelHeading(entityType);
+
+  const title = scan.isLoading
+    ? `Delete ${noun}?`
+    : canDelete
+      ? `Delete ${noun}?`
+      : `Cannot delete ${noun}`;
+
+  // SafeDelete needs a contextual icon reflecting the scan result (check /
+  // shield). We hide ConfirmDialog's tone icon and render our own inside the
+  // description slot so the title stays clean.
+  const leadingIcon = scan.isLoading ? null : canDelete ? (
+    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+  ) : (
+    <ShieldAlert className="h-5 w-5 text-amber-600" />
+  );
+
+  const description = (
+    <span className="inline-flex items-center gap-2">
+      {leadingIcon}
+      <span>
+        <span className="font-medium text-foreground">{entityLabel}</span>{" "}
+        {scan.isLoading
+          ? "— checking for linked records…"
+          : !canDelete
+            ? "is currently referenced by other business records. Remove or reassign the records below first, or archive this record instead."
+            : cascadingRows.length > 0
+              ? "will be permanently removed. Some linked child records will be removed or detached automatically (listed below)."
+              : "has no linked records. This will permanently remove it."}
+      </span>
+    </span>
+  );
+
+  const body = (
+    <>
+      {scan.isLoading && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Scanning dependencies…
+        </div>
+      )}
+      {scan.error && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-destructive">
+          {toUserMessage(scan.error)}
+        </div>
+      )}
+      {!scan.isLoading && !scan.error && blockingRows.length > 0 && (
+        <Section
+          title="Blocking references"
+          tone="danger"
+          rows={blockingRows}
+          onNavigate={() => onOpenChange(false)}
+        />
+      )}
+      {!scan.isLoading && !scan.error && cascadingRows.length > 0 && (
+        <Section
+          title={
+            canDelete
+              ? "Will be removed or detached automatically"
+              : "Will be removed or detached once blockers are cleared"
+          }
+          tone="info"
+          rows={cascadingRows}
+          onNavigate={() => onOpenChange(false)}
+        />
+      )}
+    </>
+  );
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-lg">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            {scan.isLoading ? (
-              <>Delete {entityLabelHeading(entityType)}?</>
-            ) : canDelete ? (
-              <>
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                Delete {entityLabelHeading(entityType)}?
-              </>
-            ) : (
-              <>
-                <ShieldAlert className="h-5 w-5 text-amber-600" />
-                Cannot delete {entityLabelHeading(entityType)}
-              </>
-            )}
-          </AlertDialogTitle>
-        </AlertDialogHeader>
-
-        <div className="space-y-3 text-sm">
-          <p className="text-muted-foreground">
-            <span className="font-medium text-foreground">{entityLabel}</span>{" "}
-            {scan.isLoading
-              ? "— checking for linked records…"
-              : !canDelete
-                ? "is currently referenced by other business records. Remove or reassign the records below first, or archive this record instead."
-                : cascadingRows.length > 0
-                  ? "will be permanently removed. Some linked child records will be removed or detached automatically (listed below)."
-                  : "has no linked records. This will permanently remove it."}
-          </p>
-
-          {scan.isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Scanning dependencies…
-            </div>
-          )}
-
-          {scan.error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-destructive">
-              {toUserMessage(scan.error)}
-            </div>
-          )}
-
-          {!scan.isLoading && !scan.error && blockingRows.length > 0 && (
-            <Section
-              title="Blocking references"
-              tone="danger"
-              rows={blockingRows}
-              onNavigate={() => onOpenChange(false)}
-            />
-          )}
-
-          {!scan.isLoading && !scan.error && cascadingRows.length > 0 && (
-            <Section
-              title={
-                canDelete
-                  ? "Will be removed or detached automatically"
-                  : "Will be removed or detached once blockers are cleared"
-              }
-              tone="info"
-              rows={cascadingRows}
-              onNavigate={() => onOpenChange(false)}
-            />
-          )}
-        </div>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={busy}>Close</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={busy || scan.isLoading || !canDelete}
-            onClick={(e) => {
-              e.preventDefault();
-              if (canDelete) onConfirmDelete();
-            }}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {canDelete ? "Delete permanently" : "Delete blocked"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      body={body}
+      tone="danger"
+      hideIcon
+      size="lg"
+      cancelLabel="Close"
+      confirmLabel={canDelete ? "Delete permanently" : "Delete blocked"}
+      confirmDisabled={scan.isLoading || !canDelete}
+      busy={busy}
+      onConfirm={onConfirmDelete}
+    />
   );
 }
 
