@@ -1,32 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ClipboardList,
-  Send,
   CalendarClock,
-  Users,
   Wallet,
   Receipt,
   Activity,
-  AlertTriangle,
   FileCheck2,
-  Factory,
+  Truck,
   TrendingUp,
-  ChevronDown,
-  ChevronUp,
+  Users,
+  Building2,
+  FileText,
+  ShoppingCart,
+  ClipboardCheck,
+  Plus,
+  CheckSquare,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toUserMessage } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { getDashboardKpis } from "@/lib/dashboard/api";
 import { listRecentActivity } from "@/lib/activity/api";
-import { listFollowups } from "@/lib/followups/api";
-import { LeadPipelineWidget } from "@/components/dashboard/LeadPipelineWidget";
+import { listTasks, updateTaskStatus } from "@/lib/tasks/api";
+import { useAuthReady } from "@/hooks/use-auth-ready";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -34,35 +34,36 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
 });
 
-const ACTIVITY_COLLAPSED_KEY = "st.dashboard.activity.collapsed";
-
 function DashboardPage() {
+  const { user } = useAuthReady();
+  const qc = useQueryClient();
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: qk.dashboard,
     queryFn: getDashboardKpis,
   });
   const activity = useQuery({
     queryKey: qk.activity.recent,
-    queryFn: () => listRecentActivity(20),
+    queryFn: () => listRecentActivity(8),
   });
-  const todayFu = useQuery({
-    queryKey: qk.followups.scope("today"),
-    queryFn: () => listFollowups("today"),
+  const tasks = useQuery({
+    queryKey: ["tasks", "dashboard", "pending"],
+    queryFn: () => listTasks({ status: "pending" }),
   });
 
-  const [activityCollapsed, setActivityCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(ACTIVITY_COLLAPSED_KEY) === "1";
+  const toggle = useMutation({
+    mutationFn: ({ id, done }: { id: string; done: boolean }) =>
+      updateTaskStatus(id, done ? "completed" : "pending"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(ACTIVITY_COLLAPSED_KEY, activityCollapsed ? "1" : "0");
-  }, [activityCollapsed]);
+
+  const greeting = greetingFor(new Date());
+  const name = displayName(user);
 
   if (isLoading) {
     return (
       <div>
-        <PageHeader title="Dashboard" subtitle="What requires your attention today." />
+        <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
         <LoadingBlock />
       </div>
     );
@@ -70,7 +71,7 @@ function DashboardPage() {
   if (error) {
     return (
       <div>
-        <PageHeader title="Dashboard" subtitle="What requires your attention today." />
+        <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
         <ErrorBlock message={toUserMessage(error)} onRetry={() => refetch()} />
       </div>
     );
@@ -78,144 +79,98 @@ function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" subtitle="What requires your attention today." />
+      <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
 
-      {/* Priority KPI grid — fits above the fold on 1440×900+. */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Kpi
-          title="Today's Follow-ups"
-          value={data?.todayFollowups ?? 0}
-          icon={<CalendarClock className="h-4 w-4" />}
-          to="/followups"
-          search={{ scope: "today" }}
-          tone={data?.todayFollowups ? "primary" : "muted"}
-        />
-        <Kpi
-          title="Overdue Follow-ups"
-          value={data?.overdueFollowups ?? 0}
-          icon={<AlertTriangle className="h-4 w-4" />}
-          to="/followups"
-          search={{ scope: "pending" }}
-          tone={data?.overdueFollowups ? "danger" : "muted"}
-        />
-        <Kpi
-          title="Pending RFQs"
-          value={data?.pendingRfqs ?? 0}
-          icon={<Send className="h-4 w-4" />}
-          to="/enquiries"
-          tone="info"
-        />
-        <Kpi
-          title="Quotes Awaiting"
-          value={data?.quotesAwaitingApproval ?? 0}
-          icon={<FileCheck2 className="h-4 w-4" />}
-          to="/quotes"
-          search={{ status: "sent" }}
-          tone="warn"
-        />
-        <Kpi
-          title="Orders To Start"
-          value={data?.ordersToStart ?? 0}
-          icon={<Factory className="h-4 w-4" />}
-          to="/sales-orders"
-          search={{ status: "confirmed" }}
-          tone="info"
-        />
-        <Kpi
-          title="Revenue Pipeline"
-          value={"₹" + formatMoney(data?.revenuePipelineInr ?? 0)}
-          icon={<TrendingUp className="h-4 w-4" />}
-          to="/quotes"
-          search={{ status: "sent" }}
-          tone="ok"
-        />
+      {/* Today's Overview */}
+      <section className="mb-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Today's overview
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Kpi
+            title="Sales Today"
+            value={"₹" + formatMoney(data?.salesTodayInr ?? 0)}
+            icon={<TrendingUp className="h-4 w-4" />}
+            to="/invoices"
+            tone="ok"
+          />
+          <Kpi
+            title="Collections"
+            value={"₹" + formatMoney(data?.collectionsTodayInr ?? 0)}
+            icon={<Receipt className="h-4 w-4" />}
+            to="/payments"
+            tone="primary"
+          />
+          <Kpi
+            title="Pending Quotes"
+            value={data?.pendingQuotes ?? 0}
+            icon={<FileCheck2 className="h-4 w-4" />}
+            to="/quotes"
+            search={{ status: "sent" }}
+            tone={data?.pendingQuotes ? "warn" : "muted"}
+          />
+          <Kpi
+            title="Deliveries Today"
+            value={data?.deliveriesToday ?? 0}
+            icon={<Truck className="h-4 w-4" />}
+            to="/dispatch"
+            tone={data?.deliveriesToday ? "info" : "muted"}
+          />
+        </div>
+      </section>
 
-      </div>
-
-      {/* Secondary KPIs — money & pipeline health. */}
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kpi
-          title="Active Enquiries"
-          value={data?.activeEnquiries ?? 0}
-          icon={<ClipboardList className="h-4 w-4" />}
-          to="/enquiries"
-          tone="muted"
-          compact
-        />
-        <Kpi
-          title="Outstanding"
-          value={"₹" + formatMoney(data?.outstandingInr ?? 0)}
-          icon={<Wallet className="h-4 w-4" />}
-          to="/invoices"
-          search={{ status: "overdue" }}
-          tone="muted"
-          compact
-        />
-        <Kpi
-          title="Collected (Month)"
-          value={"₹" + formatMoney(data?.paymentsThisMonthInr ?? 0)}
-          icon={<Receipt className="h-4 w-4" />}
-          to="/payments"
-          tone="muted"
-          compact
-        />
-        <Kpi
-          title="Active Customers"
-          value={data?.customers ?? 0}
-          icon={<Users className="h-4 w-4" />}
-          to="/customers"
-          tone="muted"
-          compact
-        />
-      </div>
-
-      {/* Lead Pipeline — the heartbeat of the sales workflow. */}
-      <div className="mt-4">
-        <LeadPipelineWidget />
-      </div>
-
-      {/* Today's follow-ups — actionable panel. */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      {/* Tasks + Activity */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card className="shadow-1">
-          <CardHeader className="pb-2 pt-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <CalendarClock className="h-4 w-4 text-primary" /> Today's follow-ups
+              <CheckSquare className="h-4 w-4 text-primary" /> Today's tasks
             </CardTitle>
+            <Link to="/tasks" className="text-xs text-primary hover:underline">
+              View all
+            </Link>
           </CardHeader>
           <CardContent className="pt-0">
-            {todayFu.isLoading ? (
+            {tasks.isLoading ? (
               <ul className="space-y-1.5" aria-hidden>
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 4 }).map((_, i) => (
                   <li key={i} className="h-8 animate-pulse rounded-sm bg-muted/60" />
                 ))}
               </ul>
-            ) : (todayFu.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nothing due today. Enjoy the calm.</p>
+            ) : (tasks.data ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">No open tasks. Nicely done.</p>
             ) : (
               <ul className="max-h-[280px] space-y-1 overflow-y-auto pr-1">
-                {todayFu.data!.map((f) => (
+                {tasks.data!.slice(0, 8).map((t) => (
                   <li
-                    key={f.id}
-                    className="flex items-center justify-between rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                    key={t.id}
+                    className="flex items-start gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
                   >
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">
-                        {f.enquiry?.customer?.name ?? "—"} ·{" "}
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {f.enquiry?.enquiry_no ?? "—"}
-                        </span>
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {new Date(f.scheduled_at).toLocaleTimeString("en-IN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        · {f.channel.replace("_", " ")}
-                      </div>
+                    <Checkbox
+                      className="mt-0.5"
+                      checked={t.status === "completed"}
+                      onCheckedChange={(v) =>
+                        toggle.mutate({ id: t.id, done: v === true })
+                      }
+                      aria-label={`Mark task ${t.title} complete`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{t.title}</div>
+                      {t.due_at && (
+                        <div className="text-xs text-muted-foreground">
+                          Due{" "}
+                          {new Date(t.due_at).toLocaleString("en-IN", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                        </div>
+                      )}
                     </div>
-                    <Link to="/followups" className="text-xs text-primary hover:underline">
-                      Open
-                    </Link>
+                    {t.priority && t.priority !== "medium" && (
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px] capitalize">
+                        {t.priority}
+                      </Badge>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -223,71 +178,135 @@ function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent activity — collapsible with capped height. */}
         <Card className="shadow-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-3">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Activity className="h-4 w-4 text-primary" /> Recent activity
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => setActivityCollapsed((c) => !c)}
-              aria-expanded={!activityCollapsed}
-            >
-              {activityCollapsed ? (
-                <>
-                  Show <ChevronDown className="ml-1 h-3 w-3" />
-                </>
-              ) : (
-                <>
-                  Hide <ChevronUp className="ml-1 h-3 w-3" />
-                </>
-              )}
-            </Button>
+            <Link to="/activity" className="text-xs text-primary hover:underline">
+              View all
+            </Link>
           </CardHeader>
-          {!activityCollapsed && (
-            <CardContent className="pt-0">
-              {activity.isLoading ? (
-                <ul className="space-y-1.5" aria-hidden>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <li key={i} className="h-7 animate-pulse rounded-sm bg-muted/60" />
-                  ))}
-                </ul>
-              ) : (activity.data ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">No activity yet.</p>
-              ) : (
-                <ul className="max-h-[280px] space-y-1 overflow-y-auto pr-1">
-                  {activity.data!.slice(0, 20).map((a) => (
-                    <li
-                      key={a.id}
-                      className="flex items-center justify-between gap-2 rounded-sm px-2 py-1 text-sm"
-                    >
-                      <span className="min-w-0 flex-1 truncate">
-                        <Badge variant="outline" className="mr-2 h-4 px-1 text-[10px] capitalize">
-                          {a.action.replace("_", " ")}
-                        </Badge>
-                        <span className="text-muted-foreground">
-                          {a.summary ?? a.entity_type}
-                        </span>
+          <CardContent className="pt-0">
+            {activity.isLoading ? (
+              <ul className="space-y-1.5" aria-hidden>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <li key={i} className="h-7 animate-pulse rounded-sm bg-muted/60" />
+                ))}
+              </ul>
+            ) : (activity.data ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">No activity yet.</p>
+            ) : (
+              <ul className="max-h-[280px] space-y-1 overflow-y-auto pr-1">
+                {activity.data!.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between gap-2 rounded-sm px-2 py-1 text-sm"
+                  >
+                    <span className="min-w-0 flex-1 truncate">
+                      <Badge variant="outline" className="mr-2 h-4 px-1 text-[10px] capitalize">
+                        {a.action.replace("_", " ")}
+                      </Badge>
+                      <span className="text-muted-foreground">
+                        {a.summary ?? a.entity_type}
                       </span>
-                      <span className="whitespace-nowrap text-[11px] text-muted-foreground">
-                        {new Date(a.created_at).toLocaleString("en-IN", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          )}
+                    </span>
+                    <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                      {new Date(a.created_at).toLocaleString("en-IN", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <section className="mt-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Quick actions
+        </h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <QuickAction to="/customers" label="New Customer" icon={<Users className="h-4 w-4" />} />
+          <QuickAction to="/quotes/new" label="New Quote" icon={<FileText className="h-4 w-4" />} />
+          <QuickAction
+            to="/sales-orders/new"
+            label="New Sales Order"
+            icon={<ShoppingCart className="h-4 w-4" />}
+          />
+          <QuickAction to="/invoices/new" label="New Invoice" icon={<Receipt className="h-4 w-4" />} />
+          <QuickAction to="/payments/new" label="Receive Payment" icon={<Wallet className="h-4 w-4" />} />
+          <QuickAction
+            to="/purchase-orders/new"
+            label="Purchase Order"
+            icon={<ClipboardCheck className="h-4 w-4" />}
+          />
+        </div>
+      </section>
+
+      {/* Secondary KPIs */}
+      <section className="mt-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Pipeline & receivables
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Kpi
+            title="Today's Follow-ups"
+            value={data?.todayFollowups ?? 0}
+            icon={<CalendarClock className="h-4 w-4" />}
+            to="/followups"
+            search={{ scope: "today" }}
+            tone={data?.todayFollowups ? "primary" : "muted"}
+            compact
+          />
+          <Kpi
+            title="Revenue Pipeline"
+            value={"₹" + formatMoney(data?.revenuePipelineInr ?? 0)}
+            icon={<TrendingUp className="h-4 w-4" />}
+            to="/quotes"
+            tone="muted"
+            compact
+          />
+          <Kpi
+            title="Outstanding"
+            value={"₹" + formatMoney(data?.outstandingInr ?? 0)}
+            icon={<Wallet className="h-4 w-4" />}
+            to="/invoices"
+            tone="muted"
+            compact
+          />
+          <Kpi
+            title="Active Customers"
+            value={data?.customers ?? 0}
+            icon={<Building2 className="h-4 w-4" />}
+            to="/customers"
+            tone="muted"
+            compact
+          />
+        </div>
+      </section>
     </div>
   );
+}
+
+function greetingFor(d: Date): string {
+  const h = d.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function displayName(user: { user_metadata?: Record<string, unknown>; email?: string | null } | null): string {
+  if (!user) return "there";
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const full = (meta.full_name ?? meta.name) as string | undefined;
+  if (full && typeof full === "string") return full.split(" ")[0];
+  if (user.email) return user.email.split("@")[0];
+  return "there";
 }
 
 function formatMoney(n: number): string {
@@ -359,3 +378,25 @@ function Kpi({
   );
 }
 
+function QuickAction({
+  to,
+  label,
+  icon,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-medium transition-shadow hover:border-primary/40 hover:shadow-2"
+    >
+      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Plus className="h-3.5 w-3.5" />
+      </span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="text-muted-foreground group-hover:text-primary">{icon}</span>
+    </Link>
+  );
+}
