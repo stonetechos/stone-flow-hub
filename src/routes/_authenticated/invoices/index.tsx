@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,6 +25,12 @@ import {
 } from "@/components/ui/select";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
@@ -51,6 +56,8 @@ function InvoicesPage() {
   const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<InvoiceListItem | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
@@ -61,6 +68,21 @@ function InvoicesPage() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("invoices");
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "no", label: "Invoice no.", required: true },
+      { key: "customer", label: "Customer" },
+      { key: "project", label: "Project" },
+      { key: "status", label: "Status" },
+      { key: "total", label: "Total" },
+      { key: "balance", label: "Balance" },
+      { key: "due", label: "Due" },
+    ],
+    [],
+  );
+
   const setStatusFilter = (v: string) =>
     nav({
       to: "/invoices",
@@ -68,6 +90,7 @@ function InvoicesPage() {
     });
   const commitSearch = (v: string) => {
     setQ(v);
+    setPage(1);
     nav({
       to: "/invoices",
       search: { status: statusFilter === "all" ? undefined : statusFilter, q: v || undefined },
@@ -76,42 +99,52 @@ function InvoicesPage() {
   const rows = (query.data ?? []).filter(
     (r) => statusFilter === "all" || r.status === statusFilter,
   );
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, dq]);
 
   return (
     <div>
       <PageHeader
         title="Invoices"
         subtitle="Collect payments — Razorpay links or manual entries."
-        actions={
+      />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={commitSearch}
+        searchPlaceholder="Search by invoice no…"
+        primaryFilter={
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-40 text-xs">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="partially_paid">Partially paid</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="overdue">Overdue</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+        columns={
+          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
+        }
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
           roles.canWrite && (
-            <Button onClick={() => nav({ to: "/invoices/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New invoice
+            <Button size="sm" className="h-8" onClick={() => nav({ to: "/invoices/new" })}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New invoice
             </Button>
           )
         }
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => commitSearch(e.target.value)}
-          placeholder="Search by invoice no…"
-          className="max-w-md"
-        />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-            <SelectItem value="partially_paid">Partially paid</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {query.isLoading ? (
         <SkeletonTable rows={6} columns={5} />
@@ -129,44 +162,66 @@ function InvoicesPage() {
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>No.</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Balance</TableHead>
-                <TableHead>Due</TableHead>
+                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                {!isHidden("project") && <TableHead>Project</TableHead>}
+                {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
+                {!isHidden("balance") && <TableHead className="text-right">Balance</TableHead>}
+                {!isHidden("due") && <TableHead>Due</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((r) => (
+              {pageRows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/invoices/$invoiceId"
-                      params={{ invoiceId: r.id }}
-                      className="text-primary hover:underline"
-                    >
-                      {r.invoice_no}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{r.customer?.name ?? "—"}</TableCell>
-                  <TableCell>{r.project?.name ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {r.status.replace(/_/g, " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{formatInr(r.total)}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatInr(r.balance_due)}
-                  </TableCell>
-                  <TableCell>{r.due_date ?? "—"}</TableCell>
+                  {!isHidden("no") && (
+                    <TableCell className="font-mono text-xs">
+                      <Link
+                        to="/invoices/$invoiceId"
+                        params={{ invoiceId: r.id }}
+                        className="text-primary hover:underline"
+                      >
+                        {r.invoice_no}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
+                  {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {r.status.replace(/_/g, " ")}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {!isHidden("total") && (
+                    <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>
+                  )}
+                  {!isHidden("balance") && (
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatInr(r.balance_due)}
+                    </TableCell>
+                  )}
+                  {!isHidden("due") && <TableCell>{r.due_date ?? "—"}</TableCell>}
                   <TableCell>
                     <RowActions
                       onEdit={() =>
@@ -179,8 +234,9 @@ function InvoicesPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
+
 
       <SafeDeleteDialog
         open={!!toDelete}

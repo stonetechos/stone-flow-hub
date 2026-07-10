@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Users, ExternalLink } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -35,6 +35,12 @@ import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { LifecycleMenuItems } from "@/components/mdm/LifecycleMenu";
 import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { qk } from "@/lib/query-keys";
@@ -69,8 +75,26 @@ function CustomersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerRow | null>(null);
   const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("customers");
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "code", label: "Code", required: true },
+      { key: "name", label: "Name", required: true },
+      { key: "type", label: "Type" },
+      { key: "mobile", label: "Mobile" },
+      { key: "city", label: "City" },
+    ],
+    [],
+  );
 
   const query = useQuery({ queryKey: qk.customers.list(dq), queryFn: () => listCustomers(dq) });
+
+  useEffect(() => {
+    setPage(1);
+  }, [dq]);
 
   useEffect(() => {
     if (!edit) return;
@@ -92,101 +116,121 @@ function CustomersPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const rows = query.data ?? [];
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
   return (
     <div>
       <PageHeader
         title="Customers"
         subtitle="Master list of everyone you sell to."
-        actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> New customer
+      />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Search by name, code, phone, city…"
+        columns={
+          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
+        }
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={openCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New customer
           </Button>
         }
       />
-
-      <div className="mb-3 flex items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, code, phone, city…"
-          className="max-w-md"
-        />
-      </div>
 
       {query.isLoading ? (
         <SkeletonTable rows={6} columns={6} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : (query.data ?? []).length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={<Users className="h-6 w-6" />}
           title="No customers yet"
           message="Add your first customer — only name and mobile are required."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+            <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> New customer
             </Button>
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Mobile</TableHead>
-                <TableHead>City</TableHead>
+                {!isHidden("code") && <TableHead>Code</TableHead>}
+                {!isHidden("name") && <TableHead>Name</TableHead>}
+                {!isHidden("type") && <TableHead>Type</TableHead>}
+                {!isHidden("mobile") && <TableHead>Mobile</TableHead>}
+                {!isHidden("city") && <TableHead>City</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query.data!.map((c) => (
+              {pageRows.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/customers/$customerId"
-                      params={{ customerId: c.id }}
-                      className="hover:underline"
-                    >
-                      {c.customer_code}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
+                  {!isHidden("code") && (
+                    <TableCell className="font-mono text-xs">
                       <Link
                         to="/customers/$customerId"
                         params={{ customerId: c.id }}
                         className="hover:underline"
                       >
-                        {c.name}
+                        {c.customer_code}
                       </Link>
-                      <LifecycleBadge
-                        status={
-                          (c as unknown as { lifecycle_status?: LifecycleStatus })
-                            .lifecycle_status
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="capitalize">
-                      {c.customer_type.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{c.primary_phone ?? "—"}</TableCell>
-                  <TableCell>{c.city ?? "—"}</TableCell>
+                    </TableCell>
+                  )}
+                  {!isHidden("name") && (
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to="/customers/$customerId"
+                          params={{ customerId: c.id }}
+                          className="hover:underline"
+                        >
+                          {c.name}
+                        </Link>
+                        <LifecycleBadge
+                          status={
+                            (c as unknown as { lifecycle_status?: LifecycleStatus })
+                              .lifecycle_status
+                          }
+                        />
+                      </div>
+                    </TableCell>
+                  )}
+                  {!isHidden("type") && (
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {c.customer_type.replace("_", " ")}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {!isHidden("mobile") && <TableCell>{c.primary_phone ?? "—"}</TableCell>}
+                  {!isHidden("city") && <TableCell>{c.city ?? "—"}</TableCell>}
                   <TableCell>
                     <RowActions
                       extra={
@@ -220,8 +264,9 @@ function CustomersPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
+
 
       <CustomerFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
       <SafeDeleteDialog

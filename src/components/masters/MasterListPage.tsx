@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Search, Layers, Upload } from "lucide-react";
+import { Plus, Loader2, Layers, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -25,6 +25,11 @@ import {
 import { RowActions } from "@/components/data/RowActions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
@@ -126,42 +131,58 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
     [config],
   );
 
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs(
+    `masters:${config.table}`,
+  );
+
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "code", label: "Code", required: true },
+      { key: "name", label: "Name", required: true },
+      ...config.extraColumns.map((c) => ({ key: c.key, label: c.label })),
+      { key: "sort_order", label: "Sort" },
+      { key: "is_active", label: "Status" },
+    ],
+    [config],
+  );
+
   return (
     <div>
       <PageHeader
         title={config.title}
         subtitle={config.description}
-        actions={
+      />
+
+      <DataToolbar
+        count={list.data?.length}
+        search={query}
+        onSearchChange={setQuery}
+        searchPlaceholder={`Search ${config.title.toLowerCase()}…`}
+        primaryFilter={
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "inactive")}>
+            <TabsList className="h-8">
+              <TabsTrigger value="active" className="h-6 text-xs">Active</TabsTrigger>
+              <TabsTrigger value="inactive" className="h-6 text-xs">Inactive</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
+        columns={
+          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
+        }
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
           <Can anyRole={["admin", "sales_manager"]}>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => setImporting(true)}>
-                <Upload className="mr-1.5 h-4 w-4" /> Bulk import
+            <div className="flex items-center gap-1.5">
+              <Button size="sm" variant="outline" className="h-8" onClick={() => setImporting(true)}>
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> Import
               </Button>
-              <Button size="sm" onClick={() => setCreating(true)}>
-                <Plus className="mr-1.5 h-4 w-4" /> New {config.singular}
+              <Button size="sm" className="h-8" onClick={() => setCreating(true)}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New {config.singular}
               </Button>
             </div>
           </Can>
         }
       />
-
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "inactive")}>
-          <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="relative sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${config.title.toLowerCase()}…`}
-            className="pl-9"
-          />
-        </div>
-      </div>
 
       {list.isLoading ? (
         <SkeletonTable />
@@ -178,36 +199,50 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
+        <DataTableShell density={prefs.density}>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[140px]">Code</TableHead>
-                <TableHead>Name</TableHead>
-                {config.extraColumns.map((c) => (
-                  <TableHead key={c.key}>{c.label}</TableHead>
-                ))}
-                <TableHead className="w-[100px]">Sort</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
+                {!isHidden("code") && <TableHead className="w-[140px]">Code</TableHead>}
+                {!isHidden("name") && <TableHead>Name</TableHead>}
+                {config.extraColumns.map((c) =>
+                  isHidden(c.key) ? null : (
+                    <TableHead key={c.key}>{c.label}</TableHead>
+                  ),
+                )}
+                {!isHidden("sort_order") && <TableHead className="w-[100px]">Sort</TableHead>}
+                {!isHidden("is_active") && <TableHead className="w-[100px]">Status</TableHead>}
                 <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.data.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell className="font-mono text-xs">{row.code}</TableCell>
-                  <TableCell className="font-medium">{row.name}</TableCell>
-                  {config.extraColumns.map((c) => (
-                    <TableCell key={c.key} className="text-sm text-muted-foreground">
-                      {formatCell(row[c.key])}
+                  {!isHidden("code") && (
+                    <TableCell className="font-mono text-xs">{row.code}</TableCell>
+                  )}
+                  {!isHidden("name") && (
+                    <TableCell className="font-medium">{row.name}</TableCell>
+                  )}
+                  {config.extraColumns.map((c) =>
+                    isHidden(c.key) ? null : (
+                      <TableCell key={c.key} className="text-sm text-muted-foreground">
+                        {formatCell(row[c.key])}
+                      </TableCell>
+                    ),
+                  )}
+                  {!isHidden("sort_order") && (
+                    <TableCell className="text-sm text-muted-foreground">
+                      {row.sort_order}
                     </TableCell>
-                  ))}
-                  <TableCell className="text-sm text-muted-foreground">{row.sort_order}</TableCell>
-                  <TableCell>
-                    <Badge variant={row.is_active ? "default" : "secondary"}>
-                      {row.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
+                  )}
+                  {!isHidden("is_active") && (
+                    <TableCell>
+                      <Badge variant={row.is_active ? "default" : "secondary"}>
+                        {row.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       onEdit={() => setEditing(row)}
@@ -229,8 +264,9 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
+
 
       <MasterFormDialog
         open={creating || !!editing}
