@@ -163,7 +163,7 @@ function EstimateDetailPage() {
   if (!est.data) return <ErrorBlock message="Estimate not found." />;
 
   const estimate = est.data;
-  const canConvert = estimate.status === "accepted";
+  const converted = linkedQuote.data ?? null;
   const tpl = ESTIMATE_TEMPLATES[estimate.template];
 
   const openSend = (chan: "whatsapp" | "email") => {
