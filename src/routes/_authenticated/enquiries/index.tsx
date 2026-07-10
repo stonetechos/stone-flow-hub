@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
@@ -10,27 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
@@ -90,8 +83,27 @@ function EnquiriesPage() {
   const [newOpen, setNewOpen] = useState(false);
   const [editing, setEditing] = useState<EnquiryListItem | null>(null);
   const [toDelete, setToDelete] = useState<EnquiryListItem | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("enquiries");
+
+  const columnDefs: ColumnDef[] = useMemo(
+    () => [
+      { key: "no", label: "No.", required: true },
+      { key: "customer", label: "Customer" },
+      { key: "requirement", label: "Requirement" },
+      { key: "project", label: "Project" },
+      { key: "stage", label: "Lead Stage" },
+      { key: "health", label: "Health" },
+      { key: "followup", label: "Next follow-up" },
+      { key: "priority", label: "Priority" },
+      { key: "budget", label: "Budget (INR)" },
+    ],
+    [],
+  );
 
   const query = useQuery({ queryKey: qk.enquiries.list(dq), queryFn: () => listEnquiries(dq) });
+  useEffect(() => setPage(1), [dq, umbrella]);
 
   useEffect(() => {
     if (!edit) return;
@@ -114,16 +126,9 @@ function EnquiriesPage() {
 
   const stageMut = useMutation({
     mutationFn: ({
-      id,
-      stage,
-      lost_reason,
-      lost_notes,
-    }: {
-      id: string;
-      stage: LeadStage;
-      lost_reason?: string | null;
-      lost_notes?: string | null;
-    }) => updateEnquiryStage(id, stage, { lost_reason, lost_notes }),
+      id, stage, lost_reason, lost_notes,
+    }: { id: string; stage: LeadStage; lost_reason?: string | null; lost_notes?: string | null }) =>
+      updateEnquiryStage(id, stage, { lost_reason, lost_notes }),
     onSuccess: () => {
       toast.success("Stage updated");
       qc.invalidateQueries({ queryKey: qk.enquiries.all });
@@ -138,15 +143,16 @@ function EnquiriesPage() {
   const rows = (query.data ?? []).filter((r) =>
     umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true,
   );
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
-  const rowIds = rows.map((r) => r.id);
+  const rowIds = pageRows.map((r) => r.id);
   const signalsQ = useQuery({
     queryKey: ["enquiry-signals-batch", rowIds.join(",")],
     queryFn: () =>
       listEnquirySignals(
         rowIds,
         Object.fromEntries(
-          rows.map((r) => [r.id, { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null }]),
+          pageRows.map((r) => [r.id, { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null }]),
         ),
       ),
     enabled: rowIds.length > 0,
@@ -154,49 +160,52 @@ function EnquiriesPage() {
   });
   const signals = signalsQ.data ?? {};
 
+  const umbrellaFilter = (
+    <div className="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        onClick={() => nav({ to: "/enquiries", search: {}, replace: true })}
+        className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${!umbrella ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+      >
+        All
+      </button>
+      {LEAD_UMBRELLAS.map((u) => (
+        <button
+          key={u.id}
+          type="button"
+          onClick={() => nav({ to: "/enquiries", search: { umbrella: u.id }, replace: true })}
+          className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${umbrella === u.id ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+        >
+          {u.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       <PageHeader
         title="Enquiries"
         subtitle="Every lead in the pipeline — capture first, qualify later."
-        actions={
-          <Button onClick={() => setNewOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New enquiry
+      />
+
+      <DataToolbar
+        count={rows.length}
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Search by enquiry no, requirement, or notes…"
+        primaryFilter={umbrellaFilter}
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+        action={
+          <Button size="sm" className="h-8" onClick={() => setNewOpen(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> New enquiry
           </Button>
         }
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by enquiry no, requirement, or notes…"
-          className="max-w-md"
-        />
-        <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
-            onClick={() => nav({ to: "/enquiries", search: {}, replace: true })}
-            className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${!umbrella ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
-          >
-            All
-          </button>
-          {LEAD_UMBRELLAS.map((u) => (
-            <button
-              key={u.id}
-              type="button"
-              onClick={() =>
-                nav({ to: "/enquiries", search: { umbrella: u.id }, replace: true })
-              }
-              className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${umbrella === u.id ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
-            >
-              {u.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={8} />
+        <SkeletonTable rows={6} columns={9} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -211,24 +220,35 @@ function EnquiriesPage() {
           }
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <DataTableShell
+          density={prefs.density}
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={rows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          }
+        >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>No.</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Requirement</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead className="min-w-[200px]">Lead Stage</TableHead>
-                <TableHead>Health</TableHead>
-                <TableHead className="min-w-[140px]">Next follow-up</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Budget (INR)</TableHead>
+                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("customer") && <TableHead>Customer</TableHead>}
+                {!isHidden("requirement") && <TableHead>Requirement</TableHead>}
+                {!isHidden("project") && <TableHead>Project</TableHead>}
+                {!isHidden("stage") && <TableHead className="min-w-[200px]">Lead Stage</TableHead>}
+                {!isHidden("health") && <TableHead>Health</TableHead>}
+                {!isHidden("followup") && <TableHead className="min-w-[140px]">Next follow-up</TableHead>}
+                {!isHidden("priority") && <TableHead>Priority</TableHead>}
+                {!isHidden("budget") && <TableHead>Budget (INR)</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((e) => {
+              {pageRows.map((e) => {
                 const currentUmbrella = stageToUmbrella(e.stage);
                 const sig = signals[e.id] ?? null;
                 const daysInStage = daysSince(sig?.stage_entered_at ?? e.updated_at ?? e.created_at);
@@ -244,63 +264,53 @@ function EnquiriesPage() {
                 });
                 return (
                   <TableRow key={e.id}>
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/enquiries/$enquiryId"
-                        params={{ enquiryId: e.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {e.enquiry_no}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
-                    <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
-                    <TableCell>
-                      {e.project ? (
-                        e.project.name
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Unassigned</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Select
-                          value={currentUmbrella.id}
-                          onValueChange={(v) => {
-                            const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
-                            const primary = target.stages[0];
-                            if (target.stages.includes(e.stage)) return;
-                            if (primary === "lost" || primary === "cancelled") {
-                              setLostFor({ id: e.id, stage: primary });
-                              return;
-                            }
-                            stageMut.mutate({ id: e.id, stage: primary });
-                          }}
-                        >
-                          <SelectTrigger className="h-8 w-full text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LEAD_UMBRELLAS.map((u) => (
-                              <SelectItem key={u.id} value={u.id}>
-                                {u.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <StageAgeChip stage={e.stage} days={daysInStage} compact />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <LeadHealthBadge health={health} compact />
-                    </TableCell>
-                    <TableCell>
-                      <NextFollowupChip next={nextFup} compact />
-                    </TableCell>
-                    <TableCell className="capitalize">{e.priority}</TableCell>
-                    <TableCell>
-                      {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
-                    </TableCell>
+                    {!isHidden("no") && (
+                      <TableCell className="font-mono text-xs">
+                        <Link to="/enquiries/$enquiryId" params={{ enquiryId: e.id }} className="text-primary hover:underline">
+                          {e.enquiry_no}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("customer") && <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>}
+                    {!isHidden("requirement") && <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>}
+                    {!isHidden("project") && (
+                      <TableCell>
+                        {e.project ? e.project.name : <span className="text-xs text-muted-foreground">Unassigned</span>}
+                      </TableCell>
+                    )}
+                    {!isHidden("stage") && (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Select
+                            value={currentUmbrella.id}
+                            onValueChange={(v) => {
+                              const target = UMBRELLA_BY_ID[v as LeadUmbrellaId];
+                              const primary = target.stages[0];
+                              if (target.stages.includes(e.stage)) return;
+                              if (primary === "lost" || primary === "cancelled") {
+                                setLostFor({ id: e.id, stage: primary });
+                                return;
+                              }
+                              stageMut.mutate({ id: e.id, stage: primary });
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-full text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {LEAD_UMBRELLAS.map((u) => (
+                                <SelectItem key={u.id} value={u.id}>{u.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <StageAgeChip stage={e.stage} days={daysInStage} compact />
+                        </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("health") && <TableCell><LeadHealthBadge health={health} compact /></TableCell>}
+                    {!isHidden("followup") && <TableCell><NextFollowupChip next={nextFup} compact /></TableCell>}
+                    {!isHidden("priority") && <TableCell className="capitalize">{e.priority}</TableCell>}
+                    {!isHidden("budget") && (
+                      <TableCell className="tabular-nums">{e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}</TableCell>
+                    )}
                     <TableCell>
                       <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
                     </TableCell>
@@ -309,7 +319,7 @@ function EnquiriesPage() {
               })}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
       <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} />
@@ -332,12 +342,7 @@ function EnquiriesPage() {
         onOpenChange={(o) => !o && setLostFor(null)}
         onConfirm={(reason, notes) => {
           if (!lostFor) return;
-          stageMut.mutate({
-            id: lostFor.id,
-            stage: lostFor.stage,
-            lost_reason: reason,
-            lost_notes: notes,
-          });
+          stageMut.mutate({ id: lostFor.id, stage: lostFor.stage, lost_reason: reason, lost_notes: notes });
           setLostFor(null);
         }}
         stage={lostFor?.stage ?? "lost"}
