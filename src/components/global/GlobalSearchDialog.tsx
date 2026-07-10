@@ -92,15 +92,15 @@ export function GlobalSearchDialog({
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="Search customers, projects, enquiries, invoices…"
+        placeholder="Search customers, projects, quotes, invoices, payments…"
         value={query}
         onValueChange={setQuery}
       />
-      <CommandList>
+      <CommandList className="max-h-[70vh]">
         {query.trim().length < 2 ? (
           <>
             {recentNavItems.length > 0 && (
-              <CommandGroup heading="Recently used modules">
+              <CommandGroup heading="Recently used">
                 {recentNavItems.map((item) => (
                   <CommandItem
                     key={`nav-recent-${item.id}`}
@@ -118,7 +118,7 @@ export function GlobalSearchDialog({
             ) : recent.length > 0 ? (
               <>
                 {recentNavItems.length > 0 && <CommandSeparator />}
-                <CommandGroup heading="Recent">
+                <CommandGroup heading="Recently viewed">
                   {recent.slice(0, 8).map((r) => (
                     <CommandItem
                       key={`${r.entityType}:${r.entityId}`}
@@ -127,7 +127,7 @@ export function GlobalSearchDialog({
                     >
                       <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
                       <span className="truncate">{r.label}</span>
-                      <span className="ml-auto text-xs text-muted-foreground capitalize">
+                      <span className="ml-auto text-[11px] text-muted-foreground capitalize">
                         {r.entityType}
                       </span>
                     </CommandItem>
@@ -173,7 +173,7 @@ export function GlobalSearchDialog({
                       >
                         <span className="truncate">{h.label}</span>
                         {h.sublabel && (
-                          <span className="ml-auto truncate text-xs text-muted-foreground">
+                          <span className="ml-auto truncate text-[11px] text-muted-foreground">
                             {h.sublabel}
                           </span>
                         )}
@@ -186,6 +186,23 @@ export function GlobalSearchDialog({
           </>
         )}
       </CommandList>
+      <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">↑↓</kbd>
+            navigate
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">↵</kbd>
+            open
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">esc</kbd>
+            close
+          </span>
+        </div>
+        <span className="hidden sm:inline">Stone Tech OS · Command</span>
+      </div>
     </CommandDialog>
   );
 }
