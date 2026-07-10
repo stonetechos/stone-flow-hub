@@ -21,7 +21,7 @@ import { toUserMessage } from "@/lib/errors";
 import { getSalesOrder, listSalesOrderItems } from "@/lib/sales-orders/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
 import { invalidateInvoice } from "@/lib/query-invalidation";
-import { formatCurrency } from "@/lib/format";
+import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id")({
   ssr: false,
