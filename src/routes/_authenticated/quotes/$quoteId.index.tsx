@@ -186,18 +186,22 @@ function QuoteDetailPage() {
                     Create revision
                   </Button>
                 )}
-                <Link
-                  to="/sales-orders/new"
-                  search={{
-                    quote: quoteId,
-                    ...(quote.project_id ? { project: quote.project_id } : {}),
-                    ...(quote.customer_id ? { customer: quote.customer_id } : {}),
-                  }}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => soMut.mutate()}
+                  disabled={soMut.isPending}
+                  title={
+                    linkedSo.data
+                      ? `Already linked to ${linkedSo.data.so_no}`
+                      : "Create a sales order from this quote"
+                  }
                 >
-                  <Button size="sm" variant="outline">
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Sales order
-                  </Button>
-                </Link>
+                  {soMut.isPending
+                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    : <ShoppingCart className="mr-2 h-4 w-4" />}
+                  {linkedSo.data ? "Open sales order" : "Convert to Sales Order"}
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => convertMut.mutate()}
