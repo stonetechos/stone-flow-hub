@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,6 +25,12 @@ import {
 } from "@/components/ui/select";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { TablePagination } from "@/components/data/Pagination";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
