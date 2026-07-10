@@ -124,6 +124,7 @@ function EstimateDetailPage() {
       toast.success(`Quote ${quote.quote_no} created`);
       invalidateEstimate(qc, estimateId);
       invalidateQuote(qc);
+      qc.invalidateQueries({ queryKey: ["estimates", "linkedQuote", estimateId] });
       nav({ to: "/quotes/$quoteId", params: { quoteId: quote.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
