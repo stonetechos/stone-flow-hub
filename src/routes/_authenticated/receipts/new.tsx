@@ -6,18 +6,25 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EntityPicker } from "@/components/forms/EntityPicker";
+import { Field } from "@/components/forms/Field";
+import {
+  FormLayout,
+  FormSection,
+  FormGrid,
+  FormActions,
+  FormSummary,
+  FormSummaryRow,
+} from "@/components/forms/FormLayout";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createReceipt, listOpenInvoicesForCustomer } from "@/lib/receipts/api";
-import { RECEIPT_METHODS } from "@/lib/receipts/schema";
+import { RECEIPT_METHODS, RECEIPT_METHOD_LABELS } from "@/lib/receipts/schema";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 
@@ -55,6 +62,7 @@ function NewReceiptPage() {
   const net = Math.max(0, amount - tds - charges);
   const alloc = useMemo(() => allocations.reduce((s, a) => s + Number(a.amount || 0), 0), [allocations]);
   const unallocated = net - alloc;
+  const overAllocated = alloc > net + 0.01;
 
   const mut = useMutation({
     mutationFn: () =>
@@ -90,177 +98,260 @@ function NewReceiptPage() {
     });
   }
 
-  const canSave = !!customerId && amount > 0 && alloc <= net + 0.01 && !!method && !!receivedAt;
+  const canSave = !!customerId && amount > 0 && !overAllocated && !!method && !!receivedAt;
+  const hint = overAllocated
+    ? "Allocations exceed the net receipt amount."
+    : !customerId
+      ? "Select a customer to begin."
+      : amount <= 0
+        ? "Enter a receipt amount greater than zero."
+        : unallocated > 0
+          ? `${formatInr(unallocated)} will be saved as an unallocated advance.`
+          : null;
 
   return (
     <div>
       <PageHeader
-        title="New Receipt"
-        subtitle="Record a customer receipt. Leave allocations empty to keep it as an unallocated advance."
+        title="New receipt"
+        subtitle="Record a customer receipt. Leave allocations empty to save it as an unallocated advance."
         actions={
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-            <Button size="sm" disabled={!canSave || mut.isPending} onClick={() => mut.mutate()}>
-              <Save className="mr-2 h-4 w-4" /> Save receipt
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="shadow-1 md:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Receipt details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Customer *</Label>
-                <EntityPicker type="customer" value={customerId} onChange={(id) => { setCustomerId(id); setAllocations([]); }} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Received on *</Label>
-                <Input type="date" value={receivedAt} onChange={(e) => setReceivedAt(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Amount *</Label>
-                <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Method *</Label>
-                <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {RECEIPT_METHODS.map((m) => (
-                      <SelectItem key={m} value={m} className="uppercase">{m.replace(/_/g, " ")}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Bank name</Label>
-                <Input value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. HDFC Bank" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Account used</Label>
-                <Input value={accountUsed} onChange={(e) => setAccountUsed(e.target.value)} placeholder="e.g. Current A/c 12345" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>UTR / Transaction #</Label>
-                <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Cheque #</Label>
-                <Input value={chequeNo} onChange={(e) => setChequeNo(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Cheque date</Label>
-                <Input type="date" value={chequeDate} onChange={(e) => setChequeDate(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>TDS deducted</Label>
-                <Input type="number" step="0.01" value={tds} onChange={(e) => setTds(Number(e.target.value))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Bank charges</Label>
-                <Input type="number" step="0.01" value={charges} onChange={(e) => setCharges(Number(e.target.value))} />
-              </div>
-              <div className="space-y-1.5 md:col-span-2">
-                <Label>Remarks</Label>
-                <Textarea rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <FormLayout
+        busy={mut.isPending}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (canSave) mut.mutate();
+        }}
+      >
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="space-y-10 md:col-span-2">
+            <FormSection
+              title="Receipt information"
+              description="Who paid, how much, and when it was received."
+            >
+              <FormGrid>
+                <Field label="Customer" required>
+                  <EntityPicker
+                    type="customer"
+                    value={customerId}
+                    onChange={(id) => {
+                      setCustomerId(id);
+                      setAllocations([]);
+                    }}
+                  />
+                </Field>
+                <Field label="Received on" required>
+                  <Input
+                    type="date"
+                    value={receivedAt}
+                    onChange={(e) => setReceivedAt(e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field label="Amount" required>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={amount || ""}
+                    onChange={(e) => setAmount(Number(e.target.value))}
+                    required
+                  />
+                </Field>
+                <Field label="Method" required>
+                  <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RECEIPT_METHODS.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {RECEIPT_METHOD_LABELS[m]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </FormGrid>
+            </FormSection>
 
-        <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">Summary</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <Row k="Gross amount" v={formatInr(amount)} />
-            <Row k="Less: TDS" v={formatInr(-tds)} />
-            <Row k="Less: Bank charges" v={formatInr(-charges)} />
-            <Row k="Net" v={formatInr(net)} bold />
-            <hr className="my-2 border-border" />
-            <Row k="Allocated" v={formatInr(alloc)} />
-            <Row k="Unallocated advance" v={formatInr(unallocated)} bold={unallocated > 0} />
-          </CardContent>
-        </Card>
-      </div>
+            <FormSection
+              title="Bank & reference"
+              description="Optional — used for reconciliation and audit."
+            >
+              <FormGrid>
+                <Field label="Bank name">
+                  <Input
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="e.g. HDFC Bank"
+                  />
+                </Field>
+                <Field label="Account used">
+                  <Input
+                    value={accountUsed}
+                    onChange={(e) => setAccountUsed(e.target.value)}
+                    placeholder="e.g. Current A/c 12345"
+                  />
+                </Field>
+                <Field label="UTR / Transaction #">
+                  <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} />
+                </Field>
+                <Field label="Cheque #">
+                  <Input value={chequeNo} onChange={(e) => setChequeNo(e.target.value)} />
+                </Field>
+                <Field label="Cheque date">
+                  <Input type="date" value={chequeDate} onChange={(e) => setChequeDate(e.target.value)} />
+                </Field>
+              </FormGrid>
+            </FormSection>
 
-      <Card className="mt-4 shadow-1">
-        <CardHeader>
-          <CardTitle className="text-sm">Allocate to open invoices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!customerId ? (
-            <p className="text-sm text-muted-foreground">Select a customer first.</p>
-          ) : invoicesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading open invoices…</p>
-          ) : (invoicesQuery.data ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No open invoices — this receipt will be saved as an unallocated advance.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Issued</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                  <TableHead className="text-right">Allocate</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(invoicesQuery.data ?? []).map((inv) => {
-                  const row = allocations.find((a) => a.invoice_id === inv.id);
-                  return (
-                    <TableRow key={inv.id}>
-                      <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
-                      <TableCell className="text-sm">{formatDate(inv.issue_date)}</TableCell>
-                      <TableCell className="text-right">{formatInr(inv.total)}</TableCell>
-                      <TableCell className="text-right">{formatInr(inv.balance_due)}</TableCell>
-                      <TableCell className="text-right">
-                        {row ? (
-                          <Input
-                            type="number" step="0.01" className="w-32 ml-auto text-right"
-                            value={row.amount}
-                            onChange={(e) =>
-                              setAllocations((prev) => prev.map((p) =>
-                                p.invoice_id === inv.id ? { ...p, amount: Number(e.target.value) } : p))
-                            }
-                          />
-                        ) : (
-                          <Button variant="outline" size="sm" onClick={() => toggleInvoice(inv as never)}>
-                            Allocate
-                          </Button>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {row && (
-                          <Button variant="ghost" size="icon" onClick={() => toggleInvoice(inv as never)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+            <FormSection
+              title="Deductions"
+              description="TDS and bank charges reduce the net amount available for allocation."
+            >
+              <FormGrid>
+                <Field label="TDS deducted">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={tds || ""}
+                    onChange={(e) => setTds(Number(e.target.value) || 0)}
+                  />
+                </Field>
+                <Field label="Bank charges">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={charges || ""}
+                    onChange={(e) => setCharges(Number(e.target.value) || 0)}
+                  />
+                </Field>
+                <Field label="Remarks" className="md:col-span-2">
+                  <Textarea rows={2} value={remarks} onChange={(e) => setRemarks(e.target.value)} />
+                </Field>
+              </FormGrid>
+            </FormSection>
 
-function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-muted-foreground">{k}</span>
-      <span className={bold ? "font-semibold" : ""}>{v}</span>
+            <FormSection
+              title="Allocate to open invoices"
+              description="Select invoices to settle. Anything unallocated stays on the customer ledger as an advance."
+            >
+              {!customerId ? (
+                <p className="py-6 text-sm text-muted-foreground">Select a customer to view open invoices.</p>
+              ) : invoicesQuery.isLoading ? (
+                <p className="py-6 text-sm text-muted-foreground">Loading open invoices…</p>
+              ) : (invoicesQuery.data ?? []).length === 0 ? (
+                <p className="py-6 text-sm text-muted-foreground">
+                  No open invoices — this receipt will be saved as an unallocated advance.
+                </p>
+              ) : (
+                <div className="rounded-md border border-border/60">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Invoice #</TableHead>
+                        <TableHead>Issued</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead className="text-right">Allocate</TableHead>
+                        <TableHead className="w-10" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(invoicesQuery.data ?? []).map((inv) => {
+                        const row = allocations.find((a) => a.invoice_id === inv.id);
+                        return (
+                          <TableRow key={inv.id}>
+                            <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
+                            <TableCell className="text-sm">{formatDate(inv.issue_date)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{formatInr(inv.total)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{formatInr(inv.balance_due)}</TableCell>
+                            <TableCell className="text-right">
+                              {row ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  inputMode="decimal"
+                                  className="ml-auto w-32 text-right tabular-nums"
+                                  value={row.amount}
+                                  onChange={(e) =>
+                                    setAllocations((prev) =>
+                                      prev.map((p) =>
+                                        p.invoice_id === inv.id ? { ...p, amount: Number(e.target.value) } : p,
+                                      ),
+                                    )
+                                  }
+                                />
+                              ) : (
+                                <Button variant="outline" size="sm" onClick={() => toggleInvoice(inv as never)}>
+                                  Allocate
+                                </Button>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {row && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={`Remove allocation for ${inv.invoice_no}`}
+                                  onClick={() => toggleInvoice(inv as never)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </FormSection>
+          </div>
+
+          <div className="md:sticky md:top-4 md:self-start">
+            <FormSummary>
+              <FormSummaryRow label="Gross amount" value={formatInr(amount)} />
+              <FormSummaryRow label="Less: TDS" value={formatInr(-tds)} tone="muted" />
+              <FormSummaryRow label="Less: Bank charges" value={formatInr(-charges)} tone="muted" />
+              <div className="my-1 border-t border-border/60" />
+              <FormSummaryRow label="Net" value={formatInr(net)} emphasis />
+              <div className="my-1 border-t border-border/60" />
+              <FormSummaryRow label="Allocated" value={formatInr(alloc)} />
+              <FormSummaryRow
+                label="Unallocated advance"
+                value={formatInr(unallocated)}
+                emphasis={unallocated > 0}
+                tone={overAllocated ? "warning" : unallocated > 0 ? "positive" : "default"}
+              />
+            </FormSummary>
+          </div>
+        </div>
+
+        <FormActions
+          busy={mut.isPending}
+          hint={hint}
+          secondary={
+            <Button type="button" variant="ghost" onClick={() => nav({ to: "/receipts" })}>
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={!canSave || mut.isPending}>
+              <Save className="mr-2 h-4 w-4" /> Save receipt
+            </Button>
+          }
+        />
+      </FormLayout>
     </div>
   );
 }
