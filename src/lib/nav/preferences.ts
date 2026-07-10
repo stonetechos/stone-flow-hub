@@ -32,6 +32,8 @@ export interface NavPreferences {
   itemOrderByGroup: Partial<Record<NavGroupId, string[]>>;
   /** Groups whose bodies are currently collapsed. */
   collapsedGroups: NavGroupId[];
+  /** Per-item override of the group an item lives in (drag between groups). */
+  itemGroupOverrides: Record<string, NavGroupId>;
 }
 
 export function defaultPreferences(): NavPreferences {
@@ -42,6 +44,7 @@ export function defaultPreferences(): NavPreferences {
     groupOrder: NAV_GROUPS.map((g) => g.id),
     itemOrderByGroup: {},
     collapsedGroups: [],
+    itemGroupOverrides: {},
   };
 }
 
