@@ -82,6 +82,10 @@ function QuoteDetailPage() {
     queryKey: qk.quotes.items(quoteId),
     queryFn: () => getQuoteItems(quoteId),
   });
+  const linkedSo = useQuery({
+    queryKey: ["quotes", "linkedSalesOrder", quoteId],
+    queryFn: () => getSalesOrderForQuote(quoteId),
+  });
 
   const statusMut = useMutation({
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
