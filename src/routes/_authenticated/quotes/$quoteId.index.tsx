@@ -86,6 +86,12 @@ function QuoteDetailPage() {
     queryKey: ["quotes", "linkedSalesOrder", quoteId],
     queryFn: () => getSalesOrderForQuote(quoteId),
   });
+  const sourceEstimateId = q.data?.estimate_id ?? null;
+  const sourceEstimate = useQuery({
+    queryKey: ["quotes", "sourceEstimate", sourceEstimateId ?? ""],
+    queryFn: () => (sourceEstimateId ? getEstimateForQuote(sourceEstimateId) : null),
+    enabled: !!sourceEstimateId,
+  });
 
   const statusMut = useMutation({
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
