@@ -369,6 +369,11 @@ function CustomerHub() {
           <AttachmentsPanel entityType="customer_document" entityId={customerId} />
         </TabsContent>
 
+        <TabsContent value="challans" className="mt-4">
+          <DeliveryChallanListPanel customerId={customerId} title="Delivery challans for this customer" />
+        </TabsContent>
+
+
         <TabsContent value="timeline" className="mt-4">
           <TimelinePanel entityType="customer" entityId={customerId} />
         </TabsContent>
