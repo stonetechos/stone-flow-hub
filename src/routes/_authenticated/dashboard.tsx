@@ -38,6 +38,7 @@ import { listRecentActivity } from "@/lib/activity/api";
 import { listTasks, updateTaskStatus, type TaskRow } from "@/lib/tasks/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { formatRelative } from "@/lib/format";
+import { WorkforceSummaryWidget } from "@/components/dashboard/WorkforceSummaryWidget";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
