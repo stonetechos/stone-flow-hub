@@ -80,6 +80,7 @@ export const qk = {
     all: ["salesOrders"] as const,
     list: (q?: string, status?: string) => ["salesOrders", "list", q ?? "", status ?? ""] as const,
     byId: (id: string) => ["salesOrders", "byId", id] as const,
+    items: (id: string) => ["salesOrders", "items", id] as const,
   },
   purchaseOrders: {
     all: ["purchaseOrders"] as const,
