@@ -126,6 +126,17 @@ function QuoteDetailPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const soMut = useMutation({
+    mutationFn: () => convertQuoteToSalesOrder(quoteId),
+    onSuccess: (so) => {
+      toast.success(`Sales order ${so.so_no} created`);
+      invalidateSalesOrder(qc, so.id);
+      qc.invalidateQueries({ queryKey: ["quotes", "linkedSalesOrder", quoteId] });
+      nav({ to: "/sales-orders/$id", params: { id: so.id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Quote not found." />;
