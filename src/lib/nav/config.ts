@@ -37,6 +37,7 @@ import {
 export type NavGroupId =
   | "sales"
   | "operations"
+  | "workforce"
   | "masterData"
   | "others"
   | "admin";
@@ -50,6 +51,7 @@ export interface NavGroupDef {
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "operations", label: "Operations" },
+  { id: "workforce", label: "Workforce Intelligence" },
   { id: "masterData", label: "Master Data" },
   { id: "others", label: "Others" },
   { id: "admin", label: "Administration", adminOnly: true },
