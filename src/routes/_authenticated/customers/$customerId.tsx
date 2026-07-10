@@ -30,6 +30,7 @@ import { getCustomer } from "@/lib/customers/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DeliveryChallanListPanel } from "@/components/dispatch/DeliveryChallanListPanel";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
