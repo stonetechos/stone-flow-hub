@@ -383,7 +383,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
             </p>
           )}
 
-        <input type="hidden" data-nav-items-count={NAV_ITEMS_BY_ID ? NAV_ITEMS.length : 0} />
+        
       </CardContent>
     </Card>
   );
