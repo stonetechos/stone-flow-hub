@@ -36,6 +36,10 @@ function SalesOrderDetailPage() {
   const canTransfer = roles.isAdmin || roles.isSalesManager;
   const [transferOpen, setTransferOpen] = useState(false);
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
+  const itemsQuery = useQuery({
+    queryKey: qk.salesOrders.items(id),
+    queryFn: () => listSalesOrderItems(id),
+  });
 
   const convertMut = useMutation({
     mutationFn: (quoteId: string) => convertQuoteToInvoice({ quote_id: quoteId }),
