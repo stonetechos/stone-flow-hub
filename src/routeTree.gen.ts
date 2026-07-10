@@ -136,6 +136,7 @@ import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
 import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 import { Route as ApiPublicHooksWorkforceDailyRouteImport } from './routes/api/public/hooks/workforce-daily'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
@@ -891,6 +892,12 @@ const AuthenticatedQuotesQuoteIdIndexRoute =
     path: '/quotes/$quoteId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
@@ -1152,6 +1159,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1300,6 +1308,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1450,6 +1459,7 @@ export interface FileRoutesById {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1600,6 +1610,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
+    | '/lovable/email/queue/process'
     | '/quotes/$quoteId/'
     | '/workforce-intelligence/capacities/'
     | '/workforce-intelligence/employees/'
@@ -1748,6 +1759,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
+    | '/lovable/email/queue/process'
     | '/quotes/$quoteId'
     | '/workforce-intelligence/capacities'
     | '/workforce-intelligence/employees'
@@ -1897,6 +1909,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
+    | '/lovable/email/queue/process'
     | '/_authenticated/quotes/$quoteId/'
     | '/_authenticated/workforce-intelligence/capacities/'
     | '/_authenticated/workforce-intelligence/employees/'
@@ -1917,6 +1930,7 @@ export interface RootRouteChildren {
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
   ApiPublicHooksWorkforceDailyRoute: typeof ApiPublicHooksWorkforceDailyRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2810,6 +2824,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/razorpay': {
       id: '/api/public/webhooks/razorpay'
       path: '/api/public/webhooks/razorpay'
@@ -3399,6 +3420,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
   ApiPublicHooksWorkforceDailyRoute: ApiPublicHooksWorkforceDailyRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
