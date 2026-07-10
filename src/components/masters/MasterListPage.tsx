@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Search, Layers, Upload } from "lucide-react";
+import { Plus, Loader2, Layers, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -25,6 +25,11 @@ import {
 import { RowActions } from "@/components/data/RowActions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { DataTableShell } from "@/components/data/DataTableShell";
+import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
+import { DensityMenu } from "@/components/data/DensityMenu";
+import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
