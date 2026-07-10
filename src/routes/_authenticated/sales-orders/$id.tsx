@@ -266,8 +266,10 @@ function SalesOrderDetailPage() {
             </CardContent>
           </Card>
 
+          <SalesOrderDeliveryPanel salesOrderId={r.id} />
           <ProductionOrdersPanel salesOrderId={r.id} />
           <SalesOrderInstallationPanel salesOrderId={r.id} />
+
 
 
           <NotesPanel
