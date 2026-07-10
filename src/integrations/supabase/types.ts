@@ -5187,6 +5187,93 @@ export type Database = {
           },
         ]
       }
+      sales_order_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          discount_pct: number
+          finish: string | null
+          fulfilment: string | null
+          id: string
+          is_demo: boolean
+          line_total: number
+          product_id: string | null
+          product_name: string | null
+          quantity: number
+          sales_order_id: string
+          size: string | null
+          sort_order: number
+          stone_type: string | null
+          tax_amount: number
+          tax_pct: number
+          unit: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description: string
+          discount_pct?: number
+          finish?: string | null
+          fulfilment?: string | null
+          id?: string
+          is_demo?: boolean
+          line_total?: number
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sales_order_id: string
+          size?: string | null
+          sort_order?: number
+          stone_type?: string | null
+          tax_amount?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          discount_pct?: number
+          finish?: string | null
+          fulfilment?: string | null
+          id?: string
+          is_demo?: boolean
+          line_total?: number
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sales_order_id?: string
+          size?: string | null
+          sort_order?: number
+          stone_type?: string | null
+          tax_amount?: number
+          tax_pct?: number
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_items_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_orders: {
         Row: {
           company_id: string | null
@@ -5195,17 +5282,24 @@ export type Database = {
           currency_code: string | null
           customer_id: string | null
           delivery_date: string | null
+          discount: number
           external_ref: string | null
+          freight: number
           id: string
           is_demo: boolean
           notes: string | null
           order_date: string
           original_customer_id: string | null
+          other_charges: number
           project_id: string | null
           quote_id: string | null
+          round_off: number
           so_no: string
           status: Database["public"]["Enums"]["sales_order_status"]
+          subtotal: number
           supply_scope: string
+          tax_amount: number
+          total: number
           updated_at: string
           workflow_state: string | null
         }
@@ -5216,17 +5310,24 @@ export type Database = {
           currency_code?: string | null
           customer_id?: string | null
           delivery_date?: string | null
+          discount?: number
           external_ref?: string | null
+          freight?: number
           id?: string
           is_demo?: boolean
           notes?: string | null
           order_date?: string
           original_customer_id?: string | null
+          other_charges?: number
           project_id?: string | null
           quote_id?: string | null
+          round_off?: number
           so_no: string
           status?: Database["public"]["Enums"]["sales_order_status"]
+          subtotal?: number
           supply_scope?: string
+          tax_amount?: number
+          total?: number
           updated_at?: string
           workflow_state?: string | null
         }
@@ -5237,17 +5338,24 @@ export type Database = {
           currency_code?: string | null
           customer_id?: string | null
           delivery_date?: string | null
+          discount?: number
           external_ref?: string | null
+          freight?: number
           id?: string
           is_demo?: boolean
           notes?: string | null
           order_date?: string
           original_customer_id?: string | null
+          other_charges?: number
           project_id?: string | null
           quote_id?: string | null
+          round_off?: number
           so_no?: string
           status?: Database["public"]["Enums"]["sales_order_status"]
+          subtotal?: number
           supply_scope?: string
+          tax_amount?: number
+          total?: number
           updated_at?: string
           workflow_state?: string | null
         }
@@ -6942,6 +7050,43 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      convert_quote_to_sales_order: {
+        Args: { p_quote_id: string }
+        Returns: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          customer_id: string | null
+          delivery_date: string | null
+          discount: number
+          external_ref: string | null
+          freight: number
+          id: string
+          is_demo: boolean
+          notes: string | null
+          order_date: string
+          original_customer_id: string | null
+          other_charges: number
+          project_id: string | null
+          quote_id: string | null
+          round_off: number
+          so_no: string
+          status: Database["public"]["Enums"]["sales_order_status"]
+          subtotal: number
+          supply_scope: string
+          tax_amount: number
+          total: number
+          updated_at: string
+          workflow_state: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sales_orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_po_from_vendor_quote: {
         Args: {
           p_override_reason?: string
@@ -7063,6 +7208,10 @@ export type Database = {
         Returns: undefined
       }
       recalc_quote_totals: { Args: { _quote_id: string }; Returns: undefined }
+      recalc_sales_order_totals: {
+        Args: { _so_id: string }
+        Returns: undefined
+      }
       recalc_vendor_performance: {
         Args: { _vendor_id: string }
         Returns: undefined
