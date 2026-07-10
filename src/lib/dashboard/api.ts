@@ -14,7 +14,12 @@ export type DashboardKpis = {
   outstandingInr: number;
   paymentsThisMonthInr: number;
   customers: number;
+  salesTodayInr: number;
+  collectionsTodayInr: number;
+  pendingQuotes: number;
+  deliveriesToday: number;
 };
+
 
 export async function getDashboardKpis(): Promise<DashboardKpis> {
   const start = new Date();
