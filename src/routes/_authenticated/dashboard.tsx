@@ -205,6 +205,10 @@ function DashboardPage() {
         </div>
       </section>
 
+      {/* Workforce Intelligence — morning brief (owner-only, self-hides otherwise) */}
+      <WorkforceSummaryWidget />
+
+
       {/* 5. Quick Actions */}
       <section>
         <SectionHeader title="Quick actions" />
