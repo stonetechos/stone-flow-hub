@@ -137,6 +137,7 @@ import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } 
 import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as ApiPublicHooksWorkforceDailyRouteImport } from './routes/api/public/hooks/workforce-daily'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
 import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/public/hooks/dispatch-queue'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
@@ -896,6 +897,12 @@ const ApiPublicWebhooksRazorpayRoute =
     path: '/api/public/webhooks/razorpay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksWorkforceDailyRoute =
+  ApiPublicHooksWorkforceDailyRouteImport.update({
+    id: '/api/public/hooks/workforce-daily',
+    path: '/api/public/hooks/workforce-daily',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksWhatsappRoute = ApiPublicHooksWhatsappRouteImport.update({
   id: '/api/public/hooks/whatsapp',
   path: '/api/public/hooks/whatsapp',
@@ -1143,6 +1150,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
@@ -1290,6 +1298,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
@@ -1439,6 +1448,7 @@ export interface FileRoutesById {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
@@ -1588,6 +1598,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId/'
     | '/workforce-intelligence/capacities/'
@@ -1735,6 +1746,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId'
     | '/workforce-intelligence/capacities'
@@ -1883,6 +1895,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/_authenticated/quotes/$quoteId/'
     | '/_authenticated/workforce-intelligence/capacities/'
@@ -1902,6 +1915,7 @@ export interface RootRouteChildren {
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
+  ApiPublicHooksWorkforceDailyRoute: typeof ApiPublicHooksWorkforceDailyRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -2803,6 +2817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/workforce-daily': {
+      id: '/api/public/hooks/workforce-daily'
+      path: '/api/public/hooks/workforce-daily'
+      fullPath: '/api/public/hooks/workforce-daily'
+      preLoaderRoute: typeof ApiPublicHooksWorkforceDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/whatsapp': {
       id: '/api/public/hooks/whatsapp'
       path: '/api/public/hooks/whatsapp'
@@ -3376,6 +3397,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksDispatchQueueRoute: ApiPublicHooksDispatchQueueRoute,
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
+  ApiPublicHooksWorkforceDailyRoute: ApiPublicHooksWorkforceDailyRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
