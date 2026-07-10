@@ -43,8 +43,26 @@ export function GlobalSearchDialog({
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const [recent, setRecent] = useState(listRecent());
+  const { prefs } = useNavPreferences();
+  const recentNavIds = useRecentNav();
 
   useEffect(() => subscribeRecent(() => setRecent(listRecent())), []);
+
+  // Ordered nav items following the user's own sidebar order (pinned first,
+  // then each visible group). Admin-only items are safe to include as
+  // matches only if the user actually has access — the visited route would
+  // otherwise be blocked, so this mirrors the sidebar (admin ignored here).
+  const orderedNav = useMemo(() => {
+    const resolved = resolveNav(prefs, false);
+    const list = [...resolved.starred, ...resolved.groups.flatMap((g) => g.items)];
+    return list;
+  }, [prefs]);
+
+  const navMatches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 1) return [];
+    return orderedNav.filter((i) => i.label.toLowerCase().includes(q)).slice(0, 8);
+  }, [query, orderedNav]);
 
   const { data, isFetching } = useQuery({
     queryKey: qk.search.global(query),
@@ -59,6 +77,11 @@ export function GlobalSearchDialog({
     arr.push(h);
     grouped.set(h.group, arr);
   }
+
+  const recentNavItems = recentNavIds
+    .map((id) => NAV_ITEMS_BY_ID[id])
+    .filter((i) => !!i)
+    .slice(0, 5);
 
   const go = (href: string): void => {
     onOpenChange(false);
