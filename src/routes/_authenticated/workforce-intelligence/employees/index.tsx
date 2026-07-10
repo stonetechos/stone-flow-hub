@@ -73,7 +73,7 @@ function EmployeesPage() {
       ) : (employees.data ?? []).length === 0 ? (
         <EmptyState
           title="No employees yet"
-          description="Add your team to unlock Today, KRA tracking and workload planning."
+          message="Add your team to unlock Today, KRA tracking and workload planning."
         />
       ) : (
         <Table>

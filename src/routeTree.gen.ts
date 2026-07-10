@@ -30,6 +30,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as VendorRfqsIndexRouteImport } from './routes/vendor/rfqs/index'
 import { Route as VendorOrdersIndexRouteImport } from './routes/vendor/orders/index'
+import { Route as AuthenticatedWorkforceIntelligenceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/index'
 import { Route as AuthenticatedVendorsIndexRouteImport } from './routes/_authenticated/vendors/index'
 import { Route as AuthenticatedVendorPaymentsIndexRouteImport } from './routes/_authenticated/vendor-payments/index'
 import { Route as AuthenticatedSalesOrdersIndexRouteImport } from './routes/_authenticated/sales-orders/index'
@@ -129,6 +130,7 @@ import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './rou
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
@@ -255,6 +257,12 @@ const VendorOrdersIndexRoute = VendorOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => VendorRouteRoute,
 } as any)
+const AuthenticatedWorkforceIntelligenceIndexRoute =
+  AuthenticatedWorkforceIntelligenceIndexRouteImport.update({
+    id: '/workforce-intelligence/',
+    path: '/workforce-intelligence/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVendorsIndexRoute =
   AuthenticatedVendorsIndexRouteImport.update({
     id: '/vendors/',
@@ -839,6 +847,12 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWorkforceIntelligenceEmployeesIndexRoute =
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport.update({
+    id: '/workforce-intelligence/employees/',
+    path: '/workforce-intelligence/employees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesQuoteIdIndexRoute =
   AuthenticatedQuotesQuoteIdIndexRouteImport.update({
     id: '/quotes/$quoteId/',
@@ -1059,6 +1073,7 @@ export interface FileRoutesByFullPath {
   '/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendor-payments/': typeof AuthenticatedVendorPaymentsIndexRoute
   '/vendors/': typeof AuthenticatedVendorsIndexRoute
+  '/workforce-intelligence/': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1078,6 +1093,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1197,6 +1213,7 @@ export interface FileRoutesByTo {
   '/sales-orders': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendor-payments': typeof AuthenticatedVendorPaymentsIndexRoute
   '/vendors': typeof AuthenticatedVendorsIndexRoute
+  '/workforce-intelligence': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders': typeof VendorOrdersIndexRoute
   '/vendor/rfqs': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1216,6 +1233,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1337,6 +1355,7 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/_authenticated/vendor-payments/': typeof AuthenticatedVendorPaymentsIndexRoute
   '/_authenticated/vendors/': typeof AuthenticatedVendorsIndexRoute
+  '/_authenticated/workforce-intelligence/': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1356,6 +1375,7 @@ export interface FileRoutesById {
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1477,6 +1497,7 @@ export interface FileRouteTypes {
     | '/sales-orders/'
     | '/vendor-payments/'
     | '/vendors/'
+    | '/workforce-intelligence/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
     | '/customers/$customerId/timeline'
@@ -1496,6 +1517,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId/'
+    | '/workforce-intelligence/employees/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1615,6 +1637,7 @@ export interface FileRouteTypes {
     | '/sales-orders'
     | '/vendor-payments'
     | '/vendors'
+    | '/workforce-intelligence'
     | '/vendor/orders'
     | '/vendor/rfqs'
     | '/customers/$customerId/timeline'
@@ -1634,6 +1657,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId'
+    | '/workforce-intelligence/employees'
   id:
     | '__root__'
     | '/'
@@ -1754,6 +1778,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders/'
     | '/_authenticated/vendor-payments/'
     | '/_authenticated/vendors/'
+    | '/_authenticated/workforce-intelligence/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
     | '/_authenticated/customers/$customerId/timeline'
@@ -1773,6 +1798,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/whatsapp'
     | '/api/public/webhooks/razorpay'
     | '/_authenticated/quotes/$quoteId/'
+    | '/_authenticated/workforce-intelligence/employees/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1936,6 +1962,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/orders/'
       preLoaderRoute: typeof VendorOrdersIndexRouteImport
       parentRoute: typeof VendorRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/': {
+      id: '/_authenticated/workforce-intelligence/'
+      path: '/workforce-intelligence'
+      fullPath: '/workforce-intelligence/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors/': {
       id: '/_authenticated/vendors/'
@@ -2630,6 +2663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/workforce-intelligence/employees/': {
+      id: '/_authenticated/workforce-intelligence/employees/'
+      path: '/workforce-intelligence/employees'
+      fullPath: '/workforce-intelligence/employees/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/quotes/$quoteId/': {
       id: '/_authenticated/quotes/$quoteId/'
       path: '/quotes/$quoteId'
@@ -2984,8 +3024,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSalesOrdersIndexRoute: typeof AuthenticatedSalesOrdersIndexRoute
   AuthenticatedVendorPaymentsIndexRoute: typeof AuthenticatedVendorPaymentsIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
+  AuthenticatedWorkforceIntelligenceIndexRoute: typeof AuthenticatedWorkforceIntelligenceIndexRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedQuotesQuoteIdIndexRoute: typeof AuthenticatedQuotesQuoteIdIndexRoute
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -3131,8 +3173,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSalesOrdersIndexRoute: AuthenticatedSalesOrdersIndexRoute,
   AuthenticatedVendorPaymentsIndexRoute: AuthenticatedVendorPaymentsIndexRoute,
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
+  AuthenticatedWorkforceIntelligenceIndexRoute:
+    AuthenticatedWorkforceIntelligenceIndexRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedQuotesQuoteIdIndexRoute: AuthenticatedQuotesQuoteIdIndexRoute,
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRoute:
+    AuthenticatedWorkforceIntelligenceEmployeesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

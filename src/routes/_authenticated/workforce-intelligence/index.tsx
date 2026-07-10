@@ -73,7 +73,7 @@ function TodayPage() {
         <PageHeader title="Workforce Intelligence" subtitle="Today's work queue" />
         <EmptyState
           title="No employee record linked"
-          description="Ask an owner to create your employee profile and link it to your login."
+          message="Ask an owner to create your employee profile and link it to your login."
         />
       </>
     );
@@ -96,7 +96,7 @@ function TodayPage() {
       ) : tasks.isError ? (
         <ErrorBlock message={toUserMessage(tasks.error)} />
       ) : rows.length === 0 ? (
-        <EmptyState title="Nothing on your plate" description="Enjoy a quiet moment." />
+        <EmptyState title="Nothing on your plate" message="Enjoy a quiet moment." />
       ) : (
         <Table>
           <TableHeader>
