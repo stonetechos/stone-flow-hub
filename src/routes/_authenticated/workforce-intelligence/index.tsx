@@ -3,7 +3,7 @@
  * Personal work queue: every task currently assigned to the signed-in
  * employee, deep-linkable back into the ERP.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
