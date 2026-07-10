@@ -389,7 +389,7 @@ function ActivityTimeline({
   loading,
 }: {
   items: Array<{
-    id: string;
+    id: string | number;
     action: string;
     summary: string | null;
     entity_type: string | null;
