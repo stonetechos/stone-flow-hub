@@ -386,9 +386,17 @@ function EstimateDetailPage() {
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
-                {!canConvert && (
+                {converted && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Mark as <span className="font-medium">Accepted</span> to convert into a quote.
+                    Converted to Quote{" "}
+                    <Link
+                      to="/quotes/$quoteId"
+                      params={{ quoteId: converted.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {converted.quote_no}
+                    </Link>{" "}
+                    ({converted.status})
                   </p>
                 )}
               </div>
