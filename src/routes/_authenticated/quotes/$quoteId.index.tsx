@@ -47,15 +47,18 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
   convertQuoteToInvoice,
+  convertQuoteToSalesOrder,
   deleteQuote,
+  getEstimateForQuote,
   getQuote,
   getQuoteItems,
+  getSalesOrderForQuote,
   reviseQuote,
   setQuoteStatus,
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 import type { DbTable } from "@/lib/types";
-import { invalidateQuote, invalidateInvoice } from "@/lib/query-invalidation";
+import { invalidateQuote, invalidateInvoice, invalidateSalesOrder } from "@/lib/query-invalidation";
 
 type QuoteStatus = DbTable<"quotes">["status"];
 
