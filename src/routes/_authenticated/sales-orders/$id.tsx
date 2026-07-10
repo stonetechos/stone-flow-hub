@@ -187,8 +187,87 @@ function SalesOrderDetailPage() {
               </Row>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Line items</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {itemsQuery.isLoading ? (
+                <p className="p-4 text-sm text-muted-foreground">Loading…</p>
+              ) : (itemsQuery.data ?? []).length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground">No line items on this sales order.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                      <tr>
+                        <th className="px-3 py-2 text-left">#</th>
+                        <th className="px-3 py-2 text-left">Item</th>
+                        <th className="px-3 py-2 text-right">Qty</th>
+                        <th className="px-3 py-2 text-right">Rate</th>
+                        <th className="px-3 py-2 text-right">Disc %</th>
+                        <th className="px-3 py-2 text-right">GST %</th>
+                        <th className="px-3 py-2 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(itemsQuery.data ?? []).map((it, idx) => (
+                        <tr key={it.id} className="border-t">
+                          <td className="px-3 py-2 align-top text-muted-foreground">{idx + 1}</td>
+                          <td className="px-3 py-2 align-top">
+                            <div className="font-medium">{it.product_name ?? it.description}</div>
+                            {it.product_name && it.description !== it.product_name && (
+                              <div className="text-xs text-muted-foreground">{it.description}</div>
+                            )}
+                            <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                              {it.category && <span>{it.category}</span>}
+                              {it.stone_type && <span>· {it.stone_type}</span>}
+                              {it.finish && <span>· {it.finish}</span>}
+                              {it.size && <span>· {it.size}</span>}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2 text-right align-top">
+                            {Number(it.quantity)} {it.unit ?? ""}
+                          </td>
+                          <td className="px-3 py-2 text-right align-top">{formatInr(it.unit_price)}</td>
+                          <td className="px-3 py-2 text-right align-top">{Number(it.discount_pct)}</td>
+                          <td className="px-3 py-2 text-right align-top">{Number(it.tax_pct)}</td>
+                          <td className="px-3 py-2 text-right align-top font-medium">
+                            {formatInr(it.line_total)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Totals</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm md:grid-cols-2">
+              <Row label="Subtotal">{formatInr((r as unknown as { subtotal?: number }).subtotal ?? 0)}</Row>
+              <Row label="Discount">{formatInr((r as unknown as { discount?: number }).discount ?? 0)}</Row>
+              <Row label="Freight">{formatInr((r as unknown as { freight?: number }).freight ?? 0)}</Row>
+              <Row label="Other charges">
+                {formatInr((r as unknown as { other_charges?: number }).other_charges ?? 0)}
+              </Row>
+              <Row label="Tax">{formatInr((r as unknown as { tax_amount?: number }).tax_amount ?? 0)}</Row>
+              <Row label="Round off">{formatInr((r as unknown as { round_off?: number }).round_off ?? 0)}</Row>
+              <div className="md:col-span-2 border-t pt-2 flex items-center justify-between font-semibold">
+                <span>Grand total</span>
+                <span>{formatInr((r as unknown as { total?: number }).total ?? 0)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
           <ProductionOrdersPanel salesOrderId={r.id} />
           <SalesOrderInstallationPanel salesOrderId={r.id} />
+
 
           <NotesPanel
             table="sales_orders"
