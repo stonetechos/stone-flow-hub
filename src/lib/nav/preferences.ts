@@ -249,6 +249,9 @@ export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav
 
   const starredSet = new Set(starred.map((i) => i.id));
 
+  const effectiveGroup = (item: NavItemDef): NavGroupId =>
+    prefs.itemGroupOverrides[item.id] ?? item.group;
+
   const groups: ResolvedNavGroup[] = prefs.groupOrder
     .filter((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
@@ -256,7 +259,7 @@ export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav
     })
     .map((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
-      const catalog = visibleItems.filter((i) => i.group === gid);
+      const catalog = visibleItems.filter((i) => effectiveGroup(i) === gid);
       const explicit = prefs.itemOrderByGroup[gid] ?? [];
       const ordered: NavItemDef[] = [];
       for (const id of explicit) {
