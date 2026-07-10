@@ -152,41 +152,17 @@ export async function deleteQuote(id: string): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
-/** 1-click conversion: create a Sales Order from an existing Quote (all header fields
- *  copied; line items remain linked via the SO's quote_id reference). */
+/** 1-click conversion: create a Sales Order (with a full snapshot of line items and
+ *  financial totals) from an existing Quote. Idempotent — the server-side RPC
+ *  returns the existing SO if one already exists for this quote. */
 export async function convertQuoteToSalesOrder(
   quoteId: string,
 ): Promise<DbTable<"sales_orders">> {
-  const quote = await getQuote(quoteId);
-  if (!quote) throw new AppError("Quote not found", "NOT_FOUND", 404);
-
-  // Return the existing SO if one has already been created from this quote.
-  const { data: existing } = await supabase
-    .from("sales_orders")
-    .select("*")
-    .eq("quote_id", quoteId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (existing) return existing;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from("sales_orders")
-    .insert({
-      so_no: "",
-      quote_id: quote.id,
-      project_id: quote.project_id ?? null,
-      customer_id: quote.customer_id ?? null,
-      status: "draft",
-      order_date: today,
-      delivery_date: quote.valid_until ?? null,
-      notes: quote.notes ?? null,
-    })
-    .select("*")
-    .single();
+  const { data, error } = await supabase.rpc("convert_quote_to_sales_order", {
+    p_quote_id: quoteId,
+  });
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return data as DbTable<"sales_orders">;
 }
 
 /** Look up the sales order created from a given quote, if any. */
