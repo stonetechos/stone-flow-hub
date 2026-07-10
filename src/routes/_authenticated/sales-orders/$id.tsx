@@ -18,9 +18,10 @@ import { SalesOrderInstallationPanel } from "@/components/installation/SalesOrde
 
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getSalesOrder } from "@/lib/sales-orders/api";
+import { getSalesOrder, listSalesOrderItems } from "@/lib/sales-orders/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
 import { invalidateInvoice } from "@/lib/query-invalidation";
+import { formatCurrency } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/sales-orders/$id")({
   ssr: false,
