@@ -6,34 +6,80 @@ import {
   Menu,
   Star,
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
   History,
+  User as UserIcon,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
 import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
-import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DemoProvider } from "@/lib/demo/context";
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
   resolveNav,
   trackNavVisit,
+  useCurrentUserId,
   useNavPreferences,
   useRecentNav,
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 
+/* --------------------------------------------------------------------- */
+/* Sidebar collapsed state (per user, persisted in localStorage)          */
+/* --------------------------------------------------------------------- */
+const COLLAPSE_KEY = (uid: string | null): string =>
+  uid ? `st.sidebar.collapsed.${uid}` : "st.sidebar.collapsed";
+
+function useSidebarCollapsed(uid: string | null): [boolean, (v: boolean) => void] {
+  const [collapsed, setCollapsed] = useState(false);
+  // Read after mount to avoid SSR hydration mismatch.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(COLLAPSE_KEY(uid));
+      if (raw != null) setCollapsed(raw === "1");
+    } catch {
+      /* ignore */
+    }
+  }, [uid]);
+  const set = (v: boolean): void => {
+    setCollapsed(v);
+    try {
+      window.localStorage.setItem(COLLAPSE_KEY(uid), v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
+  return [collapsed, set];
+}
+
+/* --------------------------------------------------------------------- */
+/* Nav row                                                                */
+/* --------------------------------------------------------------------- */
 function NavLinkRow({
   to,
   label,
   Icon,
   active,
+  collapsed,
   onNavigate,
   starred,
   onToggleStar,
@@ -42,55 +88,94 @@ function NavLinkRow({
   label: string;
   Icon: React.ComponentType<{ className?: string }>;
   active: boolean;
+  collapsed?: boolean;
   onNavigate?: () => void;
   starred: boolean;
   onToggleStar: () => void;
 }) {
+  const link = (
+    <Link
+      to={to}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative flex flex-1 items-center gap-3 rounded-md py-1.5 pr-8 text-[13px] outline-none",
+        "transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        collapsed ? "justify-center pl-2 pr-2" : "pl-3",
+        active
+          ? "bg-sidebar-accent/60 text-sidebar-accent-foreground font-medium"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
+      )}
+    >
+      {/* Restrained left accent instead of full pill */}
+      <span
+        aria-hidden
+        className={cn(
+          "absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r-full bg-sidebar-primary transition-opacity duration-150",
+          active ? "opacity-100" : "opacity-0",
+        )}
+      />
+      <Icon
+        className={cn(
+          "h-4 w-4 shrink-0 transition-opacity",
+          active ? "opacity-90" : "opacity-60",
+        )}
+        aria-hidden
+      />
+      {!collapsed && <span className="truncate">{label}</span>}
+    </Link>
+  );
+
   return (
     <div className="group relative flex items-center">
-      <Link
-        to={to}
-        onClick={onNavigate}
-        aria-current={active ? "page" : undefined}
-        className={cn(
-          "flex flex-1 items-center gap-3 rounded-sm py-2 pl-3 pr-8 text-sm outline-none transition-colors",
-          "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar",
-          active
-            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-            : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        )}
-      >
-        <Icon className="h-4 w-4 shrink-0" aria-hidden />
-        <span className="truncate">{label}</span>
-      </Link>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onToggleStar();
-        }}
-        aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
-        aria-pressed={starred}
-        className={cn(
-          "absolute right-1 rounded-sm p-1 text-sidebar-foreground/40 hover:text-sidebar-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring",
-          starred ? "opacity-100 text-amber-400" : "opacity-0 group-hover:opacity-100",
-        )}
-      >
-        <Star className={cn("h-3.5 w-3.5", starred && "fill-current")} aria-hidden />
-      </button>
+      {collapsed ? (
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>{link}</TooltipTrigger>
+            <TooltipContent side="right" className="text-xs">
+              {label}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        link
+      )}
+      {!collapsed && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleStar();
+          }}
+          aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
+          aria-pressed={starred}
+          className={cn(
+            "absolute right-1 rounded-sm p-1 text-sidebar-foreground/40 hover:text-sidebar-foreground",
+            "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring",
+            starred ? "opacity-100 text-amber-400" : "opacity-0 group-hover:opacity-100",
+          )}
+        >
+          <Star className={cn("h-3 w-3", starred && "fill-current")} aria-hidden />
+        </button>
+      )}
     </div>
   );
 }
 
+/* --------------------------------------------------------------------- */
+/* Nav list                                                               */
+/* --------------------------------------------------------------------- */
 function NavList({
   path,
   onNavigate,
   isAdmin,
+  collapsed,
 }: {
   path: string;
   onNavigate?: () => void;
   isAdmin: boolean;
+  collapsed?: boolean;
 }) {
   const { prefs, update } = useNavPreferences();
   const recent = useRecentNav();
@@ -122,25 +207,31 @@ function NavList({
     .slice(0, 5);
 
   return (
-    <nav className="flex-1 space-y-2 overflow-y-auto p-2" aria-label="Primary">
-      {recentItems.length > 0 && (
+    <nav
+      className={cn(
+        "flex-1 overflow-y-auto overflow-x-hidden",
+        collapsed ? "px-1.5 py-2 space-y-1" : "px-2 py-2 space-y-3",
+      )}
+      aria-label="Primary"
+    >
+      {!collapsed && recentItems.length > 0 && (
         <section aria-labelledby="nav-recent">
           <h4
             id="nav-recent"
-            className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/50"
+            className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40"
           >
             <History className="h-3 w-3" aria-hidden />
-            Recently used
+            Recent
           </h4>
-          <div className="space-y-0.5">
+          <div className="space-y-px">
             {recentItems.map((item) => (
               <Link
                 key={`recent-${item.id}`}
                 to={item.to}
                 onClick={onNavigate}
-                className="flex items-center gap-3 rounded-sm px-3 py-1.5 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="flex items-center gap-3 rounded-md px-3 py-1.5 text-[13px] text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
               >
-                <item.icon className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
+                <item.icon className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
                 <span className="truncate">{item.label}</span>
               </Link>
             ))}
@@ -150,14 +241,16 @@ function NavList({
 
       {resolved.starred.length > 0 && (
         <section aria-labelledby="nav-pinned">
-          <h4
-            id="nav-pinned"
-            className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/50"
-          >
-            <Star className="h-3 w-3" aria-hidden />
-            Pinned
-          </h4>
-          <div className="space-y-0.5">
+          {!collapsed && (
+            <h4
+              id="nav-pinned"
+              className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40"
+            >
+              <Star className="h-3 w-3" aria-hidden />
+              Pinned
+            </h4>
+          )}
+          <div className="space-y-px">
             {resolved.starred.map((item) => (
               <NavLinkRow
                 key={item.id}
@@ -165,6 +258,7 @@ function NavList({
                 label={item.label}
                 Icon={item.icon}
                 active={isActive(item.to)}
+                collapsed={collapsed}
                 onNavigate={onNavigate}
                 starred
                 onToggleStar={() => toggleStar(item.id)}
@@ -176,27 +270,29 @@ function NavList({
 
       {resolved.groups.map((group) => {
         if (group.items.length === 0) return null;
-        const collapsed = collapsedSet.has(group.id);
+        const groupCollapsed = collapsedSet.has(group.id);
         return (
           <section key={group.id} aria-labelledby={`nav-group-${group.id}`}>
-            <button
-              type="button"
-              id={`nav-group-${group.id}`}
-              onClick={() => toggleGroup(group.id)}
-              aria-expanded={!collapsed}
-              className="mb-0.5 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground/80"
-            >
-              <span>{group.label}</span>
-              <ChevronDown
-                className={cn(
-                  "h-3 w-3 transition-transform",
-                  collapsed && "-rotate-90",
-                )}
-                aria-hidden
-              />
-            </button>
             {!collapsed && (
-              <div className="space-y-0.5">
+              <button
+                type="button"
+                id={`nav-group-${group.id}`}
+                onClick={() => toggleGroup(group.id)}
+                aria-expanded={!groupCollapsed}
+                className="mb-1 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40 hover:text-sidebar-foreground/70"
+              >
+                <span>{group.label}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 transition-transform duration-150",
+                    groupCollapsed && "-rotate-90",
+                  )}
+                  aria-hidden
+                />
+              </button>
+            )}
+            {(collapsed || !groupCollapsed) && (
+              <div className="space-y-px">
                 {group.items.map((item) => (
                   <NavLinkRow
                     key={item.id}
@@ -204,6 +300,7 @@ function NavList({
                     label={item.label}
                     Icon={item.icon}
                     active={isActive(item.to)}
+                    collapsed={collapsed}
                     onNavigate={onNavigate}
                     starred={false}
                     onToggleStar={() => toggleStar(item.id)}
@@ -218,13 +315,89 @@ function NavList({
   );
 }
 
+/* --------------------------------------------------------------------- */
+/* User menu (avatar dropdown)                                            */
+/* --------------------------------------------------------------------- */
+function UserMenu({ onSignOut }: { onSignOut: () => void }) {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState<string>("");
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setEmail(data.user?.email ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const initials =
+    (email || "?")
+      .split("@")[0]
+      .split(/[._\-\s]+/)
+      .map((s) => s[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "?";
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full p-0"
+          aria-label="Open user menu"
+        >
+          <Avatar className="h-8 w-8 border border-border">
+            <AvatarFallback className="bg-muted text-[11px] font-medium text-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Signed in
+          </div>
+          <div className="truncate text-sm font-medium text-foreground">
+            {email || "Account"}
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
+          <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
+          <UserIcon className="mr-2 h-4 w-4" aria-hidden />
+          Preferences
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive">
+          <LogOut className="mr-2 h-4 w-4" aria-hidden />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/* --------------------------------------------------------------------- */
+/* AppShell                                                               */
+/* --------------------------------------------------------------------- */
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const uid = useCurrentUserId();
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [collapsed, setCollapsed] = useSidebarCollapsed(uid);
 
   useEffect(() => {
     let cancelled = false;
@@ -245,7 +418,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Track visits for the "Recently used" strip.
   useEffect(() => {
     trackNavVisit(path);
   }, [path]);
@@ -265,6 +437,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         setSearchOpen((v) => !v);
         return;
       }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setCollapsed(!collapsed);
+        return;
+      }
       if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
         if (e.key === "/") {
           e.preventDefault();
@@ -279,153 +456,182 @@ export function AppShell({ children }: { children: ReactNode }) {
         if (e.key === "?") {
           e.preventDefault();
           toast("Shortcuts", {
-            description: "⌘/Ctrl+K or / — search · C — create menu · ? — this help",
+            description:
+              "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — create · / — search · ? — help",
           });
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [collapsed, setCollapsed]);
 
   async function onSignOut() {
     try {
       await supabase.auth.signOut();
     } finally {
       toast.success("Signed out");
-      // Root-level onAuthStateChange handles cache teardown + redirect.
       await navigate({ to: "/auth", replace: true });
     }
   }
 
+  const sidebarWidth = collapsed ? "w-[56px]" : "w-[232px]";
+
   return (
     <DemoProvider>
-    <div className="flex min-h-dvh bg-background">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
-      >
-        Skip to main content
-      </a>
+      <div className="flex min-h-dvh bg-background">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
+        >
+          Skip to main content
+        </a>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
-        <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-          <Gem className="h-5 w-5 text-sidebar-primary" aria-hidden />
-          <span className="font-display text-lg font-semibold">
-            Stone Tech <span className="text-sidebar-primary">OS</span>
-          </span>
-        </div>
-        <NavList path={path} isAdmin={isAdmin} />
-        <div className="border-t border-sidebar-border p-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSignOut}
-            className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        {/* Desktop sidebar */}
+        <aside
+          className={cn(
+            "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+            "transition-[width] duration-200 ease-out",
+            sidebarWidth,
+          )}
+          data-collapsed={collapsed}
+        >
+          <div
+            className={cn(
+              "flex h-12 items-center gap-2 border-b border-sidebar-border",
+              collapsed ? "justify-center px-0" : "px-4",
+            )}
           >
-            <LogOut className="mr-2 h-4 w-4" aria-hidden />
-            Sign out
-          </Button>
-        </div>
-      </aside>
+            <Gem className="h-4 w-4 shrink-0 text-sidebar-primary" aria-hidden />
+            {!collapsed && (
+              <span className="font-display text-[15px] font-semibold tracking-tight">
+                Stone Tech <span className="text-sidebar-primary">OS</span>
+              </span>
+            )}
+          </div>
+          <NavList path={path} isAdmin={isAdmin} collapsed={collapsed} />
+          <div
+            className={cn(
+              "flex items-center border-t border-sidebar-border p-1.5",
+              collapsed ? "justify-center" : "justify-end",
+            )}
+          >
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="rounded-md p-1.5 text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-pressed={collapsed}
+                  >
+                    {collapsed ? (
+                      <ChevronsRight className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <ChevronsLeft className="h-4 w-4" aria-hidden />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">
+                  {collapsed ? "Expand" : "Collapse"}
+                  <span className="ml-1 opacity-60">⌘B</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </aside>
 
-      {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Topbar */}
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-card px-3 shadow-1 sm:gap-3 sm:px-4">
-          {/* Mobile nav trigger */}
-          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-            <SheetTrigger asChild>
+        {/* Main */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Topbar (48px) */}
+          <header className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b border-border bg-card/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-card/80 sm:px-3">
+            {/* Mobile nav trigger */}
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 md:hidden"
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground"
+              >
+                <SheetHeader className="h-12 flex-row items-center gap-2 border-b border-sidebar-border px-4 py-0 space-y-0">
+                  <Gem className="h-4 w-4 text-sidebar-primary" aria-hidden />
+                  <SheetTitle className="font-display text-[15px] font-semibold text-sidebar-foreground">
+                    Stone Tech <span className="text-sidebar-primary">OS</span>
+                  </SheetTitle>
+                </SheetHeader>
+                <NavList
+                  path={path}
+                  isAdmin={isAdmin}
+                  onNavigate={() => setMobileNavOpen(false)}
+                />
+              </SheetContent>
+            </Sheet>
+
+            <div className="flex items-center gap-2 md:hidden">
+              <Gem className="h-4 w-4 text-primary" aria-hidden />
+              <span className="font-display text-sm font-semibold">Stone Tech OS</span>
+            </div>
+
+            {/* Search — the visual focus of the topbar */}
+            <div className="ml-auto flex flex-1 items-center md:ml-0">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className={cn(
+                  "group relative hidden h-8 w-full max-w-md items-center gap-2 rounded-md border border-input bg-background pl-8 pr-2 text-left text-[13px] text-muted-foreground",
+                  "transition-colors hover:border-ring/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
+                )}
+                aria-label="Open global search"
+              >
+                <Search
+                  className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
+                  aria-hidden
+                />
+                <span className="truncate">Search or jump to…</span>
+                <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+                  ⌘K
+                </kbd>
+              </button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
-                aria-label="Open navigation menu"
+                className="h-8 w-8 sm:hidden"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Open global search"
               >
-                <Menu className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground"
-            >
-              <SheetHeader className="h-14 flex-row items-center gap-2 border-b border-sidebar-border px-4 py-0 space-y-0">
-                <Gem className="h-5 w-5 text-sidebar-primary" aria-hidden />
-                <SheetTitle className="font-display text-lg font-semibold text-sidebar-foreground">
-                  Stone Tech <span className="text-sidebar-primary">OS</span>
-                </SheetTitle>
-              </SheetHeader>
-              <NavList path={path} isAdmin={isAdmin} onNavigate={() => setMobileNavOpen(false)} />
-              <div className="border-t border-sidebar-border p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onSignOut}
-                  className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
-                  <LogOut className="mr-2 h-4 w-4" aria-hidden />
-                  Sign out
-                </Button>
+            </div>
+
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <DemoBadge />
+              <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
+              <NotificationsBell />
+              <div className="ml-1">
+                <UserMenu onSignOut={onSignOut} />
               </div>
-            </SheetContent>
-          </Sheet>
+            </div>
+          </header>
 
-          <div className="flex items-center gap-2 md:hidden">
-            <Gem className="h-5 w-5 text-primary" aria-hidden />
-            <span className="font-display font-semibold">Stone Tech OS</span>
-          </div>
+          <DemoBanner />
 
-          <div className="ml-auto flex flex-1 items-center md:ml-0">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className={cn(
-                "group relative hidden h-9 w-full max-w-md items-center gap-2 rounded-sm border border-input bg-background pl-8 pr-3 text-left text-sm text-muted-foreground",
-                "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
-              )}
-              aria-label="Open global search"
-            >
-              <Search
-                className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2"
-                aria-hidden
-              />
-              <span className="truncate">Search customers, projects, enquiries…</span>
-              <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
-                ⌘K
-              </kbd>
-            </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="sm:hidden"
-              onClick={() => setSearchOpen(true)}
-              aria-label="Open global search"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <DemoBadge />
-            <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
-            <NotificationsBell />
-          </div>
-        </header>
-
-        <DemoBanner />
-
-        <div className="border-b border-border bg-muted/30 px-4 py-2 md:px-6">
-          <Breadcrumbs />
+          <main id="main-content" className="flex-1 px-4 py-5 md:px-8 md:py-6">
+            {children}
+          </main>
         </div>
 
-        <main id="main-content" className="flex-1 p-4 md:p-6">
-          {children}
-        </main>
+        <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+        <Copilot />
       </div>
-
-      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
-      <Copilot />
-    </div>
     </DemoProvider>
   );
 }
