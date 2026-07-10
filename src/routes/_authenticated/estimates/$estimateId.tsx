@@ -104,6 +104,10 @@ function EstimateDetailPage() {
     queryKey: qk.estimates.documents(estimateId),
     queryFn: () => getEstimateDocuments(estimateId),
   });
+  const linkedQuote = useQuery({
+    queryKey: ["estimates", "linkedQuote", estimateId],
+    queryFn: () => getQuoteForEstimate(estimateId),
+  });
 
   const statusMut = useMutation({
     mutationFn: (s: EstStatus) => setEstimateStatus(estimateId, s),
