@@ -50,7 +50,7 @@ export function WorkforceSummaryWidget() {
       <SectionHeader
         title="Workforce Intelligence"
         description="Morning brief — rule-based, explainable."
-        action={
+        actions={
           <Link
             to="/workforce-intelligence/owner"
             className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
