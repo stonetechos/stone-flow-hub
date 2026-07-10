@@ -228,12 +228,15 @@ export async function listTasks(filter: TaskFilter = {}): Promise<WorkforceTask[
 
 export async function updateTask(id: string, input: TaskUpdateInput): Promise<WorkforceTask> {
   const parsed = taskUpdateSchema.parse(input);
-  const patch: Record<string, unknown> = { ...parsed };
-  if (parsed.status === "completed") patch.completed_at = new Date().toISOString();
-  else if (parsed.status) patch.completed_at = null;
+  const completed_at =
+    parsed.status === "completed"
+      ? new Date().toISOString()
+      : parsed.status
+        ? null
+        : undefined;
   const { data, error } = await supabase
     .from("workforce_tasks")
-    .update(patch)
+    .update({ ...parsed, ...(completed_at !== undefined ? { completed_at } : {}) })
     .eq("id", id)
     .select("*")
     .single();
