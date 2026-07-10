@@ -2,11 +2,21 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Stone Tech OS card.
+ *
+ * Quiet by default — a hairline border on the card surface, no shadow.
+ * Reach for a card only when content genuinely benefits from grouping;
+ * otherwise prefer <SectionHeader> + spacing + hairline divider.
+ */
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-xl border bg-card text-card-foreground shadow", className)}
+      className={cn(
+        "rounded-lg border border-border bg-card text-card-foreground",
+        className,
+      )}
       {...props}
     />
   ),
@@ -15,7 +25,11 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn("flex flex-col space-y-1 px-5 pt-4 pb-3", className)}
+      {...props}
+    />
   ),
 );
 CardHeader.displayName = "CardHeader";
@@ -24,7 +38,10 @@ const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("font-semibold leading-none tracking-tight", className)}
+      className={cn(
+        "font-display text-[15px] font-semibold leading-none tracking-tight text-foreground",
+        className,
+      )}
       {...props}
     />
   ),
@@ -40,14 +57,21 @@ CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+    <div ref={ref} className={cn("px-5 pb-4 pt-0", className)} {...props} />
   ),
 );
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn(
+        "flex items-center border-t border-border px-5 py-3",
+        className,
+      )}
+      {...props}
+    />
   ),
 );
 CardFooter.displayName = "CardFooter";
