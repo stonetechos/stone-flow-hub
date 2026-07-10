@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarClock,
   Wallet,
   Receipt,
-  Activity,
   FileCheck2,
   Truck,
   TrendingUp,
@@ -13,20 +13,31 @@ import {
   FileText,
   ShoppingCart,
   ClipboardCheck,
-  Plus,
   CheckSquare,
+  ChevronDown,
+  ChevronRight,
+  ArrowRight,
+  Plus,
+  ListChecks,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionHeader } from "@/components/layout/SectionHeader";
+import { Stat, StatRow } from "@/components/layout/Stat";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { toUserMessage } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { getDashboardKpis } from "@/lib/dashboard/api";
 import { listRecentActivity } from "@/lib/activity/api";
-import { listTasks, updateTaskStatus } from "@/lib/tasks/api";
+import { listTasks, updateTaskStatus, type TaskRow } from "@/lib/tasks/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
+import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -38,15 +49,12 @@ function DashboardPage() {
   const { user } = useAuthReady();
   const qc = useQueryClient();
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: qk.dashboard,
-    queryFn: getDashboardKpis,
-  });
-  const activity = useQuery({
+  const kpisQ = useQuery({ queryKey: qk.dashboard, queryFn: getDashboardKpis });
+  const activityQ = useQuery({
     queryKey: qk.activity.recent,
     queryFn: () => listRecentActivity(8),
   });
-  const tasks = useQuery({
+  const tasksQ = useQuery({
     queryKey: ["tasks", "dashboard", "pending"],
     queryFn: () => listTasks({ status: "pending" }),
   });
@@ -59,239 +67,450 @@ function DashboardPage() {
 
   const greeting = greetingFor(new Date());
   const name = displayName(user);
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
-  if (isLoading) {
+  const insight = useMemo(() => buildInsight(kpisQ.data, tasksQ.data ?? []), [
+    kpisQ.data,
+    tasksQ.data,
+  ]);
+
+  if (kpisQ.isLoading) {
     return (
       <div>
-        <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
+        <PageHeader title={`${greeting}, ${name}.`} subtitle={today} />
         <LoadingBlock />
       </div>
     );
   }
-  if (error) {
+  if (kpisQ.error) {
     return (
       <div>
-        <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
-        <ErrorBlock message={toUserMessage(error)} onRetry={() => refetch()} />
+        <PageHeader title={`${greeting}, ${name}.`} subtitle={today} />
+        <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => kpisQ.refetch()} />
       </div>
     );
   }
 
-  return (
-    <div>
-      <PageHeader title={`${greeting}, ${name}`} subtitle="Here's what's happening today." />
+  const data = kpisQ.data!;
+  const tasks = tasksQ.data ?? [];
+  const tasksDue = tasks.length;
 
-      {/* Today's Overview */}
-      <section className="mb-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Today's overview
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Kpi
-            title="Sales Today"
-            value={"₹" + formatMoney(data?.salesTodayInr ?? 0)}
-            icon={<TrendingUp className="h-4 w-4" />}
+  return (
+    <div className="space-y-10">
+      {/* 1. Greeting */}
+      <header>
+        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          {today}
+        </div>
+        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          {greeting}, {name}.
+        </h1>
+        {insight && (
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            {insight}
+          </p>
+        )}
+      </header>
+
+      {/* 2. Today's Overview */}
+      <section>
+        <SectionHeader title="Today's overview" />
+        <StatRow>
+          <Stat
+            label="Sales today"
+            value={"₹" + formatMoney(data.salesTodayInr)}
+            icon={<TrendingUp className="h-3.5 w-3.5" />}
             to="/invoices"
-            tone="ok"
           />
-          <Kpi
-            title="Collections"
-            value={"₹" + formatMoney(data?.collectionsTodayInr ?? 0)}
-            icon={<Receipt className="h-4 w-4" />}
+          <Stat
+            label="Collections"
+            value={"₹" + formatMoney(data.collectionsTodayInr)}
+            icon={<Receipt className="h-3.5 w-3.5" />}
             to="/payments"
-            tone="primary"
           />
-          <Kpi
-            title="Pending Quotes"
-            value={data?.pendingQuotes ?? 0}
-            icon={<FileCheck2 className="h-4 w-4" />}
+          <Stat
+            label="Pending quotes"
+            value={data.pendingQuotes}
+            icon={<FileCheck2 className="h-3.5 w-3.5" />}
             to="/quotes"
             search={{ status: "sent" }}
-            tone={data?.pendingQuotes ? "warn" : "muted"}
+            tone={data.pendingQuotes ? "warning" : "default"}
           />
-          <Kpi
-            title="Deliveries Today"
-            value={data?.deliveriesToday ?? 0}
-            icon={<Truck className="h-4 w-4" />}
-            to="/dispatch"
-            tone={data?.deliveriesToday ? "info" : "muted"}
+          <Stat
+            label="Pending sales orders"
+            value={data.ordersToStart}
+            icon={<ShoppingCart className="h-3.5 w-3.5" />}
+            to="/sales-orders"
+            tone={data.ordersToStart ? "primary" : "default"}
           />
-        </div>
-      </section>
-
-      {/* Tasks + Activity */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="shadow-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <CheckSquare className="h-4 w-4 text-primary" /> Today's tasks
-            </CardTitle>
-            <Link to="/tasks" className="text-xs text-primary hover:underline">
-              View all
-            </Link>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {tasks.isLoading ? (
-              <ul className="space-y-1.5" aria-hidden>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <li key={i} className="h-8 animate-pulse rounded-sm bg-muted/60" />
-                ))}
-              </ul>
-            ) : (tasks.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No open tasks. Nicely done.</p>
-            ) : (
-              <ul className="max-h-[280px] space-y-1 overflow-y-auto pr-1">
-                {tasks.data!.slice(0, 8).map((t) => (
-                  <li
-                    key={t.id}
-                    className="flex items-start gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
-                  >
-                    <Checkbox
-                      className="mt-0.5"
-                      checked={t.status === "completed"}
-                      onCheckedChange={(v) =>
-                        toggle.mutate({ id: t.id, done: v === true })
-                      }
-                      aria-label={`Mark task ${t.title} complete`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{t.title}</div>
-                      {t.due_at && (
-                        <div className="text-xs text-muted-foreground">
-                          Due{" "}
-                          {new Date(t.due_at).toLocaleString("en-IN", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    {t.priority && t.priority !== "medium" && (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px] capitalize">
-                        {t.priority}
-                      </Badge>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Activity className="h-4 w-4 text-primary" /> Recent activity
-            </CardTitle>
-            <Link to="/activity" className="text-xs text-primary hover:underline">
-              View all
-            </Link>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {activity.isLoading ? (
-              <ul className="space-y-1.5" aria-hidden>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <li key={i} className="h-7 animate-pulse rounded-sm bg-muted/60" />
-                ))}
-              </ul>
-            ) : (activity.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No activity yet.</p>
-            ) : (
-              <ul className="max-h-[280px] space-y-1 overflow-y-auto pr-1">
-                {activity.data!.map((a) => (
-                  <li
-                    key={a.id}
-                    className="flex items-center justify-between gap-2 rounded-sm px-2 py-1 text-sm"
-                  >
-                    <span className="min-w-0 flex-1 truncate">
-                      <Badge variant="outline" className="mr-2 h-4 px-1 text-[10px] capitalize">
-                        {a.action.replace("_", " ")}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        {a.summary ?? a.entity_type}
-                      </span>
-                    </span>
-                    <span className="whitespace-nowrap text-[11px] text-muted-foreground">
-                      {new Date(a.created_at).toLocaleString("en-IN", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <section className="mt-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Quick actions
-        </h2>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          <QuickAction to="/customers" label="New Customer" icon={<Users className="h-4 w-4" />} />
-          <QuickAction to="/quotes/new" label="New Quote" icon={<FileText className="h-4 w-4" />} />
-          <QuickAction
-            to="/sales-orders/new"
-            label="New Sales Order"
-            icon={<ShoppingCart className="h-4 w-4" />}
-          />
-          <QuickAction to="/invoices/new" label="New Invoice" icon={<Receipt className="h-4 w-4" />} />
-          <QuickAction to="/payments/new" label="Receive Payment" icon={<Wallet className="h-4 w-4" />} />
-          <QuickAction
-            to="/purchase-orders/new"
-            label="Purchase Order"
-            icon={<ClipboardCheck className="h-4 w-4" />}
-          />
-        </div>
-      </section>
-
-      {/* Secondary KPIs */}
-      <section className="mt-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Pipeline & receivables
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Kpi
-            title="Today's Follow-ups"
-            value={data?.todayFollowups ?? 0}
-            icon={<CalendarClock className="h-4 w-4" />}
-            to="/followups"
-            search={{ scope: "today" }}
-            tone={data?.todayFollowups ? "primary" : "muted"}
-            compact
-          />
-          <Kpi
-            title="Revenue Pipeline"
-            value={"₹" + formatMoney(data?.revenuePipelineInr ?? 0)}
-            icon={<TrendingUp className="h-4 w-4" />}
-            to="/quotes"
-            tone="muted"
-            compact
-          />
-          <Kpi
-            title="Outstanding"
-            value={"₹" + formatMoney(data?.outstandingInr ?? 0)}
-            icon={<Wallet className="h-4 w-4" />}
+          <Stat
+            label="Outstanding"
+            value={"₹" + formatMoney(data.outstandingInr)}
+            icon={<Wallet className="h-3.5 w-3.5" />}
             to="/invoices"
-            tone="muted"
-            compact
+            tone={data.outstandingInr > 0 ? "warning" : "default"}
           />
-          <Kpi
-            title="Active Customers"
-            value={data?.customers ?? 0}
-            icon={<Building2 className="h-4 w-4" />}
-            to="/customers"
-            tone="muted"
-            compact
+          <Stat
+            label="Tasks due"
+            value={tasksDue}
+            icon={<CheckSquare className="h-3.5 w-3.5" />}
+            to="/tasks"
+            tone={tasksDue ? "primary" : "default"}
           />
+        </StatRow>
+      </section>
+
+      {/* 3 + 4. My Work Today | Recent Activity */}
+      <section className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div>
+          <SectionHeader
+            title="My work today"
+            actions={
+              <Link
+                to="/tasks"
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                View all
+              </Link>
+            }
+          />
+          <TaskChecklist
+            tasks={tasks}
+            loading={tasksQ.isLoading}
+            onToggle={(id, done) => toggle.mutate({ id, done })}
+          />
+        </div>
+
+        <div>
+          <SectionHeader
+            title="Recent activity"
+            actions={
+              <Link
+                to="/activity"
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                View all
+              </Link>
+            }
+          />
+          <ActivityTimeline
+            items={activityQ.data ?? []}
+            loading={activityQ.isLoading}
+          />
+        </div>
+      </section>
+
+      {/* 5. Quick Actions */}
+      <section>
+        <SectionHeader title="Quick actions" />
+        <div className="flex flex-wrap gap-1.5">
+          <QuickAction to="/customers" label="New customer" />
+          <QuickAction to="/quotes/new" label="New quote" />
+          <QuickAction to="/sales-orders/new" label="New sales order" />
+          <QuickAction to="/invoices/new" label="New invoice" />
+          <QuickAction to="/payments/new" label="Receive payment" />
+          <QuickAction to="/purchase-orders/new" label="Purchase order" />
+        </div>
+      </section>
+
+      {/* 6. Business insights */}
+      <section>
+        <SectionHeader
+          title="Business insights"
+          description="Deeper metrics, tucked away until you need them."
+        />
+        <div className="divide-y divide-border rounded-md border border-border/70 bg-card/40">
+          <InsightGroup title="Pipeline & receivables" defaultOpen={false}>
+            <StatRow className="p-4">
+              <Stat
+                label="Today's follow-ups"
+                value={data.todayFollowups}
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                to="/followups"
+                search={{ scope: "today" }}
+                tone={data.todayFollowups ? "primary" : "default"}
+              />
+              <Stat
+                label="Overdue follow-ups"
+                value={data.overdueFollowups}
+                icon={<CalendarClock className="h-3.5 w-3.5" />}
+                to="/followups"
+                tone={data.overdueFollowups ? "danger" : "default"}
+              />
+              <Stat
+                label="Revenue pipeline"
+                value={"₹" + formatMoney(data.revenuePipelineInr)}
+                icon={<TrendingUp className="h-3.5 w-3.5" />}
+                to="/quotes"
+              />
+              <Stat
+                label="Payments (MTD)"
+                value={"₹" + formatMoney(data.paymentsThisMonthInr)}
+                icon={<Wallet className="h-3.5 w-3.5" />}
+                to="/payments"
+              />
+              <Stat
+                label="Deliveries today"
+                value={data.deliveriesToday}
+                icon={<Truck className="h-3.5 w-3.5" />}
+                to="/dispatch"
+              />
+              <Stat
+                label="Active customers"
+                value={data.customers}
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                to="/customers"
+              />
+            </StatRow>
+          </InsightGroup>
+          <InsightGroup title="Sales analytics" defaultOpen={false}>
+            <EmptyInsight
+              icon={<TrendingUp className="h-4 w-4" />}
+              label="Detailed sales analytics arrive with the Business Foundation release."
+            />
+          </InsightGroup>
+          <InsightGroup title="Inventory" defaultOpen={false}>
+            <EmptyInsight
+              icon={<ClipboardCheck className="h-4 w-4" />}
+              label="Inventory intelligence will appear here."
+            />
+          </InsightGroup>
+          <InsightGroup title="Finance" defaultOpen={false}>
+            <EmptyInsight
+              icon={<Wallet className="h-4 w-4" />}
+              label="GST, receivables ageing and cashflow join here in v0.9."
+            />
+          </InsightGroup>
         </div>
       </section>
     </div>
   );
 }
+
+/* ------------------------------ subcomponents ----------------------------- */
+
+function TaskChecklist({
+  tasks,
+  loading,
+  onToggle,
+}: {
+  tasks: TaskRow[];
+  loading: boolean;
+  onToggle: (id: string, done: boolean) => void;
+}) {
+  if (loading) {
+    return (
+      <ul className="space-y-2" aria-hidden>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <li key={i} className="h-9 animate-pulse rounded-sm bg-muted/50" />
+        ))}
+      </ul>
+    );
+  }
+  if (tasks.length === 0) {
+    return (
+      <div className="flex items-center gap-3 rounded-md border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">
+        <ListChecks className="h-4 w-4 opacity-60" />
+        You're all caught up. Nothing pending for today.
+      </div>
+    );
+  }
+  return (
+    <ul className="divide-y divide-border/70">
+      {tasks.slice(0, 8).map((t) => (
+        <li
+          key={t.id}
+          className="group flex items-start gap-3 py-2.5"
+        >
+          <Checkbox
+            className="mt-0.5"
+            checked={t.status === "completed"}
+            onCheckedChange={(v) => onToggle(t.id, v === true)}
+            aria-label={`Mark task ${t.title} complete`}
+          />
+          <div className="min-w-0 flex-1">
+            <div
+              className={cn(
+                "truncate text-sm",
+                t.status === "completed"
+                  ? "text-muted-foreground line-through"
+                  : "text-foreground",
+              )}
+            >
+              {t.title}
+            </div>
+            {t.due_at && (
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                Due {new Date(t.due_at).toLocaleString("en-IN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </div>
+            )}
+          </div>
+          {t.priority && t.priority !== "medium" && (
+            <PriorityDot priority={t.priority} />
+          )}
+          <Link
+            to="/tasks"
+            className="opacity-0 transition-opacity group-hover:opacity-100"
+            aria-label="Open in tasks"
+          >
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PriorityDot({ priority }: { priority: string }) {
+  const cls =
+    priority === "urgent"
+      ? "bg-destructive"
+      : priority === "high"
+      ? "bg-warning"
+      : "bg-muted-foreground/40";
+  return (
+    <span className="mt-1.5 flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+      <span className={cn("h-1.5 w-1.5 rounded-full", cls)} aria-hidden />
+      {priority}
+    </span>
+  );
+}
+
+function ActivityTimeline({
+  items,
+  loading,
+}: {
+  items: Array<{
+    id: string;
+    action: string;
+    summary: string | null;
+    entity_type: string | null;
+    actor_name?: string | null;
+    created_at: string;
+  }>;
+  loading: boolean;
+}) {
+  if (loading) {
+    return (
+      <ul className="space-y-3" aria-hidden>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <li key={i} className="h-8 animate-pulse rounded-sm bg-muted/50" />
+        ))}
+      </ul>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <div className="rounded-md border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">
+        No activity yet.
+      </div>
+    );
+  }
+  return (
+    <ol className="relative border-l border-border/70 pl-4">
+      {items.map((a) => (
+        <li key={a.id} className="relative py-2 first:pt-0 last:pb-0">
+          <span
+            aria-hidden
+            className="absolute -left-[19px] top-3 h-1.5 w-1.5 rounded-full bg-primary/60 ring-4 ring-background"
+          />
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 text-sm">
+              <span className="text-foreground">
+                {a.actor_name ?? "Someone"}
+              </span>{" "}
+              <span className="text-muted-foreground">
+                {humanizeAction(a.action)}
+              </span>{" "}
+              {a.summary && (
+                <span className="text-foreground">{a.summary}</span>
+              )}
+              {!a.summary && a.entity_type && (
+                <span className="text-muted-foreground">
+                  a {a.entity_type.replace(/_/g, " ")}
+                </span>
+              )}
+            </div>
+            <time className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+              {formatRelative(a.created_at)}
+            </time>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function humanizeAction(a: string): string {
+  return a.replace(/_/g, " ");
+}
+
+function QuickAction({ to, label }: { to: string; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-card px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:border-primary/40 hover:text-foreground"
+    >
+      <Plus className="h-3 w-3 text-muted-foreground" />
+      {label}
+    </Link>
+  );
+}
+
+function InsightGroup({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-foreground/90 hover:bg-muted/40">
+        <span className="flex items-center gap-2">
+          {open ? (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+          {title}
+        </span>
+        <Badge variant="outline" className="h-5 px-1.5 text-[10px] font-normal">
+          {open ? "Hide" : "Show"}
+        </Badge>
+      </CollapsibleTrigger>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function EmptyInsight({
+  icon,
+  label,
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-6 text-sm text-muted-foreground">
+      <span className="opacity-60">{icon}</span>
+      {label}
+    </div>
+  );
+}
+
+/* --------------------------------- helpers -------------------------------- */
 
 function greetingFor(d: Date): string {
   const h = d.getHours();
@@ -300,7 +519,9 @@ function greetingFor(d: Date): string {
   return "Good evening";
 }
 
-function displayName(user: { user_metadata?: Record<string, unknown>; email?: string | null } | null): string {
+function displayName(
+  user: { user_metadata?: Record<string, unknown>; email?: string | null } | null,
+): string {
   if (!user) return "there";
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
@@ -316,87 +537,29 @@ function formatMoney(n: number): string {
   return n.toLocaleString("en-IN");
 }
 
-type Tone = "primary" | "danger" | "warn" | "info" | "ok" | "muted";
-function toneClass(tone: Tone): string {
-  switch (tone) {
-    case "primary":
-      return "border-primary/40 bg-primary/5";
-    case "danger":
-      return "border-destructive/40 bg-destructive/5";
-    case "warn":
-      return "border-warning/40 bg-warning/5";
-    case "ok":
-      return "border-success/40 bg-success/5";
-    case "info":
-      return "border-primary/20 bg-card";
-    default:
-      return "border-border bg-card";
-  }
-}
-
-function Kpi({
-  title,
-  value,
-  icon,
-  to,
-  search,
-  tone = "muted",
-  compact = false,
-}: {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  to: string;
-  search?: Record<string, string>;
-  tone?: Tone;
-  compact?: boolean;
-}) {
-  return (
-    <Link to={to} search={search as never} className="block">
-      <div
-        className={cn(
-          "rounded-lg border px-3 py-2.5 transition-shadow hover:shadow-2",
-          toneClass(tone),
-        )}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            {title}
-          </div>
-          <div className="shrink-0 text-primary">{icon}</div>
-        </div>
-        <div
-          className={cn(
-            "mt-0.5 truncate font-display font-bold text-foreground",
-            compact ? "text-lg" : "text-2xl",
-          )}
-        >
-          {value}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function QuickAction({
-  to,
-  label,
-  icon,
-}: {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-medium transition-shadow hover:border-primary/40 hover:shadow-2"
-    >
-      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-        <Plus className="h-3.5 w-3.5" />
-      </span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="text-muted-foreground group-hover:text-primary">{icon}</span>
-    </Link>
-  );
+function buildInsight(
+  k: Awaited<ReturnType<typeof getDashboardKpis>> | undefined,
+  tasks: TaskRow[],
+): string | null {
+  if (!k) return null;
+  const parts: string[] = [];
+  if (k.pendingQuotes)
+    parts.push(
+      `${k.pendingQuotes} pending quotation${k.pendingQuotes === 1 ? "" : "s"}`,
+    );
+  if (k.outstandingInr > 0)
+    parts.push(`₹${formatMoney(k.outstandingInr)} awaiting collection`);
+  if (k.overdueFollowups)
+    parts.push(
+      `${k.overdueFollowups} overdue follow-up${
+        k.overdueFollowups === 1 ? "" : "s"
+      }`,
+    );
+  if (tasks.length && parts.length < 2)
+    parts.push(`${tasks.length} task${tasks.length === 1 ? "" : "s"} on your list`);
+  if (parts.length === 0)
+    return "You're clear for now. A calm morning is a great time to plan ahead.";
+  if (parts.length === 1) return `You have ${parts[0]}.`;
+  const last = parts.pop();
+  return `You have ${parts.join(", ")} and ${last}.`;
 }
