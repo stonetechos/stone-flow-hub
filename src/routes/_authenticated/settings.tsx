@@ -25,6 +25,7 @@ function SettingsPage() {
   const [userId, setUserId] = useState("");
   const [fullName, setFullName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
 
 
@@ -36,6 +37,13 @@ function SettingsPage() {
         setUserId(data.user.id);
         const meta = data.user.user_metadata as { full_name?: string } | null;
         setFullName(meta?.full_name ?? "");
+        const { data: role } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        setIsAdmin(!!role);
       }
     })();
   }, []);
