@@ -350,6 +350,34 @@ function QuoteDetailPage() {
                 </p>
               )}
             </div>
+            {(sourceEstimate.data || linkedSo.data) && (
+              <div className="space-y-1 border-t border-border pt-3 text-xs">
+                {sourceEstimate.data && (
+                  <div className="text-muted-foreground">
+                    Created from Estimate{" "}
+                    <Link
+                      to="/estimates/$estimateId"
+                      params={{ estimateId: sourceEstimate.data.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {sourceEstimate.data.estimate_no}
+                    </Link>
+                  </div>
+                )}
+                {linkedSo.data && (
+                  <div className="text-muted-foreground">
+                    Converted to Sales Order{" "}
+                    <Link
+                      to="/sales-orders/$id"
+                      params={{ id: linkedSo.data.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {linkedSo.data.so_no}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="border-t border-border pt-3 text-xs text-muted-foreground">
               <div>Valid until: {quote.valid_until ?? "—"}</div>
               {quote.notes && <div className="mt-2 whitespace-pre-line">{quote.notes}</div>}
