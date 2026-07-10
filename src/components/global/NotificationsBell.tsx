@@ -17,25 +17,43 @@ export function NotificationsBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <Bell className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8"
+          aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
+        >
+          <Bell className="h-4 w-4" />
           {unread > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
-              {unread}
-            </span>
+            <span
+              aria-hidden
+              className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-card"
+            />
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
-        <div className="flex items-center justify-between border-b border-border px-3 py-2">
-          <div className="text-sm font-medium">Notifications</div>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={markAll}>
+      <PopoverContent align="end" className="w-[360px] p-0">
+        <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-medium">Notifications</div>
+            {unread > 0 && (
+              <span className="rounded-full bg-primary/10 px-1.5 py-px text-[10px] font-medium text-primary">
+                {unread} new
+              </span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+            onClick={markAll}
+          >
             Mark all read
           </Button>
         </div>
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-[420px] overflow-y-auto">
           {items.length === 0 ? (
-            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+            <div className="px-3 py-10 text-center text-sm text-muted-foreground">
               You're all caught up.
             </div>
           ) : (
@@ -43,31 +61,39 @@ export function NotificationsBell() {
               <Link
                 key={n.id}
                 to={n.href ?? "/dashboard"}
-                className="block border-b border-border/60 px-3 py-2 hover:bg-muted"
+                className="block border-b border-border/50 px-3 py-2.5 transition-colors hover:bg-muted/60"
                 onClick={() =>
                   setItems((xs) => xs.map((x) => (x.id === n.id ? { ...x, read: true } : x)))
                 }
               >
                 <div className="flex items-start gap-2">
-                  {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />}
+                  <span
+                    aria-hidden
+                    className={
+                      !n.read
+                        ? "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                        : "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-transparent"
+                    }
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="truncate text-sm font-medium">{n.title}</div>
+                      <div className="truncate text-[13px] font-medium">{n.title}</div>
                       <span className="shrink-0 text-[11px] text-muted-foreground">
                         {formatRelative(n.at)}
                       </span>
                     </div>
-                    <div className="line-clamp-2 text-xs text-muted-foreground">{n.body}</div>
+                    <div className="line-clamp-2 text-[12px] text-muted-foreground">{n.body}</div>
                   </div>
                 </div>
               </Link>
             ))
           )}
         </div>
-        <div className="border-t border-border px-3 py-2 text-right">
+        <div className="flex items-center justify-between border-t border-border px-3 py-2">
           <Badge variant="secondary" className="text-[10px]">
-            Preview — no backend yet
+            Preview
           </Badge>
+          <span className="text-[11px] text-muted-foreground">Automation coming soon</span>
         </div>
       </PopoverContent>
     </Popover>
