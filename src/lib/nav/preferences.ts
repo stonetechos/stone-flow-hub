@@ -70,6 +70,11 @@ function normalize(p: Partial<NavPreferences> | null | undefined): NavPreference
     collapsedGroups: (p.collapsedGroups ?? []).filter((g): g is NavGroupId =>
       knownGroups.has(g as NavGroupId),
     ),
+    itemGroupOverrides: Object.fromEntries(
+      Object.entries(p.itemGroupOverrides ?? {}).filter(
+        ([id, g]) => known.has(id) && knownGroups.has(g as NavGroupId),
+      ),
+    ) as Record<string, NavGroupId>,
   };
 }
 
