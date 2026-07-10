@@ -3,17 +3,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Stone Tech OS badge.
+ *
+ * Soft, tinted pill by default — never a saturated block. Use `outline`
+ * for neutral labels and the semantic variants (`success`, `warning`,
+ * `info`, `destructive`) for status.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        default:
+          "border-transparent bg-primary/10 text-primary",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-border bg-muted text-foreground/80",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-transparent bg-destructive/10 text-destructive",
+        success:
+          "border-transparent bg-success/10 text-success",
+        warning:
+          "border-transparent bg-warning/15 text-warning-foreground",
+        info:
+          "border-transparent bg-info/10 text-info",
+        outline:
+          "border-border bg-transparent text-muted-foreground",
       },
     },
     defaultVariants: {
