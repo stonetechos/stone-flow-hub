@@ -47,15 +47,18 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
   convertQuoteToInvoice,
+  convertQuoteToSalesOrder,
   deleteQuote,
+  getEstimateForQuote,
   getQuote,
   getQuoteItems,
+  getSalesOrderForQuote,
   reviseQuote,
   setQuoteStatus,
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 import type { DbTable } from "@/lib/types";
-import { invalidateQuote, invalidateInvoice } from "@/lib/query-invalidation";
+import { invalidateQuote, invalidateInvoice, invalidateSalesOrder } from "@/lib/query-invalidation";
 
 type QuoteStatus = DbTable<"quotes">["status"];
 
@@ -78,6 +81,16 @@ function QuoteDetailPage() {
   const items = useQuery({
     queryKey: qk.quotes.items(quoteId),
     queryFn: () => getQuoteItems(quoteId),
+  });
+  const linkedSo = useQuery({
+    queryKey: ["quotes", "linkedSalesOrder", quoteId],
+    queryFn: () => getSalesOrderForQuote(quoteId),
+  });
+  const sourceEstimateId = q.data?.estimate_id ?? null;
+  const sourceEstimate = useQuery({
+    queryKey: ["quotes", "sourceEstimate", sourceEstimateId ?? ""],
+    queryFn: () => (sourceEstimateId ? getEstimateForQuote(sourceEstimateId) : null),
+    enabled: !!sourceEstimateId,
   });
 
   const statusMut = useMutation({
@@ -115,6 +128,17 @@ function QuoteDetailPage() {
       toast.success(`Revision ${rev.quote_no} created as draft`);
       qc.invalidateQueries({ queryKey: qk.quotes.all });
       nav({ to: "/quotes/$quoteId/edit", params: { quoteId: rev.id } });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const soMut = useMutation({
+    mutationFn: () => convertQuoteToSalesOrder(quoteId),
+    onSuccess: (so) => {
+      toast.success(`Sales order ${so.so_no} created`);
+      invalidateSalesOrder(qc, so.id);
+      qc.invalidateQueries({ queryKey: ["quotes", "linkedSalesOrder", quoteId] });
+      nav({ to: "/sales-orders/$id", params: { id: so.id } });
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -168,18 +192,22 @@ function QuoteDetailPage() {
                     Create revision
                   </Button>
                 )}
-                <Link
-                  to="/sales-orders/new"
-                  search={{
-                    quote: quoteId,
-                    ...(quote.project_id ? { project: quote.project_id } : {}),
-                    ...(quote.customer_id ? { customer: quote.customer_id } : {}),
-                  }}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => soMut.mutate()}
+                  disabled={soMut.isPending}
+                  title={
+                    linkedSo.data
+                      ? `Already linked to ${linkedSo.data.so_no}`
+                      : "Create a sales order from this quote"
+                  }
                 >
-                  <Button size="sm" variant="outline">
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Sales order
-                  </Button>
-                </Link>
+                  {soMut.isPending
+                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    : <ShoppingCart className="mr-2 h-4 w-4" />}
+                  {linkedSo.data ? "Open sales order" : "Convert to Sales Order"}
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => convertMut.mutate()}
@@ -322,6 +350,34 @@ function QuoteDetailPage() {
                 </p>
               )}
             </div>
+            {(sourceEstimate.data || linkedSo.data) && (
+              <div className="space-y-1 border-t border-border pt-3 text-xs">
+                {sourceEstimate.data && (
+                  <div className="text-muted-foreground">
+                    Created from Estimate{" "}
+                    <Link
+                      to="/estimates/$estimateId"
+                      params={{ estimateId: sourceEstimate.data.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {sourceEstimate.data.estimate_no}
+                    </Link>
+                  </div>
+                )}
+                {linkedSo.data && (
+                  <div className="text-muted-foreground">
+                    Converted to Sales Order{" "}
+                    <Link
+                      to="/sales-orders/$id"
+                      params={{ id: linkedSo.data.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {linkedSo.data.so_no}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="border-t border-border pt-3 text-xs text-muted-foreground">
               <div>Valid until: {quote.valid_until ?? "—"}</div>
               {quote.notes && <div className="mt-2 whitespace-pre-line">{quote.notes}</div>}

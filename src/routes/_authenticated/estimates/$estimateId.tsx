@@ -59,6 +59,7 @@ import {
   saveEstimateDocument,
   setEstimateStatus,
 } from "@/lib/estimates/api";
+import { getQuoteForEstimate } from "@/lib/quotes/api";
 import { renderEmailHtml, renderWhatsappText } from "@/lib/estimates/render";
 import { COST_COMPONENT_LABEL, ESTIMATE_TEMPLATES } from "@/lib/estimates/templates";
 import { formatInr } from "@/lib/format";
@@ -103,6 +104,10 @@ function EstimateDetailPage() {
     queryKey: qk.estimates.documents(estimateId),
     queryFn: () => getEstimateDocuments(estimateId),
   });
+  const linkedQuote = useQuery({
+    queryKey: ["estimates", "linkedQuote", estimateId],
+    queryFn: () => getQuoteForEstimate(estimateId),
+  });
 
   const statusMut = useMutation({
     mutationFn: (s: EstStatus) => setEstimateStatus(estimateId, s),
@@ -119,6 +124,7 @@ function EstimateDetailPage() {
       toast.success(`Quote ${quote.quote_no} created`);
       invalidateEstimate(qc, estimateId);
       invalidateQuote(qc);
+      qc.invalidateQueries({ queryKey: ["estimates", "linkedQuote", estimateId] });
       nav({ to: "/quotes/$quoteId", params: { quoteId: quote.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -157,7 +163,7 @@ function EstimateDetailPage() {
   if (!est.data) return <ErrorBlock message="Estimate not found." />;
 
   const estimate = est.data;
-  const canConvert = estimate.status === "accepted";
+  const converted = linkedQuote.data ?? null;
   const tpl = ESTIMATE_TEMPLATES[estimate.template];
 
   const openSend = (chan: "whatsapp" | "email") => {
@@ -212,10 +218,12 @@ function EstimateDetailPage() {
             <Button
               size="sm"
               onClick={() => convertMut.mutate()}
-              disabled={!canConvert || convertMut.isPending}
+              disabled={convertMut.isPending}
+              title={converted ? `Already converted to ${converted.quote_no}` : undefined}
             >
               {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to Quote
+              <ArrowRightCircle className="mr-2 h-4 w-4" />
+              {converted ? "Convert again" : "Convert to Quote"}
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setConfirmDel(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -378,9 +386,17 @@ function EstimateDetailPage() {
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
-                {!canConvert && (
+                {converted && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Mark as <span className="font-medium">Accepted</span> to convert into a quote.
+                    Converted to Quote{" "}
+                    <Link
+                      to="/quotes/$quoteId"
+                      params={{ quoteId: converted.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {converted.quote_no}
+                    </Link>{" "}
+                    ({converted.status})
                   </p>
                 )}
               </div>
