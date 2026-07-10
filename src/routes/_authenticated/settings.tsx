@@ -120,7 +120,9 @@ function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="preferences" className="mt-4">
+        <TabsContent value="preferences" className="mt-4 space-y-4">
+          <NavigationPreferences isAdmin={isAdmin} />
+
           <Card className="shadow-1">
             <CardHeader>
               <CardTitle className="text-sm">Guided Workflow Assistant</CardTitle>
