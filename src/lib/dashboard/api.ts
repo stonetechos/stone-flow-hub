@@ -30,6 +30,8 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
+  const todayIso = start.toISOString().slice(0, 10);
+
   const [
     activeEnq,
     pendingRfq,
@@ -41,6 +43,9 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     cust,
     outstanding,
     monthPay,
+    salesToday,
+    collectionsToday,
+    deliveriesToday,
   ] = await Promise.all([
     supabase
       .from("enquiries")
@@ -73,6 +78,16 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     supabase.from("customers").select("id", { count: "exact", head: true }).eq("is_active", true),
     supabase.from("invoices").select("balance_due").not("status", "in", '("cancelled","draft")'),
     supabase.from("payments").select("amount").gte("paid_at", monthStart.toISOString()),
+    supabase
+      .from("invoices")
+      .select("total")
+      .eq("issue_date", todayIso)
+      .not("status", "in", '("cancelled","draft")'),
+    supabase.from("payments").select("amount").gte("paid_at", start.toISOString()),
+    supabase
+      .from("dispatches")
+      .select("id", { count: "exact", head: true })
+      .eq("dispatch_date", todayIso),
   ]);
 
   for (const r of [
@@ -86,6 +101,9 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     cust,
     outstanding,
     monthPay,
+    salesToday,
+    collectionsToday,
+    deliveriesToday,
   ]) {
     if (r.error) throw new AppError(mapDbError(r.error));
   }
@@ -109,5 +127,10 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     customers: cust.count ?? 0,
     outstandingInr: sumField(outstanding.data as Array<{ balance_due: number }>, "balance_due"),
     paymentsThisMonthInr: sumField(monthPay.data as Array<{ amount: number }>, "amount"),
+    salesTodayInr: sumField(salesToday.data as Array<{ total: number }>, "total"),
+    collectionsTodayInr: sumField(collectionsToday.data as Array<{ amount: number }>, "amount"),
+    pendingQuotes: quotesAwaiting.count ?? 0,
+    deliveriesToday: deliveriesToday.count ?? 0,
   };
 }
+
