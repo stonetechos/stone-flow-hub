@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -17,9 +17,14 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
+import {
+  FormLayout,
+  FormSection,
+  FormGrid,
+  FormActions,
+} from "@/components/forms/FormLayout";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createPayment } from "@/lib/payments/crud";
@@ -51,38 +56,45 @@ function NewPaymentPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const params = Route.useSearch();
-  const [mode, setMode] = useState<Mode>(params.mode ?? (params.customer && !params.invoice ? "advance" : "invoice"));
+  const [mode, setMode] = useState<Mode>(
+    params.mode ?? (params.customer && !params.invoice ? "advance" : "invoice"),
+  );
 
   return (
     <div>
       <PageHeader
         title="New payment"
         subtitle="Record a payment against an invoice, or record an advance payment before invoicing."
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => nav({ to: "/payments" })}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+        }
       />
 
-      <div className="mb-4 rounded-md border border-border bg-card p-4 shadow-1">
-        <div className="mb-2 text-sm font-medium">Payment type</div>
+      <div className="mb-6">
+        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Payment type
+        </div>
         <RadioGroup
           value={mode}
           onValueChange={(v) => setMode(v as Mode)}
-          className="flex flex-col gap-2 md:flex-row md:gap-6"
+          className="grid gap-3 md:grid-cols-2"
         >
-          <div className="flex items-start gap-2">
-            <RadioGroupItem value="invoice" id="mode-invoice" className="mt-1" />
-            <Label htmlFor="mode-invoice" className="cursor-pointer">
-              <div className="text-sm font-medium">Payment against invoice</div>
-              <div className="text-xs text-muted-foreground">Link the payment to a specific invoice.</div>
-            </Label>
-          </div>
-          <div className="flex items-start gap-2">
-            <RadioGroupItem value="advance" id="mode-advance" className="mt-1" />
-            <Label htmlFor="mode-advance" className="cursor-pointer">
-              <div className="text-sm font-medium">Advance payment received</div>
-              <div className="text-xs text-muted-foreground">
-                Record a customer payment without an invoice. Updates the customer ledger and stays available for future allocation.
-              </div>
-            </Label>
-          </div>
+          <ModeOption
+            id="mode-invoice"
+            value="invoice"
+            title="Payment against invoice"
+            description="Link the payment to a specific invoice."
+            selected={mode === "invoice"}
+          />
+          <ModeOption
+            id="mode-advance"
+            value="advance"
+            title="Advance payment received"
+            description="Record a customer payment without an invoice. Updates the customer ledger and stays available for future allocation."
+            selected={mode === "advance"}
+          />
         </RadioGroup>
       </div>
 
@@ -127,7 +139,6 @@ function NewPaymentPage() {
       if (!form.invoice_id || form.amount) return;
       const match = (invoices.data ?? []).find((i) => i.id === form.invoice_id);
       if (match?.balance_due) set("amount", Number(match.balance_due));
-       
     }, [form.invoice_id, invoices.data]);
 
     const mut = useMutation({
@@ -140,95 +151,115 @@ function NewPaymentPage() {
       onError: (e) => toast.error(toUserMessage(e)),
     });
 
+    const canSave = !!form.invoice_id && form.amount > 0;
+    const hint = !form.invoice_id
+      ? "Select the invoice this payment settles."
+      : form.amount <= 0
+        ? "Enter an amount greater than zero."
+        : null;
+
     return (
-      <QuickForm
+      <FormLayout
+        busy={mut.isPending}
         onSubmit={(e) => {
           e.preventDefault();
-          mut.mutate(form);
+          if (canSave) mut.mutate(form);
         }}
-        busy={mut.isPending}
       >
-        <QuickForm.QuickFill>
-          <Field label="Invoice" required>
-            <Select value={form.invoice_id} onValueChange={(v) => set("invoice_id", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select invoice" />
-              </SelectTrigger>
-              <SelectContent>
-                {(invoices.data ?? []).map((i) => (
-                  <SelectItem key={i.id} value={i.id}>
-                    {i.invoice_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Amount" required>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              inputMode="decimal"
-              value={form.amount ? form.amount : ""}
-              onChange={(e) => set("amount", e.target.value === "" ? 0 : Number(e.target.value))}
-              required
-            />
-          </Field>
-        </QuickForm.QuickFill>
+        <FormSection title="Payment details" description="Which invoice, how much, and when it was paid.">
+          <FormGrid>
+            <Field label="Invoice" required>
+              <Select value={form.invoice_id} onValueChange={(v) => set("invoice_id", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select invoice" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(invoices.data ?? []).map((i) => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {i.invoice_no}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Amount" required>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                inputMode="decimal"
+                value={form.amount ? form.amount : ""}
+                onChange={(e) => set("amount", e.target.value === "" ? 0 : Number(e.target.value))}
+                required
+              />
+            </Field>
+            <Field label="Paid at" required>
+              <Input
+                type="date"
+                value={form.paid_at.slice(0, 10)}
+                onChange={(e) => set("paid_at", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Method">
+              <Select
+                value={form.method}
+                onValueChange={(v) => set("method", v as PaymentCreateInput["method"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYMENT_METHODS.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {PAYMENT_METHOD_LABELS[m]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </FormGrid>
+        </FormSection>
 
-        <QuickForm.MoreDetails>
-          <Field label="Method">
-            <Select
-              value={form.method}
-              onValueChange={(v) => set("method", v as PaymentCreateInput["method"])}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {PAYMENT_METHOD_LABELS[m]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Paid at" required>
-            <Input
-              type="date"
-              value={form.paid_at.slice(0, 10)}
-              onChange={(e) => set("paid_at", e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Reference #">
-            <Input
-              value={form.reference_no ?? ""}
-              onChange={(e) => set("reference_no", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.MoreDetails>
+        <FormSection title="Reference & notes" description="Optional — helps reconciliation and audit.">
+          <FormGrid>
+            <Field label="Reference #">
+              <Input
+                value={form.reference_no ?? ""}
+                onChange={(e) => set("reference_no", e.target.value || null)}
+                placeholder="UTR / Cheque / Txn ID"
+              />
+            </Field>
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea
+                rows={3}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value || null)}
+              />
+            </Field>
+          </FormGrid>
+        </FormSection>
 
-        <QuickForm.Advanced>
-          <Field label="Notes" className="md:col-span-2">
-            <Textarea
-              rows={3}
-              value={form.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.Advanced>
-
-        <QuickForm.Actions>
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={mut.isPending || !form.invoice_id || form.amount <= 0}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Record
-          </Button>
-        </QuickForm.Actions>
-      </QuickForm>
+        <FormActions
+          busy={mut.isPending}
+          hint={hint}
+          secondary={
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={!canSave || mut.isPending}>
+              {mut.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Record payment
+            </Button>
+          }
+        />
+      </FormLayout>
     );
   }
 
@@ -270,70 +301,131 @@ function NewPaymentPage() {
     });
 
     const canSave = !!customerId && amount > 0 && !!receivedAt;
+    const hint = !customerId
+      ? "Select the customer sending the advance."
+      : amount <= 0
+        ? "Enter an amount greater than zero."
+        : null;
 
     return (
-      <QuickForm
+      <FormLayout
+        busy={mut.isPending}
         onSubmit={(e) => {
           e.preventDefault();
           if (canSave) mut.mutate();
         }}
-        busy={mut.isPending}
       >
-        <QuickForm.QuickFill>
-          <Field label="Customer" required>
-            <EntityPicker type="customer" value={customerId} onChange={setCustomerId} />
-          </Field>
-          <Field label="Amount" required>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              inputMode="decimal"
-              value={amount ? amount : ""}
-              onChange={(e) => setAmount(e.target.value === "" ? 0 : Number(e.target.value))}
-              required
-            />
-          </Field>
-        </QuickForm.QuickFill>
+        <FormSection
+          title="Advance details"
+          description="Who is paying, how much, and when. The advance stays on the customer ledger until allocated."
+        >
+          <FormGrid>
+            <Field label="Customer" required>
+              <EntityPicker type="customer" value={customerId} onChange={setCustomerId} />
+            </Field>
+            <Field label="Amount" required>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                inputMode="decimal"
+                value={amount ? amount : ""}
+                onChange={(e) => setAmount(e.target.value === "" ? 0 : Number(e.target.value))}
+                required
+              />
+            </Field>
+            <Field label="Payment date" required>
+              <Input
+                type="date"
+                value={receivedAt}
+                onChange={(e) => setReceivedAt(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Payment mode">
+              <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RECEIPT_METHODS.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {RECEIPT_METHOD_LABELS[m]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </FormGrid>
+        </FormSection>
 
-        <QuickForm.MoreDetails>
-          <Field label="Payment mode">
-            <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {RECEIPT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {RECEIPT_METHOD_LABELS[m]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Payment date" required>
-            <Input type="date" value={receivedAt} onChange={(e) => setReceivedAt(e.target.value)} required />
-          </Field>
-          <Field label="Reference #">
-            <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} placeholder="UTR / Cheque / Txn ID" />
-          </Field>
-        </QuickForm.MoreDetails>
+        <FormSection title="Reference & notes" description="Optional — helps reconciliation and audit.">
+          <FormGrid>
+            <Field label="Reference #">
+              <Input
+                value={referenceNo}
+                onChange={(e) => setReferenceNo(e.target.value)}
+                placeholder="UTR / Cheque / Txn ID"
+              />
+            </Field>
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </Field>
+          </FormGrid>
+        </FormSection>
 
-        <QuickForm.Advanced>
-          <Field label="Notes" className="md:col-span-2">
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </Field>
-        </QuickForm.Advanced>
-
-        <QuickForm.Actions>
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={mut.isPending || !canSave}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Record advance
-          </Button>
-        </QuickForm.Actions>
-      </QuickForm>
+        <FormActions
+          busy={mut.isPending}
+          hint={hint}
+          secondary={
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={!canSave || mut.isPending}>
+              {mut.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Record advance
+            </Button>
+          }
+        />
+      </FormLayout>
     );
   }
+}
+
+function ModeOption({
+  id,
+  value,
+  title,
+  description,
+  selected,
+}: {
+  id: string;
+  value: string;
+  title: string;
+  description: string;
+  selected: boolean;
+}) {
+  return (
+    <Label
+      htmlFor={id}
+      className={
+        "flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors " +
+        (selected
+          ? "border-primary/60 bg-primary/[0.03]"
+          : "border-border/60 hover:border-border")
+      }
+    >
+      <RadioGroupItem value={value} id={id} className="mt-0.5" />
+      <div className="space-y-1">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-xs text-muted-foreground">{description}</div>
+      </div>
+    </Label>
+  );
 }
