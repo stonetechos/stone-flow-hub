@@ -71,19 +71,21 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
   const moveItem = (payload: DragPayload, target: { to: "starred" | NavGroupId; beforeId?: string }): void => {
     if (payload.from === target.to && !target.beforeId) return;
     update((p) => {
-      // Snapshot ordered lists first, then rebuild.
       const starred = [...p.starred];
       const perGroup: Record<NavGroupId, string[]> = {} as Record<NavGroupId, string[]>;
+      const effectiveGroup = (itemId: string): NavGroupId => {
+        const def = NAV_ITEMS_BY_ID[itemId];
+        return p.itemGroupOverrides[itemId] ?? def?.group ?? "others";
+      };
       for (const g of NAV_GROUPS) {
         const explicit = p.itemOrderByGroup[g.id] ?? [];
-        const catalog = NAV_ITEMS.filter((i) => i.group === g.id).map((i) => i.id);
+        const catalog = NAV_ITEMS.filter((i) => effectiveGroup(i.id) === g.id).map((i) => i.id);
         perGroup[g.id] = [
           ...explicit.filter((id) => catalog.includes(id)),
           ...catalog.filter((id) => !explicit.includes(id)),
         ];
       }
 
-      // Remove payload.itemId from its current list.
       if (payload.from === "starred") {
         const idx = starred.indexOf(payload.itemId);
         if (idx >= 0) starred.splice(idx, 1);
@@ -93,7 +95,6 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         if (idx >= 0) list.splice(idx, 1);
       }
 
-      // Insert into target.
       const insertInto = (arr: string[]): void => {
         if (target.beforeId) {
           const idx = arr.indexOf(target.beforeId);
@@ -105,24 +106,21 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         arr.push(payload.itemId);
       };
 
+      const overrides = { ...p.itemGroupOverrides };
       if (target.to === "starred") {
         insertInto(starred);
       } else {
         insertInto(perGroup[target.to]);
-        // Ensure item's home-group representation reflects new group.
-        // We do not mutate NAV_ITEMS; group membership is derived from
-        // itemOrderByGroup at render time (via resolveNav which reads
-        // by item.group). To move across groups we bypass this by
-        // re-recording explicit order and letting resolveNav prefer
-        // items whose *definition* group matches. So cross-group moves
-        // are best-effort: we keep the item in its new group's order
-        // AND remove it from the source group's explicit order above.
+        const def = NAV_ITEMS_BY_ID[payload.itemId];
+        if (def && def.group !== target.to) overrides[payload.itemId] = target.to;
+        else delete overrides[payload.itemId];
       }
 
       return {
         ...p,
         starred,
         itemOrderByGroup: perGroup,
+        itemGroupOverrides: overrides,
       };
     });
   };
