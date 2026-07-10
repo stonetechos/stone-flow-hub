@@ -15,6 +15,7 @@ import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { ProductionOrdersPanel } from "@/components/manufacturing/ProductionOrdersPanel";
 import { SalesOrderInstallationPanel } from "@/components/installation/SalesOrderInstallationPanel";
+import { SalesOrderDeliveryPanel } from "@/components/dispatch/SalesOrderDeliveryPanel";
 
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
