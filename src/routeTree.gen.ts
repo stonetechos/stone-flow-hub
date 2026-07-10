@@ -143,6 +143,7 @@ import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/
 import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authenticated/payments/$id.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices/$invoiceId.edit'
 import { Route as AuthenticatedInventoryIdEditRouteImport } from './routes/_authenticated/inventory/$id.edit'
+import { Route as AuthenticatedDispatchIdPrintRouteImport } from './routes/_authenticated/dispatch/$id.print'
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
 import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
 
@@ -921,6 +922,12 @@ const AuthenticatedInventoryIdEditRoute =
     path: '/edit',
     getParentRoute: () => AuthenticatedInventoryIdRoute,
   } as any)
+const AuthenticatedDispatchIdPrintRoute =
+  AuthenticatedDispatchIdPrintRouteImport.update({
+    id: '/print',
+    path: '/print',
+    getParentRoute: () => AuthenticatedDispatchIdRoute,
+  } as any)
 const AuthenticatedDispatchIdEditRoute =
   AuthenticatedDispatchIdEditRouteImport.update({
     id: '/edit',
@@ -1056,6 +1063,7 @@ export interface FileRoutesByFullPath {
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
+  '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1193,6 +1201,7 @@ export interface FileRoutesByTo {
   '/vendor/rfqs': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
+  '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1332,6 +1341,7 @@ export interface FileRoutesById {
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/_authenticated/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
+  '/_authenticated/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
   '/_authenticated/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1471,6 +1481,7 @@ export interface FileRouteTypes {
     | '/vendor/rfqs/'
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
+    | '/dispatch/$id/print'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -1608,6 +1619,7 @@ export interface FileRouteTypes {
     | '/vendor/rfqs'
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
+    | '/dispatch/$id/print'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -1746,6 +1758,7 @@ export interface FileRouteTypes {
     | '/vendor/rfqs/'
     | '/_authenticated/customers/$customerId/timeline'
     | '/_authenticated/dispatch/$id/edit'
+    | '/_authenticated/dispatch/$id/print'
     | '/_authenticated/inventory/$id/edit'
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/payments/$id/edit'
@@ -2715,6 +2728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryIdEditRouteImport
       parentRoute: typeof AuthenticatedInventoryIdRoute
     }
+    '/_authenticated/dispatch/$id/print': {
+      id: '/_authenticated/dispatch/$id/print'
+      path: '/print'
+      fullPath: '/dispatch/$id/print'
+      preLoaderRoute: typeof AuthenticatedDispatchIdPrintRouteImport
+      parentRoute: typeof AuthenticatedDispatchIdRoute
+    }
     '/_authenticated/dispatch/$id/edit': {
       id: '/_authenticated/dispatch/$id/edit'
       path: '/edit'
@@ -2749,11 +2769,13 @@ const AuthenticatedCustomersCustomerIdRouteWithChildren =
 
 interface AuthenticatedDispatchIdRouteChildren {
   AuthenticatedDispatchIdEditRoute: typeof AuthenticatedDispatchIdEditRoute
+  AuthenticatedDispatchIdPrintRoute: typeof AuthenticatedDispatchIdPrintRoute
 }
 
 const AuthenticatedDispatchIdRouteChildren: AuthenticatedDispatchIdRouteChildren =
   {
     AuthenticatedDispatchIdEditRoute: AuthenticatedDispatchIdEditRoute,
+    AuthenticatedDispatchIdPrintRoute: AuthenticatedDispatchIdPrintRoute,
   }
 
 const AuthenticatedDispatchIdRouteWithChildren =

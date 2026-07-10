@@ -97,7 +97,13 @@ export const qk = {
     all: ["dispatch"] as const,
     list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,
     byId: (id: string) => ["dispatch", "byId", id] as const,
+    items: (id: string) => ["dispatch", "items", id] as const,
+    bySalesOrder: (id: string) => ["dispatch", "bySalesOrder", id] as const,
+    byCustomer: (id: string) => ["dispatch", "byCustomer", id] as const,
+    byProject: (id: string) => ["dispatch", "byProject", id] as const,
+    deliveryStatus: (id: string) => ["dispatch", "deliveryStatus", id] as const,
   },
+
   paymentsAll: {
     all: ["paymentsAll"] as const,
     list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,

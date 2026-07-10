@@ -19,11 +19,17 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getDispatch, updateDispatch } from "@/lib/dispatch/api";
-import { DISPATCH_STATUSES, type DispatchCreateInput } from "@/lib/dispatch/schema";
+import {
+  getDispatch,
+  listDispatchItems,
+  replaceDispatchItems,
+  updateDispatch,
+} from "@/lib/dispatch/api";
+import { DISPATCH_STATUSES, type DispatchCreateInput, type DispatchItemInput } from "@/lib/dispatch/schema";
 import { listSalesOrdersForPicker } from "@/lib/sales-orders/api";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { allowedNextDispatchStatuses } from "@/lib/status-transitions";
+import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
 
 export const Route = createFileRoute("/_authenticated/dispatch/$id/edit")({
   ssr: false,
@@ -35,30 +41,65 @@ function EditDispatchPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: qk.dispatch.byId(id), queryFn: () => getDispatch(id) });
+  const itemsQuery = useQuery({
+    queryKey: qk.dispatch.items(id),
+    queryFn: () => listDispatchItems(id),
+  });
   const orders = useQuery({
     queryKey: qk.salesOrders.list("", ""),
     queryFn: listSalesOrdersForPicker,
   });
 
   const [form, setForm] = useState<DispatchCreateInput | null>(null);
+  const [items, setItems] = useState<DispatchItemInput[]>([]);
   useEffect(() => {
     if (query.data) {
       const r = query.data;
       setForm({
         sales_order_id: r.sales_order_id,
+        customer_id: r.customer_id,
+        project_id: r.project_id,
         status: r.status,
         dispatch_date: r.dispatch_date,
         carrier: r.carrier,
         tracking_no: r.tracking_no,
+        site_address: r.site_address,
+        vehicle_no: r.vehicle_no,
+        driver_name: r.driver_name,
+        driver_phone: r.driver_phone,
+        lr_no: r.lr_no,
+        delivered_by: r.delivered_by,
+        received_by: r.received_by,
+        carting_charge: Number(r.carting_charge ?? 0),
+        remarks: r.remarks,
         notes: r.notes,
       });
     }
   }, [query.data]);
+  useEffect(() => {
+    if (itemsQuery.data) {
+      setItems(
+        itemsQuery.data.map((it) => ({
+          id: it.id,
+          sales_order_item_id: it.sales_order_item_id,
+          product_id: it.product_id,
+          product_name: it.product_name,
+          description: it.description,
+          unit: it.unit,
+          quantity: Number(it.quantity),
+          sort_order: it.sort_order,
+        })),
+      );
+    }
+  }, [itemsQuery.data]);
 
   const mut = useMutation({
-    mutationFn: (input: DispatchCreateInput) => updateDispatch(id, input),
+    mutationFn: async (payload: { form: DispatchCreateInput; items: DispatchItemInput[] }) => {
+      await updateDispatch(id, payload.form);
+      await replaceDispatchItems(id, payload.items);
+    },
     onSuccess: () => {
-      toast.success("Dispatch updated");
+      toast.success("Delivery challan updated");
       invalidateDispatch(qc, id);
       nav({ to: "/dispatch/$id", params: { id } });
     },
@@ -77,7 +118,7 @@ function EditDispatchPage() {
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
-          mut.mutate(form);
+          mut.mutate({ form, items });
         }}
         busy={mut.isPending}
       >
@@ -99,12 +140,24 @@ function EditDispatchPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Dispatch date" required>
+          <Field label="Challan date" required>
             <Input
               type="date"
               value={form.dispatch_date}
               onChange={(e) => set("dispatch_date", e.target.value)}
               required
+            />
+          </Field>
+          <Field label="Vehicle no.">
+            <Input
+              value={form.vehicle_no ?? ""}
+              onChange={(e) => set("vehicle_no", e.target.value || null)}
+            />
+          </Field>
+          <Field label="LR / Consignment no.">
+            <Input
+              value={form.lr_no ?? ""}
+              onChange={(e) => set("lr_no", e.target.value || null)}
             />
           </Field>
         </QuickForm.QuickFill>
@@ -131,7 +184,19 @@ function EditDispatchPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Carrier">
+          <Field label="Driver name">
+            <Input
+              value={form.driver_name ?? ""}
+              onChange={(e) => set("driver_name", e.target.value || null)}
+            />
+          </Field>
+          <Field label="Driver phone">
+            <Input
+              value={form.driver_phone ?? ""}
+              onChange={(e) => set("driver_phone", e.target.value || null)}
+            />
+          </Field>
+          <Field label="Carrier / Transport">
             <Input
               value={form.carrier ?? ""}
               onChange={(e) => set("carrier", e.target.value || null)}
@@ -143,11 +208,54 @@ function EditDispatchPage() {
               onChange={(e) => set("tracking_no", e.target.value || null)}
             />
           </Field>
+          <Field label="Delivered by">
+            <Input
+              value={form.delivered_by ?? ""}
+              onChange={(e) => set("delivered_by", e.target.value || null)}
+            />
+          </Field>
+          <Field label="Received by">
+            <Input
+              value={form.received_by ?? ""}
+              onChange={(e) => set("received_by", e.target.value || null)}
+            />
+          </Field>
+          <Field label="Carting charge (₹)">
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.carting_charge}
+              onChange={(e) => set("carting_charge", Number(e.target.value))}
+            />
+          </Field>
+          <Field label="Site address" className="md:col-span-2">
+            <Textarea
+              rows={2}
+              value={form.site_address ?? ""}
+              onChange={(e) => set("site_address", e.target.value || null)}
+            />
+          </Field>
         </QuickForm.MoreDetails>
         <QuickForm.Advanced>
-          <Field label="Notes" className="md:col-span-2">
+          <Field label="Material" className="md:col-span-2">
+            <DispatchItemsEditor
+              salesOrderId={form.sales_order_id ?? null}
+              value={items}
+              onChange={setItems}
+              excludeDispatchId={id}
+            />
+          </Field>
+          <Field label="Remarks" className="md:col-span-2">
             <Textarea
-              rows={3}
+              rows={2}
+              value={form.remarks ?? ""}
+              onChange={(e) => set("remarks", e.target.value || null)}
+            />
+          </Field>
+          <Field label="Internal notes" className="md:col-span-2">
+            <Textarea
+              rows={2}
               value={form.notes ?? ""}
               onChange={(e) => set("notes", e.target.value || null)}
             />

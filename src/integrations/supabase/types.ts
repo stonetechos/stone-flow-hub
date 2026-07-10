@@ -654,50 +654,164 @@ export type Database = {
           },
         ]
       }
-      dispatches: {
+      dispatch_items: {
         Row: {
-          carrier: string | null
           created_at: string
-          created_by: string | null
-          dispatch_date: string
-          dispatch_no: string
+          description: string
+          dispatch_id: string
           id: string
           is_demo: boolean
-          notes: string | null
-          sales_order_id: string | null
-          status: Database["public"]["Enums"]["dispatch_status"]
-          tracking_no: string | null
+          product_id: string | null
+          product_name: string | null
+          quantity: number
+          sales_order_item_id: string | null
+          sort_order: number
+          unit: string | null
           updated_at: string
         }
         Insert: {
-          carrier?: string | null
           created_at?: string
-          created_by?: string | null
-          dispatch_date?: string
-          dispatch_no: string
+          description: string
+          dispatch_id: string
           id?: string
           is_demo?: boolean
-          notes?: string | null
-          sales_order_id?: string | null
-          status?: Database["public"]["Enums"]["dispatch_status"]
-          tracking_no?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sales_order_item_id?: string | null
+          sort_order?: number
+          unit?: string | null
           updated_at?: string
         }
         Update: {
-          carrier?: string | null
           created_at?: string
-          created_by?: string | null
-          dispatch_date?: string
-          dispatch_no?: string
+          description?: string
+          dispatch_id?: string
           id?: string
           is_demo?: boolean
-          notes?: string | null
-          sales_order_id?: string | null
-          status?: Database["public"]["Enums"]["dispatch_status"]
-          tracking_no?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sales_order_item_id?: string | null
+          sort_order?: number
+          unit?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "dispatch_items_dispatch_id_fkey"
+            columns: ["dispatch_id"]
+            isOneToOne: false
+            referencedRelation: "dispatches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_items_sales_order_item_id_fkey"
+            columns: ["sales_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "sales_order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatches: {
+        Row: {
+          carrier: string | null
+          carting_charge: number
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          delivered_by: string | null
+          dispatch_date: string
+          dispatch_no: string
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          is_demo: boolean
+          lr_no: string | null
+          notes: string | null
+          project_id: string | null
+          received_by: string | null
+          remarks: string | null
+          sales_order_id: string | null
+          site_address: string | null
+          status: Database["public"]["Enums"]["dispatch_status"]
+          tracking_no: string | null
+          updated_at: string
+          vehicle_no: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          carting_charge?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          delivered_by?: string | null
+          dispatch_date?: string
+          dispatch_no: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          is_demo?: boolean
+          lr_no?: string | null
+          notes?: string | null
+          project_id?: string | null
+          received_by?: string | null
+          remarks?: string | null
+          sales_order_id?: string | null
+          site_address?: string | null
+          status?: Database["public"]["Enums"]["dispatch_status"]
+          tracking_no?: string | null
+          updated_at?: string
+          vehicle_no?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          carting_charge?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          delivered_by?: string | null
+          dispatch_date?: string
+          dispatch_no?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          is_demo?: boolean
+          lr_no?: string | null
+          notes?: string | null
+          project_id?: string | null
+          received_by?: string | null
+          remarks?: string | null
+          sales_order_id?: string | null
+          site_address?: string | null
+          status?: Database["public"]["Enums"]["dispatch_status"]
+          tracking_no?: string | null
+          updated_at?: string
+          vehicle_no?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatches_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatches_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dispatches_sales_order_id_fkey"
             columns: ["sales_order_id"]
@@ -5281,6 +5395,7 @@ export type Database = {
           created_by: string | null
           currency_code: string | null
           customer_id: string | null
+          default_carting_charge: number
           delivery_date: string | null
           discount: number
           external_ref: string | null
@@ -5309,6 +5424,7 @@ export type Database = {
           created_by?: string | null
           currency_code?: string | null
           customer_id?: string | null
+          default_carting_charge?: number
           delivery_date?: string | null
           discount?: number
           external_ref?: string | null
@@ -5337,6 +5453,7 @@ export type Database = {
           created_by?: string | null
           currency_code?: string | null
           customer_id?: string | null
+          default_carting_charge?: number
           delivery_date?: string | null
           discount?: number
           external_ref?: string | null
@@ -7058,6 +7175,7 @@ export type Database = {
           created_by: string | null
           currency_code: string | null
           customer_id: string | null
+          default_carting_charge: number
           delivery_date: string | null
           discount: number
           external_ref: string | null

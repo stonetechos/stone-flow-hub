@@ -30,6 +30,7 @@ import { getCustomer } from "@/lib/customers/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { DeliveryChallanListPanel } from "@/components/dispatch/DeliveryChallanListPanel";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
@@ -189,6 +190,7 @@ function CustomerHub() {
           <TabsTrigger value="sales">Sales Orders</TabsTrigger>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="challans">Challans</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -367,6 +369,11 @@ function CustomerHub() {
         <TabsContent value="documents" className="mt-4">
           <AttachmentsPanel entityType="customer_document" entityId={customerId} />
         </TabsContent>
+
+        <TabsContent value="challans" className="mt-4">
+          <DeliveryChallanListPanel customerId={customerId} title="Delivery challans for this customer" />
+        </TabsContent>
+
 
         <TabsContent value="timeline" className="mt-4">
           <TimelinePanel entityType="customer" entityId={customerId} />
