@@ -76,12 +76,12 @@ function DispatchPage() {
   return (
     <div>
       <PageHeader
-        title="Dispatch"
-        subtitle="Outbound shipments against sales orders."
+        title="Delivery challans"
+        subtitle="Outbound deliveries against sales orders. Each challan is an independent record of what left the yard."
         actions={
           roles.canWrite && (
             <Button onClick={() => nav({ to: "/dispatch/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New dispatch
+              <Plus className="mr-2 h-4 w-4" /> New delivery challan
             </Button>
           )
         }
