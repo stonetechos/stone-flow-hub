@@ -30,12 +30,14 @@ import {
   Star,
   ShieldCheck,
   Layers,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 
 export type NavGroupId =
   | "sales"
   | "operations"
+  | "workforce"
   | "masterData"
   | "others"
   | "admin";
@@ -49,6 +51,7 @@ export interface NavGroupDef {
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "operations", label: "Operations" },
+  { id: "workforce", label: "Workforce Intelligence" },
   { id: "masterData", label: "Master Data" },
   { id: "others", label: "Others" },
   { id: "admin", label: "Administration", adminOnly: true },
@@ -85,6 +88,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "operations" },
   { id: "slabs", to: "/inventory/slabs", label: "Slab Register", icon: Layers, group: "operations" },
   { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "operations" },
+
+  // Workforce Intelligence
+  { id: "wf-today", to: "/workforce-intelligence", label: "Today", icon: CheckSquare, group: "workforce" },
+  { id: "wf-employees", to: "/workforce-intelligence/employees", label: "Employees", icon: Users, group: "workforce" },
+  { id: "wf-roles", to: "/workforce-intelligence/roles", label: "Roles & KRAs", icon: Briefcase, group: "workforce" },
+  { id: "wf-capacities", to: "/workforce-intelligence/capacities", label: "Workload Capacity", icon: Layers, group: "workforce" },
+  { id: "wf-performance", to: "/workforce-intelligence/performance", label: "Performance", icon: BarChart3, group: "workforce" },
+  { id: "wf-owner", to: "/workforce-intelligence/owner", label: "Owner Intelligence", icon: ShieldCheck, group: "workforce", adminOnly: true },
 
   // Master Data
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },

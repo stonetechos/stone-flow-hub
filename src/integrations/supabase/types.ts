@@ -654,6 +654,45 @@ export type Database = {
           },
         ]
       }
+      designations: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          expected_outcomes: string | null
+          id: string
+          level: number
+          name: string
+          purpose: string | null
+          responsibilities: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          expected_outcomes?: string | null
+          id?: string
+          level?: number
+          name: string
+          purpose?: string | null
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          expected_outcomes?: string | null
+          id?: string
+          level?: number
+          name?: string
+          purpose?: string | null
+          responsibilities?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dispatch_items: {
         Row: {
           created_at: string
@@ -913,6 +952,164 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      employee_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          employee_id: string
+          file_object_id: string | null
+          id: string
+          notes: string | null
+          title: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          employee_id: string
+          file_object_id?: string | null
+          id?: string
+          notes?: string | null
+          title?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          employee_id?: string
+          file_object_id?: string | null
+          id?: string
+          notes?: string | null
+          title?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_file_object_id_fkey"
+            columns: ["file_object_id"]
+            isOneToOne: false
+            referencedRelation: "file_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          aadhaar: string | null
+          address: string | null
+          bank_details: Json
+          created_at: string
+          department: string | null
+          designation_id: string | null
+          email: string | null
+          emergency_contact: string | null
+          employee_code: string
+          employment_status: Database["public"]["Enums"]["employment_status"]
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          full_name: string
+          id: string
+          joining_date: string | null
+          pan: string | null
+          phone: string | null
+          photo_url: string | null
+          remarks: string | null
+          reporting_manager_id: string | null
+          salary_ctc: number | null
+          skills: string[]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          aadhaar?: string | null
+          address?: string | null
+          bank_details?: Json
+          created_at?: string
+          department?: string | null
+          designation_id?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          employee_code: string
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          full_name: string
+          id?: string
+          joining_date?: string | null
+          pan?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          remarks?: string | null
+          reporting_manager_id?: string | null
+          salary_ctc?: number | null
+          skills?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          aadhaar?: string | null
+          address?: string | null
+          bank_details?: Json
+          created_at?: string
+          department?: string | null
+          designation_id?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          employee_code?: string
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          full_name?: string
+          id?: string
+          joining_date?: string | null
+          pan?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          remarks?: string | null
+          reporting_manager_id?: string | null
+          salary_ctc?: number | null
+          skills?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "designations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enquiries: {
         Row: {
@@ -2570,6 +2767,59 @@ export type Database = {
           },
         ]
       }
+      kras: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          designation_id: string
+          id: string
+          metric_source: string | null
+          name: string
+          sort_order: number
+          target_period: Database["public"]["Enums"]["kra_period"]
+          target_value: number
+          updated_at: string
+          weightage: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          designation_id: string
+          id?: string
+          metric_source?: string | null
+          name: string
+          sort_order?: number
+          target_period?: Database["public"]["Enums"]["kra_period"]
+          target_value?: number
+          updated_at?: string
+          weightage?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          designation_id?: string
+          id?: string
+          metric_source?: string | null
+          name?: string
+          sort_order?: number
+          target_period?: Database["public"]["Enums"]["kra_period"]
+          target_value?: number
+          updated_at?: string
+          weightage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kras_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "designations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manufacturing_stages: {
         Row: {
           code: string
@@ -2875,6 +3125,54 @@ export type Database = {
           payload?: Json
         }
         Relationships: []
+      }
+      owner_notes: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          id: string
+          kind: Database["public"]["Enums"]["owner_note_kind"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          id?: string
+          kind: Database["public"]["Enums"]["owner_note_kind"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["owner_note_kind"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_notes_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_notes_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ownership_transfers: {
         Row: {
@@ -6941,6 +7239,278 @@ export type Database = {
         }
         Relationships: []
       }
+      workforce_rule_assignments: {
+        Row: {
+          active: boolean
+          created_at: string
+          designation_id: string | null
+          fallback_employee_id: string | null
+          id: string
+          notes: string | null
+          rule_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          designation_id?: string | null
+          fallback_employee_id?: string | null
+          id?: string
+          notes?: string | null
+          rule_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          designation_id?: string | null
+          fallback_employee_id?: string | null
+          id?: string
+          notes?: string | null
+          rule_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_rule_assignments_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "designations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_rule_assignments_fallback_employee_id_fkey"
+            columns: ["fallback_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_rule_assignments_fallback_employee_id_fkey"
+            columns: ["fallback_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_score_snapshots: {
+        Row: {
+          achieved: number
+          created_at: string
+          employee_id: string
+          grade: Database["public"]["Enums"]["performance_grade"] | null
+          id: string
+          kra_id: string | null
+          kra_name: string
+          overall_pct: number | null
+          pct: number
+          period: Database["public"]["Enums"]["kra_period"]
+          period_end: string
+          period_start: string
+          target: number
+          weight: number
+          weighted_score: number
+        }
+        Insert: {
+          achieved?: number
+          created_at?: string
+          employee_id: string
+          grade?: Database["public"]["Enums"]["performance_grade"] | null
+          id?: string
+          kra_id?: string | null
+          kra_name: string
+          overall_pct?: number | null
+          pct?: number
+          period: Database["public"]["Enums"]["kra_period"]
+          period_end: string
+          period_start: string
+          target?: number
+          weight?: number
+          weighted_score?: number
+        }
+        Update: {
+          achieved?: number
+          created_at?: string
+          employee_id?: string
+          grade?: Database["public"]["Enums"]["performance_grade"] | null
+          id?: string
+          kra_id?: string | null
+          kra_name?: string
+          overall_pct?: number | null
+          pct?: number
+          period?: Database["public"]["Enums"]["kra_period"]
+          period_end?: string
+          period_start?: string
+          target?: number
+          weight?: number
+          weighted_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_score_snapshots_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_score_snapshots_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_score_snapshots_kra_id_fkey"
+            columns: ["kra_id"]
+            isOneToOne: false
+            referencedRelation: "kras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_tasks: {
+        Row: {
+          auto_generated: boolean
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          dedup_key: string
+          deferred_until: string | null
+          description: string | null
+          designation_id: string | null
+          due_at: string | null
+          employee_id: string | null
+          estimated_minutes: number | null
+          id: string
+          priority: Database["public"]["Enums"]["workforce_task_priority"]
+          rule_key: string | null
+          source_deep_link: string | null
+          source_id: string | null
+          source_type: string | null
+          status: Database["public"]["Enums"]["workforce_task_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          auto_generated?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dedup_key: string
+          deferred_until?: string | null
+          description?: string | null
+          designation_id?: string | null
+          due_at?: string | null
+          employee_id?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          priority?: Database["public"]["Enums"]["workforce_task_priority"]
+          rule_key?: string | null
+          source_deep_link?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          status?: Database["public"]["Enums"]["workforce_task_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          auto_generated?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dedup_key?: string
+          deferred_until?: string | null
+          description?: string | null
+          designation_id?: string | null
+          due_at?: string | null
+          employee_id?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          priority?: Database["public"]["Enums"]["workforce_task_priority"]
+          rule_key?: string | null
+          source_deep_link?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          status?: Database["public"]["Enums"]["workforce_task_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_tasks_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "designations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_tasks_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_tasks_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workload_capacities: {
+        Row: {
+          created_at: string
+          designation_id: string
+          id: string
+          ideal_capacity: number
+          maximum_capacity: number
+          metric_key: string
+          metric_label: string
+          notes: string | null
+          overload_threshold: number
+          period: Database["public"]["Enums"]["kra_period"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          designation_id: string
+          id?: string
+          ideal_capacity?: number
+          maximum_capacity?: number
+          metric_key: string
+          metric_label: string
+          notes?: string | null
+          overload_threshold?: number
+          period?: Database["public"]["Enums"]["kra_period"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          designation_id?: string
+          id?: string
+          ideal_capacity?: number
+          maximum_capacity?: number
+          metric_key?: string
+          metric_label?: string
+          notes?: string | null
+          overload_threshold?: number
+          period?: Database["public"]["Enums"]["kra_period"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workload_capacities_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "designations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       customer_ledger: {
@@ -7001,6 +7571,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      employees_sensitive: {
+        Row: {
+          aadhaar: string | null
+          bank_details: Json | null
+          employee_code: string | null
+          full_name: string | null
+          id: string | null
+          pan: string | null
+          salary_ctc: number | null
+        }
+        Insert: {
+          aadhaar?: string | null
+          bank_details?: Json | null
+          employee_code?: string | null
+          full_name?: string | null
+          id?: string | null
+          pan?: string | null
+          salary_ctc?: number | null
+        }
+        Update: {
+          aadhaar?: string | null
+          bank_details?: Json | null
+          employee_code?: string | null
+          full_name?: string | null
+          id?: string | null
+          pan?: string | null
+          salary_ctc?: number | null
+        }
+        Relationships: []
       }
       installation_dashboard_kpis: {
         Row: {
@@ -7215,6 +7815,7 @@ export type Database = {
         Returns: string
       }
       current_demo_mode: { Args: never; Returns: boolean }
+      current_employee_id: { Args: never; Returns: string }
       current_vendor_id: { Args: never; Returns: string }
       customer_receipts_since: {
         Args: { _customer_id: string; _since: string }
@@ -7527,6 +8128,24 @@ export type Database = {
         }
         Returns: string
       }
+      workforce_close_task: {
+        Args: { _rule_key: string; _source_id: string }
+        Returns: undefined
+      }
+      workforce_is_owner: { Args: { _uid: string }; Returns: boolean }
+      workforce_upsert_task: {
+        Args: {
+          _deep_link: string
+          _description: string
+          _due: string
+          _priority: Database["public"]["Enums"]["workforce_task_priority"]
+          _rule_key: string
+          _source_id: string
+          _source_type: string
+          _title: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       activity_action:
@@ -7564,6 +8183,18 @@ export type Database = {
         | "government"
         | "other"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
+      employment_status:
+        | "active"
+        | "on_leave"
+        | "notice"
+        | "terminated"
+        | "resigned"
+      employment_type:
+        | "full_time"
+        | "part_time"
+        | "contract"
+        | "intern"
+        | "consultant"
       enquiry_priority: "low" | "normal" | "high" | "urgent"
       estimate_document_kind:
         | "customer_pdf"
@@ -7622,6 +8253,7 @@ export type Database = {
         | "paid"
         | "cancelled"
         | "overdue"
+      kra_period: "daily" | "weekly" | "monthly" | "quarterly"
       lead_stage:
         | "new_lead"
         | "contacted"
@@ -7656,6 +8288,7 @@ export type Database = {
         | "DISPATCH_COMPLETED"
         | "REVISION_REQUESTED"
       notification_status: "pending" | "sent" | "failed" | "skipped"
+      owner_note_kind: "strength" | "improvement" | "observation"
       payment_link_status:
         | "created"
         | "sent"
@@ -7677,6 +8310,7 @@ export type Database = {
         | "gateway"
         | "upi_bob_current"
         | "upi_personal"
+      performance_grade: "a_plus" | "a" | "b" | "c" | "needs_attention"
       preferred_transport: "road" | "rail" | "sea" | "air" | "mixed"
       product_unit:
         | "sqft"
@@ -7796,6 +8430,13 @@ export type Database = {
         | "declined"
         | "expired"
         | "closed_lost"
+      workforce_task_priority: "low" | "medium" | "high" | "urgent"
+      workforce_task_status:
+        | "pending"
+        | "in_progress"
+        | "completed"
+        | "deferred"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -7961,6 +8602,20 @@ export const Constants = {
         "other",
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
+      employment_status: [
+        "active",
+        "on_leave",
+        "notice",
+        "terminated",
+        "resigned",
+      ],
+      employment_type: [
+        "full_time",
+        "part_time",
+        "contract",
+        "intern",
+        "consultant",
+      ],
       enquiry_priority: ["low", "normal", "high", "urgent"],
       estimate_document_kind: [
         "customer_pdf",
@@ -8026,6 +8681,7 @@ export const Constants = {
         "cancelled",
         "overdue",
       ],
+      kra_period: ["daily", "weekly", "monthly", "quarterly"],
       lead_stage: [
         "new_lead",
         "contacted",
@@ -8062,6 +8718,7 @@ export const Constants = {
         "REVISION_REQUESTED",
       ],
       notification_status: ["pending", "sent", "failed", "skipped"],
+      owner_note_kind: ["strength", "improvement", "observation"],
       payment_link_status: [
         "created",
         "sent",
@@ -8085,6 +8742,7 @@ export const Constants = {
         "upi_bob_current",
         "upi_personal",
       ],
+      performance_grade: ["a_plus", "a", "b", "c", "needs_attention"],
       preferred_transport: ["road", "rail", "sea", "air", "mixed"],
       product_unit: [
         "sqft",
@@ -8216,6 +8874,14 @@ export const Constants = {
         "declined",
         "expired",
         "closed_lost",
+      ],
+      workforce_task_priority: ["low", "medium", "high", "urgent"],
+      workforce_task_status: [
+        "pending",
+        "in_progress",
+        "completed",
+        "deferred",
+        "cancelled",
       ],
     },
   },

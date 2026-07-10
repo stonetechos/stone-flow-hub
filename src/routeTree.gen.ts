@@ -30,6 +30,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as VendorRfqsIndexRouteImport } from './routes/vendor/rfqs/index'
 import { Route as VendorOrdersIndexRouteImport } from './routes/vendor/orders/index'
+import { Route as AuthenticatedWorkforceIntelligenceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/index'
 import { Route as AuthenticatedVendorsIndexRouteImport } from './routes/_authenticated/vendors/index'
 import { Route as AuthenticatedVendorPaymentsIndexRouteImport } from './routes/_authenticated/vendor-payments/index'
 import { Route as AuthenticatedSalesOrdersIndexRouteImport } from './routes/_authenticated/sales-orders/index'
@@ -129,12 +130,21 @@ import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './rou
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedWorkforceIntelligenceRolesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/roles/index'
+import { Route as AuthenticatedWorkforceIntelligencePerformanceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/performance/index'
+import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from './routes/_authenticated/workforce-intelligence/owner/index'
+import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
+import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
+import { Route as ApiPublicHooksWorkforceDailyRouteImport } from './routes/api/public/hooks/workforce-daily'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
 import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/public/hooks/dispatch-queue'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
+import { Route as AuthenticatedWorkforceIntelligenceRolesIdRouteImport } from './routes/_authenticated/workforce-intelligence/roles/$id'
+import { Route as AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport } from './routes/_authenticated/workforce-intelligence/employees/new'
+import { Route as AuthenticatedWorkforceIntelligenceEmployeesIdRouteImport } from './routes/_authenticated/workforce-intelligence/employees/$id'
 import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './routes/_authenticated/vendors/$vendorId.timeline'
 import { Route as AuthenticatedVendorsVendorIdLedgerRouteImport } from './routes/_authenticated/vendors/$vendorId.ledger'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
@@ -255,6 +265,12 @@ const VendorOrdersIndexRoute = VendorOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => VendorRouteRoute,
 } as any)
+const AuthenticatedWorkforceIntelligenceIndexRoute =
+  AuthenticatedWorkforceIntelligenceIndexRouteImport.update({
+    id: '/workforce-intelligence/',
+    path: '/workforce-intelligence/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVendorsIndexRoute =
   AuthenticatedVendorsIndexRouteImport.update({
     id: '/vendors/',
@@ -839,6 +855,36 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWorkforceIntelligenceRolesIndexRoute =
+  AuthenticatedWorkforceIntelligenceRolesIndexRouteImport.update({
+    id: '/workforce-intelligence/roles/',
+    path: '/workforce-intelligence/roles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligencePerformanceIndexRoute =
+  AuthenticatedWorkforceIntelligencePerformanceIndexRouteImport.update({
+    id: '/workforce-intelligence/performance/',
+    path: '/workforce-intelligence/performance/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligenceOwnerIndexRoute =
+  AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport.update({
+    id: '/workforce-intelligence/owner/',
+    path: '/workforce-intelligence/owner/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligenceEmployeesIndexRoute =
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport.update({
+    id: '/workforce-intelligence/employees/',
+    path: '/workforce-intelligence/employees/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute =
+  AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport.update({
+    id: '/workforce-intelligence/capacities/',
+    path: '/workforce-intelligence/capacities/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedQuotesQuoteIdIndexRoute =
   AuthenticatedQuotesQuoteIdIndexRouteImport.update({
     id: '/quotes/$quoteId/',
@@ -849,6 +895,12 @@ const ApiPublicWebhooksRazorpayRoute =
   ApiPublicWebhooksRazorpayRouteImport.update({
     id: '/api/public/webhooks/razorpay',
     path: '/api/public/webhooks/razorpay',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksWorkforceDailyRoute =
+  ApiPublicHooksWorkforceDailyRouteImport.update({
+    id: '/api/public/hooks/workforce-daily',
+    path: '/api/public/hooks/workforce-daily',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksWhatsappRoute = ApiPublicHooksWhatsappRouteImport.update({
@@ -873,6 +925,24 @@ const ApiPublicHooksCustomerPaymentRemindersRoute =
     id: '/api/public/hooks/customer-payment-reminders',
     path: '/api/public/hooks/customer-payment-reminders',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedWorkforceIntelligenceRolesIdRoute =
+  AuthenticatedWorkforceIntelligenceRolesIdRouteImport.update({
+    id: '/workforce-intelligence/roles/$id',
+    path: '/workforce-intelligence/roles/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligenceEmployeesNewRoute =
+  AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport.update({
+    id: '/workforce-intelligence/employees/new',
+    path: '/workforce-intelligence/employees/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkforceIntelligenceEmployeesIdRoute =
+  AuthenticatedWorkforceIntelligenceEmployeesIdRouteImport.update({
+    id: '/workforce-intelligence/employees/$id',
+    path: '/workforce-intelligence/employees/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedVendorsVendorIdTimelineRoute =
   AuthenticatedVendorsVendorIdTimelineRouteImport.update({
@@ -1059,6 +1129,7 @@ export interface FileRoutesByFullPath {
   '/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendor-payments/': typeof AuthenticatedVendorPaymentsIndexRoute
   '/vendors/': typeof AuthenticatedVendorsIndexRoute
+  '/workforce-intelligence/': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1072,12 +1143,21 @@ export interface FileRoutesByFullPath {
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
+  '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
+  '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
+  '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
+  '/workforce-intelligence/owner/': typeof AuthenticatedWorkforceIntelligenceOwnerIndexRoute
+  '/workforce-intelligence/performance/': typeof AuthenticatedWorkforceIntelligencePerformanceIndexRoute
+  '/workforce-intelligence/roles/': typeof AuthenticatedWorkforceIntelligenceRolesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1197,6 +1277,7 @@ export interface FileRoutesByTo {
   '/sales-orders': typeof AuthenticatedSalesOrdersIndexRoute
   '/vendor-payments': typeof AuthenticatedVendorPaymentsIndexRoute
   '/vendors': typeof AuthenticatedVendorsIndexRoute
+  '/workforce-intelligence': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders': typeof VendorOrdersIndexRoute
   '/vendor/rfqs': typeof VendorRfqsIndexRoute
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1210,12 +1291,21 @@ export interface FileRoutesByTo {
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
+  '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
+  '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
+  '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
+  '/workforce-intelligence/owner': typeof AuthenticatedWorkforceIntelligenceOwnerIndexRoute
+  '/workforce-intelligence/performance': typeof AuthenticatedWorkforceIntelligencePerformanceIndexRoute
+  '/workforce-intelligence/roles': typeof AuthenticatedWorkforceIntelligenceRolesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1337,6 +1427,7 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders/': typeof AuthenticatedSalesOrdersIndexRoute
   '/_authenticated/vendor-payments/': typeof AuthenticatedVendorPaymentsIndexRoute
   '/_authenticated/vendors/': typeof AuthenticatedVendorsIndexRoute
+  '/_authenticated/workforce-intelligence/': typeof AuthenticatedWorkforceIntelligenceIndexRoute
   '/vendor/orders/': typeof VendorOrdersIndexRoute
   '/vendor/rfqs/': typeof VendorRfqsIndexRoute
   '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
@@ -1350,12 +1441,21 @@ export interface FileRoutesById {
   '/_authenticated/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/_authenticated/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
   '/_authenticated/vendors/$vendorId/timeline': typeof AuthenticatedVendorsVendorIdTimelineRoute
+  '/_authenticated/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
+  '/_authenticated/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
+  '/_authenticated/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
+  '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
+  '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
+  '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
+  '/_authenticated/workforce-intelligence/owner/': typeof AuthenticatedWorkforceIntelligenceOwnerIndexRoute
+  '/_authenticated/workforce-intelligence/performance/': typeof AuthenticatedWorkforceIntelligencePerformanceIndexRoute
+  '/_authenticated/workforce-intelligence/roles/': typeof AuthenticatedWorkforceIntelligenceRolesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1477,6 +1577,7 @@ export interface FileRouteTypes {
     | '/sales-orders/'
     | '/vendor-payments/'
     | '/vendors/'
+    | '/workforce-intelligence/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
     | '/customers/$customerId/timeline'
@@ -1490,12 +1591,21 @@ export interface FileRouteTypes {
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
+    | '/workforce-intelligence/employees/$id'
+    | '/workforce-intelligence/employees/new'
+    | '/workforce-intelligence/roles/$id'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId/'
+    | '/workforce-intelligence/capacities/'
+    | '/workforce-intelligence/employees/'
+    | '/workforce-intelligence/owner/'
+    | '/workforce-intelligence/performance/'
+    | '/workforce-intelligence/roles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1615,6 +1725,7 @@ export interface FileRouteTypes {
     | '/sales-orders'
     | '/vendor-payments'
     | '/vendors'
+    | '/workforce-intelligence'
     | '/vendor/orders'
     | '/vendor/rfqs'
     | '/customers/$customerId/timeline'
@@ -1628,12 +1739,21 @@ export interface FileRouteTypes {
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
     | '/vendors/$vendorId/timeline'
+    | '/workforce-intelligence/employees/$id'
+    | '/workforce-intelligence/employees/new'
+    | '/workforce-intelligence/roles/$id'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/quotes/$quoteId'
+    | '/workforce-intelligence/capacities'
+    | '/workforce-intelligence/employees'
+    | '/workforce-intelligence/owner'
+    | '/workforce-intelligence/performance'
+    | '/workforce-intelligence/roles'
   id:
     | '__root__'
     | '/'
@@ -1754,6 +1874,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders/'
     | '/_authenticated/vendor-payments/'
     | '/_authenticated/vendors/'
+    | '/_authenticated/workforce-intelligence/'
     | '/vendor/orders/'
     | '/vendor/rfqs/'
     | '/_authenticated/customers/$customerId/timeline'
@@ -1767,12 +1888,21 @@ export interface FileRouteTypes {
     | '/_authenticated/sales-orders/$id/edit'
     | '/_authenticated/vendors/$vendorId/ledger'
     | '/_authenticated/vendors/$vendorId/timeline'
+    | '/_authenticated/workforce-intelligence/employees/$id'
+    | '/_authenticated/workforce-intelligence/employees/new'
+    | '/_authenticated/workforce-intelligence/roles/$id'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
     | '/api/public/hooks/whatsapp'
+    | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
     | '/_authenticated/quotes/$quoteId/'
+    | '/_authenticated/workforce-intelligence/capacities/'
+    | '/_authenticated/workforce-intelligence/employees/'
+    | '/_authenticated/workforce-intelligence/owner/'
+    | '/_authenticated/workforce-intelligence/performance/'
+    | '/_authenticated/workforce-intelligence/roles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1785,6 +1915,7 @@ export interface RootRouteChildren {
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
+  ApiPublicHooksWorkforceDailyRoute: typeof ApiPublicHooksWorkforceDailyRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
 }
 
@@ -1936,6 +2067,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/orders/'
       preLoaderRoute: typeof VendorOrdersIndexRouteImport
       parentRoute: typeof VendorRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/': {
+      id: '/_authenticated/workforce-intelligence/'
+      path: '/workforce-intelligence'
+      fullPath: '/workforce-intelligence/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors/': {
       id: '/_authenticated/vendors/'
@@ -2630,6 +2768,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/workforce-intelligence/roles/': {
+      id: '/_authenticated/workforce-intelligence/roles/'
+      path: '/workforce-intelligence/roles'
+      fullPath: '/workforce-intelligence/roles/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/performance/': {
+      id: '/_authenticated/workforce-intelligence/performance/'
+      path: '/workforce-intelligence/performance'
+      fullPath: '/workforce-intelligence/performance/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligencePerformanceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/owner/': {
+      id: '/_authenticated/workforce-intelligence/owner/'
+      path: '/workforce-intelligence/owner'
+      fullPath: '/workforce-intelligence/owner/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/employees/': {
+      id: '/_authenticated/workforce-intelligence/employees/'
+      path: '/workforce-intelligence/employees'
+      fullPath: '/workforce-intelligence/employees/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/capacities/': {
+      id: '/_authenticated/workforce-intelligence/capacities/'
+      path: '/workforce-intelligence/capacities'
+      fullPath: '/workforce-intelligence/capacities/'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/quotes/$quoteId/': {
       id: '/_authenticated/quotes/$quoteId/'
       path: '/quotes/$quoteId'
@@ -2642,6 +2815,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/webhooks/razorpay'
       fullPath: '/api/public/webhooks/razorpay'
       preLoaderRoute: typeof ApiPublicWebhooksRazorpayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/workforce-daily': {
+      id: '/api/public/hooks/workforce-daily'
+      path: '/api/public/hooks/workforce-daily'
+      fullPath: '/api/public/hooks/workforce-daily'
+      preLoaderRoute: typeof ApiPublicHooksWorkforceDailyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/whatsapp': {
@@ -2671,6 +2851,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/hooks/customer-payment-reminders'
       preLoaderRoute: typeof ApiPublicHooksCustomerPaymentRemindersRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/workforce-intelligence/roles/$id': {
+      id: '/_authenticated/workforce-intelligence/roles/$id'
+      path: '/workforce-intelligence/roles/$id'
+      fullPath: '/workforce-intelligence/roles/$id'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceRolesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/employees/new': {
+      id: '/_authenticated/workforce-intelligence/employees/new'
+      path: '/workforce-intelligence/employees/new'
+      fullPath: '/workforce-intelligence/employees/new'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workforce-intelligence/employees/$id': {
+      id: '/_authenticated/workforce-intelligence/employees/$id'
+      path: '/workforce-intelligence/employees/$id'
+      fullPath: '/workforce-intelligence/employees/$id'
+      preLoaderRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendors/$vendorId/timeline': {
       id: '/_authenticated/vendors/$vendorId/timeline'
@@ -2984,8 +3185,17 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSalesOrdersIndexRoute: typeof AuthenticatedSalesOrdersIndexRoute
   AuthenticatedVendorPaymentsIndexRoute: typeof AuthenticatedVendorPaymentsIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
+  AuthenticatedWorkforceIntelligenceIndexRoute: typeof AuthenticatedWorkforceIntelligenceIndexRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
+  AuthenticatedWorkforceIntelligenceEmployeesIdRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
+  AuthenticatedWorkforceIntelligenceEmployeesNewRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
+  AuthenticatedWorkforceIntelligenceRolesIdRoute: typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   AuthenticatedQuotesQuoteIdIndexRoute: typeof AuthenticatedQuotesQuoteIdIndexRoute
+  AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute: typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
+  AuthenticatedWorkforceIntelligenceOwnerIndexRoute: typeof AuthenticatedWorkforceIntelligenceOwnerIndexRoute
+  AuthenticatedWorkforceIntelligencePerformanceIndexRoute: typeof AuthenticatedWorkforceIntelligencePerformanceIndexRoute
+  AuthenticatedWorkforceIntelligenceRolesIndexRoute: typeof AuthenticatedWorkforceIntelligenceRolesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -3131,8 +3341,26 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSalesOrdersIndexRoute: AuthenticatedSalesOrdersIndexRoute,
   AuthenticatedVendorPaymentsIndexRoute: AuthenticatedVendorPaymentsIndexRoute,
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
+  AuthenticatedWorkforceIntelligenceIndexRoute:
+    AuthenticatedWorkforceIntelligenceIndexRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
+  AuthenticatedWorkforceIntelligenceEmployeesIdRoute:
+    AuthenticatedWorkforceIntelligenceEmployeesIdRoute,
+  AuthenticatedWorkforceIntelligenceEmployeesNewRoute:
+    AuthenticatedWorkforceIntelligenceEmployeesNewRoute,
+  AuthenticatedWorkforceIntelligenceRolesIdRoute:
+    AuthenticatedWorkforceIntelligenceRolesIdRoute,
   AuthenticatedQuotesQuoteIdIndexRoute: AuthenticatedQuotesQuoteIdIndexRoute,
+  AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute:
+    AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute,
+  AuthenticatedWorkforceIntelligenceEmployeesIndexRoute:
+    AuthenticatedWorkforceIntelligenceEmployeesIndexRoute,
+  AuthenticatedWorkforceIntelligenceOwnerIndexRoute:
+    AuthenticatedWorkforceIntelligenceOwnerIndexRoute,
+  AuthenticatedWorkforceIntelligencePerformanceIndexRoute:
+    AuthenticatedWorkforceIntelligencePerformanceIndexRoute,
+  AuthenticatedWorkforceIntelligenceRolesIndexRoute:
+    AuthenticatedWorkforceIntelligenceRolesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -3169,18 +3397,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksDispatchQueueRoute: ApiPublicHooksDispatchQueueRoute,
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
+  ApiPublicHooksWorkforceDailyRoute: ApiPublicHooksWorkforceDailyRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
