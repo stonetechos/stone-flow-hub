@@ -70,6 +70,7 @@ function ExecutiveDashboard() {
         <LinkCard icon={Briefcase} title="Project profitability" desc="Per-project P&L with AI explanation." to="/dashboards/profitability" />
         <LinkCard icon={Users} title="Customer intelligence" desc="Top, profitable, repeat, at-risk, inactive." to="/dashboards/customer-intelligence" />
         <LinkCard icon={AlertTriangle} title="Vendor intelligence" desc="Reliable, fastest, quality, risk, dependency." to="/dashboards/vendor-intelligence" />
+        <LinkCard icon={Sparkles} title="Command Centre" desc="Owner morning brief — sales, customers, ops, finance, workforce, insights." to="/dashboards/command-center" />
         <LinkCard icon={Briefcase} title="Control Centre" desc="One-screen owner view of the whole business." to="/dashboards/control-centre" />
       </Section>
     </div>
