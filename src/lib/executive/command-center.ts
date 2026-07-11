@@ -156,11 +156,11 @@ export async function getCommandCenter(): Promise<CommandCenterData> {
   if (urgPay) {
     insights.push({ kind: "risk", title: "Payment needing immediate attention", detail: `${urgPay.customer_name} — ₹${Math.round(Number(urgPay.balance_due ?? 0)).toLocaleString("en-IN")} on ${urgPay.invoice_no ?? "invoice"}`, to: `/customers/${urgPay.customer_id}` });
   }
-  const short = ((shortStock.data ?? []) as Array<{ id: string; name: string; quantity_on_hand: number | null; reorder_level: number | null }>)
+  const short = ((shortStock.data ?? []) as Array<{ id: string; stock_code: string; quantity_on_hand: number | null; reorder_level: number | null }>)
     .filter((r) => Number(r.quantity_on_hand ?? 0) < Number(r.reorder_level ?? 0))
     .sort((a, b) => Number(a.quantity_on_hand ?? 0) - Number(b.quantity_on_hand ?? 0));
   if (short.length > 0) {
-    insights.push({ kind: "warning", title: "Material shortage", detail: `${short.length} item${short.length === 1 ? "" : "s"} below reorder — top: ${short[0].name}`, to: `/inventory` });
+    insights.push({ kind: "warning", title: "Material shortage", detail: `${short.length} item${short.length === 1 ? "" : "s"} below reorder — top: ${short[0].stock_code}`, to: `/inventory` });
   }
 
   return {
