@@ -196,8 +196,8 @@ export function useNavPreferences(): {
   const uid = useCurrentUserId();
   const prefs = useSyncExternalStore(
     subscribePrefs,
-    () => (uid ? readPrefs(uid) : defaultPreferences()),
-    () => defaultPreferences(),
+    () => (uid ? readPrefs(uid) : DEFAULT_PREFS),
+    () => DEFAULT_PREFS,
   );
 
   return {
@@ -224,8 +224,8 @@ export function useRecentNav(): string[] {
   const uid = useCurrentUserId();
   return useSyncExternalStore(
     subscribeRecent,
-    () => (uid ? readRecent(uid) : []),
-    () => [],
+    () => (uid ? readRecent(uid) : EMPTY_RECENT),
+    () => EMPTY_RECENT,
   );
 }
 
