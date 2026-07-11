@@ -86,7 +86,7 @@ function CommandCenter() {
       />
 
       {/* ------------------- OWNER INSIGHTS ------------------- */}
-      <Section title="Owner insights" icon={Sparkles} subtitle="Rule-based signals from the running business.">
+      <Section title="Owner insights" icon={Sparkles} subtitle="Rule-based signals from the running business." plain>
         {insights.length === 0 ? (
           <Card><CardContent className="p-6 text-sm text-muted-foreground">All clear — no critical signals right now.</CardContent></Card>
         ) : (
@@ -136,7 +136,7 @@ function CommandCenter() {
       </Section>
 
       {/* ------------------- WORKFORCE (reuse existing widget) ------------------- */}
-      <Section title="Workforce" icon={Users} subtitle="Reusing Workforce Intelligence — rule-based, no AI.">
+      <Section title="Workforce" icon={Users} subtitle="Reusing Workforce Intelligence — rule-based, no AI." plain>
         <div className="rounded-lg border bg-card p-4">
           <WorkforceSummaryWidget />
         </div>
@@ -145,20 +145,16 @@ function CommandCenter() {
   );
 }
 
-function Section({ title, subtitle, icon: Icon, children }: { title: string; subtitle?: string; icon: React.ElementType; children: React.ReactNode }) {
+function Section({ title, subtitle, icon: Icon, plain = false, children }: { title: string; subtitle?: string; icon: React.ElementType; plain?: boolean; children: React.ReactNode }) {
   return (
     <section>
-      <div className="mb-3 flex items-baseline justify-between gap-2">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            <Icon className="h-4 w-4" /> {title}
-          </h2>
-          {subtitle && <p className="mt-1 text-xs text-muted-foreground/80">{subtitle}</p>}
-        </div>
+      <div className="mb-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <Icon className="h-4 w-4" /> {title}
+        </h2>
+        {subtitle && <p className="mt-1 text-xs text-muted-foreground/80">{subtitle}</p>}
       </div>
-      {typeof children === "string" || (children as { type?: unknown })?.type ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>
-      ) : children}
+      {plain ? children : <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{children}</div>}
     </section>
   );
 }

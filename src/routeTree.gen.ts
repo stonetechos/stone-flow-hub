@@ -124,6 +124,7 @@ import { Route as AuthenticatedDashboardsExecutiveRouteImport } from './routes/_
 import { Route as AuthenticatedDashboardsDailyActionRouteImport } from './routes/_authenticated/dashboards/daily-action'
 import { Route as AuthenticatedDashboardsCustomerIntelligenceRouteImport } from './routes/_authenticated/dashboards/customer-intelligence'
 import { Route as AuthenticatedDashboardsControlCentreRouteImport } from './routes/_authenticated/dashboards/control-centre'
+import { Route as AuthenticatedDashboardsCommandCenterRouteImport } from './routes/_authenticated/dashboards/command-center'
 import { Route as AuthenticatedDashboardsCollectionsRouteImport } from './routes/_authenticated/dashboards/collections'
 import { Route as AuthenticatedDashboardsBusinessIntelligenceRouteImport } from './routes/_authenticated/dashboards/business-intelligence'
 import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './routes/_authenticated/dashboards/business-health'
@@ -823,6 +824,12 @@ const AuthenticatedDashboardsControlCentreRoute =
     path: '/dashboards/control-centre',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardsCommandCenterRoute =
+  AuthenticatedDashboardsCommandCenterRouteImport.update({
+    id: '/dashboards/command-center',
+    path: '/dashboards/command-center',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardsCollectionsRoute =
   AuthenticatedDashboardsCollectionsRouteImport.update({
     id: '/dashboards/collections',
@@ -1055,6 +1062,7 @@ export interface FileRoutesByFullPath {
   '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/command-center': typeof AuthenticatedDashboardsCommandCenterRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
   '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
@@ -1206,6 +1214,7 @@ export interface FileRoutesByTo {
   '/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/dashboards/command-center': typeof AuthenticatedDashboardsCommandCenterRoute
   '/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
   '/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
@@ -1359,6 +1368,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboards/business-health': typeof AuthenticatedDashboardsBusinessHealthRoute
   '/_authenticated/dashboards/business-intelligence': typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   '/_authenticated/dashboards/collections': typeof AuthenticatedDashboardsCollectionsRoute
+  '/_authenticated/dashboards/command-center': typeof AuthenticatedDashboardsCommandCenterRoute
   '/_authenticated/dashboards/control-centre': typeof AuthenticatedDashboardsControlCentreRoute
   '/_authenticated/dashboards/customer-intelligence': typeof AuthenticatedDashboardsCustomerIntelligenceRoute
   '/_authenticated/dashboards/daily-action': typeof AuthenticatedDashboardsDailyActionRoute
@@ -1512,6 +1522,7 @@ export interface FileRouteTypes {
     | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
+    | '/dashboards/command-center'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
     | '/dashboards/daily-action'
@@ -1663,6 +1674,7 @@ export interface FileRouteTypes {
     | '/dashboards/business-health'
     | '/dashboards/business-intelligence'
     | '/dashboards/collections'
+    | '/dashboards/command-center'
     | '/dashboards/control-centre'
     | '/dashboards/customer-intelligence'
     | '/dashboards/daily-action'
@@ -1815,6 +1827,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboards/business-health'
     | '/_authenticated/dashboards/business-intelligence'
     | '/_authenticated/dashboards/collections'
+    | '/_authenticated/dashboards/command-center'
     | '/_authenticated/dashboards/control-centre'
     | '/_authenticated/dashboards/customer-intelligence'
     | '/_authenticated/dashboards/daily-action'
@@ -2766,6 +2779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardsControlCentreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboards/command-center': {
+      id: '/_authenticated/dashboards/command-center'
+      path: '/dashboards/command-center'
+      fullPath: '/dashboards/command-center'
+      preLoaderRoute: typeof AuthenticatedDashboardsCommandCenterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboards/collections': {
       id: '/_authenticated/dashboards/collections'
       path: '/dashboards/collections'
@@ -3154,6 +3174,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardsBusinessHealthRoute: typeof AuthenticatedDashboardsBusinessHealthRoute
   AuthenticatedDashboardsBusinessIntelligenceRoute: typeof AuthenticatedDashboardsBusinessIntelligenceRoute
   AuthenticatedDashboardsCollectionsRoute: typeof AuthenticatedDashboardsCollectionsRoute
+  AuthenticatedDashboardsCommandCenterRoute: typeof AuthenticatedDashboardsCommandCenterRoute
   AuthenticatedDashboardsControlCentreRoute: typeof AuthenticatedDashboardsControlCentreRoute
   AuthenticatedDashboardsCustomerIntelligenceRoute: typeof AuthenticatedDashboardsCustomerIntelligenceRoute
   AuthenticatedDashboardsDailyActionRoute: typeof AuthenticatedDashboardsDailyActionRoute
@@ -3283,6 +3304,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardsBusinessIntelligenceRoute,
   AuthenticatedDashboardsCollectionsRoute:
     AuthenticatedDashboardsCollectionsRoute,
+  AuthenticatedDashboardsCommandCenterRoute:
+    AuthenticatedDashboardsCommandCenterRoute,
   AuthenticatedDashboardsControlCentreRoute:
     AuthenticatedDashboardsControlCentreRoute,
   AuthenticatedDashboardsCustomerIntelligenceRoute:
