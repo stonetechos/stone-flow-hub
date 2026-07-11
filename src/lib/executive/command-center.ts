@@ -117,9 +117,9 @@ export async function getCommandCenter(): Promise<CommandCenterData> {
     supabase.from("dispatches").select("id", { count: "exact", head: true }).eq("status", "delivered"),
     supabase.from("production_orders").select("id", { count: "exact", head: true }).in("status", ["planned", "in_progress"]),
     supabase.from("installations").select("id", { count: "exact", head: true }).not("status", "in", '("completed","cancelled")'),
-    supabase.from("projects").select("id,name,expected_completion_date,status").not("expected_completion_date", "is", null).lt("expected_completion_date", dayIso).not("status", "in", '("completed","lost","cancelled")').order("expected_completion_date", { ascending: true }).limit(1),
+    supabase.from("projects").select("id,name,expected_completion_date,stage,lifecycle_status").not("expected_completion_date", "is", null).lt("expected_completion_date", dayIso).not("stage", "in", '("completed","lost","cancelled")').order("expected_completion_date", { ascending: true }).limit(1),
     supabase.from("customer_payment_dashboard" as never).select("id,customer_id,customer_name,balance_due,due_date,invoice_no").gt("balance_due", 0).lt("due_date", dayIso).order("balance_due", { ascending: false }).limit(1),
-    supabase.from("inventory_items").select("id,name,quantity_on_hand,reorder_level").not("reorder_level", "is", null).limit(500),
+    supabase.from("inventory_items").select("id,stock_code,quantity_on_hand,reorder_level"),
   ]);
   for (const r of [quotesPipeline, quotesAcceptedMtd, quotesLostMtd, newEnq, followTodayR, followOverdueR, lastInvoice30, lastInvoice60, lastInvoice90, activeCustomers, receiptsToday, receiptsMtd, advancesR, overdueDash, dispatchesToday, challansAwaiting, prodPending, installPending, delayedProj, urgentPayment, shortStock]) {
     if (r.error) throw new AppError(mapDbError(r.error));
