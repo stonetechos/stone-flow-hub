@@ -19,6 +19,11 @@ import {
 const PREFS_KEY = (uid: string): string => `st.navPrefs.${uid}`;
 const RECENT_KEY = (uid: string): string => `st.navRecent.${uid}`;
 const RECENT_MAX = 5;
+const DEFAULT_PREFS = defaultPreferences();
+const EMPTY_RECENT: string[] = [];
+
+let prefsCache: { uid: string; raw: string | null; value: NavPreferences } | null = null;
+let recentCache: { uid: string; raw: string | null; value: string[] } | null = null;
 
 export interface NavPreferences {
   version: 1;
@@ -81,19 +86,24 @@ function normalize(p: Partial<NavPreferences> | null | undefined): NavPreference
 // ---------------- storage helpers ----------------
 
 function readPrefs(uid: string | null): NavPreferences {
-  if (typeof window === "undefined" || !uid) return defaultPreferences();
+  if (typeof window === "undefined" || !uid) return DEFAULT_PREFS;
   try {
     const raw = window.localStorage.getItem(PREFS_KEY(uid));
-    return normalize(raw ? (JSON.parse(raw) as Partial<NavPreferences>) : null);
+    if (prefsCache?.uid === uid && prefsCache.raw === raw) return prefsCache.value;
+    const value = normalize(raw ? (JSON.parse(raw) as Partial<NavPreferences>) : null);
+    prefsCache = { uid, raw, value };
+    return value;
   } catch {
-    return defaultPreferences();
+    return DEFAULT_PREFS;
   }
 }
 
 function writePrefs(uid: string | null, prefs: NavPreferences): void {
   if (typeof window === "undefined" || !uid) return;
   try {
-    window.localStorage.setItem(PREFS_KEY(uid), JSON.stringify(prefs));
+    const raw = JSON.stringify(prefs);
+    window.localStorage.setItem(PREFS_KEY(uid), raw);
+    prefsCache = { uid, raw, value: prefs };
     window.dispatchEvent(new CustomEvent("st.navPrefs.updated"));
   } catch {
     // ignore quota errors
@@ -101,20 +111,28 @@ function writePrefs(uid: string | null, prefs: NavPreferences): void {
 }
 
 function readRecent(uid: string | null): string[] {
-  if (typeof window === "undefined" || !uid) return [];
+  if (typeof window === "undefined" || !uid) return EMPTY_RECENT;
   try {
     const raw = window.localStorage.getItem(RECENT_KEY(uid));
+    if (recentCache?.uid === uid && recentCache.raw === raw) return recentCache.value;
     const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(parsed) ? (parsed as string[]).filter((x) => typeof x === "string") : [];
+    const value = Array.isArray(parsed)
+      ? (parsed as string[]).filter((x) => typeof x === "string")
+      : EMPTY_RECENT;
+    recentCache = { uid, raw, value };
+    return value;
   } catch {
-    return [];
+    return EMPTY_RECENT;
   }
 }
 
 function writeRecent(uid: string | null, ids: string[]): void {
   if (typeof window === "undefined" || !uid) return;
   try {
-    window.localStorage.setItem(RECENT_KEY(uid), JSON.stringify(ids.slice(0, RECENT_MAX)));
+    const value = ids.slice(0, RECENT_MAX);
+    const raw = JSON.stringify(value);
+    window.localStorage.setItem(RECENT_KEY(uid), raw);
+    recentCache = { uid, raw, value };
     window.dispatchEvent(new CustomEvent("st.navRecent.updated"));
   } catch {
     // ignore quota errors
