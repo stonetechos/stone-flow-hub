@@ -102,7 +102,7 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
   return (
     <div>
       <div className="mb-2">
-        <Link to="/masters/qc-templates" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <Link to="/masters/qc-templates" search={{}} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3 w-3" /> All templates
         </Link>
       </div>

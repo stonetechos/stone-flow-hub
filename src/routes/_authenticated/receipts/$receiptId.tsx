@@ -126,7 +126,7 @@ function ReceiptDetailPage() {
                     <TableRow key={a.id}>
                       <TableCell>
                         {inv ? (
-                          <Link to="/invoices/$id" params={{ id: inv.id }} className="hover:underline font-mono text-xs">
+                          <Link to="/invoices/$invoiceId" params={{ invoiceId: inv.id }} className="hover:underline font-mono text-xs">
                             {inv.invoice_no}
                           </Link>
                         ) : "—"}

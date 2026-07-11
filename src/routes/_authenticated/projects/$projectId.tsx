@@ -103,10 +103,7 @@ function ProjectHub() {
             pin={{ entityType: "project", entityId: projectId, label: p.name }}
             primary={
               <>
-                <Link
-                  to="/enquiries"
-                  search={p.customer ? { new: "1" } : {}}
-                >
+                <Link to="/enquiries">
                   <Button size="sm">
                     <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
                   </Button>

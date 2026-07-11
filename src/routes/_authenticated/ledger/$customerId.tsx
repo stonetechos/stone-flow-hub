@@ -89,7 +89,7 @@ function LedgerPage() {
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {r.entry_type === "invoice" ? (
-                        <Link to="/invoices/$id" params={{ id: r.ref_id }} className="hover:underline">{r.ref_no}</Link>
+                        <Link to="/invoices/$invoiceId" params={{ invoiceId: r.ref_id }} className="hover:underline">{r.ref_no}</Link>
                       ) : r.entry_type === "receipt" ? (
                         <Link to="/receipts/$receiptId" params={{ receiptId: r.ref_id }} className="hover:underline">{r.ref_no}</Link>
                       ) : r.ref_no}
