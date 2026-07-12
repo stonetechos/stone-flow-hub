@@ -928,3 +928,10 @@
   80%  { opacity: 1; }
   100% { left: 110%; opacity: 0; }
 }
+
+/* STDL-approved page-transition: opacity fade only. */
+@keyframes stone-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
