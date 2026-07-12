@@ -11,6 +11,9 @@ import {
   History,
   User as UserIcon,
   Settings as SettingsIcon,
+  Sparkles,
+  Keyboard,
+  Shield,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +34,9 @@ import { cn } from "@/lib/utils";
 import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
 import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
+import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
+import { Breadcrumbs } from "@/components/global/Breadcrumbs";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DemoProvider } from "@/lib/demo/context";
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
@@ -42,6 +48,7 @@ import {
   useRecentNav,
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
+
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
