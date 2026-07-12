@@ -93,5 +93,9 @@
     "overrides": {
       "entities": "4.5.0"
     }
+  },
+  "overrides": {
+    "js-yaml": "^4.2.0"
   }
 }
+
