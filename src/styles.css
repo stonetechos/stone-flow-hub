@@ -935,3 +935,23 @@
   to   { opacity: 1; }
 }
 
+/* Skeleton shimmer — a single translucent bar sweeping across the panel.
+ * Respects `prefers-reduced-motion` at the call site (Skeleton primitive
+ * falls back to `animate-pulse`). */
+@keyframes stone-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Shared focus-ring utility — components that need to paint the STDL
+ * focus ring on a non-standard element (e.g. custom card triggers). */
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--color-background),
+      0 0 0 4px var(--intent-focus-ring);
+  }
+}
+
+
