@@ -1,6 +1,6 @@
 /**
  * Server functions for admin user management.
- * Uses supabaseAdmin to read auth.users (last_sign_in_at, confirmed_at) which
+ * Uses supabaseAdmin to read auth.users (last_sign_in_at, invited/active) which
  * the client cannot access. Authorization: caller must have the admin role.
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -15,47 +15,41 @@ export interface AdminUserRow {
   status: "invited" | "active";
 }
 
-async function assertAdmin(context: { supabase: ReturnType<typeof Object>; userId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = context.supabase as any;
-  const { data, error } = await supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden");
-}
-
 export const listAuthUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
+    const { data: isAdmin, error: rErr } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (rErr) throw new Error(rErr.message);
+    if (!isAdmin) throw new Error("Forbidden");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const all: AdminUserRow[] = [];
     let page = 1;
-    // Paginate through auth.users (max 1000 per page)
+    const perPage = 200;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage: 200,
-      });
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
       if (error) throw new Error(error.message);
       for (const u of data.users) {
+        const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+        const fullName =
+          (typeof meta.full_name === "string" && meta.full_name) ||
+          (typeof meta.name === "string" && meta.name) ||
+          null;
         all.push({
           id: u.id,
           email: u.email ?? null,
-          full_name:
-            (u.user_metadata?.full_name as string | undefined) ??
-            (u.user_metadata?.name as string | undefined) ??
-            null,
+          full_name: fullName as string | null,
           created_at: u.created_at,
           last_sign_in_at: u.last_sign_in_at ?? null,
           status: u.last_sign_in_at ? "active" : "invited",
         });
       }
-      if (data.users.length < 200) break;
+      if (data.users.length < perPage) break;
       page += 1;
       if (page > 25) break; // safety cap: 5000 users
     }
