@@ -245,8 +245,8 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
     band === "strong"
       ? "text-mint-300"
       : band === "steady"
-      ? "text-hue-warning-500"
-      : "text-hue-danger-500";
+      ? "text-status-warning-fg"
+      : "text-status-danger-fg";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
@@ -539,28 +539,28 @@ function OperationalRadar({
         <RadarColumn
           icon={<Flame className="h-3.5 w-3.5" />}
           title="Critical"
-          accent="text-status-danger-fg border-t-hue-danger-500"
+          accent="text-status-danger-fg border-t-status-danger-fg"
           items={critical}
           empty="Nothing critical."
         />
         <RadarColumn
           icon={<AlertTriangle className="h-3.5 w-3.5" />}
           title="Needs attention"
-          accent="text-status-warning-fg border-t-hue-warning-500"
+          accent="text-status-warning-fg border-t-status-warning-fg"
           items={attention}
           empty="Inbox is clear."
         />
         <RadarColumn
           icon={<CalendarClock className="h-3.5 w-3.5" />}
           title="Scheduled"
-          accent="text-status-info-fg border-t-hue-info-500"
+          accent="text-status-info-fg border-t-status-info-fg"
           items={scheduled}
           empty="No commitments today."
         />
         <RadarColumn
           icon={<CheckCircle2 className="h-3.5 w-3.5" />}
           title="Completed today"
-          accent="text-status-success-fg border-t-hue-success-500"
+          accent="text-status-success-fg border-t-status-success-fg"
           items={completed}
           empty="First win of the day awaits."
         />
@@ -775,7 +775,7 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
             className={cn(
               "flex flex-col rounded-sm border border-border-subtle bg-surface-panel px-2.5 py-2 transition-colors",
               "hover:border-border-default hover:bg-surface-card-hover",
-              c.tone === "warn" && "border-hue-warning-500/40",
+              c.tone === "warn" && "border-status-warning-fg/40",
             )}
           >
             <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
