@@ -499,6 +499,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     trackNavVisit(path);
   }, [path]);
 
+  const openShortcuts = (): void => {
+    toast("Keyboard shortcuts", {
+      description:
+        "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — quick create · / — search · ? — help",
+    });
+  };
+
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
       const target = e.target as HTMLElement | null;
@@ -532,10 +539,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         }
         if (e.key === "?") {
           e.preventDefault();
-          toast("Shortcuts", {
-            description:
-              "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — create · / — search · ? — help",
-          });
+          openShortcuts();
         }
       }
     };
@@ -553,10 +557,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const sidebarWidth = collapsed ? "w-[56px]" : "w-[232px]";
+  const showBreadcrumbs = path !== "/" && path !== "/dashboard";
 
   return (
     <DemoProvider>
-      <div className="flex min-h-dvh bg-background">
+      <div className="flex min-h-dvh bg-surface-base">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
@@ -564,10 +569,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           Skip to main content
         </a>
 
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar — Basalt material with restrained grain */}
         <aside
           className={cn(
-            "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+            "material-basalt stone-grain",
+            "hidden shrink-0 flex-col border-r border-border-inverse text-sidebar-foreground md:flex",
             "transition-[width] duration-200 ease-out",
             sidebarWidth,
           )}
@@ -575,31 +581,50 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className={cn(
-              "flex h-12 items-center gap-2 border-b border-sidebar-border",
+              "relative z-10 flex h-14 items-center gap-2 border-b border-white/6",
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
-            <Gem className="h-4 w-4 shrink-0 text-sidebar-primary" aria-hidden />
+            <span
+              aria-hidden
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/6 shadow-e1 ring-1 ring-white/8"
+            >
+              <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
+            </span>
             {!collapsed && (
-              <span className="font-display text-[15px] font-semibold tracking-tight">
-                Stone Tech <span className="text-sidebar-primary">OS</span>
-              </span>
+              <div className="flex min-w-0 flex-col leading-none">
+                <span className="font-display text-[14px] font-semibold tracking-tight text-text-inverse">
+                  Stone Tech <span className="text-mint-300">OS</span>
+                </span>
+                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-text-inverse-muted">
+                  Workspace
+                </span>
+              </div>
             )}
           </div>
-          <NavList path={path} isAdmin={isAdmin} collapsed={collapsed} />
+
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+            <NavList path={path} isAdmin={isAdmin} collapsed={collapsed} />
+          </div>
+
           <div
             className={cn(
-              "flex items-center border-t border-sidebar-border p-1.5",
-              collapsed ? "justify-center" : "justify-end",
+              "relative z-10 flex items-center border-t border-white/6 p-1.5",
+              collapsed ? "justify-center" : "justify-between",
             )}
           >
+            {!collapsed && (
+              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+                v1 · Quarry
+              </span>
+            )}
             <TooltipProvider delayDuration={200}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
                     onClick={() => setCollapsed(!collapsed)}
-                    className="rounded-md p-1.5 text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    className="rounded-md p-1.5 text-text-inverse-muted hover:bg-white/6 hover:text-text-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     aria-pressed={collapsed}
                   >
@@ -622,7 +647,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Main */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Topbar (48px) */}
-          <header className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b border-border bg-card/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-card/80 sm:px-3">
+          <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
             {/* Mobile nav trigger */}
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
@@ -637,19 +662,26 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="flex w-64 flex-col bg-sidebar p-0 text-sidebar-foreground"
+                className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
               >
-                <SheetHeader className="h-12 flex-row items-center gap-2 border-b border-sidebar-border px-4 py-0 space-y-0">
-                  <Gem className="h-4 w-4 text-sidebar-primary" aria-hidden />
-                  <SheetTitle className="font-display text-[15px] font-semibold text-sidebar-foreground">
-                    Stone Tech <span className="text-sidebar-primary">OS</span>
+                <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
+                  <span
+                    aria-hidden
+                    className="grid h-7 w-7 place-items-center rounded-md bg-white/6 ring-1 ring-white/8"
+                  >
+                    <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
+                  </span>
+                  <SheetTitle className="font-display text-[14px] font-semibold text-text-inverse">
+                    Stone Tech <span className="text-mint-300">OS</span>
                   </SheetTitle>
                 </SheetHeader>
-                <NavList
-                  path={path}
-                  isAdmin={isAdmin}
-                  onNavigate={() => setMobileNavOpen(false)}
-                />
+                <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+                  <NavList
+                    path={path}
+                    isAdmin={isAdmin}
+                    onNavigate={() => setMobileNavOpen(false)}
+                  />
+                </div>
               </SheetContent>
             </Sheet>
 
@@ -664,17 +696,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 className={cn(
-                  "group relative hidden h-8 w-full max-w-md items-center gap-2 rounded-md border border-input bg-background pl-8 pr-2 text-left text-[13px] text-muted-foreground",
-                  "transition-colors hover:border-ring/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
+                  "group relative hidden h-8 w-full max-w-md items-center gap-2 rounded-md",
+                  "border border-border-default bg-surface-card pl-8 pr-2 text-left text-[13px] text-text-muted",
+                  "transition-colors hover:border-intent-primary/40 hover:text-text-primary",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-intent-focus-ring sm:flex",
                 )}
-                aria-label="Open global search"
+                aria-label="Open global search (Ctrl+K)"
               >
                 <Search
                   className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
                   aria-hidden
                 />
-                <span className="truncate">Search or jump to…</span>
-                <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+                <span className="truncate">Search customers, projects, invoices…</span>
+                <kbd className="ml-auto hidden rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
                   ⌘K
                 </kbd>
               </button>
@@ -691,18 +725,55 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-0.5 sm:gap-1">
               <DemoBadge />
+
+              {/* AI entry point — placeholder for the Stone Tech Copilot */}
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-text-secondary hover:text-intent-primary"
+                      aria-label="Ask Stone Tech AI (coming soon)"
+                      onClick={() =>
+                        toast("Stone Tech AI", {
+                          description: "The intelligence layer arrives in a later phase.",
+                        })
+                      }
+                    >
+                      <Sparkles className="h-4 w-4" aria-hidden />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    Ask AI · soon
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <NotificationsBell />
+              <ThemeSwitcher />
               <div className="ml-1">
-                <UserMenu onSignOut={onSignOut} />
+                <UserMenu
+                  onSignOut={onSignOut}
+                  onOpenShortcuts={openShortcuts}
+                  isAdmin={isAdmin}
+                />
               </div>
             </div>
           </header>
 
+          {/* Breadcrumb rail — quiet, single line under the topbar */}
+          {showBreadcrumbs && (
+            <div className="sticky top-12 z-10 hidden border-b border-border-subtle bg-surface-base/85 px-4 py-1.5 backdrop-blur md:flex md:px-8">
+              <Breadcrumbs />
+            </div>
+          )}
+
           <DemoBanner />
 
           <main id="main-content" className="flex-1 px-4 py-5 md:px-8 md:py-6">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
         </div>
 
@@ -710,5 +781,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Copilot />
       </div>
     </DemoProvider>
+  );
+}
+
   );
 }
