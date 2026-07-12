@@ -325,14 +325,25 @@ function NavList({
 /* --------------------------------------------------------------------- */
 /* User menu (avatar dropdown)                                            */
 /* --------------------------------------------------------------------- */
-function UserMenu({ onSignOut }: { onSignOut: () => void }) {
+function UserMenu({
+  onSignOut,
+  onOpenShortcuts,
+  isAdmin,
+}: {
+  onSignOut: () => void;
+  onOpenShortcuts: () => void;
+  isAdmin: boolean;
+}) {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
+  const [lastLogin, setLastLogin] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void supabase.auth.getUser().then(({ data }) => {
-      if (!cancelled) setEmail(data.user?.email ?? "");
+      if (cancelled) return;
+      setEmail(data.user?.email ?? "");
+      setLastLogin(data.user?.last_sign_in_at ?? null);
     });
     return () => {
       cancelled = true;
@@ -349,6 +360,15 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
       .join("")
       .toUpperCase() || "?";
 
+  const lastLoginLabel = lastLogin
+    ? new Date(lastLogin).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -358,40 +378,90 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
           className="h-8 w-8 rounded-full p-0"
           aria-label="Open user menu"
         >
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarFallback className="bg-muted text-[11px] font-medium text-foreground">
+          <Avatar className="h-8 w-8 border border-border-default">
+            <AvatarFallback className="bg-surface-panel text-[11px] font-medium text-text-primary">
               {initials}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            Signed in
+      <DropdownMenuContent
+        align="end"
+        className="w-72 overflow-hidden p-0 border-border-default shadow-e3"
+      >
+        {/* Basalt header with identity */}
+        <div className="material-basalt stone-grain relative">
+          <div className="relative z-10 flex items-start gap-3 px-3.5 py-3.5">
+            <Avatar className="h-10 w-10 border border-white/10 shadow-e2">
+              <AvatarFallback className="bg-surface-nav text-[13px] font-medium text-text-inverse">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-display text-[13px] font-medium text-text-inverse">
+                {email || "Account"}
+              </div>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-sm px-1.5 py-px font-mono text-[10px] uppercase tracking-wider",
+                    isAdmin
+                      ? "bg-mint-500/20 text-mint-200"
+                      : "bg-white/8 text-text-inverse-muted",
+                  )}
+                >
+                  {isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
+                  {isAdmin ? "Admin" : "Member"}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+                  Stone Tech OS
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="truncate text-sm font-medium text-foreground">
-            {email || "Account"}
+          <div className="relative z-10 border-t border-white/8 px-3.5 py-1.5">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+              <span>Last login</span>
+              <span>{lastLoginLabel}</span>
+            </div>
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
-          <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
-          <UserIcon className="mr-2 h-4 w-4" aria-hidden />
-          Preferences
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive">
-          <LogOut className="mr-2 h-4 w-4" aria-hidden />
-          Sign out
-        </DropdownMenuItem>
+        </div>
+
+        <div className="bg-surface-card py-1">
+          <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
+            <UserIcon className="mr-2 h-4 w-4" aria-hidden />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
+            <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
+            Preferences
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              onOpenShortcuts();
+            }}
+          >
+            <Keyboard className="mr-2 h-4 w-4" aria-hidden />
+            Keyboard shortcuts
+            <kbd className="ml-auto rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
+              ?
+            </kbd>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={onSignOut}
+            className="text-intent-destructive focus:text-intent-destructive"
+          >
+            <LogOut className="mr-2 h-4 w-4" aria-hidden />
+            Sign out
+          </DropdownMenuItem>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
 
 /* --------------------------------------------------------------------- */
 /* AppShell                                                               */
