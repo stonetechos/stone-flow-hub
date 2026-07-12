@@ -159,6 +159,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <StoneGrainFilter />
       <Outlet />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
