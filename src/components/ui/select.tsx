@@ -19,10 +19,12 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-[34px] w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-1.5 text-sm cursor-pointer transition-colors",
-      "data-[placeholder]:text-muted-foreground/70",
-      "focus:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25",
-      "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-border-default bg-surface-card px-3 py-1.5 text-sm text-foreground cursor-pointer",
+      "transition-[border-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+      "data-[placeholder]:text-muted-foreground/80",
+      "hover:border-border-strong",
+      "focus:outline-none focus-visible:border-[var(--intent-focus-ring)] focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)]/25",
+      "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-surface-disabled [&>span]:line-clamp-1",
       className,
     )}
     {...props}
@@ -33,6 +35,7 @@ const SelectTrigger = React.forwardRef<
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
+
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<
