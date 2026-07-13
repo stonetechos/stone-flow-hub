@@ -104,7 +104,7 @@ function SmartNotifications() {
                   </div>
                   <Badge variant="outline" className={cn("text-[10px] uppercase",
                     n.severity === "danger" ? "border-status-danger-border text-status-danger-fg" :
-                    n.severity === "warn" ? "border-status-warning-border text-status-warning-fg" : "border-status-info-border text-sky-600"
+                    n.severity === "warn" ? "border-status-warning-border text-status-warning-fg" : "border-status-info-border text-status-info-fg"
                   )}>{n.severity}</Badge>
                 </Link>
               ))}

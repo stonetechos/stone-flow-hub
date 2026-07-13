@@ -352,7 +352,7 @@ function WhatsappStatusBadge({ query }: { query: { data?: { ok: boolean; reason?
   if (query.isFetching) return <Badge variant="outline"><Loader2 className="mr-1 h-3 w-3 animate-spin" /> checking</Badge>;
   if (query.isError) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> error</Badge>;
   if (!query.data) return <Badge variant="outline">not configured</Badge>;
-  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-emerald-500/30"><CheckCircle2 className="mr-1 h-3 w-3" /> Connected</Badge>;
+  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-status-success-border"><CheckCircle2 className="mr-1 h-3 w-3" /> Connected</Badge>;
   const r = query.data.reason ?? "";
   if (/invalid access token|401|403/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Token</Badge>;
   if (/invalid phone number id|404/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Phone Number ID</Badge>;
@@ -412,7 +412,7 @@ function ProviderStatusBadge({ query }: { query: { data?: { ok: boolean; reason?
   if (query.isFetching) return <Badge variant="outline"><Loader2 className="mr-1 h-3 w-3 animate-spin" /> checking</Badge>;
   if (query.isError) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> error</Badge>;
   if (!query.data) return <Badge variant="outline">not configured</Badge>;
-  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-emerald-500/30"><CheckCircle2 className="mr-1 h-3 w-3" /> connected</Badge>;
+  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-status-success-border"><CheckCircle2 className="mr-1 h-3 w-3" /> connected</Badge>;
   const reason = query.data.reason ?? "";
   const invalid = /invalid|401|403/i.test(reason);
   return (
