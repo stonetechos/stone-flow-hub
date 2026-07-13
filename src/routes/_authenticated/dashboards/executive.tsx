@@ -9,6 +9,7 @@ import {
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { KpiTile } from "@/components/dashboard/KpiTile";
 import { getExecutiveKpis } from "@/lib/executive/kpis";
 import { formatInr } from "@/lib/format";
 import { toUserMessage } from "@/lib/errors";
