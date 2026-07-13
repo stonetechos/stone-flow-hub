@@ -20,13 +20,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGuidedSkip } from "@/hooks/use-guided-skip";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
-import { nextGuidedStep, type GuidedEntity } from "@/lib/guided-workflow/steps";
+import { nextGuidedStep, type GuidedContext, type GuidedEntity } from "@/lib/guided-workflow/steps";
 
 interface Props {
   /** The entity the user is currently viewing. */
   entity: GuidedEntity;
   /** Its stable UUID. */
   entityId: string;
+  /**
+   * Optional parent-entity ids the caller already knows (customer_id,
+   * project_id, quote_id, sales_order_id, invoice_id, vendor_id). Anything
+   * provided is forwarded as search params to the target create page so the
+   * user doesn't have to re-pick a parent they've already been looking at.
+   */
+  ctx?: GuidedContext;
   /**
    * Set to `true` when the downstream artefact already exists (e.g. this
    * quote already has a linked sales order). The card renders nothing.
@@ -36,13 +43,12 @@ interface Props {
   reasonOverride?: string;
 }
 
-export function GuidedNextStep({ entity, entityId, hasNext, reasonOverride }: Props) {
+export function GuidedNextStep({ entity, entityId, ctx, hasNext, reasonOverride }: Props) {
   const [enabled] = useGuidedEnabled();
-  const step = nextGuidedStep(entity, entityId);
+  const step = nextGuidedStep(entity, entityId, ctx);
   const { skipped, skip } = useGuidedSkip(step?.skipKey);
 
   if (!enabled || !step || hasNext || skipped) return null;
-
 
   return (
     <Card className="border-primary/30 bg-primary/[0.04] shadow-1">
@@ -66,7 +72,7 @@ export function GuidedNextStep({ entity, entityId, hasNext, reasonOverride }: Pr
             <X className="mr-1 h-3.5 w-3.5" /> Skip for now
           </Button>
           <Button asChild size="sm">
-            <Link to={step.href}>
+            <Link to={step.href as never} search={step.search as never}>
               {step.ctaLabel} <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
           </Button>
