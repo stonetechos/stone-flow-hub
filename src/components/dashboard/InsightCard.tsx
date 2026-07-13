@@ -5,7 +5,7 @@
  * "action" or a raw Tone). The card resolves that to STDL status tokens so
  * every theme restyles it consistently.
  */
-import type { ComponentType, ReactNode } from "react";
+import type { ElementType, ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ShieldAlert, AlertTriangle, Target, PackageX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,7 @@ export type InsightKind = "risk" | "warning" | "opportunity" | "action";
 export interface InsightCardProps {
   kind?: InsightKind;
   tone?: ToneSignal;
-  icon?: ComponentType<{ className?: string }>;
+  icon?: ElementType;
   title: ReactNode;
   detail?: ReactNode;
   to?: string;
