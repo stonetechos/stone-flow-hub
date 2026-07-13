@@ -100,7 +100,11 @@ function PurchaseOrderDetailPage() {
           />
         }
       />
-      <GuidedNextStep entity="purchase_order" entityId={id} />
+      <GuidedNextStep
+        entity="purchase_order"
+        entityId={id}
+        ctx={{ vendor_id: r.vendor_id, project_id: r.project_id }}
+      />
       <div className="grid gap-4 lg:grid-cols-3">
 
         <div className="space-y-4 lg:col-span-2">
