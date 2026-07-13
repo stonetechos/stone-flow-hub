@@ -212,7 +212,7 @@ export function TransferOwnershipDialog({
 
         {step === "done" && (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <div className="rounded-full bg-green-500/10 p-3 text-green-600">
+            <div className="rounded-full bg-status-success-bg p-3 text-status-success-fg">
               <Check className="h-6 w-6" />
             </div>
             <div className="text-sm font-medium">Ownership transferred</div>
