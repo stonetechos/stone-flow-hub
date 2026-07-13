@@ -1,72 +1,36 @@
 /**
- * Business Insights card — AI-generated narrative summary of workspace health.
- * Reads a small snapshot from the DB and asks the Copilot to explain what
- * matters this week. Cached for 10 minutes to keep AI usage reasonable.
+ * Business Priorities card — deterministic list of actionable priorities
+ * derived exclusively from real database records via `getCommandCenter()`.
+ *
+ * No LLM, no fabricated summaries, no placeholder examples. Every item shown
+ * references an actual row (project, invoice, inventory item, etc.) and links
+ * to the record it describes. If the aggregator returns no insights, we show
+ * an honest empty state.
  */
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Sparkles, Loader2, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, ShieldAlert, CircleCheck } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { askCopilot } from "@/lib/ai/copilot.functions";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getCommandCenter, type OwnerInsight } from "@/lib/executive/command-center";
 import { toUserMessage } from "@/lib/errors";
-import { toast } from "sonner";
 
-type Snapshot = {
-  invoices_total: number;
-  invoices_outstanding: number;
-  invoices_count: number;
-  pipeline: number;
-  projects_active: number;
-  overdue_prod_orders: number;
-  pending_rfqs: number;
-  top_customers: string[];
+const KIND_META: Record<
+  OwnerInsight["kind"],
+  { label: string; icon: React.ComponentType<{ className?: string }>; tone: string }
+> = {
+  risk: { label: "Risk", icon: ShieldAlert, tone: "text-destructive" },
+  warning: { label: "Warning", icon: AlertTriangle, tone: "text-amber-600 dark:text-amber-400" },
+  opportunity: { label: "Opportunity", icon: TrendingUp, tone: "text-emerald-600 dark:text-emerald-400" },
+  action: { label: "Action", icon: CircleCheck, tone: "text-primary" },
 };
 
 export function BusinessInsightsCard() {
-  const snap = useQuery({
-    queryKey: ["ai", "insights", "snapshot"],
-    queryFn: async (): Promise<Snapshot> => {
-      const [inv, proj, prod, rfq, cust] = await Promise.all([
-        supabase.from("invoices").select("total, balance_due").limit(2000),
-        supabase.from("projects").select("expected_value_inr, status").limit(2000),
-        supabase.from("production_orders").select("status, planned_end_at").limit(2000),
-        supabase.from("rfqs").select("status").limit(2000),
-        supabase.from("customers").select("name").limit(20),
-      ]);
-      const invoices = inv.data ?? [];
-      const projects = proj.data ?? [];
-      const prods = (prod.data ?? []) as Array<{ status?: string; planned_end_at?: string | null }>;
-      const rfqs = (rfq.data ?? []) as Array<{ status?: string }>;
-      const now = Date.now();
-      return {
-        invoices_total: invoices.reduce((s, i) => s + Number(i.total ?? 0), 0),
-        invoices_outstanding: invoices.reduce((s, i) => s + Number(i.balance_due ?? 0), 0),
-        invoices_count: invoices.length,
-        pipeline: projects.reduce((s, p) => s + Number((p as { expected_value_inr?: number }).expected_value_inr ?? 0), 0),
-        projects_active: projects.filter((p) => (p as { status?: string }).status !== "closed").length,
-        overdue_prod_orders: prods.filter(
-          (p) => p.planned_end_at && new Date(p.planned_end_at).getTime() < now && p.status !== "completed",
-        ).length,
-        pending_rfqs: rfqs.filter((r) => r.status !== "closed").length,
-        top_customers: (cust.data ?? []).map((c) => c.name).slice(0, 10),
-      };
-    },
+  const q = useQuery({
+    queryKey: ["executive", "command-center", "insights"],
+    queryFn: getCommandCenter,
     staleTime: 5 * 60_000,
-  });
-
-  const insights = useMutation({
-    mutationFn: async () => {
-      if (!snap.data) throw new Error("Loading data…");
-      const prompt = `Here is a snapshot of the business right now:\n${JSON.stringify(snap.data, null, 2)}\n\nAs the Stone Tech OS management copilot, produce a concise executive brief with these sections:\n1. Top priorities this week (3 bullets)\n2. Cash & receivables\n3. Production risk (delays, bottlenecks)\n4. Sales pipeline signal\n5. Recommended next actions (3 bullets)\n\nBe specific with numbers where possible. Use short bullets, no filler.`;
-      return askCopilot({
-        data: {
-          prompt,
-          context: { route: "/dashboards/management", entity: "management", summary: "Executive brief request" },
-        },
-      });
-    },
-    onError: (e) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -74,37 +38,62 @@ export function BusinessInsightsCard() {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-primary" />
-          Business Insights
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto"
-            onClick={() => insights.mutate()}
-            disabled={insights.isPending || !snap.data}
-          >
-            {insights.isPending ? (
-              <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1 h-3.5 w-3.5" />
-            )}
-            {insights.data ? "Refresh" : "Generate"}
-          </Button>
+          Business Priorities
+          <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
+            Live data
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {!insights.data && !insights.isPending && (
-          <p className="text-sm text-muted-foreground">
-            AI-generated executive brief covering priorities, cash, production risk, and pipeline. Click <em>Generate</em> to
-            create the latest read.
-          </p>
-        )}
-        {insights.isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Analyzing workspace…
+        {q.isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
-        )}
-        {insights.data && (
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">{insights.data.reply}</div>
+        ) : q.error ? (
+          <p className="text-sm text-destructive">{toUserMessage(q.error)}</p>
+        ) : (q.data?.insights.length ?? 0) === 0 ? (
+          <div className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">No actionable priorities found today.</p>
+            <p className="mt-1">
+              Recommendations will appear here automatically as real operational data (overdue payments,
+              delayed projects, material shortages, etc.) becomes available.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {(q.data?.insights ?? []).map((i, idx) => {
+              const meta = KIND_META[i.kind];
+              const Icon = meta.icon;
+              const body = (
+                <div className="flex items-start gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:bg-accent/40">
+                  <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${meta.tone}`} aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{i.title}</span>
+                      <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                        {meta.label}
+                      </Badge>
+                    </div>
+                    <div className="mt-0.5 text-sm text-muted-foreground">{i.detail}</div>
+                  </div>
+                  {i.to && <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />}
+                </div>
+              );
+              return (
+                <li key={idx}>
+                  {i.to ? (
+                    <Link to={i.to as never} className="block">
+                      {body}
+                    </Link>
+                  ) : (
+                    body
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         )}
       </CardContent>
     </Card>
