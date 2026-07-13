@@ -98,9 +98,9 @@ export function computeLeadScore(input: ScoreInputs): ScoreBreakdown {
 }
 
 export const SCORE_TIER_META: Record<ScoreTier, { label: string; className: string }> = {
-  excellent: { label: "Excellent", className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
-  hot: { label: "Hot", className: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30" },
-  warm: { label: "Warm", className: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30" },
-  cold: { label: "Cold", className: "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/30" },
-  dormant: { label: "Dormant", className: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-400 border-zinc-500/30" },
+  excellent: { label: "Excellent", className: "bg-status-success-bg text-status-success-fg border-status-success-border" },
+  hot: { label: "Hot", className: "bg-status-danger-bg text-status-danger-fg border-status-danger-border" },
+  warm: { label: "Warm", className: "bg-status-warning-bg text-status-warning-fg border-status-warning-border" },
+  cold: { label: "Cold", className: "bg-status-info-bg text-status-info-fg border-status-info-border" },
+  dormant: { label: "Dormant", className: "bg-muted text-muted-foreground border-border" },
 };
