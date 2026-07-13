@@ -21,22 +21,26 @@ import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+// Suggestion prompts are how-to / explanation questions only. They must NEVER
+// invite the assistant to list, rank, or invent specific business records —
+// the assistant has no database access from the chat and would otherwise
+// hallucinate customer, project, quote, PO, or vendor identifiers.
 const CONTEXT_HINTS: Array<{ match: RegExp; entity: string; suggestions: string[] }> = [
-  { match: /^\/customers\/[^/]+/, entity: "customer", suggestions: ["Summarize this customer's history", "Suggest the next follow-up", "Draft a warm-up email"] },
-  { match: /^\/customers/, entity: "customers", suggestions: ["Which customers are inactive 30+ days?", "Suggest priority customers this week"] },
-  { match: /^\/projects\/[^/]+/, entity: "project", suggestions: ["Summarize project health", "Highlight delays and bottlenecks", "What is my next action here?"] },
-  { match: /^\/projects/, entity: "projects", suggestions: ["Which projects are at risk of slipping?", "Top 5 projects by pipeline value"] },
-  { match: /^\/rfqs\/[^/]+/, entity: "rfq", suggestions: ["Compare the incoming quotations", "Explain why the top vendor ranks highest", "Draft a negotiation message"] },
-  { match: /^\/rfqs/, entity: "rfqs", suggestions: ["Which RFQs are pending vendor response?"] },
-  { match: /^\/enquiries\/[^/]+/, entity: "enquiry", suggestions: ["Summarize this enquiry", "Draft a first response", "Recommend products to quote"] },
-  { match: /^\/enquiries/, entity: "enquiries", suggestions: ["Which enquiries need urgent follow-up?", "Rank enquiries by likely conversion"] },
-  { match: /^\/quotes\/[^/]+/, entity: "quotation", suggestions: ["Review this quotation for margin risk", "Suggest an upsell", "Explain the pricing rationale"] },
-  { match: /^\/manufacturing\/[^/]+/, entity: "production_order", suggestions: ["Which stage is delayed?", "Suggest corrective action", "Estimate finish date"] },
-  { match: /^\/manufacturing/, entity: "manufacturing", suggestions: ["List today's production priorities", "Which orders are behind schedule?"] },
-  { match: /^\/vendors\/[^/]+/, entity: "vendor", suggestions: ["Summarize vendor performance", "Compare against alternates", "Suggest RFQs to send"] },
-  { match: /^\/inventory/, entity: "inventory", suggestions: ["Which slabs are aging over 90 days?", "Suggest stock to promote"] },
-  { match: /^\/dashboard/, entity: "dashboard", suggestions: ["Summarize today's priorities", "What needs my attention now?"] },
-  { match: /^\/dashboards\/management/, entity: "management", suggestions: ["Top-performing products this quarter", "Where is the biggest revenue leak?"] },
+  { match: /^\/customers\/[^/]+/, entity: "customer", suggestions: ["How do I log a follow-up on this customer?", "What does the credit-limit warning mean?"] },
+  { match: /^\/customers/, entity: "customers", suggestions: ["How is customer health scored?", "How do I import customers in bulk?"] },
+  { match: /^\/projects\/[^/]+/, entity: "project", suggestions: ["Explain the project lifecycle stages", "How do I record a project milestone?"] },
+  { match: /^\/projects/, entity: "projects", suggestions: ["How is pipeline value calculated?", "How do I move a project to the next stage?"] },
+  { match: /^\/rfqs\/[^/]+/, entity: "rfq", suggestions: ["How does vendor scoring work?", "How do I convert an RFQ into a purchase order?"] },
+  { match: /^\/rfqs/, entity: "rfqs", suggestions: ["What is the difference between an enquiry and an RFQ?", "How do I invite a vendor to quote?"] },
+  { match: /^\/enquiries\/[^/]+/, entity: "enquiry", suggestions: ["How do I create a quotation from an enquiry?", "How is enquiry health scored?"] },
+  { match: /^\/enquiries/, entity: "enquiries", suggestions: ["What signals indicate a cold enquiry?", "How do I set the next best action?"] },
+  { match: /^\/quotes\/[^/]+/, entity: "quotation", suggestions: ["How is quote margin computed?", "How do I record customer approval on a quote?"] },
+  { match: /^\/manufacturing\/[^/]+/, entity: "production_order", suggestions: ["How do I update production stage progress?", "How does the QC checklist work?"] },
+  { match: /^\/manufacturing/, entity: "manufacturing", suggestions: ["Explain the manufacturing stage flow", "How do I release a sales order to production?"] },
+  { match: /^\/vendors\/[^/]+/, entity: "vendor", suggestions: ["How is the vendor health score calculated?", "How do I record a vendor payment?"] },
+  { match: /^\/inventory/, entity: "inventory", suggestions: ["How is reorder level determined?", "How do I record a stock movement?"] },
+  { match: /^\/dashboard/, entity: "dashboard", suggestions: ["How is the business health score calculated?", "What does the Cash Today figure include?"] },
+  { match: /^\/dashboards\/management/, entity: "management", suggestions: ["How is pipeline value defined?", "How is estimated margin computed?"] },
 ];
 
 function deriveContext(path: string) {
@@ -48,7 +52,7 @@ function deriveContext(path: string) {
       return { entity: hint.entity, entityId: idPart, suggestions: hint.suggestions };
     }
   }
-  return { entity: "app", entityId: undefined, suggestions: ["What can Stone Tech OS help me do here?", "Summarize this page"] };
+  return { entity: "app", entityId: undefined, suggestions: ["How do I navigate Stone Tech OS?", "Where do I find real-time business priorities?"] };
 }
 
 export function Copilot() {
