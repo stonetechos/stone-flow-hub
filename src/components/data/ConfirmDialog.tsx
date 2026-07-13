@@ -37,13 +37,13 @@ const TONE_ICON = {
 const TONE_ICON_CLASS = {
   default: "text-muted-foreground",
   danger: "text-destructive",
-  warning: "text-amber-600",
+  warning: "text-status-warning-fg",
 } as const;
 
 const TONE_ACTION_CLASS = {
   default: "",
   danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-  warning: "bg-amber-600 text-white hover:bg-amber-600/90",
+  warning: "bg-status-warning-fg text-status-warning-bg hover:bg-status-warning-fg/90",
 } as const;
 
 export interface ConfirmDialogProps {
