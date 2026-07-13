@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
   revokeRole,
   sendPasswordReset,
   updateDisplayName,
+  fallbackName,
   APP_ROLES,
   type AppRole,
 } from "@/lib/admin/users";
