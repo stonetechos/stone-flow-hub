@@ -31,7 +31,7 @@ const KIND_TONE: Record<InsightKind, ToneSignal> = {
   action: "info",
 };
 
-const KIND_ICON: Record<InsightKind, ComponentType<{ className?: string }>> = {
+const KIND_ICON: Record<InsightKind, ElementType> = {
   risk: ShieldAlert,
   warning: AlertTriangle,
   opportunity: Target,
