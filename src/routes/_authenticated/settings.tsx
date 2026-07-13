@@ -27,6 +27,12 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [fullName, setFullName] = useState("");
+  const [initials, setInitials] = useState("");
+  const [initialsTouched, setInitialsTouched] = useState(false);
+  const [jobTitle, setJobTitle] = useState("");
+  const [department, setDepartment] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
@@ -42,11 +48,18 @@ function SettingsPage() {
         // can edit). Fall back to auth user_metadata for legacy accounts.
         const { data: prof } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, initials, job_title, department, phone, avatar_url")
           .eq("id", data.user.id)
           .maybeSingle();
         const meta = data.user.user_metadata as { full_name?: string } | null;
-        setFullName(prof?.full_name ?? meta?.full_name ?? "");
+        const resolvedName = prof?.full_name ?? meta?.full_name ?? "";
+        setFullName(resolvedName);
+        setInitials(prof?.initials ?? deriveInitials(resolvedName, data.user.email));
+        setInitialsTouched(!!prof?.initials);
+        setJobTitle(prof?.job_title ?? "");
+        setDepartment(prof?.department ?? "");
+        setPhone(prof?.phone ?? "");
+        setAvatarUrl(prof?.avatar_url ?? null);
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
@@ -58,24 +71,39 @@ function SettingsPage() {
     })();
   }, []);
 
+  // Auto-derive initials from the display name until the admin edits them.
+  useEffect(() => {
+    if (initialsTouched) return;
+    setInitials(deriveInitials(fullName, email));
+  }, [fullName, email, initialsTouched]);
+
   async function saveProfile() {
     setSaving(true);
-    const trimmed = fullName.trim();
-    // Write to both stores so the change surfaces regardless of which one a
-    // caller reads. profiles.full_name is authoritative for the UI; the auth
-    // metadata copy stays in sync so JWT-based consumers see the same value.
-    const [{ error: pErr }, { error: aErr }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .update({ full_name: trimmed.length ? trimmed : null })
-        .eq("id", userId),
-      supabase.auth.updateUser({ data: { full_name: trimmed } }),
-    ]);
-    setSaving(false);
-    const error = pErr ?? aErr;
-    if (error) toast.error(error.message);
-    else toast.success("Profile updated");
+    const trimmedName = fullName.trim();
+    try {
+      // profiles.* is the authoritative store for the enterprise profile
+      // (display name + initials + job title + department + phone + avatar).
+      // The auth metadata copy of full_name stays in sync so JWT-based
+      // consumers see the same display name.
+      await updateProfileFields(userId, {
+        full_name: trimmedName,
+        initials,
+        job_title: jobTitle,
+        department,
+        phone,
+      });
+      const { error: aErr } = await supabase.auth.updateUser({
+        data: { full_name: trimmedName },
+      });
+      if (aErr) throw aErr;
+      toast.success("Profile updated");
+    } catch (err) {
+      toast.error(toUserMessage(err));
+    } finally {
+      setSaving(false);
+    }
   }
+
 
   return (
     <div>
