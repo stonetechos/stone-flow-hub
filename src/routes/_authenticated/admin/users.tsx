@@ -9,7 +9,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, KeyRound, X, Pencil, Check, Search } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  KeyRound,
+  X,
+  Pencil,
+  Check,
+  Search,
+  MoreHorizontal,
+  UserPlus,
+  Send,
+  UserX,
+  UserCheck,
+  Trash2,
+} from "lucide-react";
 import { toUserMessage } from "@/lib/errors";
 import {
   listAppUsers,
@@ -21,7 +68,15 @@ import {
   APP_ROLES,
   type AppRole,
 } from "@/lib/admin/users";
-import { listAuthUsers, type AdminUserRow } from "@/lib/admin/users.functions";
+import {
+  listAuthUsers,
+  inviteUser,
+  resendInvite,
+  deleteAuthUser,
+  setUserActive,
+  type AdminUserRow,
+  type AdminUserStatus,
+} from "@/lib/admin/users.functions";
 
 const qk = {
   users: ["admin", "users"] as const,
@@ -33,6 +88,13 @@ const ROLE_LABEL: Record<AppRole, string> = {
   sales_manager: "Sales Manager",
   sales: "Sales",
   purchase: "Purchase",
+};
+
+const STATUS_LABEL: Record<AdminUserStatus, string> = {
+  active: "Active",
+  invited: "Invited",
+  expired: "Invite expired",
+  deactivated: "Deactivated",
 };
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
@@ -58,7 +120,6 @@ interface CombinedUser extends AdminUserRow {
   department: string | null;
 }
 
-
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -72,9 +133,32 @@ function formatDate(iso: string | null): string {
   });
 }
 
+function statusVariant(s: AdminUserStatus): "default" | "outline" | "secondary" | "destructive" {
+  switch (s) {
+    case "active":
+      return "default";
+    case "invited":
+      return "secondary";
+    case "expired":
+      return "outline";
+    case "deactivated":
+      return "destructive";
+  }
+}
+
 function UsersAdminPage() {
   const qc = useQueryClient();
   const listAuthUsersFn = useServerFn(listAuthUsers);
+  const inviteFn = useServerFn(inviteUser);
+  const resendFn = useServerFn(resendInvite);
+  const deleteFn = useServerFn(deleteAuthUser);
+  const setActiveFn = useServerFn(setUserActive);
+
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useState(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
+    return null;
+  });
 
   const profiles = useQuery({ queryKey: qk.users, queryFn: listAppUsers });
   const authUsers = useQuery({ queryKey: qk.auth, queryFn: () => listAuthUsersFn() });
@@ -97,7 +181,6 @@ function UsersAdminPage() {
       })
       .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
   }, [authUsers.data, profiles.data]);
-
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
@@ -140,16 +223,76 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const invite = useMutation({
+    mutationFn: (data: { email: string; full_name?: string | null; role?: AppRole | null }) =>
+      inviteFn({
+        data: {
+          email: data.email,
+          full_name: data.full_name ?? null,
+          redirect_to:
+            typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
+        },
+      }).then(async (res) => {
+        if (res.id && data.role) {
+          await assignRole(res.id, data.role);
+        }
+        return res;
+      }),
+    onSuccess: () => {
+      toast.success("Invitation sent");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const resend = useMutation({
+    mutationFn: (email: string) =>
+      resendFn({
+        data: {
+          email,
+          redirect_to:
+            typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
+        },
+      }),
+    onSuccess: () => toast.success("Invitation resent"),
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const del = useMutation({
+    mutationFn: (userId: string) => deleteFn({ data: { user_id: userId } }),
+    onSuccess: () => {
+      toast.success("User deleted");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const setActive = useMutation({
+    mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
+      setActiveFn({ data: { user_id: userId, is_active: isActive } }),
+    onSuccess: (_d, v) => {
+      toast.success(v.isActive ? "User reactivated" : "User deactivated");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | AdminUserStatus>("all");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<CombinedUser | null>(null);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return combined;
-    return combined.filter(
-      (u) =>
+    return combined.filter((u) => {
+      if (statusFilter !== "all" && u.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
         (u.full_name ?? "").toLowerCase().includes(q) ||
-        (u.email ?? "").toLowerCase().includes(q),
-    );
-  }, [combined, search]);
+        (u.email ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [combined, search, statusFilter]);
 
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
@@ -159,9 +302,14 @@ function UsersAdminPage() {
     <div>
       <PageHeader
         title="Users & Roles"
-        subtitle="Manage display names and application roles. Email remains the login identity."
+        subtitle="Invite users, assign roles, and manage the full user lifecycle. Email remains the login identity."
+        actions={
+          <Button onClick={() => setInviteOpen(true)} size="sm">
+            <UserPlus className="mr-1.5 h-4 w-4" /> Invite user
+          </Button>
+        }
       />
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -171,6 +319,18 @@ function UsersAdminPage() {
             className="pl-8"
           />
         </div>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="invited">Invited</SelectItem>
+            <SelectItem value="expired">Invite expired</SelectItem>
+            <SelectItem value="deactivated">Deactivated</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <Card className="shadow-1">
         <CardContent className="p-0">
@@ -182,7 +342,7 @@ function UsersAdminPage() {
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
           ) : filtered.length === 0 ? (
             <div className="p-6 text-sm text-muted-foreground">
-              {combined.length === 0 ? "No users yet." : "No users match your search."}
+              {combined.length === 0 ? "No users yet." : "No users match your filters."}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -198,7 +358,6 @@ function UsersAdminPage() {
                     <th className="px-4 py-3">Last Login</th>
                     <th className="px-4 py-3">Created</th>
                     <th className="px-4 py-3 text-right">Actions</th>
-
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -206,10 +365,16 @@ function UsersAdminPage() {
                     <UserRowView
                       key={u.id}
                       user={u}
+                      isSelf={u.id === currentUserId}
                       onAssign={(role) => assign.mutate({ userId: u.id, role })}
                       onRevoke={(role) => revoke.mutate({ userId: u.id, role })}
                       onReset={() => u.email && reset.mutate(u.email)}
                       onRename={(fullName) => rename.mutate({ userId: u.id, fullName })}
+                      onResend={() => u.email && resend.mutate(u.email)}
+                      onSetActive={(isActive) =>
+                        setActive.mutate({ userId: u.id, isActive })
+                      }
+                      onDelete={() => setConfirmDelete(u)}
                       busy={busy}
                       renaming={rename.isPending}
                     />
@@ -222,32 +387,193 @@ function UsersAdminPage() {
       </Card>
       <p className="mt-3 text-xs text-muted-foreground">
         Display name is shown throughout the app (greetings, activity log, comments, assignments).
-        Editing it never changes the user's login email, ID, or permissions.
+        Deactivating a user preserves all historical records; deletion is blocked for yourself and
+        for the last remaining active administrator.
       </p>
+
+      <InviteDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        busy={invite.isPending}
+        onSubmit={(v) => invite.mutateAsync(v).then(() => setInviteOpen(false))}
+      />
+
+      <AlertDialog
+        open={!!confirmDelete}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this user permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes their sign-in access and profile. Historical records (activity log,
+              comments, assignments) are preserved and continue to show the user's previous
+              display name. For most cases, deactivating instead is safer.
+              {confirmDelete?.email ? (
+                <span className="mt-2 block font-medium text-foreground">
+                  {confirmDelete.full_name?.trim() || fallbackName(confirmDelete.email)} —{" "}
+                  {confirmDelete.email}
+                </span>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDelete) {
+                  del.mutate(confirmDelete.id, { onSuccess: () => setConfirmDelete(null) });
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete user
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+}
+
+function InviteDialog({
+  open,
+  onOpenChange,
+  busy,
+  onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  busy: boolean;
+  onSubmit: (v: { email: string; full_name?: string | null; role?: AppRole | null }) => Promise<unknown>;
+}) {
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<AppRole | "none">("none");
+
+  function reset() {
+    setEmail("");
+    setFullName("");
+    setRole("none");
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) reset();
+      }}
+    >
+      <DialogContent className="sm:max-w-[440px]">
+        <DialogHeader>
+          <DialogTitle>Invite user</DialogTitle>
+          <DialogDescription>
+            Sends a sign-in invitation. The recipient sets their own password on first visit.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!email.trim()) return;
+            void onSubmit({
+              email: email.trim(),
+              full_name: fullName.trim() || null,
+              role: role === "none" ? null : role,
+            });
+          }}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-email">Email</Label>
+            <Input
+              id="invite-email"
+              type="email"
+              autoFocus
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@company.com"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-name">Display name (optional)</Label>
+            <Input
+              id="invite-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="e.g. Harsh Pupneja"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Initial role (optional)</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No role (assign later)</SelectItem>
+                {APP_ROLES.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {ROLE_LABEL[r]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              disabled={busy}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy || !email.trim()}>
+              {busy ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-1.5 h-4 w-4" />
+              )}
+              Send invitation
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 function UserRowView({
   user,
+  isSelf,
   onAssign,
   onRevoke,
   onReset,
   onRename,
+  onResend,
+  onSetActive,
+  onDelete,
   busy,
   renaming,
 }: {
   user: CombinedUser;
+  isSelf: boolean;
   onAssign: (role: AppRole) => void;
   onRevoke: (role: AppRole) => void;
   onReset: () => void;
   onRename: (fullName: string) => void;
+  onResend: () => void;
+  onSetActive: (isActive: boolean) => void;
+  onDelete: () => void;
   busy: boolean;
   renaming: boolean;
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(user.full_name ?? "");
+  const pendingInvite = user.status === "invited" || user.status === "expired";
 
   function startEdit() {
     setDraft(user.full_name ?? "");
@@ -264,7 +590,7 @@ function UserRowView({
   }
 
   return (
-    <tr>
+    <tr className={user.status === "deactivated" ? "opacity-60" : undefined}>
       <td className="px-4 py-3 font-medium">
         {editing ? (
           <div className="flex items-center gap-1.5">
@@ -316,11 +642,8 @@ function UserRowView({
       <td className="px-4 py-3 text-muted-foreground">{user.job_title ?? "—"}</td>
       <td className="px-4 py-3 text-muted-foreground">{user.department ?? "—"}</td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
-
       <td className="px-4 py-3">
-        <Badge variant={user.status === "active" ? "default" : "outline"}>
-          {user.status === "active" ? "Active" : "Invited"}
-        </Badge>
+        <Badge variant={statusVariant(user.status)}>{STATUS_LABEL[user.status]}</Badge>
       </td>
       <td className="px-4 py-3">
         {user.roles.length === 0 ? (
@@ -353,7 +676,7 @@ function UserRowView({
         {formatDate(user.created_at)}
       </td>
       <td className="px-4 py-3">
-        <div className="flex flex-wrap justify-end gap-1.5">
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
           {available.map((r) => (
             <Button
               key={r}
@@ -365,14 +688,45 @@ function UserRowView({
               Grant {ROLE_LABEL[r]}
             </Button>
           ))}
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!user.email}
-            onClick={onReset}
-          >
-            <KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="More actions">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Lifecycle</DropdownMenuLabel>
+              {pendingInvite ? (
+                <DropdownMenuItem onClick={onResend} disabled={!user.email}>
+                  <Send className="mr-2 h-4 w-4" /> Resend invitation
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem onClick={onReset} disabled={!user.email}>
+                <KeyRound className="mr-2 h-4 w-4" /> Send password reset
+              </DropdownMenuItem>
+              {user.is_active ? (
+                <DropdownMenuItem
+                  onClick={() => onSetActive(false)}
+                  disabled={isSelf}
+                >
+                  <UserX className="mr-2 h-4 w-4" /> Deactivate user
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onSetActive(true)}>
+                  <UserCheck className="mr-2 h-4 w-4" /> Reactivate user
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onDelete}
+                disabled={isSelf}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {pendingInvite ? "Cancel invitation" : "Delete user"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </td>
     </tr>
