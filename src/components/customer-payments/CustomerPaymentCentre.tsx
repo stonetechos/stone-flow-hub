@@ -75,8 +75,8 @@ export function CustomerPaymentCentre(props: {
       <div className="grid gap-3 sm:grid-cols-4">
         <Kpi label="Outstanding" value={outstanding} tone="text-foreground" />
         <Kpi label="Overdue" value={overdue} tone="text-destructive" />
-        <Kpi label="Upcoming (14 d)" value={upcoming} tone="text-teal-700" />
-        <Kpi label="Paid to date" value={paid} tone="text-emerald-600" />
+        <Kpi label="Upcoming (14 d)" value={upcoming} tone="text-status-info-fg" />
+        <Kpi label="Paid to date" value={paid} tone="text-status-success-fg" />
       </div>
 
       <Card className="shadow-1">
