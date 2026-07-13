@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
+import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
+import { toUserMessage } from "@/lib/errors";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -24,6 +27,12 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [fullName, setFullName] = useState("");
+  const [initials, setInitials] = useState("");
+  const [initialsTouched, setInitialsTouched] = useState(false);
+  const [jobTitle, setJobTitle] = useState("");
+  const [department, setDepartment] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
@@ -39,11 +48,18 @@ function SettingsPage() {
         // can edit). Fall back to auth user_metadata for legacy accounts.
         const { data: prof } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, initials, job_title, department, phone, avatar_url")
           .eq("id", data.user.id)
           .maybeSingle();
         const meta = data.user.user_metadata as { full_name?: string } | null;
-        setFullName(prof?.full_name ?? meta?.full_name ?? "");
+        const resolvedName = prof?.full_name ?? meta?.full_name ?? "";
+        setFullName(resolvedName);
+        setInitials(prof?.initials ?? deriveInitials(resolvedName, data.user.email));
+        setInitialsTouched(!!prof?.initials);
+        setJobTitle(prof?.job_title ?? "");
+        setDepartment(prof?.department ?? "");
+        setPhone(prof?.phone ?? "");
+        setAvatarUrl(prof?.avatar_url ?? null);
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
@@ -55,24 +71,39 @@ function SettingsPage() {
     })();
   }, []);
 
+  // Auto-derive initials from the display name until the admin edits them.
+  useEffect(() => {
+    if (initialsTouched) return;
+    setInitials(deriveInitials(fullName, email));
+  }, [fullName, email, initialsTouched]);
+
   async function saveProfile() {
     setSaving(true);
-    const trimmed = fullName.trim();
-    // Write to both stores so the change surfaces regardless of which one a
-    // caller reads. profiles.full_name is authoritative for the UI; the auth
-    // metadata copy stays in sync so JWT-based consumers see the same value.
-    const [{ error: pErr }, { error: aErr }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .update({ full_name: trimmed.length ? trimmed : null })
-        .eq("id", userId),
-      supabase.auth.updateUser({ data: { full_name: trimmed } }),
-    ]);
-    setSaving(false);
-    const error = pErr ?? aErr;
-    if (error) toast.error(error.message);
-    else toast.success("Profile updated");
+    const trimmedName = fullName.trim();
+    try {
+      // profiles.* is the authoritative store for the enterprise profile
+      // (display name + initials + job title + department + phone + avatar).
+      // The auth metadata copy of full_name stays in sync so JWT-based
+      // consumers see the same display name.
+      await updateProfileFields(userId, {
+        full_name: trimmedName,
+        initials,
+        job_title: jobTitle,
+        department,
+        phone,
+      });
+      const { error: aErr } = await supabase.auth.updateUser({
+        data: { full_name: trimmedName },
+      });
+      if (aErr) throw aErr;
+      toast.success("Profile updated");
+    } catch (err) {
+      toast.error(toUserMessage(err));
+    } finally {
+      setSaving(false);
+    }
   }
+
 
   return (
     <div>
@@ -112,14 +143,74 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-sm">Profile</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  {avatarUrl ? <AvatarImage src={avatarUrl} alt={fullName || email} /> : null}
+                  <AvatarFallback className="text-base font-medium">
+                    {(initials || deriveInitials(fullName, email)).slice(0, 3)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Profile photo upload coming soon.
+                  </p>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label>Full name</Label>
+                  <Label>
+                    Display name <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder="e.g. Harsh Pupneja"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Shown across greetings, activity, comments, and assignments.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Initials</Label>
+                  <Input
+                    value={initials}
+                    maxLength={4}
+                    onChange={(e) => {
+                      setInitialsTouched(true);
+                      setInitials(e.target.value.toUpperCase());
+                    }}
+                    placeholder="Auto"
+                    className="uppercase"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Auto-generated from display name. Editable.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Job title</Label>
+                  <Input
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="e.g. Sales Manager"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Department</Label>
+                  <Input
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. Sales"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Phone number</Label>
+                  <Input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Optional"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -131,10 +222,11 @@ function SettingsPage() {
                   <Input value={userId} readOnly disabled className="font-mono text-xs" />
                 </div>
               </div>
-              <Button onClick={saveProfile} disabled={saving}>
+              <Button onClick={saveProfile} disabled={saving || !fullName.trim()}>
                 {saving ? "Saving…" : "Save changes"}
               </Button>
             </CardContent>
+
           </Card>
         </TabsContent>
 

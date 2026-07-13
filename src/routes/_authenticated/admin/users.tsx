@@ -53,7 +53,11 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 
 interface CombinedUser extends AdminUserRow {
   roles: AppRole[];
+  initials: string | null;
+  job_title: string | null;
+  department: string | null;
 }
+
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
@@ -77,18 +81,23 @@ function UsersAdminPage() {
 
   const combined = useMemo<CombinedUser[]>(() => {
     const auth = authUsers.data ?? [];
-    const rolesByUser = new Map<string, AppRole[]>();
-    (profiles.data ?? []).forEach((p) => rolesByUser.set(p.id, p.roles));
-    const profileNameById = new Map<string, string | null>();
-    (profiles.data ?? []).forEach((p) => profileNameById.set(p.id, p.full_name));
+    const profileById = new Map((profiles.data ?? []).map((p) => [p.id, p] as const));
+
     return auth
-      .map((u) => ({
-        ...u,
-        full_name: profileNameById.get(u.id) ?? u.full_name,
-        roles: rolesByUser.get(u.id) ?? [],
-      }))
+      .map((u) => {
+        const p = profileById.get(u.id);
+        return {
+          ...u,
+          full_name: p?.full_name ?? u.full_name,
+          roles: p?.roles ?? [],
+          initials: p?.initials ?? null,
+          job_title: p?.job_title ?? null,
+          department: p?.department ?? null,
+        };
+      })
       .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
   }, [authUsers.data, profiles.data]);
+
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
@@ -181,12 +190,15 @@ function UsersAdminPage() {
                 <thead className="bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">Display Name</th>
+                    <th className="px-4 py-3">Job Title</th>
+                    <th className="px-4 py-3">Department</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Roles</th>
                     <th className="px-4 py-3">Last Login</th>
                     <th className="px-4 py-3">Created</th>
                     <th className="px-4 py-3 text-right">Actions</th>
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -301,7 +313,10 @@ function UserRowView({
           </button>
         )}
       </td>
+      <td className="px-4 py-3 text-muted-foreground">{user.job_title ?? "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground">{user.department ?? "—"}</td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
+
       <td className="px-4 py-3">
         <Badge variant={user.status === "active" ? "default" : "outline"}>
           {user.status === "active" ? "Active" : "Invited"}
