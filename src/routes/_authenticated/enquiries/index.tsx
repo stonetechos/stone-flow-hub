@@ -394,6 +394,7 @@ function NewEnquiryDialog({
   presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
 
   useEffect(() => {
@@ -403,7 +404,13 @@ function NewEnquiryDialog({
   const mutation = useMutation({
     mutationFn: (input: EnquiryCreateInput) => createEnquiry(input),
     onSuccess: (row) => {
-      toast.success(`Enquiry ${row.enquiry_no} created`);
+      toast.success(`Enquiry ${row.enquiry_no} created`, {
+        description: "Open the enquiry to qualify it, or jump straight into project creation.",
+        action: {
+          label: "Open enquiry",
+          onClick: () => nav({ to: "/enquiries/$enquiryId", params: { enquiryId: row.id } }),
+        },
+      });
       invalidateEnquiry(qc, row.id);
       // createEnquiry auto-creates a customer when the phone is new — refresh every picker.
       invalidateCustomer(qc, row.customer_id ?? undefined);
