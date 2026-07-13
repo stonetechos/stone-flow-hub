@@ -220,19 +220,86 @@ function UserRowView({
   onAssign,
   onRevoke,
   onReset,
+  onRename,
   busy,
+  renaming,
 }: {
   user: CombinedUser;
   onAssign: (role: AppRole) => void;
   onRevoke: (role: AppRole) => void;
   onReset: () => void;
+  onRename: (fullName: string) => void;
   busy: boolean;
+  renaming: boolean;
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(user.full_name ?? "");
+
+  function startEdit() {
+    setDraft(user.full_name ?? "");
+    setEditing(true);
+  }
+  function commit() {
+    const next = draft.trim();
+    if (next === (user.full_name ?? "").trim()) {
+      setEditing(false);
+      return;
+    }
+    onRename(next);
+    setEditing(false);
+  }
 
   return (
     <tr>
-      <td className="px-4 py-3 font-medium">{user.full_name || "—"}</td>
+      <td className="px-4 py-3 font-medium">
+        {editing ? (
+          <div className="flex items-center gap-1.5">
+            <Input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commit();
+                if (e.key === "Escape") setEditing(false);
+              }}
+              placeholder="e.g. Harsh"
+              className="h-8 w-48"
+              disabled={renaming}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={commit}
+              disabled={renaming}
+              aria-label="Save display name"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => setEditing(false)}
+              disabled={renaming}
+              aria-label="Cancel"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={startEdit}
+            className="group inline-flex items-center gap-1.5 text-left hover:text-primary"
+            title="Click to edit display name"
+          >
+            <span>{user.full_name?.trim() || fallbackName(user.email)}</span>
+            <Pencil className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
+          </button>
+        )}
+      </td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
       <td className="px-4 py-3">
         <Badge variant={user.status === "active" ? "default" : "outline"}>
