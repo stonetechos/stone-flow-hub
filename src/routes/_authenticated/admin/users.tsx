@@ -53,7 +53,11 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 
 interface CombinedUser extends AdminUserRow {
   roles: AppRole[];
+  initials: string | null;
+  job_title: string | null;
+  department: string | null;
 }
+
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
