@@ -60,11 +60,11 @@ export interface HealthResult {
 }
 
 const LEVEL_META: Record<HealthLevel, Pick<HealthResult, "label" | "dotClass" | "textClass">> = {
-  healthy:   { label: "Healthy",           dotClass: "bg-emerald-500",  textClass: "text-emerald-700 dark:text-emerald-400" },
-  warm:      { label: "Warm",              dotClass: "bg-amber-400",    textClass: "text-amber-700 dark:text-amber-400" },
-  attention: { label: "Attention Needed",  dotClass: "bg-orange-500",   textClass: "text-orange-700 dark:text-orange-400" },
-  cold:      { label: "Cold",              dotClass: "bg-red-500",      textClass: "text-red-700 dark:text-red-400" },
-  lost:      { label: "Lost",              dotClass: "bg-zinc-500",     textClass: "text-zinc-600 dark:text-zinc-400" },
+  healthy:   { label: "Healthy",           dotClass: "bg-status-success-fg",  textClass: "text-status-success-fg" },
+  warm:      { label: "Warm",              dotClass: "bg-status-warning-fg",  textClass: "text-status-warning-fg" },
+  attention: { label: "Attention Needed",  dotClass: "bg-status-warning-fg",  textClass: "text-status-warning-fg" },
+  cold:      { label: "Cold",              dotClass: "bg-status-danger-fg",   textClass: "text-status-danger-fg" },
+  lost:      { label: "Lost",              dotClass: "bg-muted-foreground/60", textClass: "text-muted-foreground" },
 };
 
 /**
