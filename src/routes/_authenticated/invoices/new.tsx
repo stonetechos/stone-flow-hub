@@ -94,13 +94,22 @@ function NewInvoicePage() {
           </Button>
         }
       />
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search quotes…"
           className="max-w-md"
         />
+        {hasContextFilter && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => nav({ to: "/invoices/new", search: {} })}
+          >
+            <X className="mr-1 h-3.5 w-3.5" /> Clear context filter
+          </Button>
+        )}
       </div>
 
       {query.isLoading ? (
