@@ -7,7 +7,7 @@
  * affordance. Feature code never sets raw colour classes — pass a `tone`
  * signal instead.
  */
-import type { ComponentType, ReactNode } from "react";
+import type { ElementType, ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ export interface KpiTileProps {
   label: string;
   value: ReactNode;
   sub?: ReactNode;
-  icon?: ComponentType<{ className?: string }>;
+  icon?: ElementType;
   tone?: ToneSignal;
   to?: string;
   className?: string;
