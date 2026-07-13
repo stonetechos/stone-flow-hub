@@ -14,6 +14,8 @@ import {
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { KpiTile } from "@/components/dashboard/KpiTile";
+import { InsightCard } from "@/components/dashboard/InsightCard";
 import { getExecutiveKpis } from "@/lib/executive/kpis";
 import { getDashboardKpis } from "@/lib/dashboard/api";
 import { getCustomerIntel } from "@/lib/executive/customer-intel";
