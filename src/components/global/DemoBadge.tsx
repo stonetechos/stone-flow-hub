@@ -49,11 +49,11 @@ export function DemoBadge() {
           <DropdownMenuLabel>Workspace Mode</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => void setMode(false)} disabled={!isDemo}>
-            <Radio className="mr-2 h-4 w-4 text-emerald-600" />
+            <Radio className="mr-2 h-4 w-4 text-status-success-fg" />
             Live Mode
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => void setMode(true)} disabled={isDemo}>
-            <FlaskConical className="mr-2 h-4 w-4 text-blue-600" />
+            <FlaskConical className="mr-2 h-4 w-4 text-status-info-fg" />
             Demo Mode
           </DropdownMenuItem>
           {isDemo && (
