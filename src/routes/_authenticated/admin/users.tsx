@@ -81,18 +81,23 @@ function UsersAdminPage() {
 
   const combined = useMemo<CombinedUser[]>(() => {
     const auth = authUsers.data ?? [];
-    const rolesByUser = new Map<string, AppRole[]>();
-    (profiles.data ?? []).forEach((p) => rolesByUser.set(p.id, p.roles));
-    const profileNameById = new Map<string, string | null>();
-    (profiles.data ?? []).forEach((p) => profileNameById.set(p.id, p.full_name));
+    const profileById = new Map<string, (typeof profiles.data extends readonly (infer T)[] | undefined ? T : never)>();
+    (profiles.data ?? []).forEach((p) => profileById.set(p.id, p));
     return auth
-      .map((u) => ({
-        ...u,
-        full_name: profileNameById.get(u.id) ?? u.full_name,
-        roles: rolesByUser.get(u.id) ?? [],
-      }))
+      .map((u) => {
+        const p = profileById.get(u.id);
+        return {
+          ...u,
+          full_name: p?.full_name ?? u.full_name,
+          roles: p?.roles ?? [],
+          initials: p?.initials ?? null,
+          job_title: p?.job_title ?? null,
+          department: p?.department ?? null,
+        };
+      })
       .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
   }, [authUsers.data, profiles.data]);
+
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
