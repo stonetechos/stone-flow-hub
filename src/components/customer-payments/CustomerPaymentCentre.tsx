@@ -26,10 +26,10 @@ import { PaymentRequestDialog } from "./PaymentRequestDialog";
 
 const BUCKET_STYLE: Record<string, string> = {
   overdue: "bg-destructive/10 text-destructive",
-  due_today: "bg-amber-500/10 text-amber-700",
-  due_week: "bg-teal-500/10 text-teal-700",
+  due_today: "bg-status-warning-bg text-status-warning-fg",
+  due_week: "bg-status-info-bg text-status-info-fg",
   upcoming: "bg-muted text-foreground",
-  paid: "bg-emerald-500/10 text-emerald-700",
+  paid: "bg-status-success-bg text-status-success-fg",
   unscheduled: "bg-muted text-muted-foreground",
 };
 
