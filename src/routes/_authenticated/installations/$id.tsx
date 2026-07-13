@@ -167,7 +167,11 @@ function InstallationDetailPage() {
           </div>
         }
       />
-      <GuidedNextStep entity="installation" entityId={id} />
+      <GuidedNextStep
+        entity="installation"
+        entityId={id}
+        ctx={{ customer_id: r.customer_id, project_id: r.project_id, sales_order_id: r.sales_order_id }}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
 
