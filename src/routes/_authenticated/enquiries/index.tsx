@@ -65,11 +65,13 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
   component: EnquiriesPage,
   validateSearch: (
     s: Record<string, unknown>,
-  ): { edit?: string; umbrella?: LeadUmbrellaId } => {
-    const out: { edit?: string; umbrella?: LeadUmbrellaId } = {};
+  ): { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } => {
+    const out: { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } = {};
     if (typeof s.edit === "string") out.edit = s.edit;
     if (typeof s.umbrella === "string" && (UMBRELLA_IDS as readonly string[]).includes(s.umbrella))
       out.umbrella = s.umbrella as LeadUmbrellaId;
+    if (typeof s.new === "string") out.new = s.new;
+    if (typeof s.customer === "string") out.customer = s.customer;
     return out;
   },
 });
