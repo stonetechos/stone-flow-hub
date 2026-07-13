@@ -59,7 +59,7 @@ export function QcChecklist({ stageId }: { stageId: string }) {
           <ClipboardCheck className="h-4 w-4 text-primary" /> Quality Control
           {rows.length > 0 && (
             <span className="ml-2 flex items-center gap-1 text-xs">
-              <Badge variant="default" className="bg-emerald-600">{passed} pass</Badge>
+              <Badge variant="default" className="bg-status-success-fg text-status-success-bg">{passed} pass</Badge>
               {failed > 0 && <Badge variant="destructive">{failed} fail</Badge>}
               <Badge variant="outline">{rows.length} items</Badge>
             </span>
