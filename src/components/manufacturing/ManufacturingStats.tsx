@@ -18,9 +18,9 @@ export function ManufacturingStats() {
 
   const cards = [
     { label: "Planned", value: s?.planned, icon: ListChecks, tone: "text-muted-foreground" },
-    { label: "In Progress", value: s?.in_progress, icon: Clock, tone: "text-amber-500" },
-    { label: "On Hold", value: s?.on_hold, icon: PauseCircle, tone: "text-orange-500" },
-    { label: "QC Pending", value: s?.qc_pending, icon: ShieldCheck, tone: "text-blue-500" },
+    { label: "In Progress", value: s?.in_progress, icon: Clock, tone: "text-status-warning-fg" },
+    { label: "On Hold", value: s?.on_hold, icon: PauseCircle, tone: "text-status-warning-fg" },
+    { label: "QC Pending", value: s?.qc_pending, icon: ShieldCheck, tone: "text-status-info-fg" },
     { label: "Overdue", value: s?.overdue, icon: AlertTriangle, tone: "text-destructive" },
     { label: "Completed Today", value: s?.completed_today, icon: CheckCircle2, tone: "text-primary" },
     { label: "Total Orders", value: s?.total, icon: Factory, tone: "text-muted-foreground" },
