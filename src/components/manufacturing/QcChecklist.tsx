@@ -90,9 +90,9 @@ export function QcChecklist({ stageId }: { stageId: string }) {
                 r.outcome === "fail" || r.outcome === "rejected" ? ShieldAlert :
                 ShieldQuestion;
               const tone =
-                r.outcome === "pass" || r.outcome === "approved" ? "text-emerald-600" :
+                r.outcome === "pass" || r.outcome === "approved" ? "text-status-success-fg" :
                 r.outcome === "fail" || r.outcome === "rejected" ? "text-destructive" :
-                r.outcome === "rework" ? "text-amber-600" : "text-muted-foreground";
+                r.outcome === "rework" ? "text-status-warning-fg" : "text-muted-foreground";
               return (
                 <li key={r.id} className="rounded-md border p-3">
                   <div className="flex items-center justify-between gap-2">
