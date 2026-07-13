@@ -82,7 +82,11 @@ function DispatchDetailPage() {
           />
         }
       />
-      <GuidedNextStep entity="dispatch" entityId={id} />
+      <GuidedNextStep
+        entity="dispatch"
+        entityId={id}
+        ctx={{ sales_order_id: r.sales_order_id, project_id: r.project_id, customer_id: r.customer_id }}
+      />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Card>
