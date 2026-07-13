@@ -190,12 +190,15 @@ function UsersAdminPage() {
                 <thead className="bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">Display Name</th>
+                    <th className="px-4 py-3">Job Title</th>
+                    <th className="px-4 py-3">Department</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Roles</th>
                     <th className="px-4 py-3">Last Login</th>
                     <th className="px-4 py-3">Created</th>
                     <th className="px-4 py-3 text-right">Actions</th>
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
