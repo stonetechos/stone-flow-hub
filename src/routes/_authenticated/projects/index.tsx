@@ -278,17 +278,21 @@ function ProjectFormDialog({
   open,
   onOpenChange,
   editing,
+  presetCustomerId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   editing: ProjectWithCustomer | null;
+  presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<ProjectCreateInput>(emptyForm);
 
   useEffect(() => {
-    if (open) setForm(editing ? fromRow(editing) : emptyForm());
-  }, [open, editing]);
+    if (!open) return;
+    if (editing) setForm(fromRow(editing));
+    else setForm({ ...emptyForm(), customer_id: presetCustomerId ?? "" });
+  }, [open, editing, presetCustomerId]);
 
   const mutation = useMutation({
     mutationFn: (input: ProjectCreateInput) =>
