@@ -1328,7 +1328,7 @@ function displayName(
   if (!user) return "there";
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
-  if (full && typeof full === "string") return full.split(" ")[0];
+  if (full && typeof full === "string" && full.trim()) return full.trim().split(" ")[0];
   if (user.email) return user.email.split("@")[0];
   return "there";
 }
