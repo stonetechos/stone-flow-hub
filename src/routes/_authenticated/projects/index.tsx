@@ -286,6 +286,7 @@ function ProjectFormDialog({
   presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [form, setForm] = useState<ProjectCreateInput>(emptyForm);
 
   useEffect(() => {
