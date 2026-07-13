@@ -324,7 +324,7 @@ function EnquiriesPage() {
         </DataTableShell>
       )}
 
-      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} />
+      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} presetCustomerId={customerParam ?? null} />
       <EditEnquiryDialog
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
