@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/projects/")({
 function ProjectsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit, new: newParam, customer: customerParam, enquiry: enquiryParam } = Route.useSearch();
+  const { edit, new: newParam, customer: customerParam } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
