@@ -4517,11 +4517,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          department: string | null
           email: string | null
           full_name: string | null
           id: string
+          initials: string | null
           is_active: boolean
           is_demo_mode: boolean
+          job_title: string | null
           phone: string | null
           preferences: Json
           updated_at: string
@@ -4529,11 +4532,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          initials?: string | null
           is_active?: boolean
           is_demo_mode?: boolean
+          job_title?: string | null
           phone?: string | null
           preferences?: Json
           updated_at?: string
@@ -4541,11 +4547,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          initials?: string | null
           is_active?: boolean
           is_demo_mode?: boolean
+          job_title?: string | null
           phone?: string | null
           preferences?: Json
           updated_at?: string
