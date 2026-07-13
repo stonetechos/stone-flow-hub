@@ -31,8 +31,8 @@ export const Route = createFileRoute("/_authenticated/dashboards/collections")({
 
 const RISK_TONE: Record<string, string> = {
   critical: "bg-destructive/10 text-destructive",
-  high: "bg-amber-500/10 text-amber-700",
-  medium: "bg-teal-500/10 text-teal-700",
+  high: "bg-status-warning-bg text-status-warning-fg",
+  medium: "bg-status-info-bg text-status-info-fg",
   low: "bg-muted text-foreground",
 };
 
@@ -85,13 +85,13 @@ function CollectionsDashboard() {
         <Stat
           label="Due today"
           value={inflow.today}
-          tone="text-amber-700"
+          tone="text-status-warning-fg"
           count={todayRows.length}
         />
         <Stat
           label="Due this week"
           value={inflow.week}
-          tone="text-teal-700"
+          tone="text-status-info-fg"
           count={todayRows.length + weekRows.length}
         />
         <Stat
@@ -195,7 +195,7 @@ function CollectionsDashboard() {
         />
         <BucketList
           title="Due this week"
-          icon={<CalendarClock className="h-4 w-4 text-teal-700" />}
+          icon={<CalendarClock className="h-4 w-4 text-status-info-fg" />}
           rows={[...todayRows, ...weekRows]}
         />
       </div>

@@ -242,7 +242,7 @@ function FieldRow({
 function StageCard({ stage, onPatch }: { stage: Stage; onPatch: (p: Record<string, unknown>) => void }) {
   const icon =
     stage.status === "completed" ? <CheckCircle2 className="h-5 w-5 text-primary" /> :
-    stage.status === "in_progress" ? <Clock className="h-5 w-5 text-amber-500" /> :
+    stage.status === "in_progress" ? <Clock className="h-5 w-5 text-status-warning-fg" /> :
     stage.status === "on_hold" ? <AlertTriangle className="h-5 w-5 text-destructive" /> :
     <Circle className="h-5 w-5 text-muted-foreground" />;
   return (

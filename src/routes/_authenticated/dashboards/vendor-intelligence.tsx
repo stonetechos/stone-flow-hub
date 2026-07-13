@@ -60,7 +60,7 @@ function VList({ title, rows, col, tone }: { title: string; rows: VendorScore[];
             {rows.map((r, i) => (
               <li key={r.vendor_id + i} className="flex justify-between gap-2">
                 <Link to="/vendors/$vendorId" params={{ vendorId: r.vendor_id }} className="truncate text-primary hover:underline">{i + 1}. {r.name}</Link>
-                <span className={tone === "warn" ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}>{formatVendor(r, col)}</span>
+                <span className={tone === "warn" ? "text-status-warning-fg" : "text-muted-foreground"}>{formatVendor(r, col)}</span>
               </li>
             ))}
           </ol>

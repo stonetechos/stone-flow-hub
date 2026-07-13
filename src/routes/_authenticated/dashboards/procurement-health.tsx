@@ -111,7 +111,7 @@ function SeverityBadge({ severity }: { severity: "info" | "warn" | "risk" }) {
     );
   if (severity === "warn")
     return (
-      <Badge className="gap-1 bg-amber-500 text-white hover:bg-amber-500">
+      <Badge className="gap-1 bg-status-warning-fg text-white hover:bg-status-warning-fg">
         <AlertTriangle className="h-3 w-3" /> Warn
       </Badge>
     );

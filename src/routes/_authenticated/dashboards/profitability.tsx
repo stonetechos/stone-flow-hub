@@ -54,7 +54,7 @@ function ProfitabilityDashboard() {
                   <td className="p-2 text-right">{formatInr(r.labour_cost)}</td>
                   <td className="p-2 text-right">{formatInr(r.transport_cost)}</td>
                   <td className="p-2 text-right">{formatInr(r.gross_profit)}</td>
-                  <td className={`p-2 text-right font-medium ${r.net_profit < 0 ? "text-red-600" : "text-emerald-600"}`}>{formatInr(r.net_profit)}</td>
+                  <td className={`p-2 text-right font-medium ${r.net_profit < 0 ? "text-status-danger-fg" : "text-status-success-fg"}`}>{formatInr(r.net_profit)}</td>
                   <td className="p-2 text-right">{r.profit_pct.toFixed(1)}%</td>
                 </tr>
               ))}
