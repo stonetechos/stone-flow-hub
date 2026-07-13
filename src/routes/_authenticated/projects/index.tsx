@@ -223,7 +223,13 @@ function ProjectsPage() {
         </DataTableShell>
       )}
 
-      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ProjectFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        editing={editing}
+        presetCustomerId={customerParam ?? null}
+        presetEnquiryId={enquiryParam ?? null}
+      />
       <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
