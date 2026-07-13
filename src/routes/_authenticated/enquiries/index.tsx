@@ -374,16 +374,18 @@ function emptyNew(): EnquiryCreateInput {
 function NewEnquiryDialog({
   open,
   onOpenChange,
+  presetCustomerId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
 
   useEffect(() => {
-    if (open) setForm(emptyNew());
-  }, [open]);
+    if (open) setForm({ ...emptyNew(), customer_id: presetCustomerId ?? null });
+  }, [open, presetCustomerId]);
 
   const mutation = useMutation({
     mutationFn: (input: EnquiryCreateInput) => createEnquiry(input),
