@@ -38,7 +38,19 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 flex w-full max-w-lg max-h-[90vh] translate-x-[-50%] translate-y-[-50%] flex-col gap-4 overflow-hidden rounded-lg border border-border-subtle bg-[var(--surface-elevated)] p-6 shadow-e3 duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        // Position + sizing — mobile-first, uses dvh so the virtual keyboard
+        // shrinks the container instead of clipping it.
+        "fixed left-[50%] top-[50%] z-50 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4",
+        "w-[calc(100vw-1rem)] max-w-lg sm:w-full",
+        "max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]",
+        // Global overlay scroll strategy — every dialog scrolls internally.
+        "overlay-scroll",
+        // Skin
+        "rounded-lg border border-border-subtle bg-[var(--surface-elevated)] p-6 shadow-e3",
+        // iOS safe-area at the bottom so action rows stay reachable.
+        "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+        // Motion
+        "duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className,
       )}
       {...props}
@@ -58,27 +70,31 @@ DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex shrink-0 flex-col space-y-1.5 text-center sm:text-left", className)}
+    className={cn(
+      // Sticky so titles stay visible while long forms scroll.
+      "sticky top-0 z-10 -mx-6 -mt-6 flex shrink-0 flex-col space-y-1.5 border-b border-border-subtle bg-[var(--surface-elevated)] px-6 pb-3 pt-6 text-center sm:text-left",
+      className,
+    )}
     {...props}
   />
 );
 DialogHeader.displayName = "DialogHeader";
 
+/**
+ * DialogBody — kept as a passthrough for backwards compat. The outer
+ * DialogContent now owns scrolling globally, so DialogBody just provides
+ * consistent padding + a min-height floor.
+ */
 const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "-mx-6 min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]",
-      className,
-    )}
-    {...props}
-  />
+  <div className={cn("min-h-0 flex-1", className)} {...props} />
 );
 DialogBody.displayName = "DialogBody";
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
+      // Sticky action row — Save / Cancel always reachable, even mid-scroll.
+      "sticky bottom-[calc(-1*max(1.5rem,env(safe-area-inset-bottom)))] z-10 -mx-6 -mb-[max(1.5rem,env(safe-area-inset-bottom))] mt-2 flex shrink-0 flex-col-reverse gap-2 border-t border-border-subtle bg-[var(--surface-elevated)] px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
       className,
     )}
     {...props}
