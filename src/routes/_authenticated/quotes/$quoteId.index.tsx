@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -71,6 +72,7 @@ function QuoteDetailPage() {
   const { quoteId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
+  useDetailHotkeys({ onBack: () => nav({ to: "/quotes" }) });
   const [confirmDel, setConfirmDel] = useState(false);
   const [reassignOpen, setReassignOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);

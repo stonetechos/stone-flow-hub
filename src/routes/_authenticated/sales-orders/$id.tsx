@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History, UserCheck, Send } from "lucide-react";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/sales-orders/$id")({
 function SalesOrderDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  useDetailHotkeys({ onBack: () => nav({ to: "/sales-orders" }) });
   const qc = useQueryClient();
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;

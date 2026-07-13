@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -85,6 +86,7 @@ function EnquiryDetailPage() {
   const { enquiryId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
+  useDetailHotkeys({ onBack: () => nav({ to: "/enquiries" }) });
   const { rfq: rfqParam } = Route.useSearch();
   const [rfqOpen, setRfqOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
