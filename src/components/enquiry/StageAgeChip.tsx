@@ -20,7 +20,7 @@ export function StageAgeChip({
     ? `More than ${threshold} days in this stage`
     : `${days} day${days === 1 ? "" : "s"} in this stage`;
   const cls = warn
-    ? "text-amber-700 dark:text-amber-400 bg-amber-500/10 border-amber-500/30"
+    ? "text-status-warning-fg bg-status-warning-bg border-status-warning-border"
     : "text-muted-foreground bg-muted/40 border-border";
   return (
     <span
