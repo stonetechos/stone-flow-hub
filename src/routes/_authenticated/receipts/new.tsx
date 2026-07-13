@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +29,14 @@ import { RECEIPT_METHODS, RECEIPT_METHOD_LABELS } from "@/lib/receipts/schema";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 
+const search = z.object({
+  customer: z.string().uuid().optional(),
+  invoice: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/receipts/new")({
   ssr: false,
+  validateSearch: (s) => search.parse(s),
   component: NewReceiptPage,
 });
 
@@ -38,8 +45,9 @@ type AllocRow = { invoice_id: string; amount: number; invoice_no: string; balanc
 function NewReceiptPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
+  const preset = Route.useSearch();
 
-  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(preset.customer ?? null);
   const [receivedAt, setReceivedAt] = useState<string>(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<number>(0);
   const [method, setMethod] = useState<(typeof RECEIPT_METHODS)[number]>("bank_transfer");
@@ -58,6 +66,23 @@ function NewReceiptPage() {
     queryFn: () => listOpenInvoicesForCustomer(customerId!),
     enabled: !!customerId,
   });
+
+  // Preselect the invoice + amount when we arrived from an invoice detail
+  // page via `?invoice=…`. Fires once, when the invoice list resolves.
+  useEffect(() => {
+    if (!preset.invoice || !invoicesQuery.data) return;
+    if (allocations.some((a) => a.invoice_id === preset.invoice)) return;
+    const inv = invoicesQuery.data.find((i) => i.id === preset.invoice);
+    if (!inv) return;
+    const balance = Number(inv.balance_due) || 0;
+    setAllocations((prev) => [
+      ...prev,
+      { invoice_id: inv.id, amount: balance, invoice_no: inv.invoice_no, balance_due: balance },
+    ]);
+    if (amount === 0) setAmount(balance);
+    // Only run once per (customer, invoice) preset combo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoicesQuery.data, preset.invoice]);
 
   const net = Math.max(0, amount - tds - charges);
   const alloc = useMemo(() => allocations.reduce((s, a) => s + Number(a.amount || 0), 0), [allocations]);

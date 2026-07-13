@@ -263,7 +263,11 @@ function EnquiryDetailPage() {
         }
       />
 
-      <GuidedNextStep entity="enquiry" entityId={enquiryId} />
+      <GuidedNextStep
+        entity="enquiry"
+        entityId={enquiryId}
+        ctx={{ customer_id: enq.customer_id, enquiry_id: enquiryId, project_id: enq.project_id }}
+      />
 
       {canTransfer && enq.customer_id && (
         <TransferOwnershipDialog

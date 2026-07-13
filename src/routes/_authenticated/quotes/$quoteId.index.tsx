@@ -274,7 +274,11 @@ function QuoteDetailPage() {
         }
       />
 
-      <GuidedNextStep entity="quote" entityId={quoteId} />
+      <GuidedNextStep
+        entity="quote"
+        entityId={quoteId}
+        ctx={{ customer_id: quote.customer_id, project_id: quote.project_id, quote_id: quoteId }}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">

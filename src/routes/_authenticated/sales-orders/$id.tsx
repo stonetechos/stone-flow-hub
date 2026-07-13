@@ -139,7 +139,11 @@ function SalesOrderDetailPage() {
         }
       />
 
-      <GuidedNextStep entity="sales_order" entityId={id} />
+      <GuidedNextStep
+        entity="sales_order"
+        entityId={id}
+        ctx={{ customer_id: r.customer_id, project_id: r.project_id, sales_order_id: id, quote_id: r.quote_id }}
+      />
 
       {canTransfer && r.customer_id && (
         <TransferOwnershipDialog
