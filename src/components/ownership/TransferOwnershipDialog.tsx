@@ -439,7 +439,7 @@ function PreviewPanel({
           key={i}
           className={`flex items-start gap-2 rounded-md border p-3 text-xs ${
             w.level === "warning"
-              ? "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-400"
+              ? "border-status-warning-border bg-status-warning-bg text-status-warning-fg"
               : "border-border bg-muted/30 text-muted-foreground"
           }`}
         >
