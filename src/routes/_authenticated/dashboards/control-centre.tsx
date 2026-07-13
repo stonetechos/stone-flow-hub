@@ -111,13 +111,13 @@ function ControlCentre() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4 text-amber-500" />Critical alerts</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4 text-status-warning-fg" />Critical alerts</CardTitle></CardHeader>
           <CardContent>
             {alerts.length === 0 ? <div className="text-sm text-muted-foreground">All clear.</div> : (
               <ul className="text-sm space-y-2">
                 {alerts.map((a, i) => (
                   <li key={i}>
-                    <Link to={a.to as never} className={`flex justify-between gap-2 hover:underline ${a.tone === "critical" ? "text-red-600" : "text-amber-600 dark:text-amber-400"}`}>
+                    <Link to={a.to as never} className={`flex justify-between gap-2 hover:underline ${a.tone === "critical" ? "text-status-danger-fg" : "text-status-warning-fg"}`}>
                       <span>{a.label}</span>
                       <span className="text-xs">Open →</span>
                     </Link>

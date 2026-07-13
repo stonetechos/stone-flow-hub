@@ -44,7 +44,7 @@ function List({ title, rows, col, tone }: { title: string; rows: CustomerScore[]
             {rows.map((r, i) => (
               <li key={r.customer_id + i} className="flex justify-between gap-2">
                 <Link to="/customers/$customerId" params={{ customerId: r.customer_id }} className="truncate text-primary hover:underline">{i + 1}. {r.name}</Link>
-                <span className={tone === "warn" ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}>{formatValue(r, col)}</span>
+                <span className={tone === "warn" ? "text-status-warning-fg" : "text-muted-foreground"}>{formatValue(r, col)}</span>
               </li>
             ))}
           </ol>

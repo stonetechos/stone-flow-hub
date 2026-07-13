@@ -19,11 +19,13 @@ export const Route = createFileRoute("/_authenticated/dashboards/business-health
   component: BusinessHealthDashboard,
 });
 
+import { toneText } from "@/lib/ui/tones";
+
 function toneOf(score: number) {
-  if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 60) return "text-amber-600 dark:text-amber-400";
-  if (score >= 40) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
+  if (score >= 80) return toneText("success");
+  if (score >= 60) return toneText("warning");
+  if (score >= 40) return toneText("warning");
+  return toneText("danger");
 }
 
 function BusinessHealthDashboard() {
@@ -62,7 +64,7 @@ function MetricCard({ m }: { m: HealthMetric }) {
       <CardContent className="p-3">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{m.label}</span>
-          {m.trend && <Trend className={cn("h-3 w-3", m.trend === "up" ? "text-emerald-500" : m.trend === "down" ? "text-red-500" : "")} />}
+          {m.trend && <Trend className={cn("h-3 w-3", m.trend === "up" ? toneText("success") : m.trend === "down" ? toneText("danger") : "")} />}
         </div>
         <div className={cn("mt-1 text-2xl font-bold tabular-nums", toneOf(m.score))}>{m.score}</div>
         <div className="mt-1 text-[11px] text-muted-foreground">{m.note}</div>

@@ -94,13 +94,13 @@ function OwnerIntelPage() {
         <Section icon={<ShieldAlert className="h-4 w-4 text-destructive" />} title="Critical pending work">
           <RecList items={bucket("critical")} />
         </Section>
-        <Section icon={<Award className="h-4 w-4 text-emerald-600" />} title="Employees needing appreciation">
+        <Section icon={<Award className="h-4 w-4 text-status-success-fg" />} title="Employees needing appreciation">
           <RecList items={bucket("appreciation")} />
         </Section>
-        <Section icon={<AlertTriangle className="h-4 w-4 text-amber-600" />} title="Employees needing coaching">
+        <Section icon={<AlertTriangle className="h-4 w-4 text-status-warning-fg" />} title="Employees needing coaching">
           <RecList items={bucket("coaching")} />
         </Section>
-        <Section icon={<ShieldAlert className="h-4 w-4 text-amber-700" />} title="High-risk operational areas">
+        <Section icon={<ShieldAlert className="h-4 w-4 text-status-warning-fg" />} title="High-risk operational areas">
           <RecList items={bucket("risk")} />
         </Section>
         <Section icon={<Users className="h-4 w-4" />} title="Department summary">
@@ -172,7 +172,7 @@ function OwnerIntelPage() {
 }
 
 function Metric({ label, value, tone }: { label: string; value: number | string; tone?: "positive" | "danger" }) {
-  const cls = tone === "positive" ? "text-emerald-600" : tone === "danger" ? "text-destructive" : "";
+  const cls = tone === "positive" ? "text-status-success-fg" : tone === "danger" ? "text-destructive" : "";
   return (
     <div className="rounded-md border p-3">
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>

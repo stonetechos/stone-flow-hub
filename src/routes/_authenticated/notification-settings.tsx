@@ -80,10 +80,10 @@ function ModeCard() {
   });
   const isTest = cfg.mode !== "live";
   return (
-    <Card className={isTest ? "shadow-1 border-amber-500/40" : "shadow-1 border-emerald-500/40"}>
+    <Card className={isTest ? "shadow-1 border-status-warning-border" : "shadow-1 border-status-success-border"}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-sm">
-          <ShieldAlert className={isTest ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-emerald-500"} />
+          <ShieldAlert className={isTest ? "h-4 w-4 text-status-warning-fg" : "h-4 w-4 text-status-success-fg"} />
           Global mode
         </CardTitle>
         <Badge variant={isTest ? "outline" : "default"}>{isTest ? "TEST" : "LIVE"}</Badge>
@@ -352,7 +352,7 @@ function WhatsappStatusBadge({ query }: { query: { data?: { ok: boolean; reason?
   if (query.isFetching) return <Badge variant="outline"><Loader2 className="mr-1 h-3 w-3 animate-spin" /> checking</Badge>;
   if (query.isError) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> error</Badge>;
   if (!query.data) return <Badge variant="outline">not configured</Badge>;
-  if (query.data.ok) return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30"><CheckCircle2 className="mr-1 h-3 w-3" /> Connected</Badge>;
+  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-status-success-border"><CheckCircle2 className="mr-1 h-3 w-3" /> Connected</Badge>;
   const r = query.data.reason ?? "";
   if (/invalid access token|401|403/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Token</Badge>;
   if (/invalid phone number id|404/i.test(r)) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> Invalid Phone Number ID</Badge>;
@@ -412,7 +412,7 @@ function ProviderStatusBadge({ query }: { query: { data?: { ok: boolean; reason?
   if (query.isFetching) return <Badge variant="outline"><Loader2 className="mr-1 h-3 w-3 animate-spin" /> checking</Badge>;
   if (query.isError) return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" /> error</Badge>;
   if (!query.data) return <Badge variant="outline">not configured</Badge>;
-  if (query.data.ok) return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30"><CheckCircle2 className="mr-1 h-3 w-3" /> connected</Badge>;
+  if (query.data.ok) return <Badge className="bg-status-success-bg text-status-success-fg border-status-success-border"><CheckCircle2 className="mr-1 h-3 w-3" /> connected</Badge>;
   const reason = query.data.reason ?? "";
   const invalid = /invalid|401|403/i.test(reason);
   return (

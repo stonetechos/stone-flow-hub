@@ -33,13 +33,13 @@ export const EVENT_LABELS: Record<ProcurementEventType, string> = {
 };
 
 export const EVENT_COLORS: Record<ProcurementEventType, string> = {
-  followup: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  vendor_commitment: "bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200",
-  customer_commitment: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-200",
-  material_arrival: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-  vendor_payment: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200",
-  customer_payment: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-  dispatch: "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200",
+  followup: "bg-status-warning-bg text-status-warning-fg border border-status-warning-border",
+  vendor_commitment: "bg-status-info-bg text-status-info-fg border border-status-info-border",
+  customer_commitment: "bg-muted text-foreground border border-border",
+  material_arrival: "bg-status-success-bg text-status-success-fg border border-status-success-border",
+  vendor_payment: "bg-status-danger-bg text-status-danger-fg border border-status-danger-border",
+  customer_payment: "bg-status-success-bg text-status-success-fg border border-status-success-border",
+  dispatch: "bg-status-info-bg text-status-info-fg border border-status-info-border",
 };
 
 export async function listProcurementCalendar(params: {

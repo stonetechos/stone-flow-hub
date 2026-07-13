@@ -92,10 +92,10 @@ function DailyActionDashboard() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <TopRisks items={risks.items.slice(0, 12)} />
-        <LeadColumn title="Hot leads" icon={<Flame className="h-4 w-4 text-orange-500" />} rows={leads.hot} tone="hot" />
-        <LeadColumn title="High-value opportunities" icon={<CircleDollarSign className="h-4 w-4 text-emerald-500" />} rows={leads.highValue} tone="hv" />
-        <LeadColumn title="Cold leads" icon={<Snowflake className="h-4 w-4 text-sky-500" />} rows={leads.cold} tone="cold" />
-        <LeadColumn title="Lost leads to review" icon={<AlertTriangle className="h-4 w-4 text-zinc-500" />} rows={leads.lostReview} tone="lost" />
+        <LeadColumn title="Hot leads" icon={<Flame className="h-4 w-4 text-status-warning-fg" />} rows={leads.hot} tone="hot" />
+        <LeadColumn title="High-value opportunities" icon={<CircleDollarSign className="h-4 w-4 text-status-success-fg" />} rows={leads.highValue} tone="hv" />
+        <LeadColumn title="Cold leads" icon={<Snowflake className="h-4 w-4 text-status-info-fg" />} rows={leads.cold} tone="cold" />
+        <LeadColumn title="Lost leads to review" icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />} rows={leads.lostReview} tone="lost" />
       </div>
     </div>
   );
@@ -113,8 +113,8 @@ function TopRisks({ items }: { items: RiskItem[] }) {
               <div className="text-muted-foreground">{r.reason}</div>
             </div>
             <Badge variant="outline" className={cn("shrink-0 text-[10px] uppercase",
-              r.severity === "high" ? "border-red-500/40 text-red-600" :
-              r.severity === "medium" ? "border-amber-500/40 text-amber-600" : "border-muted"
+              r.severity === "high" ? "border-status-danger-border text-status-danger-fg" :
+              r.severity === "medium" ? "border-status-warning-border text-status-warning-fg" : "border-muted"
             )}>{r.severity}</Badge>
           </Link>
         ))}
