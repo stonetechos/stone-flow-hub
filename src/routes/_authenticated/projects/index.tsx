@@ -228,7 +228,6 @@ function ProjectsPage() {
         onOpenChange={setFormOpen}
         editing={editing}
         presetCustomerId={customerParam ?? null}
-        presetEnquiryId={enquiryParam ?? null}
       />
       <SafeDeleteDialog
         open={!!toDelete}
