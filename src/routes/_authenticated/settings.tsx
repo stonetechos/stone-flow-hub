@@ -35,8 +35,15 @@ function SettingsPage() {
       if (data.user) {
         setEmail(data.user.email ?? "");
         setUserId(data.user.id);
+        // Prefer profiles.full_name (authoritative display name that admins
+        // can edit). Fall back to auth user_metadata for legacy accounts.
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.user.id)
+          .maybeSingle();
         const meta = data.user.user_metadata as { full_name?: string } | null;
-        setFullName(meta?.full_name ?? "");
+        setFullName(prof?.full_name ?? meta?.full_name ?? "");
         const { data: role } = await supabase
           .from("user_roles")
           .select("role")
@@ -50,8 +57,19 @@ function SettingsPage() {
 
   async function saveProfile() {
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } });
+    const trimmed = fullName.trim();
+    // Write to both stores so the change surfaces regardless of which one a
+    // caller reads. profiles.full_name is authoritative for the UI; the auth
+    // metadata copy stays in sync so JWT-based consumers see the same value.
+    const [{ error: pErr }, { error: aErr }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .update({ full_name: trimmed.length ? trimmed : null })
+        .eq("id", userId),
+      supabase.auth.updateUser({ data: { full_name: trimmed } }),
+    ]);
     setSaving(false);
+    const error = pErr ?? aErr;
     if (error) toast.error(error.message);
     else toast.success("Profile updated");
   }

@@ -49,6 +49,7 @@ import { listRecentActivity } from "@/lib/activity/api";
 import { listTasks, updateTaskStatus, type TaskRow } from "@/lib/tasks/api";
 import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -77,6 +78,20 @@ function DashboardPage() {
     queryKey: qk.followups.scope("today"),
     queryFn: () => listFollowups("today"),
   });
+  const profileQ = useQuery({
+    queryKey: ["me", "profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60_000,
+  });
 
   const toggleTask = useMutation({
     mutationFn: ({ id, done }: { id: string; done: boolean }) =>
@@ -84,7 +99,8 @@ function DashboardPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 
-  const name = displayName(user);
+  const profileName = profileQ.data?.full_name?.trim();
+  const name = profileName ? profileName.split(" ")[0] : displayName(user);
   const now = new Date();
   const greeting = greetingFor(now);
   const today = now.toLocaleDateString(undefined, {
@@ -1328,7 +1344,7 @@ function displayName(
   if (!user) return "there";
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
-  if (full && typeof full === "string") return full.split(" ")[0];
+  if (full && typeof full === "string" && full.trim()) return full.trim().split(" ")[0];
   if (user.email) return user.email.split("@")[0];
   return "there";
 }

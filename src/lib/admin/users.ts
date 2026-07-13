@@ -11,6 +11,31 @@ export const APP_ROLES: readonly AppRole[] = [
   "purchase",
 ] as const;
 
+/**
+ * Fallback shown when a profile has no `full_name` set yet. Derives a display
+ * label from the email local-part (before `@`). Once an admin assigns a real
+ * `full_name`, callers should prefer that value.
+ */
+export function fallbackName(email: string | null | undefined): string {
+  if (!email) return "User";
+  const local = email.split("@")[0] ?? "";
+  return local || "User";
+}
+
+/**
+ * Canonical resolver used everywhere the UI needs to render a person's name.
+ * Prefers profiles.full_name; falls back to the email local-part until an
+ * admin sets a display name from the Users & Roles page.
+ */
+export function resolveDisplayName(input: {
+  full_name?: string | null;
+  email?: string | null;
+}): string {
+  const name = input.full_name?.trim();
+  if (name) return name;
+  return fallbackName(input.email);
+}
+
 export interface UserRow {
   id: string;
   email: string | null;
@@ -70,6 +95,20 @@ export async function sendPasswordReset(email: string): Promise<void> {
     redirectTo: `${window.location.origin}/auth`,
   });
   if (error) throw new AppError(error.message);
+}
+
+/**
+ * Admin-only: set a user's human-readable display name in `profiles.full_name`.
+ * Does NOT modify auth identity, email, roles, or user id. Requires the admin
+ * profile UPDATE policy on `public.profiles`.
+ */
+export async function updateDisplayName(userId: string, fullName: string): Promise<void> {
+  const trimmed = fullName.trim();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: trimmed.length ? trimmed : null })
+    .eq("id", userId);
+  if (error) throw new AppError(mapDbError(error));
 }
 
 export async function currentUserIsAdmin(): Promise<boolean> {
