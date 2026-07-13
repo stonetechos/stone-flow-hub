@@ -252,14 +252,11 @@ export const setUserActive = createServerFn({ method: "POST" })
         .eq("role", "admin")
         .maybeSingle();
       if (targetIsAdmin) {
-        const { data: admins } = await supabaseAdmin
-          .from("user_roles")
-          .select("user_id, profiles!inner(is_active)")
-          .eq("role", "admin");
-        const activeAdmins = (admins ?? []).filter(
-          (r: { profiles: { is_active: boolean } | null }) => r.profiles?.is_active !== false,
+        const remaining = await countActiveAdminsExcluding(
+          supabaseAdmin as never,
+          data.user_id,
         );
-        if (activeAdmins.length <= 1) {
+        if (remaining < 1) {
           throw new Error("Cannot deactivate the last active admin.");
         }
       }
