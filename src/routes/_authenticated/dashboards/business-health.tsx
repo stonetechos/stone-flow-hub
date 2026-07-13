@@ -19,11 +19,13 @@ export const Route = createFileRoute("/_authenticated/dashboards/business-health
   component: BusinessHealthDashboard,
 });
 
+import { toneText } from "@/lib/ui/tones";
+
 function toneOf(score: number) {
-  if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 60) return "text-amber-600 dark:text-amber-400";
-  if (score >= 40) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
+  if (score >= 80) return toneText("success");
+  if (score >= 60) return toneText("warning");
+  if (score >= 40) return toneText("warning");
+  return toneText("danger");
 }
 
 function BusinessHealthDashboard() {
