@@ -77,6 +77,20 @@ function DashboardPage() {
     queryKey: qk.followups.scope("today"),
     queryFn: () => listFollowups("today"),
   });
+  const profileQ = useQuery({
+    queryKey: ["me", "profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60_000,
+  });
 
   const toggleTask = useMutation({
     mutationFn: ({ id, done }: { id: string; done: boolean }) =>
@@ -84,7 +98,8 @@ function DashboardPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 
-  const name = displayName(user);
+  const profileName = profileQ.data?.full_name?.trim();
+  const name = profileName ? profileName.split(" ")[0] : displayName(user);
   const now = new Date();
   const greeting = greetingFor(now);
   const today = now.toLocaleDateString(undefined, {
