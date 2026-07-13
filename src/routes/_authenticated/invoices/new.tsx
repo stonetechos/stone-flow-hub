@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRightCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRightCircle, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -15,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Receipt } from "lucide-react";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -23,13 +24,23 @@ import { listQuotes } from "@/lib/quotes/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 
+const searchSchema = z.object({
+  // `new=1` is the guided-workflow entry-point flag; retained for URL clarity.
+  new: z.string().optional(),
+  quote: z.string().uuid().optional(),
+  so: z.string().uuid().optional(),
+  customer: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/invoices/new")({
   ssr: false,
+  validateSearch: (s) => searchSchema.parse(s),
   component: NewInvoicePage,
 });
 
 function NewInvoicePage() {
   const nav = useNavigate();
+  const preset = Route.useSearch();
   const [q, setQ] = useState("");
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -37,7 +48,16 @@ function NewInvoicePage() {
   const convert = useMutation({
     mutationFn: (id: string) => convertQuoteToInvoice({ quote_id: id }),
     onSuccess: (inv) => {
-      toast.success(`Invoice ${inv.invoice_no} created`);
+      toast.success(`Invoice ${inv.invoice_no} created`, {
+        action: {
+          label: "Record receipt",
+          onClick: () =>
+            nav({
+              to: "/receipts/new",
+              search: { invoice: inv.id, customer: inv.customer_id ?? undefined },
+            }),
+        },
+      });
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (e) => {
@@ -46,7 +66,22 @@ function NewInvoicePage() {
     },
   });
 
-  const eligible = (query.data ?? []).filter((r) => r.status === "accepted");
+  // Scope the accepted-quote list by whatever context arrived on the URL.
+  // If a specific `quote=` was passed we pre-filter to just that row so the
+  // convert click is a single action.
+  const eligible = useMemo(() => {
+    const base = (query.data ?? []).filter((r) => r.status === "accepted");
+    if (preset.quote) return base.filter((r) => r.id === preset.quote);
+    if (preset.customer) return base.filter((r) => r.customer_id === preset.customer);
+    if (preset.so) {
+      return base.filter(
+        (r) => (r as { linked_sales_order_id?: string | null }).linked_sales_order_id === preset.so,
+      );
+    }
+    return base;
+  }, [query.data, preset.quote, preset.customer, preset.so]);
+
+  const hasContextFilter = !!(preset.quote || preset.customer || preset.so);
 
   return (
     <div>
