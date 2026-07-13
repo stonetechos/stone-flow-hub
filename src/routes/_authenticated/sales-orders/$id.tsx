@@ -145,6 +145,23 @@ function SalesOrderDetailPage() {
         ctx={{ customer_id: r.customer_id, project_id: r.project_id, sales_order_id: id, quote_id: r.quote_id }}
       />
 
+      {r.quote?.enquiry_id && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs">
+          <span className="text-muted-foreground">
+            Need vendor pricing before you raise POs?
+          </span>
+          <Button asChild variant="outline" size="sm" className="h-7">
+            <Link
+              to="/enquiries/$enquiryId"
+              params={{ enquiryId: r.quote.enquiry_id }}
+              search={{ rfq: "1" }}
+            >
+              <Send className="mr-1 h-3.5 w-3.5" /> Send vendor RFQ
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {canTransfer && r.customer_id && (
         <TransferOwnershipDialog
           open={transferOpen}
