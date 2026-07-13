@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,13 +8,15 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, KeyRound, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, KeyRound, X, Pencil, Check, Search } from "lucide-react";
 import { toUserMessage } from "@/lib/errors";
 import {
   listAppUsers,
   assignRole,
   revokeRole,
   sendPasswordReset,
+  updateDisplayName,
   APP_ROLES,
   type AppRole,
 } from "@/lib/admin/users";
