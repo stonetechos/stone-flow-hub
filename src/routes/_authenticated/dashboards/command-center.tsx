@@ -93,7 +93,7 @@ function CommandCenter() {
           <Card><CardContent className="p-6 text-sm text-muted-foreground">All clear — no critical signals right now.</CardContent></Card>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {insights.slice(0, 9).map((i, idx) => <InsightCard key={idx} insight={i} />)}
+            {insights.slice(0, 9).map((i, idx) => <InsightCardLocal key={idx} insight={i} />)}
           </div>
         )}
       </Section>
