@@ -143,14 +143,74 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-sm">Profile</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  {avatarUrl ? <AvatarImage src={avatarUrl} alt={fullName || email} /> : null}
+                  <AvatarFallback className="text-base font-medium">
+                    {(initials || deriveInitials(fullName, email)).slice(0, 3)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Profile photo upload coming soon.
+                  </p>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label>Full name</Label>
+                  <Label>
+                    Display name <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder="e.g. Harsh Pupneja"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Shown across greetings, activity, comments, and assignments.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Initials</Label>
+                  <Input
+                    value={initials}
+                    maxLength={4}
+                    onChange={(e) => {
+                      setInitialsTouched(true);
+                      setInitials(e.target.value.toUpperCase());
+                    }}
+                    placeholder="Auto"
+                    className="uppercase"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Auto-generated from display name. Editable.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Job title</Label>
+                  <Input
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="e.g. Sales Manager"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Department</Label>
+                  <Input
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. Sales"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Phone number</Label>
+                  <Input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Optional"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -162,10 +222,11 @@ function SettingsPage() {
                   <Input value={userId} readOnly disabled className="font-mono text-xs" />
                 </div>
               </div>
-              <Button onClick={saveProfile} disabled={saving}>
+              <Button onClick={saveProfile} disabled={saving || !fullName.trim()}>
                 {saving ? "Saving…" : "Save changes"}
               </Button>
             </CardContent>
+
           </Card>
         </TabsContent>
 
