@@ -81,8 +81,8 @@ function UsersAdminPage() {
 
   const combined = useMemo<CombinedUser[]>(() => {
     const auth = authUsers.data ?? [];
-    const profileById = new Map<string, (typeof profiles.data extends readonly (infer T)[] | undefined ? T : never)>();
-    (profiles.data ?? []).forEach((p) => profileById.set(p.id, p));
+    const profileById = new Map((profiles.data ?? []).map((p) => [p.id, p] as const));
+
     return auth
       .map((u) => {
         const p = profileById.get(u.id);
