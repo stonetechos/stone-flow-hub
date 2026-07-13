@@ -79,7 +79,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 function EnquiriesPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit, umbrella } = Route.useSearch();
+  const { edit, umbrella, new: newParam, customer: customerParam } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [newOpen, setNewOpen] = useState(false);
