@@ -313,7 +313,10 @@ function UserRowView({
           </button>
         )}
       </td>
+      <td className="px-4 py-3 text-muted-foreground">{user.job_title ?? "—"}</td>
+      <td className="px-4 py-3 text-muted-foreground">{user.department ?? "—"}</td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
+
       <td className="px-4 py-3">
         <Badge variant={user.status === "active" ? "default" : "outline"}>
           {user.status === "active" ? "Active" : "Invited"}
