@@ -72,6 +72,20 @@ export async function sendPasswordReset(email: string): Promise<void> {
   if (error) throw new AppError(error.message);
 }
 
+/**
+ * Admin-only: set a user's human-readable display name in `profiles.full_name`.
+ * Does NOT modify auth identity, email, roles, or user id. Requires the admin
+ * profile UPDATE policy on `public.profiles`.
+ */
+export async function updateDisplayName(userId: string, fullName: string): Promise<void> {
+  const trimmed = fullName.trim();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: trimmed.length ? trimmed : null })
+    .eq("id", userId);
+  if (error) throw new AppError(mapDbError(error));
+}
+
 export async function currentUserIsAdmin(): Promise<boolean> {
   const { data: sess } = await supabase.auth.getUser();
   const uid = sess.user?.id;
