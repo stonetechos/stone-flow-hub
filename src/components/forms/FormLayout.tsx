@@ -206,9 +206,9 @@ export function FormSummaryRow({
 }) {
   const toneClass =
     tone === "positive"
-      ? "text-emerald-600"
+      ? "text-status-success-fg"
       : tone === "warning"
-        ? "text-amber-600"
+        ? "text-status-warning-fg"
         : tone === "muted"
           ? "text-muted-foreground"
           : "text-foreground";

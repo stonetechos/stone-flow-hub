@@ -21,10 +21,10 @@ export interface TimelineItem {
 const TONE = {
   default: "bg-foreground/70",
   muted: "bg-muted-foreground/50",
-  positive: "bg-emerald-500",
-  warning: "bg-amber-500",
-  danger: "bg-destructive",
-  info: "bg-sky-500",
+  positive: "bg-status-success-fg",
+  warning: "bg-status-warning-fg",
+  danger: "bg-status-danger-fg",
+  info: "bg-status-info-fg",
 } as const;
 
 export function Timeline({

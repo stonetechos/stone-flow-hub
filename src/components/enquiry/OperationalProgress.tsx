@@ -36,7 +36,7 @@ export function OperationalProgress({ projectId }: { projectId: string | null })
               return (
                 <li key={key} className="flex items-center gap-2">
                   {done ? (
-                    <Check className="h-4 w-4 text-emerald-600" />
+                    <Check className="h-4 w-4 text-status-success-fg" />
                   ) : (
                     <Circle className="h-4 w-4 text-muted-foreground/40" />
                   )}

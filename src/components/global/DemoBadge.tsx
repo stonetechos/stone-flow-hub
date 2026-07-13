@@ -35,9 +35,9 @@ export function DemoBadge() {
             className={cn(
               "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold uppercase tracking-wide transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isDemo
-                ? "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-200"
-                : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-200",
+            isDemo
+              ? "bg-status-info-bg text-status-info-fg hover:bg-status-info-bg/80 border border-status-info-border"
+              : "bg-status-success-bg text-status-success-fg hover:bg-status-success-bg/80 border border-status-success-border",
             )}
             aria-label={`Current mode: ${isDemo ? "Demo" : "Live"}. Change mode`}
           >
@@ -49,11 +49,11 @@ export function DemoBadge() {
           <DropdownMenuLabel>Workspace Mode</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => void setMode(false)} disabled={!isDemo}>
-            <Radio className="mr-2 h-4 w-4 text-emerald-600" />
+            <Radio className="mr-2 h-4 w-4 text-status-success-fg" />
             Live Mode
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => void setMode(true)} disabled={isDemo}>
-            <FlaskConical className="mr-2 h-4 w-4 text-blue-600" />
+            <FlaskConical className="mr-2 h-4 w-4 text-status-info-fg" />
             Demo Mode
           </DropdownMenuItem>
           {isDemo && (
@@ -91,7 +91,7 @@ export function DemoBanner() {
   const { isDemo } = useDemoMode();
   if (!isDemo) return null;
   return (
-    <div className="border-b border-blue-200 bg-blue-50 px-4 py-1.5 text-center text-xs font-medium text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-100">
+    <div className="border-b border-status-info-border bg-status-info-bg px-4 py-1.5 text-center text-xs font-medium text-status-info-fg">
       You are currently using Stone Tech OS Demo Mode — all changes are isolated from Live data.
     </div>
   );

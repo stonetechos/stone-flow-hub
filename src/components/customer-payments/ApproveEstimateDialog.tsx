@@ -195,7 +195,7 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
             <Plus className="mr-2 h-4 w-4" /> Add milestone
           </Button>
           <div
-            className={`text-sm ${Math.abs(totalPct - 100) < 0.01 ? "text-emerald-600" : "text-destructive"}`}
+            className={`text-sm ${Math.abs(totalPct - 100) < 0.01 ? "text-status-success-fg" : "text-destructive"}`}
           >
             Total: {totalPct.toFixed(2)}%
           </div>

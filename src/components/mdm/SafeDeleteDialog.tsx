@@ -71,9 +71,9 @@ export function SafeDeleteDialog({
   // shield). We hide ConfirmDialog's tone icon and render our own inside the
   // description slot so the title stays clean.
   const leadingIcon = scan.isLoading ? null : canDelete ? (
-    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+    <CheckCircle2 className="h-5 w-5 text-status-success-fg" />
   ) : (
-    <ShieldAlert className="h-5 w-5 text-amber-600" />
+    <ShieldAlert className="h-5 w-5 text-status-warning-fg" />
   );
 
   const description = (

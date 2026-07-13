@@ -6,10 +6,10 @@ import type { NextBestAction, ActionPriority } from "@/lib/intelligence/actions"
 import { cn } from "@/lib/utils";
 
 const TONE: Record<ActionPriority, string> = {
-  urgent: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30",
-  high: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30",
-  medium: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
-  low: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+  urgent: "bg-status-danger-bg text-status-danger-fg border-status-danger-border",
+  high: "bg-status-warning-bg text-status-warning-fg border-status-warning-border",
+  medium: "bg-status-warning-bg text-status-warning-fg border-status-warning-border",
+  low: "bg-status-success-bg text-status-success-fg border-status-success-border",
 };
 
 interface Props {

@@ -26,10 +26,10 @@ import { PaymentRequestDialog } from "./PaymentRequestDialog";
 
 const BUCKET_STYLE: Record<string, string> = {
   overdue: "bg-destructive/10 text-destructive",
-  due_today: "bg-amber-500/10 text-amber-700",
-  due_week: "bg-teal-500/10 text-teal-700",
+  due_today: "bg-status-warning-bg text-status-warning-fg",
+  due_week: "bg-status-info-bg text-status-info-fg",
   upcoming: "bg-muted text-foreground",
-  paid: "bg-emerald-500/10 text-emerald-700",
+  paid: "bg-status-success-bg text-status-success-fg",
   unscheduled: "bg-muted text-muted-foreground",
 };
 
@@ -75,8 +75,8 @@ export function CustomerPaymentCentre(props: {
       <div className="grid gap-3 sm:grid-cols-4">
         <Kpi label="Outstanding" value={outstanding} tone="text-foreground" />
         <Kpi label="Overdue" value={overdue} tone="text-destructive" />
-        <Kpi label="Upcoming (14 d)" value={upcoming} tone="text-teal-700" />
-        <Kpi label="Paid to date" value={paid} tone="text-emerald-600" />
+        <Kpi label="Upcoming (14 d)" value={upcoming} tone="text-status-info-fg" />
+        <Kpi label="Paid to date" value={paid} tone="text-status-success-fg" />
       </div>
 
       <Card className="shadow-1">

@@ -212,7 +212,7 @@ export function TransferOwnershipDialog({
 
         {step === "done" && (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <div className="rounded-full bg-green-500/10 p-3 text-green-600">
+            <div className="rounded-full bg-status-success-bg p-3 text-status-success-fg">
               <Check className="h-6 w-6" />
             </div>
             <div className="text-sm font-medium">Ownership transferred</div>
@@ -439,7 +439,7 @@ function PreviewPanel({
           key={i}
           className={`flex items-start gap-2 rounded-md border p-3 text-xs ${
             w.level === "warning"
-              ? "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-400"
+              ? "border-status-warning-border bg-status-warning-bg text-status-warning-fg"
               : "border-border bg-muted/30 text-muted-foreground"
           }`}
         >

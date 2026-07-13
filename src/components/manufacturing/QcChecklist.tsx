@@ -59,7 +59,7 @@ export function QcChecklist({ stageId }: { stageId: string }) {
           <ClipboardCheck className="h-4 w-4 text-primary" /> Quality Control
           {rows.length > 0 && (
             <span className="ml-2 flex items-center gap-1 text-xs">
-              <Badge variant="default" className="bg-emerald-600">{passed} pass</Badge>
+              <Badge variant="default" className="bg-status-success-fg text-status-success-bg">{passed} pass</Badge>
               {failed > 0 && <Badge variant="destructive">{failed} fail</Badge>}
               <Badge variant="outline">{rows.length} items</Badge>
             </span>
@@ -90,9 +90,9 @@ export function QcChecklist({ stageId }: { stageId: string }) {
                 r.outcome === "fail" || r.outcome === "rejected" ? ShieldAlert :
                 ShieldQuestion;
               const tone =
-                r.outcome === "pass" || r.outcome === "approved" ? "text-emerald-600" :
+                r.outcome === "pass" || r.outcome === "approved" ? "text-status-success-fg" :
                 r.outcome === "fail" || r.outcome === "rejected" ? "text-destructive" :
-                r.outcome === "rework" ? "text-amber-600" : "text-muted-foreground";
+                r.outcome === "rework" ? "text-status-warning-fg" : "text-muted-foreground";
               return (
                 <li key={r.id} className="rounded-md border p-3">
                   <div className="flex items-center justify-between gap-2">
