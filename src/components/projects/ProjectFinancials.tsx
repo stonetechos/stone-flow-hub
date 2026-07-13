@@ -49,7 +49,7 @@ function Kpi({ icon: Icon, label, value, tone }: { icon: React.ComponentType<{ c
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground"><Icon className="h-3 w-3" />{label}</div>
-        <div className={`mt-1 truncate text-lg font-semibold ${tone === "warn" ? "text-amber-600" : ""}`}>{value}</div>
+        <div className={`mt-1 truncate text-lg font-semibold ${tone === "warn" ? "text-status-warning-fg" : ""}`}>{value}</div>
       </CardContent>
     </Card>
   );
