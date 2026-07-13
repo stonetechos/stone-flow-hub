@@ -160,36 +160,17 @@ function Section({ title, subtitle, icon: Icon, plain = false, children }: { tit
 }
 
 function Kpi({ label, value, sub, to, tone, icon: Icon }: { label: string; value: React.ReactNode; sub?: string; to?: string; tone?: "warn" | "ok"; icon?: React.ElementType }) {
-  const toneClass = tone === "warn" ? "text-amber-600 dark:text-amber-400" : tone === "ok" ? "text-emerald-600 dark:text-emerald-400" : "";
-  const body = (
-    <Card className="h-full transition-shadow hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          {Icon && <Icon className="h-3.5 w-3.5" />} {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-semibold tabular-nums ${toneClass}`}>{value}</div>
-        {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
-      </CardContent>
-    </Card>
-  );
-  return to ? <Link to={to as never}>{body}</Link> : body;
+  const signal = tone === "warn" ? "warning" : tone === "ok" ? "success" : undefined;
+  return <KpiTile label={label} value={value} sub={sub} to={to} tone={signal} icon={Icon} />;
 }
 
-function InsightCard({ insight }: { insight: OwnerInsight }) {
-  const style: Record<OwnerInsight["kind"], { icon: React.ElementType; klass: string }> = {
-    risk: { icon: ShieldAlert, klass: "border-red-500/40 bg-red-500/5" },
-    warning: { icon: AlertTriangle, klass: "border-amber-500/40 bg-amber-500/5" },
-    opportunity: { icon: Target, klass: "border-emerald-500/40 bg-emerald-500/5" },
-    action: { icon: PackageX, klass: "border-primary/40 bg-primary/5" },
-  };
-  const s = style[insight.kind];
-  const body = (
-    <Card className={`h-full border ${s.klass} transition-shadow hover:shadow-md`}>
-      <CardHeader className="pb-1"><CardTitle className="flex items-center gap-2 text-sm font-semibold"><s.icon className="h-4 w-4" />{insight.title}</CardTitle></CardHeader>
-      <CardContent className="text-sm text-muted-foreground">{insight.detail}</CardContent>
-    </Card>
+function InsightCardLocal({ insight }: { insight: OwnerInsight }) {
+  return (
+    <InsightCard
+      kind={insight.kind}
+      title={insight.title}
+      detail={insight.detail}
+      to={insight.to}
+    />
   );
-  return insight.to ? <Link to={insight.to as never}>{body}</Link> : body;
 }
