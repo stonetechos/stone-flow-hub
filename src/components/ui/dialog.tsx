@@ -29,21 +29,53 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  /**
+   * When true, children render directly inside the dialog with no auto
+   * scroll wrapper. Reserve for consumers (e.g. CommandDialog) that manage
+   * their own scroll surface end-to-end.
+   */
+  noAutoScroll?: boolean;
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, noAutoScroll = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 flex w-full max-w-lg max-h-[90vh] translate-x-[-50%] translate-y-[-50%] flex-col gap-4 overflow-hidden rounded-lg border border-border-subtle bg-[var(--surface-elevated)] p-6 shadow-e3 duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        // Position + sizing — mobile-first, uses dvh so the virtual keyboard
+        // shrinks the container instead of clipping it. Outer container never
+        // scrolls; the inner wrapper below handles it.
+        "fixed left-[50%] top-[50%] z-50 flex translate-x-[-50%] translate-y-[-50%] flex-col",
+        "w-[calc(100vw-1rem)] max-w-lg sm:w-full",
+        "max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]",
+        "overflow-hidden rounded-lg border border-border-subtle bg-[var(--surface-elevated)] shadow-e3",
+        noAutoScroll ? "" : "p-6",
+        "duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className,
       )}
       {...props}
     >
-      {children}
+      {noAutoScroll ? (
+        children
+      ) : (
+        <div
+          className={cn(
+            // Internal scroll region — used by every standard dialog so
+            // long forms scroll without clipping fields or action rows.
+            "-m-6 flex min-h-0 flex-1 flex-col gap-4 overlay-scroll p-6",
+            // iOS safe-area at the bottom so action rows stay reachable.
+            "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+          )}
+        >
+          {children}
+        </div>
+      )}
       <DialogPrimitive.Close
         aria-label="Close dialog"
         className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground cursor-pointer transition-colors hover:bg-[var(--intent-ghost-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-elevated)] disabled:pointer-events-none"
@@ -58,27 +90,26 @@ DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex shrink-0 flex-col space-y-1.5 text-center sm:text-left", className)}
+    className={cn("flex shrink-0 flex-col space-y-1.5 pr-8 text-center sm:text-left", className)}
     {...props}
   />
 );
 DialogHeader.displayName = "DialogHeader";
 
+/**
+ * DialogBody — passthrough kept for backwards compat. The DialogContent
+ * scroll wrapper handles overflow globally, so this just marks the flexible
+ * middle region.
+ */
 const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "-mx-6 min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]",
-      className,
-    )}
-    {...props}
-  />
+  <div className={cn("min-h-0 flex-1", className)} {...props} />
 );
 DialogBody.displayName = "DialogBody";
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
+      "mt-auto flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
       className,
     )}
     {...props}
