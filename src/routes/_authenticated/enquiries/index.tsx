@@ -116,6 +116,19 @@ function EnquiriesPage() {
     }
   }, [edit, query.data, nav]);
 
+  // Auto-open create dialog when arriving via `?new=1` (guided workflow or
+  // customer hub deep link). The customer prefill happens inside the dialog.
+  useEffect(() => {
+    if (newParam) {
+      setNewOpen(true);
+      nav({
+        to: "/enquiries",
+        search: (s: Record<string, unknown>) => ({ ...s, new: undefined }),
+        replace: true,
+      });
+    }
+  }, [newParam, nav]);
+
   const delMut = useMutation({
     mutationFn: (id: string) => deleteEnquiry(id),
     onSuccess: () => {
