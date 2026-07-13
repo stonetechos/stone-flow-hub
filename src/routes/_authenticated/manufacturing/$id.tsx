@@ -149,7 +149,15 @@ function ProductionOrderDetail() {
           </Select>
         }
       />
-      <GuidedNextStep entity="production_order" entityId={id} />
+      <GuidedNextStep
+        entity="production_order"
+        entityId={id}
+        ctx={{
+          sales_order_id: po.sales_orders?.id,
+          project_id: po.projects?.id,
+          customer_id: po.customers?.id,
+        }}
+      />
 
 
 
