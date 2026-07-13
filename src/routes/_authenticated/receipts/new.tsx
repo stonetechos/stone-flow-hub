@@ -67,6 +67,23 @@ function NewReceiptPage() {
     enabled: !!customerId,
   });
 
+  // Preselect the invoice + amount when we arrived from an invoice detail
+  // page via `?invoice=…`. Fires once, when the invoice list resolves.
+  useEffect(() => {
+    if (!preset.invoice || !invoicesQuery.data) return;
+    if (allocations.some((a) => a.invoice_id === preset.invoice)) return;
+    const inv = invoicesQuery.data.find((i) => i.id === preset.invoice);
+    if (!inv) return;
+    const balance = Number(inv.balance_due) || 0;
+    setAllocations((prev) => [
+      ...prev,
+      { invoice_id: inv.id, amount: balance, invoice_no: inv.invoice_no, balance_due: balance },
+    ]);
+    if (amount === 0) setAmount(balance);
+    // Only run once per (customer, invoice) preset combo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoicesQuery.data, preset.invoice]);
+
   const net = Math.max(0, amount - tds - charges);
   const alloc = useMemo(() => allocations.reduce((s, a) => s + Number(a.amount || 0), 0), [allocations]);
   const unallocated = net - alloc;
