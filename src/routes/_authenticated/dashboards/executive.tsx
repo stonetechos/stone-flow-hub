@@ -87,21 +87,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Kpi({ icon: Icon, label, value, to, sub, tone }: { icon: React.ElementType; label: string; value: React.ReactNode; to?: string; sub?: string; tone?: "warn" | "ok" }) {
-  const toneClass = tone === "warn" ? "text-amber-600 dark:text-amber-400" : tone === "ok" ? "text-emerald-600 dark:text-emerald-400" : "";
-  const body = (
-    <Card className="h-full transition-shadow hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Icon className="h-3.5 w-3.5" /> {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-semibold ${toneClass}`}>{value}</div>
-        {sub && <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">{sub}</div>}
-      </CardContent>
-    </Card>
+  const signal = tone === "warn" ? "warning" : tone === "ok" ? "success" : undefined;
+  return (
+    <KpiTile
+      icon={Icon}
+      label={label}
+      value={value}
+      sub={sub}
+      to={to}
+      tone={signal}
+    />
   );
-  return to ? <Link to={to as never}>{body}</Link> : <div>{body}</div>;
 }
 
 function LinkCard({ icon: Icon, title, desc, to }: { icon: React.ElementType; title: string; desc: string; to: string }) {
