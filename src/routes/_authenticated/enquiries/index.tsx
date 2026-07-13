@@ -65,11 +65,13 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
   component: EnquiriesPage,
   validateSearch: (
     s: Record<string, unknown>,
-  ): { edit?: string; umbrella?: LeadUmbrellaId } => {
-    const out: { edit?: string; umbrella?: LeadUmbrellaId } = {};
+  ): { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } => {
+    const out: { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } = {};
     if (typeof s.edit === "string") out.edit = s.edit;
     if (typeof s.umbrella === "string" && (UMBRELLA_IDS as readonly string[]).includes(s.umbrella))
       out.umbrella = s.umbrella as LeadUmbrellaId;
+    if (typeof s.new === "string") out.new = s.new;
+    if (typeof s.customer === "string") out.customer = s.customer;
     return out;
   },
 });
@@ -77,7 +79,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 function EnquiriesPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit, umbrella } = Route.useSearch();
+  const { edit, umbrella, new: newParam, customer: customerParam } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [newOpen, setNewOpen] = useState(false);
@@ -113,6 +115,19 @@ function EnquiriesPage() {
       nav({ to: "/enquiries", search: (s: Record<string, unknown>) => ({ ...s, edit: undefined }), replace: true });
     }
   }, [edit, query.data, nav]);
+
+  // Auto-open create dialog when arriving via `?new=1` (guided workflow or
+  // customer hub deep link). The customer prefill happens inside the dialog.
+  useEffect(() => {
+    if (newParam) {
+      setNewOpen(true);
+      nav({
+        to: "/enquiries",
+        search: (s: Record<string, unknown>) => ({ ...s, new: undefined }),
+        replace: true,
+      });
+    }
+  }, [newParam, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteEnquiry(id),
@@ -322,7 +337,7 @@ function EnquiriesPage() {
         </DataTableShell>
       )}
 
-      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} />
+      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} presetCustomerId={customerParam ?? null} />
       <EditEnquiryDialog
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
@@ -372,21 +387,30 @@ function emptyNew(): EnquiryCreateInput {
 function NewEnquiryDialog({
   open,
   onOpenChange,
+  presetCustomerId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
 
   useEffect(() => {
-    if (open) setForm(emptyNew());
-  }, [open]);
+    if (open) setForm({ ...emptyNew(), customer_id: presetCustomerId ?? null });
+  }, [open, presetCustomerId]);
 
   const mutation = useMutation({
     mutationFn: (input: EnquiryCreateInput) => createEnquiry(input),
     onSuccess: (row) => {
-      toast.success(`Enquiry ${row.enquiry_no} created`);
+      toast.success(`Enquiry ${row.enquiry_no} created`, {
+        description: "Open the enquiry to qualify it, or jump straight into project creation.",
+        action: {
+          label: "Open enquiry",
+          onClick: () => nav({ to: "/enquiries/$enquiryId", params: { enquiryId: row.id } }),
+        },
+      });
       invalidateEnquiry(qc, row.id);
       // createEnquiry auto-creates a customer when the phone is new — refresh every picker.
       invalidateCustomer(qc, row.customer_id ?? undefined);

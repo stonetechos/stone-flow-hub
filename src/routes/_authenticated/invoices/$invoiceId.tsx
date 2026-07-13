@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -72,6 +73,7 @@ function InvoiceDetailPage() {
   const { invoiceId } = Route.useParams();
   const qc = useQueryClient();
   const nav = useNavigate();
+  useDetailHotkeys({ onBack: () => nav({ to: "/invoices" }) });
   const [payOpen, setPayOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
 

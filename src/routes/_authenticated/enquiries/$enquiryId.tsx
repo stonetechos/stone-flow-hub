@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -77,16 +78,35 @@ import { LeadScoreBadge } from "@/components/enquiry/LeadScoreBadge";
 export const Route = createFileRoute("/_authenticated/enquiries/$enquiryId")({
   ssr: false,
   component: EnquiryDetailPage,
+  validateSearch: (s: Record<string, unknown>): { rfq?: string } =>
+    typeof s.rfq === "string" ? { rfq: s.rfq } : {},
 });
 
 function EnquiryDetailPage() {
   const { enquiryId } = Route.useParams();
   const qc = useQueryClient();
+  const nav = useNavigate();
+  useDetailHotkeys({ onBack: () => nav({ to: "/enquiries" }) });
+  const { rfq: rfqParam } = Route.useSearch();
   const [rfqOpen, setRfqOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;
+
+  // Deep-linked "Send RFQ" (e.g. SO detail → RFQ shortcut). Fire once,
+  // strip the URL flag so refreshing doesn't reopen.
+  useEffect(() => {
+    if (rfqParam) {
+      setRfqOpen(true);
+      nav({
+        to: "/enquiries/$enquiryId",
+        params: { enquiryId },
+        search: {},
+        replace: true,
+      });
+    }
+  }, [rfqParam, nav, enquiryId]);
 
   const query = useQuery({
     queryKey: qk.enquiries.byId(enquiryId),

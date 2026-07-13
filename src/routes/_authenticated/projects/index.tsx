@@ -42,14 +42,22 @@ import { LEAD_STAGE_LABEL } from "@/lib/constants";
 export const Route = createFileRoute("/_authenticated/projects/")({
   ssr: false,
   component: ProjectsPage,
-  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
-    typeof s.edit === "string" ? { edit: s.edit } : {},
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { edit?: string; new?: string; customer?: string; enquiry?: string } => {
+    const out: { edit?: string; new?: string; customer?: string; enquiry?: string } = {};
+    if (typeof s.edit === "string") out.edit = s.edit;
+    if (typeof s.new === "string") out.new = s.new;
+    if (typeof s.customer === "string") out.customer = s.customer;
+    if (typeof s.enquiry === "string") out.enquiry = s.enquiry;
+    return out;
+  },
 });
 
 function ProjectsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit } = Route.useSearch();
+  const { edit, new: newParam, customer: customerParam } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
@@ -83,6 +91,20 @@ function ProjectsPage() {
       nav({ to: "/projects", search: {}, replace: true });
     }
   }, [edit, query.data, nav]);
+
+  // Auto-open create dialog on `?new=1`; strip the trigger after opening so
+  // the URL stays clean and the browser back button behaves.
+  useEffect(() => {
+    if (newParam) {
+      setEditing(null);
+      setFormOpen(true);
+      nav({
+        to: "/projects",
+        search: (s: Record<string, unknown>) => ({ ...s, new: undefined }),
+        replace: true,
+      });
+    }
+  }, [newParam, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteProject(id),
@@ -201,7 +223,12 @@ function ProjectsPage() {
         </DataTableShell>
       )}
 
-      <ProjectFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <ProjectFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        editing={editing}
+        presetCustomerId={customerParam ?? null}
+      />
       <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
@@ -251,24 +278,43 @@ function ProjectFormDialog({
   open,
   onOpenChange,
   editing,
+  presetCustomerId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   editing: ProjectWithCustomer | null;
+  presetCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [form, setForm] = useState<ProjectCreateInput>(emptyForm);
 
   useEffect(() => {
-    if (open) setForm(editing ? fromRow(editing) : emptyForm());
-  }, [open, editing]);
+    if (!open) return;
+    if (editing) setForm(fromRow(editing));
+    else setForm({ ...emptyForm(), customer_id: presetCustomerId ?? "" });
+  }, [open, editing, presetCustomerId]);
 
   const mutation = useMutation({
     mutationFn: (input: ProjectCreateInput) =>
       editing ? updateProject(editing.id, input) : createProject(input),
     onSuccess: (row) => {
-      toast.success(editing ? "Project updated" : `Project ${row.project_code} created`);
-      if (!editing) seedPickerCache(qc, "project", row);
+      if (editing) {
+        toast.success("Project updated");
+      } else {
+        toast.success(`Project ${row.project_code} created`, {
+          description: "Ready to draft a quotation for this project?",
+          action: {
+            label: "Draft quote",
+            onClick: () =>
+              nav({
+                to: "/quotes/new",
+                search: { project: row.id, customer: row.customer_id ?? undefined },
+              }),
+          },
+        });
+        seedPickerCache(qc, "project", row);
+      }
       invalidateProject(qc, row.id);
       onOpenChange(false);
     },
