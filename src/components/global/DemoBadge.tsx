@@ -91,7 +91,7 @@ export function DemoBanner() {
   const { isDemo } = useDemoMode();
   if (!isDemo) return null;
   return (
-    <div className="border-b border-blue-200 bg-blue-50 px-4 py-1.5 text-center text-xs font-medium text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-100">
+    <div className="border-b border-status-info-border bg-status-info-bg px-4 py-1.5 text-center text-xs font-medium text-status-info-fg">
       You are currently using Stone Tech OS Demo Mode — all changes are isolated from Live data.
     </div>
   );
