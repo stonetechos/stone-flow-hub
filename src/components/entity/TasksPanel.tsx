@@ -39,7 +39,7 @@ interface Props {
 const priorityTone: Record<TaskPriority, string> = {
   low: "bg-muted text-muted-foreground",
   medium: "bg-secondary text-secondary-foreground",
-  high: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100",
+  high: "bg-status-warning-bg text-status-warning-fg",
   urgent: "bg-destructive/15 text-destructive",
 };
 
