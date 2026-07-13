@@ -169,7 +169,7 @@ export function ReassignCustomerDialog({
 
         {step === "review" && (
           <div className="space-y-3 py-2">
-            <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-400">
+            <div className="rounded-md border border-status-warning-border bg-status-warning-bg p-3 text-xs text-status-warning-fg">
               <div className="flex items-center gap-2 font-medium">
                 <AlertTriangle className="h-3.5 w-3.5" /> Review the changes
               </div>
