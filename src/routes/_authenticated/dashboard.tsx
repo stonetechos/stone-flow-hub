@@ -49,6 +49,7 @@ import { listRecentActivity } from "@/lib/activity/api";
 import { listTasks, updateTaskStatus, type TaskRow } from "@/lib/tasks/api";
 import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
