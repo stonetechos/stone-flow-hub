@@ -36,10 +36,32 @@ export function resolveDisplayName(input: {
   return fallbackName(input.email);
 }
 
+/**
+ * Auto-derive initials from a display name. Uses first + last word initials
+ * (max 3 chars). Falls back to email local-part. Editable by admin/user.
+ */
+export function deriveInitials(name?: string | null, email?: string | null): string {
+  const base = (name ?? "").trim();
+  if (base) {
+    const parts = base.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+    const first = parts[0]![0] ?? "";
+    const last = parts[parts.length - 1]![0] ?? "";
+    return (first + last).toUpperCase();
+  }
+  const local = (email ?? "").split("@")[0] ?? "";
+  return local.slice(0, 2).toUpperCase() || "U";
+}
+
 export interface UserRow {
   id: string;
   email: string | null;
   full_name: string | null;
+  initials: string | null;
+  job_title: string | null;
+  department: string | null;
+  phone: string | null;
+  avatar_url: string | null;
   created_at: string;
   roles: AppRole[];
 }
@@ -47,7 +69,7 @@ export interface UserRow {
 export async function listAppUsers(): Promise<UserRow[]> {
   const { data: profiles, error: pErr } = await supabase
     .from("profiles")
-    .select("id, email, full_name, created_at")
+    .select("id, email, full_name, initials, job_title, department, phone, avatar_url, created_at")
     .order("created_at", { ascending: true });
   if (pErr) throw new AppError(mapDbError(pErr));
 
@@ -67,6 +89,11 @@ export async function listAppUsers(): Promise<UserRow[]> {
     id: p.id,
     email: p.email,
     full_name: p.full_name,
+    initials: p.initials,
+    job_title: p.job_title,
+    department: p.department,
+    phone: p.phone,
+    avatar_url: p.avatar_url,
     created_at: p.created_at,
     roles: rolesByUser.get(p.id) ?? [],
   }));
@@ -111,6 +138,48 @@ export async function updateDisplayName(userId: string, fullName: string): Promi
   if (error) throw new AppError(mapDbError(error));
 }
 
+export interface ProfileFieldsPatch {
+  full_name?: string | null;
+  initials?: string | null;
+  job_title?: string | null;
+  department?: string | null;
+  phone?: string | null;
+  avatar_url?: string | null;
+}
+
+/**
+ * Update any subset of the enterprise profile fields. Only the caller (via RLS
+ * self-update policy) or an admin (via admin-update policy) can invoke this.
+ * Does not touch auth identity, email, roles, or user id.
+ */
+export async function updateProfileFields(
+  userId: string,
+  patch: ProfileFieldsPatch,
+): Promise<void> {
+  const clean: ProfileFieldsPatch = {};
+  const keys: (keyof ProfileFieldsPatch)[] = [
+    "full_name",
+    "initials",
+    "job_title",
+    "department",
+    "phone",
+    "avatar_url",
+  ];
+  for (const k of keys) {
+    if (!(k in patch)) continue;
+    const v = patch[k];
+    if (typeof v === "string") {
+      const t = v.trim();
+      clean[k] = t.length ? t : null;
+    } else {
+      clean[k] = v ?? null;
+    }
+  }
+  if (Object.keys(clean).length === 0) return;
+  const { error } = await supabase.from("profiles").update(clean).eq("id", userId);
+  if (error) throw new AppError(mapDbError(error));
+}
+
 export async function currentUserIsAdmin(): Promise<boolean> {
   const { data: sess } = await supabase.auth.getUser();
   const uid = sess.user?.id;
@@ -123,3 +192,4 @@ export async function currentUserIsAdmin(): Promise<boolean> {
     .maybeSingle();
   return !!data;
 }
+
