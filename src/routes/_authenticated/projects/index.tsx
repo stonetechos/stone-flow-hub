@@ -298,8 +298,22 @@ function ProjectFormDialog({
     mutationFn: (input: ProjectCreateInput) =>
       editing ? updateProject(editing.id, input) : createProject(input),
     onSuccess: (row) => {
-      toast.success(editing ? "Project updated" : `Project ${row.project_code} created`);
-      if (!editing) seedPickerCache(qc, "project", row);
+      if (editing) {
+        toast.success("Project updated");
+      } else {
+        toast.success(`Project ${row.project_code} created`, {
+          description: "Ready to draft a quotation for this project?",
+          action: {
+            label: "Draft quote",
+            onClick: () =>
+              nav({
+                to: "/quotes/new",
+                search: { project: row.id, customer: row.customer_id ?? undefined },
+              }),
+          },
+        });
+        seedPickerCache(qc, "project", row);
+      }
       invalidateProject(qc, row.id);
       onOpenChange(false);
     },
