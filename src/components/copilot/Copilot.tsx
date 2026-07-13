@@ -138,7 +138,9 @@ export function Copilot() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            Context-aware assistant. Suggestions and drafts are editable — you stay in control.
+            How-to guidance for the current page. The assistant does not read your database — for
+            real customer, project, invoice or vendor data, open the relevant page or the Business
+            Priorities card on the dashboard.
           </p>
         </SheetHeader>
 
