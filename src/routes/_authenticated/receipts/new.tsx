@@ -29,8 +29,14 @@ import { RECEIPT_METHODS, RECEIPT_METHOD_LABELS } from "@/lib/receipts/schema";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 
+const search = z.object({
+  customer: z.string().uuid().optional(),
+  invoice: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/receipts/new")({
   ssr: false,
+  validateSearch: (s) => search.parse(s),
   component: NewReceiptPage,
 });
 
@@ -39,8 +45,9 @@ type AllocRow = { invoice_id: string; amount: number; invoice_no: string; balanc
 function NewReceiptPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
+  const preset = Route.useSearch();
 
-  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(preset.customer ?? null);
   const [receivedAt, setReceivedAt] = useState<string>(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<number>(0);
   const [method, setMethod] = useState<(typeof RECEIPT_METHODS)[number]>("bank_transfer");
