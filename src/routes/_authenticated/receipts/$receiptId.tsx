@@ -70,7 +70,7 @@ function ReceiptDetailPage() {
         }
       />
 
-      <GuidedNextStep entity="receipt" entityId={receiptId} />
+      <GuidedNextStep entity="receipt" entityId={receiptId} ctx={{ customer_id: r.customer_id }} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
