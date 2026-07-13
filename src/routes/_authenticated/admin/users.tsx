@@ -120,6 +120,27 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const rename = useMutation({
+    mutationFn: ({ userId, fullName }: { userId: string; fullName: string }) =>
+      updateDisplayName(userId, fullName),
+    onSuccess: () => {
+      toast.success("Display name updated");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return combined;
+    return combined.filter(
+      (u) =>
+        (u.full_name ?? "").toLowerCase().includes(q) ||
+        (u.email ?? "").toLowerCase().includes(q),
+    );
+  }, [combined, search]);
+
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
   const busy = assign.isPending || revoke.isPending;
@@ -128,8 +149,19 @@ function UsersAdminPage() {
     <div>
       <PageHeader
         title="Users & Roles"
-        subtitle="Grant or revoke application roles. Changes apply on the user's next refresh."
+        subtitle="Manage display names and application roles. Email remains the login identity."
       />
+      <div className="mb-3 flex items-center gap-2">
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by display name or email…"
+            className="pl-8"
+          />
+        </div>
+      </div>
       <Card className="shadow-1">
         <CardContent className="p-0">
           {isLoading ? (
@@ -138,14 +170,16 @@ function UsersAdminPage() {
             </div>
           ) : error ? (
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
-          ) : combined.length === 0 ? (
-            <div className="p-6 text-sm text-muted-foreground">No users yet.</div>
+          ) : filtered.length === 0 ? (
+            <div className="p-6 text-sm text-muted-foreground">
+              {combined.length === 0 ? "No users yet." : "No users match your search."}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Display Name</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Roles</th>
@@ -155,14 +189,16 @@ function UsersAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {combined.map((u) => (
+                  {filtered.map((u) => (
                     <UserRowView
                       key={u.id}
                       user={u}
                       onAssign={(role) => assign.mutate({ userId: u.id, role })}
                       onRevoke={(role) => revoke.mutate({ userId: u.id, role })}
                       onReset={() => u.email && reset.mutate(u.email)}
+                      onRename={(fullName) => rename.mutate({ userId: u.id, fullName })}
                       busy={busy}
+                      renaming={rename.isPending}
                     />
                   ))}
                 </tbody>
@@ -172,11 +208,8 @@ function UsersAdminPage() {
         </CardContent>
       </Card>
       <p className="mt-3 text-xs text-muted-foreground">
-        Need to invite a new user?{" "}
-        <Link to="/settings" className="text-primary hover:underline">
-          Go to Settings
-        </Link>{" "}
-        — new accounts are provisioned via Lovable Cloud.
+        Display name is shown throughout the app (greetings, activity log, comments, assignments).
+        Editing it never changes the user's login email, ID, or permissions.
       </p>
     </div>
   );
