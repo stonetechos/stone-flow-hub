@@ -4,69 +4,61 @@
  *
  * Each probe uses a HEAD count query (no rows transferred) and is cached for
  * 60 s via TanStack Query so navigating between siblings doesn't refetch.
- * Suppression is best-effort — if a probe errors we treat it as "unknown"
- * and let the banner render.
+ * Suppression is best-effort — for hops where the schema has no direct FK
+ * we return `false` so the banner keeps showing (safer than false-hiding).
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { GuidedEntity } from "@/lib/guided-workflow/steps";
 
-async function countByEq(
-  table:
-    | "enquiries"
-    | "projects"
-    | "quotes"
-    | "sales_orders"
-    | "purchase_orders"
-    | "production_orders"
-    | "dispatches"
-    | "installations"
-    | "invoices"
-    | "payments"
-    | "followups",
+async function hasAny(
+  table: string,
   column: string,
   value: string,
-): Promise<number> {
-  const q = supabase
-    .from(table as never)
+): Promise<boolean> {
+  const { count, error } = await supabase
+    // Table name is a build-time literal picked from a fixed allow-list below.
+    // Untyped call is intentional to keep this helper generic.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .from(table as any)
     .select("id", { count: "exact", head: true })
-    .eq(column as never, value as never);
-  const { count, error } = await q;
+    .eq(column, value);
   if (error) throw error;
-  return count ?? 0;
+  return (count ?? 0) > 0;
 }
 
-/** Runs the appropriate downstream count query for the given entity. */
+/**
+ * Returns true iff the recommended child artefact for `entity` already
+ * exists. Only hops with a direct FK are probed; the rest return `false`
+ * so the banner remains visible.
+ */
 export async function probeDownstream(
   entity: GuidedEntity,
   entityId: string,
 ): Promise<boolean> {
   switch (entity) {
     case "customer":
-      return (await countByEq("enquiries", "customer_id", entityId)) > 0;
-    case "enquiry":
-      return (await countByEq("projects", "enquiry_id", entityId)) > 0;
+      return hasAny("enquiries", "customer_id", entityId);
+    case "enquiry": {
+      // Projects don't carry enquiry_id; the enquiry itself is stamped with
+      // project_id when converted.
+      const { data, error } = await supabase
+        .from("enquiries")
+        .select("project_id")
+        .eq("id", entityId)
+        .maybeSingle();
+      if (error) throw error;
+      return !!data?.project_id;
+    }
     case "project":
-      return (await countByEq("quotes", "project_id", entityId)) > 0;
+      return hasAny("quotes", "project_id", entityId);
     case "quote":
-      return (await countByEq("sales_orders", "quote_id", entityId)) > 0;
-    case "sales_order":
-      return (await countByEq("purchase_orders", "sales_order_id", entityId)) > 0;
-    case "purchase_order":
-      // Production is typically linked to the sales order, not the PO. If the
-      // PO row has a sales_order_id we can still probe by that; otherwise we
-      // conservatively return false.
-      return false;
-    case "production_order":
-      return (await countByEq("dispatches", "production_order_id", entityId)) > 0;
-    case "dispatch":
-      return (await countByEq("installations", "dispatch_id", entityId)) > 0;
-    case "installation":
-      return (await countByEq("invoices", "installation_id", entityId)) > 0;
+      return hasAny("sales_orders", "quote_id", entityId);
     case "invoice":
-      return (await countByEq("payments", "invoice_id", entityId)) > 0;
-    case "receipt":
-      return (await countByEq("followups", "customer_id", entityId)) > 0;
+      return hasAny("payments", "invoice_id", entityId);
     default:
+      // sales_order / purchase_order / production_order / dispatch /
+      // installation / receipt — no direct FK to probe cheaply. Keep the
+      // banner visible; the user can dismiss with "Skip for now".
       return false;
   }
 }
