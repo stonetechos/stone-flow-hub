@@ -954,4 +954,35 @@
   }
 }
 
+/* ============================================================
+ *  Overlay Scroll Strategy — global, reusable
+ *  Applied to every dialog / sheet / drawer / alert-dialog.
+ *  - Momentum scroll on iOS
+ *  - Prevents overscroll-chaining to the body
+ *  - Respects iOS safe-area (home indicator, notch)
+ *  - Uses dvh so the virtual keyboard doesn't clip content
+ * ============================================================ */
+@utility overlay-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+@utility safe-pb {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+@utility safe-pt {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+
+/* When any Radix overlay is open, Radix already locks body scroll.
+ * We additionally suppress overscroll so mobile Safari can't rubber-band
+ * the underlying page through the scrim. */
+body[data-scroll-locked] {
+  overscroll-behavior: none;
+}
+
+
 
