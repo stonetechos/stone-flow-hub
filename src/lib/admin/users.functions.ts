@@ -30,16 +30,51 @@ export interface AdminUserRow {
 
 const INVITE_EXPIRY_DAYS = 7;
 
-async function requireAdmin(ctx: {
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
-  userId: string;
-}): Promise<void> {
-  const { data, error } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
-    _role: "admin",
-  });
+async function requireAdmin(ctx: { supabase: unknown; userId: string }): Promise<void> {
+  const sb = ctx.supabase as {
+    rpc: (
+      fn: "has_role",
+      args: { _user_id: string; _role: "admin" },
+    ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
+  };
+  const { data, error } = await sb.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden");
+}
+
+async function countActiveAdminsExcluding(
+  supabaseAdmin: {
+    from: (t: string) => {
+      select: (c: string) => {
+        eq: (col: string, val: string) => Promise<{ data: { user_id: string }[] | null; error: { message: string } | null }>;
+      };
+    };
+  },
+  excludeUserId?: string,
+): Promise<number> {
+  const { data: admins, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("user_id")
+    .eq("role", "admin");
+  if (error) throw new Error(error.message);
+  const ids = (admins ?? [])
+    .map((r) => r.user_id)
+    .filter((id) => id !== excludeUserId);
+  if (ids.length === 0) return 0;
+  const { data: profiles, error: pErr } = await (
+    supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          in: (col: string, vals: string[]) => Promise<{ data: { id: string; is_active: boolean }[] | null; error: { message: string } | null }>;
+        };
+      };
+    }
+  )
+    .from("profiles")
+    .select("id, is_active")
+    .in("id", ids);
+  if (pErr) throw new Error(pErr.message);
+  return (profiles ?? []).filter((p) => p.is_active !== false).length;
 }
 
 function deriveStatus(u: {
