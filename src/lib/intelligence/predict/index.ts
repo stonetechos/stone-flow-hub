@@ -12,3 +12,5 @@ export * from "./score";
 export * from "./baselines";
 export { THRESHOLDS } from "./thresholds";
 export type { PredictThresholds } from "./thresholds";
+export * from "./sales";
+export { getSalesPredictions, type SalesPredictionBundle } from "./sales-adapter";
