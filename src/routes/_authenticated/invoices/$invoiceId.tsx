@@ -245,7 +245,11 @@ function InvoiceDetailPage() {
         }
       />
 
-      <GuidedNextStep entity="invoice" entityId={invoiceId} />
+      <GuidedNextStep
+        entity="invoice"
+        entityId={invoiceId}
+        ctx={{ invoice_id: invoiceId, customer_id: invoice.customer_id }}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
