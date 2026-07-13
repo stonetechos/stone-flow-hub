@@ -214,15 +214,11 @@ export const deleteAuthUser = createServerFn({ method: "POST" })
       .maybeSingle();
     if (rErr) throw new Error(rErr.message);
     if (targetIsAdmin) {
-      const { data: admins, error: aErr } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id, profiles!inner(is_active)")
-        .eq("role", "admin");
-      if (aErr) throw new Error(aErr.message);
-      const activeAdmins = (admins ?? []).filter(
-        (r: { profiles: { is_active: boolean } | null }) => r.profiles?.is_active !== false,
+      const remaining = await countActiveAdminsExcluding(
+        supabaseAdmin as never,
+        data.user_id,
       );
-      if (activeAdmins.length <= 1) {
+      if (remaining < 1) {
         throw new Error("Cannot delete the last active admin.");
       }
     }
