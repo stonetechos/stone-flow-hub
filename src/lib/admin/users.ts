@@ -11,6 +11,31 @@ export const APP_ROLES: readonly AppRole[] = [
   "purchase",
 ] as const;
 
+/**
+ * Fallback shown when a profile has no `full_name` set yet. Derives a display
+ * label from the email local-part (before `@`). Once an admin assigns a real
+ * `full_name`, callers should prefer that value.
+ */
+export function fallbackName(email: string | null | undefined): string {
+  if (!email) return "User";
+  const local = email.split("@")[0] ?? "";
+  return local || "User";
+}
+
+/**
+ * Canonical resolver used everywhere the UI needs to render a person's name.
+ * Prefers profiles.full_name; falls back to the email local-part until an
+ * admin sets a display name from the Users & Roles page.
+ */
+export function resolveDisplayName(input: {
+  full_name?: string | null;
+  email?: string | null;
+}): string {
+  const name = input.full_name?.trim();
+  if (name) return name;
+  return fallbackName(input.email);
+}
+
 export interface UserRow {
   id: string;
   email: string | null;
