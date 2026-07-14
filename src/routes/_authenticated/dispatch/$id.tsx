@@ -53,13 +53,7 @@ function DispatchDetailPage() {
                 <Button size="sm" onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => nav({ to: "/dispatch/$id/print", params: { id } })}
-                >
-                  <Printer className="mr-2 h-4 w-4" /> Print
-                </Button>
+                <DocumentToolbar entity="delivery_challan" entityId={id} />
               </>
             }
             overflow={[
