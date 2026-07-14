@@ -348,17 +348,32 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(i.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(i.subtotal) },
-        { label: "Tax", value: inr(i.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(i.tax_amount) }]),
         { label: "Total", value: inr(i.total) },
         ...(Number(i.amount_paid) > 0 ? [{ label: "Amount paid", value: inr(i.amount_paid) }] : []),
         { label: "Balance due", value: inr(i.balance_due) },
+      ];
+      const invAny = i as unknown as {
+        place_of_supply?: string | null;
+        reverse_charge?: boolean | null;
+      };
+      const invMeta: PdfMeta[] = [
+        { label: "Project", value: i.project?.name ?? "—" },
+        { label: "Due date", value: i.due_date ?? "—" },
+        { label: "Status", value: i.status },
+        ...(invAny.place_of_supply
+          ? [{ label: "Place of supply", value: invAny.place_of_supply }]
+          : []),
+        { label: "Reverse charge", value: invAny.reverse_charge ? "Yes" : "No" },
       ];
       return {
         doc: {
@@ -367,11 +382,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           number: i.invoice_no,
           date: i.issue_date ?? i.created_at?.slice(0, 10) ?? "",
           to: customerParty(cust),
-          meta: [
-            { label: "Project", value: i.project?.name ?? "—" },
-            { label: "Due date", value: i.due_date ?? "—" },
-            { label: "Status", value: i.status },
-          ],
+          meta: invMeta,
           lines,
           totals,
           notes: i.notes ?? undefined,
