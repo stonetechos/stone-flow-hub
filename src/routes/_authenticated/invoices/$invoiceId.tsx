@@ -11,7 +11,7 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Printer,
+  
   Share2,
   FolderOpen,
   History,
