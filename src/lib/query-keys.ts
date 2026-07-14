@@ -3,6 +3,11 @@ export const qk = {
   me: ["me"] as const,
   dashboard: ["dashboard"] as const,
 
+  insights: {
+    all: ["insights"] as const,
+    provider: (id: string) => ["insights", "provider", id] as const,
+  },
+
   customers: {
     all: ["customers"] as const,
     list: (q?: string) => ["customers", "list", q ?? ""] as const,
