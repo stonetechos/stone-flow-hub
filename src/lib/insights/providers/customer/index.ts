@@ -6,9 +6,15 @@
  * `providers/operations/index.ts` exactly: no provider references
  * another, and this file is the only place that knows all four exist.
  *
- * Deliberately NOT auto-run on import — nothing in the app calls
- * `registerCustomerInsightProviders()` yet (Phase G.5 explicitly excludes
- * dashboard wiring). A later phase decides where/when to invoke this.
+ * `registerCustomerInsightProviders()` is called from
+ * `useExecutiveInsights()`, which is what actually reaches Copilot,
+ * DangerNotifications, and the Executive Brief.
+ *
+ * `CustomerDataQualityProvider` (./customerDataQuality.ts) is
+ * deliberately excluded from `CUSTOMER_INSIGHT_PROVIDERS` below — it's a
+ * future-ready Data Quality report (Phase G.8 Part 1), not an Executive
+ * Intelligence source, and must not be added to that array or registered
+ * until a dedicated Data Quality surface actually wants it.
  */
 import { registerInsightProvider } from "@/lib/insights/registry";
 import { CustomerHealthProvider } from "./customerHealth";
@@ -20,6 +26,8 @@ export { CustomerHealthProvider } from "./customerHealth";
 export { CustomerLifetimeValueProvider } from "./customerLifetimeValue";
 export { CustomerHygieneProvider } from "./customerHygiene";
 export { RepeatBusinessProvider } from "./repeatBusiness";
+// Not part of CUSTOMER_INSIGHT_PROVIDERS — see header comment.
+export { CustomerDataQualityProvider } from "./customerDataQuality";
 
 const CUSTOMER_INSIGHT_PROVIDERS = [
   CustomerHealthProvider,
