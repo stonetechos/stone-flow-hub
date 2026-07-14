@@ -191,7 +191,7 @@ export function Copilot() {
             />
           </button>
           {insightsOpen && (
-            <div className="max-h-56 overflow-y-auto px-4 pb-4">
+            <div className="max-h-[28dvh] overflow-y-auto px-4 pb-4">
               {topInsights.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
               ) : (
