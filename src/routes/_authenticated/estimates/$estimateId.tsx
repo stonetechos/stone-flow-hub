@@ -7,8 +7,6 @@ import {
   Trash2,
   ArrowRightCircle,
   MessageCircle,
-  Mail,
-  FileText,
   History,
   CheckCircle2,
 } from "lucide-react";
