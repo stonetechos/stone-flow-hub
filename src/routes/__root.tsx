@@ -15,6 +15,7 @@ import { installToastDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
+import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
 
 function NotFoundComponent() {
   return (
@@ -162,6 +163,7 @@ function RootComponent() {
       <StoneGrainFilter />
       <Outlet />
       <Toaster richColors position="top-right" />
+      {import.meta.env.DEV ? <ViewportDebugPanel /> : null}
     </QueryClientProvider>
   );
 }
