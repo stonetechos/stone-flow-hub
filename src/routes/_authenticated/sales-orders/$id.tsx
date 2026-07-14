@@ -108,6 +108,7 @@ function SalesOrderDetailPage() {
                     <Receipt className="mr-2 h-4 w-4" /> Create invoice
                   </Button>
                 )}
+                <DocumentToolbar entity="sales_order" entityId={id} />
               </>
             }
             overflow={[
