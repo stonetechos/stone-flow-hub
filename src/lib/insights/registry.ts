@@ -12,7 +12,23 @@ import type { InsightProvider } from "./types";
 const providers = new Map<string, InsightProvider>();
 const listeners = new Set<() => void>();
 
+/**
+ * Cached snapshot returned by `listInsightProviders()`. `useSyncExternalStore`
+ * (see `useInsightRegistry` in ./hooks) requires `getSnapshot` to return the
+ * exact same reference while the store hasn't changed — reallocating a new
+ * array on every call breaks that contract and causes React to treat every
+ * render as a store change, which surfaces as "Maximum update depth
+ * exceeded" (and a hydration mismatch on the first client render). This
+ * cache is invalidated only when the registry actually mutates.
+ */
+let cachedSnapshot: InsightProvider[] | null = null;
+
+function invalidateSnapshot(): void {
+  cachedSnapshot = null;
+}
+
 function notify(): void {
+  invalidateSnapshot();
   for (const listener of listeners) listener();
 }
 
@@ -32,9 +48,14 @@ export function unregisterInsightProvider(id: string): void {
   if (providers.delete(id)) notify();
 }
 
-/** Snapshot of every currently-registered provider. */
+/** Snapshot of every currently-registered provider. Returns a cached array
+ *  reference until the registry mutates (register/unregister/reset), per
+ *  the stability contract `useSyncExternalStore` requires of `getSnapshot`. */
 export function listInsightProviders(): InsightProvider[] {
-  return Array.from(providers.values());
+  if (cachedSnapshot === null) {
+    cachedSnapshot = Array.from(providers.values());
+  }
+  return cachedSnapshot;
 }
 
 export function getInsightProvider(id: string): InsightProvider | undefined {
