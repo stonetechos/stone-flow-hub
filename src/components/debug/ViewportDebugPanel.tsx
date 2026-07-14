@@ -153,9 +153,8 @@ export function ViewportDebugPanel() {
   // Ephemeral highlight when the user taps an offender row.
   const highlight = (sel: Overflowing): void => {
     const els = document.querySelectorAll<HTMLElement>(sel.tag);
-    let match: HTMLElement | null = null;
-    els.forEach((el) => {
-      if (match) return;
+    let match: HTMLElement | undefined;
+    for (const el of Array.from(els)) {
       const r = el.getBoundingClientRect();
       if (
         Math.round(r.left) === sel.left &&
@@ -163,18 +162,19 @@ export function ViewportDebugPanel() {
         Math.round(r.width) === sel.w
       ) {
         match = el;
+        break;
       }
-    });
+    }
     if (!match) return;
-    const prev = match.style.outline;
-    const prevOffset = match.style.outlineOffset;
-    match.style.outline = "2px solid #ff2d55";
-    match.style.outlineOffset = "-2px";
-    match.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    const target: HTMLElement = match;
+    const prev = target.style.outline;
+    const prevOffset = target.style.outlineOffset;
+    target.style.outline = "2px solid #ff2d55";
+    target.style.outlineOffset = "-2px";
+    target.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     window.setTimeout(() => {
-      if (!match) return;
-      match.style.outline = prev;
-      match.style.outlineOffset = prevOffset;
+      target.style.outline = prev;
+      target.style.outlineOffset = prevOffset;
     }, 2500);
   };
 
