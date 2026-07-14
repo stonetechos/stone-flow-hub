@@ -29,8 +29,8 @@ export function InsightList({ insights, className }: InsightListProps) {
           kind={insight.kind}
           tone={insight.tone}
           title={insight.title}
-          detail={insight.detail}
-          to={insight.href}
+          detail={insight.why}
+          to={insight.action.href}
         />
       ))}
     </div>

@@ -17,6 +17,9 @@ export type FollowupWithEnquiry = FollowupRow & {
   enquiry: {
     id: string;
     enquiry_no: string;
+    /** Enquiry budget, when set — joined so callers (e.g. Sales Intelligence
+     *  providers prioritizing by deal value) don't need a second query. */
+    budget_inr: number | null;
     project: { id: string; name: string } | null;
     customer: { id: string; name: string } | null;
   } | null;
@@ -24,12 +27,15 @@ export type FollowupWithEnquiry = FollowupRow & {
 };
 
 const SELECT_WITH_JOINS =
-  "*, enquiry:enquiries!followups_enquiry_id_fkey(id,enquiry_no,project:projects!enquiries_project_id_fkey(id,name),customer:customers!enquiries_customer_id_fkey(id,name)), project:projects!followups_project_id_fkey(id,name,project_code)";
+  "*, enquiry:enquiries!followups_enquiry_id_fkey(id,enquiry_no,budget_inr,project:projects!enquiries_project_id_fkey(id,name),customer:customers!enquiries_customer_id_fkey(id,name)), project:projects!followups_project_id_fkey(id,name,project_code)";
 
 export interface ListFollowupsOptions {
   scope?: "pending" | "today" | "all";
   entityType?: FollowupEntityType | null;
   entityId?: string | null;
+  /** Bulk variant — fetch follow-ups for many enquiries in one query (e.g.
+   *  insight providers scanning every open enquiry for its latest follow-up). */
+  enquiryIds?: string[] | null;
   projectId?: string | null;
   customerId?: string | null;
   limit?: number;
@@ -62,6 +68,7 @@ export async function listFollowups(
   if (opts.entityType && opts.entityId) {
     q = q.eq("entity_type", opts.entityType).eq("entity_id", opts.entityId);
   }
+  if (opts.enquiryIds && opts.enquiryIds.length > 0) q = q.in("enquiry_id", opts.enquiryIds);
   if (opts.projectId) q = q.eq("project_id", opts.projectId);
   if (opts.customerId) {
     // Match either a customer-scoped follow-up or one linked to that customer via an enquiry.
