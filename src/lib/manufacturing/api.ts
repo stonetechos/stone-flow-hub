@@ -94,3 +94,63 @@ export async function getManufacturingStats(): Promise<ManufacturingStatsRow> {
     total: rows.length,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Bulk reads (Phase G.4 — Operations Intelligence)                    */
+/* ------------------------------------------------------------------ */
+
+export type ProductionOrderListItem = ProductionOrderRow & {
+  products: { id: string; name: string; product_code: string } | null;
+  sales_orders: { id: string; so_no: string } | null;
+};
+
+/** All production orders (not scoped to one Sales Order) — mirrors
+ *  `listProductionOrdersForSalesOrder` but across the whole board, for
+ *  producers that need to reason about every open order at once. */
+export async function listProductionOrders(): Promise<ProductionOrderListItem[]> {
+  const { data, error } = await supabase
+    .from("production_orders")
+    .select("*, products(id,name,product_code), sales_orders(id,so_no)")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new AppError(mapDbError(error));
+  return (data ?? []) as unknown as ProductionOrderListItem[];
+}
+
+export type ProductionStageListItem = {
+  id: string;
+  production_order_id: string;
+  stage_id: string;
+  status: string;
+  sort_order: number;
+  planned_start: string | null;
+  planned_date: string | null;
+  started_at: string | null;
+  actual_start: string | null;
+  actual_completed_at: string | null;
+  delay_reason: string | null;
+  manufacturing_stages: { name: string; code: string; typical_days: number } | null;
+  production_orders: {
+    id: string;
+    mfg_no: string;
+    status: string;
+    sales_order_id: string | null;
+    project_id: string | null;
+  } | null;
+};
+
+/** Every not-yet-finished production stage across all orders (excludes
+ *  `completed`/`skipped`) — the bulk counterpart of the per-order stage
+ *  fetch already inline in `routes/manufacturing/$id.tsx`. */
+export async function listActiveProductionStages(): Promise<ProductionStageListItem[]> {
+  const { data, error } = await supabase
+    .from("production_stages")
+    .select(
+      "id,production_order_id,stage_id,status,sort_order,planned_start,planned_date,started_at,actual_start,actual_completed_at,delay_reason,manufacturing_stages(name,code,typical_days),production_orders(id,mfg_no,status,sales_order_id,project_id)",
+    )
+    .in("status", ["pending", "in_progress", "on_hold"])
+    .order("sort_order", { ascending: true })
+    .limit(1000);
+  if (error) throw new AppError(mapDbError(error));
+  return (data ?? []) as unknown as ProductionStageListItem[];
+}

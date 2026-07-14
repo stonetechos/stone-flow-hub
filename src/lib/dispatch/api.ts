@@ -246,3 +246,64 @@ export async function getSalesOrderDeliveryStatus(soId: string): Promise<Deliver
     totalRemaining: lines.reduce((s, l) => s + l.remaining, 0),
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Committed demand by product (Phase G.4 — Operations Intelligence)   */
+/* ------------------------------------------------------------------ */
+export type CommittedDemandRow = {
+  product_id: string;
+  committed_qty: number;
+};
+
+/**
+ * Bulk counterpart of `getSalesOrderDeliveryStatus` — same computation
+ * (ordered - delivered = remaining, via the same dispatch_items join),
+ * just aggregated by product across every open Sales Order instead of
+ * one order's line items. No bulk "committed demand" API exists yet, so
+ * this generalises the existing per-order calculation rather than
+ * inventing a new one.
+ */
+export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow[]> {
+  const { data: openOrders, error: soErr } = await supabase
+    .from("sales_orders")
+    .select("id")
+    .not("status", "in", "(delivered,cancelled)")
+    .limit(500);
+  if (soErr) throw new AppError(mapDbError(soErr));
+  const openIds = (openOrders ?? []).map((o) => o.id);
+  if (openIds.length === 0) return [];
+
+  const [itemsRes, dispatchesRes] = await Promise.all([
+    supabase.from("sales_order_items").select("id,product_id,quantity").in("sales_order_id", openIds),
+    supabase.from("dispatches").select("id").in("sales_order_id", openIds).neq("status", "cancelled"),
+  ]);
+  if (itemsRes.error) throw new AppError(mapDbError(itemsRes.error));
+  if (dispatchesRes.error) throw new AppError(mapDbError(dispatchesRes.error));
+
+  const activeDispatchIds = (dispatchesRes.data ?? []).map((d) => d.id);
+  const deliveredByItem = new Map<string, number>();
+  if (activeDispatchIds.length > 0) {
+    const { data: di, error: diErr } = await supabase
+      .from("dispatch_items")
+      .select("sales_order_item_id,quantity")
+      .in("dispatch_id", activeDispatchIds);
+    if (diErr) throw new AppError(mapDbError(diErr));
+    for (const row of di ?? []) {
+      if (!row.sales_order_item_id) continue;
+      deliveredByItem.set(
+        row.sales_order_item_id,
+        (deliveredByItem.get(row.sales_order_item_id) ?? 0) + Number(row.quantity),
+      );
+    }
+  }
+
+  const committedByProduct = new Map<string, number>();
+  for (const item of (itemsRes.data ?? []) as Array<{ id: string; product_id: string | null; quantity: number }>) {
+    if (!item.product_id) continue;
+    const delivered = deliveredByItem.get(item.id) ?? 0;
+    const remaining = Math.max(0, Number(item.quantity) - delivered);
+    if (remaining <= 0) continue;
+    committedByProduct.set(item.product_id, (committedByProduct.get(item.product_id) ?? 0) + remaining);
+  }
+  return [...committedByProduct.entries()].map(([product_id, committed_qty]) => ({ product_id, committed_qty }));
+}

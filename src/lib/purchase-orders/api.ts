@@ -91,3 +91,39 @@ export async function deletePurchaseOrder(id: string): Promise<void> {
   const { error } = await supabase.from("purchase_orders").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
+
+/* ------------------------------------------------------------------ */
+/* Open-PO product lookup (Phase G.4 — Operations Intelligence)        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Product ids that already have an open (not received/cancelled) purchase
+ * order somewhere in the pipeline. `purchase_orders` has no per-line item
+ * table of its own — it links to a single `vendor_quote_id` — so this
+ * follows that existing relationship (PO -> vendor_quote -> vendor_quote_items)
+ * rather than inventing a new one.
+ */
+export async function listOpenPurchaseProductIds(): Promise<Set<string>> {
+  const { data: openPOs, error: poErr } = await supabase
+    .from("purchase_orders")
+    .select("vendor_quote_id")
+    .in("status", ["draft", "sent", "acknowledged", "partially_received"] as PurchaseOrderStatus[])
+    .not("vendor_quote_id", "is", null)
+    .limit(500);
+  if (poErr) throw new AppError(mapDbError(poErr));
+
+  const quoteIds = [...new Set((openPOs ?? []).map((p) => p.vendor_quote_id).filter((id): id is string => !!id))];
+  if (quoteIds.length === 0) return new Set();
+
+  const { data: items, error: itemsErr } = await supabase
+    .from("vendor_quote_items")
+    .select("product_id")
+    .in("vendor_quote_id", quoteIds);
+  if (itemsErr) throw new AppError(mapDbError(itemsErr));
+
+  return new Set(
+    (items ?? [])
+      .map((i) => (i as { product_id: string | null }).product_id)
+      .filter((id): id is string => !!id),
+  );
+}
