@@ -71,9 +71,16 @@ export async function getManufacturingStats(): Promise<ManufacturingStatsRow> {
   for (const r of rows) byStatus.set(r.status, (byStatus.get(r.status) ?? 0) + 1);
 
   // QC pending: production_stages where stage code is 'QC' and status pending/in_progress.
+  // `production_orders!inner` is required here too — without it, stage rows
+  // left behind by a deleted/archived production order are still counted,
+  // which is how this card could show a nonzero value while "Total Orders"
+  // (queried straight from production_orders) reads 0.
   const { count: qcPending } = await supabase
     .from("production_stages")
-    .select("id, manufacturing_stages!inner(code)", { count: "exact", head: true })
+    .select("id, manufacturing_stages!inner(code), production_orders!inner(id)", {
+      count: "exact",
+      head: true,
+    })
     .in("status", ["pending", "in_progress"])
     .filter("manufacturing_stages.code", "ilike", "QC%");
 
