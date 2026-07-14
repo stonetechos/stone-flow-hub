@@ -28,7 +28,12 @@ export interface VendorIntel {
   dependency: Array<{ name: string; share_pct: number; purchase_value: number }>;
 }
 
-export async function getVendorIntel(): Promise<VendorIntel> {
+/**
+ * Shared score computation — the single place `getVendorIntel` (below) and
+ * `listVendorScores` (used by finance insight providers, so they don't
+ * re-query or re-derive these numbers) both read from.
+ */
+async function computeVendorScores(): Promise<VendorScore[]> {
   const [perfRes, vendRes, ledRes] = await Promise.all([
     supabase.from("vendor_performance_cache").select("*"),
     supabase.from("vendors").select("id,company_name").eq("is_active", true),
@@ -43,7 +48,7 @@ export async function getVendorIntel(): Promise<VendorIntel> {
     outMap.set(r.vendor_id, (outMap.get(r.vendor_id) ?? 0) + Number(r.debit ?? 0) - Number(r.credit ?? 0));
   }
   type Perf = { vendor_id: string; purchase_value: number; orders_count: number; approval_pct: number; delay_pct: number; avg_response_hours: number | null; avg_dispatch_days: number | null; is_preferred: boolean };
-  const scores: VendorScore[] = ((perfRes.data ?? []) as Perf[]).map((p) => {
+  return ((perfRes.data ?? []) as Perf[]).map((p) => {
     const reliability = Math.max(0, 100 - Number(p.delay_pct ?? 0));
     const quality = Number(p.approval_pct ?? 0);
     const risk = Math.max(0, Number(p.delay_pct ?? 0) * 0.6 + (100 - quality) * 0.4);
@@ -63,6 +68,17 @@ export async function getVendorIntel(): Promise<VendorIntel> {
       risk,
     };
   });
+}
+
+/** Every vendor's score, unsliced/unfiltered — for callers (e.g. Finance
+ *  insight providers) that need to scan the whole set rather than just the
+ *  top-15-per-category lists `getVendorIntel` returns. */
+export async function listVendorScores(): Promise<VendorScore[]> {
+  return computeVendorScores();
+}
+
+export async function getVendorIntel(): Promise<VendorIntel> {
+  const scores = await computeVendorScores();
   const totalSpend = scores.reduce((s, v) => s + v.purchase_value, 0) || 1;
 
   return {
