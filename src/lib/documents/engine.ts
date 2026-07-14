@@ -213,14 +213,16 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(q.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(q.subtotal) },
-        { label: "Tax", value: inr(q.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
         { label: "Total", value: inr(q.total) },
       ];
       return {
