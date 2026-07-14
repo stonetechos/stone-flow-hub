@@ -19,6 +19,7 @@ import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,6 +168,8 @@ function CustomerHub() {
           />
         }
       />
+
+      <EntityInsightPanel entityType="customer" entityId={customerId} />
 
       <GuidedNextStep entity="customer" entityId={customerId} />
 

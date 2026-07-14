@@ -21,6 +21,7 @@ import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -276,6 +277,8 @@ function QuoteDetailPage() {
           />
         }
       />
+
+      <EntityInsightPanel entityType="quote" entityId={quoteId} />
 
       <GuidedNextStep
         entity="quote"

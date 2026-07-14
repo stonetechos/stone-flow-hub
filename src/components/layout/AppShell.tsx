@@ -38,6 +38,7 @@ import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Copilot } from "@/components/copilot/Copilot";
+import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
@@ -779,6 +780,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
         <Copilot />
+        <DangerNotifications />
       </div>
     </DemoProvider>
   );

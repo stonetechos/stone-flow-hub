@@ -13,6 +13,7 @@ import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { toUserMessage } from "@/lib/errors";
 import { getBusinessHealth, type HealthMetric } from "@/lib/intelligence/business-health";
 import { cn } from "@/lib/utils";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 
 export const Route = createFileRoute("/_authenticated/dashboards/business-health")({
   ssr: false,
@@ -30,9 +31,11 @@ function toneOf(score: number) {
 
 function BusinessHealthDashboard() {
   const q = useQuery({ queryKey: ["intel", "business-health"], queryFn: getBusinessHealth, staleTime: 60_000 });
+  const { executiveBrief } = useExecutiveInsights();
   if (q.isLoading) return <><PageHeader title="Business Health" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Business Health" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const h = q.data!;
+  const m = executiveBrief.metrics;
 
   return (
     <div>
@@ -50,7 +53,22 @@ function BusinessHealthDashboard() {
           </CardContent>
         </Card>
         <div className="md:col-span-2 grid gap-3 sm:grid-cols-2">
-          {h.metrics.map((m) => <MetricCard key={m.key} m={m} />)}
+          {h.metrics.map((metric) => <MetricCard key={metric.key} m={metric} />)}
+        </div>
+      </div>
+
+      {/* ------------------- INSIGHT METRICS (Phase G.7) ------------------- */}
+      <div className="mt-6">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Insight metrics
+        </h2>
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+          <StatTile label="Critical" value={m.critical} tone="danger" />
+          <StatTile label="Warning" value={m.warning} tone="warning" />
+          <StatTile label="Healthy" value={m.healthy} tone="success" />
+          <StatTile label="Resolved" value={m.resolved} />
+          <StatTile label="Attention required" value={m.attentionRequired} />
+          <StatTile label="Completion ratio" value={`${Math.round(m.completionRatio * 100)}%`} />
         </div>
       </div>
     </div>
@@ -68,6 +86,17 @@ function MetricCard({ m }: { m: HealthMetric }) {
         </div>
         <div className={cn("mt-1 text-2xl font-bold tabular-nums", toneOf(m.score))}>{m.score}</div>
         <div className="mt-1 text-[11px] text-muted-foreground">{m.note}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StatTile({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "danger" | "warning" | "success" }) {
+  return (
+    <Card>
+      <CardContent className="p-3">
+        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className={cn("mt-1 text-2xl font-bold tabular-nums", tone ? toneText(tone) : "")}>{value}</div>
       </CardContent>
     </Card>
   );

@@ -9,21 +9,22 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight, AlertTriangle, Sparkles, ShieldAlert, Target, TrendingUp, Users,
   IndianRupee, Factory, Truck, Wrench, Wallet, ArrowUpRight, ArrowDownRight,
-  FileText, Banknote, Coins, Building2, PhoneCall, CalendarClock, PackageX,
+  FileText, Banknote, Coins, Building2, PhoneCall, CalendarClock,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { LoadingBlock, ErrorBlock, EmptyState } from "@/components/layout/States";
 import { KpiTile } from "@/components/dashboard/KpiTile";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { getExecutiveKpis } from "@/lib/executive/kpis";
 import { getDashboardKpis } from "@/lib/dashboard/api";
 import { getCustomerIntel } from "@/lib/executive/customer-intel";
-import { getVendorIntel } from "@/lib/executive/vendor-intel";
-import { getCommandCenter, type OwnerInsight } from "@/lib/executive/command-center";
+import { getCommandCenter } from "@/lib/executive/command-center";
 import { WorkforceSummaryWidget } from "@/components/dashboard/WorkforceSummaryWidget";
 import { formatInr } from "@/lib/format";
 import { toUserMessage } from "@/lib/errors";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { toneSurface } from "@/lib/ui/tones";
 
 export const Route = createFileRoute("/_authenticated/dashboards/command-center")({
   ssr: false,
@@ -34,8 +35,8 @@ function CommandCenter() {
   const exec = useQuery({ queryKey: ["dash", "executive"], queryFn: getExecutiveKpis, staleTime: 30_000 });
   const dash = useQuery({ queryKey: ["dash", "kpis"], queryFn: getDashboardKpis, staleTime: 30_000 });
   const cust = useQuery({ queryKey: ["exec", "customer-intel"], queryFn: getCustomerIntel, staleTime: 60_000 });
-  const vend = useQuery({ queryKey: ["exec", "vendor-intel"], queryFn: getVendorIntel, staleTime: 60_000 });
   const cc = useQuery({ queryKey: ["exec", "command-center"], queryFn: getCommandCenter, staleTime: 30_000 });
+  const { executiveBrief, processedInsights, loading: insightsLoading } = useExecutiveInsights();
 
   if (exec.isLoading || dash.isLoading || cc.isLoading) return <LoadingBlock />;
   const err = exec.error ?? dash.error ?? cc.error;
@@ -44,36 +45,6 @@ function CommandCenter() {
   const k = exec.data!;
   const d = dash.data!;
   const c = cc.data!;
-
-  // ---- Rule-based owner insights (composed here so intel data can join in) ----
-  const insights: OwnerInsight[] = [...c.insights];
-  const riskCust = cust.data?.delayed_payers[0];
-  if (riskCust) insights.unshift({
-    kind: "risk",
-    title: "Highest-risk customer today",
-    detail: `${riskCust.name} — ${riskCust.overdue_days}d overdue, ${formatInr(riskCust.outstanding)} outstanding`,
-    to: `/customers/${riskCust.customer_id}`,
-  });
-  const riskVendor = vend.data?.high_risk[0];
-  if (riskVendor) insights.push({
-    kind: "warning",
-    title: "Vendor requiring follow-up",
-    detail: `${riskVendor.name} — ${riskVendor.delay_pct.toFixed(0)}% delayed, ${riskVendor.approval_pct.toFixed(0)}% approval`,
-    to: `/vendors/${riskVendor.vendor_id}`,
-  });
-  const opp = cust.data?.potential_high_value.find((s) => s && s.name);
-  if (opp) insights.push({
-    kind: "opportunity",
-    title: "Customer most likely to convert",
-    detail: `${opp.name} — pipeline value ${formatInr(opp.revenue)}`,
-    to: `/customers/${opp.customer_id}`,
-  });
-  if (c.customerActivity.overdueFollowups > 0) insights.push({
-    kind: "action",
-    title: "Follow-ups overdue",
-    detail: `${c.customerActivity.overdueFollowups} pending past due — clear the list today`,
-    to: `/followups`,
-  });
 
   return (
     <div className="space-y-8">
@@ -87,13 +58,72 @@ function CommandCenter() {
         }
       />
 
-      {/* ------------------- OWNER INSIGHTS ------------------- */}
-      <Section title="Owner insights" icon={Sparkles} subtitle="Rule-based signals from the running business." plain>
-        {insights.length === 0 ? (
-          <Card><CardContent className="p-6 text-sm text-muted-foreground">All clear — no critical signals right now.</CardContent></Card>
+      {/* ------------------- EXECUTIVE BRIEF (Phase G.7) ------------------- */}
+      <Section
+        title="Executive brief"
+        icon={Sparkles}
+        subtitle="Deterministic signals from every Insight provider — no AI, no chat generation."
+        plain
+      >
+        {insightsLoading ? (
+          <LoadingBlock />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {insights.slice(0, 9).map((i, idx) => <InsightCardLocal key={idx} insight={i} />)}
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="flex flex-wrap items-start justify-between gap-4 p-6">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {executiveBrief.headline.subtitle}
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold">{executiveBrief.headline.headline}</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{executiveBrief.headline.reason}</p>
+                  {executiveBrief.headline.href && (
+                    <Link
+                      to={executiveBrief.headline.href as never}
+                      className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      Open <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                </div>
+                <span
+                  className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneSurface(
+                    executiveBrief.health.level === "Critical"
+                      ? "danger"
+                      : executiveBrief.health.level === "Watch"
+                        ? "warning"
+                        : executiveBrief.health.level === "Stable"
+                          ? "info"
+                          : "success",
+                  )}`}
+                >
+                  {executiveBrief.health.level}
+                </span>
+              </CardContent>
+            </Card>
+
+            {executiveBrief.topActions.length > 0 && (
+              <div>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Top 5 actions
+                </h3>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {executiveBrief.topActions.map((a) => (
+                    <InsightCard key={a.id} tone={a.tone} title={a.title} detail={a.module} to={a.href} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {processedInsights.length === 0 ? (
+              <EmptyState title="All clear" message="No open insights right now." />
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {processedInsights.slice(0, 9).map((i) => (
+                  <InsightCard key={i.id} kind={i.kind} tone={i.tone} title={i.title} detail={i.why} to={i.action.href} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Section>
@@ -166,13 +196,3 @@ function Kpi({ label, value, sub, to, tone, icon: Icon }: { label: string; value
   return <KpiTile label={label} value={value} sub={sub} to={to} tone={signal} icon={Icon} />;
 }
 
-function InsightCardLocal({ insight }: { insight: OwnerInsight }) {
-  return (
-    <InsightCard
-      kind={insight.kind}
-      title={insight.title}
-      detail={insight.detail}
-      to={insight.to}
-    />
-  );
-}

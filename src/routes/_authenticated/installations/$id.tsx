@@ -4,6 +4,7 @@ import { ArrowLeft, Save, MapPin, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,6 +168,8 @@ function InstallationDetailPage() {
           </div>
         }
       />
+
+      <EntityInsightPanel entityType="installation" entityId={id} />
       <GuidedNextStep
         entity="installation"
         entityId={id}

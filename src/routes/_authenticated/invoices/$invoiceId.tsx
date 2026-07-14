@@ -22,6 +22,7 @@ import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { deleteInvoice } from "@/lib/invoices/api";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -245,6 +246,8 @@ function InvoiceDetailPage() {
           />
         }
       />
+
+      <EntityInsightPanel entityType="invoice" entityId={invoiceId} />
 
       <GuidedNextStep
         entity="invoice"

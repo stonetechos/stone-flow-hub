@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { askCopilot } from "@/lib/ai/copilot.functions";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { InsightCard } from "@/components/dashboard/InsightCard";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -43,6 +45,11 @@ const CONTEXT_HINTS: Array<{ match: RegExp; entity: string; suggestions: string[
   { match: /^\/dashboards\/management/, entity: "management", suggestions: ["How is pipeline value defined?", "How is estimated margin computed?"] },
 ];
 
+/** Insight.entity.type values differ slightly from Copilot's own context
+ *  vocabulary in one place — quotes are "quotation" here, "quote" on the
+ *  Insight itself. Only entries that actually differ need listing. */
+const ENTITY_TYPE_MAP: Record<string, string> = { quotation: "quote" };
+
 function deriveContext(path: string) {
   for (const hint of CONTEXT_HINTS) {
     const m = path.match(hint.match);
@@ -63,6 +70,15 @@ export function Copilot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const ctx = deriveContext(path);
+  const { processedInsights } = useExecutiveInsights();
+  const scopedInsights = ctx.entityId
+    ? processedInsights.filter(
+        (i) => i.entity.type === (ENTITY_TYPE_MAP[ctx.entity] ?? ctx.entity) && i.entity.id === ctx.entityId,
+      )
+    : processedInsights;
+  const topInsights = [...scopedInsights]
+    .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
+    .slice(0, 5);
 
   const send = useMutation({
     mutationFn: async (prompt: string) => {
@@ -143,6 +159,21 @@ export function Copilot() {
             Priorities card on the dashboard.
           </p>
         </SheetHeader>
+
+        <div className="border-b border-border p-4">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Insights
+          </h3>
+          {topInsights.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
+          ) : (
+            <div className="space-y-2">
+              {topInsights.map((i) => (
+                <InsightCard key={i.id} kind={i.kind} tone={i.tone} title={i.title} detail={i.why} to={i.action.href} />
+              ))}
+            </div>
+          )}
+        </div>
 
         <ScrollArea className="flex-1">
           <div ref={scrollRef} className="space-y-3 p-4">
