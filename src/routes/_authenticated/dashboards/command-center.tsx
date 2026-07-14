@@ -38,25 +38,6 @@ function CommandCenter() {
   const cc = useQuery({ queryKey: ["exec", "command-center"], queryFn: getCommandCenter, staleTime: 30_000 });
   const { executiveBrief, processedInsights, loading: insightsLoading } = useExecutiveInsights();
 
-  // Error takes priority over loading: once react-query exhausts retries the
-  // failing query's `.error` is set and its `isLoading` is false, so this must
-  // be checked before (not after) the "still resolving" branch below.
-  const err = exec.error ?? dash.error ?? cc.error;
-  if (err) return <ErrorBlock message={toUserMessage(err)} />;
-
-  // `!exec.data` (etc.) deliberately covers the retry window too: react-query
-  // clears `isLoading` between a failed attempt and its automatic retry while
-  // `.error` is still null and `.data` is still undefined. Asserting `.data!`
-  // here would read through that gap; keep showing LoadingBlock instead until
-  // there's either real data or an exhausted-retry error above.
-  if (exec.isLoading || dash.isLoading || cc.isLoading || !exec.data || !dash.data || !cc.data) {
-    return <LoadingBlock />;
-  }
-
-  const k = exec.data;
-  const d = dash.data;
-  const c = cc.data;
-
   return (
     <div className="space-y-8">
       <PageHeader
@@ -139,44 +120,74 @@ function CommandCenter() {
         )}
       </Section>
 
-      {/* ------------------- SALES ------------------- */}
-      <Section title="Sales" icon={TrendingUp}>
-        <Kpi label="New enquiries (MTD)" value={c.quotes.newEnquiriesMtd} to="/enquiries" icon={FileText} />
-        <Kpi label="Quotations pending" value={c.quotes.pendingCount} sub={formatInr(c.quotes.pipelineInr)} to="/quotes" icon={FileText} />
-        <Kpi label="Quotations accepted (MTD)" value={c.quotes.acceptedMtd} sub={formatInr(c.quotes.acceptedInrMtd)} to="/quotes" tone="ok" icon={Target} />
-        <Kpi label="Lost quotations (MTD)" value={c.quotes.lostMtd} to="/quotes" tone={c.quotes.lostMtd > 0 ? "warn" : undefined} icon={ShieldAlert} />
-        <Kpi label="Sales pipeline" value={formatInr(k.salesPipelineInr)} to="/dashboards/sales-funnel" icon={TrendingUp} />
-        <Kpi label="Expected revenue (30d)" value={formatInr(k.expectedCashInflowInr)} to="/dashboards/forecast" icon={IndianRupee} />
-      </Section>
+      {/*
+       * Legacy KPI sections (Sales/Customers/Operations/Finance) depend on
+       * exec/dash/cc - render flow only, no query/calculation changes. This
+       * guard is scoped to an IIFE so it can no longer gate the Executive
+       * Brief section above: Executive Intelligence must render as soon as
+       * useExecutiveInsights() is ready, independent of these legacy KPI
+       * queries still loading, retrying, or erroring.
+       */}
+      {(() => {
+        const err = exec.error ?? dash.error ?? cc.error;
+        if (err) return <ErrorBlock message={toUserMessage(err)} />;
 
-      {/* ------------------- CUSTOMERS ------------------- */}
-      <Section title="Customers" icon={Users}>
-        <Kpi label="Overdue payments" value={c.finance.overduePaymentsCount} sub={formatInr(c.finance.overduePaymentsInr)} to="/dashboards/collections" tone={c.finance.overduePaymentsCount > 0 ? "warn" : undefined} icon={AlertTriangle} />
-        <Kpi label="Follow-ups today" value={c.customerActivity.followupsToday} to="/followups" icon={PhoneCall} />
-        <Kpi label="Inactive 30d" value={c.customerActivity.inactive30} to="/dashboards/customer-intelligence" icon={CalendarClock} />
-        <Kpi label="Inactive 60d" value={c.customerActivity.inactive60} to="/dashboards/customer-intelligence" tone={c.customerActivity.inactive60 > 0 ? "warn" : undefined} icon={CalendarClock} />
-        <Kpi label="Inactive 90d+" value={c.customerActivity.inactive90} to="/dashboards/customer-intelligence" tone={c.customerActivity.inactive90 > 0 ? "warn" : undefined} icon={CalendarClock} />
-        <Kpi label="Repeat customers" value={cust.data?.repeat.length ?? "—"} to="/dashboards/customer-intelligence" icon={Users} />
-        <Kpi label="High-value customers" value={cust.data?.top_by_revenue.length ?? "—"} sub={cust.data?.top_by_revenue[0] ? `Top: ${cust.data.top_by_revenue[0].name}` : undefined} to="/dashboards/customer-intelligence" icon={Building2} />
-      </Section>
+        // `!exec.data` (etc.) deliberately covers the retry window too:
+        // react-query clears `isLoading` between a failed attempt and its
+        // automatic retry while `.error` is still null and `.data` is still
+        // undefined. Asserting `.data!` here would read through that gap;
+        // keep showing LoadingBlock instead until there's either real data
+        // or an exhausted-retry error above.
+        if (exec.isLoading || dash.isLoading || cc.isLoading || !exec.data || !dash.data || !cc.data) {
+          return <LoadingBlock />;
+        }
 
-      {/* ------------------- OPERATIONS ------------------- */}
-      <Section title="Operations" icon={Factory}>
-        <Kpi label="Production pending" value={c.ops.productionPending} to="/production" tone={k.productionDelayed > 0 ? "warn" : undefined} sub={k.productionDelayed > 0 ? `${k.productionDelayed} delayed` : undefined} icon={Factory} />
-        <Kpi label="Dispatch due today" value={c.ops.dispatchDueToday} to="/dispatches" icon={Truck} />
-        <Kpi label="Installation pending" value={c.ops.installationPending} to="/installations" tone={k.installationDelayed > 0 ? "warn" : undefined} sub={k.installationDelayed > 0 ? `${k.installationDelayed} delayed` : undefined} icon={Wrench} />
-        <Kpi label="Challans pending invoicing" value={c.ops.challansAwaitingInvoice} to="/dispatches" icon={FileText} />
-      </Section>
+        const k = exec.data;
+        const c = cc.data;
 
-      {/* ------------------- FINANCE ------------------- */}
-      <Section title="Finance" icon={Wallet}>
-        <Kpi label="Today's collections" value={formatInr(c.finance.todaysCollectionsInr)} to="/payments" tone="ok" icon={IndianRupee} />
-        <Kpi label="Bank receipts (today)" value={formatInr(c.finance.bankInr)} to="/payments" icon={Banknote} />
-        <Kpi label="Cash receipts (today)" value={formatInr(c.finance.cashInr)} to="/payments" icon={Coins} />
-        <Kpi label="Expected collections (30d)" value={formatInr(k.expectedCashInflowInr)} to="/dashboards/forecast" icon={ArrowUpRight} />
-        <Kpi label="Outstanding receivables" value={formatInr(k.customerOutstandingInr)} to="/dashboards/collections" tone={k.customerOutstandingInr > 0 ? "warn" : undefined} icon={ArrowDownRight} />
-        <Kpi label="Advances received" value={formatInr(c.finance.advancesReceivedInr)} sub={`${c.finance.advancesCount} unallocated`} to="/receipts" icon={Wallet} />
-      </Section>
+        return (
+          <>
+            {/* ------------------- SALES ------------------- */}
+            <Section title="Sales" icon={TrendingUp}>
+              <Kpi label="New enquiries (MTD)" value={c.quotes.newEnquiriesMtd} to="/enquiries" icon={FileText} />
+              <Kpi label="Quotations pending" value={c.quotes.pendingCount} sub={formatInr(c.quotes.pipelineInr)} to="/quotes" icon={FileText} />
+              <Kpi label="Quotations accepted (MTD)" value={c.quotes.acceptedMtd} sub={formatInr(c.quotes.acceptedInrMtd)} to="/quotes" tone="ok" icon={Target} />
+              <Kpi label="Lost quotations (MTD)" value={c.quotes.lostMtd} to="/quotes" tone={c.quotes.lostMtd > 0 ? "warn" : undefined} icon={ShieldAlert} />
+              <Kpi label="Sales pipeline" value={formatInr(k.salesPipelineInr)} to="/dashboards/sales-funnel" icon={TrendingUp} />
+              <Kpi label="Expected revenue (30d)" value={formatInr(k.expectedCashInflowInr)} to="/dashboards/forecast" icon={IndianRupee} />
+            </Section>
+
+            {/* ------------------- CUSTOMERS ------------------- */}
+            <Section title="Customers" icon={Users}>
+              <Kpi label="Overdue payments" value={c.finance.overduePaymentsCount} sub={formatInr(c.finance.overduePaymentsInr)} to="/dashboards/collections" tone={c.finance.overduePaymentsCount > 0 ? "warn" : undefined} icon={AlertTriangle} />
+              <Kpi label="Follow-ups today" value={c.customerActivity.followupsToday} to="/followups" icon={PhoneCall} />
+              <Kpi label="Inactive 30d" value={c.customerActivity.inactive30} to="/dashboards/customer-intelligence" icon={CalendarClock} />
+              <Kpi label="Inactive 60d" value={c.customerActivity.inactive60} to="/dashboards/customer-intelligence" tone={c.customerActivity.inactive60 > 0 ? "warn" : undefined} icon={CalendarClock} />
+              <Kpi label="Inactive 90d+" value={c.customerActivity.inactive90} to="/dashboards/customer-intelligence" tone={c.customerActivity.inactive90 > 0 ? "warn" : undefined} icon={CalendarClock} />
+              <Kpi label="Repeat customers" value={cust.data?.repeat.length ?? "—"} to="/dashboards/customer-intelligence" icon={Users} />
+              <Kpi label="High-value customers" value={cust.data?.top_by_revenue.length ?? "—"} sub={cust.data?.top_by_revenue[0] ? `Top: ${cust.data.top_by_revenue[0].name}` : undefined} to="/dashboards/customer-intelligence" icon={Building2} />
+            </Section>
+
+            {/* ------------------- OPERATIONS ------------------- */}
+            <Section title="Operations" icon={Factory}>
+              <Kpi label="Production pending" value={c.ops.productionPending} to="/production" tone={k.productionDelayed > 0 ? "warn" : undefined} sub={k.productionDelayed > 0 ? `${k.productionDelayed} delayed` : undefined} icon={Factory} />
+              <Kpi label="Dispatch due today" value={c.ops.dispatchDueToday} to="/dispatches" icon={Truck} />
+              <Kpi label="Installation pending" value={c.ops.installationPending} to="/installations" tone={k.installationDelayed > 0 ? "warn" : undefined} sub={k.installationDelayed > 0 ? `${k.installationDelayed} delayed` : undefined} icon={Wrench} />
+              <Kpi label="Challans pending invoicing" value={c.ops.challansAwaitingInvoice} to="/dispatches" icon={FileText} />
+            </Section>
+
+            {/* ------------------- FINANCE ------------------- */}
+            <Section title="Finance" icon={Wallet}>
+              <Kpi label="Today's collections" value={formatInr(c.finance.todaysCollectionsInr)} to="/payments" tone="ok" icon={IndianRupee} />
+              <Kpi label="Bank receipts (today)" value={formatInr(c.finance.bankInr)} to="/payments" icon={Banknote} />
+              <Kpi label="Cash receipts (today)" value={formatInr(c.finance.cashInr)} to="/payments" icon={Coins} />
+              <Kpi label="Expected collections (30d)" value={formatInr(k.expectedCashInflowInr)} to="/dashboards/forecast" icon={ArrowUpRight} />
+              <Kpi label="Outstanding receivables" value={formatInr(k.customerOutstandingInr)} to="/dashboards/collections" tone={k.customerOutstandingInr > 0 ? "warn" : undefined} icon={ArrowDownRight} />
+              <Kpi label="Advances received" value={formatInr(c.finance.advancesReceivedInr)} sub={`${c.finance.advancesCount} unallocated`} to="/receipts" icon={Wallet} />
+            </Section>
+          </>
+        );
+      })()}
 
       {/* ------------------- WORKFORCE (reuse existing widget) ------------------- */}
       <Section title="Workforce" icon={Users} subtitle="Reusing Workforce Intelligence — rule-based, no AI." plain>
