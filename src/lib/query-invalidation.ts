@@ -194,6 +194,9 @@ export function invalidatePayment(qc: QueryClient, id?: string, invoiceId?: stri
   bump(qc, qk.invoices.all);
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  // Phase G.9A.2: the Payments page reads payment_register (receipts +
+  // legacy payments), not just the payments table -- keep it in sync too.
+  bump(qc, qk.paymentRegister.all);
 }
 
 export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: string): void {
@@ -212,6 +215,9 @@ export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: str
   bump(qc, qk.invoices.all);
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
+  // Phase G.9A.2: the Payments page reads payment_register (receipts +
+  // legacy payments), not just the receipts table -- keep it in sync too.
+  bump(qc, qk.paymentRegister.all);
 }
 
 export function invalidateMessage(qc: QueryClient, id?: string, entity?: { type: string; id: string }): void {

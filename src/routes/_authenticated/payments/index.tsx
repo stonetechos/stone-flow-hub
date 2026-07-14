@@ -19,7 +19,7 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { deletePayment, listPayments, type PaymentListItem } from "@/lib/payments/crud";
+import { deletePayment, listPaymentRegister, type PaymentRegisterRow } from "@/lib/payments/crud";
 import { invalidatePayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 
@@ -38,7 +38,7 @@ function PaymentsPage() {
   const search = Route.useSearch();
   const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
-  const [toDelete, setToDelete] = useState<PaymentListItem | null>(null);
+  const [toDelete, setToDelete] = useState<PaymentRegisterRow | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("payments");
@@ -55,7 +55,11 @@ function PaymentsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.paymentsAll.list(dq), queryFn: () => listPayments(dq) });
+  // Phase G.9A.2: Payments is the permanent payment register -- it reads
+  // payment_register (receipts + legacy payments), not just the payments
+  // table, so every recorded payment stays visible here regardless of
+  // which flow created it.
+  const query = useQuery({ queryKey: qk.paymentRegister.list(dq), queryFn: () => listPaymentRegister(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deletePayment(id),
     onSuccess: () => {
@@ -141,12 +145,20 @@ function PaymentsPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/payments/$id" params={{ id: r.id }} className="text-primary hover:underline">
-                        {r.payment_no}
-                      </Link>
+                      {/* Receipts (the complete system) open on their own detail
+                       * page; legacy payments keep their existing route. */}
+                      {r.source === "receipt" ? (
+                        <Link to="/receipts/$receiptId" params={{ receiptId: r.id }} className="text-primary hover:underline">
+                          {r.doc_no}
+                        </Link>
+                      ) : (
+                        <Link to="/payments/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                          {r.doc_no}
+                        </Link>
+                      )}
                     </TableCell>
                   )}
-                  {!isHidden("invoice") && <TableCell className="font-mono text-xs">{r.invoice?.invoice_no ?? "—"}</TableCell>}
+                  {!isHidden("invoice") && <TableCell className="font-mono text-xs">{r.invoice_no ?? "—"}</TableCell>}
                   {!isHidden("method") && (
                     <TableCell>
                       <Badge variant="outline" className="capitalize">{r.method.replace(/_/g, " ")}</Badge>
@@ -156,10 +168,14 @@ function PaymentsPage() {
                   {!isHidden("date") && <TableCell>{new Date(r.paid_at).toLocaleDateString()}</TableCell>}
                   {!isHidden("amount") && <TableCell className="text-right font-mono tabular-nums">{Number(r.amount).toFixed(2)}</TableCell>}
                   <TableCell>
-                    <RowActions
-                      onEdit={() => nav({ to: "/payments/$id/edit", params: { id: r.id } })}
-                      onDelete={() => setToDelete(r)}
-                    />
+                    {/* Edit/delete only apply to legacy payment rows -- receipts
+                     * are managed from their own detail page (void, etc.). */}
+                    {r.source === "payment" && (
+                      <RowActions
+                        onEdit={() => nav({ to: "/payments/$id/edit", params: { id: r.id } })}
+                        onDelete={() => setToDelete(r)}
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -172,7 +188,7 @@ function PaymentsPage() {
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete payment?"
-        description={toDelete ? `${toDelete.payment_no} will be removed.` : ""}
+        description={toDelete ? `${toDelete.doc_no} will be removed.` : ""}
         busy={del.isPending}
         onConfirm={() => toDelete && del.mutate(toDelete.id)}
       />

@@ -114,6 +114,15 @@ export const qk = {
     list: (q?: string) => ["paymentsAll", "list", q ?? ""] as const,
     byId: (id: string) => ["paymentsAll", "byId", id] as const,
   },
+  /** Phase G.9A.2 -- the payment_register view (receipts + legacy
+   *  payments), the Payments page's actual data source. Separate from
+   *  `paymentsAll` (which still reads the raw `payments` table for the
+   *  detail/edit routes) so invalidating one doesn't force-refetch the
+   *  other unnecessarily. */
+  paymentRegister: {
+    all: ["paymentRegister"] as const,
+    list: (q?: string) => ["paymentRegister", "list", q ?? ""] as const,
+  },
   receipts: {
     all: ["receipts"] as const,
     list: (q?: string) => ["receipts", "list", q ?? ""] as const,
