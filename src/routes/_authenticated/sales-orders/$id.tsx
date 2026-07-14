@@ -2,7 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, Truck, Receipt, Loader2, FolderOpen, History, UserCheck, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Truck,
+  Receipt,
+  Loader2,
+  FolderOpen,
+  History,
+  UserCheck,
+  Send,
+} from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
@@ -146,14 +156,17 @@ function SalesOrderDetailPage() {
       <GuidedNextStep
         entity="sales_order"
         entityId={id}
-        ctx={{ customer_id: r.customer_id, project_id: r.project_id, sales_order_id: id, quote_id: r.quote_id }}
+        ctx={{
+          customer_id: r.customer_id,
+          project_id: r.project_id,
+          sales_order_id: id,
+          quote_id: r.quote_id,
+        }}
       />
 
       {r.quote?.enquiry_id && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs">
-          <span className="text-muted-foreground">
-            Need vendor pricing before you raise POs?
-          </span>
+          <span className="text-muted-foreground">Need vendor pricing before you raise POs?</span>
           <Button asChild variant="outline" size="sm" className="h-7">
             <Link
               to="/enquiries/$enquiryId"
@@ -222,7 +235,9 @@ function SalesOrderDetailPage() {
               {itemsQuery.isLoading ? (
                 <p className="p-4 text-sm text-muted-foreground">Loading…</p>
               ) : (itemsQuery.data ?? []).length === 0 ? (
-                <p className="p-4 text-sm text-muted-foreground">No line items on this sales order.</p>
+                <p className="p-4 text-sm text-muted-foreground">
+                  No line items on this sales order.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -256,8 +271,12 @@ function SalesOrderDetailPage() {
                           <td className="px-3 py-2 text-right align-top">
                             {Number(it.quantity)} {it.unit ?? ""}
                           </td>
-                          <td className="px-3 py-2 text-right align-top">{formatInr(it.unit_price)}</td>
-                          <td className="px-3 py-2 text-right align-top">{Number(it.discount_pct)}</td>
+                          <td className="px-3 py-2 text-right align-top">
+                            {formatInr(it.unit_price)}
+                          </td>
+                          <td className="px-3 py-2 text-right align-top">
+                            {Number(it.discount_pct)}
+                          </td>
                           <td className="px-3 py-2 text-right align-top">{Number(it.tax_pct)}</td>
                           <td className="px-3 py-2 text-right align-top font-medium">
                             {formatInr(it.line_total)}
@@ -276,14 +295,24 @@ function SalesOrderDetailPage() {
               <CardTitle className="text-sm">Totals</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm md:grid-cols-2">
-              <Row label="Subtotal">{formatInr((r as unknown as { subtotal?: number }).subtotal ?? 0)}</Row>
-              <Row label="Discount">{formatInr((r as unknown as { discount?: number }).discount ?? 0)}</Row>
-              <Row label="Freight">{formatInr((r as unknown as { freight?: number }).freight ?? 0)}</Row>
+              <Row label="Subtotal">
+                {formatInr((r as unknown as { subtotal?: number }).subtotal ?? 0)}
+              </Row>
+              <Row label="Discount">
+                {formatInr((r as unknown as { discount?: number }).discount ?? 0)}
+              </Row>
+              <Row label="Freight">
+                {formatInr((r as unknown as { freight?: number }).freight ?? 0)}
+              </Row>
               <Row label="Other charges">
                 {formatInr((r as unknown as { other_charges?: number }).other_charges ?? 0)}
               </Row>
-              <Row label="Tax">{formatInr((r as unknown as { tax_amount?: number }).tax_amount ?? 0)}</Row>
-              <Row label="Round off">{formatInr((r as unknown as { round_off?: number }).round_off ?? 0)}</Row>
+              <Row label="Tax">
+                {formatInr((r as unknown as { tax_amount?: number }).tax_amount ?? 0)}
+              </Row>
+              <Row label="Round off">
+                {formatInr((r as unknown as { round_off?: number }).round_off ?? 0)}
+              </Row>
               <div className="md:col-span-2 border-t pt-2 flex items-center justify-between font-semibold">
                 <span>Grand total</span>
                 <span>{formatInr((r as unknown as { total?: number }).total ?? 0)}</span>
@@ -294,8 +323,6 @@ function SalesOrderDetailPage() {
           <SalesOrderDeliveryPanel salesOrderId={r.id} />
           <ProductionOrdersPanel salesOrderId={r.id} />
           <SalesOrderInstallationPanel salesOrderId={r.id} />
-
-
 
           <NotesPanel
             table="sales_orders"

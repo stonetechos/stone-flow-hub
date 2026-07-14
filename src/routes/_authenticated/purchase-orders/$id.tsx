@@ -14,7 +14,6 @@ import { toUserMessage } from "@/lib/errors";
 import { getPurchaseOrder } from "@/lib/purchase-orders/api";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 
-
 export const Route = createFileRoute("/_authenticated/purchase-orders/$id")({
   ssr: false,
   component: PurchaseOrderDetailPage,
@@ -53,7 +52,14 @@ function PurchaseOrderDetailPage() {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    nav({ to: "/grns/new", search: { po: id, vendor: r.vendor_id ?? undefined, project: r.project_id ?? undefined } })
+                    nav({
+                      to: "/grns/new",
+                      search: {
+                        po: id,
+                        vendor: r.vendor_id ?? undefined,
+                        project: r.project_id ?? undefined,
+                      },
+                    })
                   }
                 >
                   <Truck className="mr-2 h-4 w-4" /> Receive (GRN)
@@ -62,7 +68,10 @@ function PurchaseOrderDetailPage() {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    nav({ to: "/vendor-payments/new", search: { po: id, vendor: r.vendor_id ?? undefined } })
+                    nav({
+                      to: "/vendor-payments/new",
+                      search: { po: id, vendor: r.vendor_id ?? undefined },
+                    })
                   }
                 >
                   <Banknote className="mr-2 h-4 w-4" /> Pay vendor
@@ -103,7 +112,6 @@ function PurchaseOrderDetailPage() {
         ctx={{ vendor_id: r.vendor_id, project_id: r.project_id }}
       />
       <div className="grid gap-4 lg:grid-cols-3">
-
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>

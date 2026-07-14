@@ -80,7 +80,11 @@ function DispatchDetailPage() {
       <GuidedNextStep
         entity="dispatch"
         entityId={id}
-        ctx={{ sales_order_id: r.sales_order_id, project_id: r.project_id, customer_id: r.customer_id }}
+        ctx={{
+          sales_order_id: r.sales_order_id,
+          project_id: r.project_id,
+          customer_id: r.customer_id,
+        }}
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
@@ -145,9 +149,7 @@ function DispatchDetailPage() {
                         <tr key={it.id} className="border-t">
                           <td className="px-3 py-2 align-top text-muted-foreground">{idx + 1}</td>
                           <td className="px-3 py-2 align-top">
-                            <div className="font-medium">
-                              {it.product_name ?? it.description}
-                            </div>
+                            <div className="font-medium">{it.product_name ?? it.description}</div>
                             {it.product_name && it.description !== it.product_name && (
                               <div className="text-xs text-muted-foreground">{it.description}</div>
                             )}

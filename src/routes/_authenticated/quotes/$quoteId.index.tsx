@@ -9,7 +9,6 @@ import {
   Pencil,
   Trash2,
   ShoppingCart,
-  
   Share2,
   FolderOpen,
   History,
@@ -109,7 +108,8 @@ function QuoteDetailPage() {
     mutationFn: () => convertQuoteToInvoice({ quote_id: quoteId }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`);
-      invalidateQuote(qc, quoteId); invalidateInvoice(qc);
+      invalidateQuote(qc, quoteId);
+      invalidateInvoice(qc);
       nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -189,9 +189,11 @@ function QuoteDetailPage() {
                     onClick={() => reviseMut.mutate()}
                     disabled={reviseMut.isPending}
                   >
-                    {reviseMut.isPending
-                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      : <Copy className="mr-2 h-4 w-4" />}
+                    {reviseMut.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Copy className="mr-2 h-4 w-4" />
+                    )}
                     Create revision
                   </Button>
                 )}
@@ -206,9 +208,11 @@ function QuoteDetailPage() {
                       : "Create a sales order from this quote"
                   }
                 >
-                  {soMut.isPending
-                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    : <ShoppingCart className="mr-2 h-4 w-4" />}
+                  {soMut.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                  )}
                   {linkedSo.data ? "Open sales order" : "Convert to Sales Order"}
                 </Button>
                 <Button

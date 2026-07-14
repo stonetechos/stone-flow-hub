@@ -68,19 +68,22 @@ async function fetchVendor(id: string | null | undefined) {
   return data ?? null;
 }
 
-function customerParty(c: {
-  name: string;
-  billing_address: string | null;
-  city: string | null;
-  state: string | null;
-  pincode: string | null;
-  gst_number: string | null;
-  primary_email: string | null;
-  primary_phone: string | null;
-} | null): PdfParty {
+function customerParty(
+  c: {
+    name: string;
+    billing_address: string | null;
+    city: string | null;
+    state: string | null;
+    pincode: string | null;
+    gst_number: string | null;
+    primary_email: string | null;
+    primary_phone: string | null;
+  } | null,
+): PdfParty {
   if (!c) return { name: "—" };
-  const parts = [c.billing_address, [c.city, c.state, c.pincode].filter(Boolean).join(", ")]
-    .filter((s): s is string => Boolean(s && s.trim()));
+  const parts = [c.billing_address, [c.city, c.state, c.pincode].filter(Boolean).join(", ")].filter(
+    (s): s is string => Boolean(s && s.trim()),
+  );
   return {
     name: c.name,
     address: parts.join("\n") || undefined,
@@ -89,19 +92,22 @@ function customerParty(c: {
     phone: c.primary_phone ?? undefined,
   };
 }
-function vendorParty(v: {
-  company_name: string;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  pincode: string | null;
-  gst_number: string | null;
-  email: string | null;
-  mobile_number: string | null;
-} | null): PdfParty {
+function vendorParty(
+  v: {
+    company_name: string;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    pincode: string | null;
+    gst_number: string | null;
+    email: string | null;
+    mobile_number: string | null;
+  } | null,
+): PdfParty {
   if (!v) return { name: "—" };
-  const parts = [v.address, [v.city, v.state, v.pincode].filter(Boolean).join(", ")]
-    .filter((s): s is string => Boolean(s && s.trim()));
+  const parts = [v.address, [v.city, v.state, v.pincode].filter(Boolean).join(", ")].filter(
+    (s): s is string => Boolean(s && s.trim()),
+  );
   return {
     name: v.company_name,
     address: parts.join("\n") || undefined,
@@ -112,10 +118,7 @@ function vendorParty(v: {
 }
 
 /** Build a fully-populated PdfDoc from live ERP data. */
-export async function buildDocument(
-  entity: DocumentEntity,
-  id: string,
-): Promise<BuiltDocument> {
+export async function buildDocument(entity: DocumentEntity, id: string): Promise<BuiltDocument> {
   switch (entity) {
     case "estimate": {
       const e = await getEstimate(id);
@@ -276,7 +279,16 @@ export async function buildDocument(
             { label: "Project", value: po.project?.name ?? "—" },
             { label: "Expected date", value: po.expected_date ?? "—" },
             { label: "Status", value: po.status },
-            { label: "Payment terms", value: po.payment_schedule ? String(typeof po.payment_schedule === "object" ? JSON.stringify(po.payment_schedule) : po.payment_schedule) : "—" },
+            {
+              label: "Payment terms",
+              value: po.payment_schedule
+                ? String(
+                    typeof po.payment_schedule === "object"
+                      ? JSON.stringify(po.payment_schedule)
+                      : po.payment_schedule,
+                  )
+                : "—",
+            },
           ],
           notes: po.notes ?? undefined,
         },
@@ -307,9 +319,7 @@ export async function buildDocument(
         { label: "Subtotal", value: inr(i.subtotal) },
         { label: "Tax", value: inr(i.tax_amount) },
         { label: "Total", value: inr(i.total) },
-        ...(Number(i.amount_paid) > 0
-          ? [{ label: "Amount paid", value: inr(i.amount_paid) }]
-          : []),
+        ...(Number(i.amount_paid) > 0 ? [{ label: "Amount paid", value: inr(i.amount_paid) }] : []),
         { label: "Balance due", value: inr(i.balance_due) },
       ];
       return {

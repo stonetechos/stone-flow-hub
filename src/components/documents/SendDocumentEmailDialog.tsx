@@ -89,8 +89,7 @@ export function SendDocumentEmailDialog({ open, onOpenChange, entity, entityId }
         .split("\n")
         .map((l) => `<p style="margin:0 0 8px 0">${escape(l)}</p>`)
         .join("");
-      const body =
-        `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#0f172a;padding:20px">
+      const body = `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#0f172a;padding:20px">
            ${introHtml}
            <hr style="margin:24px 0;border:0;border-top:1px solid #e2e8f0" />
          </div>${html}`;
@@ -125,8 +124,8 @@ export function SendDocumentEmailDialog({ open, onOpenChange, entity, entityId }
         <DialogHeader>
           <DialogTitle>Send {DOC_ENTITY_LABEL[entity]}</DialogTitle>
           <DialogDescription>
-            The branded PDF is generated from live ERP data and attached inline
-            in the email body. The send is logged in the Communication Timeline.
+            The branded PDF is generated from live ERP data and attached inline in the email body.
+            The send is logged in the Communication Timeline.
           </DialogDescription>
         </DialogHeader>
         {loading ? (
@@ -183,8 +182,5 @@ export function SendDocumentEmailDialog({ open, onOpenChange, entity, entityId }
 }
 
 function escape(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

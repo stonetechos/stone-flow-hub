@@ -18,8 +18,17 @@
 import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 
 export type DocKind =
-  | "quotation" | "estimate" | "sales_order" | "purchase_order" | "production_order"
-  | "delivery_challan" | "dispatch_note" | "invoice" | "receipt" | "packing_list" | "qc_report";
+  | "quotation"
+  | "estimate"
+  | "sales_order"
+  | "purchase_order"
+  | "production_order"
+  | "delivery_challan"
+  | "dispatch_note"
+  | "invoice"
+  | "receipt"
+  | "packing_list"
+  | "qc_report";
 
 export type PdfLine = {
   label: string;
@@ -227,7 +236,12 @@ function openInNewTab(html: string, autoPrint: boolean) {
   w.document.close();
   if (autoPrint) {
     setTimeout(() => {
-      try { w.focus(); w.print(); } catch { /* ignore */ }
+      try {
+        w.focus();
+        w.print();
+      } catch {
+        /* ignore */
+      }
     }, 350);
   }
 }
