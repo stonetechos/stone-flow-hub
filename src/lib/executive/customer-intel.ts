@@ -11,7 +11,17 @@ export interface CustomerScore {
   orders_count: number;
   avg_days_to_pay: number | null;
   overdue_days: number;
+  /** Invoiced revenue in the last GROWTH_WINDOW_DAYS days — same summation
+   *  as `revenue`, just date-windowed. Added for Phase G.5 (Customer
+   *  Intelligence) so CustomerLifetimeValueProvider can detect real
+   *  period-over-period growth without a second revenue calculation. */
+  recent_revenue: number;
+  /** Invoiced revenue in the GROWTH_WINDOW_DAYS window before that. */
+  prior_revenue: number;
 }
+
+/** Window used for the recent-vs-prior revenue comparison above. */
+const GROWTH_WINDOW_DAYS = 90;
 
 export interface CustomerIntel {
   top_by_revenue: CustomerScore[];
@@ -23,15 +33,13 @@ export interface CustomerIntel {
   potential_high_value: CustomerScore[];
 }
 
-export async function getCustomerIntel(): Promise<CustomerIntel> {
+async function computeCustomerScores(): Promise<CustomerScore[]> {
   const now = Date.now();
-  const [custs, invs, pays, enqs] = await Promise.all([
+  const [custs, invs] = await Promise.all([
     supabase.from("customers").select("id,name,created_at").eq("is_active", true).limit(2000),
     supabase.from("invoices").select("customer_id,total,balance_due,issue_date,due_date"),
-    supabase.from("payments").select("invoice_id,paid_at,amount"),
-    supabase.from("enquiries").select("customer_id,budget_inr,created_at").limit(5000),
   ]);
-  for (const r of [custs, invs, pays, enqs]) if (r.error) throw new AppError(mapDbError(r.error));
+  for (const r of [custs, invs]) if (r.error) throw new AppError(mapDbError(r.error));
 
   type Inv = { customer_id: string; total: number; balance_due: number; issue_date: string; due_date: string | null };
   const invByCust = new Map<string, Inv[]>();
@@ -40,6 +48,9 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
     arr.push(i);
     invByCust.set(i.customer_id, arr);
   }
+
+  const recentCutoff = now - GROWTH_WINDOW_DAYS * 86_400_000;
+  const priorCutoff = now - 2 * GROWTH_WINDOW_DAYS * 86_400_000;
 
   const scores: CustomerScore[] = [];
   for (const c of (custs.data ?? []) as Array<{ id: string; name: string; created_at: string }>) {
@@ -53,6 +64,14 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
       return d > max ? d : max;
     }, 0);
     const lastOrder = rows.reduce<string | null>((acc, r) => (!acc || r.issue_date > acc ? r.issue_date : acc), null);
+    const recentRevenue = rows.reduce((s, r) => {
+      const t = new Date(r.issue_date).getTime();
+      return t >= recentCutoff ? s + Number(r.total ?? 0) : s;
+    }, 0);
+    const priorRevenue = rows.reduce((s, r) => {
+      const t = new Date(r.issue_date).getTime();
+      return t >= priorCutoff && t < recentCutoff ? s + Number(r.total ?? 0) : s;
+    }, 0);
     scores.push({
       customer_id: c.id,
       name: c.name,
@@ -62,11 +81,33 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
       orders_count: rows.length,
       avg_days_to_pay: null,
       overdue_days: overdueDays,
+      recent_revenue: recentRevenue,
+      prior_revenue: priorRevenue,
     });
   }
+  return scores;
+}
+
+/** Full, unsliced per-customer scores — added for Phase G.5 so Customer
+ *  Intelligence providers can evaluate every customer against a threshold
+ *  instead of only the top-15-per-category slices `getCustomerIntel`
+ *  returns. Mirrors the `listVendorScores` addition in `vendor-intel.ts`
+ *  (Phase G.3). `getCustomerIntel()`'s own behavior is unchanged. */
+export async function listCustomerScores(): Promise<CustomerScore[]> {
+  return computeCustomerScores();
+}
+
+export async function getCustomerIntel(): Promise<CustomerIntel> {
+  const scores = await computeCustomerScores();
+  const now = Date.now();
+  const { data: enqData, error: enqErr } = await supabase
+    .from("enquiries")
+    .select("customer_id,budget_inr,created_at")
+    .limit(5000);
+  if (enqErr) throw new AppError(mapDbError(enqErr));
 
   const enqPot = new Map<string, number>();
-  for (const e of (enqs.data ?? []) as Array<{ customer_id: string; budget_inr: number | null }>) {
+  for (const e of (enqData ?? []) as Array<{ customer_id: string; budget_inr: number | null }>) {
     if (!e.customer_id) continue;
     enqPot.set(e.customer_id, (enqPot.get(e.customer_id) ?? 0) + Number(e.budget_inr ?? 0));
   }

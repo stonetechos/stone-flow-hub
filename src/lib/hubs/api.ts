@@ -450,4 +450,9 @@ export const hub = {
     }
     return Array.from(map.values());
   },
+  /** All customer_contacts rows across every customer — added for Phase G.5
+   *  (Customer Intelligence). Every other `hub.*` method here is scoped to
+   *  one customerId; this is the bulk counterpart `customerContacts` never
+   *  needed until a provider had to check every customer's contacts at once. */
+  allCustomerContacts: () => run<CustomerContactRow[]>(supabase.from("customer_contacts").select("*")),
 };
