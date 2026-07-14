@@ -2,6 +2,13 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatInr } from "@/lib/format";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+/** Shortens a category label for the Y-axis tick only — the full label
+ *  still appears in the tooltip on hover/tap, so nothing is lost. */
+function truncateLabel(label: string, maxLen: number): string {
+  return label.length > maxLen ? `${label.slice(0, maxLen - 1)}…` : label;
+}
 
 export const CHART_COLORS = [
   "hsl(var(--primary))",
@@ -60,6 +67,14 @@ export function BarCard({
   formatValue?: (v: number) => string;
 }) {
   const empty = data.length === 0 || data.every((d) => d.value === 0);
+  // Vertical bar charts reserve fixed Y-axis width for category labels
+  // (customer/salesperson/product names). At 110px that width alone can
+  // swallow most of a narrow mobile card, leaving almost no room for the
+  // bars themselves. Below the same 768px breakpoint AppShell uses to
+  // switch to its mobile nav, shrink the reserved width and truncate long
+  // labels on the tick — the full label still shows in the tooltip.
+  const isMobile = useIsMobile();
+  const yAxisWidth = vertical ? (isMobile ? 72 : 110) : undefined;
   return (
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
@@ -68,12 +83,18 @@ export function BarCard({
           <div className="grid h-full place-items-center text-xs text-muted-foreground">No data yet.</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout={vertical ? "vertical" : "horizontal"} margin={vertical ? { left: 110 } : undefined}>
+            <BarChart data={data} layout={vertical ? "vertical" : "horizontal"} margin={vertical ? { left: yAxisWidth } : undefined}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               {vertical ? (
                 <>
                   <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
-                  <YAxis type="category" dataKey="label" tick={{ fontSize: 11 }} width={110} />
+                  <YAxis
+                    type="category"
+                    dataKey="label"
+                    tick={{ fontSize: 11 }}
+                    width={yAxisWidth}
+                    tickFormatter={isMobile ? (label: string) => truncateLabel(label, 10) : undefined}
+                  />
                 </>
               ) : (
                 <>
