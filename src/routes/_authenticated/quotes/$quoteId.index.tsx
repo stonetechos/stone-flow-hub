@@ -9,7 +9,7 @@ import {
   Pencil,
   Trash2,
   ShoppingCart,
-  Printer,
+  
   Share2,
   FolderOpen,
   History,
