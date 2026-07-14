@@ -38,13 +38,24 @@ function CommandCenter() {
   const cc = useQuery({ queryKey: ["exec", "command-center"], queryFn: getCommandCenter, staleTime: 30_000 });
   const { executiveBrief, processedInsights, loading: insightsLoading } = useExecutiveInsights();
 
-  if (exec.isLoading || dash.isLoading || cc.isLoading) return <LoadingBlock />;
+  // Error takes priority over loading: once react-query exhausts retries the
+  // failing query's `.error` is set and its `isLoading` is false, so this must
+  // be checked before (not after) the "still resolving" branch below.
   const err = exec.error ?? dash.error ?? cc.error;
   if (err) return <ErrorBlock message={toUserMessage(err)} />;
 
-  const k = exec.data!;
-  const d = dash.data!;
-  const c = cc.data!;
+  // `!exec.data` (etc.) deliberately covers the retry window too: react-query
+  // clears `isLoading` between a failed attempt and its automatic retry while
+  // `.error` is still null and `.data` is still undefined. Asserting `.data!`
+  // here would read through that gap; keep showing LoadingBlock instead until
+  // there's either real data or an exhausted-retry error above.
+  if (exec.isLoading || dash.isLoading || cc.isLoading || !exec.data || !dash.data || !cc.data) {
+    return <LoadingBlock />;
+  }
+
+  const k = exec.data;
+  const d = dash.data;
+  const c = cc.data;
 
   return (
     <div className="space-y-8">
