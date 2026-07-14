@@ -259,11 +259,13 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(so.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description ?? it.product_name ?? "",
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(so.subtotal) },
         ...(Number(so.discount) > 0 ? [{ label: "Discount", value: inr(so.discount) }] : []),
@@ -271,7 +273,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         ...(Number(so.other_charges) > 0
           ? [{ label: "Other charges", value: inr(so.other_charges) }]
           : []),
-        { label: "Tax", value: inr(so.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(so.tax_amount) }]),
         { label: "Total", value: inr(so.total) },
       ];
       return {
