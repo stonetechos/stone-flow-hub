@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -204,12 +205,7 @@ function EstimateDetailPage() {
             <Button size="sm" variant="outline" onClick={() => openSend("whatsapp")}>
               <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
             </Button>
-            <Button size="sm" variant="outline" onClick={() => openSend("email")}>
-              <Mail className="mr-2 h-4 w-4" /> Email
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()}>
-              <FileText className="mr-2 h-4 w-4" /> Print PDF
-            </Button>
+            <DocumentToolbar entity="estimate" entityId={estimate.id} />
             {estimate.status !== "accepted" && estimate.status !== "converted" && (
               <Button size="sm" variant="secondary" onClick={() => setApproveOpen(true)}>
                 <CheckCircle2 className="mr-2 h-4 w-4" /> Approve &amp; create schedule

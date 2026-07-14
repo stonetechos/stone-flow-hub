@@ -218,14 +218,10 @@ function QuoteDetailPage() {
                   {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
                 </Button>
+                <DocumentToolbar entity="quote" entityId={quoteId} />
               </>
             }
             overflow={[
-              {
-                label: "Print",
-                icon: <Printer className="h-4 w-4" />,
-                onSelect: () => window.print(),
-              },
               {
                 label: "Share link",
                 icon: <Share2 className="h-4 w-4" />,

@@ -1,127 +1,63 @@
 /**
- * Lightweight branded PDF generator. Renders a document into an offscreen
- * iframe and triggers the browser's print dialog — no external dependency,
- * consistent typography across quotation / SO / PO / invoice / packing / QC.
+ * Branded PDF/print renderer.
  *
- * For richer server-side PDF rendering, swap `printHtml` with a server fn
- * that uses `pdf-lib` or a headless renderer without changing callers.
+ * Renders any ERP document into a single professional HTML/PDF layout,
+ * reading company identity (name, logo, address, phone, email, website,
+ * GSTIN, colours) from `BrandingConfig` via `loadBranding()`. Consumers
+ * never hard-code branding.
+ *
+ * Actions:
+ *  - `renderDocHtml(doc, brand)` → pure HTML string (used for email body,
+ *    hosted preview, and browser print-to-PDF).
+ *  - `previewPdf(doc)`  → open in new tab (no auto-print).
+ *  - `printPdf(doc)`    → open in new tab and trigger the print dialog.
+ *  - `downloadPdf(doc)` → same as `printPdf`; the OS print dialog exposes
+ *    "Save as PDF". A true binary PDF generator can slot in later behind
+ *    the same signature without touching call sites.
  */
-export type DocKind =
-  | "quotation" | "sales_order" | "purchase_order" | "production_order"
-  | "delivery_challan" | "dispatch_note" | "invoice" | "packing_list" | "qc_report";
+import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 
-export type PdfLine = { label: string; qty?: number | string; unit?: string; rate?: number | string; amount?: number | string };
+export type DocKind =
+  | "quotation" | "estimate" | "sales_order" | "purchase_order" | "production_order"
+  | "delivery_challan" | "dispatch_note" | "invoice" | "receipt" | "packing_list" | "qc_report";
+
+export type PdfLine = {
+  label: string;
+  qty?: number | string;
+  unit?: string;
+  rate?: number | string;
+  amount?: number | string;
+  hsn?: string;
+};
 export type PdfMeta = { label: string; value: string | number | null | undefined };
+
+export type PdfParty = {
+  name: string;
+  address?: string;
+  gstin?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+};
 
 export type PdfDoc = {
   kind: DocKind;
   title: string;
   number: string;
   date: string;
-  from: { name: string; address?: string; gstin?: string; email?: string; phone?: string };
-  to: { name: string; address?: string; gstin?: string };
+  /** Sender party. If omitted, filled from BrandingConfig. */
+  from?: PdfParty;
+  to: PdfParty;
   meta?: PdfMeta[];
   lines?: PdfLine[];
   totals?: PdfMeta[];
   notes?: string;
+  terms?: string;
   footer?: string;
 };
 
-const BRAND = "Stone Tech OS";
-const ACCENT = "#0F766E"; // teal
-const INK = "#0F172A";
-
-export function renderDocHtml(doc: PdfDoc): string {
-  const rows = (doc.lines ?? [])
-    .map(
-      (l, i) => `<tr>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB">${i + 1}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB">${escapeHtml(l.label)}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB;text-align:right">${escapeHtml(String(l.qty ?? ""))}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB">${escapeHtml(String(l.unit ?? ""))}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB;text-align:right">${escapeHtml(String(l.rate ?? ""))}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #E5E7EB;text-align:right">${escapeHtml(String(l.amount ?? ""))}</td>
-      </tr>`,
-    )
-    .join("");
-
-  const meta = (doc.meta ?? [])
-    .map((m) => `<div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:#64748B">${escapeHtml(m.label)}</span><span>${escapeHtml(String(m.value ?? "—"))}</span></div>`)
-    .join("");
-
-  const totals = (doc.totals ?? [])
-    .map((t, i, arr) => `<div style="display:flex;justify-content:space-between;padding:4px 0;${i === arr.length - 1 ? "border-top:1px solid #CBD5E1;font-weight:600;color:" + INK : "color:#334155"}"><span>${escapeHtml(t.label)}</span><span>${escapeHtml(String(t.value ?? ""))}</span></div>`)
-    .join("");
-
-  return `<!doctype html><html><head><meta charset="utf-8" />
-<title>${escapeHtml(doc.title)} · ${escapeHtml(doc.number)}</title>
-<style>
-  @page { size: A4; margin: 18mm; }
-  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color:${INK}; margin:0; }
-  header { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:14px; border-bottom:2px solid ${ACCENT}; }
-  h1 { font-size:20px; margin:0; color:${ACCENT}; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:16px 0; }
-  .card { border:1px solid #E5E7EB; border-radius:8px; padding:12px; }
-  .label { font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#64748B; }
-  table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-  thead th { text-align:left; padding:8px; background:#F1F5F9; font-size:11px; color:#334155; }
-  tfoot td { padding:8px; }
-  .notes { margin-top:16px; padding:12px; background:#F8FAFC; border-radius:8px; font-size:12px; color:#475569; }
-  .footer { margin-top:24px; padding-top:12px; border-top:1px solid #E5E7EB; font-size:11px; color:#64748B; text-align:center; }
-</style>
-</head><body>
-  <header>
-    <div>
-      <h1>${escapeHtml(doc.title)}</h1>
-      <div class="label">${escapeHtml(BRAND)} · Architectural Stone ERP</div>
-    </div>
-    <div style="text-align:right">
-      <div style="font-size:15px;font-weight:600">${escapeHtml(doc.number)}</div>
-      <div class="label">${escapeHtml(doc.date)}</div>
-    </div>
-  </header>
-
-  <div class="grid">
-    <div class="card">
-      <div class="label">From</div>
-      <div style="font-weight:600;margin-top:4px">${escapeHtml(doc.from.name)}</div>
-      ${doc.from.address ? `<div style="font-size:12px;color:#475569;white-space:pre-line">${escapeHtml(doc.from.address)}</div>` : ""}
-      ${doc.from.gstin ? `<div style="font-size:11px;color:#64748B;margin-top:4px">GSTIN: ${escapeHtml(doc.from.gstin)}</div>` : ""}
-    </div>
-    <div class="card">
-      <div class="label">To</div>
-      <div style="font-weight:600;margin-top:4px">${escapeHtml(doc.to.name)}</div>
-      ${doc.to.address ? `<div style="font-size:12px;color:#475569;white-space:pre-line">${escapeHtml(doc.to.address)}</div>` : ""}
-      ${doc.to.gstin ? `<div style="font-size:11px;color:#64748B;margin-top:4px">GSTIN: ${escapeHtml(doc.to.gstin)}</div>` : ""}
-    </div>
-  </div>
-
-  ${meta ? `<div class="card" style="margin-bottom:16px">${meta}</div>` : ""}
-
-  ${rows
-    ? `<table>
-        <thead><tr>
-          <th style="width:32px">#</th>
-          <th>Description</th>
-          <th style="text-align:right;width:70px">Qty</th>
-          <th style="width:60px">Unit</th>
-          <th style="text-align:right;width:90px">Rate</th>
-          <th style="text-align:right;width:100px">Amount</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`
-    : ""}
-
-  ${totals ? `<div style="margin-top:16px;margin-left:auto;width:280px">${totals}</div>` : ""}
-
-  ${doc.notes ? `<div class="notes"><strong>Notes:</strong> ${escapeHtml(doc.notes)}</div>` : ""}
-
-  <div class="footer">${escapeHtml(doc.footer ?? `${BRAND} — This is a system-generated document.`)}</div>
-</body></html>`;
-}
-
-function escapeHtml(s: string): string {
-  return s
+function esc(s: unknown): string {
+  return String(s ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -129,14 +65,188 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-/** Renders `doc` and opens the browser print dialog (Save-as-PDF). */
-export function printPdf(doc: PdfDoc) {
-  const html = renderDocHtml(doc);
+function brandParty(brand: BrandingConfig): PdfParty {
+  return {
+    name: brand.company_name,
+    address: brand.address,
+    gstin: brand.gstin,
+    email: brand.email,
+    phone: brand.phone,
+    website: brand.website,
+  };
+}
+
+export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRANDING): string {
+  const from = doc.from ?? brandParty(brand);
+  const accent = brand.primary || "#0F766E";
+  const ink = "#0F172A";
+  const muted = "#64748B";
+  const border = "#E5E7EB";
+
+  const logo = brand.logo_url
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:52px;max-width:180px;object-fit:contain" />`
+    : `<div style="font-size:22px;font-weight:800;color:${accent};letter-spacing:-.01em">${esc(brand.company_name)}</div>`;
+
+  const showHsn = (doc.lines ?? []).some((l) => l.hsn);
+  const rows = (doc.lines ?? [])
+    .map(
+      (l, i) => `<tr>
+        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};font-size:11px">${i + 1}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border}">${esc(l.label)}</td>
+        ${showHsn ? `<td style="padding:8px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px">${esc(l.hsn ?? "")}</td>` : ""}
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right">${esc(l.qty ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted}">${esc(l.unit ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right">${esc(l.rate ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums">${esc(l.amount ?? "")}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const meta = (doc.meta ?? [])
+    .map(
+      (m) =>
+        `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
+          <span style="color:${muted}">${esc(m.label)}</span>
+          <span style="color:${ink}">${esc(m.value ?? "—")}</span>
+        </div>`,
+    )
+    .join("");
+
+  const totals = (doc.totals ?? [])
+    .map(
+      (t, i, arr) => `<div style="display:flex;justify-content:space-between;padding:5px 0;${
+        i === arr.length - 1
+          ? `border-top:2px solid ${accent};margin-top:4px;font-weight:700;font-size:14px;color:${ink}`
+          : `color:#334155`
+      }">
+        <span>${esc(t.label)}</span>
+        <span style="font-variant-numeric:tabular-nums">${esc(t.value ?? "")}</span>
+      </div>`,
+    )
+    .join("");
+
+  const partyBlock = (p: PdfParty, label: string) => `
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">${label}</div>
+      <div style="font-weight:700;font-size:14px;color:${ink}">${esc(p.name)}</div>
+      ${p.address ? `<div style="font-size:12px;color:#475569;white-space:pre-line;margin-top:2px">${esc(p.address)}</div>` : ""}
+      ${p.gstin ? `<div style="font-size:11px;color:${muted};margin-top:4px"><b>GSTIN:</b> ${esc(p.gstin)}</div>` : ""}
+      ${p.email ? `<div style="font-size:11px;color:${muted}">${esc(p.email)}</div>` : ""}
+      ${p.phone ? `<div style="font-size:11px;color:${muted}">${esc(p.phone)}</div>` : ""}
+    </div>`;
+
+  return `<!doctype html><html><head><meta charset="utf-8" />
+<title>${esc(doc.title)} · ${esc(doc.number)}</title>
+<style>
+  @page { size: A4; margin: 16mm; }
+  @media print { .no-print { display:none !important; } }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:${ink}; margin:0; background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sheet { max-width: 780px; margin: 0 auto; padding: 24px; }
+  .toolbar { position: sticky; top:0; background:#f8fafc; border-bottom:1px solid ${border}; padding:8px 24px; display:flex; gap:8px; justify-content:flex-end; }
+  .toolbar button { font: inherit; padding:6px 12px; border-radius:6px; border:1px solid ${border}; background:#fff; cursor:pointer; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; padding-bottom:16px; border-bottom:3px solid ${accent}; }
+  .doc-title { font-size:22px; margin:0; color:${accent}; letter-spacing:-.01em; font-weight:700; }
+  .doc-sub { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:${muted}; margin-top:4px; }
+  .parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0 16px; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+  thead th { text-align:left; padding:8px; background:${accent}; color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+  thead th:last-child, thead th.right { text-align:right; }
+  .totals { margin-top:20px; margin-left:auto; width:300px; }
+  .notes { margin-top:16px; padding:12px 14px; background:#F8FAFC; border-left:3px solid ${accent}; font-size:12px; color:#334155; }
+  .terms { margin-top:14px; font-size:11px; color:${muted}; white-space:pre-line; line-height:1.55; }
+  .footer { margin-top:28px; padding-top:12px; border-top:1px solid ${border}; font-size:10px; color:${muted}; text-align:center; }
+  .footer a { color:${accent}; text-decoration:none; }
+</style>
+</head><body>
+  <div class="toolbar no-print">
+    <button onclick="window.print()">Print / Save as PDF</button>
+    <button onclick="window.close()">Close</button>
+  </div>
+  <div class="sheet">
+    <header>
+      <div>
+        ${logo}
+        <div class="doc-sub">${esc(brand.tagline || "")}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="doc-title">${esc(doc.title)}</div>
+        <div style="font-size:14px;font-weight:600;color:${ink};margin-top:4px">${esc(doc.number)}</div>
+        <div class="doc-sub">${esc(doc.date)}</div>
+      </div>
+    </header>
+
+    <div class="parties">
+      ${partyBlock(from, "From")}
+      ${partyBlock(doc.to, "Bill To")}
+    </div>
+
+    ${meta ? `<div style="border:1px solid ${border};border-radius:6px;padding:10px 14px;margin-bottom:8px">${meta}</div>` : ""}
+
+    ${
+      rows
+        ? `<table>
+            <thead><tr>
+              <th style="width:28px">#</th>
+              <th>Description</th>
+              ${showHsn ? `<th style="width:70px">HSN</th>` : ""}
+              <th class="right" style="width:70px">Qty</th>
+              <th style="width:60px">Unit</th>
+              <th class="right" style="width:90px">Rate</th>
+              <th class="right" style="width:110px">Amount</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`
+        : ""
+    }
+
+    ${totals ? `<div class="totals">${totals}</div>` : ""}
+
+    ${doc.notes ? `<div class="notes"><b>Notes:</b> ${esc(doc.notes)}</div>` : ""}
+    ${doc.terms ? `<div class="terms"><b>Terms &amp; Conditions</b>\n${esc(doc.terms)}</div>` : ""}
+
+    <div class="footer">
+      ${esc(doc.footer ?? `${brand.company_name} — This is a system-generated document.`)}
+      ${brand.website ? ` · <a href="${esc(brand.website)}">${esc(brand.website)}</a>` : ""}
+    </div>
+  </div>
+</body></html>`;
+}
+
+/** Render `doc` fully-branded to an HTML string (async, loads branding). */
+export async function renderDocHtmlAsync(doc: PdfDoc): Promise<string> {
+  const brand = await loadBranding();
+  return renderDocHtml(doc, brand);
+}
+
+function openInNewTab(html: string, autoPrint: boolean) {
   const w = window.open("", "_blank", "noopener,noreferrer");
   if (!w) return;
   w.document.open();
   w.document.write(html);
   w.document.close();
-  // Give the browser a tick to render before printing.
-  setTimeout(() => { try { w.focus(); w.print(); } catch { /* ignore */ } }, 300);
+  if (autoPrint) {
+    setTimeout(() => {
+      try { w.focus(); w.print(); } catch { /* ignore */ }
+    }, 350);
+  }
+}
+
+/** Open the branded document in a new tab (no print dialog). */
+export async function previewPdf(doc: PdfDoc): Promise<void> {
+  openInNewTab(await renderDocHtmlAsync(doc), false);
+}
+
+/** Open the branded document and trigger the print dialog. */
+export async function printPdf(doc: PdfDoc): Promise<void> {
+  openInNewTab(await renderDocHtmlAsync(doc), true);
+}
+
+/**
+ * Download as PDF: opens the print dialog which offers "Save as PDF"
+ * on every modern OS. Kept as a distinct entry point so a future
+ * binary-PDF backend can slot in without touching call sites.
+ */
+export async function downloadPdf(doc: PdfDoc): Promise<void> {
+  return printPdf(doc);
 }

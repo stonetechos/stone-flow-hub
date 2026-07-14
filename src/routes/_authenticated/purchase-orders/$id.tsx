@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Printer, Truck, Banknote } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History, Truck, Banknote } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -72,14 +73,10 @@ function PurchaseOrderDetailPage() {
                 >
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
+                <DocumentToolbar entity="purchase_order" entityId={id} />
               </div>
             }
             overflow={[
-              {
-                label: "Print",
-                icon: <Printer className="h-4 w-4" />,
-                onSelect: () => window.print(),
-              },
               {
                 label: "Documents",
                 icon: <FolderOpen className="h-4 w-4" />,
