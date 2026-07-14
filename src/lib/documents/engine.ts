@@ -49,6 +49,36 @@ function inr(n: number | string | null | undefined) {
   return formatInr(Number.isFinite(v) ? v : 0);
 }
 
+function num(n: number | string | null | undefined): number {
+  const v = typeof n === "string" ? Number(n) : (n ?? 0);
+  return Number.isFinite(v) ? Number(v) : 0;
+}
+
+/**
+ * Build GST breakdown rows from item aggregates. Returns [] when no item
+ * carries CGST/SGST/IGST — historical rows fall back to the legacy single
+ * "Tax" line the caller passes in. Never fabricates statutory values.
+ */
+type GstItem = {
+  cgst_amount?: number | string | null;
+  sgst_amount?: number | string | null;
+  igst_amount?: number | string | null;
+};
+function gstTotalsFromItems(items: ReadonlyArray<GstItem>): PdfMeta[] {
+  const has = items.some(
+    (it) => it.cgst_amount != null || it.sgst_amount != null || it.igst_amount != null,
+  );
+  if (!has) return [];
+  const cgst = items.reduce((s, it) => s + num(it.cgst_amount), 0);
+  const sgst = items.reduce((s, it) => s + num(it.sgst_amount), 0);
+  const igst = items.reduce((s, it) => s + num(it.igst_amount), 0);
+  const out: PdfMeta[] = [];
+  if (cgst > 0) out.push({ label: "CGST", value: inr(cgst) });
+  if (sgst > 0) out.push({ label: "SGST", value: inr(sgst) });
+  if (igst > 0) out.push({ label: "IGST", value: inr(igst) });
+  return out;
+}
+
 async function fetchCustomer(id: string | null | undefined) {
   if (!id) return null;
   const { data } = await supabase
