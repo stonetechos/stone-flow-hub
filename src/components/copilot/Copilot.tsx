@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { Sparkles, Send, Loader2, X, Bookmark, Trash2 } from "lucide-react";
+import { Sparkles, Send, Loader2, X, Bookmark, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,10 @@ export function Copilot() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [bookmarks, setBookmarks] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  // Insights layout only (Phase G.7 data untouched): expanded by default,
+  // independently scrollable, and collapsible so it can never grow large
+  // enough to push the chat composer off-screen.
+  const [insightsOpen, setInsightsOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const ctx = deriveContext(path);
@@ -169,22 +173,39 @@ export function Copilot() {
           </p>
         </SheetHeader>
 
-        <div className="border-b border-border p-4">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Insights
-          </h3>
-          {topInsights.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
-          ) : (
-            <div className="space-y-2">
-              {topInsights.map((i) => (
-                <InsightCard key={i.id} kind={i.kind} tone={i.tone} title={i.title} detail={i.why} to={i.action.href} />
-              ))}
+        <div className="flex-shrink-0 border-b border-border">
+          <button
+            type="button"
+            onClick={() => setInsightsOpen((v) => !v)}
+            aria-expanded={insightsOpen}
+            className="flex w-full items-center justify-between px-4 py-3 text-left"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Insights
+            </h3>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+                insightsOpen && "rotate-180",
+              )}
+            />
+          </button>
+          {insightsOpen && (
+            <div className="max-h-56 overflow-y-auto px-4 pb-4">
+              {topInsights.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
+              ) : (
+                <div className="space-y-2">
+                  {topInsights.map((i) => (
+                    <InsightCard key={i.id} kind={i.kind} tone={i.tone} title={i.title} detail={i.why} to={i.action.href} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div ref={scrollRef} className="space-y-3 p-4">
 
             {messages.length === 0 && (
@@ -231,44 +252,45 @@ export function Copilot() {
           </div>
         </ScrollArea>
 
-        <ScrollArea className="max-h-none">
-          <div className="border-t border-border p-3">
-            <div className="mb-2 flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={bookmarkLast} disabled={messages.length === 0}>
-                <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setMessages([])} disabled={messages.length === 0}>
-                <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
-              </Button>
-              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-end gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
-                }}
-                placeholder="Ask about this page… (Enter to send, Shift+Enter for newline)"
-                rows={2}
-                className="min-h-[56px] resize-none"
-              />
-              <Button
-                size="icon"
-                onClick={() => submit()}
-                disabled={send.isPending || !input.trim()}
-                aria-label="Send"
-              >
-                {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
-            </div>
+        {/* Permanently pinned composer - flex-shrink-0 keeps it the fixed
+         * last child of the drawer's flex column, always visible regardless
+         * of how long the conversation or Insights section grows. */}
+        <div className="flex-shrink-0 border-t border-border p-3">
+          <div className="mb-2 flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={bookmarkLast} disabled={messages.length === 0}>
+              <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setMessages([])} disabled={messages.length === 0}>
+              <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
+            </Button>
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </ScrollArea>
+          <div className="flex items-end gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                }
+              }}
+              placeholder="Ask about this page… (Enter to send, Shift+Enter for newline)"
+              rows={2}
+              className="min-h-[56px] resize-none"
+            />
+            <Button
+              size="icon"
+              onClick={() => submit()}
+              disabled={send.isPending || !input.trim()}
+              aria-label="Send"
+            >
+              {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );
