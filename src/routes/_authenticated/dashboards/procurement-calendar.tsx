@@ -141,7 +141,10 @@ function ProcurementCalendarPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-7 gap-1 text-xs">
+            {/* Mobile: horizontally scrolls within this wrapper instead of
+             * squeezing 7 columns into the viewport or overflowing the page. */}
+            <div className="overflow-x-auto">
+            <div className="grid min-w-[560px] grid-cols-7 gap-1 text-xs">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                 <div key={d} className="p-1 text-center font-medium text-muted-foreground">
                   {d}
@@ -185,6 +188,7 @@ function ProcurementCalendarPage() {
                   </div>
                 );
               })}
+            </div>
             </div>
 
             {events.length === 0 && (

@@ -51,7 +51,7 @@ function DiffRow({
 }) {
   const changed = (before ?? "") !== (after ?? "");
   return (
-    <div className="grid grid-cols-[140px_1fr_1fr] items-start gap-2 border-b border-border py-2 last:border-0">
+    <div className="grid grid-cols-1 gap-1 border-b border-border py-2 last:border-0 sm:grid-cols-[140px_1fr_1fr] sm:items-start sm:gap-2">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className={`text-sm ${changed ? "text-muted-foreground line-through" : ""}`}>
         {before || "—"}
@@ -180,7 +180,7 @@ export function ReassignCustomerDialog({
               </p>
             </div>
 
-            <div className="grid grid-cols-[140px_1fr_1fr] gap-2 border-b border-border pb-1 text-xs font-medium text-muted-foreground">
+            <div className="hidden gap-2 border-b border-border pb-1 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-[140px_1fr_1fr]">
               <div>Field</div>
               <div>Current</div>
               <div className="flex items-center gap-1">

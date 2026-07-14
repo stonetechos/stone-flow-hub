@@ -336,7 +336,7 @@ function ComparePanel({ from, to }: { from: CustomerRow | null; to: CustomerRow 
   ];
   return (
     <div className="py-2">
-      <div className="grid grid-cols-[130px_1fr_1fr] gap-2 border-b border-border pb-1 text-xs font-medium text-muted-foreground">
+      <div className="hidden gap-2 border-b border-border pb-1 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-[130px_1fr_1fr]">
         <div>Field</div>
         <div>Current</div>
         <div className="flex items-center gap-1">
@@ -349,7 +349,7 @@ function ComparePanel({ from, to }: { from: CustomerRow | null; to: CustomerRow 
           return (
             <div
               key={r.label}
-              className="grid grid-cols-[130px_1fr_1fr] items-start gap-2 border-b border-border py-2 last:border-0"
+              className="grid grid-cols-1 gap-1 border-b border-border py-2 last:border-0 sm:grid-cols-[130px_1fr_1fr] sm:items-start sm:gap-2"
             >
               <div className="text-xs font-medium text-muted-foreground">{r.label}</div>
               <div className={`text-sm ${changed ? "text-muted-foreground line-through" : ""}`}>
