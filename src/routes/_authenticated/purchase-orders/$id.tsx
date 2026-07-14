@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Printer, Truck, Banknote } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History, Truck, Banknote } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -12,7 +13,6 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getPurchaseOrder } from "@/lib/purchase-orders/api";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
-
 
 export const Route = createFileRoute("/_authenticated/purchase-orders/$id")({
   ssr: false,
@@ -52,7 +52,14 @@ function PurchaseOrderDetailPage() {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    nav({ to: "/grns/new", search: { po: id, vendor: r.vendor_id ?? undefined, project: r.project_id ?? undefined } })
+                    nav({
+                      to: "/grns/new",
+                      search: {
+                        po: id,
+                        vendor: r.vendor_id ?? undefined,
+                        project: r.project_id ?? undefined,
+                      },
+                    })
                   }
                 >
                   <Truck className="mr-2 h-4 w-4" /> Receive (GRN)
@@ -61,7 +68,10 @@ function PurchaseOrderDetailPage() {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    nav({ to: "/vendor-payments/new", search: { po: id, vendor: r.vendor_id ?? undefined } })
+                    nav({
+                      to: "/vendor-payments/new",
+                      search: { po: id, vendor: r.vendor_id ?? undefined },
+                    })
                   }
                 >
                   <Banknote className="mr-2 h-4 w-4" /> Pay vendor
@@ -72,14 +82,10 @@ function PurchaseOrderDetailPage() {
                 >
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
+                <DocumentToolbar entity="purchase_order" entityId={id} />
               </div>
             }
             overflow={[
-              {
-                label: "Print",
-                icon: <Printer className="h-4 w-4" />,
-                onSelect: () => window.print(),
-              },
               {
                 label: "Documents",
                 icon: <FolderOpen className="h-4 w-4" />,
@@ -106,7 +112,6 @@ function PurchaseOrderDetailPage() {
         ctx={{ vendor_id: r.vendor_id, project_id: r.project_id }}
       />
       <div className="grid gap-4 lg:grid-cols-3">
-
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>

@@ -5,11 +5,17 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -61,8 +67,14 @@ function ReceiptDetailPage() {
             <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
+            <DocumentToolbar entity="receipt" entityId={receiptId} />
             {r.status !== "void" && (
-              <Button variant="destructive" size="sm" onClick={() => voidMut.mutate()} disabled={voidMut.isPending}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => voidMut.mutate()}
+                disabled={voidMut.isPending}
+              >
                 <Ban className="mr-2 h-4 w-4" /> Void
               </Button>
             )}
@@ -74,7 +86,9 @@ function ReceiptDetailPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Details</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Details</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-3 text-sm md:grid-cols-2">
             <Field k="Received on" v={formatDate(r.received_at)} />
             <Field k="Method" v={r.method.toUpperCase()} />
@@ -83,13 +97,25 @@ function ReceiptDetailPage() {
             <Field k="UTR / Ref" v={r.reference_no ?? "—"} />
             <Field k="Cheque #" v={r.cheque_no ?? "—"} />
             <Field k="Cheque date" v={r.cheque_date ? formatDate(r.cheque_date) : "—"} />
-            <Field k="Status" v={<Badge variant={r.status === "void" ? "destructive" : "outline"} className="capitalize">{r.status}</Badge>} />
+            <Field
+              k="Status"
+              v={
+                <Badge
+                  variant={r.status === "void" ? "destructive" : "outline"}
+                  className="capitalize"
+                >
+                  {r.status}
+                </Badge>
+              }
+            />
             <Field k="Remarks" v={r.remarks ?? "—"} full />
           </CardContent>
         </Card>
 
         <Card className="shadow-1">
-          <CardHeader><CardTitle className="text-sm">Amounts</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Amounts</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Line k="Gross" v={formatInr(r.amount)} />
             <Line k="TDS" v={formatInr(-Number(r.tds_amount))} />
@@ -103,12 +129,16 @@ function ReceiptDetailPage() {
       </div>
 
       <Card className="mt-4 shadow-1">
-        <CardHeader><CardTitle className="text-sm">Allocations</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm">Allocations</CardTitle>
+        </CardHeader>
         <CardContent>
           {allocs.isLoading ? (
             <LoadingBlock />
           ) : (allocs.data ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">Unallocated advance — apply to invoices from the customer ledger.</p>
+            <p className="text-sm text-muted-foreground">
+              Unallocated advance — apply to invoices from the customer ledger.
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -121,19 +151,40 @@ function ReceiptDetailPage() {
               </TableHeader>
               <TableBody>
                 {(allocs.data ?? []).map((a) => {
-                  const inv = (a as { invoice: { id: string; invoice_no: string; total: number; issue_date: string } | null }).invoice;
+                  const inv = (
+                    a as {
+                      invoice: {
+                        id: string;
+                        invoice_no: string;
+                        total: number;
+                        issue_date: string;
+                      } | null;
+                    }
+                  ).invoice;
                   return (
                     <TableRow key={a.id}>
                       <TableCell>
                         {inv ? (
-                          <Link to="/invoices/$invoiceId" params={{ invoiceId: inv.id }} className="hover:underline font-mono text-xs">
+                          <Link
+                            to="/invoices/$invoiceId"
+                            params={{ invoiceId: inv.id }}
+                            className="hover:underline font-mono text-xs"
+                          >
                             {inv.invoice_no}
                           </Link>
-                        ) : "—"}
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
-                      <TableCell className="text-sm">{inv ? formatDate(inv.issue_date) : "—"}</TableCell>
-                      <TableCell className="text-right">{inv ? formatInr(inv.total) : "—"}</TableCell>
-                      <TableCell className="text-right font-medium">{formatInr(a.amount)}</TableCell>
+                      <TableCell className="text-sm">
+                        {inv ? formatDate(inv.issue_date) : "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {inv ? formatInr(inv.total) : "—"}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatInr(a.amount)}
+                      </TableCell>
                     </TableRow>
                   );
                 })}

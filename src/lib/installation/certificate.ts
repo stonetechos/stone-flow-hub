@@ -16,7 +16,7 @@ export function printCompletionCertificate(input: {
     title: "Installation Completion Certificate",
     number: input.installation_no,
     date: input.actual_end_date ?? new Date().toISOString().slice(0, 10),
-    from: { name: "Stone Tech OS" },
+    // `from` intentionally omitted → renderer fills it from BrandingConfig.
     to: { name: input.customer_name, address: input.site_address ?? undefined },
     meta: [
       { label: "Project", value: input.project_name ?? "—" },

@@ -11,7 +11,7 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Printer,
+  
   Share2,
   FolderOpen,
   History,
@@ -25,6 +25,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -177,9 +178,7 @@ function InvoiceDetailPage() {
                 <Button size="sm" onClick={() => setPayOpen(true)} disabled={balance <= 0}>
                   <Plus className="mr-2 h-4 w-4" /> Record payment
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => window.print()}>
-                  <Printer className="mr-2 h-4 w-4" /> Print
-                </Button>
+                <DocumentToolbar entity="invoice" entityId={invoiceId} />
                 <Button
                   size="sm"
                   variant="outline"

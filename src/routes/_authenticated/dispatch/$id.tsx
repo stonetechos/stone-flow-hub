@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Printer } from "lucide-react";
+import { ArrowLeft, Pencil, FolderOpen, History } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -52,13 +53,7 @@ function DispatchDetailPage() {
                 <Button size="sm" onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => nav({ to: "/dispatch/$id/print", params: { id } })}
-                >
-                  <Printer className="mr-2 h-4 w-4" /> Print
-                </Button>
+                <DocumentToolbar entity="delivery_challan" entityId={id} />
               </>
             }
             overflow={[
@@ -85,7 +80,11 @@ function DispatchDetailPage() {
       <GuidedNextStep
         entity="dispatch"
         entityId={id}
-        ctx={{ sales_order_id: r.sales_order_id, project_id: r.project_id, customer_id: r.customer_id }}
+        ctx={{
+          sales_order_id: r.sales_order_id,
+          project_id: r.project_id,
+          customer_id: r.customer_id,
+        }}
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
@@ -150,9 +149,7 @@ function DispatchDetailPage() {
                         <tr key={it.id} className="border-t">
                           <td className="px-3 py-2 align-top text-muted-foreground">{idx + 1}</td>
                           <td className="px-3 py-2 align-top">
-                            <div className="font-medium">
-                              {it.product_name ?? it.description}
-                            </div>
+                            <div className="font-medium">{it.product_name ?? it.description}</div>
                             {it.product_name && it.description !== it.product_name && (
                               <div className="text-xs text-muted-foreground">{it.description}</div>
                             )}
