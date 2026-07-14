@@ -54,8 +54,17 @@ function deriveContext(path: string) {
   for (const hint of CONTEXT_HINTS) {
     const m = path.match(hint.match);
     if (m) {
+      // Only "detail" hints (whose pattern captures a trailing `/[^/]+`
+      // segment, e.g. `/^\/customers\/[^/]+/`) actually point at a real
+      // entity id. "List"/section hints like `/^\/dashboard/` have no id
+      // segment at all - treating their second path part (e.g. "command-center"
+      // in `/dashboards/command-center`) as an entityId was scoping Copilot's
+      // insight filter to a bogus entity.type/entity.id pair that no real
+      // Insight ever matches, which forced the empty-state even though
+      // processedInsights was non-empty.
+      const expectsId = hint.match.source.includes("[^/]+");
       const parts = path.split("/").filter(Boolean);
-      const idPart = parts[1] && parts[1].length >= 6 ? parts[1] : undefined;
+      const idPart = expectsId && parts[1] && parts[1].length >= 6 ? parts[1] : undefined;
       return { entity: hint.entity, entityId: idPart, suggestions: hint.suggestions };
     }
   }
