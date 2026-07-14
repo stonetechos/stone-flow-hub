@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
