@@ -49,6 +49,36 @@ function inr(n: number | string | null | undefined) {
   return formatInr(Number.isFinite(v) ? v : 0);
 }
 
+function num(n: number | string | null | undefined): number {
+  const v = typeof n === "string" ? Number(n) : (n ?? 0);
+  return Number.isFinite(v) ? Number(v) : 0;
+}
+
+/**
+ * Build GST breakdown rows from item aggregates. Returns [] when no item
+ * carries CGST/SGST/IGST — historical rows fall back to the legacy single
+ * "Tax" line the caller passes in. Never fabricates statutory values.
+ */
+type GstItem = {
+  cgst_amount?: number | string | null;
+  sgst_amount?: number | string | null;
+  igst_amount?: number | string | null;
+};
+function gstTotalsFromItems(items: ReadonlyArray<GstItem>): PdfMeta[] {
+  const has = items.some(
+    (it) => it.cgst_amount != null || it.sgst_amount != null || it.igst_amount != null,
+  );
+  if (!has) return [];
+  const cgst = items.reduce((s, it) => s + num(it.cgst_amount), 0);
+  const sgst = items.reduce((s, it) => s + num(it.sgst_amount), 0);
+  const igst = items.reduce((s, it) => s + num(it.igst_amount), 0);
+  const out: PdfMeta[] = [];
+  if (cgst > 0) out.push({ label: "CGST", value: inr(cgst) });
+  if (sgst > 0) out.push({ label: "SGST", value: inr(sgst) });
+  if (igst > 0) out.push({ label: "IGST", value: inr(igst) });
+  return out;
+}
+
 async function fetchCustomer(id: string | null | undefined) {
   if (!id) return null;
   const { data } = await supabase
@@ -128,17 +158,21 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(e.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity ?? "",
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(e.subtotal) },
         ...(Number(e.margin_amount) > 0
           ? [{ label: `Margin (${e.margin_pct}%)`, value: inr(e.margin_amount) }]
           : []),
-        { label: `GST (${e.gst_pct}%)`, value: inr(e.gst_amount) },
+        ...(gstSplit.length
+          ? gstSplit
+          : [{ label: `GST (${e.gst_pct}%)`, value: inr(e.gst_amount) }]),
         { label: "Total", value: inr(e.total) },
       ];
       const schedNotes = schedule.length
@@ -179,14 +213,16 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(q.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(q.subtotal) },
-        { label: "Tax", value: inr(q.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(q.tax_amount) }]),
         { label: "Total", value: inr(q.total) },
       ];
       return {
@@ -223,11 +259,13 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(so.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description ?? it.product_name ?? "",
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(so.subtotal) },
         ...(Number(so.discount) > 0 ? [{ label: "Discount", value: inr(so.discount) }] : []),
@@ -235,7 +273,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         ...(Number(so.other_charges) > 0
           ? [{ label: "Other charges", value: inr(so.other_charges) }]
           : []),
-        { label: "Tax", value: inr(so.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(so.tax_amount) }]),
         { label: "Total", value: inr(so.total) },
       ];
       return {
@@ -310,17 +348,32 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(i.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity,
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(i.subtotal) },
-        { label: "Tax", value: inr(i.tax_amount) },
+        ...(gstSplit.length ? gstSplit : [{ label: "Tax", value: inr(i.tax_amount) }]),
         { label: "Total", value: inr(i.total) },
         ...(Number(i.amount_paid) > 0 ? [{ label: "Amount paid", value: inr(i.amount_paid) }] : []),
         { label: "Balance due", value: inr(i.balance_due) },
+      ];
+      const invAny = i as unknown as {
+        place_of_supply?: string | null;
+        reverse_charge?: boolean | null;
+      };
+      const invMeta: PdfMeta[] = [
+        { label: "Project", value: i.project?.name ?? "—" },
+        { label: "Due date", value: i.due_date ?? "—" },
+        { label: "Status", value: i.status },
+        ...(invAny.place_of_supply
+          ? [{ label: "Place of supply", value: invAny.place_of_supply }]
+          : []),
+        { label: "Reverse charge", value: invAny.reverse_charge ? "Yes" : "No" },
       ];
       return {
         doc: {
@@ -329,11 +382,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           number: i.invoice_no,
           date: i.issue_date ?? i.created_at?.slice(0, 10) ?? "",
           to: customerParty(cust),
-          meta: [
-            { label: "Project", value: i.project?.name ?? "—" },
-            { label: "Due date", value: i.due_date ?? "—" },
-            { label: "Status", value: i.status },
-          ],
+          meta: invMeta,
           lines,
           totals,
           notes: i.notes ?? undefined,

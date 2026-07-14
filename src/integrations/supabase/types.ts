@@ -1538,13 +1538,17 @@ export type Database = {
       estimate_items: {
         Row: {
           category: Database["public"]["Enums"]["estimate_item_category"]
+          cgst_amount: number | null
           description: string
           estimate_id: string
+          hsn_sac: string | null
           id: string
+          igst_amount: number | null
           is_demo: boolean
           line_total: number
           product_id: string | null
           quantity: number
+          sgst_amount: number | null
           sort_order: number
           tax_pct: number
           unit: string | null
@@ -1552,13 +1556,17 @@ export type Database = {
         }
         Insert: {
           category?: Database["public"]["Enums"]["estimate_item_category"]
+          cgst_amount?: number | null
           description: string
           estimate_id: string
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
@@ -1566,13 +1574,17 @@ export type Database = {
         }
         Update: {
           category?: Database["public"]["Enums"]["estimate_item_category"]
+          cgst_amount?: number | null
           description?: string
           estimate_id?: string
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
@@ -2686,42 +2698,54 @@ export type Database = {
       }
       invoice_items: {
         Row: {
+          cgst_amount: number | null
           created_at: string
           description: string
+          hsn_sac: string | null
           id: string
+          igst_amount: number | null
           invoice_id: string
           is_demo: boolean
           line_total: number
           product_id: string | null
           quantity: number
+          sgst_amount: number | null
           sort_order: number
           tax_pct: number
           unit: string | null
           unit_price: number
         }
         Insert: {
+          cgst_amount?: number | null
           created_at?: string
           description: string
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           invoice_id: string
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
           unit_price?: number
         }
         Update: {
+          cgst_amount?: number | null
           created_at?: string
           description?: string
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           invoice_id?: string
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
@@ -2761,8 +2785,10 @@ export type Database = {
           issue_date: string
           notes: string | null
           original_customer_id: string | null
+          place_of_supply: string | null
           project_id: string
           quote_id: string | null
+          reverse_charge: boolean
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
@@ -2787,8 +2813,10 @@ export type Database = {
           issue_date?: string
           notes?: string | null
           original_customer_id?: string | null
+          place_of_supply?: string | null
           project_id: string
           quote_id?: string | null
+          reverse_charge?: boolean
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
@@ -2813,8 +2841,10 @@ export type Database = {
           issue_date?: string
           notes?: string | null
           original_customer_id?: string | null
+          place_of_supply?: string | null
           project_id?: string
           quote_id?: string | null
+          reverse_charge?: boolean
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
@@ -5164,45 +5194,57 @@ export type Database = {
       }
       quote_items: {
         Row: {
+          cgst_amount: number | null
           created_at: string
           description: string
           fulfilment: string | null
+          hsn_sac: string | null
           id: string
+          igst_amount: number | null
           is_demo: boolean
           line_total: number
           product_id: string | null
           quantity: number
           quote_id: string
+          sgst_amount: number | null
           sort_order: number
           tax_pct: number
           unit: string | null
           unit_price: number
         }
         Insert: {
+          cgst_amount?: number | null
           created_at?: string
           description: string
           fulfilment?: string | null
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
           quote_id: string
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
           unit_price?: number
         }
         Update: {
+          cgst_amount?: number | null
           created_at?: string
           description?: string
           fulfilment?: string | null
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           quantity?: number
           quote_id?: string
+          sgst_amount?: number | null
           sort_order?: number
           tax_pct?: number
           unit?: string | null
@@ -5698,18 +5740,22 @@ export type Database = {
       sales_order_items: {
         Row: {
           category: string | null
+          cgst_amount: number | null
           created_at: string
           description: string
           discount_pct: number
           finish: string | null
           fulfilment: string | null
+          hsn_sac: string | null
           id: string
+          igst_amount: number | null
           is_demo: boolean
           line_total: number
           product_id: string | null
           product_name: string | null
           quantity: number
           sales_order_id: string
+          sgst_amount: number | null
           size: string | null
           sort_order: number
           stone_type: string | null
@@ -5721,18 +5767,22 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          cgst_amount?: number | null
           created_at?: string
           description: string
           discount_pct?: number
           finish?: string | null
           fulfilment?: string | null
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           product_name?: string | null
           quantity?: number
           sales_order_id: string
+          sgst_amount?: number | null
           size?: string | null
           sort_order?: number
           stone_type?: string | null
@@ -5744,18 +5794,22 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          cgst_amount?: number | null
           created_at?: string
           description?: string
           discount_pct?: number
           finish?: string | null
           fulfilment?: string | null
+          hsn_sac?: string | null
           id?: string
+          igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
           product_id?: string | null
           product_name?: string | null
           quantity?: number
           sales_order_id?: string
+          sgst_amount?: number | null
           size?: string | null
           sort_order?: number
           stone_type?: string | null
@@ -7870,8 +7924,10 @@ export type Database = {
           issue_date: string
           notes: string | null
           original_customer_id: string | null
+          place_of_supply: string | null
           project_id: string
           quote_id: string | null
+          reverse_charge: boolean
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
