@@ -158,17 +158,21 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const cust = await fetchCustomer(e.customer_id);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
+        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
         qty: it.quantity ?? "",
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
       }));
+      const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(e.subtotal) },
         ...(Number(e.margin_amount) > 0
           ? [{ label: `Margin (${e.margin_pct}%)`, value: inr(e.margin_amount) }]
           : []),
-        { label: `GST (${e.gst_pct}%)`, value: inr(e.gst_amount) },
+        ...(gstSplit.length
+          ? gstSplit
+          : [{ label: `GST (${e.gst_pct}%)`, value: inr(e.gst_amount) }]),
         { label: "Total", value: inr(e.total) },
       ];
       const schedNotes = schedule.length
