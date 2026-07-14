@@ -163,6 +163,7 @@ function RootComponent() {
       <StoneGrainFilter />
       <Outlet />
       <Toaster richColors position="top-right" />
+      {import.meta.env.DEV ? <ViewportDebugPanel /> : null}
     </QueryClientProvider>
   );
 }
