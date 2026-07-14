@@ -62,6 +62,7 @@ function ReceiptDetailPage() {
             <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
+            <DocumentToolbar entity="receipt" entityId={receiptId} />
             {r.status !== "void" && (
               <Button variant="destructive" size="sm" onClick={() => voidMut.mutate()} disabled={voidMut.isPending}>
                 <Ban className="mr-2 h-4 w-4" /> Void
