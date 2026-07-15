@@ -36,6 +36,7 @@ import { InventoryShortageProvider } from "@/lib/insights/providers/operations/i
 import { DispatchRiskProvider } from "@/lib/insights/providers/operations/dispatchRisk";
 import type { Insight } from "@/lib/insights/types";
 import type { NlEntityType, NlFilters, NlResultItem, NlStructuredIntent } from "./types";
+import type { TimelineScope } from "@/lib/timeline/types";
 
 const DAY_MS = 86_400_000;
 
@@ -286,25 +287,29 @@ async function resolveGeneric(entityType: NlEntityType, searchText: string | und
   }
 }
 
+/** SearchHit group -> NlEntityType, reused by both fromSearchHits() (the
+ *  open_record/fallback resolver) and resolveTimelineIntent() (Phase
+ *  G.10) so there is exactly one group/entity mapping, not two. */
+const SEARCH_GROUP_TO_ENTITY: Partial<Record<SearchHit["group"], NlEntityType>> = {
+  customers: "customer",
+  projects: "project",
+  vendors: "vendor",
+  products: "product",
+  enquiries: "enquiry",
+  quotes: "quote",
+  salesOrders: "sales_order",
+  purchaseOrders: "purchase_order",
+  inventory: "inventory_item",
+  invoices: "invoice",
+  dispatch: "dispatch",
+};
+
 /** globalSearch() -> NlResultItem[], scoped to a known entityType when
  *  one was classified. Used for open_record lookups and as the fallback
  *  when no specialized resolver applies. */
 function fromSearchHits(hits: SearchHit[], entityType?: NlEntityType): NlResultItem[] {
-  const groupToEntity: Partial<Record<SearchHit["group"], NlEntityType>> = {
-    customers: "customer",
-    projects: "project",
-    vendors: "vendor",
-    products: "product",
-    enquiries: "enquiry",
-    quotes: "quote",
-    salesOrders: "sales_order",
-    purchaseOrders: "purchase_order",
-    inventory: "inventory_item",
-    invoices: "invoice",
-    dispatch: "dispatch",
-  };
   return hits
-    .map((h) => ({ hit: h, mapped: groupToEntity[h.group] }))
+    .map((h) => ({ hit: h, mapped: SEARCH_GROUP_TO_ENTITY[h.group] }))
     .filter(({ mapped }) => !entityType || mapped === entityType)
     .map(({ hit, mapped }) => ({
       id: hit.id,
@@ -316,8 +321,169 @@ function fromSearchHits(hits: SearchHit[], entityType?: NlEntityType): NlResultI
     }));
 }
 
-/** The single entry point: structured intent in, real results out. */
-export async function resolveIntent(intent: NlStructuredIntent): Promise<NlResultItem[]> {
+/** Per-entity-type dispatch, factored out of resolveIntent() so
+ *  resolveTimelineIntent() (Phase G.10) can fall back to the exact same
+ *  per-entity resolver when it can't confidently resolve one specific
+ *  record — one dispatch table, reused, not two. */
+async function resolveByEntityType(entityType: NlEntityType, searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+  switch (entityType) {
+    case "customer":
+      return resolveCustomer(searchText, filters);
+    case "invoice":
+      return resolveInvoice(searchText, filters);
+    case "dispatch":
+      return resolveDispatch(searchText, filters);
+    case "installation":
+      return resolveInstallation(searchText, filters);
+    case "inventory_item":
+      return resolveInventory(searchText, filters);
+    case "project":
+      return resolveProject(searchText, filters);
+    default:
+      return resolveGeneric(entityType, searchText);
+  }
+}
+
+/** Picks the single specific record a timeline question is about. Never
+ *  guesses across an ambiguous set: with no name to match against, more
+ *  than one candidate row means "don't know which one," not "assume the
+ *  first." With a name, prefers an exact match, then a prefix match, and
+ *  only falls back to the search API's own top-relevance row — the same
+ *  ordering every other NL Search resolver already trusts. */
+function pickBestMatch<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): T | null {
+  if (rows.length === 0) return null;
+  if (!needle) return rows.length === 1 ? rows[0] : null;
+  const lower = needle.toLowerCase();
+  const exact = rows.find((r) => getName(r).toLowerCase() === lower);
+  if (exact) return exact;
+  const prefix = rows.find((r) => getName(r).toLowerCase().startsWith(lower));
+  if (prefix) return prefix;
+  return rows[0];
+}
+
+/** Phase G.10 — resolves "timeline_summary" / "recent_activity" /
+ *  "show_related" / "explain_status" / "summarize_record" intents into
+ *  real Business Timeline events for ONE specific record, rendered as
+ *  chronological cards (never a second free-text AI call — the events
+ *  themselves ARE the answer, so nothing can be invented). Customer,
+ *  project and vendor scopes reuse the rich multi-source aggregators
+ *  (getCustomerTimeline/getProjectTimeline/getVendorTimeline via
+ *  getBusinessTimeline); any other named record (a quote number, an
+ *  invoice number, ...) reuses the generic single-entity fallback. If no
+ *  single record can be confidently resolved, this degrades to the
+ *  entity's normal list/search resolver rather than guessing which
+ *  record the user meant. */
+async function resolveTimelineIntent(
+  intent: NlStructuredIntent,
+  pageContext?: { entity?: string; entityId?: string },
+): Promise<NlResultItem[]> {
+  const entityType = intent.entityType;
+  if (!entityType) return [];
+  const nameNeedle = intent.filters?.customerName ?? intent.searchText;
+
+  let scope: TimelineScope | null = null;
+  let entityHref = "";
+  let entityLabel = entityType.replace(/_/g, " ");
+
+  // "this customer" / "show every interaction before I call this
+  // customer" name nothing — they mean whichever record the user is
+  // currently looking at. The client sends that as page context (the
+  // same {entity, entityId} Copilot's own chat already uses), never
+  // something the LLM inferred, so this is exact, not a guess.
+  if (!nameNeedle && !intent.identifier && pageContext?.entityId && pageContext.entity === entityType) {
+    scope =
+      entityType === "customer"
+        ? { customerId: pageContext.entityId }
+        : entityType === "project"
+          ? { projectId: pageContext.entityId }
+          : entityType === "vendor"
+            ? { vendorId: pageContext.entityId }
+            : { entityType, entityId: pageContext.entityId };
+    entityHref = `/${ENTITY_NAV_ID[entityType] ?? entityType}/${pageContext.entityId}`;
+    entityLabel = "this " + entityType.replace(/_/g, " ");
+  } else if (entityType === "customer") {
+    const rows = await listCustomers(nameNeedle ?? "");
+    const match = pickBestMatch(rows, nameNeedle, (r) => r.name);
+    if (match) {
+      scope = { customerId: match.id };
+      entityHref = `/customers/${match.id}`;
+      entityLabel = match.name;
+    }
+  } else if (entityType === "project") {
+    const rows = await listProjects(nameNeedle ?? "");
+    const match = pickBestMatch(rows, nameNeedle, (r) => r.name);
+    if (match) {
+      scope = { projectId: match.id };
+      entityHref = `/projects/${match.id}`;
+      entityLabel = match.name;
+    }
+  } else if (entityType === "vendor") {
+    const rows = await listVendors(nameNeedle ?? "");
+    const match = pickBestMatch(rows, nameNeedle, (r) => r.company_name);
+    if (match) {
+      scope = { vendorId: match.id };
+      entityHref = `/vendors/${match.id}`;
+      entityLabel = match.company_name;
+    }
+  } else if (intent.identifier) {
+    // A specific document number (e.g. "QUO-000050") — resolve it the
+    // same way the open_record intent already does.
+    const hits = await globalSearch(intent.identifier);
+    const hit = hits.find((h) => SEARCH_GROUP_TO_ENTITY[h.group] === entityType) ?? hits[0];
+    if (hit) {
+      scope = { entityType, entityId: hit.id };
+      entityHref = hit.href;
+      entityLabel = hit.label;
+    }
+  }
+
+  if (!scope) return resolveByEntityType(entityType, intent.searchText, intent.filters);
+
+  const { getBusinessTimeline } = await import("@/lib/timeline/api");
+  const events = await getBusinessTimeline(scope);
+
+  const sinceDays = intent.filters?.sinceDays;
+  const cutoff = sinceDays ? Date.now() - sinceDays * DAY_MS : null;
+  const filtered = cutoff ? events.filter((e) => new Date(e.at).getTime() >= cutoff) : events;
+
+  if (filtered.length === 0) {
+    return [
+      {
+        id: `timeline-empty:${entityHref}`,
+        entityType,
+        title: `No recorded history for ${entityLabel}`,
+        subtitle: sinceDays ? `in the last ${sinceDays} days` : "activity will appear here once it happens",
+        href: entityHref,
+        rank: 100,
+      },
+    ];
+  }
+
+  return filtered.slice(0, 20).map((ev, idx) => ({
+    id: ev.id,
+    entityType,
+    title: ev.title,
+    subtitle: `${new Date(ev.at).toLocaleDateString("en-IN")}${ev.detail ? ` · ${ev.detail}` : ev.status ? ` · ${ev.status}` : ""}`,
+    href: ev.route ?? entityHref,
+    // Descending rank preserves the timeline's own chronological order
+    // through rank.ts's sort. Spaced 1000 apart — comfortably wider than
+    // the largest possible combination of rank.ts's additive boosts
+    // (favorite + active + recency + text-match, well under 1000) — so
+    // no boost can ever reorder events out of chronological sequence.
+    rank: 100_000 - idx * 1000,
+    updatedAt: ev.at,
+  }));
+}
+
+/** The single entry point: structured intent in, real results out.
+ *  `pageContext` (Phase G.10) is the client's current page — the same
+ *  {entity, entityId} askCopilot already receives — used only to resolve
+ *  "this customer"/"this project" style references, never sent to or
+ *  produced by the LLM. */
+export async function resolveIntent(
+  intent: NlStructuredIntent,
+  pageContext?: { entity?: string; entityId?: string },
+): Promise<NlResultItem[]> {
   if (intent.intent === "navigate" && intent.entityType) {
     const navItem = NAV_ITEMS_BY_ID[ENTITY_NAV_ID[intent.entityType]];
     if (navItem) {
@@ -330,23 +496,25 @@ export async function resolveIntent(intent: NlStructuredIntent): Promise<NlResul
     return fromSearchHits(hits, intent.entityType);
   }
 
+  // Phase G.10: "what happened with X", "why is X still pending", "show
+  // every interaction before I call this customer", "summarize this
+  // project's history" — all five ask about ONE record's real history,
+  // not a filtered list. Answered from the shared Business Timeline
+  // engine (lib/timeline/api.ts), never a second LLM call, so the answer
+  // can only ever contain events that actually happened.
+  if (
+    intent.entityType &&
+    (intent.intent === "timeline_summary" ||
+      intent.intent === "recent_activity" ||
+      intent.intent === "show_related" ||
+      intent.intent === "explain_status" ||
+      intent.intent === "summarize_record")
+  ) {
+    return resolveTimelineIntent(intent, pageContext);
+  }
+
   if (intent.entityType) {
-    switch (intent.entityType) {
-      case "customer":
-        return resolveCustomer(intent.searchText, intent.filters);
-      case "invoice":
-        return resolveInvoice(intent.searchText, intent.filters);
-      case "dispatch":
-        return resolveDispatch(intent.searchText, intent.filters);
-      case "installation":
-        return resolveInstallation(intent.searchText, intent.filters);
-      case "inventory_item":
-        return resolveInventory(intent.searchText, intent.filters);
-      case "project":
-        return resolveProject(intent.searchText, intent.filters);
-      default:
-        return resolveGeneric(intent.entityType, intent.searchText);
-    }
+    return resolveByEntityType(intent.entityType, intent.searchText, intent.filters);
   }
 
   // No entity type classified — fall back to the general-purpose search

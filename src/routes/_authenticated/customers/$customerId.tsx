@@ -30,13 +30,34 @@ import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
-import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
+import { BusinessTimeline } from "@/components/timeline/BusinessTimeline";
+import { useCustomerTimeline } from "@/lib/timeline/hooks";
 import { DeliveryChallanListPanel } from "@/components/dispatch/DeliveryChallanListPanel";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { formatInr } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
 import { listFollowups } from "@/lib/followups/api";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+
+/** Phase G.10 — full Business Timeline for this customer: enquiries,
+ *  quotations, sales orders, invoices, payments, dispatches, installations,
+ *  completed tasks and the customer's own activity log, unioned and sorted
+ *  chronologically by the shared lib/timeline engine. Answers "what
+ *  happened with this customer" directly on the customer page itself. */
+function CustomerTimelineTab({ customerId }: { customerId: string }) {
+  const timelineQ = useCustomerTimeline(customerId);
+  return (
+    <BusinessTimeline
+      events={timelineQ.data}
+      isLoading={timelineQ.isLoading}
+      error={timelineQ.error}
+      onRetry={() => timelineQ.refetch()}
+      emptyTitle="No history yet"
+      emptyMessage="Enquiries, quotations, orders, invoices and payments for this customer will appear here as they happen."
+    />
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   ssr: false,
@@ -379,7 +400,7 @@ function CustomerHub() {
 
 
         <TabsContent value="timeline" className="mt-4">
-          <TimelinePanel entityType="customer" entityId={customerId} />
+          <CustomerTimelineTab customerId={customerId} />
         </TabsContent>
 
         <TabsContent value="notes" className="mt-4">

@@ -1,39 +1,29 @@
 /**
  * Vendor Timeline.
  *
- * Chronological event stream for a vendor, unioned client-side from the four
- * event sources that are unambiguously vendor-scoped today:
+ * Chronological event stream for a vendor, unioned client-side from the
+ * five event sources that are unambiguously vendor-scoped today:
  *   - activity_log (entity_type='vendor')
  *   - vendor_requests (RFQ sent / status)
  *   - vendor_quotes (via vendor_requests join)
  *   - purchase_orders
- *
- * Later slices can extend `TimelineEvent` by pushing rows from:
  *   - vendor_ledger_entries (payments, GRNs, DN/CN)
- *   - message_queue / message_delivery_events (once vendor_id is added)
- * without changing the render surface — event kinds are pluggable.
+ *
+ * Phase G.10: `TimelineEvent`/`TimelineKind` now come from the shared
+ * lib/timeline/types.ts contract (Business Timeline) instead of a local
+ * type, so this vendor-specific aggregator plugs directly into
+ * lib/timeline/api.ts's `getBusinessTimeline({ vendorId })` — one type,
+ * reused, not two competing shapes. The vendor-specific fetch logic below
+ * is unchanged; only the output shape was widened to match the shared
+ * contract (a few extra fields — relatedCustomerId, severity, aiContext —
+ * that don't apply to a vendor timeline are simply left null).
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
+import type { TimelineEvent, TimelineEventKind } from "@/lib/timeline/types";
 
-export type TimelineKind =
-  | "activity"
-  | "rfq_sent"
-  | "vendor_quote"
-  | "purchase_order"
-  | "ledger";
-
-export interface TimelineEvent {
-  id: string;
-  at: string;                 // ISO timestamp
-  kind: TimelineKind;
-  title: string;
-  detail: string | null;
-  ref_no: string | null;
-  status: string | null;
-  route: string | null;       // deep link when the source doc has a UI page
-  amount: number | null;
-}
+export type { TimelineEvent };
+export type TimelineKind = TimelineEventKind;
 
 export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent[]> {
   const [
@@ -92,10 +82,15 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       kind: "activity",
       title: a.summary ?? `Vendor ${a.action}`,
       detail: a.field_name,
-      ref_no: null,
+      refNo: null,
       status: a.action,
       route: null,
       amount: null,
+      userId: null,
+      relatedCustomerId: null,
+      relatedProjectId: null,
+      severity: null,
+      aiContext: `${a.summary ?? a.action} on vendor at ${a.created_at}`,
     });
   }
 
@@ -107,10 +102,15 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       kind: "rfq_sent",
       title: rfqNo ? `RFQ sent · ${rfqNo}` : "RFQ sent",
       detail: r.response_status ? `Response: ${r.response_status}` : null,
-      ref_no: rfqNo,
+      refNo: rfqNo,
       status: r.response_status ?? null,
       route: "/rfqs",
       amount: null,
+      userId: null,
+      relatedCustomerId: null,
+      relatedProjectId: null,
+      severity: null,
+      aiContext: `RFQ ${rfqNo ?? ""} sent to vendor${r.response_status ? `, response: ${r.response_status}` : ""}`,
     });
   }
 
@@ -127,10 +127,15 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
         ? `Quote submitted · ${q.quote_no}`
         : rfqNo ? `Quote for ${rfqNo}` : "Vendor quote submitted",
       detail: q.remarks ?? null,
-      ref_no: q.quote_no ?? rfqNo,
+      refNo: q.quote_no ?? rfqNo,
       status: q.is_approved ? "approved" : "submitted",
       route: "/rfqs",
       amount: Number(q.total_inr ?? 0) || null,
+      userId: null,
+      relatedCustomerId: null,
+      relatedProjectId: null,
+      severity: null,
+      aiContext: `Vendor quote ${q.quote_no ?? ""} ${q.is_approved ? "approved" : "submitted"}, total ₹${q.total_inr ?? 0}`,
     });
   }
 
@@ -141,10 +146,15 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       kind: "purchase_order",
       title: `Purchase Order · ${p.po_no}`,
       detail: p.expected_date ? `Expected ${p.expected_date}` : p.notes ?? null,
-      ref_no: p.po_no,
+      refNo: p.po_no,
       status: p.status,
       route: "/purchase-orders",
       amount: null,
+      userId: null,
+      relatedCustomerId: null,
+      relatedProjectId: null,
+      severity: null,
+      aiContext: `Purchase Order ${p.po_no} status "${p.status}"`,
     });
   }
 
@@ -168,10 +178,15 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       kind: "ledger",
       title: `${e.source_type.replace(/_/g, " ")} · ${e.ref_no ?? ""}`.trim(),
       detail: e.description,
-      ref_no: e.ref_no,
+      refNo: e.ref_no,
       status: e.status,
       route: e.route,
       amount: d - c,
+      userId: null,
+      relatedCustomerId: null,
+      relatedProjectId: null,
+      severity: null,
+      aiContext: `${e.source_type.replace(/_/g, " ")} ${e.ref_no ?? ""} amount ₹${d - c}`,
     });
   }
 

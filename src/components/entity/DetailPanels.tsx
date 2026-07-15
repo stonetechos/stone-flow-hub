@@ -16,6 +16,8 @@ import {
   uploadAttachment,
   type FileRow,
 } from "@/lib/attachments/api";
+import { useEntityTimeline } from "@/lib/timeline/hooks";
+import { BusinessTimeline } from "@/components/timeline/BusinessTimeline";
 
 export function NotesPanel({
   table,
@@ -179,22 +181,19 @@ export function AttachmentsPanel({
   );
 }
 
+/** Generic single-entity Timeline tab — reused by every document detail
+ *  page (payments, vendors, products, installations, enquiries,
+ *  purchase-orders, dispatch, invoices, quotes, grns, sales-orders,
+ *  inventory). Phase G.10: now backed by the shared Business Timeline
+ *  engine (lib/timeline/api.ts's getEntityTimeline, the single factored-out
+ *  implementation of this exact query) and the shared BusinessTimeline UI,
+ *  instead of an inline ad-hoc activity_log query. Customer and Project
+ *  pages use the richer useCustomerTimeline()/useProjectTimeline() +
+ *  BusinessTimeline directly (see their own route files) since those
+ *  scopes have many more event sources than a single entity_type/entity_id
+ *  pair. */
 export function TimelinePanel({ entityType, entityId }: { entityType: string; entityId: string }) {
-  const key = ["activity", entityType, entityId] as const;
-  const query = useQuery({
-    queryKey: key,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("activity_log")
-        .select("*")
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw new AppError(mapDbError(error));
-      return data ?? [];
-    },
-  });
+  const query = useEntityTimeline(entityType, entityId);
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0">
@@ -202,22 +201,15 @@ export function TimelinePanel({ entityType, entityId }: { entityType: string; en
         <CardTitle className="text-sm">Activity Timeline</CardTitle>
       </CardHeader>
       <CardContent>
-        {query.isLoading ? (
-          <p className="text-xs text-muted-foreground">Loading…</p>
-        ) : (query.data ?? []).length === 0 ? (
-          <p className="text-xs text-muted-foreground">No activity recorded yet.</p>
-        ) : (
-          <ol className="space-y-3">
-            {query.data!.map((a) => (
-              <li key={a.id} className="border-l-2 border-primary/40 pl-3">
-                <div className="text-xs font-medium capitalize">{a.action.replace(/_/g, " ")}</div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(a.created_at).toLocaleString()}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
+        <BusinessTimeline
+          events={query.data}
+          isLoading={query.isLoading}
+          error={query.error}
+          onRetry={() => query.refetch()}
+          pageSize={10}
+          emptyTitle="No activity yet"
+          emptyMessage="No activity recorded yet."
+        />
       </CardContent>
     </Card>
   );

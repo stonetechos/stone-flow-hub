@@ -37,7 +37,9 @@ import { toUserMessage } from "@/lib/errors";
 import { getProject } from "@/lib/projects/api";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
-import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
+import { BusinessTimeline } from "@/components/timeline/BusinessTimeline";
+import { useProjectTimeline } from "@/lib/timeline/hooks";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { LEAD_STAGE_LABEL } from "@/lib/constants";
 import { formatInr } from "@/lib/format";
@@ -410,7 +412,7 @@ function ProjectHub() {
           <AttachmentsPanel entityType="project_document" entityId={projectId} />
         </TabsContent>
         <TabsContent value="timeline" className="mt-4">
-          <TimelinePanel entityType="project" entityId={projectId} />
+          <ProjectTimelineTab projectId={projectId} />
         </TabsContent>
         <TabsContent value="notes" className="mt-4">
           <NotesPanel
@@ -428,6 +430,26 @@ function ProjectHub() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+/** Phase G.10 — full Business Timeline for this project: enquiries,
+ *  quotations, sales orders, purchase orders, invoices, dispatches,
+ *  installations, follow-ups, completed tasks and the project's own
+ *  activity log, unioned and sorted chronologically by the shared
+ *  lib/timeline engine. Answers "summarize this project's history"
+ *  directly on the project page itself. */
+function ProjectTimelineTab({ projectId }: { projectId: string }) {
+  const timelineQ = useProjectTimeline(projectId);
+  return (
+    <BusinessTimeline
+      events={timelineQ.data}
+      isLoading={timelineQ.isLoading}
+      error={timelineQ.error}
+      onRetry={() => timelineQ.refetch()}
+      emptyTitle="No history yet"
+      emptyMessage="Enquiries, quotations, orders, purchase orders, invoices and follow-ups for this project will appear here as they happen."
+    />
   );
 }
 

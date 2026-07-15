@@ -18,6 +18,16 @@ import type { NlSearchResponse, NlStructuredIntent } from "./nl-search/types";
 
 const nlSearchInput = z.object({
   query: z.string().min(1).max(500),
+  /** Phase G.10 — the client's current page, threaded through only to
+   *  resolve "this customer"/"this project" style references in
+   *  resolveTimelineIntent(). Never shown to the LLM classifier above;
+   *  it classifies free text only. */
+  context: z
+    .object({
+      entity: z.string().optional(),
+      entityId: z.string().optional(),
+    })
+    .optional(),
 });
 
 const INTENT_SYSTEM_PROMPT = `You are the intent classifier for Stone Tech OS's Natural Language Search.
@@ -32,7 +42,8 @@ Return STRICT JSON matching this shape (omit optional keys you don't need):
   "filters": {
     "status": "a loose status word like unpaid, overdue, pending, low_stock, late, active",
     "dateRange": "today" | "this_week" | "next_week" | "this_month" | "next_month" | "overdue",
-    "customerName": "a customer name mentioned in the query"
+    "customerName": "a customer name mentioned in the query",
+    "sinceDays": "a NUMBER of days, only for backward-looking history questions like 'in the last 90 days' or 'in the past month' (30)"
   }
 }
 
@@ -41,6 +52,9 @@ Rules:
 - "open_record" is for queries naming a specific document number (e.g. "Open quotation QUO-000021").
 - "navigate" is for queries asking to go to a module/page in general (e.g. "take me to invoices").
 - "filter"/"search" are for queries asking for a list of records matching criteria.
+- "recent_activity"/"timeline_summary"/"show_related" are for questions asking what happened with ONE specific customer, project or vendor — set entityType and either customerName/searchText (a name) or leave both unset if the query doesn't name one.
+- "explain_status" is for "why is X still Y" questions about one specific record — set entityType and identifier if a document number is given.
+- "summarize_record" is for "summarize this record's history" questions — set entityType and identifier/searchText.
 - Only set entityType when you can identify one from the union above.
 - Never fabricate a searchText/identifier/customerName that wasn't implied by the query.
 
@@ -52,6 +66,11 @@ Examples:
 "Projects starting next month" -> {"intent":"filter","entityType":"project","filters":{"dateRange":"next_month"}}
 "Late installations" -> {"intent":"filter","entityType":"installation","filters":{"status":"late"}}
 "Low stock of Mint Sandstone" -> {"intent":"filter","entityType":"inventory_item","searchText":"Mint Sandstone","filters":{"status":"low_stock"}}
+"What happened with Shiv Solanki during the last 90 days?" -> {"intent":"timeline_summary","entityType":"customer","filters":{"customerName":"Shiv Solanki","sinceDays":90}}
+"Why is quotation QUO-000050 still pending?" -> {"intent":"explain_status","entityType":"quote","identifier":"QUO-000050"}
+"Show every interaction before I call this customer" -> {"intent":"show_related","entityType":"customer"}
+"When was the last payment received from Ashish Patel?" -> {"intent":"recent_activity","entityType":"customer","filters":{"customerName":"Ashish Patel"}}
+"Summarize this project's history" -> {"intent":"summarize_record","entityType":"project"}
 "How does the manufacturing workflow work" -> {"intent":"chat"}
 
 Return JSON only, no prose.`;
@@ -90,7 +109,7 @@ export const nlSearch = createServerFn({ method: "POST" })
       return { intent, interpretation: "general question", results: [], resultCount: 0 };
     }
 
-    const rawResults = await resolveIntent(intent);
+    const rawResults = await resolveIntent(intent, data.context);
     const ranked = await rankResults(rawResults, intent);
     const results = ranked.slice(0, 8);
 

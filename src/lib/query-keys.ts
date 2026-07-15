@@ -263,6 +263,11 @@ export const qk = {
   companyProfile: {
     active: ["company_profile", "active"] as const,
   },
+  timeline: {
+    customer: (id: string) => ["timeline", "customer", id] as const,
+    project: (id: string) => ["timeline", "project", id] as const,
+    entity: (entityType: string, entityId: string) => ["timeline", "entity", entityType, entityId] as const,
+  },
 } as const;
 
 

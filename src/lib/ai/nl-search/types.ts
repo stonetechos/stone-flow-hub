@@ -56,6 +56,13 @@ export interface NlFilters {
   status?: string;
   dateRange?: "today" | "this_week" | "next_week" | "this_month" | "next_month" | "overdue";
   customerName?: string;
+  /** Phase G.10 — a backward-looking window in days, extracted from
+   *  phrasing like "during the last 90 days" or "in the past month".
+   *  Every other dateRange bucket above is forward-looking (today's
+   *  work, this week's dispatches); this one is specifically for
+   *  history/timeline questions and is applied client-side by
+   *  resolveTimelineIntent() over real TimelineEvent timestamps. */
+  sinceDays?: number;
 }
 
 /** What the LLM call returns — structure only, never data. */

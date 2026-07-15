@@ -113,7 +113,11 @@ export function Copilot() {
   // question, or if classification itself failed). askCopilot's own
   // STRICT DATA RULE and behavior are untouched.
   const nlSearchMutation = useMutation({
-    mutationFn: (query: string) => nlSearch({ data: { query } }),
+    // Phase G.10: page context is passed through so "this customer"/
+    // "this project"-style timeline questions resolve to the record the
+    // user is actually looking at (see resolveTimelineIntent()).
+    mutationFn: (query: string) =>
+      nlSearch({ data: { query, context: { entity: ctx.entity, entityId: ctx.entityId } } }),
     onSuccess: (res, query) => {
       if (res.intent.intent === "chat") {
         send.mutate(query);
