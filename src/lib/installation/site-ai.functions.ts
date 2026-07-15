@@ -2,6 +2,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStaff } from "@/lib/ai/require-staff";
+
 
 const input = z.object({ installation_id: z.string().uuid() });
 
@@ -43,8 +45,10 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => input.parse(d))
   .handler(async ({ data, context }): Promise<{ snapshot: Snapshot; ai: AiResult }> => {
+    await requireStaff(context);
     const { chat } = await import("@/lib/ai/gateway.server");
     const { supabase } = context;
+
 
     const [inst, progress, materials, signoff] = await Promise.all([
       supabase.from("installations").select("*").eq("id", data.installation_id).maybeSingle(),
