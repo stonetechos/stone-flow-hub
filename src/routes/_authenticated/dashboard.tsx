@@ -1042,7 +1042,7 @@ function QuickActionsDock() {
     { to: "/quotes/new", label: "Quote", icon: <FileText className="h-3.5 w-3.5" /> },
     { to: "/sales-orders/new", label: "Sales order", icon: <Package className="h-3.5 w-3.5" /> },
     { to: "/purchase-orders/new", label: "Purchase order", icon: <ClipboardCheck className="h-3.5 w-3.5" /> },
-    { to: "/payments/new", label: "Payment", icon: <Wallet className="h-3.5 w-3.5" /> },
+    { to: "/receipts/new", label: "Receipt", icon: <Wallet className="h-3.5 w-3.5" /> },
     { to: "/dispatch/new", label: "Dispatch", icon: <Truck className="h-3.5 w-3.5" /> },
   ];
   return (

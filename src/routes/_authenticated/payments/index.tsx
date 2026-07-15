@@ -91,8 +91,8 @@ function PaymentsPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite ? (
-            <Button size="sm" className="h-8" onClick={() => nav({ to: "/payments/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New payment
+            <Button size="sm" className="h-8" onClick={() => nav({ to: "/receipts/new" })}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
             </Button>
           ) : null
         }
@@ -109,8 +109,8 @@ function PaymentsPage() {
           message="Record a payment received against an invoice."
           action={
             roles.canWrite ? (
-              <Button onClick={() => nav({ to: "/payments/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> New payment
+              <Button onClick={() => nav({ to: "/receipts/new" })}>
+                <Plus className="mr-2 h-4 w-4" /> New receipt
               </Button>
             ) : undefined
           }

@@ -39,7 +39,7 @@ const ITEMS: ReadonlyArray<{
   { to: "/quotes/new", label: "Quotation", icon: FileText, group: "Sales" },
   { to: "/sales-orders/new", label: "Sales Order", icon: ShoppingCart, group: "Sales" },
   { to: "/invoices/new", label: "Invoice", icon: Receipt, group: "Sales" },
-  { to: "/payments/new", label: "Payment", icon: Wallet, group: "Sales" },
+  { to: "/receipts/new", label: "Receipt", icon: Wallet, group: "Sales" },
   { to: "/purchase-orders/new", label: "Purchase Order", icon: ClipboardCheck, group: "Ops" },
   { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Ops" },
   { to: "/dispatch/new", label: "Dispatch", icon: Truck, group: "Ops" },
