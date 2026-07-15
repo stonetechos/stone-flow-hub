@@ -74,7 +74,10 @@ export function toUserMessage(err: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
-/** True in dev / preview / non-production builds — diagnostics are appended then. */
+/** True in dev / non-production builds only — diagnostics are appended then.
+ *  Published `*.lovable.app` / `*.lovableproject.com` hosts are treated as
+ *  production and get generic errors so raw DB internals never leak to end
+ *  users. */
 function isDiagnosticsMode(): boolean {
   try {
     if (typeof import.meta !== "undefined" && import.meta.env) {
@@ -86,10 +89,11 @@ function isDiagnosticsMode(): boolean {
   }
   if (typeof window !== "undefined") {
     const host = window.location?.hostname ?? "";
-    if (/localhost|127\.0\.0\.1|lovable\.app|lovableproject\.com/.test(host)) return true;
+    if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
   }
   return false;
 }
+
 
 /**
  * Extract the failing database object (function, trigger, relation, constraint)
@@ -149,8 +153,10 @@ export function mapDbError(
   const hint = err.hint ?? "";
   const combined = `${msg} ${details} ${hint}`.toLowerCase();
 
-  // Log the raw error so devs can see the real reason regardless of what we surface.
-  if (typeof console !== "undefined") {
+  // Only log raw DB internals in dev/local — never in the published app,
+  // where they would leak table / constraint / RPC names to end users.
+  const diagnostics = isDiagnosticsMode();
+  if (diagnostics && typeof console !== "undefined") {
     recordDbErrorForDiagnostics(err);
     console.error("[db error]", {
       code: err.code,
@@ -160,6 +166,7 @@ export function mapDbError(
       object: extractDbObject(msg, details, hint),
     });
   }
+
 
   const diag = isDiagnosticsMode() ? buildDiagnostic(err) : "";
   const withDiag = (base: string) => `${base}${diag}`;

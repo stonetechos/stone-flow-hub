@@ -6,6 +6,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStaff } from "@/lib/ai/require-staff";
+
 
 const inputSchema = z.object({}).default({});
 
@@ -38,7 +40,9 @@ export const generateProcurementHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ context }): Promise<ProcurementHealthReport> => {
+    await requireStaff(context);
     const { supabase } = context;
+
     const [{ data: kpi }, { data: vendors }, { data: overduePos }, { data: pendingGrns }] =
       await Promise.all([
         supabase.from("procurement_kpis" as never).select("*").maybeSingle(),
