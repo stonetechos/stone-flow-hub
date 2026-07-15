@@ -1,37 +1,37 @@
 /**
  * Stone Tech Intelligence — Risk detection.
  *
- * Aggregates operational risks across enquiries, quotations, invoices,
- * dispatches, installations, RFQs, POs and receipts. Read-only: never
- * mutates records. Consumers use it to surface warnings and to power the
- * Business Health / Daily Action dashboards.
+ * Phase G.8.8 (Final Intelligence Consolidation) trimmed this file. It
+ * used to compute 7 rule types; 5 of them (inactive_enquiry,
+ * quotation_stale, payment_overdue, dispatch_overdue, installation_overdue)
+ * independently recomputed facts that real Insight Providers already
+ * compute (ColdEnquiryProvider, QuoteAgeingProvider,
+ * CollectionPriorityProvider/PaymentScheduleAdherenceProvider,
+ * DispatchRiskProvider, InstallationDelayProvider respectively) — genuine
+ * duplicate business logic, on different thresholds, feeding 3 dashboards
+ * that never reconciled with what Copilot/customer pages showed. Those 5
+ * rules are retired; the dashboards that used them now consume the real
+ * providers directly via `getOperationalRiskCounts()`
+ * (`lib/insights/shared/operationalRiskCounts.ts`).
+ *
+ * What's left here — `no_salesperson` and `vendor_delay` — are the two
+ * facts that had no Insight Provider equivalent (a genuine coverage gap,
+ * not a duplicate). They were wrapped as real providers in G.8.7
+ * (EnquiryOwnershipProvider, VendorDeliveryRiskProvider), which both call
+ * this function for the underlying query rather than re-querying — this
+ * file remains the single source of truth for these two facts, just no
+ * longer for the other five.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { STAGE_TO_UMBRELLA } from "@/lib/constants";
-import { STAGE_AGE_WARNING_DAYS } from "@/lib/lead-stage/health";
 import type { LeadStage } from "@/lib/types";
 
-export type RiskKey =
-  | "quotation_stale"
-  | "no_followup"
-  | "project_delayed"
-  | "dispatch_overdue"
-  | "installation_overdue"
-  | "vendor_delay"
-  | "payment_overdue"
-  | "inactive_enquiry"
-  | "no_salesperson"
-  | "missing_quotation"
-  | "missing_rfq"
-  | "missing_po"
-  | "missing_invoice"
-  | "missing_installation"
-  | "missing_completion";
+export type RiskKey = "vendor_delay" | "no_salesperson";
 
 export interface RiskItem {
   key: RiskKey;
   severity: "low" | "medium" | "high";
-  entity: "enquiry" | "quote" | "invoice" | "dispatch" | "installation" | "po" | "rfq";
+  entity: "enquiry" | "po" | "rfq";
   entityId: string;
   label: string;
   reason: string;
@@ -47,16 +47,12 @@ export interface RiskSummary {
 const now = () => Date.now();
 const days = (iso: string | null) => (iso ? Math.max(0, Math.floor((now() - new Date(iso).getTime()) / 86_400_000)) : 0);
 
-export async function getRiskSummary(quoteStaleDays = 14): Promise<RiskSummary> {
+export async function getRiskSummary(): Promise<RiskSummary> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const from = (t: string) => (supabase.from as unknown as (n: string) => any)(t);
 
-  const [enqRes, quoteRes, invRes, dispRes, instRes, poRes, rfqRes] = await Promise.all([
+  const [enqRes, poRes, rfqRes] = await Promise.all([
     from("enquiries").select("id,enquiry_no,stage,assigned_to,updated_at,created_at").limit(2000),
-    from("quotes").select("id,quote_no,status,created_at,customer_id").in("status", ["draft", "sent"]).limit(2000),
-    from("invoices").select("id,invoice_no,status,due_date,balance_due,customer_id").limit(2000),
-    from("dispatches").select("id,dispatch_no,status,dispatch_date").limit(2000),
-    from("installations").select("id,installation_no,status,planned_end_date,actual_end_date").limit(2000),
     from("purchase_orders").select("id,po_no,status,expected_date").limit(2000),
     from("rfqs").select("id,rfq_no,status,due_date").limit(2000),
   ]);
@@ -69,39 +65,9 @@ export async function getRiskSummary(quoteStaleDays = 14): Promise<RiskSummary> 
   for (const e of (enqRes.data ?? []) as Array<{ id: string; enquiry_no: string; stage: LeadStage; assigned_to: string | null; updated_at: string; created_at: string }>) {
     const umb = STAGE_TO_UMBRELLA[e.stage];
     if (umb === "lost" || umb === "cancelled" || umb === "completed") continue;
-    const inactive = days(e.updated_at ?? e.created_at);
-    const warn = STAGE_AGE_WARNING_DAYS[umb];
-    if (!e.assigned_to) add({ key: "no_salesperson", severity: "high", entity: "enquiry", entityId: e.id, label: e.enquiry_no, reason: "No salesperson assigned", daysOverdue: inactive, href: `/enquiries/${e.id}` });
-    if (inactive > warn * 2) add({ key: "inactive_enquiry", severity: "high", entity: "enquiry", entityId: e.id, label: e.enquiry_no, reason: `Untouched for ${inactive} days`, daysOverdue: inactive - warn, href: `/enquiries/${e.id}` });
-    else if (inactive > warn) add({ key: "inactive_enquiry", severity: "medium", entity: "enquiry", entityId: e.id, label: e.enquiry_no, reason: `Slow — ${inactive} days in stage`, daysOverdue: inactive - warn, href: `/enquiries/${e.id}` });
-  }
-
-  for (const q of (quoteRes.data ?? []) as Array<{ id: string; quote_no: string; created_at: string }>) {
-    const age = days(q.created_at);
-    if (age > quoteStaleDays) add({ key: "quotation_stale", severity: age > quoteStaleDays * 2 ? "high" : "medium", entity: "quote", entityId: q.id, label: q.quote_no, reason: `Quotation open for ${age} days`, daysOverdue: age - quoteStaleDays, href: `/quotes/${q.id}` });
-  }
-
-  for (const i of (invRes.data ?? []) as Array<{ id: string; invoice_no: string; status: string; due_date: string | null; balance_due: number | null }>) {
-    if (i.status === "paid" || (i.balance_due ?? 0) <= 0) continue;
-    if (i.due_date && new Date(i.due_date).getTime() < now()) {
-      const d = days(i.due_date);
-      add({ key: "payment_overdue", severity: d > 30 ? "high" : "medium", entity: "invoice", entityId: i.id, label: i.invoice_no, reason: `Payment overdue ${d} days (₹${Number(i.balance_due ?? 0).toLocaleString("en-IN")})`, daysOverdue: d, href: `/invoices/${i.id}` });
-    }
-  }
-
-  for (const d of (dispRes.data ?? []) as Array<{ id: string; dispatch_no: string; status: string; dispatch_date: string | null }>) {
-    if (["delivered", "cancelled"].includes(String(d.status))) continue;
-    if (d.dispatch_date && new Date(d.dispatch_date).getTime() < now()) {
-      const od = days(d.dispatch_date);
-      add({ key: "dispatch_overdue", severity: od > 7 ? "high" : "medium", entity: "dispatch", entityId: d.id, label: d.dispatch_no ?? "Dispatch", reason: `Dispatch overdue ${od} days`, daysOverdue: od, href: `/dispatch/${d.id}` });
-    }
-  }
-
-  for (const i of (instRes.data ?? []) as Array<{ id: string; installation_no: string; status: string; planned_end_date: string | null; actual_end_date: string | null }>) {
-    if (i.status === "completed" || i.actual_end_date) continue;
-    if (i.planned_end_date && new Date(i.planned_end_date).getTime() < now()) {
-      const od = days(i.planned_end_date);
-      add({ key: "installation_overdue", severity: od > 7 ? "high" : "medium", entity: "installation", entityId: i.id, label: i.installation_no ?? "Install", reason: `Installation overdue ${od} days`, daysOverdue: od, href: `/installations/${i.id}` });
+    if (!e.assigned_to) {
+      const inactive = days(e.updated_at ?? e.created_at);
+      add({ key: "no_salesperson", severity: "high", entity: "enquiry", entityId: e.id, label: e.enquiry_no, reason: "No salesperson assigned", daysOverdue: inactive, href: `/enquiries/${e.id}` });
     }
   }
 

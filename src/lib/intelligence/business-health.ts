@@ -4,9 +4,17 @@
  * Computes composite 0-100 sub-scores across Sales, Cash Flow, Leads,
  * Operations, Vendors and Customer Satisfaction. Every sub-score is a
  * simple rule-based rollup over data already collected by earlier phases.
+ *
+ * Phase G.8.8: the risk-derived counts (overdue payments, inactive
+ * enquiries, dispatch/installation delays, vendor delays) now come from
+ * `getOperationalRiskCounts()` — the real Insight Providers — instead of
+ * `lib/intelligence/risk.ts`'s retired duplicate rules. The rest of this
+ * file (quote conversion, revenue trend, installs-completed ratio, etc.)
+ * is genuine composite scoring over raw data, not duplicated anywhere
+ * else, and is unchanged.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { getRiskSummary } from "./risk";
+import { getOperationalRiskCounts } from "@/lib/insights/shared/operationalRiskCounts";
 
 export interface HealthMetric {
   key: string;
@@ -25,7 +33,7 @@ export interface BusinessHealth {
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 
 export async function getBusinessHealth(): Promise<BusinessHealth> {
-  const risk = await getRiskSummary();
+  const risk = await getOperationalRiskCounts();
 
   const [
     enqRes, quoteRes, soRes, invRes, receiptRes, dispRes, instRes,
@@ -61,25 +69,25 @@ export async function getBusinessHealth(): Promise<BusinessHealth> {
   const totalInv = invoices.reduce((a, i) => a + Number(i.total ?? 0), 0);
   const outstanding = invoices.reduce((a, i) => a + Number(i.balance_due ?? 0), 0);
   const paidRatio = totalInv === 0 ? 0.6 : Math.max(0, 1 - outstanding / totalInv);
-  const overdueCount = risk.counts.payment_overdue ?? 0;
+  const overdueCount = risk.paymentOverdue;
   const cash: HealthMetric = { key: "cash", label: "Cash Flow", score: clamp(paidRatio * 100 - Math.min(40, overdueCount * 4)), note: `₹${Math.round(outstanding).toLocaleString("en-IN")} outstanding · ${overdueCount} overdue` };
 
   // Lead health: assigned/inactive
   const active = enqs.filter((e) => !["completed", "lost", "cancelled"].includes(String(e.stage))).length;
   const unassigned = enqs.filter((e) => !e.assigned_to && !["completed", "lost", "cancelled"].includes(String(e.stage))).length;
-  const inactivePenalty = Math.min(50, (risk.counts.inactive_enquiry ?? 0) * 2);
+  const inactivePenalty = Math.min(50, (risk.inactiveEnquiry) * 2);
   const unassignedPenalty = Math.min(30, unassigned * 3);
   const leads: HealthMetric = { key: "leads", label: "Lead Health", score: clamp(100 - inactivePenalty - unassignedPenalty), note: `${active} active · ${unassigned} unassigned` };
 
   // Operations: dispatch + installation on time
-  const dispOverdue = risk.counts.dispatch_overdue ?? 0;
-  const instOverdue = risk.counts.installation_overdue ?? 0;
+  const dispOverdue = risk.dispatchOverdue;
+  const instOverdue = risk.installationOverdue;
   const onTime = 100 - Math.min(60, dispOverdue * 6) - Math.min(40, instOverdue * 5);
   const ops: HealthMetric = { key: "ops", label: "Operations", score: clamp(onTime), note: `${dispOverdue} dispatches · ${instOverdue} installs overdue` };
 
   // Vendor health: PO delivery on time
   const openPO = pos.filter((p) => !["received", "closed", "cancelled"].includes(String(p.status))).length;
-  const vendorDelays = risk.counts.vendor_delay ?? 0;
+  const vendorDelays = risk.vendorDelay;
   const vendor: HealthMetric = { key: "vendor", label: "Vendors", score: clamp(100 - Math.min(70, vendorDelays * 5)), note: `${openPO} open POs · ${vendorDelays} delays` };
 
   // Customer satisfaction proxy: installations completed vs overdue
@@ -109,5 +117,5 @@ export async function getBusinessHealth(): Promise<BusinessHealth> {
 
   const metrics = [sales, cash, leads, ops, vendor, cs, revenue, conversion];
   const weighted = (sales.score * 0.2 + cash.score * 0.2 + leads.score * 0.15 + ops.score * 0.15 + vendor.score * 0.1 + cs.score * 0.1 + revenue.score * 0.05 + conversion.score * 0.05);
-  return { overall: clamp(weighted), metrics, pendingRisks: risk.items.length };
+  return { overall: clamp(weighted), metrics, pendingRisks: risk.total };
 }

@@ -1,21 +1,27 @@
 /**
  * Daily Action Dashboard — one page for salespeople and ops managers
  * summarising what needs attention today. Composed entirely from existing
- * data + Phase-4 intelligence (risk + Next Best Action). Read-only.
+ * data + the Insight Provider registry (risk + Next Best Action).
+ * Read-only.
+ *
+ * Phase G.8.8: the risk-derived tiles and the "Top risks" panel used to
+ * come from `getRiskSummary()` directly; they now come from
+ * `getOperationalRiskCounts()` (the real Insight Providers), and "Top
+ * risks" renders the same `<InsightList>` component every other
+ * Intelligence surface uses instead of a bespoke local renderer.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, CircleDollarSign, Clock, Flame, Snowflake, Truck, Wrench, Users, Zap } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { toUserMessage } from "@/lib/errors";
-import { getRiskSummary, type RiskItem } from "@/lib/intelligence/risk";
+import { getOperationalRiskCounts } from "@/lib/insights/shared/operationalRiskCounts";
+import { InsightList } from "@/components/insights/InsightList";
 import { getFollowupBuckets } from "@/lib/lead-analytics/api";
 import { supabase } from "@/integrations/supabase/client";
 import { STAGE_TO_UMBRELLA } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboards/daily-action")({
   ssr: false,
@@ -49,7 +55,7 @@ async function loadLeadBuckets() {
 }
 
 function DailyActionDashboard() {
-  const riskQ = useQuery({ queryKey: ["intel", "risk"], queryFn: () => getRiskSummary(), staleTime: 60_000 });
+  const riskQ = useQuery({ queryKey: ["intel", "operational-risk-counts"], queryFn: getOperationalRiskCounts, staleTime: 60_000 });
   const fupQ = useQuery({ queryKey: ["intel", "followup-buckets"], queryFn: getFollowupBuckets, staleTime: 60_000 });
   const leadsQ = useQuery({ queryKey: ["intel", "lead-buckets"], queryFn: loadLeadBuckets, staleTime: 60_000 });
 
@@ -61,14 +67,14 @@ function DailyActionDashboard() {
   const leads = leadsQ.data!;
 
   const priorities = [
-    { icon: <CalendarClock className="h-4 w-4" />, label: "Today's follow-ups", value: fup.today, tone: "info" as const, href: "/followups?scope=today" },
-    { icon: <AlertTriangle className="h-4 w-4" />, label: "Overdue follow-ups", value: fup.overdue, tone: "danger" as const, href: "/followups?scope=pending" },
-    { icon: <CircleDollarSign className="h-4 w-4" />, label: "Payments overdue", value: risks.counts.payment_overdue ?? 0, tone: "danger" as const, href: "/invoices" },
-    { icon: <Truck className="h-4 w-4" />, label: "Dispatches due", value: risks.counts.dispatch_overdue ?? 0, tone: "warn" as const, href: "/dispatch" },
-    { icon: <Wrench className="h-4 w-4" />, label: "Installations due", value: risks.counts.installation_overdue ?? 0, tone: "warn" as const, href: "/installations" },
-    { icon: <Users className="h-4 w-4" />, label: "Vendor follow-ups", value: risks.counts.vendor_delay ?? 0, tone: "warn" as const, href: "/purchase-orders" },
-    { icon: <Clock className="h-4 w-4" />, label: "Inactive leads", value: risks.counts.inactive_enquiry ?? 0, tone: "muted" as const, href: "/enquiries" },
-    { icon: <Zap className="h-4 w-4" />, label: "Unassigned leads", value: risks.counts.no_salesperson ?? 0, tone: "danger" as const, href: "/enquiries" },
+    { icon: <CalendarClock className="h-4 w-4" />, label: "Today's follow-ups", value: fup.today, href: "/followups?scope=today" },
+    { icon: <AlertTriangle className="h-4 w-4" />, label: "Overdue follow-ups", value: fup.overdue, href: "/followups?scope=pending" },
+    { icon: <CircleDollarSign className="h-4 w-4" />, label: "Payments overdue", value: risks.paymentOverdue, href: "/invoices" },
+    { icon: <Truck className="h-4 w-4" />, label: "Dispatches due", value: risks.dispatchOverdue, href: "/dispatch" },
+    { icon: <Wrench className="h-4 w-4" />, label: "Installations due", value: risks.installationOverdue, href: "/installations" },
+    { icon: <Users className="h-4 w-4" />, label: "Vendor follow-ups", value: risks.vendorDelay, href: "/purchase-orders" },
+    { icon: <Clock className="h-4 w-4" />, label: "Inactive leads", value: risks.inactiveEnquiry, href: "/enquiries" },
+    { icon: <Zap className="h-4 w-4" />, label: "Unassigned leads", value: risks.unassignedEnquiry, href: "/enquiries" },
   ];
 
   return (
@@ -91,41 +97,27 @@ function DailyActionDashboard() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <TopRisks items={risks.items.slice(0, 12)} />
-        <LeadColumn title="Hot leads" icon={<Flame className="h-4 w-4 text-status-warning-fg" />} rows={leads.hot} tone="hot" />
-        <LeadColumn title="High-value opportunities" icon={<CircleDollarSign className="h-4 w-4 text-status-success-fg" />} rows={leads.highValue} tone="hv" />
-        <LeadColumn title="Cold leads" icon={<Snowflake className="h-4 w-4 text-status-info-fg" />} rows={leads.cold} tone="cold" />
-        <LeadColumn title="Lost leads to review" icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />} rows={leads.lostReview} tone="lost" />
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Top risks</CardTitle></CardHeader>
+          <CardContent>
+            {risks.items.length === 0 ? (
+              <div className="text-xs text-muted-foreground">No risks detected.</div>
+            ) : (
+              <InsightList insights={risks.items.slice(0, 12)} className="sm:grid-cols-1 xl:grid-cols-1" />
+            )}
+          </CardContent>
+        </Card>
+        <LeadColumn title="Hot leads" icon={<Flame className="h-4 w-4 text-status-warning-fg" />} rows={leads.hot} />
+        <LeadColumn title="High-value opportunities" icon={<CircleDollarSign className="h-4 w-4 text-status-success-fg" />} rows={leads.highValue} />
+        <LeadColumn title="Cold leads" icon={<Snowflake className="h-4 w-4 text-status-info-fg" />} rows={leads.cold} />
+        <LeadColumn title="Lost leads to review" icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />} rows={leads.lostReview} />
       </div>
     </div>
   );
 }
 
-function TopRisks({ items }: { items: RiskItem[] }) {
-  return (
-    <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">Top risks</CardTitle></CardHeader>
-      <CardContent className="space-y-1.5">
-        {items.length === 0 ? <div className="text-xs text-muted-foreground">No risks detected.</div> : items.map((r) => (
-          <Link key={r.entity + r.entityId + r.key} to={r.href} className="flex items-start justify-between gap-2 rounded-md p-2 text-xs hover:bg-muted/60">
-            <div>
-              <div className="font-medium">{r.label} <span className="text-muted-foreground">· {r.entity}</span></div>
-              <div className="text-muted-foreground">{r.reason}</div>
-            </div>
-            <Badge variant="outline" className={cn("shrink-0 text-[10px] uppercase",
-              r.severity === "high" ? "border-status-danger-border text-status-danger-fg" :
-              r.severity === "medium" ? "border-status-warning-border text-status-warning-fg" : "border-muted"
-            )}>{r.severity}</Badge>
-          </Link>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
 interface LeadRow { id: string; enquiry_no: string | null; budget_inr: number | null; customer?: { name: string | null } | null; updated_at?: string | null }
-function LeadColumn({ title, icon, rows, tone }: { title: string; icon: React.ReactNode; rows: LeadRow[]; tone: string }) {
-  void tone;
+function LeadColumn({ title, icon, rows }: { title: string; icon: React.ReactNode; rows: LeadRow[] }) {
   return (
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2">{icon} {title}</CardTitle></CardHeader>

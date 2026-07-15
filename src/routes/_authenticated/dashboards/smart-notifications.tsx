@@ -1,8 +1,22 @@
 /**
  * Smart Notifications — surfaces overdue follow-ups, quotation expiry,
  * delayed production/dispatch/installation, outstanding payments, lead
- * inactivity, vendor delays and upcoming site visits + installations.
- * Never executes actions automatically.
+ * inactivity, vendor delays, margin/customer/repeat-business signals and
+ * upcoming site visits + installations. Never executes actions
+ * automatically.
+ *
+ * Phase G.8.8: the risk-derived notices used to come from
+ * `getRiskSummary()` (a private, 7-rule engine only this file and 2
+ * others ever saw). They now come from the same Insight Provider
+ * registry every other Intelligence surface reads — Copilot,
+ * EntityInsightPanel, DangerNotifications — via `useExecutiveInsights()`.
+ * This is a genuine capability increase, not just a refactor: Smart
+ * Notifications now sees all 24 registered providers (margin watch,
+ * customer lifetime value, repeat business, etc.), not just the 7 rules
+ * risk.ts used to compute. Filtered to danger/warning tones only, to
+ * keep this page's original "alerts, not opportunities" scope — the same
+ * filter DangerNotifications and daily-action apply for their own
+ * purposes.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +26,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { toUserMessage } from "@/lib/errors";
-import { getRiskSummary } from "@/lib/intelligence/risk";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { resolveTone } from "@/lib/ui/tones";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -26,17 +41,20 @@ interface Notice {
   when?: string;
 }
 
-async function loadNotices(): Promise<Notice[]> {
-  const risk = await getRiskSummary();
-  const notices: Notice[] = risk.items.map((r) => ({
-    key: `risk-${r.key}-${r.entityId}`,
-    category: r.key.replace(/_/g, " "),
-    severity: r.severity === "high" ? "danger" : r.severity === "medium" ? "warn" : "info",
-    title: r.label,
-    detail: r.reason,
-    href: r.href,
-  }));
+interface UpcomingRow {
+  id: string;
+  project_id: string | null;
+  scheduled_at: string | null;
+  status: string;
+}
+interface UpcomingInstallRow {
+  id: string;
+  installation_no: string | null;
+  planned_start_date: string | null;
+  status: string;
+}
 
+async function loadUpcomingNotices(): Promise<Notice[]> {
   const now = Date.now();
   const in7 = new Date(now + 7 * 86_400_000).toISOString();
   const nowIso = new Date(now).toISOString();
@@ -45,7 +63,8 @@ async function loadNotices(): Promise<Notice[]> {
     supabase.from("site_visits").select("id,project_id,scheduled_at,status").gte("scheduled_at", nowIso).lte("scheduled_at", in7).limit(50),
     supabase.from("installations").select("id,installation_no,planned_start_date,status").gte("planned_start_date", nowIso).lte("planned_start_date", in7).limit(50),
   ]);
-  for (const v of visits.data ?? []) {
+  const notices: Notice[] = [];
+  for (const v of (visits.data ?? []) as UpcomingRow[]) {
     if (v.status === "completed" || v.status === "cancelled") continue;
     if (!v.scheduled_at) continue;
     notices.push({
@@ -55,7 +74,7 @@ async function loadNotices(): Promise<Notice[]> {
       when: v.scheduled_at,
     });
   }
-  for (const i of installs.data ?? []) {
+  for (const i of (installs.data ?? []) as UpcomingInstallRow[]) {
     if (i.status === "completed" || i.status === "cancelled") continue;
     notices.push({
       key: `ins-${i.id}`, category: "upcoming installation", severity: "info",
@@ -74,11 +93,27 @@ export const Route = createFileRoute("/_authenticated/dashboards/smart-notificat
 });
 
 function SmartNotifications() {
-  const q = useQuery({ queryKey: ["intel", "smart-notifications"], queryFn: loadNotices, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Smart Notifications" /><LoadingBlock /></>;
+  const q = useQuery({ queryKey: ["intel", "smart-notifications", "upcoming"], queryFn: loadUpcomingNotices, staleTime: 60_000 });
+  const { processedInsights, loading: insightsLoading } = useExecutiveInsights();
+
+  if (q.isLoading || insightsLoading) return <><PageHeader title="Smart Notifications" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Smart Notifications" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
 
-  const notices = q.data ?? [];
+  const riskNotices: Notice[] = processedInsights
+    .filter((i) => {
+      const tone = resolveTone(i.tone);
+      return tone === "danger" || tone === "warning";
+    })
+    .map((i) => ({
+      key: `insight-${i.source}-${i.id}`,
+      category: i.module.toLowerCase(),
+      severity: resolveTone(i.tone) === "danger" ? "danger" : "warn",
+      title: i.title,
+      detail: i.why,
+      href: i.action.href,
+    }));
+
+  const notices = [...riskNotices, ...(q.data ?? [])];
   const groups = new Map<string, Notice[]>();
   for (const n of notices) {
     const key = n.category;
