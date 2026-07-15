@@ -168,6 +168,9 @@ export const qk = {
     byUser: ["favorites", "me"] as const,
     check: (type: string, id: string) => ["favorites", "check", type, id] as const,
   },
+  insightStates: {
+    all: ["insightStates", "me"] as const,
+  },
   search: {
     global: (q: string) => ["search", "global", q] as const,
   },

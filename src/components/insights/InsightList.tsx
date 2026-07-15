@@ -10,6 +10,11 @@
  * primitives (see e.g. `routes/_authenticated/invoices/new.tsx`). Keeping
  * that logic out of InsightList keeps it a true layout-only primitive that
  * any Intelligence surface can drop resolved insights into.
+ *
+ * `onDismiss` (Phase G.8.6 Task 3, optional/additive): forwarded to each
+ * `InsightCard` so a caller wired to the shared insight lifecycle
+ * (`useInsightLifecycle`) can let a user dismiss/acknowledge directly from
+ * the list, reflected everywhere else that insight is shown.
  */
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { cn } from "@/lib/utils";
@@ -18,9 +23,10 @@ import type { Insight } from "@/lib/insights/types";
 export interface InsightListProps {
   insights: Insight[];
   className?: string;
+  onDismiss?: (insight: Insight) => void;
 }
 
-export function InsightList({ insights, className }: InsightListProps) {
+export function InsightList({ insights, className, onDismiss }: InsightListProps) {
   return (
     <div className={cn("grid gap-2 sm:grid-cols-2 xl:grid-cols-3", className)}>
       {insights.map((insight) => (
@@ -31,6 +37,7 @@ export function InsightList({ insights, className }: InsightListProps) {
           title={insight.title}
           detail={insight.why}
           to={insight.action.href}
+          onDismiss={onDismiss ? () => onDismiss(insight) : undefined}
         />
       ))}
     </div>

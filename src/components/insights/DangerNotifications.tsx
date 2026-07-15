@@ -1,65 +1,59 @@
 /**
- * DangerNotifications — Phase G.7 UI integration.
+ * DangerNotifications — Phase G.7 UI integration; lifecycle-aware as of
+ * Phase G.8.6 Task 3.
  *
  * Surfaces a toast for the highest-confidence danger-toned insights only,
  * reusing the existing `sonner` toast primitive already used throughout
  * this app (Copilot.tsx, AppShell.tsx, and most mutation handlers) rather
  * than building a new notification system.
  *
- * "Maximum once per session per insight.id": ids already shown are kept
- * in `sessionStorage` only — no database writes, and a brand new browser
- * session (not just a page refresh) will see them again if still open.
- * Renderless — mount once (see AppShell.tsx, alongside `<Copilot />`).
+ * Previously (Phase G.7): "maximum once per session per insight.id" was
+ * tracked in `sessionStorage` only — private to this browser tab's
+ * session, invisible to Copilot/EntityInsightPanel/any other surface, and
+ * reset on every new session even for an insight the user had already
+ * acted on. That was exactly the fragmentation the G.8.5 audit named
+ * ("Danger Notifications" as one of five independent alert sources).
+ *
+ * Now: toasts only fire for insights whose *shared* lifecycle status is
+ * still "new" (never seen anywhere — Copilot, EntityInsightPanel, or a
+ * prior toast), and showing the toast immediately marks it "seen" in the
+ * same `insight_states` table every other surface reads. Dismissing an
+ * insight in Copilot or on a customer page also means it will never toast
+ * here again, and vice versa.
  */
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { resolveTone } from "@/lib/ui/tones";
 
-const SESSION_KEY = "insights:notified";
 /** confidence is 0..1 (see lib/insights/shared/priority.ts's
  *  computeConfidence) — 0.9+ means the rule fired on a fully direct
  *  signal, not a weakened fallback one. */
 const HIGH_CONFIDENCE_MIN = 0.9;
 
-function readNotified(): Set<string> {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function writeNotified(ids: Set<string>): void {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify([...ids]));
-  } catch {
-    // sessionStorage unavailable (private browsing, etc.) — degrade silently.
-  }
-}
-
 export function DangerNotifications() {
   const { processedInsights } = useExecutiveInsights();
-  const notifiedRef = useRef<Set<string> | null>(null);
+  const { withLifecycle, setStatus } = useInsightLifecycle(processedInsights);
+  const toastedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (notifiedRef.current === null) notifiedRef.current = readNotified();
-    const notified = notifiedRef.current;
-    let changed = false;
-
-    for (const insight of processedInsights) {
+    for (const insight of withLifecycle) {
       if (resolveTone(insight.tone) !== "danger") continue;
       if (insight.confidence < HIGH_CONFIDENCE_MIN) continue;
-      if (notified.has(insight.id)) continue;
+      if (insight.lifecycleStatus !== "new") continue;
 
-      notified.add(insight.id);
-      changed = true;
+      const key = `${insight.source}:${insight.id}`;
+      // Guards against the same insight toasting twice within one mount
+      // while the "seen" write is still in flight (react-query hasn't
+      // refetched insight_states yet).
+      if (toastedRef.current.has(key)) continue;
+      toastedRef.current.add(key);
+
       toast.error(insight.title, { description: insight.why, duration: 10_000 });
+      setStatus(insight, "seen");
     }
-
-    if (changed) writeNotified(notified);
-  }, [processedInsights]);
+  }, [withLifecycle, setStatus]);
 
   return null;
 }

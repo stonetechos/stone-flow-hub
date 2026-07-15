@@ -19,6 +19,7 @@ import { askCopilot } from "@/lib/ai/copilot.functions";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -89,7 +90,11 @@ export function Copilot() {
         (i) => i.entity.type === (ENTITY_TYPE_MAP[ctx.entity] ?? ctx.entity) && i.entity.id === ctx.entityId,
       )
     : processedInsights;
-  const topInsights = [...scopedInsights]
+  // Phase G.8.6 Task 3: same shared lifecycle EntityInsightPanel and
+  // DangerNotifications read/write, so dismissing here also stops the
+  // insight from resurfacing on a customer page or as a toast.
+  const { active: activeInsights, setStatus: setInsightStatus } = useInsightLifecycle(scopedInsights);
+  const topInsights = [...activeInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
 
@@ -197,7 +202,15 @@ export function Copilot() {
               ) : (
                 <div className="space-y-2">
                   {topInsights.map((i) => (
-                    <InsightCard key={i.id} kind={i.kind} tone={i.tone} title={i.title} detail={i.why} to={i.action.href} />
+                    <InsightCard
+                      key={i.id}
+                      kind={i.kind}
+                      tone={i.tone}
+                      title={i.title}
+                      detail={i.why}
+                      to={i.action.href}
+                      onDismiss={() => setInsightStatus(i, "dismissed")}
+                    />
                   ))}
                 </div>
               )}

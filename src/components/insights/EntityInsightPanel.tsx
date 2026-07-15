@@ -1,5 +1,6 @@
 /**
- * EntityInsightPanel — Phase G.7 UI integration.
+ * EntityInsightPanel — Phase G.7 UI integration; lifecycle-aware as of
+ * Phase G.8.6 Task 3.
  *
  * Filters `useExecutiveInsights().processedInsights` down to whatever
  * `entity.type` + `entity.id` the current page is about, and renders them
@@ -12,8 +13,16 @@
  * each provider pack's index.ts for the full list of entity types actually
  * produced) — rather than fabricating a relationship between an invoice
  * and, say, a payment-schedule insight that isn't really about it.
+ *
+ * Task 3 change: insights already acknowledged/resolved/dismissed
+ * elsewhere (Copilot, DangerNotifications) no longer render here either —
+ * this was one of the three concrete surfaces the G.8.5 audit named
+ * ("Customer Pages") where the same signal kept resurfacing after a user
+ * had already dealt with it. Each remaining card offers a dismiss action
+ * wired to the same shared state.
  */
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightList } from "@/components/insights/InsightList";
 
 export function EntityInsightPanel({
@@ -24,19 +33,21 @@ export function EntityInsightPanel({
   entityId: string;
 }) {
   const { processedInsights, loading } = useExecutiveInsights();
-  if (loading) return null;
 
   const scoped = processedInsights.filter(
     (insight) => insight.entity.type === entityType && insight.entity.id === entityId,
   );
-  if (scoped.length === 0) return null;
+  const { active, setStatus } = useInsightLifecycle(scoped);
+
+  if (loading) return null;
+  if (active.length === 0) return null;
 
   return (
     <div className="space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Insights
       </h3>
-      <InsightList insights={scoped} />
+      <InsightList insights={active} onDismiss={(i) => setStatus(i, "dismissed")} />
     </div>
   );
 }
