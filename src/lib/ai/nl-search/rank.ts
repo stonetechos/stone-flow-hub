@@ -14,6 +14,10 @@ const EXACT_MATCH_BOOST = 50;
 const PARTIAL_MATCH_BOOST = 15;
 const FAVORITE_BOOST = 20;
 const HAS_SUBTITLE_BOOST = 2;
+const ACTIVE_BOOST = 8;
+const RECENT_7D_BOOST = 10;
+const RECENT_30D_BOOST = 5;
+const DAY_MS = 86_400_000;
 
 function textScore(title: string, needle: string | undefined): number {
   if (!needle) return 0;
@@ -22,6 +26,18 @@ function textScore(title: string, needle: string | undefined): number {
   if (!n) return 0;
   if (t === n) return EXACT_MATCH_BOOST;
   if (t.includes(n) || n.includes(t)) return PARTIAL_MATCH_BOOST;
+  return 0;
+}
+
+/** Phase G.8.9/G.9B.1 re-audit (Task B4 — "prefer recent activity").
+ *  Tiered rather than a continuous decay: simpler, and a search result
+ *  list doesn't need sub-day precision, just "recently touched" vs not. */
+function recencyScore(updatedAt: string | null | undefined): number {
+  if (!updatedAt) return 0;
+  const ageMs = Date.now() - new Date(updatedAt).getTime();
+  if (ageMs < 0) return 0;
+  if (ageMs <= 7 * DAY_MS) return RECENT_7D_BOOST;
+  if (ageMs <= 30 * DAY_MS) return RECENT_30D_BOOST;
   return 0;
 }
 
@@ -46,6 +62,12 @@ export async function rankResults(
     score += textScore(item.title, needle);
     if (favoriteIds.has(`${item.entityType}:${item.id}`)) score += FAVORITE_BOOST;
     if (item.subtitle) score += HAS_SUBTITLE_BOOST;
+    // Task B4: "active records" and "recent activity". Both are optional
+    // signals on NlResultItem — undefined (unknown) is treated as neutral,
+    // never a penalty, so insight-backed and navigate results (which don't
+    // carry these fields) aren't disadvantaged against list-API results.
+    if (item.isActive === true) score += ACTIVE_BOOST;
+    score += recencyScore(item.updatedAt);
     return { ...item, rank: score };
   });
 

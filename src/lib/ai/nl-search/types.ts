@@ -78,6 +78,13 @@ export interface NlResultItem {
   href: string;
   /** Higher sorts first — see rank.ts for how this is computed. */
   rank: number;
+  /** Phase G.8.9/G.9B.1 re-audit (Task B4 — "prefer active records, recent
+   *  activity"). Both optional: populated where the underlying row makes
+   *  the signal unambiguous (is_active flags, unambiguous terminal
+   *  statuses, updated_at), left undefined otherwise so rank.ts treats an
+   *  unknown signal as neutral rather than penalizing it. */
+  updatedAt?: string | null;
+  isActive?: boolean;
 }
 
 export interface NlSearchResponse {

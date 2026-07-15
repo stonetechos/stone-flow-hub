@@ -132,7 +132,7 @@ async function resolveCustomer(searchText: string | undefined, filters: NlFilter
   const rows = await listCustomers(searchText ?? "");
   return rows
     .filter((c) => nameMatches(c.name, filters?.customerName))
-    .map((c) => ({ id: c.id, entityType: "customer" as const, title: c.name, subtitle: c.customer_code, href: `/customers/${c.id}`, rank: 0 }));
+    .map((c) => ({ id: c.id, entityType: "customer" as const, title: c.name, subtitle: c.customer_code, href: `/customers/${c.id}`, rank: 0, updatedAt: c.updated_at, isActive: c.is_active }));
 }
 
 async function resolveInvoice(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
@@ -156,6 +156,8 @@ async function resolveInvoice(searchText: string | undefined, filters: NlFilters
       subtitle: inv.customer?.name ? `${inv.customer.name} · ₹${Number(inv.balance_due ?? 0).toLocaleString("en-IN")} due` : null,
       href: `/invoices/${inv.id}`,
       rank: 0,
+      updatedAt: inv.updated_at,
+      isActive: inv.status !== "cancelled",
     }));
 }
 
@@ -170,7 +172,7 @@ async function resolveDispatch(searchText: string | undefined, filters: NlFilter
   const window = dateRangeWindow(filters?.dateRange);
   return rows
     .filter((d) => !window || inRange(d.dispatch_date, window[0], window[1]))
-    .map((d) => ({ id: d.id, entityType: "dispatch" as const, title: d.dispatch_no ?? "Dispatch", subtitle: d.status, href: `/dispatch/${d.id}`, rank: 0 }));
+    .map((d) => ({ id: d.id, entityType: "dispatch" as const, title: d.dispatch_no ?? "Dispatch", subtitle: d.status, href: `/dispatch/${d.id}`, rank: 0, updatedAt: d.updated_at }));
 }
 
 async function resolveInstallation(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
@@ -178,8 +180,40 @@ async function resolveInstallation(searchText: string | undefined, filters: NlFi
     const insights = await InstallationDelayProvider.fetch();
     return insights.map((i) => fromInsight(i, "installation"));
   }
-  const rows = await listInstallations(searchText ?? "", filters?.status ?? "");
-  return rows.map((r) => ({ id: r.id, entityType: "installation" as const, title: r.installation_no ?? "Installation", subtitle: r.status, href: `/installations/${r.id}`, rank: 0 }));
+  // Phase G.8.9/G.9B.1 re-audit (Task B2): "Pending installations" is one
+  // of the phase's own example queries, but INSTALLATION_ORDER_STATUSES
+  // has no literal "pending" value — listInstallations()'s native .eq()
+  // filter would silently return zero rows. Map loose words to the real
+  // enum the same way resolveDispatch already does, instead of passing
+  // the LLM's word straight through to a strict-equality DB filter.
+  const statusMap: Record<string, string> = {
+    pending: "planned",
+    upcoming: "planned",
+    planned: "planned",
+    scheduled: "scheduled",
+    ongoing: "in_progress",
+    in_progress: "in_progress",
+    "in progress": "in_progress",
+    on_hold: "on_hold",
+    "on hold": "on_hold",
+    paused: "on_hold",
+    completed: "completed",
+    done: "completed",
+    signed_off: "signed_off",
+    cancelled: "cancelled",
+  };
+  const status = filters?.status ? (statusMap[filters.status] ?? "") : "";
+  const rows = await listInstallations(searchText ?? "", status);
+  return rows.map((r) => ({
+    id: r.id,
+    entityType: "installation" as const,
+    title: r.installation_no ?? "Installation",
+    subtitle: r.status,
+    href: `/installations/${r.id}`,
+    rank: 0,
+    updatedAt: r.updated_at,
+    isActive: !["completed", "signed_off", "cancelled"].includes(r.status),
+  }));
 }
 
 async function resolveInventory(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
@@ -197,6 +231,7 @@ async function resolveInventory(searchText: string | undefined, filters: NlFilte
     subtitle: `${r.quantity_on_hand} on hand`,
     href: `/inventory/${r.id}`,
     rank: 0,
+    updatedAt: r.updated_at,
   }));
 }
 
@@ -212,7 +247,7 @@ async function resolveProject(searchText: string | undefined, filters: NlFilters
       const dateToCheck = p.expected_start_date ?? p.expected_completion_date;
       return inRange(dateToCheck, window[0], window[1]);
     })
-    .map((p) => ({ id: p.id, entityType: "project" as const, title: p.name, subtitle: p.customer?.name ?? p.city, href: `/projects/${p.id}`, rank: 0 }));
+    .map((p) => ({ id: p.id, entityType: "project" as const, title: p.name, subtitle: p.customer?.name ?? p.city, href: `/projects/${p.id}`, rank: 0, updatedAt: p.updated_at, isActive: p.is_active }));
 }
 
 async function resolveGeneric(entityType: NlEntityType, searchText: string | undefined): Promise<NlResultItem[]> {
@@ -220,31 +255,31 @@ async function resolveGeneric(entityType: NlEntityType, searchText: string | und
   switch (entityType) {
     case "enquiry": {
       const rows = await listEnquiries(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.enquiry_no, subtitle: r.customer?.name ?? null, href: `/enquiries/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.enquiry_no, subtitle: r.customer?.name ?? null, href: `/enquiries/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "quote": {
       const rows = await listQuotes(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.quote_no, subtitle: r.customer?.name ?? null, href: `/quotes/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.quote_no, subtitle: r.customer?.name ?? null, href: `/quotes/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "sales_order": {
       const rows = await listSalesOrders(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.so_no, subtitle: r.customer?.name ?? null, href: `/sales-orders/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.so_no, subtitle: r.customer?.name ?? null, href: `/sales-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "receipt": {
       const rows = await listReceipts(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.receipt_no, subtitle: r.customer?.name ?? null, href: `/receipts/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.receipt_no, subtitle: r.customer?.name ?? null, href: `/receipts/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "purchase_order": {
       const rows = await listPurchaseOrders(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.po_no, subtitle: r.vendor?.company_name ?? null, href: `/purchase-orders/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.po_no, subtitle: r.vendor?.company_name ?? null, href: `/purchase-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "vendor": {
       const rows = await listVendors(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.company_name, subtitle: r.vendor_code, href: `/vendors/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.company_name, subtitle: r.vendor_code, href: `/vendors/${r.id}`, rank: 0, updatedAt: r.updated_at, isActive: r.is_active }));
     }
     case "product": {
       const rows = await listProducts(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.name, subtitle: r.product_code, href: `/products/${r.id}`, rank: 0 }));
+      return rows.map((r) => ({ id: r.id, entityType, title: r.name, subtitle: r.product_code, href: `/products/${r.id}`, rank: 0, updatedAt: r.updated_at, isActive: r.is_active }));
     }
     default:
       return [];
