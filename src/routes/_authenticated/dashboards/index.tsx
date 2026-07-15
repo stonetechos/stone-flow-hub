@@ -87,18 +87,6 @@ const ROLES = [
     icon: LineChartIcon,
   },
   {
-    to: "/dashboards/executive",
-    title: "Executive",
-    desc: "Owner KPI cockpit — pipeline, cash, ops, deep-links to every module.",
-    icon: Crown,
-  },
-  {
-    to: "/dashboards/control-centre",
-    title: "Control Centre",
-    desc: "One-screen: sales, finance, procurement, production, installation, alerts.",
-    icon: Gauge,
-  },
-  {
     to: "/dashboards/analytics",
     title: "Business Analytics",
     desc: "Interactive charts — trends, aging, revenue mix, custom date range.",
