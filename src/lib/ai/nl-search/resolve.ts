@@ -344,21 +344,44 @@ async function resolveByEntityType(entityType: NlEntityType, searchText: string 
   }
 }
 
-/** Picks the single specific record a timeline question is about. Never
- *  guesses across an ambiguous set: with no name to match against, more
- *  than one candidate row means "don't know which one," not "assume the
- *  first." With a name, prefers an exact match, then a prefix match, and
- *  only falls back to the search API's own top-relevance row — the same
- *  ordering every other NL Search resolver already trusts. */
-function pickBestMatch<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): T | null {
-  if (rows.length === 0) return null;
-  if (!needle) return rows.length === 1 ? rows[0] : null;
+type NameResolution<T> = { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[] } | { kind: "none" };
+
+/** Resolves the single specific record a timeline question is about —
+ *  and, per user feedback, never silently guesses across a genuinely
+ *  ambiguous set the way an earlier version of this function did
+ *  ("shiv" matching both a Shiv Solanki and a Shiv Nader used to just
+ *  pick whichever the search API listed first). Now: an exact
+ *  case-insensitive name match is always confident. With no exact match,
+ *  a single remaining row is still confident (only one real candidate).
+ *  Two or more remaining rows with no exact match is genuinely
+ *  ambiguous — the caller renders every candidate as its own card so
+ *  the user picks, instead of resolve.ts guessing on their behalf. */
+function resolveByName<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): NameResolution<T> {
+  if (rows.length === 0) return { kind: "none" };
+  if (!needle) return rows.length === 1 ? { kind: "one", row: rows[0] } : { kind: "ambiguous", rows };
   const lower = needle.toLowerCase();
-  const exact = rows.find((r) => getName(r).toLowerCase() === lower);
-  if (exact) return exact;
-  const prefix = rows.find((r) => getName(r).toLowerCase().startsWith(lower));
-  if (prefix) return prefix;
-  return rows[0];
+  const exact = rows.filter((r) => getName(r).toLowerCase() === lower);
+  if (exact.length === 1) return { kind: "one", row: exact[0] };
+  if (exact.length > 1) return { kind: "ambiguous", rows: exact };
+  if (rows.length === 1) return { kind: "one", row: rows[0] };
+  return { kind: "ambiguous", rows };
+}
+
+/** Turns an ambiguous name match into result cards instead of a guess —
+ *  the same NlResultItem card list every other NL Search answer already
+ *  renders, so no new UI is needed: the user just taps the record they
+ *  meant. rank is uniform (0) since none of these candidates is "more
+ *  right" than another; ranking by confidence would defeat the point of
+ *  asking. */
+function ambiguousMatchResults<T>(
+  rows: T[],
+  entityType: NlEntityType,
+  toCard: (row: T) => { id: string; title: string; subtitle: string | null; href: string },
+): NlResultItem[] {
+  return rows.slice(0, 8).map((row) => {
+    const card = toCard(row);
+    return { id: card.id, entityType, title: card.title, subtitle: card.subtitle, href: card.href, rank: 0 };
+  });
 }
 
 /** Phase G.10 — resolves "timeline_summary" / "recent_activity" /
@@ -377,7 +400,14 @@ async function resolveTimelineIntent(
   intent: NlStructuredIntent,
   pageContext?: { entity?: string; entityId?: string },
 ): Promise<NlResultItem[]> {
-  const entityType = intent.entityType;
+  // The classifier sometimes puts a name straight into filters.customerName
+  // without also setting entityType (e.g. "give me all updates about
+  // shiv" — the LLM correctly hears a person's name but doesn't commit to
+  // a record type). A bare person name in this app is overwhelmingly a
+  // customer, so that's the one default resolve.ts fills in — everything
+  // else about "who this is" still comes from real data below, never
+  // invented.
+  const entityType = intent.entityType ?? (intent.filters?.customerName ? "customer" : undefined);
   if (!entityType) return [];
   const nameNeedle = intent.filters?.customerName ?? intent.searchText;
 
@@ -403,27 +433,51 @@ async function resolveTimelineIntent(
     entityLabel = "this " + entityType.replace(/_/g, " ");
   } else if (entityType === "customer") {
     const rows = await listCustomers(nameNeedle ?? "");
-    const match = pickBestMatch(rows, nameNeedle, (r) => r.name);
-    if (match) {
-      scope = { customerId: match.id };
-      entityHref = `/customers/${match.id}`;
-      entityLabel = match.name;
+    const resolution = resolveByName(rows, nameNeedle, (r) => r.name);
+    if (resolution.kind === "ambiguous") {
+      return ambiguousMatchResults(resolution.rows, "customer", (r) => ({
+        id: r.id,
+        title: r.name,
+        subtitle: [r.customer_code, r.city].filter(Boolean).join(" · ") || null,
+        href: `/customers/${r.id}`,
+      }));
+    }
+    if (resolution.kind === "one") {
+      scope = { customerId: resolution.row.id };
+      entityHref = `/customers/${resolution.row.id}`;
+      entityLabel = resolution.row.name;
     }
   } else if (entityType === "project") {
     const rows = await listProjects(nameNeedle ?? "");
-    const match = pickBestMatch(rows, nameNeedle, (r) => r.name);
-    if (match) {
-      scope = { projectId: match.id };
-      entityHref = `/projects/${match.id}`;
-      entityLabel = match.name;
+    const resolution = resolveByName(rows, nameNeedle, (r) => r.name);
+    if (resolution.kind === "ambiguous") {
+      return ambiguousMatchResults(resolution.rows, "project", (r) => ({
+        id: r.id,
+        title: r.name,
+        subtitle: r.customer?.name ?? r.city ?? null,
+        href: `/projects/${r.id}`,
+      }));
+    }
+    if (resolution.kind === "one") {
+      scope = { projectId: resolution.row.id };
+      entityHref = `/projects/${resolution.row.id}`;
+      entityLabel = resolution.row.name;
     }
   } else if (entityType === "vendor") {
     const rows = await listVendors(nameNeedle ?? "");
-    const match = pickBestMatch(rows, nameNeedle, (r) => r.company_name);
-    if (match) {
-      scope = { vendorId: match.id };
-      entityHref = `/vendors/${match.id}`;
-      entityLabel = match.company_name;
+    const resolution = resolveByName(rows, nameNeedle, (r) => r.company_name);
+    if (resolution.kind === "ambiguous") {
+      return ambiguousMatchResults(resolution.rows, "vendor", (r) => ({
+        id: r.id,
+        title: r.company_name,
+        subtitle: r.vendor_code ?? null,
+        href: `/vendors/${r.id}`,
+      }));
+    }
+    if (resolution.kind === "one") {
+      scope = { vendorId: resolution.row.id };
+      entityHref = `/vendors/${resolution.row.id}`;
+      entityLabel = resolution.row.company_name;
     }
   } else if (intent.identifier) {
     // A specific document number (e.g. "QUO-000050") — resolve it the
@@ -501,9 +555,12 @@ export async function resolveIntent(
   // project's history" — all five ask about ONE record's real history,
   // not a filtered list. Answered from the shared Business Timeline
   // engine (lib/timeline/api.ts), never a second LLM call, so the answer
-  // can only ever contain events that actually happened.
+  // can only ever contain events that actually happened. Entered even
+  // when the classifier only set filters.customerName and left
+  // entityType unset (a bare person's name) — resolveTimelineIntent()
+  // itself defaults that case to "customer".
   if (
-    intent.entityType &&
+    (intent.entityType || intent.filters?.customerName) &&
     (intent.intent === "timeline_summary" ||
       intent.intent === "recent_activity" ||
       intent.intent === "show_related" ||
@@ -519,6 +576,12 @@ export async function resolveIntent(
 
   // No entity type classified — fall back to the general-purpose search
   // every other surface already uses, rather than returning nothing.
-  const hits = await globalSearch(intent.searchText ?? intent.identifier ?? "");
+  // Phase G.10 fix: a name the classifier filed under filters.customerName
+  // (rather than searchText) used to be silently dropped here, searching
+  // "" and always coming back empty even when the record existed — this
+  // is what produced "no matching records" for a query as simple as
+  // "give me all updates about shiv" when the classifier didn't also set
+  // entityType. customerName is now a real fallback search term too.
+  const hits = await globalSearch(intent.searchText ?? intent.filters?.customerName ?? intent.identifier ?? "");
   return fromSearchHits(hits);
 }
