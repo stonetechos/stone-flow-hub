@@ -118,6 +118,22 @@ const ENTITY_NAV_ID: Record<NlEntityType, string> = {
   project: "projects",
 };
 
+/** A specific RECORD's own detail-page URL segment — a different concern
+ *  from ENTITY_NAV_ID above (which answers "what module/dashboard does
+ *  this entity type live under" for the navigate intent, e.g.
+ *  installation -> the wf-today dashboard, since there's no dedicated
+ *  top-level Installations nav item). Bug found in a Phase G.10 re-audit:
+ *  resolveTimelineIntent()'s page-context branch was reusing
+ *  ENTITY_NAV_ID to build a record's own href, which produced the
+ *  non-existent route "/wf-today/<id>" for installations instead of the
+ *  real "/installations/<id>". Every other entity type's detail path
+ *  segment happens to equal its nav id, so this was the only one
+ *  actually broken — fixed here with its own correct, dedicated map. */
+const ENTITY_DETAIL_PATH: Record<NlEntityType, string> = {
+  ...ENTITY_NAV_ID,
+  installation: "installations",
+};
+
 async function resolveCustomer(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
   if (filters?.status === "overdue" || filters?.status === "unpaid") {
     const [collection, adherence] = await Promise.all([
@@ -429,7 +445,7 @@ async function resolveTimelineIntent(
           : entityType === "vendor"
             ? { vendorId: pageContext.entityId }
             : { entityType, entityId: pageContext.entityId };
-    entityHref = `/${ENTITY_NAV_ID[entityType] ?? entityType}/${pageContext.entityId}`;
+    entityHref = `/${ENTITY_DETAIL_PATH[entityType] ?? entityType}/${pageContext.entityId}`;
     entityLabel = "this " + entityType.replace(/_/g, " ");
   } else if (entityType === "customer") {
     const rows = await listCustomers(nameNeedle ?? "");
