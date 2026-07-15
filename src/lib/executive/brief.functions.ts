@@ -4,6 +4,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStaff } from "@/lib/ai/require-staff";
+
 
 const input = z.object({
   scope: z.enum(["daily", "weekly", "monthly"]).default("daily"),
