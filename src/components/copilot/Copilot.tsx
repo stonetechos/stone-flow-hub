@@ -6,9 +6,9 @@
  * a compact system prompt tailored to the page.
  */
 import { useEffect, useRef, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { Sparkles, Send, Loader2, X, Bookmark, Trash2, ChevronDown } from "lucide-react";
+import { Sparkles, Send, Loader2, X, Bookmark, Trash2, ChevronDown, ArrowRight, SearchX } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { askCopilot } from "@/lib/ai/copilot.functions";
+import { nlSearch } from "@/lib/ai/nl-search.functions";
+import type { NlResultItem } from "@/lib/ai/nl-search/types";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
+/** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
+ *  cards instead of AI prose, since the results come from real API
+ *  calls (see nl-search/resolve.ts), never from the LLM. */
+type NlResultsMsg = { role: "assistant"; kind: "nl-results"; interpretation: string; results: NlResultItem[] };
+type Msg = ChatMsg | NlResultsMsg;
 
 // Suggestion prompts are how-to / explanation questions only. They must NEVER
 // invite the assistant to list, rank, or invent specific business records —
@@ -75,7 +82,7 @@ function deriveContext(path: string) {
 export function Copilot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [bookmarks, setBookmarks] = useState<Msg[]>([]);
+  const [bookmarks, setBookmarks] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   // Insights layout only (Phase G.7 data untouched): expanded by default,
   // independently scrollable, and collapsible so it can never grow large
@@ -98,9 +105,38 @@ export function Copilot() {
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
 
+  // Phase G.9B.1: Natural Language Search. This mutation is the ONLY
+  // caller of the NL Search server function — it runs one LLM
+  // classification call, then either renders real, deterministically
+  // fetched results (data question) or falls through to the existing,
+  // unmodified `askCopilot` chat mutation below (general/how-to
+  // question, or if classification itself failed). askCopilot's own
+  // STRICT DATA RULE and behavior are untouched.
+  const nlSearchMutation = useMutation({
+    mutationFn: (query: string) => nlSearch({ data: { query } }),
+    onSuccess: (res, query) => {
+      if (res.intent.intent === "chat") {
+        send.mutate(query);
+        return;
+      }
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", kind: "nl-results", interpretation: res.interpretation, results: res.results },
+      ]);
+    },
+    onError: (_e, query) => {
+      // Classification call failed - don't block the user, fall back to
+      // the existing chat path exactly as if this phase didn't exist.
+      send.mutate(query);
+    },
+  });
+
   const send = useMutation({
     mutationFn: async (prompt: string) => {
-      const history = messages.slice(-8);
+      const history = messages
+        .filter((m): m is ChatMsg => m.kind !== "nl-results")
+        .slice(-8)
+        .map(({ role, content }) => ({ role, content }));
       return askCopilot({
         data: {
           prompt,
@@ -117,9 +153,11 @@ export function Copilot() {
     },
   });
 
+  const isPending = send.isPending || nlSearchMutation.isPending;
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, send.isPending]);
+  }, [messages, isPending]);
 
   // ⌘/Ctrl + J toggles the copilot
   useEffect(() => {
@@ -135,14 +173,14 @@ export function Copilot() {
 
   function submit(prompt?: string) {
     const text = (prompt ?? input).trim();
-    if (!text || send.isPending) return;
+    if (!text || isPending) return;
     setMessages((m) => [...m, { role: "user", content: text }]);
     setInput("");
-    send.mutate(text);
+    nlSearchMutation.mutate(text);
   }
 
   function bookmarkLast() {
-    const last = [...messages].reverse().find((m) => m.role === "assistant");
+    const last = [...messages].reverse().find((m): m is ChatMsg => m.role === "assistant" && m.kind !== "nl-results");
     if (!last) return;
     setBookmarks((b) => [last, ...b].slice(0, 20));
     toast.success("Bookmarked");
@@ -238,10 +276,14 @@ export function Copilot() {
                 </div>
               </div>
             )}
-            {messages.map((m, i) => (
-              <Bubble key={i} role={m.role} content={m.content} />
-            ))}
-            {send.isPending && (
+            {messages.map((m, i) =>
+              m.kind === "nl-results" ? (
+                <NlResultsBubble key={i} interpretation={m.interpretation} results={m.results} onNavigate={() => setOpen(false)} />
+              ) : (
+                <Bubble key={i} role={m.role} content={m.content} />
+              ),
+            )}
+            {isPending && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
               </div>
@@ -297,10 +339,10 @@ export function Copilot() {
             <Button
               size="icon"
               onClick={() => submit()}
-              disabled={send.isPending || !input.trim()}
+              disabled={isPending || !input.trim()}
               aria-label="Send"
             >
-              {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -309,7 +351,7 @@ export function Copilot() {
   );
 }
 
-function Bubble({ role, content }: Msg) {
+function Bubble({ role, content }: ChatMsg) {
   if (role === "user") {
     return (
       <div className="flex justify-end">
@@ -322,6 +364,54 @@ function Bubble({ role, content }: Msg) {
   return (
     <div className="max-w-full whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 text-sm">
       {content}
+    </div>
+  );
+}
+
+/** Phase G.9B.1, Task 5: renders NL Search results as a concise,
+ *  one-click-navigation card list — no AI prose. `interpretation` is a
+ *  deterministic restatement built in nl-search.functions.ts, never a
+ *  second LLM call. Every row's href comes straight from resolve.ts's
+ *  real API calls, so clicking just navigates like any other app link. */
+function NlResultsBubble({
+  interpretation,
+  results,
+  onNavigate,
+}: {
+  interpretation: string;
+  results: NlResultItem[];
+  onNavigate: () => void;
+}) {
+  return (
+    <div className="max-w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {interpretation}
+      </p>
+      {results.length === 0 ? (
+        <div className="flex items-center gap-2 py-1 text-sm text-muted-foreground">
+          <SearchX className="h-3.5 w-3.5 shrink-0" />
+          No matching records found.
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {results.map((r) => (
+            <Link
+              key={`${r.entityType}:${r.id}`}
+              to={r.href as never}
+              onClick={onNavigate}
+              className="flex items-center justify-between gap-2 rounded-md border border-transparent bg-background px-2.5 py-1.5 hover:border-border hover:bg-accent"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{r.title}</span>
+                {r.subtitle && (
+                  <span className="block truncate text-xs text-muted-foreground">{r.subtitle}</span>
+                )}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
