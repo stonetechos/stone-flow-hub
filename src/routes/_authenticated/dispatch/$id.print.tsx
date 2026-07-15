@@ -177,10 +177,24 @@ function PrintDispatchPage() {
 
       <section className="mt-16 grid grid-cols-2 gap-8 text-sm">
         <div>
-          <div className="mb-10 border-b border-slate-400" />
+          {(b.signature_url || b.stamp_url) ? (
+            <div className="mb-2 flex items-end gap-2">
+              {b.signature_url && (
+                <img src={b.signature_url} alt="Signature" className="h-11 max-w-[120px] object-contain" />
+              )}
+              {b.stamp_url && (
+                <img src={b.stamp_url} alt="Company stamp" className="h-14 w-14 object-contain" />
+              )}
+            </div>
+          ) : (
+            <div className="mb-10 border-b border-slate-400" />
+          )}
           <div className="text-xs text-slate-500">Delivered by</div>
           <div>{r.delivered_by ?? "—"}</div>
-          <div className="text-xs text-slate-500 mt-2">For {b.company_name}</div>
+          <div className="text-xs text-slate-500 mt-2">
+            For {b.company_name}
+            {b.authorized_signatory ? ` — ${b.authorized_signatory}` : ""}
+          </div>
         </div>
         <div>
           <div className="mb-10 border-b border-slate-400" />

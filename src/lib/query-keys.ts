@@ -260,6 +260,9 @@ export const qk = {
     picker: ["installation_teams", "picker"] as const,
     byId: (id: string) => ["installation_teams", "byId", id] as const,
   },
+  companyProfile: {
+    active: ["company_profile", "active"] as const,
+  },
 } as const;
 
 

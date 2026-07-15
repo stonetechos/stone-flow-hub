@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
+import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -269,36 +270,7 @@ function SettingsPage() {
 
 
         <TabsContent value="company" className="mt-4">
-          <Card className="shadow-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                Company <Badge variant="outline">Coming soon</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label>Company name</Label>
-                  <Input placeholder="Stone Tech Pvt. Ltd." disabled />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>GSTIN</Label>
-                  <Input placeholder="—" disabled />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Currency</Label>
-                  <Input value="INR" disabled />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Timezone</Label>
-                  <Input value="Asia/Kolkata" disabled />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Multi-company workspace configuration ships in a later phase.
-              </p>
-            </CardContent>
-          </Card>
+          <CompanyProfileTab />
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-4">

@@ -1,5 +1,17 @@
-/** Stone Tech branding — sourced from `app_settings.branding`. */
-import { getAppSetting } from "@/lib/app-settings/api";
+/**
+ * Stone Tech branding — the "our own company" identity shown on every
+ * generated document (lib/pdf/generator.ts), the dispatch print view,
+ * installation certificates, and outbound email (emailShell below).
+ *
+ * Previously sourced from `app_settings.branding`, a loose JSON blob with
+ * no admin UI and no structured columns. Now sourced from the Company
+ * Profile module's `company_profiles` table (lib/company/api.ts) — the
+ * single source of truth a Settings > Company admin can actually edit.
+ * `BrandingConfig` is kept as a superset of the old shape so every
+ * existing consumer (`brand.company_name`, `brand.gstin`, `brand.address`,
+ * ...) keeps working unchanged; only this loader function changed.
+ */
+import { getActiveCompanyProfile } from "@/lib/company/api";
 
 export interface BrandingConfig {
   company_name: string;
@@ -12,6 +24,21 @@ export interface BrandingConfig {
   email: string;
   gstin: string;
   website: string;
+  // Added when Company Profile became the source of truth — optional so
+  // any caller still destructuring only the original fields is unaffected.
+  legal_business_name?: string;
+  trade_name?: string;
+  mobile?: string;
+  pan?: string;
+  cin?: string;
+  bank_name?: string;
+  bank_branch?: string;
+  bank_account_number?: string;
+  bank_ifsc?: string;
+  upi_id?: string;
+  authorized_signatory?: string;
+  signature_url?: string;
+  stamp_url?: string;
 }
 
 export const DEFAULT_BRANDING: BrandingConfig = {
@@ -27,10 +54,45 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   website: "",
 };
 
+function joinAddress(parts: Array<string | null | undefined>): string {
+  return parts.filter((p): p is string => !!p && p.trim() !== "").join(", ");
+}
+
 export async function loadBranding(): Promise<BrandingConfig> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const v = (await getAppSetting<any>("branding" as never)) ?? {};
-  return { ...DEFAULT_BRANDING, ...v };
+  const c = await getActiveCompanyProfile().catch(() => null);
+  if (!c) return DEFAULT_BRANDING;
+
+  const address = [
+    joinAddress([c.address_line1, c.address_line2]),
+    joinAddress([c.city, c.state, c.pincode]),
+    c.country && c.country !== "India" ? c.country : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    ...DEFAULT_BRANDING,
+    company_name: c.company_name || DEFAULT_BRANDING.company_name,
+    logo_url: c.logo_url ?? "",
+    address,
+    phone: c.phone ?? "",
+    email: c.email ?? "",
+    gstin: c.gstin ?? "",
+    website: c.website ?? "",
+    legal_business_name: c.legal_business_name ?? undefined,
+    trade_name: c.trade_name ?? undefined,
+    mobile: c.mobile ?? undefined,
+    pan: c.pan ?? undefined,
+    cin: c.cin ?? undefined,
+    bank_name: c.bank_name ?? undefined,
+    bank_branch: c.bank_branch ?? undefined,
+    bank_account_number: c.bank_account_number ?? undefined,
+    bank_ifsc: c.bank_ifsc ?? undefined,
+    upi_id: c.upi_id ?? undefined,
+    authorized_signatory: c.authorized_signatory ?? undefined,
+    signature_url: c.signature_url ?? undefined,
+    stamp_url: c.stamp_url ?? undefined,
+  };
 }
 
 export function emailShell(bodyHtml: string, brand: BrandingConfig): string {

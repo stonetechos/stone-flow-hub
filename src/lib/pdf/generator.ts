@@ -3,8 +3,10 @@
  *
  * Renders any ERP document into a single professional HTML/PDF layout,
  * reading company identity (name, logo, address, phone, email, website,
- * GSTIN, colours) from `BrandingConfig` via `loadBranding()`. Consumers
- * never hard-code branding.
+ * GSTIN, PAN, bank details, authorized signatory, signature/stamp images,
+ * colours) from `BrandingConfig` via `loadBranding()`, which in turn reads
+ * the Company Profile module (Settings > Company). Consumers never
+ * hard-code branding.
  *
  * Actions:
  *  - `renderDocHtml(doc, brand)` → pure HTML string (used for email body,
@@ -144,6 +146,35 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       ${p.phone ? `<div style="font-size:11px;color:${muted}">${esc(p.phone)}</div>` : ""}
     </div>`;
 
+  // Payment Details box — only when at least one bank field is set, so a
+  // profile that hasn't filled these in yet doesn't show an empty box.
+  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.bank_ifsc || brand.upi_id;
+  const bankBlock = hasBankDetails
+    ? `<div style="flex:1;min-width:220px;border:1px solid ${border};border-radius:6px;padding:10px 14px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">Payment Details</div>
+        ${brand.bank_name ? `<div style="font-size:12px"><b>Bank:</b> ${esc(brand.bank_name)}</div>` : ""}
+        ${brand.bank_branch ? `<div style="font-size:12px"><b>Branch:</b> ${esc(brand.bank_branch)}</div>` : ""}
+        ${brand.bank_account_number ? `<div style="font-size:12px"><b>A/C No:</b> ${esc(brand.bank_account_number)}</div>` : ""}
+        ${brand.bank_ifsc ? `<div style="font-size:12px"><b>IFSC:</b> ${esc(brand.bank_ifsc)}</div>` : ""}
+        ${brand.upi_id ? `<div style="font-size:12px"><b>UPI:</b> ${esc(brand.upi_id)}</div>` : ""}
+      </div>`
+    : "";
+
+  // Authorized-signatory sign-off block — only when the profile has a
+  // signatory name, signature image, or stamp image to show.
+  const hasSignatory = brand.authorized_signatory || brand.signature_url || brand.stamp_url;
+  const signatoryBlock = hasSignatory
+    ? `<div style="flex:1;min-width:220px;text-align:right">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">For ${esc(brand.company_name)}</div>
+        <div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:10px">
+          ${brand.signature_url ? `<img src="${esc(brand.signature_url)}" alt="Signature" style="max-height:44px;max-width:120px;object-fit:contain" />` : ""}
+          ${brand.stamp_url ? `<img src="${esc(brand.stamp_url)}" alt="Company stamp" style="max-height:60px;max-width:60px;object-fit:contain" />` : ""}
+        </div>
+        ${brand.authorized_signatory ? `<div style="font-size:12px;margin-top:4px">${esc(brand.authorized_signatory)}</div>` : ""}
+        <div style="font-size:10px;color:${muted}">Authorized Signatory</div>
+      </div>`
+    : "";
+
   return `<!doctype html><html><head><meta charset="utf-8" />
 <title>${esc(doc.title)} · ${esc(doc.number)}</title>
 <style>
@@ -211,11 +242,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
     ${totals ? `<div class="totals">${totals}</div>` : ""}
 
+    <div style="display:flex;justify-content:space-between;gap:24px;margin-top:20px;flex-wrap:wrap">
+      ${bankBlock}
+      ${signatoryBlock}
+    </div>
+
     ${doc.notes ? `<div class="notes"><b>Notes:</b> ${esc(doc.notes)}</div>` : ""}
     ${doc.terms ? `<div class="terms"><b>Terms &amp; Conditions</b>\n${esc(doc.terms)}</div>` : ""}
 
     <div class="footer">
       ${esc(doc.footer ?? `${brand.company_name} — This is a system-generated document.`)}
+      ${brand.pan ? ` · PAN: ${esc(brand.pan)}` : ""}
       ${brand.website ? ` · <a href="${esc(brand.website)}">${esc(brand.website)}</a>` : ""}
     </div>
   </div>
