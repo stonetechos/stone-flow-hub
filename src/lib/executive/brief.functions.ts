@@ -92,8 +92,10 @@ async function buildSnapshot(scope: "daily" | "weekly" | "monthly"): Promise<Sna
 export const generateBusinessBrief = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => input.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const snapshot = await buildSnapshot(data.scope);
+
     const { chat } = await import("@/lib/ai/gateway.server");
     const scopeLabel = { daily: "Daily Business Brief", weekly: "Weekly Management Report", monthly: "Monthly Performance Report" }[data.scope];
     const messages = [
