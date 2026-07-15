@@ -153,8 +153,10 @@ export function mapDbError(
   const hint = err.hint ?? "";
   const combined = `${msg} ${details} ${hint}`.toLowerCase();
 
-  // Log the raw error so devs can see the real reason regardless of what we surface.
-  if (typeof console !== "undefined") {
+  // Only log raw DB internals in dev/local — never in the published app,
+  // where they would leak table / constraint / RPC names to end users.
+  const diagnostics = isDiagnosticsMode();
+  if (diagnostics && typeof console !== "undefined") {
     recordDbErrorForDiagnostics(err);
     console.error("[db error]", {
       code: err.code,
@@ -164,6 +166,7 @@ export function mapDbError(
       object: extractDbObject(msg, details, hint),
     });
   }
+
 
   const diag = isDiagnosticsMode() ? buildDiagnostic(err) : "";
   const withDiag = (base: string) => `${base}${diag}`;
