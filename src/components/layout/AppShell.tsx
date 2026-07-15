@@ -37,6 +37,7 @@ import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
@@ -752,6 +753,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </TooltipProvider>
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
+              <SyncStatusIndicator />
               <NotificationsBell />
               <ThemeSwitcher />
               <div className="ml-1">

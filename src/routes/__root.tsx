@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { classifyFailure } from "../lib/errors";
 import { installToastDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
+import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
@@ -89,6 +90,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
       },
       { name: "author", content: "Stone Tech OS" },
+      // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
+      // the branding primary in src/lib/branding/index.ts; background here
+      // matches the icon tile so browser chrome doesn't clash with the mark.
+      { name: "theme-color", content: "#0d9488" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Stone Tech OS" },
       { property: "og:title", content: "Stone Tech OS" },
       { property: "og:description", content: "ERP for the natural stone industry — leads, projects, vendors, RFQs." },
       { property: "og:type", content: "website" },
@@ -106,6 +115,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700&display=swap",
       },
+      // Phase G.10A — PWA foundation
+      { rel: "manifest", href: "/manifest.json" },
+      { rel: "icon", href: "/icons/icon-192.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -134,6 +147,7 @@ function RootComponent() {
 
   useEffect(() => {
     void installToastDiagnostics();
+    registerServiceWorker();
   }, []);
 
   useEffect(() => {

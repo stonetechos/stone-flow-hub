@@ -1,0 +1,42 @@
+<!--
+  Stone Tech OS PWA icon source (Phase G.10A).
+
+  Not a new brand mark: this reproduces the existing sidebar badge from
+  AppShell.tsx (a Gem icon, class text mint 300, on a dark rounded basalt
+  tile) so the installed app icon matches what users already associate
+  with the product. Colors are pulled directly from the Quarry
+  design system tokens in src/styles.css (not new arbitrary hex):
+  background token stone basalt 900 approx #06090D, gem fill token
+  mint 300 approx #93CDB3, gem edge token mint 500 approx #469878
+  (same family as the brand primary color).
+
+  Regenerate PNGs with: python3 scripts/pwa/generate_icons.py
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="tile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F14"/>
+      <stop offset="100%" stop-color="#06090D"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B7E4CE"/>
+      <stop offset="55%" stop-color="#93CDB3"/>
+      <stop offset="100%" stop-color="#469878"/>
+    </linearGradient>
+  </defs>
+
+  <!-- full-bleed tile background (also serves as the maskable safe area) -->
+  <rect width="512" height="512" fill="url(#tile)"/>
+  <rect width="512" height="512" rx="96" fill="url(#tile)"/>
+
+  <!-- gem mark, centered, sized to stay inside the ~80% maskable safe zone -->
+  <g transform="translate(256,266)">
+    <path d="M -92 -54 L -46 -100 L 46 -100 L 92 -54 L 0 118 Z"
+          fill="url(#gem)" stroke="#0B0F14" stroke-width="6" stroke-linejoin="round"/>
+    <!-- table + crown facet lines -->
+    <path d="M -92 -54 L 92 -54 M -46 -100 L -18 -54 M 46 -100 L 18 -54 M -18 -54 L 0 118 M 18 -54 L 0 118 M -92 -54 L 0 118 M 92 -54 L 0 118"
+          fill="none" stroke="#0B0F14" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity="0.55"/>
+    <!-- highlight -->
+    <path d="M -46 -100 L -18 -54 L -92 -54 Z" fill="#E7F7EE" opacity="0.35"/>
+  </g>
+</svg>

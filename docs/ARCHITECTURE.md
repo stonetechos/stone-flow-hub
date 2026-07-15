@@ -115,7 +115,7 @@ src/
 
   hooks/                  use-roles, use-auth-ready, use-table-prefs,
                           use-debounced-value, use-hotkey, use-mobile,
-                          use-guided-*
+                          use-guided-*, use-online-status, use-install-prompt
   integrations/supabase/  auto-generated client, types, middleware, attacher
   styles.css              Tailwind v4 tokens
   routeTree.gen.ts        auto-generated — never edit
@@ -139,6 +139,30 @@ src/
 - **Storage bucket** `stonetech-files` (private, RLS-scoped).
 - **AI Gateway** — chat, embeddings, image analysis via `LOVABLE_API_KEY`;
   no per-provider keys required.
+
+## PWA (Phase G.10A)
+
+- `public/manifest.json`, `public/sw.js`, `public/offline.html`, `public/icons/*`
+  — static, not built by a Vite plugin. `src/lib/pwa/register-service-worker.ts`
+  registers the worker client-side from `__root.tsx`.
+- **Hard boundary**: the service worker never intercepts Supabase
+  (`*.supabase.co`) or same-origin `/api/*` requests — those stay
+  network-only so RLS/auth behave identically online or with a worker
+  installed. Only the static app shell (JS/CSS/fonts/icons) is cached,
+  stale-while-revalidate.
+- `src/lib/pwa/sync-queue.ts` — an IndexedDB pending-operations primitive
+  + Background Sync registration. Foundation only: no mutation call site
+  enqueues into it yet. A later phase would need to wire specific writes
+  (estimates, quotes, dispatches, …) through it to get true offline
+  editing.
+- `src/hooks/use-online-status.ts` / `use-install-prompt.ts` +
+  `src/components/layout/SyncStatusIndicator.tsx` — connectivity pill and
+  install affordance mounted once in `AppShell`'s topbar.
+- Icon source: `scripts/pwa/icon-source.svg` reproduces the existing
+  `AppShell` sidebar gem badge (not a new mark); regenerate PNGs with
+  `python3 scripts/pwa/generate_icons.py`.
+- Android TWA/Bubblewrap packaging is explicitly out of scope here — next
+  phase.
 
 ## Cross-Cutting Conventions
 
