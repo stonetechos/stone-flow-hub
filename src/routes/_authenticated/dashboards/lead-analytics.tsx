@@ -33,7 +33,7 @@ function LeadAnalyticsHub() {
   const category = useQuery({ queryKey: ["la", "category"], queryFn: getRevenueByProductCategory, staleTime: 60_000 });
   const vendors = useQuery({ queryKey: ["la", "vendors"], queryFn: getRevenueByVendor, staleTime: 60_000 });
 
-  const anyLoading = [source, lost, city, architect, contractor, designer, products, category, vendors].some((q) => q.isLoading);
+  const anyLoading = [source, lost, city, architect, contractor, designer, products, category, vendors].some((q) => q.isLoading || !q.data);
   const firstError = [source, lost, city, architect, contractor, designer, products, category, vendors].find((q) => q.error);
   if (anyLoading) return <><PageHeader title="Lead Analytics" /><LoadingBlock /></>;
   if (firstError) return <><PageHeader title="Lead Analytics" /><ErrorBlock message={toUserMessage(firstError.error)} /></>;

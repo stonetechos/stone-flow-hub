@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/team-performanc
 
 function TeamPerformanceDashboard() {
   const q = useQuery({ queryKey: ["lead-analytics", "team"], queryFn: getTeamPerformance, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Team Performance" /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Team Performance" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Team Performance" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const rows = q.data!;
 

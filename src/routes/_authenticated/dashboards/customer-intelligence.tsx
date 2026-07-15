@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/customer-intell
 
 function CustomerIntelPage() {
   const q = useQuery({ queryKey: ["exec", "customer-intel"], queryFn: getCustomerIntel, staleTime: 60_000 });
-  if (q.isLoading) return <LoadingBlock />;
+  if (q.isLoading || !q.data) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} />;
   const d = q.data!;
   return (

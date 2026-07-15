@@ -20,7 +20,7 @@ function ForecastPage() {
   const [grain, setGrain] = useState<ForecastGrain>("week");
   const [horizon, setHorizon] = useState(90);
   const q = useQuery({ queryKey: ["exec", "forecast", grain, horizon], queryFn: () => getForecast(horizon, grain), staleTime: 60_000 });
-  if (q.isLoading) return <LoadingBlock />;
+  if (q.isLoading || !q.data) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} />;
   const f = q.data!;
   return (

@@ -16,6 +16,54 @@ export class AppError extends Error {
   }
 }
 
+/**
+ * Phase G.8.9 Task A6: coarse failure classification for diagnostics and
+ * logging. Deliberately separate from the user-facing message
+ * (`toUserMessage`) — this is for telling apart *why* something failed in
+ * production logs, not for what the user sees. Categories match the phase
+ * spec's own list: programming bug vs backend failure vs permission issue
+ * vs network interruption vs missing data vs expired authentication.
+ */
+export type FailureCategory =
+  | "network"
+  | "auth_expired"
+  | "permission"
+  | "not_found"
+  | "backend"
+  | "validation"
+  | "programming_bug";
+
+export function classifyFailure(err: unknown): FailureCategory {
+  // A raw fetch/network failure never reaches AppError — the browser
+  // throws before a response exists at all.
+  if (err instanceof TypeError && /fetch|network/i.test(err.message)) return "network";
+  if (
+    err instanceof Error &&
+    /networkerror|failed to fetch|load failed|ERR_INTERNET_DISCONNECTED|ERR_NETWORK/i.test(err.message)
+  ) {
+    return "network";
+  }
+
+  const message = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+
+  if (/jwt expired|invalid refresh token|refresh_token_not_found|session.*expired|not authenticated/i.test(message)) {
+    return "auth_expired";
+  }
+  if (/row-level security|permission denied|insufficient_privilege|not executable by your role/i.test(message)) {
+    return "permission";
+  }
+  if (/does not exist|not found/i.test(message)) return "not_found";
+  if (/database is busy|operation timed out|constraint|invalid value|required field|too long for its field/i.test(message)) {
+    return "validation";
+  }
+  if (err instanceof AppError) return "backend";
+
+  // Not an AppError and not a recognized message pattern — most likely an
+  // unhandled JS exception in render/component logic (e.g. the unguarded
+  // `.data!` class of bug this phase fixed), not a backend response at all.
+  return "programming_bug";
+}
+
 export function toUserMessage(err: unknown): string {
   if (err instanceof ZodError) {
     return err.issues.map((i) => i.message).join(" • ");

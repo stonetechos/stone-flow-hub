@@ -59,8 +59,15 @@ function DailyActionDashboard() {
   const fupQ = useQuery({ queryKey: ["intel", "followup-buckets"], queryFn: getFollowupBuckets, staleTime: 60_000 });
   const leadsQ = useQuery({ queryKey: ["intel", "lead-buckets"], queryFn: loadLeadBuckets, staleTime: 60_000 });
 
-  if (riskQ.isLoading || fupQ.isLoading || leadsQ.isLoading) return <><PageHeader title="Daily Action" /><LoadingBlock /></>;
+  if (riskQ.isLoading || fupQ.isLoading || leadsQ.isLoading || !riskQ.data || !fupQ.data || !leadsQ.data)
+    return <><PageHeader title="Daily Action" /><LoadingBlock /></>;
+  // Phase G.8.9 Task A2: each of these three queries is independent — the
+  // original guard only checked riskQ.error, so a transient failure in
+  // just fupQ or leadsQ (both still succeed for riskQ) fell through to an
+  // unguarded .data! on the failed query and crashed the whole page.
   if (riskQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(riskQ.error)} onRetry={() => riskQ.refetch()} /></>;
+  if (fupQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(fupQ.error)} onRetry={() => fupQ.refetch()} /></>;
+  if (leadsQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(leadsQ.error)} onRetry={() => leadsQ.refetch()} /></>;
 
   const risks = riskQ.data!;
   const fup = fupQ.data!;

@@ -37,7 +37,7 @@ function ProcurementDashboard() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  if (q.isLoading) return <LoadingBlock />;
+  if (q.isLoading || !q.data) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   const s = q.data!;
 

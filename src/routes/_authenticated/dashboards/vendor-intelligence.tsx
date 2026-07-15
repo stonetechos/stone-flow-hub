@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/vendor-intellig
 
 function VendorIntelPage() {
   const q = useQuery({ queryKey: ["exec", "vendor-intel"], queryFn: getVendorIntel, staleTime: 60_000 });
-  if (q.isLoading) return <LoadingBlock />;
+  if (q.isLoading || !q.data) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} />;
   const d = q.data!;
   return (

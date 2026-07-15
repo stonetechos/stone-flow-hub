@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/revenue-crm")({
 
 function RevenueCrmDashboard() {
   const q = useQuery({ queryKey: ["lead-analytics", "revenue"], queryFn: getRevenueSnapshot, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Revenue Dashboard" /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Revenue Dashboard" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Revenue Dashboard" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const d = q.data!;
 

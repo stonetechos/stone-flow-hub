@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { classifyFailure } from "../lib/errors";
 import { installToastDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
@@ -43,7 +44,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportLovableError(error, { boundary: "tanstack_root_error_component", category: classifyFailure(error) });
   }, [error]);
 
   return (
@@ -138,16 +139,26 @@ function RootComponent() {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
-        // Stop in-flight protected queries before their 401s land, then drop
-        // cached protected data. Redirect happens via the auth gate on the
-        // next router.invalidate().
+        // Phase G.8.9 root-cause fix: clearing the query cache in place
+        // (queryClient.clear()) synchronously drops every mounted query's
+        // `data` to undefined for one render before a refetch can start.
+        // Many screens only guard on `isLoading`/`error` before asserting
+        // `query.data!`, so that transient render was throwing straight
+        // through to the root error boundary instead of the intended
+        // redirect. When we're about to hard-navigate away anyway, the
+        // in-memory cache is moot the instant the page unloads — so do the
+        // navigation first and skip the doomed re-render entirely. Only
+        // mutate the cache in place when we're NOT navigating (i.e.
+        // already on /auth, so nothing will unmount the tree for us).
+        const onAuthPage =
+          typeof window !== "undefined" && window.location.pathname.startsWith("/auth");
+        if (!onAuthPage && typeof window !== "undefined") {
+          window.location.replace("/auth");
+          return;
+        }
         void queryClient.cancelQueries();
         queryClient.clear();
         router.invalidate();
-        // Force navigation to /auth from anywhere (e.g. another tab signed us out).
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-          window.location.replace("/auth");
-        }
         return;
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {

@@ -128,7 +128,7 @@ function DashboardPage() {
     year: "numeric",
   });
 
-  if (kpisQ.isLoading) return <ShellLoading greeting={greeting} name={name} today={today} />;
+  if (kpisQ.isLoading || !kpisQ.data) return <ShellLoading greeting={greeting} name={name} today={today} />;
   if (kpisQ.error)
     return (
       <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />

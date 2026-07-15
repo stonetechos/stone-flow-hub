@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/lead-health")({
 
 function LeadHealthDashboard() {
   const q = useQuery({ queryKey: ["lead-analytics", "health"], queryFn: getHealthBuckets, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Lead Health" /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Lead Health" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Lead Health" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const b = q.data!;
 

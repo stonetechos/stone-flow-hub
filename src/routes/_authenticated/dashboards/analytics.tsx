@@ -62,12 +62,12 @@ function AnalyticsDashboard() {
         </CardContent>
       </Card>
 
-      {trends.isLoading ? <LoadingBlock /> : trends.error ? <ErrorBlock message={toUserMessage(trends.error)} /> : (
+      {trends.isLoading || !trends.data ? <LoadingBlock /> : trends.error ? <ErrorBlock message={toUserMessage(trends.error)} /> : (
         <div className="grid gap-3 md:grid-cols-2">
-          <TrendChart title="Sales trend (₹)" data={trends.data!.sales} />
-          <TrendChart title="Collections trend (₹)" data={trends.data!.collections} />
-          <TrendChart title="Procurement — POs created" data={trends.data!.procurement} money={false} />
-          <TrendChart title="Purchases paid (₹)" data={trends.data!.purchases} />
+          <TrendChart title="Sales trend (₹)" data={trends.data.sales} />
+          <TrendChart title="Collections trend (₹)" data={trends.data.collections} />
+          <TrendChart title="Procurement — POs created" data={trends.data.procurement} money={false} />
+          <TrendChart title="Purchases paid (₹)" data={trends.data.purchases} />
         </div>
       )}
 
@@ -108,9 +108,9 @@ function AgingCard({ title, q }: { title: string; q: ReturnType<typeof useQuery<
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
       <CardContent style={{ height: 260 }}>
-        {q.isLoading ? <LoadingBlock /> : q.error ? <ErrorBlock message={toUserMessage(q.error)} /> : (
+        {q.isLoading || !q.data ? <LoadingBlock /> : q.error ? <ErrorBlock message={toUserMessage(q.error)} /> : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={q.data!}>
+            <BarChart data={q.data}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${Math.round(v / 1000)}k`} />

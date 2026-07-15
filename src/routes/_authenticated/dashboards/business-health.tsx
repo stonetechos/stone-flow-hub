@@ -32,7 +32,7 @@ function toneOf(score: number) {
 function BusinessHealthDashboard() {
   const q = useQuery({ queryKey: ["intel", "business-health"], queryFn: getBusinessHealth, staleTime: 60_000 });
   const { executiveBrief } = useExecutiveInsights();
-  if (q.isLoading) return <><PageHeader title="Business Health" /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Business Health" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Business Health" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const h = q.data!;
   const m = executiveBrief.metrics;

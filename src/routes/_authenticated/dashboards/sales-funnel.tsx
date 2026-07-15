@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/sales-funnel")(
 
 function SalesFunnelDashboard() {
   const q = useQuery({ queryKey: ["lead-analytics", "funnel"], queryFn: getFunnelSummary, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Sales Funnel" /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Sales Funnel" /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Sales Funnel" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const d = q.data!;
   const maxCount = Math.max(1, ...d.stages.map((s) => s.count));

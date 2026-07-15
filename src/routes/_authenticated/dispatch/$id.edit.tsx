@@ -106,7 +106,7 @@ function EditDispatchPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  if (query.isLoading || !form) return <LoadingBlock />;
+  if (query.isLoading || !form || !query.data) return <LoadingBlock />;
   if (query.error) return <ErrorBlock message={toUserMessage(query.error)} />;
 
   const set = <K extends keyof DispatchCreateInput>(k: K, v: DispatchCreateInput[K]) =>

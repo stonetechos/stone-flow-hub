@@ -62,7 +62,7 @@ function EditSalesOrderPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  if (query.isLoading || !form) return <LoadingBlock />;
+  if (query.isLoading || !form || !query.data) return <LoadingBlock />;
   if (query.error) return <ErrorBlock message={toUserMessage(query.error)} />;
 
   const set = <K extends keyof SalesOrderCreateInput>(k: K, v: SalesOrderCreateInput[K]) =>

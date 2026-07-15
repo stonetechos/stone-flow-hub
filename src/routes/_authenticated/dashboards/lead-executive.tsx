@@ -26,7 +26,7 @@ function tone(group: string) {
 
 function LeadExecutiveDashboard() {
   const q = useQuery({ queryKey: ["lead-analytics", "executive"], queryFn: getExecutiveOverview, staleTime: 60_000 });
-  if (q.isLoading) return <><PageHeader title="Lead Executive Dashboard" subtitle="Complete view of every stage in the customer lifecycle." /><LoadingBlock /></>;
+  if (q.isLoading || !q.data) return <><PageHeader title="Lead Executive Dashboard" subtitle="Complete view of every stage in the customer lifecycle." /><LoadingBlock /></>;
   if (q.error) return <><PageHeader title="Lead Executive Dashboard" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
   const d = q.data!;
 

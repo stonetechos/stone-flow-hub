@@ -20,7 +20,7 @@ function FollowupsDashboard() {
   const today = useQuery({ queryKey: ["followups", "scope", "today"], queryFn: () => listFollowups("today") });
   const pending = useQuery({ queryKey: ["followups", "scope", "pending"], queryFn: () => listFollowups("pending") });
 
-  if (buckets.isLoading) return <><PageHeader title="Follow-up Dashboard" /><LoadingBlock /></>;
+  if (buckets.isLoading || !buckets.data) return <><PageHeader title="Follow-up Dashboard" /><LoadingBlock /></>;
   if (buckets.error) return <><PageHeader title="Follow-up Dashboard" /><ErrorBlock message={toUserMessage(buckets.error)} onRetry={() => buckets.refetch()} /></>;
   const b = buckets.data!;
   const todayIso = new Date();
