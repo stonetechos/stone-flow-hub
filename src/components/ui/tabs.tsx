@@ -19,7 +19,11 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "relative inline-flex h-10 items-center gap-1 border-b border-border text-muted-foreground w-full",
+      // Phase G.11, Section 5: several detail pages register 10-15 tabs —
+      // more than fits at any viewport width, including desktop. tabstrip-scroll
+      // (styles.css) makes the strip horizontally scrollable with hidden
+      // scrollbar chrome instead of silently overflowing the container.
+      "relative flex h-10 items-center gap-1 border-b border-border text-muted-foreground w-full tabstrip-scroll",
       className,
     )}
     {...props}
@@ -34,7 +38,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "relative inline-flex h-10 items-center justify-center whitespace-nowrap px-3 text-sm font-medium cursor-pointer transition-colors",
+      "relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-3 text-sm font-medium cursor-pointer transition-colors",
       "hover:text-foreground",
       "focus-visible:outline-none focus-visible:text-foreground",
       "disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",

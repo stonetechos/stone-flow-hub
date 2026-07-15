@@ -131,7 +131,7 @@ function NavLinkRow({
         )}
         aria-hidden
       />
-      {!collapsed && <span className="truncate">{label}</span>}
+      {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
     </Link>
   );
 
@@ -241,7 +241,7 @@ function NavList({
                 className="flex items-center gap-3 rounded-md px-3 py-1.5 text-[13px] text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
               >
                 <item.icon className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
-                <span className="truncate">{item.label}</span>
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
               </Link>
             ))}
           </div>
@@ -728,7 +728,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
                   aria-hidden
                 />
-                <span className="truncate">Search customers, projects, invoices…</span>
+                <span className="min-w-0 flex-1 truncate">Search customers, projects, invoices…</span>
                 <kbd className="ml-auto hidden rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
                   ⌘K
                 </kbd>

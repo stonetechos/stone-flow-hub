@@ -152,10 +152,10 @@ function BlockNode({ node }: { node: BlockNodeT }) {
         onClick={() => setOpen((x) => !x)}
         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
       >
-        {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        <Layers className="h-4 w-4 text-primary" />
-        <span className="font-display font-semibold">Block {node.label}</span>
-        <Badge variant="secondary" className="ml-auto">
+        {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+        <Layers className="h-4 w-4 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1 truncate font-display font-semibold">Block {node.label}</span>
+        <Badge variant="secondary" className="ml-auto shrink-0">
           {node.children.length} lots · {node.count} slabs · {node.qty.toFixed(1)}
         </Badge>
       </button>
@@ -179,10 +179,10 @@ function LotNodeView({ node }: { node: LotNode }) {
         onClick={() => setOpen((x) => !x)}
         className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent"
       >
-        {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        <Boxes className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">Lot {node.label}</span>
-        <Badge variant="outline" className="ml-auto">
+        {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+        <Boxes className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1 truncate font-medium">Lot {node.label}</span>
+        <Badge variant="outline" className="ml-auto shrink-0">
           {node.count} slabs · {node.qty.toFixed(1)}
         </Badge>
       </button>
@@ -199,16 +199,16 @@ function LotNodeView({ node }: { node: LotNode }) {
                   s.quantity_on_hand <= 0 && "opacity-60",
                 )}
               >
-                <Slice className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-mono text-xs">{s.slab_no ?? s.stock_code}</span>
-                <span className="truncate text-muted-foreground">
+                <Slice className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <span className="shrink-0 font-mono text-xs">{s.slab_no ?? s.stock_code}</span>
+                <span className="min-w-0 flex-1 truncate text-muted-foreground">
                   {s.products?.name ?? "—"}
                   {s.size_length_mm && s.size_width_mm
                     ? ` · ${s.size_length_mm}×${s.size_width_mm}${s.thickness_mm ? `×${s.thickness_mm}` : ""}mm`
                     : ""}
                   {s.location ? ` · ${s.location}` : ""}
                 </span>
-                <span className="ml-auto text-xs tabular-nums">
+                <span className="ml-auto shrink-0 text-xs tabular-nums">
                   {Number(s.quantity_on_hand).toFixed(1)} {s.unit ?? ""}
                 </span>
               </Link>

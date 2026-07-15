@@ -993,6 +993,30 @@
   scrollbar-gutter: stable;
 }
 
+/* ============================================================
+ *  Tab Strip Scroll Strategy — global, reusable (Phase G.11, Section 5)
+ *  Applied to TabsList. Several detail pages (Customers, Vendors,
+ *  Projects, ...) register 10-15 tabs — more than fits at any viewport,
+ *  including desktop widths like 1366px. Without this, TabsList's
+ *  `inline-flex` + `w-full` simply overflows its container with no way
+ *  to reach the later tabs. This makes the strip horizontally
+ *  scrollable (touch + trackpad) with hidden scrollbar chrome instead
+ *  of a visible scrollbar, matching the rest of the app's overlay-scroll
+ *  surfaces.
+ * ============================================================ */
+@utility tabstrip-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility safe-pb {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }

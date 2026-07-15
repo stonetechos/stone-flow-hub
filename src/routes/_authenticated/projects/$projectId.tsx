@@ -596,12 +596,12 @@ function ProjectOverview({
                         <Link
                           to="/vendors/$vendorId"
                           params={{ vendorId: v.vendor.id }}
-                          className="truncate font-medium text-primary hover:underline"
+                          className="block truncate font-medium text-primary hover:underline"
                         >
                           {v.vendor.company_name}
                         </Link>
                       ) : (
-                        <span className="truncate">Vendor</span>
+                        <span className="block truncate">Vendor</span>
                       )}
                       {v.rfq && (
                         <span className="ml-2 font-mono text-xs text-muted-foreground">
@@ -688,7 +688,7 @@ function RfqsAndQuotesPanel({ projectId }: { projectId: string }) {
                           <Link
                             to="/vendors/$vendorId"
                             params={{ vendorId: vr.vendor.id }}
-                            className="truncate font-medium hover:text-primary"
+                            className="block truncate font-medium hover:text-primary"
                           >
                             {vr.vendor.company_name}
                           </Link>
