@@ -7,6 +7,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStaff } from "./require-staff";
+
 
 const chatInput = z.object({
   prompt: z.string().min(1).max(4000),
