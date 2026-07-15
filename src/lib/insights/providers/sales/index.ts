@@ -3,7 +3,7 @@
  * the shared Insight Registry (see lib/insights/registry.ts).
  *
  * Per the phase spec, no provider references another, and this file is
- * the only place that knows all five exist.
+ * the only place that knows all six exist.
  *
  * Deliberately NOT auto-run on import: nothing in the app calls
  * `registerSalesInsightProviders()` yet (Phase G.2 explicitly excludes
@@ -16,12 +16,14 @@ import { ColdEnquiryProvider } from "./coldEnquiry";
 import { LostOpportunityProvider } from "./lostOpportunity";
 import { FollowUpRecommendationProvider } from "./followUpRecommendation";
 import { EnquiryOwnershipProvider } from "./enquiryOwnership";
+import { ProjectDelayProvider } from "./projectDelay";
 
 export { QuoteAgeingProvider } from "./quoteAgeing";
 export { ColdEnquiryProvider } from "./coldEnquiry";
 export { LostOpportunityProvider } from "./lostOpportunity";
 export { FollowUpRecommendationProvider } from "./followUpRecommendation";
 export { EnquiryOwnershipProvider } from "./enquiryOwnership";
+export { ProjectDelayProvider } from "./projectDelay";
 
 const SALES_INSIGHT_PROVIDERS = [
   QuoteAgeingProvider,
@@ -29,6 +31,7 @@ const SALES_INSIGHT_PROVIDERS = [
   LostOpportunityProvider,
   FollowUpRecommendationProvider,
   EnquiryOwnershipProvider,
+  ProjectDelayProvider,
 ];
 
 /**

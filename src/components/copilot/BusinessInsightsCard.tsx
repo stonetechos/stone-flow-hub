@@ -1,23 +1,35 @@
 /**
- * Business Priorities card — deterministic list of actionable priorities
- * derived exclusively from real database records via `getCommandCenter()`.
+ * Business Priorities card — deterministic list of actionable priorities.
  *
- * No LLM, no fabricated summaries, no placeholder examples. Every item shown
- * references an actual row (project, invoice, inventory item, etc.) and links
- * to the record it describes. If the aggregator returns no insights, we show
- * an honest empty state.
+ * Phase G.8.8: previously sourced from `getCommandCenter()`'s ad-hoc
+ * `OwnerInsight[]` (lib/executive/command-center.ts), a private aggregator
+ * with no stable identity that duplicated two existing Insight Providers
+ * (CollectionPriorityProvider for "payment needing attention",
+ * InventoryShortageProvider for "material shortage") and had one genuine
+ * gap ("biggest delayed project", now covered by the new
+ * ProjectDelayProvider). Now sources directly from the same Insight
+ * Provider registry every other Intelligence surface reads — Copilot's
+ * own Insights panel, EntityInsightPanel, DangerNotifications,
+ * smart-notifications, daily-action — via `useExecutiveInsights()`, and
+ * shares the same dismiss lifecycle (`useInsightLifecycle`) so dismissing
+ * a priority here means it stops resurfacing everywhere else too.
+ *
+ * No LLM, no fabricated summaries, no placeholder examples. Every item
+ * shown references an actual row and links to the record it describes —
+ * unchanged from before, just sourced from the shared pipeline instead of
+ * a private one.
  */
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, ShieldAlert, CircleCheck } from "lucide-react";
+import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, ShieldAlert, CircleCheck, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCommandCenter, type OwnerInsight } from "@/lib/executive/command-center";
-import { toUserMessage } from "@/lib/errors";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import { useInsightLifecycle } from "@/lib/insights/state/hooks";
+import type { InsightKind } from "@/lib/insights/types";
 
 const KIND_META: Record<
-  OwnerInsight["kind"],
+  InsightKind,
   { label: string; icon: React.ComponentType<{ className?: string }>; tone: string }
 > = {
   risk: { label: "Risk", icon: ShieldAlert, tone: "text-destructive" },
@@ -26,12 +38,12 @@ const KIND_META: Record<
   action: { label: "Action", icon: CircleCheck, tone: "text-primary" },
 };
 
+const TOP_N = 5;
+
 export function BusinessInsightsCard() {
-  const q = useQuery({
-    queryKey: ["executive", "command-center", "insights"],
-    queryFn: getCommandCenter,
-    staleTime: 5 * 60_000,
-  });
+  const { processedInsights, loading } = useExecutiveInsights();
+  const { active, setStatus } = useInsightLifecycle(processedInsights);
+  const top = [...active].sort((a, b) => b.normalizedPriority - a.normalizedPriority).slice(0, TOP_N);
 
   return (
     <Card className="mt-4">
@@ -45,15 +57,13 @@ export function BusinessInsightsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {q.isLoading ? (
+        {loading ? (
           <div className="space-y-2">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
-        ) : q.error ? (
-          <p className="text-sm text-destructive">{toUserMessage(q.error)}</p>
-        ) : (q.data?.insights.length ?? 0) === 0 ? (
+        ) : top.length === 0 ? (
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">No actionable priorities found today.</p>
             <p className="mt-1">
@@ -63,7 +73,7 @@ export function BusinessInsightsCard() {
           </div>
         ) : (
           <ul className="space-y-2">
-            {(q.data?.insights ?? []).map((i, idx) => {
+            {top.map((i) => {
               const meta = KIND_META[i.kind];
               const Icon = meta.icon;
               const body = (
@@ -76,15 +86,28 @@ export function BusinessInsightsCard() {
                         {meta.label}
                       </Badge>
                     </div>
-                    <div className="mt-0.5 text-sm text-muted-foreground">{i.detail}</div>
+                    <div className="mt-0.5 text-sm text-muted-foreground">{i.why}</div>
                   </div>
-                  {i.to && <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />}
+                  <button
+                    type="button"
+                    aria-label="Dismiss"
+                    title="Dismiss"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setStatus(i, "dismissed");
+                    }}
+                    className="mt-0.5 shrink-0 rounded p-0.5 opacity-50 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                  {i.action.href && <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />}
                 </div>
               );
               return (
-                <li key={idx}>
-                  {i.to ? (
-                    <Link to={i.to as never} className="block">
+                <li key={`${i.source}:${i.id}`}>
+                  {i.action.href ? (
+                    <Link to={i.action.href as never} className="block">
                       {body}
                     </Link>
                   ) : (
