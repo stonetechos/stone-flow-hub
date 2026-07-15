@@ -158,9 +158,29 @@ function installFetchDiagnostics() {
   }) as typeof window.fetch;
 }
 
+function isDiagnosticsAllowed(): boolean {
+  try {
+    if (typeof import.meta !== "undefined" && import.meta.env) {
+      if (import.meta.env.DEV) return true;
+      if (import.meta.env.MODE && import.meta.env.MODE !== "production") return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location?.hostname ?? "";
+    if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+  }
+  return false;
+}
+
 export async function installToastDiagnostics() {
   if (typeof window === "undefined") return;
+  // Never patch fetch/toast to log raw Postgres error bodies on the
+  // published site — this would leak table / RPC / constraint names.
+  if (!isDiagnosticsAllowed()) return;
   installFetchDiagnostics();
+
   const w = window as typeof window & { [PATCHED_FLAG]?: boolean };
   if (w[PATCHED_FLAG]) return;
   w[PATCHED_FLAG] = true;
