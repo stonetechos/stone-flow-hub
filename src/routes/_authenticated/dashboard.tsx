@@ -11,9 +11,26 @@
  * Presentation-only redesign of `/dashboard`. All numbers come from the
  * existing dashboard KPIs, tasks, activity and follow-ups APIs — no new
  * queries, no schema changes.
+ *
+ * Phase G.8.8: the "Executive brief" bullet list and "Suggested actions"
+ * panel used to be generated locally by `buildBrief`/`buildSuggestions` —
+ * hand-rolled threshold judgments over DashboardKpis ("if outstanding >
+ * 1,000,000, mention it"), independent of and less rigorous than the real
+ * Insight Providers already computing the same category of judgment
+ * (CollectionPriorityProvider, ColdEnquiryProvider, etc.). Both sections
+ * now render the top processed insights from the same registry every
+ * other Intelligence surface reads — Copilot, EntityInsightPanel,
+ * DangerNotifications, Business Priorities — via `useExecutiveInsights()`.
+ * `computeHealth`/`pickHeadline` (the health gauge and headline KPI) are
+ * a different concern — a single composite score / KPI pick, not a list
+ * of discrete business-rule judgments — and were out of this phase's
+ * named scope (risk.ts, OwnerInsight, and specifically buildBrief/
+ * buildSuggestions); left untouched.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
+import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -64,6 +81,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardPage() {
   const { user } = useAuthReady();
   const qc = useQueryClient();
+  const { processedInsights } = useExecutiveInsights();
 
   const kpisQ = useQuery({ queryKey: qk.dashboard, queryFn: getDashboardKpis });
   const activityQ = useQuery({
@@ -120,7 +138,10 @@ function DashboardPage() {
   const tasks = tasksQ.data ?? [];
   const followups = followupsQ.data ?? [];
   const health = computeHealth(kpis);
-  const brief = buildBrief(kpis, tasks);
+  const topInsights = [...processedInsights]
+    .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
+    .slice(0, 5);
+  const brief = buildBrief(topInsights, tasks);
   const headline = pickHeadline(kpis);
 
   return (
@@ -164,6 +185,7 @@ function DashboardPage() {
         <CopilotDock
           health={health}
           kpis={kpis}
+          topInsights={topInsights}
           activity={activityQ.data ?? []}
           activityLoading={activityQ.isLoading}
         />
@@ -781,11 +803,13 @@ function InventoryIntelligence() {
 function CopilotDock({
   health,
   kpis,
+  topInsights,
   activity,
   activityLoading,
 }: {
   health: HealthScore;
   kpis: DashboardKpis;
+  topInsights: ProcessedInsight[];
   activity: Array<{
     id: string | number;
     action: string;
@@ -796,7 +820,7 @@ function CopilotDock({
   }>;
   activityLoading: boolean;
 }) {
-  const suggestions = buildSuggestions(kpis);
+  const suggestions = buildSuggestions(topInsights);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
       {/* Contextual summary */}
@@ -1217,24 +1241,17 @@ function pickHeadline(k: DashboardKpis): HeadlineMetric {
   };
 }
 
-function buildBrief(k: DashboardKpis, tasks: TaskRow[]): string[] {
-  const lines: string[] = [];
-  if (k.pendingQuotes)
-    lines.push(
-      `${k.pendingQuotes} quotation${k.pendingQuotes === 1 ? "" : "s"} require approval.`,
-    );
-  if (k.overdueFollowups)
-    lines.push(
-      `${k.overdueFollowups} follow-up${k.overdueFollowups === 1 ? " is" : "s are"} overdue.`,
-    );
-  if (k.outstandingInr > 1_000_000)
-    lines.push(`₹${formatMoney(k.outstandingInr)} sits in receivables — chase collections.`);
-  if (k.collectionsTodayInr > 0)
-    lines.push(`₹${formatMoney(k.collectionsTodayInr)} collected so far today.`);
-  if (k.deliveriesToday)
-    lines.push(
-      `${k.deliveriesToday} dispatch${k.deliveriesToday === 1 ? "" : "es"} scheduled to leave.`,
-    );
+/**
+ * Phase G.8.8: the headline lines now come directly from the top
+ * processed insights (already complete, readable sentences by provider
+ * convention — every provider writes `title` as a full sentence, e.g.
+ * "ENQ-000001 has no salesperson assigned") instead of re-deciding
+ * locally which KPI thresholds are "worth mentioning." Urgent-task count
+ * is kept as a direct, judgment-free count — Tasks aren't part of the
+ * Insight registry and nothing else in the app computes this, so it
+ * isn't duplicate logic, just a plain tally appended to the same list. */
+function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[]): string[] {
+  const lines = topInsights.map((i) => i.title);
   const urgent = tasks.filter((t) => t.priority === "urgent").length;
   if (urgent) lines.push(`${urgent} urgent task${urgent === 1 ? "" : "s"} on your list.`);
   if (lines.length === 0)
@@ -1242,19 +1259,13 @@ function buildBrief(k: DashboardKpis, tasks: TaskRow[]): string[] {
   return lines.slice(0, 5);
 }
 
-function buildSuggestions(k: DashboardKpis): Array<{ label: string; to: string }> {
-  const out: Array<{ label: string; to: string }> = [];
-  if (k.pendingQuotes)
-    out.push({ label: "Review pending quotations", to: "/quotes" });
-  if (k.overdueFollowups)
-    out.push({ label: "Clear overdue follow-ups", to: "/followups" });
-  if (k.ordersToStart)
-    out.push({ label: "Release orders to production", to: "/sales-orders" });
-  if (k.outstandingInr > 1_000_000)
-    out.push({ label: "Chase top receivables", to: "/invoices" });
-  if (k.deliveriesToday)
-    out.push({ label: "Confirm today's dispatches", to: "/dispatch" });
-  return out.slice(0, 5);
+/**
+ * Phase G.8.8: suggestions now come directly from the top processed
+ * insights' own `action` field — every Insight already carries exactly
+ * this {label, href} shape for its single primary call-to-action, so
+ * this is a straight map, not a second judgment about what to suggest. */
+function buildSuggestions(topInsights: ProcessedInsight[]): Array<{ label: string; to: string }> {
+  return topInsights.slice(0, 5).map((i) => ({ label: i.action.label, to: i.action.href }));
 }
 
 function greetingFor(d: Date): string {
