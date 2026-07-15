@@ -43,6 +43,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import {
   Loader2,
   KeyRound,
@@ -56,6 +58,10 @@ import {
   UserX,
   UserCheck,
   Trash2,
+  Eye,
+  EyeOff,
+  Copy,
+  RefreshCw,
 } from "lucide-react";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -71,12 +77,15 @@ import {
 import {
   listAuthUsers,
   inviteUser,
+  createUserWithPassword,
   resendInvite,
   deleteAuthUser,
   setUserActive,
   type AdminUserRow,
   type AdminUserStatus,
 } from "@/lib/admin/users.functions";
+import { generatePassword, scorePasswordStrength, MIN_PASSWORD_LENGTH } from "@/lib/admin/password";
+import { toneText } from "@/lib/ui/tones";
 
 const qk = {
   users: ["admin", "users"] as const,
@@ -150,6 +159,7 @@ function UsersAdminPage() {
   const qc = useQueryClient();
   const listAuthUsersFn = useServerFn(listAuthUsers);
   const inviteFn = useServerFn(inviteUser);
+  const createWithPasswordFn = useServerFn(createUserWithPassword);
   const resendFn = useServerFn(resendInvite);
   const deleteFn = useServerFn(deleteAuthUser);
   const setActiveFn = useServerFn(setUserActive);
@@ -245,6 +255,32 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const createWithPassword = useMutation({
+    mutationFn: (data: {
+      email: string;
+      full_name?: string | null;
+      password: string;
+      role?: AppRole | null;
+    }) =>
+      createWithPasswordFn({
+        data: {
+          email: data.email,
+          password: data.password,
+          full_name: data.full_name ?? null,
+        },
+      }).then(async (res) => {
+        if (res.id && data.role) {
+          await assignRole(res.id, data.role);
+        }
+        return res;
+      }),
+    onSuccess: () => {
+      toast.success("User created");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const resend = useMutation({
     mutationFn: (email: string) =>
       resendFn({
@@ -305,7 +341,7 @@ function UsersAdminPage() {
         subtitle="Invite users, assign roles, and manage the full user lifecycle. Email remains the login identity."
         actions={
           <Button onClick={() => setInviteOpen(true)} size="sm">
-            <UserPlus className="mr-1.5 h-4 w-4" /> Invite user
+            <UserPlus className="mr-1.5 h-4 w-4" /> Add user
           </Button>
         }
       />
@@ -391,11 +427,13 @@ function UsersAdminPage() {
         for the last remaining active administrator.
       </p>
 
-      <InviteDialog
+      <CreateUserDialog
         open={inviteOpen}
         onOpenChange={setInviteOpen}
-        busy={invite.isPending}
-        onSubmit={(v) => invite.mutateAsync(v).then(() => setInviteOpen(false))}
+        busyInvite={invite.isPending}
+        busyPassword={createWithPassword.isPending}
+        onSubmitInvite={(v) => invite.mutateAsync(v).then(() => setInviteOpen(false))}
+        onSubmitPassword={(v) => createWithPassword.mutateAsync(v).then(() => setInviteOpen(false))}
       />
 
       <AlertDialog
@@ -436,112 +474,308 @@ function UsersAdminPage() {
   );
 }
 
-function InviteDialog({
+function CreateUserDialog({
   open,
   onOpenChange,
-  busy,
-  onSubmit,
+  busyInvite,
+  busyPassword,
+  onSubmitInvite,
+  onSubmitPassword,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  busyInvite: boolean;
+  busyPassword: boolean;
+  onSubmitInvite: (v: {
+    email: string;
+    full_name?: string | null;
+    role?: AppRole | null;
+  }) => Promise<unknown>;
+  onSubmitPassword: (v: {
+    email: string;
+    full_name?: string | null;
+    password: string;
+    role?: AppRole | null;
+  }) => Promise<unknown>;
+}) {
+  const [mode, setMode] = useState<"invite" | "password">("invite");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[460px]">
+        <DialogHeader>
+          <DialogTitle>Add user</DialogTitle>
+          <DialogDescription>
+            Send an email invitation, or set a password directly and skip the invite step.
+          </DialogDescription>
+        </DialogHeader>
+        <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
+          <TabsList>
+            <TabsTrigger value="invite">Send invite</TabsTrigger>
+            <TabsTrigger value="password">Set password now</TabsTrigger>
+          </TabsList>
+          <TabsContent value="invite">
+            <InviteForm
+              busy={busyInvite}
+              onCancel={() => onOpenChange(false)}
+              onSubmit={(v) => onSubmitInvite(v)}
+            />
+          </TabsContent>
+          <TabsContent value="password">
+            <PasswordCreateForm
+              busy={busyPassword}
+              onCancel={() => onOpenChange(false)}
+              onSubmit={(v) => onSubmitPassword(v)}
+            />
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InviteForm({
+  busy,
+  onCancel,
+  onSubmit,
+}: {
   busy: boolean;
-  onSubmit: (v: { email: string; full_name?: string | null; role?: AppRole | null }) => Promise<unknown>;
+  onCancel: () => void;
+  onSubmit: (v: { email: string; full_name?: string | null; role?: AppRole | null }) => void;
 }) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AppRole | "none">("none");
 
-  function reset() {
-    setEmail("");
-    setFullName("");
-    setRole("none");
+  return (
+    <form
+      className="space-y-3 pt-1"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!email.trim()) return;
+        onSubmit({
+          email: email.trim(),
+          full_name: fullName.trim() || null,
+          role: role === "none" ? null : role,
+        });
+      }}
+    >
+      <p className="text-xs text-muted-foreground">
+        Sends a sign-in invitation. The recipient sets their own password on first visit.
+      </p>
+      <div className="space-y-1.5">
+        <Label htmlFor="invite-email">Email</Label>
+        <Input
+          id="invite-email"
+          type="email"
+          autoFocus
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="user@company.com"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="invite-name">Display name (optional)</Label>
+        <Input
+          id="invite-name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="e.g. Harsh Pupneja"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Initial role (optional)</Label>
+        <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No role (assign later)</SelectItem>
+            {APP_ROLES.map((r) => (
+              <SelectItem key={r} value={r}>
+                {ROLE_LABEL[r]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={busy || !email.trim()}>
+          {busy ? (
+            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="mr-1.5 h-4 w-4" />
+          )}
+          Send invitation
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function PasswordCreateForm({
+  busy,
+  onCancel,
+  onSubmit,
+}: {
+  busy: boolean;
+  onCancel: () => void;
+  onSubmit: (v: {
+    email: string;
+    full_name?: string | null;
+    password: string;
+    role?: AppRole | null;
+  }) => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<AppRole | "none">("none");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const strength = scorePasswordStrength(password);
+  const tooShort = password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+
+  async function copyPassword() {
+    if (!password) return;
+    await navigator.clipboard.writeText(password);
+    toast.success("Password copied to clipboard");
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        onOpenChange(o);
-        if (!o) reset();
+    <form
+      className="space-y-3 pt-1"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!email.trim() || password.length < MIN_PASSWORD_LENGTH) return;
+        onSubmit({
+          email: email.trim(),
+          full_name: fullName.trim() || null,
+          password,
+          role: role === "none" ? null : role,
+        });
       }}
     >
-      <DialogContent className="sm:max-w-[440px]">
-        <DialogHeader>
-          <DialogTitle>Invite user</DialogTitle>
-          <DialogDescription>
-            Sends a sign-in invitation. The recipient sets their own password on first visit.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!email.trim()) return;
-            void onSubmit({
-              email: email.trim(),
-              full_name: fullName.trim() || null,
-              role: role === "none" ? null : role,
-            });
-          }}
-        >
-          <div className="space-y-1.5">
-            <Label htmlFor="invite-email">Email</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              autoFocus
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@company.com"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="invite-name">Display name (optional)</Label>
-            <Input
-              id="invite-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Harsh Pupneja"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Initial role (optional)</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No role (assign later)</SelectItem>
-                {APP_ROLES.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {ROLE_LABEL[r]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
+      <p className="text-xs text-muted-foreground">
+        Creates the account with this password immediately — no invitation email is sent, and the
+        email address is not independently verified. Share the password with the user yourself.
+      </p>
+      <div className="space-y-1.5">
+        <Label htmlFor="pw-email">Email</Label>
+        <Input
+          id="pw-email"
+          type="email"
+          autoFocus
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="user@company.com"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="pw-name">Display name (optional)</Label>
+        <Input
+          id="pw-name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="e.g. Harsh Pupneja"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Initial role (optional)</Label>
+        <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No role (assign later)</SelectItem>
+            {APP_ROLES.map((r) => (
+              <SelectItem key={r} value={r}>
+                {ROLE_LABEL[r]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="pw-password">Password</Label>
+          <button
+            type="button"
+            onClick={() => setPassword(generatePassword())}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            <RefreshCw className="h-3 w-3" /> Generate
+          </button>
+        </div>
+        <div className="relative">
+          <Input
+            id="pw-password"
+            type={showPassword ? "text" : "password"}
+            required
+            minLength={MIN_PASSWORD_LENGTH}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Type or generate a password"
+            className="pr-16 font-mono"
+            aria-describedby="pw-strength"
+          />
+          <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
             <Button
               type="button"
+              size="icon"
               variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={busy}
+              className="h-7 w-7"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              Cancel
+              {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
             </Button>
-            <Button type="submit" disabled={busy || !email.trim()}>
-              {busy ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="mr-1.5 h-4 w-4" />
-              )}
-              Send invitation
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={copyPassword}
+              disabled={!password}
+              aria-label="Copy password"
+            >
+              <Copy className="h-3.5 w-3.5" />
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </div>
+        <div id="pw-strength" className="space-y-1">
+          <Progress value={strength.percent} className="h-1" />
+          <div className="flex items-center justify-between text-xs">
+            <span className={password ? toneText(strength.tone) : "text-muted-foreground"}>
+              {password ? strength.label : "Minimum 8 characters"}
+            </span>
+            {tooShort && (
+              <span className="text-status-danger-fg">
+                {MIN_PASSWORD_LENGTH - password.length} more character
+                {MIN_PASSWORD_LENGTH - password.length === 1 ? "" : "s"} needed
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={busy || !email.trim() || password.length < MIN_PASSWORD_LENGTH}>
+          {busy ? (
+            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+          ) : (
+            <KeyRound className="mr-1.5 h-4 w-4" />
+          )}
+          Create user
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
 

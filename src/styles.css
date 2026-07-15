@@ -118,6 +118,8 @@
   --color-text-disabled:       var(--text-disabled);
   --color-text-inverse:        var(--text-inverse);
   --color-text-inverse-muted:  var(--text-inverse-muted);
+  --color-text-on-material:       var(--text-on-material);
+  --color-text-on-material-muted: var(--text-on-material-muted);
   --color-text-on-intent:      var(--text-on-intent);
   --color-text-link:           var(--text-link);
 
@@ -277,8 +279,20 @@
   --text-secondary:      var(--stone-slate-400);
   --text-muted:          var(--stone-slate-500);
   --text-disabled:       var(--stone-slate-300);
+  /* --text-inverse pairs with --surface-inverse (tooltip.tsx only) — both
+   * intentionally flip lightness per theme so a tooltip always contrasts
+   * the page behind it. Everything that sits on a permanently-dark Stone
+   * Material (material-basalt / material-granite: sidebar, hero cards,
+   * popovers with a stone header, the auth screen's branding panel) must
+   * use --text-on-material / --text-on-material-muted instead — those
+   * stay light in every theme because the material never lightens.
+   * Phase G.11 Section 3: two dark themes previously reused
+   * --text-inverse for material text too, which flips it dark exactly
+   * when the surface stays dark — that was the contrast bug. */
   --text-inverse:        var(--stone-limestone-50);
   --text-inverse-muted:  oklch(0.75 0.010 250);
+  --text-on-material:       var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.010 250);
   --text-on-intent:      var(--stone-graphite-900);
   --text-link:           var(--mint-700);
 
@@ -429,8 +443,14 @@
   --text-secondary:     oklch(0.78 0.010 250);
   --text-muted:         oklch(0.62 0.012 250);
   --text-disabled:      oklch(0.44 0.012 250);
+  /* --text-inverse correctly flips dark here to pair with --surface-inverse
+   * (also flipped light below) for tooltip.tsx. Stone Material surfaces
+   * (sidebar/hero/etc.) never lighten in this theme, so their text uses
+   * --text-on-material, which stays the same light value as :root. */
   --text-inverse:       var(--stone-graphite-900);
   --text-inverse-muted: var(--stone-slate-500);
+  --text-on-material:       var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.010 250);
   --text-on-intent:     var(--stone-graphite-900);
   --text-link:          var(--mint-300);
 
@@ -547,6 +567,8 @@
   --text-disabled:      oklch(0.44 0.012 250);
   --text-inverse:       var(--stone-graphite-900);
   --text-inverse-muted: var(--stone-slate-500);
+  --text-on-material:       var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.010 250);
   --text-on-intent:     var(--stone-graphite-900);
   --text-link:          var(--mint-300);
 
@@ -653,6 +675,8 @@
   --text-disabled:      var(--stone-slate-400);
   --text-inverse:       oklch(1 0 0);
   --text-inverse-muted: oklch(0.85 0 0);
+  --text-on-material:       oklch(1 0 0);
+  --text-on-material-muted: oklch(0.85 0 0);
   --text-on-intent:     var(--stone-graphite-900);
   --text-link:          var(--mint-700);
 
@@ -832,7 +856,7 @@
   position: relative;
   isolation: isolate;
   background: var(--material-basalt-fill);
-  color: var(--color-text-inverse);
+  color: var(--color-text-on-material);
   &::after {
     content: "";
     position: absolute;
@@ -849,7 +873,7 @@
   position: relative;
   isolation: isolate;
   background: var(--material-granite-fill);
-  color: var(--color-text-inverse);
+  color: var(--color-text-on-material);
   &::after {
     content: "";
     position: absolute;

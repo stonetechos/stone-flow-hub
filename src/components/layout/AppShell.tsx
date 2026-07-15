@@ -395,12 +395,12 @@ function UserMenu({
         <div className="material-basalt stone-grain relative">
           <div className="relative z-10 flex items-start gap-3 px-3.5 py-3.5">
             <Avatar className="h-10 w-10 border border-white/10 shadow-e2">
-              <AvatarFallback className="bg-surface-nav text-[13px] font-medium text-text-inverse">
+              <AvatarFallback className="bg-surface-nav text-[13px] font-medium text-text-on-material">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-display text-[13px] font-medium text-text-inverse">
+              <div className="truncate font-display text-[13px] font-medium text-text-on-material">
                 {email || "Account"}
               </div>
               <div className="mt-0.5 flex items-center gap-1.5">
@@ -409,20 +409,20 @@ function UserMenu({
                     "inline-flex items-center gap-1 rounded-sm px-1.5 py-px font-mono text-[10px] uppercase tracking-wider",
                     isAdmin
                       ? "bg-mint-500/20 text-mint-200"
-                      : "bg-white/8 text-text-inverse-muted",
+                      : "bg-white/8 text-text-on-material-muted",
                   )}
                 >
                   {isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
                   {isAdmin ? "Admin" : "Member"}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
                   Stone Tech OS
                 </span>
               </div>
             </div>
           </div>
           <div className="relative z-10 border-t border-white/8 px-3.5 py-1.5">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
               <span>Last login</span>
               <span>{lastLoginLabel}</span>
             </div>
@@ -563,13 +563,23 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <DemoProvider>
-      <div className="flex min-h-dvh bg-surface-base">
+      <div className="flex h-dvh overflow-hidden bg-surface-base">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
         >
           Skip to main content
         </a>
+
+        {/*
+          Enterprise layout (Phase G.11 Section 1): the shell itself is
+          locked to the viewport (h-dvh + overflow-hidden) so there is no
+          page-level scroll. The sidebar and the <main> content pane below
+          are each an independent overflow-y-auto region — scrolling one
+          never moves the other, and the header/breadcrumb/demo banner
+          stay put as shrink-0 chrome instead of relying on sticky
+          positioning against a scrolling ancestor.
+        */}
 
         {/* Desktop sidebar — Basalt material with restrained grain */}
         <aside
@@ -583,7 +593,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className={cn(
-              "relative z-10 flex h-14 items-center gap-2 border-b border-white/6",
+              "relative z-10 flex h-14 shrink-0 items-center gap-2 border-b border-white/6",
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
@@ -594,11 +604,18 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
             </span>
             {!collapsed && (
-              <div className="flex min-w-0 flex-col leading-none">
-                <span className="font-display text-[14px] font-semibold tracking-tight text-text-inverse">
+              // Phase G.11 Section 4: leading-none clipped the ascenders of
+              // "Stone Tech OS" in font-display (Inter/Roboto Slab) at this
+              // weight/size — a tight single-purpose line-height with no
+              // vertical headroom is a known culprit for custom display
+              // fonts. leading-tight (1.25) gives just enough room to stop
+              // the crop without visibly changing the row's height or
+              // alignment.
+              <div className="flex min-w-0 flex-col justify-center leading-tight">
+                <span className="font-display text-[14px] font-semibold tracking-tight text-text-on-material">
                   Stone Tech <span className="text-mint-300">OS</span>
                 </span>
-                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-text-inverse-muted">
+                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-text-on-material-muted">
                   Workspace
                 </span>
               </div>
@@ -616,7 +633,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           >
             {!collapsed && (
-              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-text-inverse-muted">
+              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
                 v1 · Quarry
               </span>
             )}
@@ -626,7 +643,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <button
                     type="button"
                     onClick={() => setCollapsed(!collapsed)}
-                    className="rounded-md p-1.5 text-text-inverse-muted hover:bg-white/6 hover:text-text-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    className="rounded-md p-1.5 text-text-on-material-muted hover:bg-white/6 hover:text-text-on-material focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     aria-pressed={collapsed}
                   >
@@ -646,10 +663,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        {/* Main */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Topbar (48px) */}
-          <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
+        {/* Main column: bounded to the viewport row height (min-h-0) so
+            <main> below is the only scrolling region; header/breadcrumb/
+            demo banner are plain shrink-0 flow items instead of sticky. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {/* Topbar (48px) — fixed chrome, no longer sticky-against-scroll */}
+          <header className="z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
             {/* Mobile nav trigger */}
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
@@ -673,7 +692,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   >
                     <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
                   </span>
-                  <SheetTitle className="font-display text-[14px] font-semibold text-text-inverse">
+                  <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
                     Stone Tech <span className="text-mint-300">OS</span>
                   </SheetTitle>
                 </SheetHeader>
@@ -768,14 +787,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Breadcrumb rail — quiet, single line under the topbar */}
           {showBreadcrumbs && (
-            <div className="sticky top-12 z-10 hidden border-b border-border-subtle bg-surface-base/85 px-4 py-1.5 backdrop-blur md:flex md:px-8">
+            <div className="z-10 hidden shrink-0 border-b border-border-subtle bg-surface-base/85 px-4 py-1.5 backdrop-blur md:flex md:px-8">
               <Breadcrumbs />
             </div>
           )}
 
           <DemoBanner />
 
-          <main id="main-content" className="flex-1 px-4 py-5 md:px-8 md:py-6">
+          <main
+            id="main-content"
+            className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-8 md:py-6"
+          >
             <PageTransition>{children}</PageTransition>
           </main>
         </div>

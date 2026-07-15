@@ -117,10 +117,10 @@ function HeroPanel({ className }: { className?: string }) {
       {/* Middle: headline + copy + capabilities */}
       <div className="relative z-10 mt-16 max-w-[520px] space-y-10 lg:mt-24">
         <div className="space-y-5">
-          <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-inverse sm:text-[38px] lg:text-[44px]">
+          <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-on-material sm:text-[38px] lg:text-[44px]">
             Enterprise OS for the Natural Stone Industry
           </h2>
-          <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-inverse-muted">
+          <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
             Manage enquiries, quotations, production, inventory, procurement,
             dispatch, finance and customer relationships from one operating
             system.
@@ -149,7 +149,7 @@ function HeroPanel({ className }: { className?: string }) {
       {/* Bottom: quarry line illustration + wordmark */}
       <div className="relative z-10 mt-16">
         <QuarryLines />
-        <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-inverse-muted">
+        <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
           Stone Tech OS · v1.0
         </p>
       </div>
@@ -183,10 +183,10 @@ function StoneTechMark() {
         </svg>
       </div>
       <div className="leading-tight">
-        <div className="font-display text-lg font-medium tracking-tight text-text-inverse">
+        <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
           Stone Tech <span className="text-mint-300">OS</span>
         </div>
-        <div className="text-[11px] uppercase tracking-[0.14em] text-text-inverse-muted">
+        <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
           Natural Stone Industry
         </div>
       </div>
@@ -212,10 +212,10 @@ function Capability({
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <div className="text-[13px] font-medium tracking-tight text-text-inverse">
+        <div className="text-[13px] font-medium tracking-tight text-text-on-material">
           {title}
         </div>
-        <div className="mt-1 text-[12.5px] leading-relaxed text-text-inverse-muted">
+        <div className="mt-1 text-[12.5px] leading-relaxed text-text-on-material-muted">
           {body}
         </div>
       </div>
@@ -229,7 +229,7 @@ function QuarryLines() {
     <svg
       aria-hidden="true"
       viewBox="0 0 480 96"
-      className="h-20 w-full max-w-[460px] text-text-inverse-muted"
+      className="h-20 w-full max-w-[460px] text-text-on-material-muted"
       fill="none"
       stroke="currentColor"
       strokeWidth={1}

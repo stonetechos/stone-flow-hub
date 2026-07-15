@@ -175,6 +175,51 @@ export const inviteUser = createServerFn({ method: "POST" })
     return { id: userId ?? null, email };
   });
 
+const createWithPasswordInput = z.object({
+  email: z.string().email("Enter a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128),
+  full_name: z.string().trim().max(200).optional().nullable(),
+});
+
+/**
+ * Creates an auth user with an admin-supplied password and marks the email
+ * confirmed immediately (no invite email is sent).
+ *
+ * This is a deliberately separate path from `inviteUser`: that flow verifies
+ * the recipient owns the email address before any credential exists. This
+ * one skips that verification because the admin is asserting the identity
+ * and setting the credential directly — added at explicit user request
+ * (Phase G.11, Section 2) alongside the existing invite flow, not in place
+ * of it.
+ */
+export const createUserWithPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => createWithPasswordInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = data.email.trim().toLowerCase();
+    const fullName = data.full_name?.trim() || null;
+
+    const { data: result, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: fullName ? { full_name: fullName } : undefined,
+    });
+    if (error) throw new Error(error.message);
+    const userId = result.user?.id;
+    if (userId && fullName) {
+      await supabaseAdmin
+        .from("profiles")
+        .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+    }
+    return { id: userId ?? null, email };
+  });
+
 const emailInput = z.object({
   email: z.string().email(),
   redirect_to: z.string().url().optional().nullable(),

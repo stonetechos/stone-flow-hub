@@ -83,12 +83,12 @@ export function NotificationsBell() {
         <div className="material-basalt stone-grain relative">
           <div className="relative z-10 flex items-center justify-between px-3.5 py-3">
             <div className="flex items-center gap-2">
-              <Inbox className="h-3.5 w-3.5 text-text-inverse-muted" aria-hidden />
-              <span className="font-display text-[13px] font-medium tracking-tight text-text-inverse">
+              <Inbox className="h-3.5 w-3.5 text-text-on-material-muted" aria-hidden />
+              <span className="font-display text-[13px] font-medium tracking-tight text-text-on-material">
                 Notifications
               </span>
               {unread > 0 && (
-                <span className="rounded-full bg-primary/25 px-1.5 py-px font-mono text-[10px] font-medium text-text-inverse">
+                <span className="rounded-full bg-primary/25 px-1.5 py-px font-mono text-[10px] font-medium text-text-on-material">
                   {unread}
                 </span>
               )}
@@ -99,8 +99,8 @@ export function NotificationsBell() {
               disabled={unread === 0}
               className={cn(
                 "flex items-center gap-1 rounded-sm px-1.5 py-1 text-[11px]",
-                "text-text-inverse-muted transition-colors",
-                "hover:bg-white/5 hover:text-text-inverse",
+                "text-text-on-material-muted transition-colors",
+                "hover:bg-white/5 hover:text-text-on-material",
                 "disabled:opacity-40 disabled:hover:bg-transparent",
               )}
             >

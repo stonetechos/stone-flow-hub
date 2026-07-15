@@ -223,10 +223,10 @@ function ExecutiveHero({
       <div className="relative z-10 p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-inverse-muted">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
               {today}
             </div>
-            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-text-inverse sm:text-[28px]">
+            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-text-on-material sm:text-[28px]">
               {greeting}, {name}.
             </h1>
           </div>
@@ -235,21 +235,21 @@ function ExecutiveHero({
 
         {/* Headline metric */}
         <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-inverse-muted">
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
             {headline.label}
           </span>
           <Link
             to={headline.to}
-            className="font-display text-3xl font-semibold tabular-nums text-text-inverse hover:underline sm:text-[36px]"
+            className="font-display text-3xl font-semibold tabular-nums text-text-on-material hover:underline sm:text-[36px]"
           >
             {headline.value}
           </Link>
-          <span className="text-[13px] text-text-inverse-muted">{headline.context}</span>
+          <span className="text-[13px] text-text-on-material-muted">{headline.context}</span>
         </div>
 
         {/* AI Executive Brief */}
         <div className="mt-6 border-t border-white/8 pt-5">
-          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-inverse-muted">
+          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
             <Sparkles className="h-3 w-3" aria-hidden />
             Executive brief
           </div>
@@ -257,7 +257,7 @@ function ExecutiveHero({
             {brief.map((line, i) => (
               <li
                 key={i}
-                className="flex gap-2.5 text-[14px] leading-relaxed text-text-inverse/90"
+                className="flex gap-2.5 text-[14px] leading-relaxed text-text-on-material/90"
               >
                 <span
                   aria-hidden
@@ -295,7 +295,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
           stroke="currentColor"
           strokeWidth={stroke}
           fill="none"
-          className="text-white/10"
+          className="text-text-on-material/10"
         />
         <circle
           cx={size / 2}
@@ -312,10 +312,10 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-xl font-semibold tabular-nums text-text-inverse">
+        <span className="font-display text-xl font-semibold tabular-nums text-text-on-material">
           {score}
         </span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-inverse-muted">
+        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-on-material-muted">
           Health
         </span>
       </div>
@@ -826,11 +826,11 @@ function CopilotDock({
       {/* Contextual summary */}
       <div className="material-basalt stone-grain overflow-hidden rounded-md border border-border-inverse shadow-e2">
         <div className="relative z-10 p-4">
-          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-inverse-muted">
+          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
             <Sparkles className="h-3 w-3" aria-hidden />
             AI copilot
           </div>
-          <div className="font-display text-[15px] font-medium leading-snug text-text-inverse">
+          <div className="font-display text-[15px] font-medium leading-snug text-text-on-material">
             {health.band === "strong"
               ? "The business is running well. Focus on growth."
               : health.band === "steady"
@@ -908,10 +908,10 @@ function CopilotDock({
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="font-mono text-[9px] uppercase tracking-wider text-text-inverse-muted">
+      <div className="font-mono text-[9px] uppercase tracking-wider text-text-on-material-muted">
         {label}
       </div>
-      <div className="mt-0.5 font-display text-[14px] font-semibold tabular-nums text-text-inverse">
+      <div className="mt-0.5 font-display text-[14px] font-semibold tabular-nums text-text-on-material">
         {value}
       </div>
     </div>
@@ -1075,14 +1075,14 @@ function QuickActionsDock() {
       aria-label="Quick create actions"
     >
       <div className="pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border-inverse bg-surface-nav/95 px-1.5 py-1 shadow-e3 backdrop-blur">
-        <span className="pl-2 pr-1 font-mono text-[10px] uppercase tracking-[0.18em] text-text-inverse-muted">
+        <span className="pl-2 pr-1 font-mono text-[10px] uppercase tracking-[0.18em] text-text-on-material-muted">
           <Plus className="inline h-3 w-3" aria-hidden /> New
         </span>
         {actions.map((a) => (
           <Link
             key={a.to}
             to={a.to}
-            className="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] text-text-inverse-muted transition-colors hover:bg-white/8 hover:text-text-inverse"
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] text-text-on-material-muted transition-colors hover:bg-white/8 hover:text-text-on-material"
           >
             {a.icon}
             {a.label}
