@@ -146,6 +146,52 @@ async function resolveCustomer(searchText: string | undefined, filters: NlFilter
     }
     return [...byCustomer.values()].map((i) => fromInsight(i, "customer"));
   }
+
+  // A query naming one specific person ("give me updates about Shiv",
+  // "find customer Shiv Solanki") must resolve the same way regardless
+  // of which intent the classifier filed it under. resolveTimelineIntent()
+  // already does this via resolveByName()/ambiguousMatchResults() for the
+  // five timeline-style intents (timeline_summary, recent_activity,
+  // show_related, explain_status, summarize_record) — but a query the
+  // classifier instead calls "search" or "filter" (still entityType
+  // "customer", still filters.customerName set) used to fall through to
+  // the flat list below, which fetched only the 200 most-recently-created
+  // customers unfiltered and client-side-matched them, and — unlike
+  // resolveTimelineIntent() — never disambiguated when more than one
+  // customer shared the name. Routing the named-customer case through the
+  // same resolveByName() logic here closes that gap: "give me updates
+  // about Shiv" now asks which Shiv (or resolves confidently to one) no
+  // matter how the classifier categorized the question, and the lookup
+  // is a real server-side name search instead of a capped unfiltered scan.
+  if (filters?.customerName) {
+    const rows = await listCustomers(filters.customerName);
+    const resolution = resolveByName(rows, filters.customerName, (r) => r.name);
+    if (resolution.kind === "ambiguous") {
+      return ambiguousMatchResults(resolution.rows, "customer", (r) => ({
+        id: r.id,
+        title: r.name,
+        subtitle: [r.customer_code, r.city].filter(Boolean).join(" · ") || null,
+        href: `/customers/${r.id}`,
+      }));
+    }
+    if (resolution.kind === "one") {
+      const c = resolution.row;
+      return [
+        {
+          id: c.id,
+          entityType: "customer" as const,
+          title: c.name,
+          subtitle: c.customer_code,
+          href: `/customers/${c.id}`,
+          rank: 0,
+          updatedAt: c.updated_at,
+          isActive: c.is_active,
+        },
+      ];
+    }
+    return [];
+  }
+
   const rows = await listCustomers(searchText ?? "");
   return rows
     .filter((c) => nameMatches(c.name, filters?.customerName))
