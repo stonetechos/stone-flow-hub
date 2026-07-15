@@ -34,8 +34,10 @@ const chatInput = z.object({
 export const askCopilot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => chatInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const { chat } = await import("./gateway.server");
+
     const systemLines = [
       "You are the Stone Tech OS Copilot — an assistant embedded in an ERP for the natural-stone industry (marble, granite, quartz, engineered stone).",
       "Users are sales, procurement, production, QC and management staff at a stone fabrication company in India.",
