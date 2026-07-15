@@ -1,5 +1,5 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -8,7 +8,7 @@ import { customerCreateSchema, type CustomerCreateInput } from "./schema";
 export type CustomerRow = DbTable<"customers">;
 
 export async function listCustomers(query = ""): Promise<CustomerRow[]> {
-  let q = supabase
+  let q = getDb()
     .from("customers")
     .select("*")
     .order("created_at", { ascending: false })
@@ -35,7 +35,7 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
 }
 
 export async function getCustomer(id: string): Promise<CustomerRow | null> {
-  const { data, error } = await supabase.from("customers").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await getDb().from("customers").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
@@ -43,7 +43,7 @@ export async function getCustomer(id: string): Promise<CustomerRow | null> {
 export async function findCustomerByPhone(mobile: string): Promise<CustomerRow | null> {
   const normalized = normalizeMobile(mobile);
   if (!normalized) return null;
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customers")
     .select("*")
     .ilike("primary_phone", `%${normalized}%`)
@@ -65,7 +65,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customers")
     .insert({
       customer_code: "",
@@ -90,7 +90,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
 
 export async function updateCustomer(id: string, input: CustomerCreateInput): Promise<CustomerRow> {
   const parsed = customerCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customers")
     .update({
       name: parsed.name,
@@ -113,6 +113,6 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
-  const { error } = await supabase.from("customers").delete().eq("id", id);
+  const { error } = await getDb().from("customers").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

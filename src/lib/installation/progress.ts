@@ -1,5 +1,5 @@
 /** Daily site progress reports for an installation. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { z } from "zod";
 
@@ -38,7 +38,7 @@ export const progressCreateSchema = z.object({
 export type ProgressCreateInput = z.infer<typeof progressCreateSchema>;
 
 export async function listProgress(installationId: string): Promise<ProgressReport[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("installation_progress" as never)
     .select("*")
     .eq("installation_id", installationId)
@@ -50,8 +50,8 @@ export async function listProgress(installationId: string): Promise<ProgressRepo
 
 export async function createProgress(input: ProgressCreateInput): Promise<ProgressReport> {
   const p = progressCreateSchema.parse(input);
-  const user = (await supabase.auth.getUser()).data.user;
-  const { data, error } = await supabase
+  const user = (await getDb().auth.getUser()).data.user;
+  const { data, error } = await getDb()
     .from("installation_progress" as never)
     .insert({ ...p, reported_by: user?.id ?? null } as never)
     .select("*")
@@ -61,6 +61,6 @@ export async function createProgress(input: ProgressCreateInput): Promise<Progre
 }
 
 export async function deleteProgress(id: string): Promise<void> {
-  const { error } = await supabase.from("installation_progress" as never).delete().eq("id", id);
+  const { error } = await getDb().from("installation_progress" as never).delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

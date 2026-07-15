@@ -1,5 +1,5 @@
 /** Customer Receipts — data access. Supports advance receipts, multi-invoice allocation. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -21,7 +21,7 @@ const JOINS =
   "*, customer:customers!receipts_customer_id_fkey(id,name,customer_code)";
 
 export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("receipts")
     .select(JOINS)
     .order("received_at", { ascending: false })
@@ -34,7 +34,7 @@ export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
 }
 
 export async function getReceipt(id: string): Promise<ReceiptListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("receipts")
     .select(JOINS)
     .eq("id", id)
@@ -44,7 +44,7 @@ export async function getReceipt(id: string): Promise<ReceiptListItem | null> {
 }
 
 export async function getReceiptAllocations(receiptId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("receipt_allocations")
     .select("*, invoice:invoices!receipt_allocations_invoice_id_fkey(id,invoice_no,total,balance_due,issue_date)")
     .eq("receipt_id", receiptId);
@@ -53,7 +53,7 @@ export async function getReceiptAllocations(receiptId: string) {
 }
 
 export async function listReceiptsByCustomer(customerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("receipts")
     .select("*")
     .eq("customer_id", customerId)
@@ -64,7 +64,7 @@ export async function listReceiptsByCustomer(customerId: string) {
 
 /** Outstanding invoices (with balance > 0) for a customer — used in allocation UI. */
 export async function listOpenInvoicesForCustomer(customerId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoices")
     .select("id, invoice_no, total, balance_due, issue_date, due_date, status")
     .eq("customer_id", customerId)
@@ -86,7 +86,7 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
       400,
     );
   }
-  const { data: rcpt, error } = await supabase
+  const { data: rcpt, error } = await getDb()
     .from("receipts")
     .insert({
       receipt_no: "",
@@ -111,7 +111,7 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
   if (error) throw new AppError(mapDbError(error));
 
   if (parsed.allocations.length) {
-    const { error: aErr } = await supabase.from("receipt_allocations").insert(
+    const { error: aErr } = await getDb().from("receipt_allocations").insert(
       parsed.allocations.map((a) => ({
         receipt_id: rcpt.id,
         invoice_id: a.invoice_id,
@@ -125,7 +125,7 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
 
 export async function updateReceipt(id: string, input: ReceiptUpdateInput): Promise<ReceiptRow> {
   const parsed = receiptUpdateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("receipts")
     .update({
       received_at: parsed.received_at,
@@ -149,7 +149,7 @@ export async function updateReceipt(id: string, input: ReceiptUpdateInput): Prom
 }
 
 export async function voidReceipt(id: string) {
-  const { error } = await supabase.from("receipts").update({ status: "void" }).eq("id", id);
+  const { error } = await getDb().from("receipts").update({ status: "void" }).eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -157,9 +157,9 @@ export async function replaceAllocations(
   receiptId: string,
   allocations: Array<{ invoice_id: string; amount: number }>,
 ) {
-  await supabase.from("receipt_allocations").delete().eq("receipt_id", receiptId);
+  await getDb().from("receipt_allocations").delete().eq("receipt_id", receiptId);
   if (!allocations.length) return;
-  const { error } = await supabase
+  const { error } = await getDb()
     .from("receipt_allocations")
     .insert(allocations.map((a) => ({ receipt_id: receiptId, ...a })));
   if (error) throw new AppError(mapDbError(error));

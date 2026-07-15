@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -21,7 +21,7 @@ export async function listPurchaseOrders(
   query = "",
   status = "",
 ): Promise<PurchaseOrderListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("purchase_orders")
     .select(SELECT)
     .order("created_at", { ascending: false })
@@ -35,7 +35,7 @@ export async function listPurchaseOrders(
 }
 
 export async function getPurchaseOrder(id: string): Promise<PurchaseOrderListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("purchase_orders")
     .select(SELECT)
     .eq("id", id)
@@ -48,7 +48,7 @@ export async function createPurchaseOrder(
   input: PurchaseOrderCreateInput,
 ): Promise<PurchaseOrderRow> {
   const p = purchaseOrderCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("purchase_orders")
     .insert({
       po_no: "",
@@ -70,7 +70,7 @@ export async function updatePurchaseOrder(
   input: PurchaseOrderCreateInput,
 ): Promise<PurchaseOrderRow> {
   const p = purchaseOrderCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("purchase_orders")
     .update({
       vendor_id: p.vendor_id ?? null,
@@ -88,7 +88,7 @@ export async function updatePurchaseOrder(
 }
 
 export async function deletePurchaseOrder(id: string): Promise<void> {
-  const { error } = await supabase.from("purchase_orders").delete().eq("id", id);
+  const { error } = await getDb().from("purchase_orders").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -104,7 +104,7 @@ export async function deletePurchaseOrder(id: string): Promise<void> {
  * rather than inventing a new one.
  */
 export async function listOpenPurchaseProductIds(): Promise<Set<string>> {
-  const { data: openPOs, error: poErr } = await supabase
+  const { data: openPOs, error: poErr } = await getDb()
     .from("purchase_orders")
     .select("vendor_quote_id")
     .in("status", ["draft", "sent", "acknowledged", "partially_received"] as PurchaseOrderStatus[])
@@ -115,7 +115,7 @@ export async function listOpenPurchaseProductIds(): Promise<Set<string>> {
   const quoteIds = [...new Set((openPOs ?? []).map((p) => p.vendor_quote_id).filter((id): id is string => !!id))];
   if (quoteIds.length === 0) return new Set();
 
-  const { data: items, error: itemsErr } = await supabase
+  const { data: items, error: itemsErr } = await getDb()
     .from("vendor_quote_items")
     .select("product_id")
     .in("vendor_quote_id", quoteIds);

@@ -1,0 +1,157 @@
+#!/usr/bin/env node
+/**
+ * Regression guard for the "AI server functions must use the
+ * authenticated Supabase client, never the anonymous singleton" fix.
+ *
+ * Background: every data-access function under src/lib/**\/api.ts is
+ * called from both the browser (where the module-level `supabase`
+ * singleton in integrations/supabase/client.ts carries the real user's
+ * session) and TanStack Start server functions like `nlSearch` (where
+ * that same singleton has no session — it authenticates as Postgres role
+ * `anon`, and every RLS policy that matters is scoped `TO authenticated`,
+ * so it silently returns zero rows). That was the actual root cause of
+ * Copilot's "no matching records" bug for every query, regardless of how
+ * correct the resolver logic was. The fix: these files now call
+ * getDb() (integrations/supabase/server-context.ts) instead of importing
+ * the singleton directly; getDb() resolves to the real authenticated
+ * client inside a withAuthenticatedClient() scope (which nlSearch's
+ * handler opens with requireSupabaseAuth's context.supabase) and falls
+ * back to the exact same singleton everywhere else, so browser behaviour
+ * is unchanged.
+ *
+ * This script has no framework dependency (the repo has no vitest/jest
+ * configured) — it's a plain Node script performing static source
+ * checks, run via `npm run verify:auth-context`. It exits non-zero (and
+ * fails CI, if wired into it) the moment any of the following regress:
+ *
+ *   1. Any of the data-access files this fix touched reverts to
+ *      importing the anonymous singleton directly.
+ *   2. Any of those same files stops importing getDb from
+ *      server-context.
+ *   3. nl-search.functions.ts's nlSearch handler stops wrapping its body
+ *      in withAuthenticatedClient(context.supabase, ...).
+ *   4. resolve.ts starts importing a NEW list*()/get*() data-access
+ *      module (from src/lib/**\/api.ts or similar) that isn't in this
+ *      script's known-migrated set — a signal that a future AI feature
+ *      added a new resolver without threading the authenticated client
+ *      through it.
+ */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
+
+const ANON_IMPORT = '@/integrations/supabase/client"';
+const AUTH_IMPORT = '@/integrations/supabase/server-context"';
+
+// Every data-access file this fix migrated, covering every G.9B NL
+// Search resolver: customers, enquiries, quotations, sales orders,
+// invoices, receipts, dispatch, installations, purchase orders,
+// vendors, products, inventory, projects, global search, timeline
+// (+ the vendor timeline it dynamically imports), and the three
+// further data sources the Executive Insight providers those
+// resolvers fan out to actually read from (payment dashboard,
+// installation progress, manufacturing/production orders).
+const MIGRATED_FILES = [
+  "src/lib/customers/api.ts",
+  "src/lib/enquiries/api.ts",
+  "src/lib/quotes/api.ts",
+  "src/lib/sales-orders/api.ts",
+  "src/lib/invoices/api.ts",
+  "src/lib/receipts/api.ts",
+  "src/lib/dispatch/api.ts",
+  "src/lib/installation/orders.ts",
+  "src/lib/purchase-orders/api.ts",
+  "src/lib/vendors/api.ts",
+  "src/lib/products/api.ts",
+  "src/lib/inventory/api.ts",
+  "src/lib/projects/api.ts",
+  "src/lib/search/api.ts",
+  "src/lib/timeline/api.ts",
+  "src/lib/vendors/timeline.ts",
+  "src/lib/customer-payments/schedule.ts",
+  "src/lib/installation/progress.ts",
+  "src/lib/manufacturing/api.ts",
+];
+
+let failures = 0;
+
+function fail(message) {
+  console.error(`✘ ${message}`);
+  failures++;
+}
+
+function pass(message) {
+  console.log(`✓ ${message}`);
+}
+
+function read(relPath) {
+  return readFileSync(path.join(ROOT, relPath), "utf8");
+}
+
+// --- Checks 1 & 2: every migrated data-access file must use getDb(),
+// never the anonymous singleton, for its query client. ---
+for (const relPath of MIGRATED_FILES) {
+  let content;
+  try {
+    content = read(relPath);
+  } catch {
+    fail(`${relPath}: could not read file (has it moved? update MIGRATED_FILES and resolve.ts's imports together)`);
+    continue;
+  }
+
+  if (content.includes(ANON_IMPORT)) {
+    fail(`${relPath}: imports the anonymous module-level Supabase singleton directly. Server-side callers (AI/NL Search) would run unauthenticated and RLS-filtered to zero rows — this is the exact bug that made Copilot's customer search always return "No matching records found". Import getDb from "@/integrations/supabase/server-context" instead.`);
+    continue;
+  }
+  if (!content.includes(AUTH_IMPORT)) {
+    fail(`${relPath}: does not import getDb from "@/integrations/supabase/server-context" — expected every query in this file to be built off getDb() so it respects a request's authenticated scope when called from a server function.`);
+    continue;
+  }
+  pass(`${relPath}: uses getDb() (authenticated-aware), not the anonymous singleton`);
+}
+
+// --- Check 3: nlSearch must actually open the authenticated scope. ---
+{
+  const relPath = "src/lib/ai/nl-search.functions.ts";
+  const content = read(relPath);
+  const opensScope =
+    content.includes("withAuthenticatedClient") && content.includes("context.supabase");
+  if (!opensScope) {
+    fail(
+      `${relPath}: nlSearch's handler no longer calls withAuthenticatedClient(context.supabase, ...). Without this, every resolver it calls (resolveIntent's full call graph) silently falls back to the anonymous client again, regardless of how correct those resolvers' own logic is.`,
+    );
+  } else {
+    pass(`${relPath}: nlSearch wraps its handler in withAuthenticatedClient(context.supabase, ...)`);
+  }
+}
+
+// --- Check 4: resolve.ts must not gain a new, unmigrated data source. ---
+{
+  const relPath = "src/lib/ai/nl-search/resolve.ts";
+  const content = read(relPath);
+  const importedApiPaths = [...content.matchAll(/from\s+"(@\/lib\/[^"]+\/api)"/g)].map((m) => m[1]);
+  const knownApiModules = new Set(
+    MIGRATED_FILES.filter((f) => f.endsWith("/api.ts")).map((f) =>
+      "@/" + f.replace(/^src\//, "").replace(/\.ts$/, ""),
+    ),
+  );
+  const unknown = importedApiPaths.filter((p) => !knownApiModules.has(p));
+  if (unknown.length > 0) {
+    fail(
+      `${relPath}: imports data-access module(s) not covered by this guard: ${unknown.join(", ")}. If this is a genuinely new NL Search resolver, migrate it to getDb() (see integrations/supabase/server-context.ts) and add it to MIGRATED_FILES in scripts/verify-server-auth-context.mjs.`,
+    );
+  } else {
+    pass(`${relPath}: every .../api module it imports is a known, migrated (authenticated-aware) data source`);
+  }
+}
+
+console.log("");
+if (failures > 0) {
+  console.error(`${failures} check(s) failed.`);
+  process.exit(1);
+} else {
+  console.log("All server-auth-context checks passed.");
+}

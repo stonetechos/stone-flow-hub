@@ -1,5 +1,5 @@
 /** Installation Orders — auto-generated from Supply+Install Sales Orders. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import { z } from "zod";
@@ -44,7 +44,7 @@ const SELECT =
   "*, customer:customers!installations_customer_id_fkey(id,name), project:projects!installations_project_id_fkey(id,name), sales_order:sales_orders!installations_sales_order_id_fkey(id,so_no), team:installation_teams!installations_team_id_fkey(id,name)";
 
 export async function listInstallations(query = "", status = ""): Promise<InstallationListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("installations" as never)
     .select(SELECT)
     .order("created_at", { ascending: false })
@@ -58,7 +58,7 @@ export async function listInstallations(query = "", status = ""): Promise<Instal
 }
 
 export async function getInstallation(id: string): Promise<InstallationListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("installations" as never)
     .select(SELECT)
     .eq("id", id)
@@ -68,7 +68,7 @@ export async function getInstallation(id: string): Promise<InstallationListItem 
 }
 
 export async function listInstallationsForSalesOrder(soId: string): Promise<InstallationOrder[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("installations" as never)
     .select("*")
     .eq("sales_order_id", soId)
@@ -94,7 +94,7 @@ export type InstallationUpdateInput = z.infer<typeof installationUpdateSchema>;
 
 export async function updateInstallation(id: string, input: InstallationUpdateInput): Promise<void> {
   const p = installationUpdateSchema.parse(input);
-  const { error } = await supabase
+  const { error } = await getDb()
     .from("installations" as never)
     .update(p as never)
     .eq("id", id);
@@ -102,7 +102,7 @@ export async function updateInstallation(id: string, input: InstallationUpdateIn
 }
 
 export async function deleteInstallation(id: string): Promise<void> {
-  const { error } = await supabase.from("installations" as never).delete().eq("id", id);
+  const { error } = await getDb().from("installations" as never).delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -111,7 +111,7 @@ export async function setSalesOrderSupplyScope(
   salesOrderId: string,
   scope: "material_only" | "supply_and_installation",
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getDb()
     .from("sales_orders")
     .update({ supply_scope: scope } as never)
     .eq("id", salesOrderId);

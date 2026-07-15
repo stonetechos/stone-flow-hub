@@ -1,5 +1,5 @@
 /** Invoices data access. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
@@ -26,7 +26,7 @@ const SELECT_WITH_JOINS =
   "*, customer:customers!invoices_customer_id_fkey(id,name,customer_code), project:projects!invoices_project_id_fkey(id,name,project_code)";
 
 export async function listInvoices(query = ""): Promise<InvoiceListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("invoices")
     .select(SELECT_WITH_JOINS)
     .order("created_at", { ascending: false })
@@ -39,7 +39,7 @@ export async function listInvoices(query = ""): Promise<InvoiceListItem[]> {
 }
 
 export async function listInvoicesForProject(projectId: string): Promise<InvoiceListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoices")
     .select(SELECT_WITH_JOINS)
     .eq("project_id", projectId)
@@ -49,7 +49,7 @@ export async function listInvoicesForProject(projectId: string): Promise<Invoice
 }
 
 export async function getInvoice(id: string): Promise<InvoiceListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoices")
     .select(SELECT_WITH_JOINS)
     .eq("id", id)
@@ -59,7 +59,7 @@ export async function getInvoice(id: string): Promise<InvoiceListItem | null> {
 }
 
 export async function getInvoiceItems(invoiceId: string): Promise<InvoiceItemRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoice_items")
     .select("*")
     .eq("invoice_id", invoiceId)
@@ -69,7 +69,7 @@ export async function getInvoiceItems(invoiceId: string): Promise<InvoiceItemRow
 }
 
 export async function getInvoicePayments(invoiceId: string): Promise<PaymentRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("payments")
     .select("*")
     .eq("invoice_id", invoiceId)
@@ -79,7 +79,7 @@ export async function getInvoicePayments(invoiceId: string): Promise<PaymentRow[
 }
 
 export async function getInvoicePaymentLinks(invoiceId: string): Promise<PaymentLinkRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("payment_links")
     .select("*")
     .eq("invoice_id", invoiceId)
@@ -90,7 +90,7 @@ export async function getInvoicePaymentLinks(invoiceId: string): Promise<Payment
 
 export async function setInvoiceStatus(input: SetInvoiceStatusInput): Promise<InvoiceRow> {
   const parsed = setInvoiceStatusSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoices")
     .update({ status: parsed.status })
     .eq("id", parsed.invoice_id)
@@ -102,7 +102,7 @@ export async function setInvoiceStatus(input: SetInvoiceStatusInput): Promise<In
 
 export async function recordManualPayment(input: RecordPaymentInput): Promise<PaymentRow> {
   const parsed = recordPaymentSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("payments")
     .insert({
       payment_no: "",
@@ -121,7 +121,7 @@ export async function recordManualPayment(input: RecordPaymentInput): Promise<Pa
 
 export async function updateInvoice(id: string, input: InvoiceUpdateInput): Promise<InvoiceRow> {
   const parsed = invoiceUpdateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("invoices")
     .update({
       due_date: parsed.due_date ?? null,
@@ -136,6 +136,6 @@ export async function updateInvoice(id: string, input: InvoiceUpdateInput): Prom
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
-  const { error } = await supabase.from("invoices").delete().eq("id", id);
+  const { error } = await getDb().from("invoices").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

@@ -1,5 +1,5 @@
 /** Quotes data access — includes creation-with-items and convert-to-invoice. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
@@ -24,7 +24,7 @@ const SELECT_WITH_JOINS =
   "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code), project:projects!quotes_project_id_fkey(id,name,project_code)";
 
 export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("quotes")
     .select(SELECT_WITH_JOINS)
     .order("created_at", { ascending: false })
@@ -37,7 +37,7 @@ export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
 }
 
 export async function listQuotesForProject(projectId: string): Promise<QuoteListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quotes")
     .select(SELECT_WITH_JOINS)
     .eq("project_id", projectId)
@@ -47,7 +47,7 @@ export async function listQuotesForProject(projectId: string): Promise<QuoteList
 }
 
 export async function getQuote(id: string): Promise<QuoteListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quotes")
     .select(SELECT_WITH_JOINS)
     .eq("id", id)
@@ -57,7 +57,7 @@ export async function getQuote(id: string): Promise<QuoteListItem | null> {
 }
 
 export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quote_items")
     .select("*")
     .eq("quote_id", quoteId)
@@ -71,7 +71,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
   const project = await getProject(parsed.project_id);
   if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
 
-  const { data: quote, error } = await supabase
+  const { data: quote, error } = await getDb()
     .from("quotes")
     .insert({
       quote_no: "",
@@ -98,11 +98,11 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
   }));
-  const { error: itemErr } = await supabase.from("quote_items").insert(rows as never);
+  const { error: itemErr } = await getDb().from("quote_items").insert(rows as never);
   if (itemErr) throw new AppError(mapDbError(itemErr));
 
   // Reload to reflect totals
-  const { data: reloaded } = await supabase.from("quotes").select("*").eq("id", quote.id).single();
+  const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();
   return reloaded ?? quote;
 }
 
@@ -110,7 +110,7 @@ export async function setQuoteStatus(
   id: string,
   status: DbTable<"quotes">["status"],
 ): Promise<QuoteRow> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quotes")
     .update({ status })
     .eq("id", id)
@@ -122,7 +122,7 @@ export async function setQuoteStatus(
 
 export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
   const parsed = convertQuoteSchema.parse(input);
-  const { data, error } = await supabase.rpc("convert_quote_to_invoice", {
+  const { data, error } = await getDb().rpc("convert_quote_to_invoice", {
     p_quote_id: parsed.quote_id,
     p_due_date: parsed.due_date ?? undefined,
   });
@@ -132,7 +132,7 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
 
 export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<QuoteRow> {
   const parsed = quoteUpdateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quotes")
     .update({
       valid_until: parsed.valid_until ?? null,
@@ -148,7 +148,7 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
 }
 
 export async function deleteQuote(id: string): Promise<void> {
-  const { error } = await supabase.from("quotes").delete().eq("id", id);
+  const { error } = await getDb().from("quotes").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -158,7 +158,7 @@ export async function deleteQuote(id: string): Promise<void> {
 export async function convertQuoteToSalesOrder(
   quoteId: string,
 ): Promise<DbTable<"sales_orders">> {
-  const { data, error } = await supabase.rpc("convert_quote_to_sales_order", {
+  const { data, error } = await getDb().rpc("convert_quote_to_sales_order", {
     p_quote_id: quoteId,
   });
   if (error) throw new AppError(mapDbError(error));
@@ -169,7 +169,7 @@ export async function convertQuoteToSalesOrder(
 export async function getSalesOrderForQuote(
   quoteId: string,
 ): Promise<Pick<DbTable<"sales_orders">, "id" | "so_no"> | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_orders")
     .select("id, so_no")
     .eq("quote_id", quoteId)
@@ -184,7 +184,7 @@ export async function getSalesOrderForQuote(
 export async function getQuoteForEstimate(
   estimateId: string,
 ): Promise<Pick<QuoteRow, "id" | "quote_no" | "status"> | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quotes")
     .select("id, quote_no, status")
     .eq("estimate_id", estimateId)
@@ -199,7 +199,7 @@ export async function getQuoteForEstimate(
 export async function getEstimateForQuote(
   estimateId: string,
 ): Promise<{ id: string; estimate_no: string } | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("estimates")
     .select("id, estimate_no")
     .eq("id", estimateId)
@@ -226,7 +226,7 @@ export async function addQuoteItem(
   quoteId: string,
   patch: QuoteItemPatch & { description: string; quantity: number; unit_price: number },
 ): Promise<QuoteItemRow> {
-  const { data: existing, error: exErr } = await supabase
+  const { data: existing, error: exErr } = await getDb()
     .from("quote_items")
     .select("sort_order")
     .eq("quote_id", quoteId)
@@ -234,7 +234,7 @@ export async function addQuoteItem(
     .limit(1);
   if (exErr) throw new AppError(mapDbError(exErr));
   const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quote_items")
     .insert({
       quote_id: quoteId,
@@ -253,7 +253,7 @@ export async function addQuoteItem(
 }
 
 export async function updateQuoteItem(itemId: string, patch: QuoteItemPatch): Promise<QuoteItemRow> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("quote_items")
     .update(patch as never)
     .eq("id", itemId)
@@ -264,7 +264,7 @@ export async function updateQuoteItem(itemId: string, patch: QuoteItemPatch): Pr
 }
 
 export async function deleteQuoteItem(itemId: string): Promise<void> {
-  const { error } = await supabase.from("quote_items").delete().eq("id", itemId);
+  const { error } = await getDb().from("quote_items").delete().eq("id", itemId);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -272,12 +272,12 @@ export async function reorderQuoteItems(orderedIds: string[]): Promise<void> {
   // Two-phase reorder to avoid unique-index conflicts if one exists.
   await Promise.all(
     orderedIds.map((id, idx) =>
-      supabase.from("quote_items").update({ sort_order: idx + 1000 } as never).eq("id", id),
+      getDb().from("quote_items").update({ sort_order: idx + 1000 } as never).eq("id", id),
     ),
   );
   await Promise.all(
     orderedIds.map((id, idx) =>
-      supabase.from("quote_items").update({ sort_order: idx } as never).eq("id", id),
+      getDb().from("quote_items").update({ sort_order: idx } as never).eq("id", id),
     ),
   );
 }
@@ -334,7 +334,7 @@ export async function reassignQuoteCustomer(
   quoteId: string,
   newCustomerId: string,
 ): Promise<QuoteRow> {
-  const { data, error } = await supabase.rpc("reassign_quote_customer", {
+  const { data, error } = await getDb().rpc("reassign_quote_customer", {
     p_quote_id: quoteId,
     p_new_customer_id: newCustomerId,
   });

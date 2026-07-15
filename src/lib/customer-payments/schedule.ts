@@ -6,7 +6,7 @@
  * Zero schema duplication — everything lives on `customer_payment_schedules`
  * with lookups via the `customer_payment_dashboard` view.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 
 export interface CustomerPaymentScheduleRow {
@@ -49,7 +49,7 @@ export async function approveEstimate(
   estimateId: string,
   override?: ScheduleMilestone[] | null,
 ): Promise<CustomerPaymentScheduleRow[]> {
-  const { data, error } = await supabase.rpc(
+  const { data, error } = await getDb().rpc(
     "approve_estimate" as never,
     {
       _estimate_id: estimateId,
@@ -64,7 +64,7 @@ export async function approveEstimate(
 export async function listSchedulesForEstimate(
   estimateId: string,
 ): Promise<CustomerPaymentScheduleRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customer_payment_schedules" as never)
     .select("*")
     .eq("estimate_id" as never, estimateId as never)
@@ -76,7 +76,7 @@ export async function listSchedulesForEstimate(
 export async function listSchedulesForCustomer(
   customerId: string,
 ): Promise<PaymentScheduleDashboardRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customer_payment_dashboard" as never)
     .select("*")
     .eq("customer_id" as never, customerId as never)
@@ -88,7 +88,7 @@ export async function listSchedulesForCustomer(
 export async function listSchedulesForProject(
   projectId: string,
 ): Promise<PaymentScheduleDashboardRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customer_payment_dashboard" as never)
     .select("*")
     .eq("project_id" as never, projectId as never)
@@ -99,7 +99,7 @@ export async function listSchedulesForProject(
 
 /** Full dashboard — one row per outstanding milestone across all customers. */
 export async function listPaymentDashboard(): Promise<PaymentScheduleDashboardRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("customer_payment_dashboard" as never)
     .select("*")
     .neq("status", "paid")
@@ -114,7 +114,7 @@ export async function recordSchedulePayment(
   amount: number,
   receiptNo?: string,
 ): Promise<CustomerPaymentScheduleRow> {
-  const { data, error } = await supabase.rpc(
+  const { data, error } = await getDb().rpc(
     "record_schedule_payment" as never,
     {
       _schedule_id: scheduleId,
@@ -133,7 +133,7 @@ export async function updateSchedule(
     Pick<CustomerPaymentScheduleRow, "due_date" | "amount" | "label" | "notes" | "status">
   >,
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getDb()
     .from("customer_payment_schedules" as never)
     .update(patch as never)
     .eq("id" as never, id as never);
@@ -142,7 +142,7 @@ export async function updateSchedule(
 
 /** Run reminder generator on demand (cron calls the same fn). */
 export async function generateRemindersNow(): Promise<number> {
-  const { data, error } = await supabase.rpc("generate_customer_payment_reminders" as never);
+  const { data, error } = await getDb().rpc("generate_customer_payment_reminders" as never);
   if (error) throw new AppError(mapDbError(error));
   return Number(data ?? 0);
 }

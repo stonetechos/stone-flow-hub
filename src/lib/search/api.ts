@@ -1,5 +1,5 @@
 /** Global search across all business modules. Runs queries in parallel and groups results. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 
 export type SearchGroupKey =
   | "customers"
@@ -63,105 +63,105 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     architects,
   ] = await Promise.all([
     safe(
-      supabase
+      getDb()
         .from("customers")
         .select("id,name,customer_code,primary_phone,primary_email,city")
         .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("customer_contacts")
         .select("id,name,phone,email,whatsapp,customer_id")
         .or(`name.ilike.${p},phone.ilike.${p},email.ilike.${p},whatsapp.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("projects")
         .select("id,name,city,project_code,site_address")
         .or(`name.ilike.${p},city.ilike.${p},project_code.ilike.${p},site_address.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("vendors")
         .select("id,company_name,vendor_code,city")
         .or(`company_name.ilike.${p},vendor_code.ilike.${p},city.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("products")
         .select("id,name,product_code")
         .or(`name.ilike.${p},product_code.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("enquiries")
         .select("id,enquiry_no,notes,architect_name,contractor_name")
         .or(`enquiry_no.ilike.${p},notes.ilike.${p},architect_name.ilike.${p},contractor_name.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("quotes")
         .select("id,quote_no,notes")
         .or(`quote_no.ilike.${p},notes.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("sales_orders")
         .select("id,so_no,notes")
         .or(`so_no.ilike.${p},notes.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("purchase_orders")
         .select("id,po_no,notes")
         .or(`po_no.ilike.${p},notes.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("inventory_items")
         .select("id,stock_code,location")
         .or(`stock_code.ilike.${p},location.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("invoices")
         .select("id,invoice_no,notes")
         .or(`invoice_no.ilike.${p},notes.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("payments")
         .select("id,payment_no,reference_no")
         .or(`payment_no.ilike.${p},reference_no.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("dispatches")
         .select("id,dispatch_no,tracking_no")
         .or(`dispatch_no.ilike.${p},tracking_no.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("profiles")
         .select("id,full_name,email,phone")
         .or(`full_name.ilike.${p},email.ilike.${p},phone.ilike.${p}`)
         .limit(LIMIT),
     ),
     safe(
-      supabase
+      getDb()
         .from("customers")
         .select("id,name,customer_code,customer_type,city")
         .in("customer_type", ["architect", "interior_designer", "contractor"])

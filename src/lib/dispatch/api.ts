@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -44,7 +44,7 @@ function toPayload(p: DispatchCreateInput) {
 }
 
 export async function listDispatches(query = "", status = ""): Promise<DispatchListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("dispatches")
     .select(SELECT)
     .order("created_at", { ascending: false })
@@ -61,7 +61,7 @@ export async function listDispatches(query = "", status = ""): Promise<DispatchL
 }
 
 export async function listDispatchesBySalesOrder(soId: string): Promise<DispatchListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .select(SELECT)
     .eq("sales_order_id", soId)
@@ -71,7 +71,7 @@ export async function listDispatchesBySalesOrder(soId: string): Promise<Dispatch
 }
 
 export async function listDispatchesByCustomer(customerId: string): Promise<DispatchListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .select(SELECT)
     .eq("customer_id", customerId)
@@ -81,7 +81,7 @@ export async function listDispatchesByCustomer(customerId: string): Promise<Disp
 }
 
 export async function listDispatchesByProject(projectId: string): Promise<DispatchListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .select(SELECT)
     .eq("project_id", projectId)
@@ -91,7 +91,7 @@ export async function listDispatchesByProject(projectId: string): Promise<Dispat
 }
 
 export async function getDispatch(id: string): Promise<DispatchListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .select(SELECT)
     .eq("id", id)
@@ -102,7 +102,7 @@ export async function getDispatch(id: string): Promise<DispatchListItem | null> 
 
 export async function createDispatch(input: DispatchCreateInput): Promise<DispatchRow> {
   const p = dispatchCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .insert({ dispatch_no: "", ...toPayload(p) })
     .select("*")
@@ -113,7 +113,7 @@ export async function createDispatch(input: DispatchCreateInput): Promise<Dispat
 
 export async function updateDispatch(id: string, input: DispatchCreateInput): Promise<DispatchRow> {
   const p = dispatchCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatches")
     .update(toPayload(p))
     .eq("id", id)
@@ -124,7 +124,7 @@ export async function updateDispatch(id: string, input: DispatchCreateInput): Pr
 }
 
 export async function deleteDispatch(id: string): Promise<void> {
-  const { error } = await supabase.from("dispatches").delete().eq("id", id);
+  const { error } = await getDb().from("dispatches").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -133,7 +133,7 @@ export async function deleteDispatch(id: string): Promise<void> {
 /* ------------------------------------------------------------------ */
 
 export async function listDispatchItems(dispatchId: string): Promise<DispatchItemRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("dispatch_items")
     .select("*")
     .eq("dispatch_id", dispatchId)
@@ -150,7 +150,7 @@ export async function replaceDispatchItems(
     .map((it, idx) => dispatchItemInputSchema.parse({ ...it, sort_order: it.sort_order ?? idx }))
     .filter((it) => Number(it.quantity) > 0);
 
-  const { error: delErr } = await supabase
+  const { error: delErr } = await getDb()
     .from("dispatch_items")
     .delete()
     .eq("dispatch_id", dispatchId);
@@ -169,7 +169,7 @@ export async function replaceDispatchItems(
     sort_order: it.sort_order ?? 0,
   }));
 
-  const { data, error } = await supabase.from("dispatch_items").insert(rows).select("*");
+  const { data, error } = await getDb().from("dispatch_items").insert(rows).select("*");
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
 }
@@ -196,12 +196,12 @@ export type DeliveryStatus = {
 
 export async function getSalesOrderDeliveryStatus(soId: string): Promise<DeliveryStatus> {
   const [{ data: items, error: iErr }, { data: dispatches, error: dErr }] = await Promise.all([
-    supabase
+    getDb()
       .from("sales_order_items")
       .select("id,product_name,description,unit,quantity")
       .eq("sales_order_id", soId)
       .order("sort_order", { ascending: true }),
-    supabase.from("dispatches").select("id,status").eq("sales_order_id", soId),
+    getDb().from("dispatches").select("id,status").eq("sales_order_id", soId),
   ]);
   if (iErr) throw new AppError(mapDbError(iErr));
   if (dErr) throw new AppError(mapDbError(dErr));
@@ -212,7 +212,7 @@ export async function getSalesOrderDeliveryStatus(soId: string): Promise<Deliver
 
   let delivered: Record<string, number> = {};
   if (activeDispatchIds.length > 0) {
-    const { data: di, error: diErr } = await supabase
+    const { data: di, error: diErr } = await getDb()
       .from("dispatch_items")
       .select("sales_order_item_id,quantity")
       .in("dispatch_id", activeDispatchIds);
@@ -264,7 +264,7 @@ export type CommittedDemandRow = {
  * inventing a new one.
  */
 export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow[]> {
-  const { data: openOrders, error: soErr } = await supabase
+  const { data: openOrders, error: soErr } = await getDb()
     .from("sales_orders")
     .select("id")
     .not("status", "in", "(delivered,cancelled)")
@@ -274,8 +274,8 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
   if (openIds.length === 0) return [];
 
   const [itemsRes, dispatchesRes] = await Promise.all([
-    supabase.from("sales_order_items").select("id,product_id,quantity").in("sales_order_id", openIds),
-    supabase.from("dispatches").select("id").in("sales_order_id", openIds).neq("status", "cancelled"),
+    getDb().from("sales_order_items").select("id,product_id,quantity").in("sales_order_id", openIds),
+    getDb().from("dispatches").select("id").in("sales_order_id", openIds).neq("status", "cancelled"),
   ]);
   if (itemsRes.error) throw new AppError(mapDbError(itemsRes.error));
   if (dispatchesRes.error) throw new AppError(mapDbError(dispatchesRes.error));
@@ -283,7 +283,7 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
   const activeDispatchIds = (dispatchesRes.data ?? []).map((d) => d.id);
   const deliveredByItem = new Map<string, number>();
   if (activeDispatchIds.length > 0) {
-    const { data: di, error: diErr } = await supabase
+    const { data: di, error: diErr } = await getDb()
       .from("dispatch_items")
       .select("sales_order_item_id,quantity")
       .in("dispatch_id", activeDispatchIds);

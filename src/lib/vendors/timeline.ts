@@ -18,7 +18,7 @@
  * contract (a few extra fields — relatedCustomerId, severity, aiContext —
  * that don't apply to a vendor timeline are simply left null).
  */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { TimelineEvent, TimelineEventKind } from "@/lib/timeline/types";
 
@@ -33,33 +33,33 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
     posRes,
     ledgerRes,
   ] = await Promise.all([
-    supabase
+    getDb()
       .from("activity_log")
       .select("id,action,summary,field_name,created_at")
       .eq("entity_type", "vendor")
       .eq("entity_id", vendorId)
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase
+    getDb()
       .from("vendor_requests")
       .select("id,rfq_id,response_status,sent_at,created_at,rfq:rfqs!vendor_requests_rfq_id_fkey(rfq_no)")
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase
+    getDb()
       .from("vendor_quotes")
       .select(
         "id,quote_no,total_inr,submitted_at,is_approved,remarks,vendor_request:vendor_requests!vendor_quotes_vendor_request_id_fkey(vendor_id,rfq:rfqs!vendor_requests_rfq_id_fkey(rfq_no))",
       )
       .order("submitted_at", { ascending: false })
       .limit(200),
-    supabase
+    getDb()
       .from("purchase_orders")
       .select("id,po_no,status,order_date,expected_date,created_at,notes")
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase
+    getDb()
       .from("vendor_ledger_entries" as never)
       .select("id,entry_date,source_type,ref_no,description,debit,credit,route,status,created_at")
       .eq("vendor_id" as never, vendorId as never)

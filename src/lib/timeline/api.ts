@@ -21,7 +21,7 @@
  * recovered after the fact without risking a wrong attribution. Adding
  * that column is a real option for a future phase, not invented here.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { TimelineEvent, TimelineEventKind, TimelineScope } from "./types";
 
@@ -42,7 +42,7 @@ async function fetchActivity(
   relatedCustomerId: string | null,
   relatedProjectId: string | null,
 ): Promise<TimelineEvent[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("activity_log")
     .select("id,action,summary,field_name,actor_id,project_id,created_at")
     .eq("entity_type", entityType)
@@ -78,7 +78,7 @@ async function fetchTasks(
   relatedCustomerId: string | null,
   relatedProjectId: string | null,
 ): Promise<TimelineEvent[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("tasks")
     .select("id,title,status,priority,completed_at,assigned_to")
     .eq("entity_type", entityType)
@@ -311,43 +311,43 @@ export async function getCustomerTimeline(customerId: string): Promise<TimelineE
     await Promise.all([
       fetchActivity("customer", customerId, customerId, null),
       fetchTasks("customer", customerId, customerId, null),
-      supabase
+      getDb()
         .from("enquiries")
         .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
         .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("quotes")
         .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
         .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("sales_orders")
         .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
         .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("invoices")
         .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
         .eq("customer_id", customerId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("receipts")
         .select("id,receipt_no,amount,customer_id,received_at")
         .eq("customer_id", customerId)
         .order("received_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("dispatches")
         .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
         .eq("customer_id", customerId)
         .order("dispatch_date", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("installations" as never)
         .select("id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at")
         .eq("customer_id" as never, customerId as never)
@@ -382,49 +382,49 @@ export async function getProjectTimeline(projectId: string): Promise<TimelineEve
     await Promise.all([
       fetchActivity("project", projectId, null, projectId),
       fetchTasks("project", projectId, null, projectId),
-      supabase
+      getDb()
         .from("enquiries")
         .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("quotes")
         .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("sales_orders")
         .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("purchase_orders")
         .select("id,po_no,status,project_id,order_date,updated_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("invoices")
         .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("dispatches")
         .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
         .eq("project_id", projectId)
         .order("dispatch_date", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("installations" as never)
         .select("id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at")
         .eq("project_id" as never, projectId as never)
         .order("updated_at", { ascending: false })
         .limit(LIMIT),
-      supabase
+      getDb()
         .from("followups")
         .select("id,project_id,status,scheduled_at,completed_at,notes")
         .eq("project_id", projectId)

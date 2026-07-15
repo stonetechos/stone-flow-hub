@@ -3,7 +3,7 @@
  * plus dashboard KPIs. Uses the `send_to_manufacturing` RPC added in
  * migration 20260706_module3c.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 
@@ -17,7 +17,7 @@ export type ProductionOrderCard = ProductionOrderRow & {
 export async function sendSalesOrderToManufacturing(
   salesOrderId: string,
 ): Promise<ProductionOrderRow[]> {
-  const { data, error } = await supabase.rpc(
+  const { data, error } = await getDb().rpc(
     "send_to_manufacturing" as never,
     { p_sales_order_id: salesOrderId } as never,
   );
@@ -29,7 +29,7 @@ export async function sendSalesOrderToManufacturing(
 export async function listProductionOrdersForSalesOrder(
   salesOrderId: string,
 ): Promise<ProductionOrderCard[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("production_orders")
     .select("*, products(id,name,product_code)")
     .eq("sales_order_id", salesOrderId)
@@ -52,13 +52,13 @@ export type ManufacturingStatsRow = {
 export async function getManufacturingStats(): Promise<ManufacturingStatsRow> {
   const today = new Date().toISOString().slice(0, 10);
   const [all, completedToday, overdue] = await Promise.all([
-    supabase.from("production_orders").select("status", { count: "exact", head: false }).limit(1000),
-    supabase
+    getDb().from("production_orders").select("status", { count: "exact", head: false }).limit(1000),
+    getDb()
       .from("production_orders")
       .select("id", { count: "exact", head: true })
       .gte("completed_at", `${today}T00:00:00`)
       .lte("completed_at", `${today}T23:59:59`),
-    supabase
+    getDb()
       .from("production_orders")
       .select("id", { count: "exact", head: true })
       .lt("planned_end", today)
@@ -75,7 +75,7 @@ export async function getManufacturingStats(): Promise<ManufacturingStatsRow> {
   // left behind by a deleted/archived production order are still counted,
   // which is how this card could show a nonzero value while "Total Orders"
   // (queried straight from production_orders) reads 0.
-  const { count: qcPending } = await supabase
+  const { count: qcPending } = await getDb()
     .from("production_stages")
     .select("id, manufacturing_stages!inner(code), production_orders!inner(id)", {
       count: "exact",
@@ -108,7 +108,7 @@ export type ProductionOrderListItem = ProductionOrderRow & {
  *  `listProductionOrdersForSalesOrder` but across the whole board, for
  *  producers that need to reason about every open order at once. */
 export async function listProductionOrders(): Promise<ProductionOrderListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("production_orders")
     .select("*, products(id,name,product_code), sales_orders(id,so_no)")
     .order("created_at", { ascending: false })
@@ -143,7 +143,7 @@ export type ProductionStageListItem = {
  *  `completed`/`skipped`) — the bulk counterpart of the per-order stage
  *  fetch already inline in `routes/manufacturing/$id.tsx`. */
 export async function listActiveProductionStages(): Promise<ProductionStageListItem[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("production_stages")
     .select(
       "id,production_order_id,stage_id,status,sort_order,planned_start,planned_date,started_at,actual_start,actual_completed_at,delay_reason,manufacturing_stages(name,code,typical_days),production_orders(id,mfg_no,status,sales_order_id,project_id)",

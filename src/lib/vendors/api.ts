@@ -1,5 +1,5 @@
 /** Vendors data access. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -9,7 +9,7 @@ export type VendorRow = DbTable<"vendors">;
 export type VendorContactRow = DbTable<"vendor_contacts">;
 
 export async function listVendors(query = ""): Promise<VendorRow[]> {
-  let q = supabase.from("vendors").select("*").order("created_at", { ascending: false }).limit(200);
+  let q = getDb().from("vendors").select("*").order("created_at", { ascending: false }).limit(200);
   const s = sanitizeSearch(query);
   if (s) {
     q = q.or(
@@ -27,7 +27,7 @@ export async function listVendors(query = ""): Promise<VendorRow[]> {
 }
 
 export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
-  let q = supabase
+  let q = getDb()
     .from("vendors")
     .select("*")
     .eq("is_active", true)
@@ -50,13 +50,13 @@ export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
 }
 
 export async function getVendor(id: string): Promise<VendorRow | null> {
-  const { data, error } = await supabase.from("vendors").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await getDb().from("vendors").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
 
 export async function getPrimaryContact(vendorId: string): Promise<VendorContactRow | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("vendor_contacts")
     .select("*")
     .eq("vendor_id", vendorId)
@@ -69,7 +69,7 @@ export async function getPrimaryContact(vendorId: string): Promise<VendorContact
 export async function createVendor(input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
 
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await getDb()
     .from("vendors")
     .insert({
       vendor_code: "",
@@ -87,7 +87,7 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
   if (error) throw new AppError(mapDbError(error));
 
   const phone = normalizeMobile(parsed.mobile);
-  const { error: cErr } = await supabase.from("vendor_contacts").insert({
+  const { error: cErr } = await getDb().from("vendor_contacts").insert({
     vendor_id: vendor.id,
     name: parsed.contact_name,
     phone,
@@ -101,7 +101,7 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
 
 export async function updateVendor(id: string, input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await getDb()
     .from("vendors")
     .update({
       company_name: parsed.company_name,
@@ -121,13 +121,13 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
   const phone = normalizeMobile(parsed.mobile);
   const existing = await getPrimaryContact(id);
   if (existing) {
-    const { error: uErr } = await supabase
+    const { error: uErr } = await getDb()
       .from("vendor_contacts")
       .update({ name: parsed.contact_name, phone, email: parsed.email ?? null })
       .eq("id", existing.id);
     if (uErr) throw new AppError(mapDbError(uErr));
   } else {
-    const { error: iErr } = await supabase.from("vendor_contacts").insert({
+    const { error: iErr } = await getDb().from("vendor_contacts").insert({
       vendor_id: id,
       name: parsed.contact_name,
       phone,
@@ -140,6 +140,6 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
 }
 
 export async function deleteVendor(id: string): Promise<void> {
-  const { error } = await supabase.from("vendors").delete().eq("id", id);
+  const { error } = await getDb().from("vendors").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

@@ -1,5 +1,5 @@
 /** Enquiries data access — includes stage advance, Send-RFQ, and Convert-to-Project. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable, LeadStage } from "@/lib/types";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
@@ -25,7 +25,7 @@ const SELECT_WITH_JOINS =
   "*, customer:customers!enquiries_customer_id_fkey(id,name,customer_code), project:projects!enquiries_project_id_fkey(id,name,project_code,city)";
 
 export async function listEnquiries(query = ""): Promise<EnquiryListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("enquiries")
     .select(SELECT_WITH_JOINS)
     .order("created_at", { ascending: false })
@@ -40,7 +40,7 @@ export async function listEnquiries(query = ""): Promise<EnquiryListItem[]> {
 }
 
 export async function getEnquiry(id: string): Promise<EnquiryListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .select(SELECT_WITH_JOINS)
     .eq("id", id)
@@ -63,7 +63,7 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
 
   if (parsed.customer_id) {
     // Trust the picker — user chose an existing customer explicitly.
-    const { data, error } = await supabase
+    const { data, error } = await getDb()
       .from("customers")
       .select("*")
       .eq("id", parsed.customer_id)
@@ -91,7 +91,7 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
   }
 
 
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .insert({
       enquiry_no: "",
@@ -125,7 +125,7 @@ export async function updateEnquiryStage(
     if (opts.lost_reason !== undefined) patch.lost_reason = opts.lost_reason ?? null;
     if (opts.lost_notes !== undefined) patch.lost_notes = opts.lost_notes ?? null;
   }
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .update(patch)
     .eq("id", id)
@@ -141,7 +141,7 @@ export async function bulkUpdateEnquiryStage(
   stage: LeadStage,
 ): Promise<number> {
   if (ids.length === 0) return 0;
-  const { error, count } = await supabase
+  const { error, count } = await getDb()
     .from("enquiries")
     .update({ stage }, { count: "exact" })
     .in("id", ids);
@@ -161,7 +161,7 @@ export type StageAggregate = {
 };
 
 export async function getEnquiryPipeline(): Promise<StageAggregate[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .select("stage, budget_inr, updated_at, created_at");
   if (error) throw new AppError(mapDbError(error));
@@ -186,7 +186,7 @@ export async function getEnquiryPipeline(): Promise<StageAggregate[]> {
 
 /** Which underlying stages this enquiry has ever passed through. */
 export async function listEnquiryVisitedStages(enquiryId: string): Promise<Set<LeadStage>> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiry_stage_history")
     .select("to_stage")
     .eq("enquiry_id", enquiryId);
@@ -196,7 +196,7 @@ export async function listEnquiryVisitedStages(enquiryId: string): Promise<Set<L
 
 export async function updateEnquiry(id: string, input: EnquiryUpdateInput): Promise<EnquiryRow> {
   const parsed = enquiryUpdateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .update({
       source: parsed.source ?? null,
@@ -214,7 +214,7 @@ export async function updateEnquiry(id: string, input: EnquiryUpdateInput): Prom
 }
 
 export async function deleteEnquiry(id: string): Promise<void> {
-  const { error } = await supabase.from("enquiries").delete().eq("id", id);
+  const { error } = await getDb().from("enquiries").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -234,7 +234,7 @@ export async function convertEnquiryToProject(
   if (enq.project_id)
     throw new AppError("This enquiry is already linked to a project", "CONFLICT", 409);
 
-  const { data: project, error: pErr } = await supabase
+  const { data: project, error: pErr } = await getDb()
     .from("projects")
     .insert({
       project_code: "",
@@ -252,7 +252,7 @@ export async function convertEnquiryToProject(
     .single();
   if (pErr) throw new AppError(mapDbError(pErr));
 
-  const { error: uErr } = await supabase
+  const { error: uErr } = await getDb()
     .from("enquiries")
     .update({
       project_id: project.id,
@@ -266,7 +266,7 @@ export async function convertEnquiryToProject(
 
 export async function sendRfq(input: SendRfqInput) {
   const parsed = sendRfqSchema.parse(input);
-  const { data, error } = await supabase.rpc("send_rfq", {
+  const { data, error } = await getDb().rpc("send_rfq", {
     p_enquiry_id: parsed.enquiry_id,
     p_vendor_ids: parsed.vendor_ids,
     p_due_date: parsed.due_date,

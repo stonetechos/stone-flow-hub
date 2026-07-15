@@ -92,31 +92,46 @@ function buildInterpretation(intent: NlStructuredIntent): string {
 export const nlSearch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => nlSearchInput.parse(d))
-  .handler(async ({ data }): Promise<NlSearchResponse> => {
-    const { chatJson } = await import("./gateway.server");
-    const { resolveIntent } = await import("./nl-search/resolve");
-    const { rankResults } = await import("./nl-search/rank");
+  .handler(async ({ data, context }): Promise<NlSearchResponse> => {
+    // Every list*()/getBusinessTimeline()/globalSearch() call this triggers
+    // (resolveIntent's full call graph, several layers deep, including the
+    // Insight Providers it fans out to) reads its Supabase client via
+    // getDb(), which defaults to the anonymous browser singleton unless a
+    // request has opted into an authenticated scope. withAuthenticatedClient
+    // is that opt-in: it makes context.supabase — the client
+    // requireSupabaseAuth's middleware already built with this caller's real
+    // bearer token — the client every one of those nested calls resolves to,
+    // so RLS evaluates as the actual signed-in user instead of silently
+    // running unauthenticated. See integrations/supabase/server-context.ts
+    // for the full rationale.
+    const { withAuthenticatedClient } = await import("@/integrations/supabase/server-context");
 
-    const intent = await chatJson<NlStructuredIntent>(
-      [
-        { role: "system", content: INTENT_SYSTEM_PROMPT },
-        { role: "user", content: data.query },
-      ],
-      { temperature: 0 },
-    );
+    return withAuthenticatedClient(context.supabase, async () => {
+      const { chatJson } = await import("./gateway.server");
+      const { resolveIntent } = await import("./nl-search/resolve");
+      const { rankResults } = await import("./nl-search/rank");
 
-    if (intent.intent === "chat") {
-      return { intent, interpretation: "general question", results: [], resultCount: 0 };
-    }
+      const intent = await chatJson<NlStructuredIntent>(
+        [
+          { role: "system", content: INTENT_SYSTEM_PROMPT },
+          { role: "user", content: data.query },
+        ],
+        { temperature: 0 },
+      );
 
-    const rawResults = await resolveIntent(intent, data.context);
-    const ranked = await rankResults(rawResults, intent);
-    const results = ranked.slice(0, 8);
+      if (intent.intent === "chat") {
+        return { intent, interpretation: "general question", results: [], resultCount: 0 };
+      }
 
-    return {
-      intent,
-      interpretation: buildInterpretation(intent),
-      results,
-      resultCount: results.length,
-    };
+      const rawResults = await resolveIntent(intent, data.context);
+      const ranked = await rankResults(rawResults, intent);
+      const results = ranked.slice(0, 8);
+
+      return {
+        intent,
+        interpretation: buildInterpretation(intent),
+        results,
+        resultCount: results.length,
+      };
+    });
   });

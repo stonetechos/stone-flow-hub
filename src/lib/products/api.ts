@@ -1,5 +1,5 @@
 /** Products data access. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
@@ -10,7 +10,7 @@ export type ProductCategoryRow = DbTable<"product_categories">;
 export type ProductImageRow = DbTable<"product_images">;
 
 export async function listProducts(query = ""): Promise<ProductRow[]> {
-  let q = supabase
+  let q = getDb()
     .from("products")
     .select("*")
     .order("created_at", { ascending: false })
@@ -32,7 +32,7 @@ export async function listProducts(query = ""): Promise<ProductRow[]> {
 }
 
 export async function listProductCategories(): Promise<ProductCategoryRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("product_categories")
     .select("*")
     .eq("is_active", true)
@@ -42,13 +42,13 @@ export async function listProductCategories(): Promise<ProductCategoryRow[]> {
 }
 
 export async function getProduct(id: string): Promise<ProductRow | null> {
-  const { data, error } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await getDb().from("products").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
 
 export async function listProductImages(productId: string): Promise<ProductImageRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("product_images")
     .select("*")
     .eq("product_id", productId)
@@ -59,7 +59,7 @@ export async function listProductImages(productId: string): Promise<ProductImage
 
 export async function createProduct(input: ProductCreateInput): Promise<ProductRow> {
   const parsed = productCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("products")
     .insert({
       product_code: "",
@@ -81,7 +81,7 @@ export async function createProduct(input: ProductCreateInput): Promise<ProductR
 
 export async function updateProduct(id: string, input: ProductCreateInput): Promise<ProductRow> {
   const parsed = productCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("products")
     .update({
       name: parsed.name,
@@ -102,6 +102,6 @@ export async function updateProduct(id: string, input: ProductCreateInput): Prom
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  const { error } = await supabase.from("products").delete().eq("id", id);
+  const { error } = await getDb().from("products").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

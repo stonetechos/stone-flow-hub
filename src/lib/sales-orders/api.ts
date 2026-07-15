@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -24,7 +24,7 @@ const SELECT =
   "*, customer:customers!sales_orders_customer_id_fkey(id,name,customer_code), project:projects!sales_orders_project_id_fkey(id,name,project_code), quote:quotes!sales_orders_quote_id_fkey(id,quote_no,status,enquiry_id)";
 
 export async function listSalesOrders(query = "", status = ""): Promise<SalesOrderListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("sales_orders")
     .select(SELECT)
     .order("created_at", { ascending: false })
@@ -38,7 +38,7 @@ export async function listSalesOrders(query = "", status = ""): Promise<SalesOrd
 }
 
 export async function getSalesOrder(id: string): Promise<SalesOrderListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_orders")
     .select(SELECT)
     .eq("id", id)
@@ -49,7 +49,7 @@ export async function getSalesOrder(id: string): Promise<SalesOrderListItem | nu
 
 export async function createSalesOrder(input: SalesOrderCreateInput): Promise<SalesOrderRow> {
   const p = salesOrderCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_orders")
     .insert({
       so_no: "",
@@ -72,7 +72,7 @@ export async function updateSalesOrder(
   input: SalesOrderCreateInput,
 ): Promise<SalesOrderRow> {
   const p = salesOrderCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_orders")
     .update({
       quote_id: p.quote_id ?? null,
@@ -91,14 +91,14 @@ export async function updateSalesOrder(
 }
 
 export async function deleteSalesOrder(id: string): Promise<void> {
-  const { error } = await supabase.from("sales_orders").delete().eq("id", id);
+  const { error } = await getDb().from("sales_orders").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
 export async function listSalesOrdersForPicker(): Promise<
   Array<Pick<SalesOrderRow, "id" | "so_no">>
 > {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_orders")
     .select("id,so_no")
     .order("created_at", { ascending: false })
@@ -113,7 +113,7 @@ export async function listSalesOrdersForPicker(): Promise<
 export type SalesOrderItemRow = DbTable<"sales_order_items">;
 
 export async function listSalesOrderItems(salesOrderId: string): Promise<SalesOrderItemRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_order_items")
     .select("*")
     .eq("sales_order_id", salesOrderId)
@@ -143,7 +143,7 @@ export async function addSalesOrderItem(
   salesOrderId: string,
   patch: SalesOrderItemPatch & { description: string; quantity: number; unit_price: number },
 ): Promise<SalesOrderItemRow> {
-  const { data: existing, error: exErr } = await supabase
+  const { data: existing, error: exErr } = await getDb()
     .from("sales_order_items")
     .select("sort_order")
     .eq("sales_order_id", salesOrderId)
@@ -151,7 +151,7 @@ export async function addSalesOrderItem(
     .limit(1);
   if (exErr) throw new AppError(mapDbError(exErr));
   const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_order_items")
     .insert({
       sales_order_id: salesOrderId,
@@ -168,7 +168,7 @@ export async function updateSalesOrderItem(
   itemId: string,
   patch: SalesOrderItemPatch,
 ): Promise<SalesOrderItemRow> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("sales_order_items")
     .update(patch as never)
     .eq("id", itemId)
@@ -179,6 +179,6 @@ export async function updateSalesOrderItem(
 }
 
 export async function deleteSalesOrderItem(itemId: string): Promise<void> {
-  const { error } = await supabase.from("sales_order_items").delete().eq("id", itemId);
+  const { error } = await getDb().from("sales_order_items").delete().eq("id", itemId);
   if (error) throw new AppError(mapDbError(error));
 }

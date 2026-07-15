@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -12,7 +12,7 @@ export type InventoryListItem = InventoryRow & {
 const SELECT = "*, product:products!inventory_items_product_id_fkey(id,name,product_code)";
 
 export async function listInventory(query = ""): Promise<InventoryListItem[]> {
-  let q = supabase
+  let q = getDb()
     .from("inventory_items")
     .select(SELECT)
     .order("created_at", { ascending: false })
@@ -25,7 +25,7 @@ export async function listInventory(query = ""): Promise<InventoryListItem[]> {
 }
 
 export async function getInventoryItem(id: string): Promise<InventoryListItem | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("inventory_items")
     .select(SELECT)
     .eq("id", id)
@@ -36,7 +36,7 @@ export async function getInventoryItem(id: string): Promise<InventoryListItem | 
 
 export async function createInventoryItem(input: InventoryCreateInput): Promise<InventoryRow> {
   const p = inventoryCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("inventory_items")
     .insert({
       stock_code: "",
@@ -58,7 +58,7 @@ export async function updateInventoryItem(
   input: InventoryCreateInput,
 ): Promise<InventoryRow> {
   const p = inventoryCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("inventory_items")
     .update({
       product_id: p.product_id ?? null,
@@ -76,6 +76,6 @@ export async function updateInventoryItem(
 }
 
 export async function deleteInventoryItem(id: string): Promise<void> {
-  const { error } = await supabase.from("inventory_items").delete().eq("id", id);
+  const { error } = await getDb().from("inventory_items").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

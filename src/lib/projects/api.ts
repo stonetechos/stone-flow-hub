@@ -1,5 +1,5 @@
 /** Projects data access. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
@@ -14,7 +14,7 @@ const SELECT_WITH_CUSTOMER =
   "*, customer:customers!projects_customer_id_fkey(id,name,customer_code)";
 
 export async function listProjects(query = ""): Promise<ProjectWithCustomer[]> {
-  let q = supabase
+  let q = getDb()
     .from("projects")
     .select(SELECT_WITH_CUSTOMER)
     .order("created_at", { ascending: false })
@@ -45,7 +45,7 @@ export interface ProjectPickerOptions {
 export async function listProjectsForPicker(
   opts: ProjectPickerOptions = {},
 ): Promise<ProjectWithCustomer[]> {
-  let q = supabase
+  let q = getDb()
     .from("projects")
     .select(SELECT_WITH_CUSTOMER)
     .eq("is_active", true)
@@ -73,7 +73,7 @@ export async function listProjectsByCustomer(customerId: string): Promise<Projec
 }
 
 export async function getProject(id: string): Promise<ProjectWithCustomer | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("projects")
     .select(SELECT_WITH_CUSTOMER)
     .eq("id", id)
@@ -85,7 +85,7 @@ export async function getProject(id: string): Promise<ProjectWithCustomer | null
 export async function createProject(input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
 
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("projects")
     .insert({
       project_code: "",
@@ -109,7 +109,7 @@ export async function createProject(input: ProjectCreateInput): Promise<ProjectR
 
 export async function updateProject(id: string, input: ProjectCreateInput): Promise<ProjectRow> {
   const parsed = projectCreateSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("projects")
     .update({
       customer_id: parsed.customer_id,
@@ -132,6 +132,6 @@ export async function updateProject(id: string, input: ProjectCreateInput): Prom
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  const { error } = await supabase.from("projects").delete().eq("id", id);
+  const { error } = await getDb().from("projects").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
