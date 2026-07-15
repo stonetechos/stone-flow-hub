@@ -173,7 +173,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <StoneGrainFilter />
       <Outlet />
-      <Toaster richColors position="top-right" />
+      {/* closeButton: lets a toast be dismissed immediately (an X
+          appears on hover) instead of waiting out its auto-dismiss timer
+          — requested for the danger/overdue toasts DangerNotifications.tsx
+          fires, which sit for up to 10s otherwise. */}
+      <Toaster richColors position="top-right" closeButton />
       {import.meta.env.DEV ? <ViewportDebugPanel /> : null}
     </QueryClientProvider>
   );
