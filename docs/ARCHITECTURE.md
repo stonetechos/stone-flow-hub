@@ -162,7 +162,8 @@ src/
   `AppShell` sidebar gem badge (not a new mark); regenerate PNGs with
   `python3 scripts/pwa/generate_icons.py`.
 - Android TWA/Bubblewrap packaging is explicitly out of scope here — next
-  phase.
+  phase. Prep tracked in `docs/android-twa-prep.md` (package name, manifest
+  readiness, Digital Asset Links status).
 
 ## Cross-Cutting Conventions
 
