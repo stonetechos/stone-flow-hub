@@ -51,7 +51,7 @@ function EmployeesPage() {
         actions={
           <Can anyRole={["admin", "sales_manager"]}>
             <Button asChild size="sm">
-              <Link to="/workforce-intelligence/employees/new" search={{}}>
+              <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
                 <Plus className="mr-1 h-4 w-4" /> New employee
               </Link>
             </Button>

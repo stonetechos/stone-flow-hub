@@ -28,7 +28,7 @@ export function VendorShell({
   async function signOut() {
     await supabase.auth.signOut();
     toast.success("Signed out");
-    await navigate({ to: "/auth", replace: true });
+    await navigate({ to: "/auth", replace: true, search: { flow: "signin" } });
   }
 
   return (

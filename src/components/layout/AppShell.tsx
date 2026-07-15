@@ -553,7 +553,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
     } finally {
       toast.success("Signed out");
-      await navigate({ to: "/auth", replace: true });
+      await navigate({ to: "/auth", replace: true, search: { flow: "signin" } });
     }
   }
 

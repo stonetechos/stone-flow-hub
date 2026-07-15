@@ -11,7 +11,7 @@ export const Route = createFileRoute("/vendor")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
   },
   component: VendorLayout,
 });
