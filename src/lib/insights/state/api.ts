@@ -19,7 +19,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 
-export type InsightLifecycleStatus = "new" | "seen" | "acknowledged" | "resolved" | "dismissed";
+export type InsightLifecycleStatus =
+  | "new"
+  | "seen"
+  | "acknowledged"
+  | "resolved"
+  | "dismissed"
+  | "expired"
+  | "snoozed";
 
 export interface InsightStateRow {
   id: string;
@@ -27,16 +34,24 @@ export interface InsightStateRow {
   insight_source: string;
   insight_id: string;
   status: InsightLifecycleStatus;
+  /** Only meaningful when status === "snoozed" — see the G.8.7 Task 4
+   *  migration's column comment. Null for every other status. */
+  snoozed_until: string | null;
   created_at: string;
   updated_at: string;
 }
 
 /** Statuses that mean "a user has already handled this — stop resurfacing
  *  it as something new to act on" across every consuming surface. */
+/** Every status that means "stop showing this as something new to act on"
+ *  — independent of the time-aware `snoozed` case, which useInsightLifecycle
+ *  handles separately since it un-settles itself once snoozed_until passes. */
 export const INSIGHT_SETTLED_STATUSES: ReadonlySet<InsightLifecycleStatus> = new Set([
   "acknowledged",
   "resolved",
   "dismissed",
+  "expired",
+  "snoozed",
 ]);
 
 async function requireUserId(): Promise<string> {
@@ -64,6 +79,10 @@ export async function setInsightState(
   source: string,
   insightId: string,
   status: InsightLifecycleStatus,
+  /** Required (and only meaningful) when status === "snoozed" — an ISO
+   *  timestamp for when the insight should reappear. Also how a "remind me
+   *  later" action is modeled: same status, user-chosen date. */
+  snoozedUntil?: string,
 ): Promise<void> {
   const uid = await requireUserId();
   const { error } = await supabase.from("insight_states" as never).upsert(
@@ -72,6 +91,7 @@ export async function setInsightState(
       insight_source: source,
       insight_id: insightId,
       status,
+      snoozed_until: status === "snoozed" ? (snoozedUntil ?? null) : null,
     } as never,
     { onConflict: "user_id,insight_source,insight_id" },
   );
