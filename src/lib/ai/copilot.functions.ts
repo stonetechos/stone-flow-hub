@@ -74,7 +74,8 @@ const hsnInput = z.object({
 export const suggestHsnGst = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => hsnInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const { chatJson } = await import("./gateway.server");
     const facts = Object.entries(data)
       .filter(([, v]) => v !== undefined && v !== null && v !== "")
@@ -119,7 +120,8 @@ const costInput = z.object({
 export const estimateCost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => costInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const { chatJson } = await import("./gateway.server");
     type Cost = {
       material: number;
@@ -164,7 +166,8 @@ const marketInput = z.object({
 export const marketPrice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => marketInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const { chatJson } = await import("./gateway.server");
     type Price = { low: number; average: number; high: number; confidence: number; notes: string };
     const out = await chatJson<Price>(
@@ -195,7 +198,8 @@ const recogInput = z.object({ image_url: z.string().url() });
 export const recognizeStoneImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => recogInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
     const { chat } = await import("./gateway.server");
     // Gemini Flash supports vision via OpenAI-style image_url parts.
     const raw = await chat(
