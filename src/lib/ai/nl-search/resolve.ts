@@ -313,24 +313,61 @@ async function resolveProject(searchText: string | undefined, filters: NlFilters
     .map((p) => ({ id: p.id, entityType: "project" as const, title: p.name, subtitle: p.customer?.name ?? p.city, href: `/projects/${p.id}`, rank: 0, updatedAt: p.updated_at, isActive: p.is_active }));
 }
 
-async function resolveGeneric(entityType: NlEntityType, searchText: string | undefined): Promise<NlResultItem[]> {
+/** Entity types below that carry a `customer` relationship on their own
+ *  rows — used by resolveGeneric() to decide when a named customer must
+ *  narrow the result set (see the `filters?.customerName` block there). */
+const CUSTOMER_SCOPED_ENTITY_TYPES = new Set<NlEntityType>(["enquiry", "quote", "sales_order", "receipt"]);
+
+async function resolveGeneric(entityType: NlEntityType, searchText: string | undefined, filters?: NlFilters): Promise<NlResultItem[]> {
   const q = searchText ?? "";
+
+  // Bug found in a Phase RC-4 live audit: a query naming a specific
+  // customer but asking about one of THEIR records ("Show me Darshan
+  // Shah's enquiry status") used to ignore filters.customerName entirely
+  // here, returning whatever listEnquiries(q) came back with — an
+  // unfiltered, unrelated set of enquiries (Sunny Gandhi's, Shiv
+  // Solanki's) with no connection to the customer actually asked about.
+  // Resolved the same deterministic, exact-match-first way
+  // resolveCustomer()/resolveTimelineIntent() already resolve a named
+  // customer — ambiguous names surface every candidate as its own card
+  // instead of guessing, exactly one confident match narrows the list
+  // below, and no match returns nothing rather than an unrelated list.
+  let customerFilter: { id: string } | null = null;
+  if (filters?.customerName && CUSTOMER_SCOPED_ENTITY_TYPES.has(entityType)) {
+    const customers = await listCustomers(filters.customerName);
+    const resolution = resolveByName(customers, filters.customerName, (r) => r.name);
+    if (resolution.kind === "ambiguous") {
+      return ambiguousMatchResults(resolution.rows, "customer", (r) => ({
+        id: r.id,
+        title: r.name,
+        subtitle: [r.customer_code, r.city].filter(Boolean).join(" · ") || null,
+        href: `/customers/${r.id}`,
+      }));
+    }
+    if (resolution.kind === "none") return [];
+    customerFilter = { id: resolution.row.id };
+  }
+
   switch (entityType) {
     case "enquiry": {
       const rows = await listEnquiries(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.enquiry_no, subtitle: r.customer?.name ?? null, href: `/enquiries/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
+      return filtered.map((r) => ({ id: r.id, entityType, title: r.enquiry_no, subtitle: r.customer?.name ?? null, href: `/enquiries/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "quote": {
       const rows = await listQuotes(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.quote_no, subtitle: r.customer?.name ?? null, href: `/quotes/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
+      return filtered.map((r) => ({ id: r.id, entityType, title: r.quote_no, subtitle: r.customer?.name ?? null, href: `/quotes/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "sales_order": {
       const rows = await listSalesOrders(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.so_no, subtitle: r.customer?.name ?? null, href: `/sales-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
+      return filtered.map((r) => ({ id: r.id, entityType, title: r.so_no, subtitle: r.customer?.name ?? null, href: `/sales-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "receipt": {
       const rows = await listReceipts(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.receipt_no, subtitle: r.customer?.name ?? null, href: `/receipts/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
+      return filtered.map((r) => ({ id: r.id, entityType, title: r.receipt_no, subtitle: r.customer?.name ?? null, href: `/receipts/${r.id}`, rank: 0, updatedAt: r.updated_at }));
     }
     case "purchase_order": {
       const rows = await listPurchaseOrders(q);
@@ -402,7 +439,7 @@ async function resolveByEntityType(entityType: NlEntityType, searchText: string 
     case "project":
       return resolveProject(searchText, filters);
     default:
-      return resolveGeneric(entityType, searchText);
+      return resolveGeneric(entityType, searchText, filters);
   }
 }
 
@@ -418,7 +455,7 @@ type NameResolution<T> = { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[
  *  Two or more remaining rows with no exact match is genuinely
  *  ambiguous — the caller renders every candidate as its own card so
  *  the user picks, instead of resolve.ts guessing on their behalf. */
-function resolveByName<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): NameResolution<T> {
+export function resolveByName<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): NameResolution<T> {
   if (rows.length === 0) return { kind: "none" };
   if (!needle) return rows.length === 1 ? { kind: "one", row: rows[0] } : { kind: "ambiguous", rows };
   const lower = needle.toLowerCase();
