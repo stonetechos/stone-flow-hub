@@ -7,6 +7,19 @@ import { classifyFailure } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
+  // Phase RC-3: `ssr: false` means the server renders nothing for this
+  // route (and everything nested under it) and TanStack Start defers to a
+  // client-only render — by design, and not itself the bug. The actual
+  // defect was a timing race: `beforeLoad`'s auth check (and its redirect
+  // to /auth when signed out) can resolve before React finishes committing
+  // its first hydration pass, since nothing forces the router to hold that
+  // initial pass open. `pendingMinMs` uses TanStack Router's own built-in
+  // mechanism (see `setMatchForcePending` in `@tanstack/router-core`'s
+  // ssr-client hydrate()) to force this match to stay in its pending state
+  // for a minimum window, guaranteeing hydration fully commits before the
+  // resolved (redirected-or-not) content swaps in. No auth/SSR/TanStack
+  // behavior changes — this only closes the race window.
+  pendingMinMs: 300,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
