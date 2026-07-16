@@ -728,7 +728,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
                   aria-hidden
                 />
-                <span className="min-w-0 flex-1 truncate">Search customers, projects, invoices…</span>
+                <span className="min-w-0 flex-1 truncate">
+                  Search customers, projects, invoices…
+                </span>
                 <kbd className="ml-auto hidden rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
                   ⌘K
                 </kbd>

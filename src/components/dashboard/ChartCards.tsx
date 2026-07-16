@@ -11,7 +11,7 @@ function truncateLabel(label: string, maxLen: number): string {
 }
 
 export const CHART_COLORS = [
-  "hsl(var(--primary))",
+  "var(--primary)",
   "hsl(173 58% 39%)",
   "hsl(43 74% 66%)",
   "hsl(12 76% 61%)",
@@ -84,7 +84,7 @@ export function BarCard({
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout={vertical ? "vertical" : "horizontal"} margin={vertical ? { left: yAxisWidth } : undefined}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               {vertical ? (
                 <>
                   <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
@@ -103,7 +103,7 @@ export function BarCard({
                 </>
               )}
               <Tooltip formatter={(v: number) => formatValue(v)} />
-              <Bar dataKey="value" fill="hsl(var(--primary))" />
+              <Bar dataKey="value" fill="var(--primary)" />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -127,11 +127,11 @@ export function LineCard({
       <CardContent style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: 8, right: 8, top: 6, bottom: 6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
             <Tooltip formatter={(v: number) => formatValue(v)} />
-            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

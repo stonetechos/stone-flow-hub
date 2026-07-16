@@ -152,9 +152,15 @@ function BlockNode({ node }: { node: BlockNodeT }) {
         onClick={() => setOpen((x) => !x)}
         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
       >
-        {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+        {open ? (
+          <ChevronDown className="h-4 w-4 shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        )}
         <Layers className="h-4 w-4 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1 truncate font-display font-semibold">Block {node.label}</span>
+        <span className="min-w-0 flex-1 truncate font-display font-semibold">
+          Block {node.label}
+        </span>
         <Badge variant="secondary" className="ml-auto shrink-0">
           {node.children.length} lots · {node.count} slabs · {node.qty.toFixed(1)}
         </Badge>
@@ -179,7 +185,11 @@ function LotNodeView({ node }: { node: LotNode }) {
         onClick={() => setOpen((x) => !x)}
         className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent"
       >
-        {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+        {open ? (
+          <ChevronDown className="h-4 w-4 shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        )}
         <Boxes className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate font-medium">Lot {node.label}</span>
         <Badge variant="outline" className="ml-auto shrink-0">

@@ -107,8 +107,8 @@ export function GlobalSearchDialog({
                     value={`nav-recent-${item.label}`}
                     onSelect={() => go(item.to)}
                   >
-                    <item.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">{item.label}</span>
+                    <item.icon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -125,9 +125,9 @@ export function GlobalSearchDialog({
                       value={`recent-${r.label}`}
                       onSelect={() => go(r.href)}
                     >
-                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{r.label}</span>
-                      <span className="ml-auto text-[11px] text-muted-foreground capitalize">
+                      <Clock className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate">{r.label}</span>
+                      <span className="ml-auto shrink-0 text-[11px] text-muted-foreground capitalize">
                         {r.entityType}
                       </span>
                     </CommandItem>
@@ -146,8 +146,8 @@ export function GlobalSearchDialog({
                     value={`nav-${item.label}`}
                     onSelect={() => go(item.to)}
                   >
-                    <Compass className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">{item.label}</span>
+                    <Compass className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -171,9 +171,9 @@ export function GlobalSearchDialog({
                         value={`${g}-${h.label}-${h.id}`}
                         onSelect={() => go(h.href)}
                       >
-                        <span className="truncate">{h.label}</span>
+                        <span className="min-w-0 flex-1 truncate">{h.label}</span>
                         {h.sublabel && (
-                          <span className="ml-auto truncate text-[11px] text-muted-foreground">
+                          <span className="ml-auto min-w-0 shrink truncate text-[11px] text-muted-foreground max-w-[45%]">
                             {h.sublabel}
                           </span>
                         )}

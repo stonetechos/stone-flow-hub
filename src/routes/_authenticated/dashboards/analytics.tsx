@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/dashboards/analytics")({
 });
 
 const GRAINS: Grain[] = ["day", "week", "month", "quarter", "year"];
-const COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2, 173 58% 39%))", "hsl(var(--chart-3, 43 74% 66%))", "hsl(var(--chart-4, 12 76% 61%))", "hsl(var(--chart-5, 262 60% 55%))", "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE"];
+const COLORS = ["var(--primary)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE"];
 
 function AnalyticsDashboard() {
   const [range, setRange] = useState<Range>(defaultRange(90));
@@ -91,11 +91,11 @@ function TrendChart({ title, data, money = true }: { title: string; data: Array<
       <CardContent style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: 8, right: 8, top: 6, bottom: 6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => money ? `₹${Math.round(v / 1000)}k` : String(v)} />
             <Tooltip formatter={(v: number) => money ? formatInr(v) : v} />
-            <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
@@ -111,11 +111,11 @@ function AgingCard({ title, q }: { title: string; q: ReturnType<typeof useQuery<
         {q.isLoading || !q.data ? <LoadingBlock /> : q.error ? <ErrorBlock message={toUserMessage(q.error)} /> : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={q.data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${Math.round(v / 1000)}k`} />
               <Tooltip formatter={(v: number) => formatInr(v)} />
-              <Bar dataKey="amount" fill="hsl(var(--primary))" />
+              <Bar dataKey="amount" fill="var(--primary)" />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -153,11 +153,11 @@ function BarCard({ title, q }: { title: string; q: ReturnType<typeof useQuery<Ar
         {q.isLoading ? <LoadingBlock /> : q.error ? <ErrorBlock message={toUserMessage(q.error)} /> : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={q.data ?? []} layout="vertical" margin={{ left: 90 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${Math.round(v / 1000)}k`} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 11 }} width={90} />
               <Tooltip formatter={(v: number) => formatInr(v)} />
-              <Bar dataKey="value" fill="hsl(var(--primary))" />
+              <Bar dataKey="value" fill="var(--primary)" />
             </BarChart>
           </ResponsiveContainer>
         )}

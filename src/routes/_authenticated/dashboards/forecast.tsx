@@ -50,12 +50,12 @@ function ForecastPage() {
         <CardContent style={{ height: 340 }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={f.points}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="period" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${Math.round(v / 1000)}k`} />
               <Tooltip formatter={(v: number) => formatInr(v)} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="inflow" fill="hsl(var(--primary))" name="Inflow" />
+              <Bar dataKey="inflow" fill="var(--primary)" name="Inflow" />
               <Bar dataKey="outflow" fill="#f59e0b" name="Outflow" />
               <Line type="monotone" dataKey="net" stroke="#10b981" strokeWidth={2} name="Net" />
             </ComposedChart>

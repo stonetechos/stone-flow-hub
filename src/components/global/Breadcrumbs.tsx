@@ -60,9 +60,9 @@ export function Breadcrumbs() {
         <span key={c.href} className="flex min-w-0 items-center gap-1">
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
           {c.last ? (
-            <span className="truncate text-foreground">{c.label}</span>
+            <span className="block truncate text-foreground">{c.label}</span>
           ) : (
-            <Link to={c.href} className="truncate hover:text-foreground">
+            <Link to={c.href} className="block truncate hover:text-foreground">
               {c.label}
             </Link>
           )}
