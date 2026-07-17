@@ -10,11 +10,7 @@ export type ProductCategoryRow = DbTable<"product_categories">;
 export type ProductImageRow = DbTable<"product_images">;
 
 export async function listProducts(query = ""): Promise<ProductRow[]> {
-  let q = getDb()
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(200);
+  let q = getDb().from("products").select("*").order("created_at", { ascending: false }).limit(200);
   const s = sanitizeSearch(query);
   if (s) {
     q = q.or(
@@ -45,6 +41,17 @@ export async function getProduct(id: string): Promise<ProductRow | null> {
   const { data, error } = await getDb().from("products").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
+}
+
+/** Bulk name lookup for a set of product ids — used by Quote Comparison
+ *  to label a product-linked line item by its real product name rather
+ *  than whatever free-text description happened to be typed on that
+ *  particular quote. */
+export async function getProductsByIds(ids: string[]): Promise<Pick<ProductRow, "id" | "name">[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await getDb().from("products").select("id, name").in("id", ids);
+  if (error) throw new AppError(mapDbError(error));
+  return data ?? [];
 }
 
 export async function listProductImages(productId: string): Promise<ProductImageRow[]> {

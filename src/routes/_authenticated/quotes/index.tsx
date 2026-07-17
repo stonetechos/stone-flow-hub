@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, FileText, Trash2 } from "lucide-react";
+import { Plus, Loader2, FileText, Trash2, Scale } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -11,9 +11,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { QuoteComparisonDialog } from "@/components/quotes/QuoteComparisonDialog";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
@@ -60,6 +75,8 @@ function QuotesPage() {
   const [toDelete, setToDelete] = useState<QuoteListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+  const [compareOpen, setCompareOpen] = useState(false);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("quotes");
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -92,6 +109,20 @@ function QuotesPage() {
   useEffect(() => setPage(1), [dq, statusFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
+  function toggleCompare(id: string) {
+    setCompareIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 4) {
+        next.add(id);
+      } else {
+        toast.error("You can compare up to 4 quotes at a time.");
+      }
+      return next;
+    });
+  }
+
   useEffect(() => {
     if (params.new) setOpen(true);
   }, [params.new]);
@@ -111,7 +142,9 @@ function QuotesPage() {
         searchPlaceholder="Search by quote no…"
         primaryFilter={
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-8 w-40 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-40 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
@@ -127,9 +160,21 @@ function QuotesPage() {
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
-          <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New quote
-          </Button>
+          <div className="flex items-center gap-2">
+            {compareIds.size >= 2 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8"
+                onClick={() => setCompareOpen(true)}
+              >
+                <Scale className="mr-1.5 h-3.5 w-3.5" /> Compare ({compareIds.size})
+              </Button>
+            )}
+            <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New quote
+            </Button>
+          </div>
         }
       />
 
@@ -157,13 +202,17 @@ function QuotesPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead>No.</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
@@ -176,19 +225,38 @@ function QuotesPage() {
             <TableBody>
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={compareIds.has(r.id)}
+                      onCheckedChange={() => toggleCompare(r.id)}
+                      aria-label={`Select ${r.quote_no} for comparison`}
+                    />
+                  </TableCell>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/quotes/$quoteId" params={{ quoteId: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/quotes/$quoteId"
+                        params={{ quoteId: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.quote_no}
                       </Link>
                     </TableCell>
                   )}
-                  {!isHidden("project") && <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("project") && (
+                    <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
+                  )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("status") && (
-                    <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {r.status}
+                      </Badge>
+                    </TableCell>
                   )}
-                  {!isHidden("total") && <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>}
+                  {!isHidden("total") && (
+                    <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>
+                  )}
                   {!isHidden("valid") && <TableCell>{r.valid_until ?? "—"}</TableCell>}
                   <TableCell>
                     <RowActions
@@ -222,6 +290,15 @@ function QuotesPage() {
         initialProjectId={params.project ?? null}
         initialEnquiryId={params.enquiry ?? null}
       />
+
+      {compareOpen && (
+        <QuoteComparisonDialog
+          quoteIds={Array.from(compareIds)}
+          onOpenChange={(o) => {
+            if (!o) setCompareOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -252,7 +329,6 @@ function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
     fulfilment: defaultFulfilment,
   };
 }
-
 
 function CreateQuoteDialog({
   open,
@@ -285,7 +361,6 @@ function CreateQuoteDialog({
       setItems([emptyItem("")]);
     }
   }, [open, initialProjectId]);
-
 
   const totals = useMemo(() => {
     let sub = 0,
@@ -344,7 +419,6 @@ function CreateQuoteDialog({
     });
   }
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -380,7 +454,6 @@ function CreateQuoteDialog({
                 </SelectContent>
               </Select>
             </Field>
-
 
             <div className="md:col-span-2">
               <div className="mb-2 flex items-center justify-between">
