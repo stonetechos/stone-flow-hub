@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { installCapacitorServerFnFetchPatch } from "@/lib/capacitor/install-fetch-patch";
+
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { classifyFailure } from "../lib/errors";
@@ -18,6 +20,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
+
+// Installs the Capacitor server-fn fetch patch (no-op outside the
+// Capacitor build — see that file for why this exists). Called at
+// module scope, before the router (and therefore any route loader's
+// server-fn calls) is created.
+installCapacitorServerFnFetchPatch();
 
 function NotFoundComponent() {
   return (
