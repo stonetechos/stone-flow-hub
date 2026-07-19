@@ -8,13 +8,48 @@ import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
-const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
-  signup: SignupEmail,
-  invite: InviteEmail,
-  magiclink: MagicLinkEmail,
-  recovery: RecoveryEmail,
-  email_change: EmailChangeEmail,
-  reauthentication: ReauthenticationEmail,
+type EmailRenderer = (data: Record<string, unknown>) => React.ReactElement
+
+function str(v: unknown): string {
+  return typeof v === 'string' ? v : ''
+}
+
+const EMAIL_TEMPLATES: Record<string, EmailRenderer> = {
+  signup: (d) =>
+    React.createElement(SignupEmail, {
+      siteName: str(d.siteName),
+      siteUrl: str(d.siteUrl),
+      recipient: str(d.recipient),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  invite: (d) =>
+    React.createElement(InviteEmail, {
+      siteName: str(d.siteName),
+      siteUrl: str(d.siteUrl),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  magiclink: (d) =>
+    React.createElement(MagicLinkEmail, {
+      siteName: str(d.siteName),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  recovery: (d) =>
+    React.createElement(RecoveryEmail, {
+      siteName: str(d.siteName),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  email_change: (d) =>
+    React.createElement(EmailChangeEmail, {
+      siteName: str(d.siteName),
+      oldEmail: str(d.oldEmail),
+      email: str(d.email),
+      newEmail: str(d.newEmail),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  reauthentication: (d) =>
+    React.createElement(ReauthenticationEmail, {
+      token: str(d.token),
+    }),
 }
 
 // Configuration
@@ -28,7 +63,7 @@ const ROOT_DOMAIN = "erp.stonetech.in"
 // even if the project's domain has changed since the template was scaffolded.
 const SAMPLE_PROJECT_URL = "https://stone-flow-hub.lovable.app"
 const SAMPLE_EMAIL = "user@example.test"
-const SAMPLE_DATA: Record<string, object> = {
+const SAMPLE_DATA: Record<string, Record<string, unknown>> = {
   signup: {
     siteName: SITE_NAME,
     siteUrl: SAMPLE_PROJECT_URL,
@@ -100,7 +135,7 @@ export const Route = createFileRoute("/lovable/email/auth/preview")({
         }
 
         const sampleData = SAMPLE_DATA[type] || {}
-        const html = await render(React.createElement(EmailTemplate, sampleData))
+        const html = await render(EmailTemplate(sampleData))
 
         return new Response(html, {
           status: 200,

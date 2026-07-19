@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
 import { parseEmailWebhookPayload } from '@lovable.dev/email-js'
-import { WebhookError, verifyWebhookRequest } from '@lovable.dev/webhooks-js'
+import { WebhookError, verifyWebhookRequest, type EmailWebhookPayload } from '@lovable.dev/webhooks-js'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { SignupEmail } from '@/lib/email-templates/signup'
@@ -21,13 +21,48 @@ const EMAIL_SUBJECTS: Record<string, string> = {
 }
 
 // Template mapping
-const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
-  signup: SignupEmail,
-  invite: InviteEmail,
-  magiclink: MagicLinkEmail,
-  recovery: RecoveryEmail,
-  email_change: EmailChangeEmail,
-  reauthentication: ReauthenticationEmail,
+type EmailRenderer = (data: Record<string, unknown>) => React.ReactElement
+
+function str(v: unknown): string {
+  return typeof v === 'string' ? v : ''
+}
+
+const EMAIL_TEMPLATES: Record<string, EmailRenderer> = {
+  signup: (d) =>
+    React.createElement(SignupEmail, {
+      siteName: str(d.siteName),
+      siteUrl: str(d.siteUrl),
+      recipient: str(d.recipient),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  invite: (d) =>
+    React.createElement(InviteEmail, {
+      siteName: str(d.siteName),
+      siteUrl: str(d.siteUrl),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  magiclink: (d) =>
+    React.createElement(MagicLinkEmail, {
+      siteName: str(d.siteName),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  recovery: (d) =>
+    React.createElement(RecoveryEmail, {
+      siteName: str(d.siteName),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  email_change: (d) =>
+    React.createElement(EmailChangeEmail, {
+      siteName: str(d.siteName),
+      oldEmail: str(d.oldEmail),
+      email: str(d.email),
+      newEmail: str(d.newEmail),
+      confirmationUrl: str(d.confirmationUrl),
+    }),
+  reauthentication: (d) =>
+    React.createElement(ReauthenticationEmail, {
+      token: str(d.token),
+    }),
 }
 
 // Configuration
@@ -58,7 +93,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Verify signature + timestamp, then parse payload.
-        let payload: any
+        let payload: EmailWebhookPayload
         let run_id = ''
         try {
           const verified = await verifyWebhookRequest({
@@ -67,7 +102,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
             parser: parseEmailWebhookPayload,
           })
           payload = verified.payload
-          run_id = payload.run_id
+          run_id = payload.run_id ?? ''
         } catch (error) {
           if (error instanceof WebhookError) {
             switch (error.code) {
@@ -113,9 +148,24 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           )
         }
 
+        if (!payload.data) {
+          console.error('Webhook payload missing data', { run_id })
+          return Response.json(
+            { error: 'Invalid webhook payload' },
+            { status: 400 }
+          )
+        }
+
         // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
         // payload.type is the hook event type ("auth")
         const emailType = payload.data.action_type
+        if (!emailType) {
+          console.error('Webhook payload missing action_type', { run_id })
+          return Response.json(
+            { error: 'Invalid webhook payload' },
+            { status: 400 }
+          )
+        }
         console.log('Received auth event', {
           emailType,
           email_redacted: redactEmail(payload.data.email),
@@ -132,7 +182,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Build template props from payload.data (HookData structure)
-        const templateProps = {
+        const templateProps: Record<string, unknown> = {
           siteName: SITE_NAME,
           siteUrl: `https://${ROOT_DOMAIN}`,
           recipient: payload.data.email,
@@ -144,7 +194,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Render React Email to HTML and plain text
-        const element = React.createElement(EmailTemplate, templateProps)
+        const element = EmailTemplate(templateProps)
         const html = await render(element)
         const text = await render(element, { plainText: true })
 

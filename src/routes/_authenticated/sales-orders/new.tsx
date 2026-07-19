@@ -136,11 +136,8 @@ function NewSalesOrderPage() {
             <EntityPicker
               type="project"
               value={form.project_id}
-              onChange={(id, row) => {
+              onChange={(id) => {
                 set("project_id", id);
-                // Auto-fill customer from project when missing.
-                const cust = (row as any)?.raw?.customer_id;
-                if (id && !form.customer_id && cust) set("customer_id", cust);
               }}
               filter={{ customerId: form.customer_id ?? null }}
               createDefaults={{ customer_id: form.customer_id ?? "" }}

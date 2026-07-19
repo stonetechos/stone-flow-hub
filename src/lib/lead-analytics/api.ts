@@ -217,7 +217,7 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
 
   // Quote totals by id.
   const quoteIds = (so.data ?? []).map((s) => s.quote_id).filter(Boolean) as string[];
-  let quoteTotals = new Map<string, number>();
+  const quoteTotals = new Map<string, number>();
   if (quoteIds.length > 0) {
     const { data } = await supabase.from("quotes").select("id,total").in("id", quoteIds);
     for (const q of data ?? []) quoteTotals.set(q.id, Number(q.total ?? 0));

@@ -1,6 +1,26 @@
 import { sendLovableEmail } from '@lovable.dev/email-js'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
+import type { Database, Json } from '@/integrations/supabase/types'
+
+// Shape of the JSON payload stored in the pgmq message body. Matches
+// EmailSendRequest from @lovable.dev/email-js plus the queue-only
+// `queued_at` field we stamp on enqueue (see auth/webhook.ts).
+interface EmailQueuePayload {
+  run_id?: string
+  to: string
+  from: string
+  sender_domain?: string
+  subject: string
+  html: string
+  text: string
+  purpose?: string
+  label?: string
+  idempotency_key?: string
+  unsubscribe_token?: string
+  message_id?: string
+  queued_at?: string
+}
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -36,15 +56,15 @@ function getRetryAfterSeconds(error: unknown): number {
 }
 
 async function moveToDlq(
-  supabase: SupabaseClient<any, any>,
+  supabase: SupabaseClient<Database>,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: { msg_id: number; message: EmailQueuePayload },
   reason: string
 ): Promise<void> {
   const payload = msg.message
   await supabase.from('email_send_log').insert({
-    message_id: payload.message_id,
-    template_name: (payload.label || queue) as string,
+    message_id: payload.message_id ?? null,
+    template_name: payload.label || queue,
     recipient_email: payload.to,
     status: 'dlq',
     error_message: reason,
@@ -53,7 +73,7 @@ async function moveToDlq(
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
     message_id: msg.msg_id,
-    payload,
+    payload: payload as unknown as Json,
   })
   if (error) {
     console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
@@ -88,7 +108,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        const supabase: SupabaseClient<any, any> = createClient(supabaseUrl, supabaseServiceKey)
+        const supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, supabaseServiceKey)
 
         // 1. Check rate-limit cooldown and read queue config
         const { data: state } = await supabase
@@ -111,11 +131,18 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
 
         // 2. Process auth_emails first (priority), then transactional_emails
         for (const queue of ['auth_emails', 'transactional_emails']) {
-          const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
+          const { data: rawMessages, error: readError } = await supabase.rpc('read_email_batch', {
             queue_name: queue,
             batch_size: batchSize,
             vt: 30,
           })
+          // The RPC's generated return type only declares message/msg_id/read_ct
+          // (the columns the SQL function actually SELECTs). Cast once, here, to
+          // the concrete payload shape so the rest of this loop can access named
+          // fields without repeated per-line casts.
+          const messages = rawMessages as unknown as
+            | { msg_id: number; read_ct: number; message: EmailQueuePayload }[]
+            | null
 
           if (readError) {
             console.error('Failed to read email batch', { queue, error: readError })
@@ -128,11 +155,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           const messageIds = Array.from(
             new Set(
               messages
-                .map((msg: any) =>
-                  msg?.message?.message_id && typeof msg.message.message_id === 'string'
-                    ? msg.message.message_id
-                    : null
-                )
+                .map((msg) => (typeof msg.message?.message_id === 'string' ? msg.message.message_id : null))
                 .filter((id: string | null): id is string => Boolean(id))
             )
           )
@@ -169,10 +192,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                 ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
                 : msg.read_ct ?? 0
 
-            // Drop expired messages (TTL exceeded).
-            // Prefer payload.queued_at when present; fall back to PGMQ's enqueued_at
-            // which is always set by the queue.
-            const queuedAt = payload.queued_at ?? msg.enqueued_at
+            // Drop expired messages (TTL exceeded). read_email_batch only returns
+            // message/msg_id/read_ct (no enqueued_at column), so queued_at must
+            // come from the payload we stamped on enqueue (see auth/webhook.ts).
+            const queuedAt = payload.queued_at
             if (queuedAt) {
               const ageMs = Date.now() - new Date(queuedAt).getTime()
               const maxAgeMs = ttlMinutes[queue] * 60 * 1000

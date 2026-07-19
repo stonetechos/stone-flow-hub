@@ -40,7 +40,8 @@ import { projectCreateSchema, PROJECT_TYPES } from "@/lib/projects/schema";
 import { createProduct } from "@/lib/products/api";
 import { productCreateSchema, STONE_TYPES } from "@/lib/products/schema";
 import { EntityPicker } from "./EntityPicker";
-import type { EntityType } from "./EntityPicker";
+import type { EntityType, EntitySourceRow } from "./EntityPicker";
+import type { DbEnum } from "@/lib/types";
 
 interface QuickCreateDialogProps {
   type: EntityType;
@@ -48,7 +49,7 @@ interface QuickCreateDialogProps {
   onOpenChange: (v: boolean) => void;
   initialName?: string;
   defaults?: Record<string, unknown>;
-  onCreated: (row: any) => void;
+  onCreated: (row: EntitySourceRow) => void;
 }
 
 export function QuickCreateDialog(props: QuickCreateDialogProps) {
@@ -77,12 +78,18 @@ function QuickCreateCustomer({
   onCreated,
 }: QuickCreateDialogProps) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    mobile: string;
+    email: string;
+    city: string;
+    customer_type: DbEnum<"customer_type">;
+  }>({
     name: initialName ?? "",
     mobile: "",
     email: "",
     city: "",
-    customer_type: "individual" as const,
+    customer_type: "individual",
   });
   useEffect(() => {
     if (open) setForm((f) => ({ ...f, name: initialName ?? f.name }));
@@ -147,7 +154,9 @@ function QuickCreateCustomer({
             <Field label="Type" className="md:col-span-2">
               <Select
                 value={form.customer_type}
-                onValueChange={(v) => setForm({ ...form, customer_type: v as any })}
+                onValueChange={(v) =>
+                  setForm({ ...form, customer_type: v as DbEnum<"customer_type"> })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -281,11 +290,16 @@ function QuickCreateProject({
 }: QuickCreateDialogProps) {
   const qc = useQueryClient();
   const defaultCustomer = (defaults?.customer_id as string | undefined) ?? "";
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    customer_id: string;
+    name: string;
+    city: string;
+    project_type: DbEnum<"project_type">;
+  }>({
     customer_id: defaultCustomer,
     name: initialName ?? "",
     city: "",
-    project_type: "residential" as const,
+    project_type: "residential",
   });
   useEffect(() => {
     if (open) {
@@ -350,7 +364,9 @@ function QuickCreateProject({
             <Field label="Type" className="md:col-span-2">
               <Select
                 value={form.project_type}
-                onValueChange={(v) => setForm({ ...form, project_type: v as any })}
+                onValueChange={(v) =>
+                  setForm({ ...form, project_type: v as DbEnum<"project_type"> })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -386,9 +402,12 @@ function QuickCreateProduct({
   onCreated,
 }: QuickCreateDialogProps) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    stone_type: DbEnum<"stone_type">;
+  }>({
     name: initialName ?? "",
-    stone_type: "marble" as const,
+    stone_type: "marble",
   });
   useEffect(() => {
     if (open) setForm((f) => ({ ...f, name: initialName ?? f.name }));
@@ -433,7 +452,7 @@ function QuickCreateProduct({
             <Field label="Stone type" className="md:col-span-2">
               <Select
                 value={form.stone_type}
-                onValueChange={(v) => setForm({ ...form, stone_type: v as any })}
+                onValueChange={(v) => setForm({ ...form, stone_type: v as DbEnum<"stone_type"> })}
               >
                 <SelectTrigger>
                   <SelectValue />

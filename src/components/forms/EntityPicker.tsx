@@ -94,24 +94,45 @@ function useDebounced<T>(value: T, ms = 250): T {
   return v;
 }
 
-function toRow(type: EntityType, r: any): EntityRow {
+/** Loosely-shaped row returned by the various list/get queries this picker wraps. */
+export interface EntitySourceRow {
+  id: string;
+  name?: string | null;
+  company_name?: string | null;
+  customer_code?: string | null;
+  vendor_code?: string | null;
+  project_code?: string | null;
+  product_code?: string | null;
+  primary_phone?: string | null;
+  city?: string | null;
+  customer?: { name?: string | null } | null;
+  stone_type?: string | null;
+  finish?: string | null;
+  code?: string | null;
+  mohs_hardness?: number | string | null;
+  anti_slip?: boolean | null;
+  machine_required?: boolean | null;
+  default_uom?: string | null;
+}
+
+function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
   switch (type) {
     case "customer":
-      return { id: r.id, label: r.name, sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · ") };
     case "vendor":
-      return { id: r.id, label: r.company_name, sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.company_name ?? "", sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · ") };
     case "project":
-      return { id: r.id, label: r.name, sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · ") };
     case "product":
-      return { id: r.id, label: r.name, sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · ") };
     case "stone_type":
-      return { id: r.id, label: r.name, sublabel: [r.code, r.mohs_hardness ? `Mohs ${r.mohs_hardness}` : null].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.mohs_hardness ? `Mohs ${r.mohs_hardness}` : null].filter(Boolean).join(" · ") };
     case "surface_finish":
-      return { id: r.id, label: r.name, sublabel: [r.code, r.anti_slip ? "anti-slip" : null].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.anti_slip ? "anti-slip" : null].filter(Boolean).join(" · ") };
     case "edge_finish":
-      return { id: r.id, label: r.name, sublabel: [r.code, r.machine_required ? "machine" : "hand"].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.machine_required ? "machine" : "hand"].filter(Boolean).join(" · ") };
     case "product_family":
-      return { id: r.id, label: r.name, sublabel: [r.code, r.default_uom].filter(Boolean).join(" · ") };
+      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.default_uom].filter(Boolean).join(" · ") };
   }
 }
 

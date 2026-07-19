@@ -266,7 +266,11 @@ function WhatsAppProviderCard() {
         `WABA ${r.checks.business_account_id.ok ? "✓" : "✗"}`,
         `Endpoint ${r.checks.messaging_endpoint.ok ? "✓" : "✗"}`,
       ].join(" · ");
-      r.ok ? toast.success(parts) : toast.error(parts);
+      if (r.ok) {
+        toast.success(parts);
+      } else {
+        toast.error(parts);
+      }
       status.refetch();
       health.refetch();
     },
