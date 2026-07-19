@@ -7413,6 +7413,78 @@ export type Database = {
         }
         Relationships: []
       }
+      vie_actions: {
+        Row: {
+          applied_at: string | null
+          canonical_text: string
+          confidence: number
+          created_at: string
+          created_by: string
+          entities: Json
+          error_message: string | null
+          execution_mode:
+            | Database["public"]["Enums"]["vie_execution_mode"]
+            | null
+          id: string
+          intent: string
+          language: string
+          linked_record_id: string | null
+          linked_record_type: string | null
+          plan: Json | null
+          plan_blockers: Json | null
+          raw_text: string
+          request_id: string
+          status: Database["public"]["Enums"]["vie_action_status"]
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          canonical_text: string
+          confidence: number
+          created_at?: string
+          created_by: string
+          entities?: Json
+          error_message?: string | null
+          execution_mode?:
+            | Database["public"]["Enums"]["vie_execution_mode"]
+            | null
+          id?: string
+          intent: string
+          language: string
+          linked_record_id?: string | null
+          linked_record_type?: string | null
+          plan?: Json | null
+          plan_blockers?: Json | null
+          raw_text: string
+          request_id: string
+          status?: Database["public"]["Enums"]["vie_action_status"]
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          canonical_text?: string
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          entities?: Json
+          error_message?: string | null
+          execution_mode?:
+            | Database["public"]["Enums"]["vie_execution_mode"]
+            | null
+          id?: string
+          intent?: string
+          language?: string
+          linked_record_id?: string | null
+          linked_record_type?: string | null
+          plan?: Json | null
+          plan_blockers?: Json | null
+          raw_text?: string
+          request_id?: string
+          status?: Database["public"]["Enums"]["vie_action_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       workforce_rule_assignments: {
         Row: {
           active: boolean
@@ -8632,6 +8704,17 @@ export type Database = {
         | "declined"
         | "expired"
         | "closed_lost"
+      vie_action_status:
+        | "pending"
+        | "planned"
+        | "awaiting_confirmation"
+        | "draft"
+        | "confirmed"
+        | "executing"
+        | "applied"
+        | "rejected"
+        | "failed"
+      vie_execution_mode: "auto" | "confirm" | "draft"
       workforce_task_priority: "low" | "medium" | "high" | "urgent"
       workforce_task_status:
         | "pending"
@@ -9077,6 +9160,18 @@ export const Constants = {
         "expired",
         "closed_lost",
       ],
+      vie_action_status: [
+        "pending",
+        "planned",
+        "awaiting_confirmation",
+        "draft",
+        "confirmed",
+        "executing",
+        "applied",
+        "rejected",
+        "failed",
+      ],
+      vie_execution_mode: ["auto", "confirm", "draft"],
       workforce_task_priority: ["low", "medium", "high", "urgent"],
       workforce_task_status: [
         "pending",
