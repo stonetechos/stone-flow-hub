@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "in.stonetech.erp",
+  appId: "in.vedoravision.stonetechos.app",
   appName: "Stone Tech OS",
   // Produced by `npm run build:capacitor` (see vite.config.ts) — a real
   // static SPA shell (index.html + assets), not the Nitro/Cloudflare

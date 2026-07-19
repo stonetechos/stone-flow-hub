@@ -7,7 +7,10 @@ export type AppSettingKey =
   | "notifications.whatsapp"
   | "notifications.sms"
   | "payments.gateways"
-  | "communication.mode";
+  | "communication.mode"
+  // VIE Phase 1 (ADR-0001 §6) — per-intent execution policy config:
+  // Partial<Record<VieIntent, { mode: "auto"|"confirm"|"draft"; autoThreshold: number }>>
+  | "vie.execution_policies";
 
 export async function getAppSetting<T = Record<string, unknown>>(
   key: AppSettingKey,

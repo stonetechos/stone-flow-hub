@@ -20,16 +20,16 @@ Checked against the official quick-start guide
 and Android Developers TWA guide. All present and correct as of the live
 production manifest:
 
-| Requirement | Status |
-|---|---|
-| `name` / `short_name` | ✅ "Stone Tech OS" (short_name is 13 chars; Android truncates around ~12 on some launchers — cosmetic only, not blocking) |
-| `start_url` / `scope` | ✅ both `/` |
-| `display` | ✅ `standalone` |
-| `theme_color` / `background_color` | ✅ `#0d9488` / `#06090D` |
-| `orientation` | ✅ `any` |
-| Icons 192 + 512, `any` + `maskable` purpose | ✅ present, served from `/icons/*` |
-| Maskable safe zone | ✅ verified mathematically at build time — mark sits within ~150px radius of center on the 512px canvas, inside the required ≤204.8px (80%) safe zone |
-| Served over HTTPS | ✅ |
+| Requirement                                 | Status                                                                                                                                                |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` / `short_name`                       | ✅ "Stone Tech OS" (short_name is 13 chars; Android truncates around ~12 on some launchers — cosmetic only, not blocking)                             |
+| `start_url` / `scope`                       | ✅ both `/`                                                                                                                                           |
+| `display`                                   | ✅ `standalone`                                                                                                                                       |
+| `theme_color` / `background_color`          | ✅ `#0d9488` / `#06090D`                                                                                                                              |
+| `orientation`                               | ✅ `any`                                                                                                                                              |
+| Icons 192 + 512, `any` + `maskable` purpose | ✅ present, served from `/icons/*`                                                                                                                    |
+| Maskable safe zone                          | ✅ verified mathematically at build time — mark sits within ~150px radius of center on the 512px canvas, inside the required ≤204.8px (80%) safe zone |
+| Served over HTTPS                           | ✅                                                                                                                                                    |
 
 `bubblewrap init --manifest=https://erp.stonetech.in/manifest.json --packageId=in.vedoravision.stonetechos.app` can run against this today without any manifest changes.
 
@@ -41,6 +41,7 @@ silently falls back to a Custom Tab (address bar visible) — not broken,
 just not the polished look.
 
 Blocked on two values that don't exist yet:
+
 1. This package name (now decided, see above).
 2. The **SHA-256 certificate fingerprint** of the signing key — only
    generated when `bubblewrap init` creates (or you supply) a keystore.
@@ -55,14 +56,16 @@ Once you have the fingerprint, `bubblewrap init` generates
 `assetlinks.json` for you automatically. For reference, the shape is:
 
 ```json
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "in.vedoravision.stonetechos.app",
-    "sha256_cert_fingerprints": ["<from your keystore, after bubblewrap init>"]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "in.vedoravision.stonetechos.app",
+      "sha256_cert_fingerprints": ["<from your keystore, after bubblewrap init>"]
+    }
   }
-}]
+]
 ```
 
 That file then needs to be uploaded to

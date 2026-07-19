@@ -1,5 +1,5 @@
 /** Follow-ups data access. Polymorphic: attaches to any master record. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import {
@@ -47,7 +47,7 @@ export async function listFollowups(
 ): Promise<FollowupWithEnquiry[]> {
   const opts: ListFollowupsOptions = typeof input === "string" ? { scope: input } : input;
   const scope = opts.scope ?? "all";
-  let q = supabase
+  let q = getDb()
     .from("followups")
     .select(SELECT_WITH_JOINS)
     .order("scheduled_at", { ascending: true })
@@ -84,7 +84,7 @@ export async function listFollowups(
 }
 
 async function enquiryIdsForCustomer(customerId: string): Promise<string[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("enquiries")
     .select("id")
     .eq("customer_id", customerId);
@@ -93,7 +93,7 @@ async function enquiryIdsForCustomer(customerId: string): Promise<string[]> {
 }
 
 export async function getFollowup(id: string): Promise<FollowupWithEnquiry | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("followups")
     .select(SELECT_WITH_JOINS)
     .eq("id", id)
@@ -103,7 +103,7 @@ export async function getFollowup(id: string): Promise<FollowupWithEnquiry | nul
 }
 
 export async function listFollowupsForEnquiry(enquiryId: string): Promise<FollowupRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("followups")
     .select("*")
     .eq("enquiry_id", enquiryId)
@@ -119,7 +119,7 @@ async function deriveDerivedContext(
 ): Promise<{ enquiry_id: string | null; project_id: string | null }> {
   switch (entityType) {
     case "enquiry": {
-      const { data } = await supabase
+      const { data } = await getDb()
         .from("enquiries")
         .select("id,project_id")
         .eq("id", entityId)
@@ -129,7 +129,7 @@ async function deriveDerivedContext(
     case "project":
       return { enquiry_id: null, project_id: entityId };
     case "rfq": {
-      const { data } = await supabase
+      const { data } = await getDb()
         .from("rfqs")
         .select("enquiry_id,project_id")
         .eq("id", entityId)
@@ -139,7 +139,7 @@ async function deriveDerivedContext(
     case "purchase_order":
     case "sales_order": {
       const table = entityType === "purchase_order" ? "purchase_orders" : "sales_orders";
-      const { data } = await supabase
+      const { data } = await getDb()
         .from(table)
         .select("project_id")
         .eq("id", entityId)
@@ -147,7 +147,7 @@ async function deriveDerivedContext(
       return { enquiry_id: null, project_id: data?.project_id ?? null };
     }
     case "invoice": {
-      const { data } = await supabase
+      const { data } = await getDb()
         .from("invoices")
         .select("project_id")
         .eq("id", entityId)
@@ -164,7 +164,7 @@ export async function createFollowup(input: FollowupCreateInput): Promise<Follow
   const parsed = followupCreateSchema.parse(input);
   const derived = await deriveDerivedContext(parsed.entity_type, parsed.entity_id);
 
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("followups")
     .insert({
       entity_type: parsed.entity_type,
@@ -184,7 +184,7 @@ export async function createFollowup(input: FollowupCreateInput): Promise<Follow
 
 export async function completeFollowup(input: FollowupCompleteInput): Promise<FollowupRow> {
   const parsed = followupCompleteSchema.parse(input);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("followups")
     .update({
       status: "done",
@@ -201,7 +201,7 @@ export async function completeFollowup(input: FollowupCompleteInput): Promise<Fo
 export async function updateFollowup(id: string, input: FollowupCreateInput): Promise<FollowupRow> {
   const parsed = followupCreateSchema.parse(input);
   const derived = await deriveDerivedContext(parsed.entity_type, parsed.entity_id);
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("followups")
     .update({
       entity_type: parsed.entity_type,
@@ -220,6 +220,6 @@ export async function updateFollowup(id: string, input: FollowupCreateInput): Pr
 }
 
 export async function deleteFollowup(id: string): Promise<void> {
-  const { error } = await supabase.from("followups").delete().eq("id", id);
+  const { error } = await getDb().from("followups").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
