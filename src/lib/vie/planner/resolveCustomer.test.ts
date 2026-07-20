@@ -77,18 +77,18 @@ describe("resolveCustomer", () => {
   });
 
   test("more than 5 matches...", async () => {
-  listCustomersMock.mockImplementation(async () =>
-    Array.from({ length: 7 }, (_, i) => ({
-      id: `cust-${i}`,
-      name: `Ramesh ${i}`,
-      customer_code: `CUST-000${i}`,
-    })),
-  );
+    listCustomersMock.mockImplementation(async () =>
+      Array.from({ length: 7 }, (_, i) => ({
+        id: `cust-${i}`,
+        name: `Ramesh ${i}`,
+        customer_code: `CUST-000${i}`,
+      })),
+    );
 
-  const result = await resolveCustomer("Ramesh");
+    const result = await resolveCustomer("Ramesh");
 
-  expect(result.blocker).toContain("matches 7 customers:");
-  expect(result.blocker?.endsWith(", ...")).toBe(true);
-  expect((result.blocker?.match(/CUST-000/g) ?? []).length).toBe(5);
-});
+    expect(result.blocker).toContain("matches 7 customers:");
+    expect(result.blocker?.endsWith(", ...")).toBe(true);
+    expect((result.blocker?.match(/CUST-000/g) ?? []).length).toBe(5);
+  });
 });
