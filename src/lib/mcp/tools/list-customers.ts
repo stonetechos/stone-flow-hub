@@ -17,7 +17,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ query, limit }, ctx) => {
     const staff = await requireStaffClient(ctx);
-    if ("error" in staff) return staff.error;
+    if (!staff.ok) return staff.error;
     let q = staff.client
       .from("customers")
       .select(

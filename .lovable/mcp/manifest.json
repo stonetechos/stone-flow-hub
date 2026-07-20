@@ -63,7 +63,7 @@
       {
         "name": "get_customer",
         "title": "Get customer",
-        "description": "Return one customer plus a short summary of their recent enquiries, quotes, invoices and outstanding balance.",
+        "description": "Return one customer plus a short summary of their recent enquiries, quotes and invoices.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -89,7 +89,7 @@
       {
         "name": "list_enquiries",
         "title": "List enquiries",
-        "description": "List enquiries, optionally filtered by lead stage, status, owner or free-text search on subject / enquiry code.",
+        "description": "List enquiries, optionally filtered by lead stage, assignee or free-text search on enquiry number / requirement text.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -101,14 +101,19 @@
             "query": {
               "type": "string"
             },
-            "lead_stage": {
+            "stage": {
               "type": "string",
-              "description": "e.g. 'new', 'qualified', 'won', 'lost'"
+              "enum": [
+                "new",
+                "qualifying",
+                "quoted",
+                "negotiation",
+                "won",
+                "lost",
+                "on_hold"
+              ]
             },
-            "status": {
-              "type": "string"
-            },
-            "owner_id": {
+            "assigned_to": {
               "type": "string",
               "format": "uuid"
             },
@@ -140,7 +145,14 @@
               "type": "string"
             },
             "status": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "draft",
+                "sent",
+                "accepted",
+                "rejected",
+                "expired"
+              ]
             },
             "customer_id": {
               "type": "string",
@@ -174,7 +186,15 @@
               "type": "string"
             },
             "status": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "draft",
+                "sent",
+                "partial",
+                "paid",
+                "overdue",
+                "cancelled"
+              ]
             },
             "customer_id": {
               "type": "string",
@@ -199,7 +219,7 @@
       {
         "name": "list_my_tasks",
         "title": "List my tasks",
-        "description": "List open tasks assigned to the signed-in user, most urgent first.",
+        "description": "List tasks assigned to the signed-in user, most urgent first.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -208,7 +228,7 @@
         "inputSchema": {
           "type": "object",
           "properties": {
-            "include_completed": {
+            "include_done": {
               "type": "boolean",
               "default": false
             },
@@ -227,7 +247,7 @@
       {
         "name": "get_dashboard_snapshot",
         "title": "Dashboard snapshot",
-        "description": "Return a high-level operational snapshot: open enquiries, active quotes, unpaid invoices, overdue amount and today's receipts.",
+        "description": "Return a high-level operational snapshot: open enquiries, quotes sent, outstanding + overdue receivables and today's receipts.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

@@ -1,5 +1,4 @@
 import { defineTool } from "@lovable.dev/mcp-js";
-import { z } from "zod";
 import { jsonResult, requireStaffClient, unauthenticated } from "../util";
 
 export default defineTool({
@@ -12,9 +11,7 @@ export default defineTool({
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) return unauthenticated();
     const staff = await requireStaffClient(ctx);
-    if ("error" in staff) {
-      // Still return identity even without staff access, so a non-staff caller
-      // can see what account they connected as.
+    if (!staff.ok) {
       return jsonResult({
         user_id: ctx.getUserId(),
         email: ctx.getUserEmail(),
@@ -30,8 +27,6 @@ export default defineTool({
       .from("user_roles")
       .select("role")
       .eq("user_id", staff.userId);
-    // z.infer is unused here; z import kept for uniformity with other tools.
-    void z;
     return jsonResult({
       user_id: staff.userId,
       email: ctx.getUserEmail(),

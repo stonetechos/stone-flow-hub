@@ -1,35 +1,45 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 import { errorResult, jsonResult, requireStaffClient, sanitize } from "../util";
+
+type LeadStage = Database["public"]["Enums"]["lead_stage"];
+const STAGES: LeadStage[] = [
+  "new",
+  "qualifying",
+  "quoted",
+  "negotiation",
+  "won",
+  "lost",
+  "on_hold",
+];
 
 export default defineTool({
   name: "list_enquiries",
   title: "List enquiries",
   description:
-    "List enquiries, optionally filtered by lead stage, status, owner or free-text search on subject / enquiry code.",
+    "List enquiries, optionally filtered by lead stage, assignee or free-text search on enquiry number / requirement text.",
   inputSchema: {
     query: z.string().optional(),
-    lead_stage: z.string().optional().describe("e.g. 'new', 'qualified', 'won', 'lost'"),
-    status: z.string().optional(),
-    owner_id: z.string().uuid().optional(),
+    stage: z.enum(STAGES as [LeadStage, ...LeadStage[]]).optional(),
+    assigned_to: z.string().uuid().optional(),
     limit: z.number().int().min(1).max(100).default(25),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ query, lead_stage, status, owner_id, limit }, ctx) => {
+  handler: async ({ query, stage, assigned_to, limit }, ctx) => {
     const staff = await requireStaffClient(ctx);
-    if ("error" in staff) return staff.error;
+    if (!staff.ok) return staff.error;
     let q = staff.client
       .from("enquiries")
       .select(
-        "id, enquiry_code, subject, status, lead_stage, priority, owner_id, customer_id, created_at",
+        "id, enquiry_no, requirement, stage, priority, assigned_to, customer_id, budget_inr, required_delivery_date, created_at",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
-    if (lead_stage) q = q.eq("lead_stage", lead_stage as never);
-    if (status) q = q.eq("status", status as never);
-    if (owner_id) q = q.eq("owner_id", owner_id);
+    if (stage) q = q.eq("stage", stage);
+    if (assigned_to) q = q.eq("assigned_to", assigned_to);
     const s = query ? sanitize(query) : "";
-    if (s) q = q.or(`enquiry_code.ilike.%${s}%,subject.ilike.%${s}%`);
+    if (s) q = q.or(`enquiry_no.ilike.%${s}%,requirement.ilike.%${s}%,notes.ilike.%${s}%`);
     const { data, error } = await q;
     if (error) return errorResult(error);
     return jsonResult({ count: data?.length ?? 0, enquiries: data ?? [] });
