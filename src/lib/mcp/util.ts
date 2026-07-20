@@ -38,9 +38,12 @@ export type StaffClientResult =
  * return `result.error` directly on failure.
  */
 export async function requireStaffClient(ctx: ToolContext): Promise<StaffClientResult> {
-  if (!ctx.isAuthenticated()) return { ok: false, error: unauthenticated() };
-  const client = supabaseAsUser(ctx.getToken());
+  const token = ctx.getToken();
   const userId = ctx.getUserId();
+  if (!ctx.isAuthenticated() || !token || !userId) {
+    return { ok: false, error: unauthenticated() };
+  }
+  const client = supabaseAsUser(token);
   const { data, error } = await client.rpc("has_staff_access", { _user_id: userId });
   if (error) return { ok: false, error: errorResult(new Error(`Role check failed: ${error.message}`)) };
   if (!data) return { ok: false, error: forbidden() };

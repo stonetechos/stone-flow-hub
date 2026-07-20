@@ -23,7 +23,7 @@ export default defineTool({
       .eq("assigned_to", staff.userId)
       .order("due_at", { ascending: true, nullsFirst: false })
       .limit(limit);
-    if (!include_done) q = q.neq("status", "done" as TaskStatus);
+    if (!include_done) q = q.not("status", "in", "(completed,cancelled)" as unknown as TaskStatus);
     const { data, error } = await q;
     if (error) return errorResult(error);
     return jsonResult({ count: data?.length ?? 0, tasks: data ?? [] });

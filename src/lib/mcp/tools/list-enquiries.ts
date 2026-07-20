@@ -5,13 +5,24 @@ import { errorResult, jsonResult, requireStaffClient, sanitize } from "../util";
 
 type LeadStage = Database["public"]["Enums"]["lead_stage"];
 const STAGES: LeadStage[] = [
-  "new",
-  "qualifying",
-  "quoted",
+  "new_lead",
+  "contacted",
+  "site_visit_scheduled",
+  "site_visit_completed",
+  "sample_sent",
+  "customer_quotation_sent",
   "negotiation",
-  "won",
+  "rfq_sent",
+  "vendor_quote_received",
+  "vendor_approved",
+  "customer_approved",
+  "production",
+  "dispatch",
+  "completed",
   "lost",
-  "on_hold",
+  "cancelled",
+  "qualified",
+  "after_sales",
 ];
 
 export default defineTool({

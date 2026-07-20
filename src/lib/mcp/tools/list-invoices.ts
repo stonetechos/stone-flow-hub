@@ -4,7 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { errorResult, jsonResult, requireStaffClient, sanitize } from "../util";
 
 type InvoiceStatus = Database["public"]["Enums"]["invoice_status"];
-const STATUSES: InvoiceStatus[] = ["draft", "sent", "partial", "paid", "overdue", "cancelled"];
+const STATUSES: InvoiceStatus[] = ["draft", "sent", "partially_paid", "paid", "overdue", "cancelled"];
 
 export default defineTool({
   name: "list_invoices",
