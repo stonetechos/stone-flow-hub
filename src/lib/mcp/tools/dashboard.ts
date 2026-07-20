@@ -18,7 +18,7 @@ export default defineTool({
       client
         .from("enquiries")
         .select("id", { count: "exact", head: true })
-        .not("stage", "in", "(won,lost)"),
+        .not("stage", "in", "(completed,lost,cancelled)"),
       client
         .from("quotes")
         .select("id", { count: "exact", head: true })
