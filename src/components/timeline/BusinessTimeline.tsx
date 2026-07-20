@@ -55,21 +55,35 @@ const KIND_LABELS: Record<TimelineEventKind, string> = {
 
 function kindIcon(kind: TimelineEventKind) {
   switch (kind) {
-    case "enquiry":        return <ClipboardList className="h-3 w-3" />;
-    case "quote":           return <FileText className="h-3 w-3" />;
-    case "sales_order":     return <ShoppingCart className="h-3 w-3" />;
-    case "purchase_order":  return <ShoppingCart className="h-3 w-3" />;
-    case "invoice":         return <FileText className="h-3 w-3" />;
-    case "receipt":         return <Wallet className="h-3 w-3" />;
-    case "dispatch":        return <Truck className="h-3 w-3" />;
-    case "installation":    return <Wrench className="h-3 w-3" />;
-    case "task":             return <CheckSquare className="h-3 w-3" />;
-    case "followup":        return <History className="h-3 w-3" />;
-    case "rfq_sent":        return <Send className="h-3 w-3" />;
-    case "vendor_quote":    return <FileText className="h-3 w-3" />;
-    case "ledger":           return <Boxes className="h-3 w-3" />;
+    case "enquiry":
+      return <ClipboardList className="h-3 w-3" />;
+    case "quote":
+      return <FileText className="h-3 w-3" />;
+    case "sales_order":
+      return <ShoppingCart className="h-3 w-3" />;
+    case "purchase_order":
+      return <ShoppingCart className="h-3 w-3" />;
+    case "invoice":
+      return <FileText className="h-3 w-3" />;
+    case "receipt":
+      return <Wallet className="h-3 w-3" />;
+    case "dispatch":
+      return <Truck className="h-3 w-3" />;
+    case "installation":
+      return <Wrench className="h-3 w-3" />;
+    case "task":
+      return <CheckSquare className="h-3 w-3" />;
+    case "followup":
+      return <History className="h-3 w-3" />;
+    case "rfq_sent":
+      return <Send className="h-3 w-3" />;
+    case "vendor_quote":
+      return <FileText className="h-3 w-3" />;
+    case "ledger":
+      return <Boxes className="h-3 w-3" />;
     case "activity":
-    default:                 return <Activity className="h-3 w-3" />;
+    default:
+      return <Activity className="h-3 w-3" />;
   }
 }
 
@@ -156,7 +170,13 @@ export function BusinessTimeline({
   if (isLoading) return <SkeletonTable rows={6} columns={2} />;
   if (error) return <ErrorBlock message={toUserMessage(error)} onRetry={onRetry} />;
   if ((events ?? []).length === 0) {
-    return <EmptyState icon={<History className="h-6 w-6" />} title={emptyTitle} message={emptyMessage} />;
+    return (
+      <EmptyState
+        icon={<History className="h-6 w-6" />}
+        title={emptyTitle}
+        message={emptyMessage}
+      />
+    );
   }
 
   const shown = filtered.slice(0, visible);

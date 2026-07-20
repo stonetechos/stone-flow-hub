@@ -46,7 +46,9 @@ export function NextFollowupChip({
     >
       <Icon className="h-3 w-3" />
       {overdue ? <span className="font-semibold">Overdue</span> : null}
-      <span>{date} · {time}</span>
+      <span>
+        {date} · {time}
+      </span>
       {!compact && assigneeName ? (
         <span className="inline-flex items-center gap-0.5 text-muted-foreground">
           <User className="h-3 w-3" /> {assigneeName}

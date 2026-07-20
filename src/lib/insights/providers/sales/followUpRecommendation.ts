@@ -56,7 +56,10 @@ export const FollowUpRecommendationProvider: InsightProvider = {
       const overdueDays = bucket === "overdue" ? daysSince(followup.scheduled_at, now) : 0;
       const customerName = enquiry.customer?.name ?? "Unknown customer";
       const scheduledDate = new Date(followup.scheduled_at);
-      const when = scheduledDate.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+      const when = scheduledDate.toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
       const whenTimeOnly = scheduledDate.toLocaleTimeString("en-IN", { timeStyle: "short" });
 
       const kind = bucket === "overdue" ? "risk" : "action";
@@ -89,7 +92,10 @@ export const FollowUpRecommendationProvider: InsightProvider = {
         action: { label: "Open enquiry", href: `/enquiries/${enquiry.id}` },
         entity: { type: "followup", id: followup.id, label: enquiry.enquiry_no },
         value: enquiry.budget_inr ?? undefined,
-        priority: computePriority({ urgencyDays: overdueDays, valueInr: enquiry.budget_inr ?? undefined }),
+        priority: computePriority({
+          urgencyDays: overdueDays,
+          valueInr: enquiry.budget_inr ?? undefined,
+        }),
         generatedAt: new Date().toISOString(),
       });
     }

@@ -159,7 +159,10 @@ export async function updateGrn(id: string, input: Partial<GrnCreateInput>): Pro
 }
 
 export async function deleteGrn(id: string): Promise<void> {
-  const { error } = await supabase.from("grns" as never).delete().eq("id", id);
+  const { error } = await supabase
+    .from("grns" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -175,7 +178,10 @@ export async function addGrnItem(input: GrnItemCreateInput): Promise<GrnItemRow>
 }
 
 export async function deleteGrnItem(id: string): Promise<void> {
-  const { error } = await supabase.from("grn_items" as never).delete().eq("id", id);
+  const { error } = await supabase
+    .from("grn_items" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 

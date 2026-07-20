@@ -23,20 +23,13 @@ const badgeVariants = cva(
       variant: {
         default:
           "border-transparent bg-[oklch(from_var(--intent-primary)_l_c_h_/_0.12)] text-[var(--intent-primary-active)]",
-        secondary:
-          "border-border-subtle bg-surface-panel text-foreground/80",
-        destructive:
-          "border-status-danger-border bg-status-danger-bg text-status-danger-fg",
-        success:
-          "border-status-success-border bg-status-success-bg text-status-success-fg",
-        warning:
-          "border-status-warning-border bg-status-warning-bg text-status-warning-fg",
-        info:
-          "border-status-info-border bg-status-info-bg text-status-info-fg",
-        outline:
-          "border-border-default bg-transparent text-muted-foreground",
-        solid:
-          "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-border-subtle bg-surface-panel text-foreground/80",
+        destructive: "border-status-danger-border bg-status-danger-bg text-status-danger-fg",
+        success: "border-status-success-border bg-status-success-bg text-status-success-fg",
+        warning: "border-status-warning-border bg-status-warning-bg text-status-warning-fg",
+        info: "border-status-info-border bg-status-info-bg text-status-info-fg",
+        outline: "border-border-default bg-transparent text-muted-foreground",
+        solid: "border-transparent bg-primary text-primary-foreground",
       },
       size: {
         default: "px-2 py-0.5 text-[11px]",

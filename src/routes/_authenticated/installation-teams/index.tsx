@@ -9,8 +9,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -58,7 +72,10 @@ function TeamsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.installationTeams.list(dq), queryFn: () => listInstallationTeams(dq) });
+  const query = useQuery({
+    queryKey: qk.installationTeams.list(dq),
+    queryFn: () => listInstallationTeams(dq),
+  });
   useEffect(() => setPage(1), [dq]);
 
   const del = useMutation({
@@ -89,7 +106,12 @@ function TeamsPage() {
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
-          <Button variant="outline" size="sm" className="h-8" onClick={() => nav({ to: "/installations" })}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8"
+            onClick={() => nav({ to: "/installations" })}
+          >
             Installations
           </Button>
         }
@@ -101,7 +123,11 @@ function TeamsPage() {
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : !rows.length ? (
-        <EmptyState icon={<Users className="h-6 w-6" />} title="No teams yet" message="Create a team to assign to installations." />
+        <EmptyState
+          icon={<Users className="h-6 w-6" />}
+          title="No teams yet"
+          message="Create a team to assign to installations."
+        />
       ) : (
         <DataTableShell
           density={prefs.density}
@@ -111,7 +137,10 @@ function TeamsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -131,17 +160,29 @@ function TeamsPage() {
             <TableBody>
               {pageRows.map((t) => (
                 <TableRow key={t.id}>
-                  {!isHidden("code") && <TableCell className="text-xs text-muted-foreground">{t.team_code}</TableCell>}
+                  {!isHidden("code") && (
+                    <TableCell className="text-xs text-muted-foreground">{t.team_code}</TableCell>
+                  )}
                   {!isHidden("name") && <TableCell className="font-medium">{t.name}</TableCell>}
                   {!isHidden("supervisor") && (
-                    <TableCell>{t.supervisor_name ?? "—"}{t.supervisor_phone ? ` · ${t.supervisor_phone}` : ""}</TableCell>
+                    <TableCell>
+                      {t.supervisor_name ?? "—"}
+                      {t.supervisor_phone ? ` · ${t.supervisor_phone}` : ""}
+                    </TableCell>
                   )}
                   {!isHidden("members") && <TableCell>{t.members.length}</TableCell>}
-                  {!isHidden("skills") && <TableCell className="text-xs">{t.skills.join(", ") || "—"}</TableCell>}
+                  {!isHidden("skills") && (
+                    <TableCell className="text-xs">{t.skills.join(", ") || "—"}</TableCell>
+                  )}
                   {!isHidden("vehicle") && <TableCell>{t.vehicle ?? "—"}</TableCell>}
                   {!isHidden("capacity") && <TableCell>{t.daily_capacity_sqft ?? "—"}</TableCell>}
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => setToDelete(t)} aria-label="Remove team">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setToDelete(t)}
+                      aria-label="Remove team"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -195,7 +236,10 @@ function NewTeamDialog() {
         supervisor_phone: form.supervisor_phone || null,
         vehicle: form.vehicle || null,
         daily_capacity_sqft: form.daily_capacity_sqft ? Number(form.daily_capacity_sqft) : null,
-        skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
+        skills: form.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
         members,
         notes: form.notes || null,
       }),
@@ -210,40 +254,80 @@ function NewTeamDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Plus className="mr-1 h-4 w-4" /> New team</Button>
+        <Button size="sm">
+          <Plus className="mr-1 h-4 w-4" /> New team
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>New installation team</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New installation team</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
-          <div className="space-y-1"><Label>Team name</Label>
+          <div className="space-y-1">
+            <Label>Team name</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1"><Label>Supervisor</Label>
-              <Input value={form.supervisor_name} onChange={(e) => setForm({ ...form, supervisor_name: e.target.value })} />
+            <div className="space-y-1">
+              <Label>Supervisor</Label>
+              <Input
+                value={form.supervisor_name}
+                onChange={(e) => setForm({ ...form, supervisor_name: e.target.value })}
+              />
             </div>
-            <div className="space-y-1"><Label>Supervisor phone</Label>
-              <Input value={form.supervisor_phone} onChange={(e) => setForm({ ...form, supervisor_phone: e.target.value })} />
+            <div className="space-y-1">
+              <Label>Supervisor phone</Label>
+              <Input
+                value={form.supervisor_phone}
+                onChange={(e) => setForm({ ...form, supervisor_phone: e.target.value })}
+              />
             </div>
-            <div className="space-y-1"><Label>Vehicle</Label>
-              <Input value={form.vehicle} onChange={(e) => setForm({ ...form, vehicle: e.target.value })} />
+            <div className="space-y-1">
+              <Label>Vehicle</Label>
+              <Input
+                value={form.vehicle}
+                onChange={(e) => setForm({ ...form, vehicle: e.target.value })}
+              />
             </div>
-            <div className="space-y-1"><Label>Daily capacity (sqft)</Label>
-              <Input type="number" value={form.daily_capacity_sqft} onChange={(e) => setForm({ ...form, daily_capacity_sqft: e.target.value })} />
+            <div className="space-y-1">
+              <Label>Daily capacity (sqft)</Label>
+              <Input
+                type="number"
+                value={form.daily_capacity_sqft}
+                onChange={(e) => setForm({ ...form, daily_capacity_sqft: e.target.value })}
+              />
             </div>
           </div>
-          <div className="space-y-1"><Label>Skills (comma separated)</Label>
-            <Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="fabrication, chemical, edge polish" />
+          <div className="space-y-1">
+            <Label>Skills (comma separated)</Label>
+            <Input
+              value={form.skills}
+              onChange={(e) => setForm({ ...form, skills: e.target.value })}
+              placeholder="fabrication, chemical, edge polish"
+            />
           </div>
-          <div className="space-y-1"><Label>Members (one per line: name | phone | skill)</Label>
-            <Textarea rows={3} value={form.members} onChange={(e) => setForm({ ...form, members: e.target.value })} placeholder="Ramesh | 9876543210 | Lead installer" />
+          <div className="space-y-1">
+            <Label>Members (one per line: name | phone | skill)</Label>
+            <Textarea
+              rows={3}
+              value={form.members}
+              onChange={(e) => setForm({ ...form, members: e.target.value })}
+              placeholder="Ramesh | 9876543210 | Lead installer"
+            />
           </div>
-          <div className="space-y-1"><Label>Notes</Label>
-            <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <div className="space-y-1">
+            <Label>Notes</Label>
+            <Textarea
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => create.mutate()} disabled={!form.name || create.isPending}>
             {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
           </Button>

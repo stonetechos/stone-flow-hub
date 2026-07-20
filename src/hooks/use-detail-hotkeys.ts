@@ -15,10 +15,7 @@
  */
 import { useHotkey } from "./use-hotkey";
 
-export function useDetailHotkeys(opts: {
-  onEdit?: () => void;
-  onBack?: () => void;
-}): void {
+export function useDetailHotkeys(opts: { onEdit?: () => void; onBack?: () => void }): void {
   useHotkey("e", () => opts.onEdit?.(), !!opts.onEdit);
   useHotkey("b", () => opts.onBack?.(), !!opts.onBack);
 }

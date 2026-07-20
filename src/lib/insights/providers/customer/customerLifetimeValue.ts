@@ -33,7 +33,9 @@ export const CustomerLifetimeValueProvider: InsightProvider = {
     if (scores.length === 0) return [];
 
     const byRevenue = [...scores].sort((a, b) => b.revenue - a.revenue);
-    const topValueIds = new Set(byRevenue.slice(0, THRESHOLDS.topValueRank).map((s) => s.customer_id));
+    const topValueIds = new Set(
+      byRevenue.slice(0, THRESHOLDS.topValueRank).map((s) => s.customer_id),
+    );
 
     const now = new Date().toISOString();
     const insights: Insight[] = [];
@@ -46,7 +48,8 @@ export const CustomerLifetimeValueProvider: InsightProvider = {
       const isTopValue = topValueIds.has(score.customer_id);
       const isLargeSpend = score.revenue >= THRESHOLDS.largeLifetimeSpendMinInr;
       const isRapidGrowth =
-        score.prior_revenue > 0 && score.recent_revenue >= score.prior_revenue * THRESHOLDS.growthMultiplier;
+        score.prior_revenue > 0 &&
+        score.recent_revenue >= score.prior_revenue * THRESHOLDS.growthMultiplier;
 
       if (isTopValue) reasons.push(`#${rank} customer by lifetime revenue`);
       if (isLargeSpend) reasons.push(`${formatInr(score.revenue)} lifetime spend`);

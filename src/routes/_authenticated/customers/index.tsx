@@ -126,19 +126,14 @@ function CustomersPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Customers"
-        subtitle="Master list of everyone you sell to."
-      />
+      <PageHeader title="Customers" subtitle="Master list of everyone you sell to." />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={setQ}
         searchPlaceholder="Search by name, code, phone, city…"
-        columns={
-          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
-        }
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
@@ -267,16 +262,13 @@ function CustomersPage() {
         </DataTableShell>
       )}
 
-
       <CustomerFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
       <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         entityType="customer"
         entityId={toDelete?.id ?? null}
-        entityLabel={
-          toDelete ? `${toDelete.name} (${toDelete.customer_code})` : ""
-        }
+        entityLabel={toDelete ? `${toDelete.name} (${toDelete.customer_code})` : ""}
         busy={delMut.isPending}
         onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
@@ -449,7 +441,6 @@ function CustomerFormDialog({
             </Button>
           </QuickForm.Actions>
         </QuickForm>
-
       </DialogContent>
     </Dialog>
   );

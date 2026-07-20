@@ -24,7 +24,13 @@ export type InstallationMaterialListItem = InstallationMaterial & {
   product: { id: string; name: string; product_code: string } | null;
 };
 
-export const MATERIAL_KINDS = ["dispatched", "received", "installed", "damaged", "returned"] as const;
+export const MATERIAL_KINDS = [
+  "dispatched",
+  "received",
+  "installed",
+  "damaged",
+  "returned",
+] as const;
 export type MaterialKind = (typeof MATERIAL_KINDS)[number];
 
 export const materialRecordSchema = z.object({
@@ -43,9 +49,7 @@ export async function listInstallationMaterials(
 ): Promise<InstallationMaterialListItem[]> {
   const { data, error } = await supabase
     .from("installation_materials" as never)
-    .select(
-      "*, product:products!installation_materials_product_id_fkey(id,name,product_code)",
-    )
+    .select("*, product:products!installation_materials_product_id_fkey(id,name,product_code)")
     .eq("installation_id", installationId)
     .order("created_at", { ascending: false });
   if (error) throw new AppError(mapDbError(error));
@@ -54,15 +58,18 @@ export async function listInstallationMaterials(
 
 export async function recordInstallationMaterial(input: MaterialRecordInput): Promise<string> {
   const p = materialRecordSchema.parse(input);
-  const { data, error } = await supabase.rpc("record_installation_material" as never, {
-    p_installation_id: p.installation_id,
-    p_product_id: p.product_id ?? null,
-    p_kind: p.kind,
-    p_qty: p.qty,
-    p_unit: p.unit ?? null,
-    p_notes: p.notes ?? null,
-    p_description: p.description ?? null,
-  } as never);
+  const { data, error } = await supabase.rpc(
+    "record_installation_material" as never,
+    {
+      p_installation_id: p.installation_id,
+      p_product_id: p.product_id ?? null,
+      p_kind: p.kind,
+      p_qty: p.qty,
+      p_unit: p.unit ?? null,
+      p_notes: p.notes ?? null,
+      p_description: p.description ?? null,
+    } as never,
+  );
   if (error) throw new AppError(mapDbError(error));
   return (data as unknown as string) ?? "";
 }

@@ -42,10 +42,7 @@ function VendorLedgerPage() {
     staleTime: 30_000,
   });
 
-  const summary = useMemo(
-    () => summariseLedger(ledgerQ.data ?? []),
-    [ledgerQ.data],
-  );
+  const summary = useMemo(() => summariseLedger(ledgerQ.data ?? []), [ledgerQ.data]);
 
   return (
     <div>
@@ -64,9 +61,13 @@ function VendorLedgerPage() {
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <SummaryCard label="Total Debit"   value={summary.totalDebit}  tone="destructive" />
-        <SummaryCard label="Total Credit"  value={summary.totalCredit} tone="secondary" />
-        <SummaryCard label="Outstanding"   value={summary.outstanding} tone={summary.outstanding > 0 ? "default" : "secondary"} />
+        <SummaryCard label="Total Debit" value={summary.totalDebit} tone="destructive" />
+        <SummaryCard label="Total Credit" value={summary.totalCredit} tone="secondary" />
+        <SummaryCard
+          label="Outstanding"
+          value={summary.outstanding}
+          tone={summary.outstanding > 0 ? "default" : "secondary"}
+        />
       </div>
 
       {ledgerQ.isLoading ? (
@@ -108,7 +109,7 @@ function VendorLedgerPage() {
                           {row.ref_no ?? "—"}
                         </Link>
                       ) : (
-                        row.ref_no ?? "—"
+                        (row.ref_no ?? "—")
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -146,9 +147,7 @@ function SummaryCard({
   return (
     <Card>
       <CardHeader className="pb-1">
-        <CardTitle className="text-xs font-medium text-muted-foreground">
-          {label}
-        </CardTitle>
+        <CardTitle className="text-xs font-medium text-muted-foreground">{label}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline gap-2">

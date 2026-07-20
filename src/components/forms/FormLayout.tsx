@@ -107,14 +107,8 @@ export function FormGrid({
   className?: string;
 }) {
   const cols =
-    columns === 1
-      ? "md:grid-cols-1"
-      : columns === 3
-        ? "md:grid-cols-3"
-        : "md:grid-cols-2";
-  return (
-    <div className={cn("grid grid-cols-1 gap-x-6 gap-y-5", cols, className)}>{children}</div>
-  );
+    columns === 1 ? "md:grid-cols-1" : columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
+  return <div className={cn("grid grid-cols-1 gap-x-6 gap-y-5", cols, className)}>{children}</div>;
 }
 
 /* -------------------------------------------------------------------- */
@@ -215,13 +209,7 @@ export function FormSummaryRow({
   return (
     <div className="flex items-center justify-between gap-4">
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "tabular-nums",
-          emphasis ? "text-sm font-semibold" : "text-sm",
-          toneClass,
-        )}
-      >
+      <dd className={cn("tabular-nums", emphasis ? "text-sm font-semibold" : "text-sm", toneClass)}>
         {value}
       </dd>
     </div>

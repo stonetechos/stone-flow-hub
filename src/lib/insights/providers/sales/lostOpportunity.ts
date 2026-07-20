@@ -42,7 +42,8 @@ export const LostOpportunityProvider: InsightProvider = {
 
     for (const enquiry of highValueOpen) {
       const snapshot = snapshots.get(enquiry.id);
-      if (!snapshot || snapshot.daysSinceActivity < LOST_OPPORTUNITY_THRESHOLDS.minIdleDays) continue;
+      if (!snapshot || snapshot.daysSinceActivity < LOST_OPPORTUNITY_THRESHOLDS.minIdleDays)
+        continue;
 
       const customerName = enquiry.customer?.name ?? "Unknown customer";
       const rank = rankById.get(enquiry.id);

@@ -36,9 +36,11 @@ export const EVENT_COLORS: Record<ProcurementEventType, string> = {
   followup: "bg-status-warning-bg text-status-warning-fg border border-status-warning-border",
   vendor_commitment: "bg-status-info-bg text-status-info-fg border border-status-info-border",
   customer_commitment: "bg-muted text-foreground border border-border",
-  material_arrival: "bg-status-success-bg text-status-success-fg border border-status-success-border",
+  material_arrival:
+    "bg-status-success-bg text-status-success-fg border border-status-success-border",
   vendor_payment: "bg-status-danger-bg text-status-danger-fg border border-status-danger-border",
-  customer_payment: "bg-status-success-bg text-status-success-fg border border-status-success-border",
+  customer_payment:
+    "bg-status-success-bg text-status-success-fg border border-status-success-border",
   dispatch: "bg-status-info-bg text-status-info-fg border border-status-info-border",
 };
 

@@ -39,21 +39,35 @@ export function classifyFailure(err: unknown): FailureCategory {
   if (err instanceof TypeError && /fetch|network/i.test(err.message)) return "network";
   if (
     err instanceof Error &&
-    /networkerror|failed to fetch|load failed|ERR_INTERNET_DISCONNECTED|ERR_NETWORK/i.test(err.message)
+    /networkerror|failed to fetch|load failed|ERR_INTERNET_DISCONNECTED|ERR_NETWORK/i.test(
+      err.message,
+    )
   ) {
     return "network";
   }
 
   const message = err instanceof Error ? err.message : typeof err === "string" ? err : "";
 
-  if (/jwt expired|invalid refresh token|refresh_token_not_found|session.*expired|not authenticated/i.test(message)) {
+  if (
+    /jwt expired|invalid refresh token|refresh_token_not_found|session.*expired|not authenticated/i.test(
+      message,
+    )
+  ) {
     return "auth_expired";
   }
-  if (/row-level security|permission denied|insufficient_privilege|not executable by your role/i.test(message)) {
+  if (
+    /row-level security|permission denied|insufficient_privilege|not executable by your role/i.test(
+      message,
+    )
+  ) {
     return "permission";
   }
   if (/does not exist|not found/i.test(message)) return "not_found";
-  if (/database is busy|operation timed out|constraint|invalid value|required field|too long for its field/i.test(message)) {
+  if (
+    /database is busy|operation timed out|constraint|invalid value|required field|too long for its field/i.test(
+      message,
+    )
+  ) {
     return "validation";
   }
   if (err instanceof AppError) return "backend";
@@ -93,7 +107,6 @@ function isDiagnosticsMode(): boolean {
   }
   return false;
 }
-
 
 /**
  * Extract the failing database object (function, trigger, relation, constraint)
@@ -167,19 +180,26 @@ export function mapDbError(
     });
   }
 
-
   const diag = isDiagnosticsMode() ? buildDiagnostic(err) : "";
   const withDiag = (base: string) => `${base}${diag}`;
 
   switch (err.code) {
     case "23505":
-      return withDiag(details ? `Duplicate value: ${details}` : "A record with the same details already exists.");
+      return withDiag(
+        details ? `Duplicate value: ${details}` : "A record with the same details already exists.",
+      );
     case "23503":
-      return withDiag("This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.");
+      return withDiag(
+        "This record is linked to other business transactions and cannot be removed until those are archived, reassigned, or deleted first.",
+      );
     case "23502":
-      return withDiag(details ? `Required field missing: ${details}` : "A required field is missing.");
+      return withDiag(
+        details ? `Required field missing: ${details}` : "A required field is missing.",
+      );
     case "23514":
-      return withDiag(details ? `Constraint violation: ${details}` : "That value doesn't meet a required rule.");
+      return withDiag(
+        details ? `Constraint violation: ${details}` : "That value doesn't meet a required rule.",
+      );
     case "22P02":
       return withDiag(msg || "One of the fields has an invalid value.");
     case "22001":
@@ -218,11 +238,7 @@ export function mapDbError(
         );
       }
       if (/permission denied|insufficient_privilege/i.test(combined)) {
-        return withDiag(
-          obj
-            ? `Permission denied on ${obj}.`
-            : msg || "Permission denied.",
-        );
+        return withDiag(obj ? `Permission denied on ${obj}.` : msg || "Permission denied.");
       }
       // Trigger RAISE with SQLSTATE 42501 and a custom message — surface it.
       return withDiag(msg || "Permission denied.");

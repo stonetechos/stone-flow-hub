@@ -94,9 +94,11 @@ export async function clearPendingOperations(): Promise<void> {
 export async function registerBackgroundSync(): Promise<void> {
   try {
     const registration = await navigator.serviceWorker?.ready;
-    const syncManager = (registration as ServiceWorkerRegistration & {
-      sync?: { register: (tag: string) => Promise<void> };
-    })?.sync;
+    const syncManager = (
+      registration as ServiceWorkerRegistration & {
+        sync?: { register: (tag: string) => Promise<void> };
+      }
+    )?.sync;
     if (syncManager) {
       await syncManager.register(SYNC_TAG);
     }

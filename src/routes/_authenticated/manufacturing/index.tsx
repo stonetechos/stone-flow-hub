@@ -56,7 +56,7 @@ function ManufacturingKanban() {
       const { data, error } = await supabase
         .from("production_orders")
         .select(
-          "id, mfg_no, status, quantity, unit, room, elevation, wall, bundle_no, crate_no, drawing_ref, revision, planned_start, planned_end, products(name, product_code), customers(name), projects(name)"
+          "id, mfg_no, status, quantity, unit, room, elevation, wall, bundle_no, crate_no, drawing_ref, revision, planned_start, planned_end, products(name, product_code), customers(name), projects(name)",
         )
         .order("planned_start", { ascending: true, nullsFirst: false })
         .limit(300);
@@ -100,7 +100,10 @@ function ManufacturingKanban() {
           {STATUSES.map((s) => {
             const rows = byStatus.get(s.key) ?? [];
             return (
-              <div key={s.key} className="flex min-h-[200px] flex-col gap-2 rounded-lg border bg-muted/30 p-3">
+              <div
+                key={s.key}
+                className="flex min-h-[200px] flex-col gap-2 rounded-lg border bg-muted/30 p-3"
+              >
                 <div className="mb-1 flex items-center justify-between">
                   <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                     {s.label}
@@ -111,11 +114,7 @@ function ManufacturingKanban() {
                   <p className="py-6 text-center text-xs text-muted-foreground">Empty</p>
                 ) : (
                   rows.map((po) => (
-                    <Link
-                      key={po.id}
-                      to={`/manufacturing/${po.id}` as string}
-                      className="block"
-                    >
+                    <Link key={po.id} to={`/manufacturing/${po.id}` as string} className="block">
                       <Card className="p-3 transition-colors hover:border-primary/60 hover:bg-accent/40">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-mono text-xs font-semibold text-primary">

@@ -7,8 +7,21 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
@@ -88,11 +101,15 @@ function SalesOrdersPage() {
         searchPlaceholder="Search by SO no…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-44 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-44 text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {SALES_ORDER_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s.replace(/_/g, " ")}</SelectItem>
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s.replace(/_/g, " ")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -130,7 +147,10 @@ function SalesOrdersPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -151,16 +171,26 @@ function SalesOrdersPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/sales-orders/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/sales-orders/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.so_no}
                       </Link>
                     </TableCell>
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
-                  {!isHidden("quote") && <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>}
+                  {!isHidden("quote") && (
+                    <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>
+                  )}
                   {!isHidden("date") && <TableCell>{r.order_date}</TableCell>}
-                  {!isHidden("status") && <TableCell><StatusPill status={r.status} /></TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <StatusPill status={r.status} />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       onEdit={() => nav({ to: "/sales-orders/$id/edit", params: { id: r.id } })}

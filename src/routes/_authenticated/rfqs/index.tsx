@@ -8,8 +8,21 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
@@ -20,7 +33,12 @@ import { toUserMessage } from "@/lib/errors";
 import { listRfqs, type RfqStatus } from "@/lib/rfqs/api";
 
 const STATUSES: RfqStatus[] = [
-  "draft", "sent", "partially_received", "fully_received", "closed", "cancelled",
+  "draft",
+  "sent",
+  "partially_received",
+  "fully_received",
+  "closed",
+  "cancelled",
 ];
 
 export const Route = createFileRoute("/_authenticated/rfqs/")({
@@ -54,7 +72,10 @@ function RfqsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: ["rfqs", "list", dq, status], queryFn: () => listRfqs(dq, status) });
+  const query = useQuery({
+    queryKey: ["rfqs", "list", dq, status],
+    queryFn: () => listRfqs(dq, status),
+  });
   useEffect(() => setPage(1), [dq, status]);
 
   function setStatus(v: string) {
@@ -70,7 +91,10 @@ function RfqsPage() {
 
   return (
     <div>
-      <PageHeader title="RFQs" subtitle="Every request-for-quote sent to vendors, across all enquiries." />
+      <PageHeader
+        title="RFQs"
+        subtitle="Every request-for-quote sent to vendors, across all enquiries."
+      />
 
       <DataToolbar
         count={rows.length}
@@ -79,11 +103,15 @@ function RfqsPage() {
         searchPlaceholder="Search RFQ no…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-48 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-48 text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s.replace(/_/g, " ")}</SelectItem>
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s.replace(/_/g, " ")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -111,7 +139,10 @@ function RfqsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -132,7 +163,11 @@ function RfqsPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/rfqs/$rfqId" params={{ rfqId: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/rfqs/$rfqId"
+                        params={{ rfqId: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.rfq_no}
                       </Link>
                     </TableCell>
@@ -140,17 +175,31 @@ function RfqsPage() {
                   {!isHidden("enquiry") && (
                     <TableCell className="font-mono text-xs">
                       {r.enquiry ? (
-                        <Link to="/enquiries/$enquiryId" params={{ enquiryId: r.enquiry.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/enquiries/$enquiryId"
+                          params={{ enquiryId: r.enquiry.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.enquiry.enquiry_no}
                         </Link>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                   )}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
                   {!isHidden("status") && (
-                    <TableCell><Badge variant="outline" className="capitalize">{r.status.replace(/_/g, " ")}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {r.status.replace(/_/g, " ")}
+                      </Badge>
+                    </TableCell>
                   )}
-                  {!isHidden("responses") && <TableCell className="tabular-nums">{r.response_count} / {r.vendor_count}</TableCell>}
+                  {!isHidden("responses") && (
+                    <TableCell className="tabular-nums">
+                      {r.response_count} / {r.vendor_count}
+                    </TableCell>
+                  )}
                   {!isHidden("due") && <TableCell>{r.due_date ?? "—"}</TableCell>}
                   <TableCell>
                     <Button

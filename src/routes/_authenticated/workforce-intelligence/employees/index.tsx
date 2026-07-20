@@ -100,7 +100,9 @@ function EmployeesPage() {
                     {e.full_name}
                   </Link>
                 </TableCell>
-                <TableCell>{e.designation_id ? desigById.get(e.designation_id) ?? "—" : "—"}</TableCell>
+                <TableCell>
+                  {e.designation_id ? (desigById.get(e.designation_id) ?? "—") : "—"}
+                </TableCell>
                 <TableCell>{e.department ?? "—"}</TableCell>
                 <TableCell>
                   <Badge variant={e.employment_status === "active" ? "default" : "outline"}>

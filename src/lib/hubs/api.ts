@@ -222,9 +222,7 @@ export const hub = {
   projectFollowups: async (projectId: string) => {
     const { data, error } = await supabase
       .from("followups")
-      .select(
-        "*, enquiry:enquiries!followups_enquiry_id_fkey(id, enquiry_no, project_id)",
-      )
+      .select("*, enquiry:enquiries!followups_enquiry_id_fkey(id, enquiry_no, project_id)")
       .eq("project_id", projectId)
       .order("scheduled_at", { ascending: false })
       .limit(100);
@@ -321,15 +319,17 @@ export const hub = {
       },
       financials: { invoiced, collected, outstanding },
       nextFollowup: (nextFu.data ?? [])[0] ?? null,
-      approvedVendors: ((approvedVendors.data ?? []) as unknown as Array<{
-        id: string;
-        total_inr: number | null;
-        approved_at: string | null;
-        vendor_request: {
-          vendor: { id: string; company_name: string; vendor_code: string } | null;
-          rfq: { id: string; rfq_no: string } | null;
-        } | null;
-      }>).map((r) => ({
+      approvedVendors: (
+        (approvedVendors.data ?? []) as unknown as Array<{
+          id: string;
+          total_inr: number | null;
+          approved_at: string | null;
+          vendor_request: {
+            vendor: { id: string; company_name: string; vendor_code: string } | null;
+            rfq: { id: string; rfq_no: string } | null;
+          } | null;
+        }>
+      ).map((r) => ({
         quoteId: r.id,
         totalInr: r.total_inr,
         approvedAt: r.approved_at,
@@ -454,5 +454,6 @@ export const hub = {
    *  (Customer Intelligence). Every other `hub.*` method here is scoped to
    *  one customerId; this is the bulk counterpart `customerContacts` never
    *  needed until a provider had to check every customer's contacts at once. */
-  allCustomerContacts: () => run<CustomerContactRow[]>(supabase.from("customer_contacts").select("*")),
+  allCustomerContacts: () =>
+    run<CustomerContactRow[]>(supabase.from("customer_contacts").select("*")),
 };

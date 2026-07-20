@@ -96,7 +96,9 @@ function GrnDetailPage() {
 
   if (grnQuery.isLoading) return <LoadingBlock />;
   if (grnQuery.error)
-    return <ErrorBlock message={toUserMessage(grnQuery.error)} onRetry={() => grnQuery.refetch()} />;
+    return (
+      <ErrorBlock message={toUserMessage(grnQuery.error)} onRetry={() => grnQuery.refetch()} />
+    );
   if (!grnQuery.data) return <ErrorBlock message="GRN not found" />;
   const g = grnQuery.data;
 
@@ -118,7 +120,12 @@ function GrnDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => nav({ to: "/vendor-payments/new", search: { vendor: g.vendor_id, grn: g.id, po: g.purchase_order_id ?? undefined } })}
+              onClick={() =>
+                nav({
+                  to: "/vendor-payments/new",
+                  search: { vendor: g.vendor_id, grn: g.id, po: g.purchase_order_id ?? undefined },
+                })
+              }
             >
               Record payment
             </Button>
@@ -176,10 +183,7 @@ function GrnDetailPage() {
                 <div className="text-xs text-muted-foreground">Status</div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <StatusPill status={g.status} />
-                  <Select
-                    value={g.status}
-                    onValueChange={(v) => statusMut.mutate({ status: v })}
-                  >
+                  <Select value={g.status} onValueChange={(v) => statusMut.mutate({ status: v })}>
                     <SelectTrigger className="h-7 w-40 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -470,10 +474,8 @@ function InspectionRow({
     remarks: existing?.remarks ?? "",
   }));
 
-  const setB = (k: keyof GrnInspectionInput, v: boolean) =>
-    setIns((s) => ({ ...s, [k]: v }));
-  const setN = (k: keyof GrnInspectionInput, v: number) =>
-    setIns((s) => ({ ...s, [k]: v }));
+  const setB = (k: keyof GrnInspectionInput, v: boolean) => setIns((s) => ({ ...s, [k]: v }));
+  const setN = (k: keyof GrnInspectionInput, v: number) => setIns((s) => ({ ...s, [k]: v }));
 
   return (
     <div className="mt-3 rounded-md bg-muted/40 p-3">
@@ -491,11 +493,7 @@ function InspectionRow({
           ] as const
         ).map(([k, label]) => (
           <label key={k} className="flex items-center gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={!!ins[k]}
-              onChange={(e) => setB(k, e.target.checked)}
-            />
+            <input type="checkbox" checked={!!ins[k]} onChange={(e) => setB(k, e.target.checked)} />
             {label} OK
           </label>
         ))}
@@ -536,9 +534,7 @@ function InspectionRow({
         <Input
           placeholder="Packaging"
           value={ins.packaging_condition ?? ""}
-          onChange={(e) =>
-            setIns((s) => ({ ...s, packaging_condition: e.target.value }))
-          }
+          onChange={(e) => setIns((s) => ({ ...s, packaging_condition: e.target.value }))}
         />
         <Select
           value={ins.outcome}

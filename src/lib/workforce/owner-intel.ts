@@ -38,7 +38,10 @@ export function buildOwnerSummary(
   const now = Date.now();
   const empById = new Map(employees.map((e) => [e.id, e]));
 
-  const perEmp = new Map<string, { pending: number; overdue: number; completed: number; critical: number }>();
+  const perEmp = new Map<
+    string,
+    { pending: number; overdue: number; completed: number; critical: number }
+  >();
   let pending = 0;
   let inProgress = 0;
   let completed = 0;
@@ -49,9 +52,16 @@ export function buildOwnerSummary(
     if (t.status === "completed") completed++;
     else if (t.status === "in_progress") inProgress++;
     else if (t.status === "pending") pending++;
-    const isOverdue = t.due_at && new Date(t.due_at).getTime() < now && t.status !== "completed" && t.status !== "cancelled";
+    const isOverdue =
+      t.due_at &&
+      new Date(t.due_at).getTime() < now &&
+      t.status !== "completed" &&
+      t.status !== "cancelled";
     if (isOverdue) overdue++;
-    const isCritical = (t.priority === "urgent" || t.priority === "high") && t.status !== "completed" && t.status !== "cancelled";
+    const isCritical =
+      (t.priority === "urgent" || t.priority === "high") &&
+      t.status !== "completed" &&
+      t.status !== "cancelled";
     if (isCritical) critical++;
     if (t.employee_id) {
       const s = perEmp.get(t.employee_id) ?? { pending: 0, overdue: 0, completed: 0, critical: 0 };
@@ -92,7 +102,8 @@ export function buildOwnerSummary(
     department,
     total: v.total,
     pending: v.pending,
-    completion: v.pending + v.completed > 0 ? Math.round((v.completed / (v.pending + v.completed)) * 100) : 0,
+    completion:
+      v.pending + v.completed > 0 ? Math.round((v.completed / (v.pending + v.completed)) * 100) : 0,
   }));
 
   const workloadByEmployee = employees

@@ -106,12 +106,15 @@ async function fetchTasks(
   }));
 }
 
-function enquiryEvent(
-  e: {
-    id: string; enquiry_no: string; stage: string; customer_id: string;
-    project_id: string | null; created_at: string; updated_at: string;
-  },
-): TimelineEvent {
+function enquiryEvent(e: {
+  id: string;
+  enquiry_no: string;
+  stage: string;
+  customer_id: string;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}): TimelineEvent {
   return {
     id: `enquiry:${e.id}`,
     at: e.updated_at ?? e.created_at,
@@ -130,12 +133,16 @@ function enquiryEvent(
   };
 }
 
-function quoteEvent(
-  q: {
-    id: string; quote_no: string; status: string; customer_id: string;
-    project_id: string | null; total: number; issue_date: string; updated_at: string;
-  },
-): TimelineEvent {
+function quoteEvent(q: {
+  id: string;
+  quote_no: string;
+  status: string;
+  customer_id: string;
+  project_id: string | null;
+  total: number;
+  issue_date: string;
+  updated_at: string;
+}): TimelineEvent {
   return {
     id: `quote:${q.id}`,
     at: q.updated_at ?? q.issue_date,
@@ -154,12 +161,16 @@ function quoteEvent(
   };
 }
 
-function salesOrderEvent(
-  s: {
-    id: string; so_no: string; status: string; customer_id: string | null;
-    project_id: string | null; total: number; order_date: string; updated_at: string;
-  },
-): TimelineEvent {
+function salesOrderEvent(s: {
+  id: string;
+  so_no: string;
+  status: string;
+  customer_id: string | null;
+  project_id: string | null;
+  total: number;
+  order_date: string;
+  updated_at: string;
+}): TimelineEvent {
   return {
     id: `sales_order:${s.id}`,
     at: s.updated_at ?? s.order_date,
@@ -178,18 +189,25 @@ function salesOrderEvent(
   };
 }
 
-function invoiceEvent(
-  i: {
-    id: string; invoice_no: string; status: string; customer_id: string;
-    project_id: string | null; total: number; balance_due: number; issue_date: string; updated_at: string;
-  },
-): TimelineEvent {
+function invoiceEvent(i: {
+  id: string;
+  invoice_no: string;
+  status: string;
+  customer_id: string;
+  project_id: string | null;
+  total: number;
+  balance_due: number;
+  issue_date: string;
+  updated_at: string;
+}): TimelineEvent {
   const isCancelled = i.status === "cancelled";
   return {
     id: `invoice:${i.id}`,
     at: i.updated_at ?? i.issue_date,
     kind: "invoice",
-    title: isCancelled ? `Invoice ${i.invoice_no} cancelled` : `Invoice ${i.invoice_no} issued · ${i.status.replace(/_/g, " ")}`,
+    title: isCancelled
+      ? `Invoice ${i.invoice_no} cancelled`
+      : `Invoice ${i.invoice_no} issued · ${i.status.replace(/_/g, " ")}`,
     detail: Number(i.balance_due) > 0 ? `₹${i.balance_due} outstanding` : null,
     refNo: i.invoice_no,
     status: i.status,
@@ -203,9 +221,13 @@ function invoiceEvent(
   };
 }
 
-function receiptEvent(
-  r: { id: string; receipt_no: string; amount: number; customer_id: string; received_at: string },
-): TimelineEvent {
+function receiptEvent(r: {
+  id: string;
+  receipt_no: string;
+  amount: number;
+  customer_id: string;
+  received_at: string;
+}): TimelineEvent {
   return {
     id: `receipt:${r.id}`,
     at: r.received_at,
@@ -224,18 +246,22 @@ function receiptEvent(
   };
 }
 
-function dispatchEvent(
-  d: {
-    id: string; dispatch_no: string; status: string; customer_id: string | null;
-    project_id: string | null; dispatch_date: string;
-  },
-): TimelineEvent {
+function dispatchEvent(d: {
+  id: string;
+  dispatch_no: string;
+  status: string;
+  customer_id: string | null;
+  project_id: string | null;
+  dispatch_date: string;
+}): TimelineEvent {
   const completed = d.status === "delivered";
   return {
     id: `dispatch:${d.id}`,
     at: d.dispatch_date,
     kind: "dispatch",
-    title: completed ? `Dispatch ${d.dispatch_no} delivered` : `Dispatch ${d.dispatch_no} · ${d.status.replace(/_/g, " ")}`,
+    title: completed
+      ? `Dispatch ${d.dispatch_no} delivered`
+      : `Dispatch ${d.dispatch_no} · ${d.status.replace(/_/g, " ")}`,
     detail: null,
     refNo: d.dispatch_no,
     status: d.status,
@@ -249,12 +275,16 @@ function dispatchEvent(
   };
 }
 
-function installationEvent(
-  i: {
-    id: string; installation_no: string | null; status: string; customer_id: string | null;
-    project_id: string | null; planned_start_date: string | null; actual_end_date: string | null; updated_at: string;
-  },
-): TimelineEvent {
+function installationEvent(i: {
+  id: string;
+  installation_no: string | null;
+  status: string;
+  customer_id: string | null;
+  project_id: string | null;
+  planned_start_date: string | null;
+  actual_end_date: string | null;
+  updated_at: string;
+}): TimelineEvent {
   const completed = i.status === "completed" || i.status === "signed_off";
   return {
     id: `installation:${i.id}`,
@@ -276,9 +306,14 @@ function installationEvent(
   };
 }
 
-function followupEvent(
-  f: { id: string; project_id: string | null; status: string; scheduled_at: string; completed_at: string | null; notes: string | null },
-): TimelineEvent {
+function followupEvent(f: {
+  id: string;
+  project_id: string | null;
+  status: string;
+  scheduled_at: string;
+  completed_at: string | null;
+  notes: string | null;
+}): TimelineEvent {
   const completed = f.status === "completed";
   return {
     id: `followup:${f.id}`,
@@ -307,53 +342,64 @@ function sortDesc(events: TimelineEvent[]): TimelineEvent[] {
  *  tasks, and the customer's own activity_log trail. Answers "what
  *  happened with this customer" (Task 4's own example query). */
 export async function getCustomerTimeline(customerId: string): Promise<TimelineEvent[]> {
-  const [activity, tasks, enquiries, quotes, salesOrders, invoices, receipts, dispatches, installations] =
-    await Promise.all([
-      fetchActivity("customer", customerId, customerId, null),
-      fetchTasks("customer", customerId, customerId, null),
-      getDb()
-        .from("enquiries")
-        .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
-        .eq("customer_id", customerId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("quotes")
-        .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
-        .eq("customer_id", customerId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("sales_orders")
-        .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
-        .eq("customer_id", customerId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("invoices")
-        .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
-        .eq("customer_id", customerId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("receipts")
-        .select("id,receipt_no,amount,customer_id,received_at")
-        .eq("customer_id", customerId)
-        .order("received_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("dispatches")
-        .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
-        .eq("customer_id", customerId)
-        .order("dispatch_date", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("installations" as never)
-        .select("id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at")
-        .eq("customer_id" as never, customerId as never)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-    ]);
+  const [
+    activity,
+    tasks,
+    enquiries,
+    quotes,
+    salesOrders,
+    invoices,
+    receipts,
+    dispatches,
+    installations,
+  ] = await Promise.all([
+    fetchActivity("customer", customerId, customerId, null),
+    fetchTasks("customer", customerId, customerId, null),
+    getDb()
+      .from("enquiries")
+      .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
+      .eq("customer_id", customerId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("quotes")
+      .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
+      .eq("customer_id", customerId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("sales_orders")
+      .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
+      .eq("customer_id", customerId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("invoices")
+      .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
+      .eq("customer_id", customerId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("receipts")
+      .select("id,receipt_no,amount,customer_id,received_at")
+      .eq("customer_id", customerId)
+      .order("received_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("dispatches")
+      .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
+      .eq("customer_id", customerId)
+      .order("dispatch_date", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("installations" as never)
+      .select(
+        "id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at",
+      )
+      .eq("customer_id" as never, customerId as never)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+  ]);
 
   for (const r of [enquiries, quotes, salesOrders, invoices, receipts, dispatches]) {
     if (r.error) throw new AppError(mapDbError(r.error));
@@ -367,7 +413,9 @@ export async function getCustomerTimeline(customerId: string): Promise<TimelineE
   for (const i of invoices.data ?? []) pushEvent(out, invoiceEvent(i));
   for (const r of receipts.data ?? []) pushEvent(out, receiptEvent(r));
   for (const d of dispatches.data ?? []) pushEvent(out, dispatchEvent(d));
-  for (const i of (installations.data ?? []) as unknown as Parameters<typeof installationEvent>[0][]) {
+  for (const i of (installations.data ?? []) as unknown as Parameters<
+    typeof installationEvent
+  >[0][]) {
     pushEvent(out, installationEvent(i));
   }
   return sortDesc(out);
@@ -378,61 +426,81 @@ export async function getCustomerTimeline(customerId: string): Promise<TimelineE
  *  project-scoped, not customer-scoped, in this schema). Answers
  *  "summarize this project's history" (Task 4's own example query). */
 export async function getProjectTimeline(projectId: string): Promise<TimelineEvent[]> {
-  const [activity, tasks, enquiries, quotes, salesOrders, purchaseOrders, invoices, dispatches, installations, followups] =
-    await Promise.all([
-      fetchActivity("project", projectId, null, projectId),
-      fetchTasks("project", projectId, null, projectId),
-      getDb()
-        .from("enquiries")
-        .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
-        .eq("project_id", projectId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("quotes")
-        .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
-        .eq("project_id", projectId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("sales_orders")
-        .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
-        .eq("project_id", projectId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("purchase_orders")
-        .select("id,po_no,status,project_id,order_date,updated_at")
-        .eq("project_id", projectId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("invoices")
-        .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
-        .eq("project_id", projectId)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("dispatches")
-        .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
-        .eq("project_id", projectId)
-        .order("dispatch_date", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("installations" as never)
-        .select("id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at")
-        .eq("project_id" as never, projectId as never)
-        .order("updated_at", { ascending: false })
-        .limit(LIMIT),
-      getDb()
-        .from("followups")
-        .select("id,project_id,status,scheduled_at,completed_at,notes")
-        .eq("project_id", projectId)
-        .order("scheduled_at", { ascending: false })
-        .limit(LIMIT),
-    ]);
+  const [
+    activity,
+    tasks,
+    enquiries,
+    quotes,
+    salesOrders,
+    purchaseOrders,
+    invoices,
+    dispatches,
+    installations,
+    followups,
+  ] = await Promise.all([
+    fetchActivity("project", projectId, null, projectId),
+    fetchTasks("project", projectId, null, projectId),
+    getDb()
+      .from("enquiries")
+      .select("id,enquiry_no,stage,customer_id,project_id,created_at,updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("quotes")
+      .select("id,quote_no,status,customer_id,project_id,total,issue_date,updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("sales_orders")
+      .select("id,so_no,status,customer_id,project_id,total,order_date,updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("purchase_orders")
+      .select("id,po_no,status,project_id,order_date,updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("invoices")
+      .select("id,invoice_no,status,customer_id,project_id,total,balance_due,issue_date,updated_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("dispatches")
+      .select("id,dispatch_no,status,customer_id,project_id,dispatch_date")
+      .eq("project_id", projectId)
+      .order("dispatch_date", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("installations" as never)
+      .select(
+        "id,installation_no,status,customer_id,project_id,planned_start_date,actual_end_date,updated_at",
+      )
+      .eq("project_id" as never, projectId as never)
+      .order("updated_at", { ascending: false })
+      .limit(LIMIT),
+    getDb()
+      .from("followups")
+      .select("id,project_id,status,scheduled_at,completed_at,notes")
+      .eq("project_id", projectId)
+      .order("scheduled_at", { ascending: false })
+      .limit(LIMIT),
+  ]);
 
-  for (const r of [enquiries, quotes, salesOrders, purchaseOrders, invoices, dispatches, followups]) {
+  for (const r of [
+    enquiries,
+    quotes,
+    salesOrders,
+    purchaseOrders,
+    invoices,
+    dispatches,
+    followups,
+  ]) {
     if (r.error) throw new AppError(mapDbError(r.error));
   }
   if (installations.error) throw new AppError(mapDbError(installations.error));
@@ -461,7 +529,9 @@ export async function getProjectTimeline(projectId: string): Promise<TimelineEve
   }
   for (const i of invoices.data ?? []) pushEvent(out, invoiceEvent(i));
   for (const d of dispatches.data ?? []) pushEvent(out, dispatchEvent(d));
-  for (const i of (installations.data ?? []) as unknown as Parameters<typeof installationEvent>[0][]) {
+  for (const i of (installations.data ?? []) as unknown as Parameters<
+    typeof installationEvent
+  >[0][]) {
     pushEvent(out, installationEvent(i));
   }
   for (const f of followups.data ?? []) pushEvent(out, followupEvent(f));
@@ -474,7 +544,10 @@ export async function getProjectTimeline(projectId: string): Promise<TimelineEve
  *  (components/entity/DetailPanels.tsx's TimelinePanel); factored out
  *  here so there is exactly one implementation, per "no duplicate
  *  timeline implementations." */
-export async function getEntityTimeline(entityType: string, entityId: string): Promise<TimelineEvent[]> {
+export async function getEntityTimeline(
+  entityType: string,
+  entityId: string,
+): Promise<TimelineEvent[]> {
   return sortDesc(await fetchActivity(entityType, entityId, null, null));
 }
 

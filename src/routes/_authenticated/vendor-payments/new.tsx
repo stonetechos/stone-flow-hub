@@ -73,7 +73,10 @@ function NewVendorPaymentPage() {
 
   return (
     <div>
-      <PageHeader title="Record vendor payment" subtitle="Posts to the vendor ledger automatically." />
+      <PageHeader
+        title="Record vendor payment"
+        subtitle="Posts to the vendor ledger automatically."
+      />
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -92,7 +95,9 @@ function NewVendorPaymentPage() {
           <Field label="Payment type" required>
             <Select
               value={form.payment_type}
-              onValueChange={(v) => set("payment_type", v as VendorPaymentCreateInput["payment_type"])}
+              onValueChange={(v) =>
+                set("payment_type", v as VendorPaymentCreateInput["payment_type"])
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -129,9 +134,7 @@ function NewVendorPaymentPage() {
           <Field label="Method">
             <Select
               value={form.method ?? "bank_transfer"}
-              onValueChange={(v) =>
-                set("method", v as VendorPaymentCreateInput["method"])
-              }
+              onValueChange={(v) => set("method", v as VendorPaymentCreateInput["method"])}
             >
               <SelectTrigger>
                 <SelectValue />

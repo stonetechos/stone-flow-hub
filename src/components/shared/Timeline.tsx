@@ -41,10 +41,7 @@ export function Timeline({
   }
   return (
     <ol className={cn("relative space-y-4", className)}>
-      <span
-        aria-hidden
-        className="absolute left-[7px] top-2 bottom-2 w-px bg-border"
-      />
+      <span aria-hidden className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
       {items.map((it) => (
         <li key={it.id} className="relative flex gap-3 pl-6">
           <span
@@ -64,9 +61,7 @@ export function Timeline({
             <div className="flex items-baseline justify-between gap-3">
               <div className="text-sm text-foreground">{it.title}</div>
               {it.meta && (
-                <div className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                  {it.meta}
-                </div>
+                <div className="shrink-0 text-xs tabular-nums text-muted-foreground">{it.meta}</div>
               )}
             </div>
             {it.body && <div className="text-sm text-muted-foreground">{it.body}</div>}

@@ -34,13 +34,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type NavGroupId =
-  | "sales"
-  | "operations"
-  | "workforce"
-  | "masterData"
-  | "others"
-  | "admin";
+export type NavGroupId = "sales" | "operations" | "workforce" | "masterData" | "others" | "admin";
 
 export interface NavGroupDef {
   id: NavGroupId;
@@ -73,7 +67,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "projects", to: "/projects", label: "Projects", icon: Building2, group: "sales" },
   { id: "estimates", to: "/estimates", label: "Estimation Studio", icon: FileText, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
-  { id: "sales-orders", to: "/sales-orders", label: "Sales Orders", icon: ShoppingCart, group: "sales" },
+  {
+    id: "sales-orders",
+    to: "/sales-orders",
+    label: "Sales Orders",
+    icon: ShoppingCart,
+    group: "sales",
+  },
   { id: "payments", to: "/payments", label: "Payments", icon: Wallet, group: "sales" },
   { id: "invoices", to: "/invoices", label: "Invoices", icon: Receipt, group: "sales" },
   { id: "receipts", to: "/receipts", label: "Receipts & Ledger", icon: Wallet, group: "sales" },
@@ -83,19 +83,74 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "calendar", to: "/calendar", label: "Calendar", icon: Calendar, group: "sales" },
 
   // Operations
-  { id: "purchase-orders", to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardCheck, group: "operations" },
-  { id: "manufacturing", to: "/manufacturing", label: "Manufacturing", icon: Factory, group: "operations" },
+  {
+    id: "purchase-orders",
+    to: "/purchase-orders",
+    label: "Purchase Orders",
+    icon: ClipboardCheck,
+    group: "operations",
+  },
+  {
+    id: "manufacturing",
+    to: "/manufacturing",
+    label: "Manufacturing",
+    icon: Factory,
+    group: "operations",
+  },
   { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "operations" },
-  { id: "slabs", to: "/inventory/slabs", label: "Slab Register", icon: Layers, group: "operations" },
+  {
+    id: "slabs",
+    to: "/inventory/slabs",
+    label: "Slab Register",
+    icon: Layers,
+    group: "operations",
+  },
   { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "operations" },
 
   // Workforce Intelligence
-  { id: "wf-today", to: "/workforce-intelligence", label: "Today", icon: CheckSquare, group: "workforce" },
-  { id: "wf-employees", to: "/workforce-intelligence/employees", label: "Employees", icon: Users, group: "workforce" },
-  { id: "wf-roles", to: "/workforce-intelligence/roles", label: "Roles & KRAs", icon: Briefcase, group: "workforce" },
-  { id: "wf-capacities", to: "/workforce-intelligence/capacities", label: "Workload Capacity", icon: Layers, group: "workforce" },
-  { id: "wf-performance", to: "/workforce-intelligence/performance", label: "Performance", icon: BarChart3, group: "workforce" },
-  { id: "wf-owner", to: "/workforce-intelligence/owner", label: "Owner Intelligence", icon: ShieldCheck, group: "workforce", adminOnly: true },
+  {
+    id: "wf-today",
+    to: "/workforce-intelligence",
+    label: "Today",
+    icon: CheckSquare,
+    group: "workforce",
+  },
+  {
+    id: "wf-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "workforce",
+  },
+  {
+    id: "wf-roles",
+    to: "/workforce-intelligence/roles",
+    label: "Roles & KRAs",
+    icon: Briefcase,
+    group: "workforce",
+  },
+  {
+    id: "wf-capacities",
+    to: "/workforce-intelligence/capacities",
+    label: "Workload Capacity",
+    icon: Layers,
+    group: "workforce",
+  },
+  {
+    id: "wf-performance",
+    to: "/workforce-intelligence/performance",
+    label: "Performance",
+    icon: BarChart3,
+    group: "workforce",
+  },
+  {
+    id: "wf-owner",
+    to: "/workforce-intelligence/owner",
+    label: "Owner Intelligence",
+    icon: ShieldCheck,
+    group: "workforce",
+    adminOnly: true,
+  },
 
   // Master Data
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
@@ -104,7 +159,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
 
   // Others
   { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "others" },
-  { id: "dashboards", to: "/dashboards", label: "Role Dashboards", icon: BarChart3, group: "others" },
+  {
+    id: "dashboards",
+    to: "/dashboards",
+    label: "Role Dashboards",
+    icon: BarChart3,
+    group: "others",
+  },
   { id: "documents", to: "/documents", label: "Documents", icon: FolderOpen, group: "others" },
   { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
   { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
@@ -113,7 +174,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "settings", to: "/settings", label: "Settings", icon: Settings, group: "others" },
 
   // Admin
-  { id: "admin-users", to: "/admin/users", label: "Users & Roles", icon: ShieldCheck, group: "admin", adminOnly: true },
+  {
+    id: "admin-users",
+    to: "/admin/users",
+    label: "Users & Roles",
+    icon: ShieldCheck,
+    group: "admin",
+    adminOnly: true,
+  },
 ];
 
 export const NAV_ITEMS_BY_ID: Readonly<Record<string, NavItemDef>> = Object.fromEntries(

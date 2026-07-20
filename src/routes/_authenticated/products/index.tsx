@@ -12,9 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
@@ -101,7 +114,10 @@ function ProductsPage() {
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
-  const openCreate = () => { setEditing(null); setFormOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
 
   return (
     <div>
@@ -150,7 +166,10 @@ function ProductsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -171,22 +190,38 @@ function ProductsPage() {
                 <TableRow key={p.id}>
                   {!isHidden("code") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/products/$productId" params={{ productId: p.id }} className="hover:underline">
+                      <Link
+                        to="/products/$productId"
+                        params={{ productId: p.id }}
+                        className="hover:underline"
+                      >
                         {p.product_code}
                       </Link>
                     </TableCell>
                   )}
                   {!isHidden("name") && (
                     <TableCell className="font-medium">
-                      <Link to="/products/$productId" params={{ productId: p.id }} className="hover:underline">
+                      <Link
+                        to="/products/$productId"
+                        params={{ productId: p.id }}
+                        className="hover:underline"
+                      >
                         {p.name}
                       </Link>
                     </TableCell>
                   )}
                   {!isHidden("stone") && (
-                    <TableCell><Badge variant="secondary" className="capitalize">{p.stone_type ?? "—"}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {p.stone_type ?? "—"}
+                      </Badge>
+                    </TableCell>
                   )}
-                  {!isHidden("finish") && <TableCell className="capitalize">{p.finish?.replace("_", " ") ?? "—"}</TableCell>}
+                  {!isHidden("finish") && (
+                    <TableCell className="capitalize">
+                      {p.finish?.replace("_", " ") ?? "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("unit") && <TableCell>{p.default_unit}</TableCell>}
                   {!isHidden("thickness") && <TableCell>{p.thickness_mm ?? "—"}</TableCell>}
                   <TableCell>
@@ -198,7 +233,10 @@ function ProductsPage() {
                           </Link>
                         </DropdownMenuItem>
                       }
-                      onEdit={() => { setEditing(p); setFormOpen(true); }}
+                      onEdit={() => {
+                        setEditing(p);
+                        setFormOpen(true);
+                      }}
                       onDelete={() => setToDelete(p)}
                     />
                   </TableCell>

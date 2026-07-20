@@ -114,63 +114,63 @@ function CalendarPage() {
             {/* Mobile: horizontally scrolls within this wrapper instead of
              * squeezing 7 columns into the viewport or overflowing the page. */}
             <div className="overflow-x-auto">
-            <div className="grid min-w-[560px] grid-cols-7 gap-px rounded-sm border border-border bg-border text-sm">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                <div
-                  key={d}
-                  className="bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
-                >
-                  {d}
-                </div>
-              ))}
-              {grid.map((cell, i) => {
-                const key = cell.date?.toDateString();
-                const items = key ? (byDay.get(key) ?? []) : [];
-                const isToday = key === today;
-                return (
+              <div className="grid min-w-[560px] grid-cols-7 gap-px rounded-sm border border-border bg-border text-sm">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                   <div
-                    key={i}
-                    className={cn("min-h-24 bg-card p-1.5", !cell.date && "bg-muted/40")}
+                    key={d}
+                    className="bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
                   >
-                    {cell.date && (
-                      <>
-                        <div
-                          className={cn(
-                            "mb-1 text-xs font-medium",
-                            isToday &&
-                              "inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground",
-                          )}
-                        >
-                          {cell.date.getDate()}
-                        </div>
-                        <div className="space-y-0.5">
-                          {items.slice(0, 3).map((f) => (
-                            <Link
-                              key={f.id}
-                              to="/enquiries/$enquiryId"
-                              params={{ enquiryId: f.enquiry_id ?? "" }}
-                              className="block truncate rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary hover:bg-primary/20"
-                              title={f.notes ?? f.channel}
-                            >
-                              {new Date(f.scheduled_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}{" "}
-                              {f.notes ?? f.channel}
-                            </Link>
-                          ))}
-                          {items.length > 3 && (
-                            <div className="text-[11px] text-muted-foreground">
-                              +{items.length - 3} more
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
+                    {d}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+                {grid.map((cell, i) => {
+                  const key = cell.date?.toDateString();
+                  const items = key ? (byDay.get(key) ?? []) : [];
+                  const isToday = key === today;
+                  return (
+                    <div
+                      key={i}
+                      className={cn("min-h-24 bg-card p-1.5", !cell.date && "bg-muted/40")}
+                    >
+                      {cell.date && (
+                        <>
+                          <div
+                            className={cn(
+                              "mb-1 text-xs font-medium",
+                              isToday &&
+                                "inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground",
+                            )}
+                          >
+                            {cell.date.getDate()}
+                          </div>
+                          <div className="space-y-0.5">
+                            {items.slice(0, 3).map((f) => (
+                              <Link
+                                key={f.id}
+                                to="/enquiries/$enquiryId"
+                                params={{ enquiryId: f.enquiry_id ?? "" }}
+                                className="block truncate rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary hover:bg-primary/20"
+                                title={f.notes ?? f.channel}
+                              >
+                                {new Date(f.scheduled_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}{" "}
+                                {f.notes ?? f.channel}
+                              </Link>
+                            ))}
+                            {items.length > 3 && (
+                              <div className="text-[11px] text-muted-foreground">
+                                +{items.length - 3} more
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>

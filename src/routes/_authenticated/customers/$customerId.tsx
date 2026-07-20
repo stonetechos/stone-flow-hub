@@ -395,9 +395,11 @@ function CustomerHub() {
         </TabsContent>
 
         <TabsContent value="challans" className="mt-4">
-          <DeliveryChallanListPanel customerId={customerId} title="Delivery challans for this customer" />
+          <DeliveryChallanListPanel
+            customerId={customerId}
+            title="Delivery challans for this customer"
+          />
         </TabsContent>
-
 
         <TabsContent value="timeline" className="mt-4">
           <CustomerTimelineTab customerId={customerId} />

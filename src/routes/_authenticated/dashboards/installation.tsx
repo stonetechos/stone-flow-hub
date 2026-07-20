@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Activity, AlertTriangle, Users, PackageMinus, PenSquare, IndianRupee, TrendingUp,
+  Activity,
+  AlertTriangle,
+  Users,
+  PackageMinus,
+  PenSquare,
+  IndianRupee,
+  TrendingUp,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,18 +25,55 @@ function InstallationDashboard() {
   const k = query.data;
 
   const cards: Array<{ label: string; value: string; icon: React.ElementType; to?: string }> = [
-    { label: "Active installations", value: String(k?.active_installations ?? "—"), icon: Activity, to: "/installations" },
-    { label: "Delayed sites", value: String(k?.delayed_sites ?? "—"), icon: AlertTriangle, to: "/installations" },
-    { label: "Teams on site", value: String(k?.teams_on_site ?? "—"), icon: Users, to: "/installation-teams" },
-    { label: "Avg progress", value: `${Math.round(k?.avg_progress_pct ?? 0)}%`, icon: TrendingUp, to: "/installations" },
-    { label: "Material shortages", value: String(k?.material_shortages ?? "—"), icon: PackageMinus, to: "/installations" },
-    { label: "Sign-offs pending", value: String(k?.signoffs_pending ?? "—"), icon: PenSquare, to: "/installations" },
-    { label: "Installation revenue", value: formatInr(Number(k?.installation_revenue ?? 0)), icon: IndianRupee },
+    {
+      label: "Active installations",
+      value: String(k?.active_installations ?? "—"),
+      icon: Activity,
+      to: "/installations",
+    },
+    {
+      label: "Delayed sites",
+      value: String(k?.delayed_sites ?? "—"),
+      icon: AlertTriangle,
+      to: "/installations",
+    },
+    {
+      label: "Teams on site",
+      value: String(k?.teams_on_site ?? "—"),
+      icon: Users,
+      to: "/installation-teams",
+    },
+    {
+      label: "Avg progress",
+      value: `${Math.round(k?.avg_progress_pct ?? 0)}%`,
+      icon: TrendingUp,
+      to: "/installations",
+    },
+    {
+      label: "Material shortages",
+      value: String(k?.material_shortages ?? "—"),
+      icon: PackageMinus,
+      to: "/installations",
+    },
+    {
+      label: "Sign-offs pending",
+      value: String(k?.signoffs_pending ?? "—"),
+      icon: PenSquare,
+      to: "/installations",
+    },
+    {
+      label: "Installation revenue",
+      value: formatInr(Number(k?.installation_revenue ?? 0)),
+      icon: IndianRupee,
+    },
   ];
 
   return (
     <div>
-      <PageHeader title="Installation dashboard" subtitle="Live KPIs across active sites and teams." />
+      <PageHeader
+        title="Installation dashboard"
+        subtitle="Live KPIs across active sites and teams."
+      />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => {
           const Body = (
@@ -44,7 +87,9 @@ function InstallationDashboard() {
             </Card>
           );
           return c.to ? (
-            <Link key={c.label} to={c.to}>{Body}</Link>
+            <Link key={c.label} to={c.to}>
+              {Body}
+            </Link>
           ) : (
             <div key={c.label}>{Body}</div>
           );

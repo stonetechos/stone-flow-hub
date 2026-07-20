@@ -19,7 +19,10 @@
  * receipt record to deep-link to. The CTA instead opens the customer
  * record, where the Customer Payment Centre renders this exact schedule.
  */
-import { listPaymentDashboard, type PaymentScheduleDashboardRow } from "@/lib/customer-payments/schedule";
+import {
+  listPaymentDashboard,
+  type PaymentScheduleDashboardRow,
+} from "@/lib/customer-payments/schedule";
 import { formatInr } from "@/lib/format";
 import type { Insight, InsightProvider } from "@/lib/insights/types";
 import { computePriority } from "@/lib/insights/shared/priority";

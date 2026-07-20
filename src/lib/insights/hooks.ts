@@ -23,11 +23,7 @@ export const INSIGHTS_STALE_TIME_MS = 60_000;
 /** Live list of currently-registered providers — updates whenever a
  *  provider is registered/unregistered anywhere in the app. */
 export function useInsightRegistry(): InsightProvider[] {
-  return useSyncExternalStore(
-    subscribeInsightRegistry,
-    listInsightProviders,
-    listInsightProviders,
-  );
+  return useSyncExternalStore(subscribeInsightRegistry, listInsightProviders, listInsightProviders);
 }
 
 export interface UseInsightsResult {

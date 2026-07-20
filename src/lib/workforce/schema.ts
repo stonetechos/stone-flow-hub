@@ -5,7 +5,9 @@ export const employeeSchema = z.object({
   full_name: zRequired("Full name"),
   designation_id: z.string().uuid().nullable().optional(),
   department: zOptional(),
-  employment_type: z.enum(["full_time", "part_time", "contract", "intern", "consultant"]).default("full_time"),
+  employment_type: z
+    .enum(["full_time", "part_time", "contract", "intern", "consultant"])
+    .default("full_time"),
   reporting_manager_id: z.string().uuid().nullable().optional(),
   joining_date: zOptional(),
   phone: zOptional(),
@@ -15,8 +17,10 @@ export const employeeSchema = z.object({
   aadhaar: zOptional(),
   pan: zOptional(),
   bank_details: z.record(z.string(), z.any()).default({}),
-  salary_ctc: z
-    .preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().nullable().optional()),
+  salary_ctc: z.preprocess(
+    (v) => (v === "" || v == null ? null : Number(v)),
+    z.number().nullable().optional(),
+  ),
   skills: z.array(z.string()).default([]),
   employment_status: z
     .enum(["active", "on_leave", "notice", "terminated", "resigned"])
@@ -78,8 +82,10 @@ export const manualTaskSchema = z.object({
   description: zOptional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
   due_at: zOptional(),
-  estimated_minutes: z
-    .preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().int().min(0).nullable().optional()),
+  estimated_minutes: z.preprocess(
+    (v) => (v === "" || v == null ? null : Number(v)),
+    z.number().int().min(0).nullable().optional(),
+  ),
 });
 export type ManualTaskInput = z.infer<typeof manualTaskSchema>;
 

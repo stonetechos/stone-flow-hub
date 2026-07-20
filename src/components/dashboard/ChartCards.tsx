@@ -1,5 +1,19 @@
 /** Shared chart helpers for lead-workflow dashboards. Recharts wrapper. */
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LineChart,
+  Line,
+} from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatInr } from "@/lib/format";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,15 +49,28 @@ export function DonutCard({
   const empty = data.length === 0 || data.every((d) => d.value === 0);
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+      </CardHeader>
       <CardContent style={{ height: 260 }}>
         {empty ? (
-          <div className="grid h-full place-items-center text-xs text-muted-foreground">No data yet.</div>
+          <div className="grid h-full place-items-center text-xs text-muted-foreground">
+            No data yet.
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={data} dataKey="value" nameKey="label" innerRadius={50} outerRadius={95} paddingAngle={2}>
-                {data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="label"
+                innerRadius={50}
+                outerRadius={95}
+                paddingAngle={2}
+              >
+                {data.map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
               </Pie>
               <Tooltip formatter={(v: number) => [formatValue(v), valueLabel]} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -77,23 +104,37 @@ export function BarCard({
   const yAxisWidth = vertical ? (isMobile ? 72 : 110) : undefined;
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+      </CardHeader>
       <CardContent style={{ height: 320 }}>
         {empty ? (
-          <div className="grid h-full place-items-center text-xs text-muted-foreground">No data yet.</div>
+          <div className="grid h-full place-items-center text-xs text-muted-foreground">
+            No data yet.
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout={vertical ? "vertical" : "horizontal"} margin={vertical ? { left: yAxisWidth } : undefined}>
+            <BarChart
+              data={data}
+              layout={vertical ? "vertical" : "horizontal"}
+              margin={vertical ? { left: yAxisWidth } : undefined}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               {vertical ? (
                 <>
-                  <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v: number) => formatValue(v)}
+                  />
                   <YAxis
                     type="category"
                     dataKey="label"
                     tick={{ fontSize: 11 }}
                     width={yAxisWidth}
-                    tickFormatter={isMobile ? (label: string) => truncateLabel(label, 10) : undefined}
+                    tickFormatter={
+                      isMobile ? (label: string) => truncateLabel(label, 10) : undefined
+                    }
                   />
                 </>
               ) : (
@@ -123,7 +164,9 @@ export function LineCard({
 }) {
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+      </CardHeader>
       <CardContent style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: 8, right: 8, top: 6, bottom: 6 }}>
@@ -131,7 +174,13 @@ export function LineCard({
             <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
             <Tooltip formatter={(v: number) => formatValue(v)} />
-            <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot={false} />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="var(--primary)"
+              strokeWidth={2}
+              dot={false}
+            />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

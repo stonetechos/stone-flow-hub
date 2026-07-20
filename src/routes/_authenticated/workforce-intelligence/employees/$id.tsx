@@ -113,10 +113,18 @@ function EmployeeProfile() {
           <TabsTrigger value="performance">Performance</TabsTrigger>
           {isOwner && <TabsTrigger value="notes">Owner Notes</TabsTrigger>}
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="attendance" disabled>Attendance</TabsTrigger>
-          <TabsTrigger value="leave" disabled>Leave</TabsTrigger>
-          <TabsTrigger value="payroll" disabled>Payroll</TabsTrigger>
-          <TabsTrigger value="training" disabled>Training</TabsTrigger>
+          <TabsTrigger value="attendance" disabled>
+            Attendance
+          </TabsTrigger>
+          <TabsTrigger value="leave" disabled>
+            Leave
+          </TabsTrigger>
+          <TabsTrigger value="payroll" disabled>
+            Payroll
+          </TabsTrigger>
+          <TabsTrigger value="training" disabled>
+            Training
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-6">
@@ -134,7 +142,10 @@ function EmployeeProfile() {
               <>
                 <InfoRow label="Aadhaar" value={e.aadhaar ?? "—"} />
                 <InfoRow label="PAN" value={e.pan ?? "—"} />
-                <InfoRow label="Salary CTC" value={e.salary_ctc != null ? `₹${e.salary_ctc}` : "—"} />
+                <InfoRow
+                  label="Salary CTC"
+                  value={e.salary_ctc != null ? `₹${e.salary_ctc}` : "—"}
+                />
               </>
             )}
           </div>
@@ -150,7 +161,10 @@ function EmployeeProfile() {
           {kras.isLoading ? (
             <SkeletonTable />
           ) : (kras.data ?? []).length === 0 ? (
-            <EmptyState title="No KRAs configured" message="Configure KRAs against the role master." />
+            <EmptyState
+              title="No KRAs configured"
+              message="Configure KRAs against the role master."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -194,9 +208,15 @@ function EmployeeProfile() {
                 {(tasks.data ?? []).map((t) => (
                   <TableRow key={t.id}>
                     <TableCell>{t.title}</TableCell>
-                    <TableCell><Badge variant="outline">{t.priority}</Badge></TableCell>
-                    <TableCell className="text-xs">{t.due_at ? format(new Date(t.due_at), "d MMM") : "—"}</TableCell>
-                    <TableCell><Badge variant="secondary">{t.status}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{t.priority}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {t.due_at ? format(new Date(t.due_at), "d MMM") : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{t.status}</Badge>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -208,7 +228,10 @@ function EmployeeProfile() {
           {score.isLoading ? (
             <SkeletonTable />
           ) : !score.data ? (
-            <EmptyState title="Performance not yet computed" message="Assign a designation with KRAs to enable scoring." />
+            <EmptyState
+              title="Performance not yet computed"
+              message="Assign a designation with KRAs to enable scoring."
+            />
           ) : (
             <>
               <div className="flex items-center gap-4">
@@ -244,7 +267,8 @@ function EmployeeProfile() {
               </Table>
               {(snapshots.data ?? []).length > 0 && (
                 <div className="text-xs text-muted-foreground">
-                  {snapshots.data!.length} historical snapshot{snapshots.data!.length === 1 ? "" : "s"}.
+                  {snapshots.data!.length} historical snapshot
+                  {snapshots.data!.length === 1 ? "" : "s"}.
                 </div>
               )}
             </>
@@ -305,16 +329,29 @@ function OwnerNotesTab({ employeeId }: { employeeId: string }) {
       <div className="rounded-md border p-3 space-y-2">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
           <Select value={kind} onValueChange={(v) => setKind(v as OwnerNoteKind)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {OWNER_NOTE_KINDS.map((k) => (
-                <SelectItem key={k} value={k}>{k}</SelectItem>
+                <SelectItem key={k} value={k}>
+                  {k}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Short title" className="md:col-span-3" />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Short title"
+            className="md:col-span-3"
+          />
         </div>
-        <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Observation, evidence, follow-up…" />
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Observation, evidence, follow-up…"
+        />
         <div className="flex justify-end">
           <Button size="sm" disabled={!title.trim() || add.isPending} onClick={() => add.mutate()}>
             <Plus className="mr-1 h-4 w-4" /> Add note
@@ -332,14 +369,18 @@ function OwnerNotesTab({ employeeId }: { employeeId: string }) {
             <div key={n.id} className="rounded-md border p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Badge variant="outline" className="mr-2">{n.kind}</Badge>
+                  <Badge variant="outline" className="mr-2">
+                    {n.kind}
+                  </Badge>
                   <span className="font-medium">{n.title}</span>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => del.mutate(n.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              {n.body && <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{n.body}</p>}
+              {n.body && (
+                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{n.body}</p>
+              )}
               <div className="mt-1 text-xs text-muted-foreground">
                 {format(new Date(n.created_at), "d MMM yyyy, HH:mm")}
               </div>
@@ -358,7 +399,9 @@ function DocumentsTab({ employeeId }: { employeeId: string }) {
   });
   if (q.isLoading) return <SkeletonTable />;
   if ((q.data ?? []).length === 0)
-    return <EmptyState title="No documents yet" message="Upload via the shared Documents module." />;
+    return (
+      <EmptyState title="No documents yet" message="Upload via the shared Documents module." />
+    );
   return (
     <Table>
       <TableHeader>
@@ -373,7 +416,9 @@ function DocumentsTab({ employeeId }: { employeeId: string }) {
           <TableRow key={d.id}>
             <TableCell>{d.doc_type}</TableCell>
             <TableCell>{d.title ?? "—"}</TableCell>
-            <TableCell className="text-xs">{format(new Date(d.created_at), "d MMM yyyy")}</TableCell>
+            <TableCell className="text-xs">
+              {format(new Date(d.created_at), "d MMM yyyy")}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

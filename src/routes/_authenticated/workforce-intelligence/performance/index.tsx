@@ -25,7 +25,10 @@ export const Route = createFileRoute("/_authenticated/workforce-intelligence/per
 });
 
 function PerformancePage() {
-  const employees = useQuery({ queryKey: ["wf", "employees", "list", ""], queryFn: () => listEmployees("") });
+  const employees = useQuery({
+    queryKey: ["wf", "employees", "list", ""],
+    queryFn: () => listEmployees(""),
+  });
   const designations = useQuery({ queryKey: ["wf", "designations"], queryFn: listDesignations });
 
   const scoreQuery = useQuery({

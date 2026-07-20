@@ -27,7 +27,12 @@ import type { Json } from "@/integrations/supabase/types";
 import { understand } from "./understand";
 import { planAction } from "./planner";
 import { executeAction } from "./workflowEngine";
-import type { VieActionContext, VieActionStatus, VieExecutionPlan, VieUnderstanding } from "./types";
+import type {
+  VieActionContext,
+  VieActionStatus,
+  VieExecutionPlan,
+  VieUnderstanding,
+} from "./types";
 
 /**
  * entities/plan originate as Record<string, unknown> (VieUnderstanding.entities,
@@ -87,7 +92,9 @@ export const understandAndStage = createServerFn({ method: "POST" })
         understanding = await understand(data.text);
       } catch (err) {
         throw new AppError(
-          err instanceof Error ? err.message : "The AI understanding step failed. Please try again.",
+          err instanceof Error
+            ? err.message
+            : "The AI understanding step failed. Please try again.",
           "VIE_UNDERSTAND_FAILED",
           502,
         );
@@ -108,7 +115,10 @@ export const understandAndStage = createServerFn({ method: "POST" })
       // reaching the caller as an unhandled exception.
       let plan: VieExecutionPlan | null;
       try {
-        plan = understanding.intent === "unsupported" ? null : await planAction(understanding, actionContext);
+        plan =
+          understanding.intent === "unsupported"
+            ? null
+            : await planAction(understanding, actionContext);
       } catch (err) {
         if (err instanceof ZodError) {
           throw new AppError(
@@ -152,7 +162,6 @@ export const understandAndStage = createServerFn({ method: "POST" })
           : `"${understanding.intent}" is not a Phase 1 VIE intent — no action was taken.`,
       };
 
-      let row: DbTable<"vie_actions">;
       const { data: inserted, error: insertError } = await db
         .from("vie_actions")
         .insert(insertPayload)
@@ -171,12 +180,15 @@ export const understandAndStage = createServerFn({ method: "POST" })
             .eq("created_by", context.userId)
             .eq("request_id", data.requestId)
             .single();
+
           if (racedError) throw new AppError(mapDbError(racedError));
           return raced;
         }
+
         throw new AppError(mapDbError(insertError));
       }
-      row = inserted;
+
+      const row: DbTable<"vie_actions"> = inserted;
 
       if (row.status === "planned") {
         // AUTO mode, unblocked, confident enough — execute immediately so a

@@ -9,7 +9,12 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { LEAD_UMBRELLAS, STAGE_TO_UMBRELLA, TERMINAL_STAGES, type LeadUmbrellaId } from "@/lib/constants";
+import {
+  LEAD_UMBRELLAS,
+  STAGE_TO_UMBRELLA,
+  TERMINAL_STAGES,
+  type LeadUmbrellaId,
+} from "@/lib/constants";
 import type { LeadStage } from "@/lib/types";
 
 // ---------- Executive umbrella cards ----------
@@ -31,7 +36,9 @@ export interface ExecutiveOverview {
 async function fetchEnquiryStageRows() {
   const { data, error } = await supabase
     .from("enquiries")
-    .select("stage, budget_inr, updated_at, created_at, lost_reason, source, assigned_to, customer_id, project_id");
+    .select(
+      "stage, budget_inr, updated_at, created_at, lost_reason, source, assigned_to, customer_id, project_id",
+    );
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
 }
@@ -73,8 +80,8 @@ export interface FunnelStage {
   label: string;
   count: number;
   revenueInr: number;
-  dropOffPct: number;      // % lost vs previous active stage
-  conversionPct: number;   // % that made it here from the top
+  dropOffPct: number; // % lost vs previous active stage
+  conversionPct: number; // % that made it here from the top
 }
 
 export interface FunnelSummary {
@@ -174,20 +181,20 @@ export async function getFunnelSummary(): Promise<FunnelSummary> {
     avgOrderInr: avg(oData as Array<{ total: number | null }>),
     avgDaysToClose: 0, // reserved — closing timestamps not stored per-enquiry
     // Extra for callers that want top count:
-    ...( { _top: top } as unknown as object ),
+    ...({ _top: top } as unknown as object),
   };
 }
 
 // ---------- Revenue snapshot ----------
 
 export interface RevenueSnapshot {
-  expectedInr: number;         // pipeline quotes
-  confirmedInr: number;        // quotes for confirmed sales orders
+  expectedInr: number; // pipeline quotes
+  confirmedInr: number; // quotes for confirmed sales orders
   collectedAdvanceInr: number; // payments received this year
-  outstandingInr: number;      // invoices outstanding
+  outstandingInr: number; // invoices outstanding
   dispatchPendingInr: number;
   installationPendingInr: number;
-  completedInr: number;        // paid invoices
+  completedInr: number; // paid invoices
   monthlyTrend: Array<{ label: string; value: number }>;
 }
 
@@ -205,14 +212,17 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
       supabase.from("sales_orders").select("id, quote_id, status"),
       supabase.from("dispatches").select("status, sales_order_id"),
       supabase.from("installations").select("progress_pct, sales_order_id"),
-      supabase.from("invoices").select("total, issue_date, status").gte("issue_date", yearStart.slice(0, 10)),
+      supabase
+        .from("invoices")
+        .select("total, issue_date, status")
+        .gte("issue_date", yearStart.slice(0, 10)),
     ]);
 
   for (const r of [expected, invoices, paidPayments, so, dispatches, installs, monthlyInv]) {
     if (r.error) throw new AppError(mapDbError(r.error));
   }
 
-  const sum = <T,>(arr: T[] | null, sel: (r: T) => number) =>
+  const sum = <T>(arr: T[] | null, sel: (r: T) => number) =>
     (arr ?? []).reduce((a, r) => a + sel(r), 0);
 
   // Quote totals by id.
@@ -233,7 +243,9 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
     .filter((i) => Number(i.progress_pct ?? 0) < 100 && i.sales_order_id)
     .reduce((a, i) => a + soValue(i.sales_order_id!), 0);
   const confirmedInr = (so.data ?? [])
-    .filter((s) => s.status === "confirmed" || s.status === "in_production" || s.status === "shipped")
+    .filter(
+      (s) => s.status === "confirmed" || s.status === "in_production" || s.status === "shipped",
+    )
     .reduce((a, s) => a + Number(quoteTotals.get(s.quote_id ?? "") ?? 0), 0);
 
   // Monthly invoice trend (last 12 months).
@@ -243,7 +255,11 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     byMonth.set(d.toISOString().slice(0, 7), 0);
   }
-  for (const r of (monthlyInv.data ?? []) as Array<{ total: number; issue_date: string; status: string }>) {
+  for (const r of (monthlyInv.data ?? []) as Array<{
+    total: number;
+    issue_date: string;
+    status: string;
+  }>) {
     if (!r.issue_date) continue;
     const k = r.issue_date.slice(0, 7);
     if (byMonth.has(k)) byMonth.set(k, byMonth.get(k)! + Number(r.total ?? 0));
@@ -252,8 +268,12 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
   return {
     expectedInr: sum(expected.data as Array<{ total: number }>, (r) => Number(r.total ?? 0)),
     confirmedInr,
-    collectedAdvanceInr: sum(paidPayments.data as Array<{ amount: number }>, (r) => Number(r.amount ?? 0)),
-    outstandingInr: sum(invoices.data as Array<{ balance_due: number }>, (r) => Number(r.balance_due ?? 0)),
+    collectedAdvanceInr: sum(paidPayments.data as Array<{ amount: number }>, (r) =>
+      Number(r.amount ?? 0),
+    ),
+    outstandingInr: sum(invoices.data as Array<{ balance_due: number }>, (r) =>
+      Number(r.balance_due ?? 0),
+    ),
     dispatchPendingInr,
     installationPendingInr: installPendingInr,
     completedInr: sum(
@@ -325,7 +345,9 @@ export async function getFollowupBuckets(): Promise<FollowupBuckets> {
       .map((r) => r.enquiry_id)
       .filter(Boolean) as string[],
   );
-  const noFollowup = ((active.data ?? []) as Array<{ id: string }>).filter((r) => !withSet.has(r.id)).length;
+  const noFollowup = ((active.data ?? []) as Array<{ id: string }>).filter(
+    (r) => !withSet.has(r.id),
+  ).length;
 
   return {
     today: today.count ?? 0,
@@ -351,7 +373,14 @@ export async function getHealthBuckets(): Promise<HealthBuckets> {
   const rows = await fetchEnquiryStageRows();
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
-  const b: HealthBuckets = { healthy: 0, warning: 0, critical: 0, cold: 0, inactive: 0, noActivity30d: 0 };
+  const b: HealthBuckets = {
+    healthy: 0,
+    warning: 0,
+    critical: 0,
+    cold: 0,
+    inactive: 0,
+    noActivity30d: 0,
+  };
   for (const r of rows) {
     const stage = r.stage as LeadStage;
     if (stage === "lost" || stage === "cancelled" || stage === "completed") continue;
@@ -391,7 +420,11 @@ export async function getTeamPerformance(): Promise<SalespersonRow[]> {
   }
 
   const nameOf = new Map<string, string>();
-  for (const p of (profiles.data ?? []) as Array<{ id: string; full_name: string | null; email: string | null }>) {
+  for (const p of (profiles.data ?? []) as Array<{
+    id: string;
+    full_name: string | null;
+    email: string | null;
+  }>) {
     nameOf.set(p.id, p.full_name || p.email || p.id.slice(0, 8));
   }
 
@@ -423,7 +456,10 @@ export async function getTeamPerformance(): Promise<SalespersonRow[]> {
   }
 
   // Quotation coverage — creator of a quote counts as its salesperson.
-  for (const q of (quotes.data ?? []) as Array<{ created_by: string | null; total: number | null }>) {
+  for (const q of (quotes.data ?? []) as Array<{
+    created_by: string | null;
+    total: number | null;
+  }>) {
     if (!q.created_by) continue;
     const b = bump(q.created_by);
     b.withQuote += 1;
@@ -506,7 +542,8 @@ async function projectsBy<K extends "city" | "architect_name" | "contractor_name
   const rows = await projectsAll();
   const map = new Map<string, { count: number; rev: number }>();
   for (const r of rows) {
-    const k = ((r as Record<string, unknown>)[key] as string | null | undefined)?.trim() || fallback;
+    const k =
+      ((r as Record<string, unknown>)[key] as string | null | undefined)?.trim() || fallback;
     const b = map.get(k) ?? { count: 0, rev: 0 };
     b.count += 1;
     b.rev += Number(r.expected_value_inr ?? 0);
@@ -524,9 +561,7 @@ export const getRevenueByContractor = () => projectsBy("contractor_name", "None 
 export async function getInteriorDesignerBreakdown(): Promise<BreakdownRow[]> {
   // "Interior designer" isn't a first-class column — we surface customers of
   // type 'interior_designer' with their project revenue.
-  const { data, error } = await supabase
-    .from("customers")
-    .select("id, name, customer_type");
+  const { data, error } = await supabase.from("customers").select("id, name, customer_type");
   if (error) throw new AppError(mapDbError(error));
   const designerIds = new Set(
     ((data ?? []) as Array<{ id: string; name: string; customer_type: string }>)
@@ -623,4 +658,3 @@ export async function getRevenueByVendor(): Promise<BreakdownRow[]> {
     .map(([label, b]) => ({ label, count: b.count, revenueInr: b.rev }))
     .sort((a, b) => b.revenueInr - a.revenueInr);
 }
-

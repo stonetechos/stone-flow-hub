@@ -56,7 +56,9 @@ export async function getVendorPayment(id: string): Promise<VendorPaymentListIte
   return (data as VendorPaymentListItem | null) ?? null;
 }
 
-export async function createVendorPayment(input: VendorPaymentCreateInput): Promise<VendorPaymentRow> {
+export async function createVendorPayment(
+  input: VendorPaymentCreateInput,
+): Promise<VendorPaymentRow> {
   const p = vendorPaymentCreateSchema.parse(input);
   const { data, error } = await supabase
     .from("vendor_payments" as never)
@@ -81,6 +83,9 @@ export async function createVendorPayment(input: VendorPaymentCreateInput): Prom
 }
 
 export async function deleteVendorPayment(id: string): Promise<void> {
-  const { error } = await supabase.from("vendor_payments" as never).delete().eq("id", id);
+  const { error } = await supabase
+    .from("vendor_payments" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

@@ -104,11 +104,11 @@ export async function getSalesPredictions(): Promise<SalesPredictionBundle> {
   const quoteConversion: Prediction[] = [];
   for (const q of quotes) {
     if (!["draft", "sent"].includes(q.status ?? "")) continue;
-    const history = (q.customer_id ? quotesByCustomer.get(q.customer_id) ?? [] : []).filter(
+    const history = (q.customer_id ? (quotesByCustomer.get(q.customer_id) ?? []) : []).filter(
       (h) => h.id !== q.id,
     );
-    const enq = q.enquiry_id ? enquiriesById.get(q.enquiry_id) ?? null : null;
-    const nextFup = q.enquiry_id ? nextByEnquiry.get(q.enquiry_id) ?? null : null;
+    const enq = q.enquiry_id ? (enquiriesById.get(q.enquiry_id) ?? null) : null;
+    const nextFup = q.enquiry_id ? (nextByEnquiry.get(q.enquiry_id) ?? null) : null;
     const pred = predictQuoteConversion({
       quote: {
         id: q.id,
@@ -140,10 +140,7 @@ export async function getSalesPredictions(): Promise<SalesPredictionBundle> {
     if (arr.length < 3) continue;
     const sorted = [...arr].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    stageMedian.set(
-      stage,
-      sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2,
-    );
+    stageMedian.set(stage, sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2);
   }
 
   const enquiriesCold: Prediction[] = [];

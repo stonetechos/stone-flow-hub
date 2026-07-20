@@ -8,7 +8,7 @@ export const THRESHOLDS = {
     quoteAgingWarnDays: 7,
     quoteAgingHotDays: 14,
     enquiryColdDays: 14,
-    enquiryStuckMultiplier: 2,   // stage-age > multiplier × stage-median
+    enquiryStuckMultiplier: 2, // stage-age > multiplier × stage-median
     repeatOrderStableMinOrders: 3,
     stopBuyingRecencyMultiplier: 2,
   },
@@ -21,7 +21,7 @@ export const THRESHOLDS = {
   },
   finance: {
     delayMinHistoryInvoices: 3,
-    marginErosionRatio: 1.1,     // actual > 110 % of estimated
+    marginErosionRatio: 1.1, // actual > 110 % of estimated
     forecastCoverageHigh: 0.8,
   },
   procurement: {

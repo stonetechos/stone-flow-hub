@@ -2,7 +2,14 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +21,13 @@ import { invalidateInstallation } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
-export function SignoffDialog({ installationId, disabled }: { installationId: string; disabled?: boolean }) {
+export function SignoffDialog({
+  installationId,
+  disabled,
+}: {
+  installationId: string;
+  disabled?: boolean;
+}) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState("");
@@ -42,10 +55,14 @@ export function SignoffDialog({ installationId, disabled }: { installationId: st
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" disabled={disabled}><CheckCheck className="mr-1 h-4 w-4" /> Customer sign-off</Button>
+        <Button size="sm" disabled={disabled}>
+          <CheckCheck className="mr-1 h-4 w-4" /> Customer sign-off
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Complete installation & capture sign-off</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Complete installation & capture sign-off</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
             <Label>Customer name</Label>
@@ -59,10 +76,15 @@ export function SignoffDialog({ installationId, disabled }: { installationId: st
                   type="button"
                   key={n}
                   onClick={() => setRating(n)}
-                  className={cn("rounded p-1 hover:bg-accent", rating != null && n <= rating ? "text-primary" : "text-muted-foreground")}
+                  className={cn(
+                    "rounded p-1 hover:bg-accent",
+                    rating != null && n <= rating ? "text-primary" : "text-muted-foreground",
+                  )}
                   aria-label={`Rate ${n}`}
                 >
-                  <Star className={cn("h-6 w-6", rating != null && n <= rating && "fill-current")} />
+                  <Star
+                    className={cn("h-6 w-6", rating != null && n <= rating && "fill-current")}
+                  />
                 </button>
               ))}
             </div>
@@ -77,7 +99,9 @@ export function SignoffDialog({ installationId, disabled }: { installationId: st
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
             {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign off
           </Button>

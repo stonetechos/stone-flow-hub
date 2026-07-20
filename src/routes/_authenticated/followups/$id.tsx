@@ -10,11 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { toUserMessage } from "@/lib/errors";
-import {
-  completeFollowup,
-  deleteFollowup,
-  getFollowup,
-} from "@/lib/followups/api";
+import { completeFollowup, deleteFollowup, getFollowup } from "@/lib/followups/api";
 import { invalidateFollowup } from "@/lib/query-invalidation";
 import { useState } from "react";
 
@@ -130,9 +126,7 @@ function FollowupDetailPage() {
             </Row>
             {relatedLink && <Row label="Related">{relatedLink}</Row>}
             {f.completed_at && (
-              <Row label="Completed">
-                {new Date(f.completed_at).toLocaleString("en-IN")}
-              </Row>
+              <Row label="Completed">{new Date(f.completed_at).toLocaleString("en-IN")}</Row>
             )}
           </CardContent>
         </Card>

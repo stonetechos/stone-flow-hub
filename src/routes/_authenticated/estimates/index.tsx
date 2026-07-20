@@ -6,8 +6,20 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -60,7 +72,11 @@ function EstimatesListPage() {
       <DropdownMenuContent align="end" className="w-72">
         {ESTIMATE_TEMPLATE_LIST.map((t) => (
           <DropdownMenuItem key={t.key} asChild>
-            <Link to="/estimates/new" search={{ template: t.key }} className="flex flex-col items-start gap-0.5">
+            <Link
+              to="/estimates/new"
+              search={{ template: t.key }}
+              className="flex flex-col items-start gap-0.5"
+            >
               <span className="font-medium">{t.label}</span>
               <span className="text-xs text-muted-foreground">{t.tagline}</span>
             </Link>
@@ -111,7 +127,10 @@ function EstimatesListPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -130,12 +149,20 @@ function EstimatesListPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell>
-                      <Link to="/estimates/$estimateId" params={{ estimateId: r.id }} className="font-medium hover:underline">
+                      <Link
+                        to="/estimates/$estimateId"
+                        params={{ estimateId: r.id }}
+                        className="font-medium hover:underline"
+                      >
                         {r.estimate_no}
                       </Link>
                     </TableCell>
                   )}
-                  {!isHidden("template") && <TableCell className="text-sm">{ESTIMATE_TEMPLATES[r.template].label}</TableCell>}
+                  {!isHidden("template") && (
+                    <TableCell className="text-sm">
+                      {ESTIMATE_TEMPLATES[r.template].label}
+                    </TableCell>
+                  )}
                   {!isHidden("customer") && (
                     <TableCell className="text-sm">
                       <div>{r.customer?.name ?? "—"}</div>
@@ -143,9 +170,17 @@ function EstimatesListPage() {
                     </TableCell>
                   )}
                   {!isHidden("status") && (
-                    <TableCell><Badge variant="outline" className="capitalize">{r.status}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {r.status}
+                      </Badge>
+                    </TableCell>
                   )}
-                  {!isHidden("total") && <TableCell className="text-right font-medium tabular-nums">{formatInr(r.total)}</TableCell>}
+                  {!isHidden("total") && (
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatInr(r.total)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

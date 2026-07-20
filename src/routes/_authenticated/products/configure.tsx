@@ -24,7 +24,6 @@ import { invalidateProduct, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import { Sparkles } from "lucide-react";
 
-
 export const Route = createFileRoute("/_authenticated/products/configure")({
   component: ProductConfigurator,
 });
@@ -75,24 +74,60 @@ function ProductConfigurator() {
     if (family) parts.push(family.name);
     if (surface) parts.push(surface.name);
     if (edge) parts.push(`${edge.name} edge`);
-    if (thickness) parts.push(`${(thickness as MasterOpt & { mm?: number }).mm ?? thickness.name}mm`);
+    if (thickness)
+      parts.push(`${(thickness as MasterOpt & { mm?: number }).mm ?? thickness.name}mm`);
     if (length && width) parts.push(`${length}×${width}mm`);
     if (grade) parts.push(`Grade ${grade.name}`);
 
     const name = parts.slice(0, 5).join(" ") || "Configured product";
     const description = parts.join(" · ");
-    const codeParts = [family?.code, stone?.code, colour?.code, surface?.code, thickness && `T${(thickness as MasterOpt & { mm?: number }).mm ?? ""}`]
+    const codeParts = [
+      family?.code,
+      stone?.code,
+      colour?.code,
+      surface?.code,
+      thickness && `T${(thickness as MasterOpt & { mm?: number }).mm ?? ""}`,
+    ]
       .filter(Boolean)
       .map((s) => String(s).toUpperCase());
     const suggestedCode = codeParts.join("-");
     // Deterministic canonical hash of the full configuration.
-    const hashInput = [familyId, stoneId, colourId, surfaceId, edgeId, thicknessId, originId, gradeId, packagingId, uomId, length, width].join("|");
+    const hashInput = [
+      familyId,
+      stoneId,
+      colourId,
+      surfaceId,
+      edgeId,
+      thicknessId,
+      originId,
+      gradeId,
+      packagingId,
+      uomId,
+      length,
+      width,
+    ].join("|");
     const config_hash = simpleHash(hashInput);
     return { name, description, suggestedCode, config_hash };
   }, [
-    families.data, stones.data, colours.data, surfaces.data, edges.data,
-    thicknesses.data, grades.data, familyId, stoneId, colourId, surfaceId,
-    edgeId, thicknessId, originId, gradeId, packagingId, uomId, length, width,
+    families.data,
+    stones.data,
+    colours.data,
+    surfaces.data,
+    edges.data,
+    thicknesses.data,
+    grades.data,
+    familyId,
+    stoneId,
+    colourId,
+    surfaceId,
+    edgeId,
+    thicknessId,
+    originId,
+    gradeId,
+    packagingId,
+    uomId,
+    length,
+    width,
   ]);
 
   const create = useMutation({
@@ -110,7 +145,9 @@ function ProductConfigurator() {
         mosaic: ["mosaic"],
       };
       const fname = (family?.name ?? "").toLowerCase();
-      const required = Object.entries(capabilityMap).flatMap(([k, v]) => (fname.includes(k) ? v : []));
+      const required = Object.entries(capabilityMap).flatMap(([k, v]) =>
+        fname.includes(k) ? v : [],
+      );
       const payload = {
         name: derived.name,
         commercial_name: derived.name,
@@ -119,8 +156,19 @@ function ProductConfigurator() {
         auto_description: derived.description,
         config_hash: derived.config_hash,
         config_json: {
-          familyId, stoneId, colourId, surfaceId, edgeId, thicknessId, originId,
-          gradeId, packagingId, uomId, length: length || null, width: width || null, notes: notes || null,
+          familyId,
+          stoneId,
+          colourId,
+          surfaceId,
+          edgeId,
+          thicknessId,
+          originId,
+          gradeId,
+          packagingId,
+          uomId,
+          length: length || null,
+          width: width || null,
+          notes: notes || null,
         },
         family_id: familyId,
         stone_type_id: stoneId,
@@ -135,14 +183,31 @@ function ProductConfigurator() {
         is_custom: true,
         hsn_code: hsn.hsn,
         gst_pct: gst.gst_pct,
-        estimated_mfg_days: fname.includes("artwork") || fname.includes("mural") ? 14 : fname.includes("mosaic") ? 7 : 5,
+        estimated_mfg_days:
+          fname.includes("artwork") || fname.includes("mural")
+            ? 14
+            : fname.includes("mosaic")
+              ? 7
+              : 5,
         waste_pct: fname.includes("inlay") || fname.includes("artwork") ? 15 : 5,
         required_capabilities: required,
         is_active: true,
       };
-      const { data, error } = await (supabase.from("products") as unknown as {
-        insert: (v: Record<string, unknown>) => { select: (c: string) => { single: () => Promise<{ data: { id: string; name: string; product_code: string } | null; error: unknown }> } };
-      }).insert(payload).select("id,name,product_code").single();
+      const { data, error } = await (
+        supabase.from("products") as unknown as {
+          insert: (v: Record<string, unknown>) => {
+            select: (c: string) => {
+              single: () => Promise<{
+                data: { id: string; name: string; product_code: string } | null;
+                error: unknown;
+              }>;
+            };
+          };
+        }
+      )
+        .insert(payload)
+        .select("id,name,product_code")
+        .single();
       if (error) throw error;
       return data!;
     },
@@ -155,7 +220,11 @@ function ProductConfigurator() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const ready = familyId && stoneId && (thicknessId || families.data?.find((f) => f.id === familyId)?.code?.match(/MURAL|ARTWORK|SCULPTURE/i));
+  const ready =
+    familyId &&
+    stoneId &&
+    (thicknessId ||
+      families.data?.find((f) => f.id === familyId)?.code?.match(/MURAL|ARTWORK|SCULPTURE/i));
 
   return (
     <div>
@@ -175,13 +244,28 @@ function ProductConfigurator() {
                 <EntityPicker type="stone_type" value={stoneId} onChange={setStoneId} />
               </Field>
               <Field label="Colour">
-                <MasterSelect list={colours.data ?? []} value={colourId} onChange={setColourId} placeholder="Select colour" />
+                <MasterSelect
+                  list={colours.data ?? []}
+                  value={colourId}
+                  onChange={setColourId}
+                  placeholder="Select colour"
+                />
               </Field>
               <Field label="Origin">
-                <MasterSelect list={origins.data ?? []} value={originId} onChange={setOriginId} placeholder="Select origin" />
+                <MasterSelect
+                  list={origins.data ?? []}
+                  value={originId}
+                  onChange={setOriginId}
+                  placeholder="Select origin"
+                />
               </Field>
               <Field label="Quality Grade">
-                <MasterSelect list={grades.data ?? []} value={gradeId} onChange={setGradeId} placeholder="Select grade" />
+                <MasterSelect
+                  list={grades.data ?? []}
+                  value={gradeId}
+                  onChange={setGradeId}
+                  placeholder="Select grade"
+                />
               </Field>
             </div>
           </Section>
@@ -198,8 +282,13 @@ function ProductConfigurator() {
           <Section title="4. Dimensions">
             <div className="grid gap-3 sm:grid-cols-3">
               <Field label="Thickness">
-                <MasterSelect list={thicknesses.data ?? []} value={thicknessId} onChange={setThicknessId} placeholder="Select thickness"
-                  labelFn={(o) => `${o.name} · T${(o as MasterOpt & { mm?: number }).mm ?? ""}mm`} />
+                <MasterSelect
+                  list={thicknesses.data ?? []}
+                  value={thicknessId}
+                  onChange={setThicknessId}
+                  placeholder="Select thickness"
+                  labelFn={(o) => `${o.name} · T${(o as MasterOpt & { mm?: number }).mm ?? ""}mm`}
+                />
               </Field>
               <Field label="Length (mm)">
                 <Input type="number" value={length} onChange={(e) => setLength(e.target.value)} />
@@ -212,16 +301,30 @@ function ProductConfigurator() {
           <Section title="5. Packaging & Unit">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Packaging">
-                <MasterSelect list={packaging.data ?? []} value={packagingId} onChange={setPackagingId} placeholder="Select packaging" />
+                <MasterSelect
+                  list={packaging.data ?? []}
+                  value={packagingId}
+                  onChange={setPackagingId}
+                  placeholder="Select packaging"
+                />
               </Field>
               <Field label="Unit of Measurement">
-                <MasterSelect list={uoms.data ?? []} value={uomId} onChange={setUomId} placeholder="Select UoM" />
+                <MasterSelect
+                  list={uoms.data ?? []}
+                  value={uomId}
+                  onChange={setUomId}
+                  placeholder="Select UoM"
+                />
               </Field>
             </div>
           </Section>
           <Section title="6. Notes">
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
-              placeholder="Any customer-specific instructions, drawings or references…" />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Any customer-specific instructions, drawings or references…"
+            />
           </Section>
         </div>
 
@@ -234,7 +337,9 @@ function ProductConfigurator() {
               <PreviewRow label="Code" value={derived.suggestedCode || "—"} mono />
               <PreviewRow label="Name" value={derived.name} />
               <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">Description</dt>
+                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Description
+                </dt>
                 <dd className="mt-1 text-sm">{derived.description || "—"}</dd>
               </div>
               <AiClassify
@@ -243,10 +348,15 @@ function ProductConfigurator() {
                 colourName={colours.data?.find((c) => c.id === colourId)?.name}
                 surfaceName={surfaces.data?.find((s) => s.id === surfaceId)?.name}
                 originName={origins.data?.find((o) => o.id === originId)?.name}
-                thicknessMm={(thicknesses.data?.find((t) => t.id === thicknessId) as (MasterOpt & { mm?: number }) | undefined)?.mm ?? null}
+                thicknessMm={
+                  (
+                    thicknesses.data?.find((t) => t.id === thicknessId) as
+                      | (MasterOpt & { mm?: number })
+                      | undefined
+                  )?.mm ?? null
+                }
                 productName={derived.name}
               />
-
             </dl>
             <div className="mt-4 flex flex-col gap-2">
               <Button
@@ -254,7 +364,11 @@ function ProductConfigurator() {
                 onClick={() => create.mutate()}
                 className="w-full"
               >
-                {create.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Check className="mr-1.5 h-4 w-4" />}
+                {create.isPending ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="mr-1.5 h-4 w-4" />
+                )}
                 Create Product
               </Button>
               {!ready && (
@@ -281,7 +395,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1">
       <Label>
@@ -305,7 +427,11 @@ function PreviewRow({ label, value, mono }: { label: string; value: string; mono
 }
 
 function MasterSelect({
-  list, value, onChange, placeholder, labelFn,
+  list,
+  value,
+  onChange,
+  placeholder,
+  labelFn,
 }: {
   list: MasterOpt[];
   value: string | null;
@@ -321,7 +447,9 @@ function MasterSelect({
     >
       <option value="">{placeholder ?? "Select…"}</option>
       {list.map((o) => (
-        <option key={o.id} value={o.id}>{labelFn ? labelFn(o) : o.name}</option>
+        <option key={o.id} value={o.id}>
+          {labelFn ? labelFn(o) : o.name}
+        </option>
       ))}
     </select>
   );
@@ -332,9 +460,19 @@ function useMasterList(table: string, extraCol?: string) {
   return useQuery({
     queryKey: [table, "picker", ""],
     queryFn: async () => {
-      const { data, error } = await (supabase.from(table as never) as unknown as {
-        select: (c: string) => { eq: (a: string, b: unknown) => { order: (c: string) => Promise<{ data: MasterOpt[] | null; error: unknown }> } };
-      }).select(cols).eq("is_active", true).order("sort_order");
+      const { data, error } = await (
+        supabase.from(table as never) as unknown as {
+          select: (c: string) => {
+            eq: (
+              a: string,
+              b: unknown,
+            ) => { order: (c: string) => Promise<{ data: MasterOpt[] | null; error: unknown }> };
+          };
+        }
+      )
+        .select(cols)
+        .eq("is_active", true)
+        .order("sort_order");
       if (error) throw error;
       return (data ?? []) as MasterOpt[];
     },
@@ -358,8 +496,12 @@ function AiClassify(props: {
   productName: string;
 }) {
   const [result, setResult] = useState<{
-    hsn: string; hsn_conf: number; hsn_reason?: string;
-    gst: number; gst_conf: number; gst_reason?: string;
+    hsn: string;
+    hsn_conf: number;
+    hsn_reason?: string;
+    gst: number;
+    gst_conf: number;
+    gst_reason?: string;
   } | null>(null);
   const run = useMutation({
     mutationFn: async () => {
@@ -374,10 +516,15 @@ function AiClassify(props: {
       if (!r) throw new Error("No suggestion");
       return r;
     },
-    onSuccess: (r) => setResult({
-      hsn: r.hsn.hsn, hsn_conf: r.hsn.confidence, hsn_reason: r.hsn.reason,
-      gst: r.gst.gst_pct, gst_conf: r.gst.confidence, gst_reason: r.gst.reason,
-    }),
+    onSuccess: (r) =>
+      setResult({
+        hsn: r.hsn.hsn,
+        hsn_conf: r.hsn.confidence,
+        hsn_reason: r.hsn.reason,
+        gst: r.gst.gst_pct,
+        gst_conf: r.gst.confidence,
+        gst_reason: r.gst.reason,
+      }),
     onError: (e) => toast.error(toUserMessage(e)),
   });
   const hsn = result?.hsn ?? heuristicHsn(props.familyName).hsn;
@@ -395,7 +542,11 @@ function AiClassify(props: {
           onClick={() => run.mutate()}
           disabled={run.isPending || !props.stoneName}
         >
-          {run.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {run.isPending ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="h-3.5 w-3.5" />
+          )}
           AI Suggest
         </Button>
       </div>
@@ -409,4 +560,3 @@ function AiClassify(props: {
     </div>
   );
 }
-

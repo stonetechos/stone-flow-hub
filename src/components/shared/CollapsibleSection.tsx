@@ -42,9 +42,7 @@ export function CollapsibleSection({
             <h3 className="font-display text-[15px] font-semibold tracking-tight text-foreground">
               {title}
             </h3>
-            {description && (
-              <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-            )}
+            {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
           </div>
         </CollapsibleTrigger>
         {aside && <div className="shrink-0">{aside}</div>}

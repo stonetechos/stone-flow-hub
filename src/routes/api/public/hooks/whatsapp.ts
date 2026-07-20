@@ -34,7 +34,8 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
               .select("value")
               .eq("key", "notifications.whatsapp")
               .maybeSingle();
-            const cfg = ((setting as { value?: { verify_token?: string } } | null)?.value ?? {}) as { verify_token?: string };
+            const cfg = ((setting as { value?: { verify_token?: string } } | null)?.value ??
+              {}) as { verify_token?: string };
             expected = cfg.verify_token;
           } catch {
             // ignore — expected stays undefined, we'll 403 below
@@ -46,8 +47,12 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
             const { updateWhatsappStatus } = await import("@/lib/notifications/dispatch.server");
-            await updateWhatsappStatus(supabaseAdmin as never, { webhook_verified_at: new Date().toISOString() });
-          } catch { /* ignore */ }
+            await updateWhatsappStatus(supabaseAdmin as never, {
+              webhook_verified_at: new Date().toISOString(),
+            });
+          } catch {
+            /* ignore */
+          }
           return new Response(challenge, {
             status: 200,
             headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -68,8 +73,7 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
           return new Response("App secret not configured", { status: 500 });
         }
         const sig = request.headers.get("x-hub-signature-256") ?? "";
-        const expected =
-          "sha256=" + createHmac("sha256", appSecret).update(raw).digest("hex");
+        const expected = "sha256=" + createHmac("sha256", appSecret).update(raw).digest("hex");
         const sigBuf = Buffer.from(sig);
         const expBuf = Buffer.from(expected);
         if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
@@ -77,7 +81,11 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
         }
 
         let payload: unknown;
-        try { payload = JSON.parse(raw); } catch { return new Response("Bad JSON", { status: 400 }); }
+        try {
+          payload = JSON.parse(raw);
+        } catch {
+          return new Response("Bad JSON", { status: 400 });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { updateWhatsappStatus } = await import("@/lib/notifications/dispatch.server");
@@ -86,8 +94,21 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
           entry?: Array<{
             changes?: Array<{
               value?: {
-                statuses?: Array<{ id?: string; status?: string; recipient_id?: string; timestamp?: string; errors?: Array<{ title?: string; message?: string }> }>;
-                messages?: Array<{ id?: string; from?: string; timestamp?: string; type?: string; text?: { body?: string }; context?: { id?: string } }>;
+                statuses?: Array<{
+                  id?: string;
+                  status?: string;
+                  recipient_id?: string;
+                  timestamp?: string;
+                  errors?: Array<{ title?: string; message?: string }>;
+                }>;
+                messages?: Array<{
+                  id?: string;
+                  from?: string;
+                  timestamp?: string;
+                  type?: string;
+                  text?: { body?: string };
+                  context?: { id?: string };
+                }>;
                 metadata?: { phone_number_id?: string };
               };
             }>;
@@ -126,13 +147,19 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
                 payload: st as never,
               });
               if (eventName === "read") {
-                await supabaseAdmin.from("message_queue").update({ read_at: new Date().toISOString() }).eq("id", (mq as { id: string }).id);
+                await supabaseAdmin
+                  .from("message_queue")
+                  .update({ read_at: new Date().toISOString() })
+                  .eq("id", (mq as { id: string }).id);
               } else if (eventName === "failed") {
-                await supabaseAdmin.from("message_queue").update({
-                  status: "failed",
-                  last_error: st.errors?.[0]?.message ?? "Delivery failed",
-                  failed_reason: st.errors?.[0]?.title ?? "meta_delivery_failed",
-                }).eq("id", (mq as { id: string }).id);
+                await supabaseAdmin
+                  .from("message_queue")
+                  .update({
+                    status: "failed",
+                    last_error: st.errors?.[0]?.message ?? "Delivery failed",
+                    failed_reason: st.errors?.[0]?.title ?? "meta_delivery_failed",
+                  })
+                  .eq("id", (mq as { id: string }).id);
               }
             }
 

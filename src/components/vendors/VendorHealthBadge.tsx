@@ -5,12 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Award, ShieldAlert, ShieldCheck, ShieldQuestion, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getVendorHealth, type HealthTier } from "@/lib/vendors/health";
 
 const CFG: Record<
@@ -20,10 +15,10 @@ const CFG: Record<
     icon: React.ReactNode;
   }
 > = {
-  preferred:   { variant: "default",     icon: <Award className="mr-1 h-3 w-3" /> },
-  good:        { variant: "secondary",   icon: <ShieldCheck className="mr-1 h-3 w-3" /> },
-  average:     { variant: "outline",     icon: <ShieldQuestion className="mr-1 h-3 w-3" /> },
-  risk:        { variant: "destructive", icon: <ShieldAlert className="mr-1 h-3 w-3" /> },
+  preferred: { variant: "default", icon: <Award className="mr-1 h-3 w-3" /> },
+  good: { variant: "secondary", icon: <ShieldCheck className="mr-1 h-3 w-3" /> },
+  average: { variant: "outline", icon: <ShieldQuestion className="mr-1 h-3 w-3" /> },
+  risk: { variant: "destructive", icon: <ShieldAlert className="mr-1 h-3 w-3" /> },
   blacklisted: { variant: "destructive", icon: <Ban className="mr-1 h-3 w-3" /> },
 };
 

@@ -6,7 +6,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -74,7 +81,9 @@ function ReceiptsListPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" asChild>
-            <Link to="/receipts/new"><Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt</Link>
+            <Link to="/receipts/new">
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
+            </Link>
           </Button>
         }
       />
@@ -90,7 +99,9 @@ function ReceiptsListPage() {
           message="Record your first customer receipt to start tracking payments and ledger balances."
           action={
             <Button asChild>
-              <Link to="/receipts/new"><Plus className="mr-2 h-4 w-4" /> New receipt</Link>
+              <Link to="/receipts/new">
+                <Plus className="mr-2 h-4 w-4" /> New receipt
+              </Link>
             </Button>
           }
         />
@@ -103,7 +114,10 @@ function ReceiptsListPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -116,7 +130,9 @@ function ReceiptsListPage() {
                 {!isHidden("method") && <TableHead>Method</TableHead>}
                 {!isHidden("reference") && <TableHead>Reference</TableHead>}
                 {!isHidden("amount") && <TableHead className="text-right">Amount</TableHead>}
-                {!isHidden("unallocated") && <TableHead className="text-right">Unallocated</TableHead>}
+                {!isHidden("unallocated") && (
+                  <TableHead className="text-right">Unallocated</TableHead>
+                )}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
               </TableRow>
             </TableHeader>
@@ -125,20 +141,45 @@ function ReceiptsListPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell>
-                      <Link to="/receipts/$receiptId" params={{ receiptId: r.id }} className="font-medium hover:underline">
+                      <Link
+                        to="/receipts/$receiptId"
+                        params={{ receiptId: r.id }}
+                        className="font-medium hover:underline"
+                      >
                         {r.receipt_no}
                       </Link>
                     </TableCell>
                   )}
-                  {!isHidden("date") && <TableCell className="text-sm">{formatDate(r.received_at)}</TableCell>}
-                  {!isHidden("customer") && <TableCell className="text-sm">{r.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("method") && <TableCell className="text-sm uppercase">{r.method}</TableCell>}
-                  {!isHidden("reference") && <TableCell className="text-sm">{r.reference_no ?? r.cheque_no ?? "—"}</TableCell>}
-                  {!isHidden("amount") && <TableCell className="text-right font-medium tabular-nums">{formatInr(r.amount)}</TableCell>}
-                  {!isHidden("unallocated") && <TableCell className="text-right tabular-nums">{formatInr(r.unallocated_amount)}</TableCell>}
+                  {!isHidden("date") && (
+                    <TableCell className="text-sm">{formatDate(r.received_at)}</TableCell>
+                  )}
+                  {!isHidden("customer") && (
+                    <TableCell className="text-sm">{r.customer?.name ?? "—"}</TableCell>
+                  )}
+                  {!isHidden("method") && (
+                    <TableCell className="text-sm uppercase">{r.method}</TableCell>
+                  )}
+                  {!isHidden("reference") && (
+                    <TableCell className="text-sm">
+                      {r.reference_no ?? r.cheque_no ?? "—"}
+                    </TableCell>
+                  )}
+                  {!isHidden("amount") && (
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatInr(r.amount)}
+                    </TableCell>
+                  )}
+                  {!isHidden("unallocated") && (
+                    <TableCell className="text-right tabular-nums">
+                      {formatInr(r.unallocated_amount)}
+                    </TableCell>
+                  )}
                   {!isHidden("status") && (
                     <TableCell>
-                      <Badge variant={r.status === "void" ? "destructive" : "outline"} className="capitalize">
+                      <Badge
+                        variant={r.status === "void" ? "destructive" : "outline"}
+                        className="capitalize"
+                      >
                         {r.status}
                       </Badge>
                     </TableCell>

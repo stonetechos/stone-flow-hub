@@ -63,7 +63,12 @@ export function VendorShell({
           })}
         </nav>
         <div className="border-t border-border p-2">
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={signOut}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2"
+            onClick={signOut}
+          >
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
         </div>

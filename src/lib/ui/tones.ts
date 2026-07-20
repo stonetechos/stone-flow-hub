@@ -75,16 +75,11 @@ export function toneText(signal: ToneSignal | undefined | null): string {
 export function toneSurface(signal: ToneSignal | undefined | null): string {
   const t = resolveTone(signal);
   return {
-    neutral:
-      "bg-muted/40 text-muted-foreground border-border-subtle",
-    info:
-      "bg-status-info-bg text-status-info-fg border-status-info-border",
-    success:
-      "bg-status-success-bg text-status-success-fg border-status-success-border",
-    warning:
-      "bg-status-warning-bg text-status-warning-fg border-status-warning-border",
-    danger:
-      "bg-status-danger-bg text-status-danger-fg border-status-danger-border",
+    neutral: "bg-muted/40 text-muted-foreground border-border-subtle",
+    info: "bg-status-info-bg text-status-info-fg border-status-info-border",
+    success: "bg-status-success-bg text-status-success-fg border-status-success-border",
+    warning: "bg-status-warning-bg text-status-warning-fg border-status-warning-border",
+    danger: "bg-status-danger-bg text-status-danger-fg border-status-danger-border",
   }[t];
 }
 

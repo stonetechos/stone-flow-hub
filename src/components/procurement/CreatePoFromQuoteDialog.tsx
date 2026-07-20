@@ -9,7 +9,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AlertTriangle, Loader2, ShieldAlert, ShoppingCart } from "lucide-react";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +25,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import {
-  checkProcurementLock, createPoFromVendorQuote, riskFor,
+  checkProcurementLock,
+  createPoFromVendorQuote,
+  riskFor,
   type PaymentScheduleRow,
 } from "@/lib/procurement/commitment";
 
 export function CreatePoFromQuoteDialog({
-  quoteId, open, onOpenChange,
+  quoteId,
+  open,
+  onOpenChange,
 }: {
   quoteId: string | null;
   open: boolean;
@@ -62,12 +71,13 @@ export function CreatePoFromQuoteDialog({
   const canSubmit = !needsOverride || override.trim().length > 3;
 
   const mut = useMutation({
-    mutationFn: () => createPoFromVendorQuote({
-      quoteId: quoteId!,
-      vendorDeliveryDate: vendorDelivery || null,
-      overrideReason: needsOverride ? override.trim() : null,
-      paymentSchedule: schedule,
-    }),
+    mutationFn: () =>
+      createPoFromVendorQuote({
+        quoteId: quoteId!,
+        vendorDeliveryDate: vendorDelivery || null,
+        overrideReason: needsOverride ? override.trim() : null,
+        paymentSchedule: schedule,
+      }),
     onSuccess: (poId) => {
       toast.success("Purchase order created");
       qc.invalidateQueries({ queryKey: ["rfq-compare"] });
@@ -87,8 +97,8 @@ export function CreatePoFromQuoteDialog({
             <ShoppingCart className="h-4 w-4" /> Create Purchase Order
           </DialogTitle>
           <DialogDescription>
-            Links the PO to the approved vendor quote, RFQ, estimate, project and customer.
-            Defaults the vendor delivery deadline to two days before the customer commitment.
+            Links the PO to the approved vendor quote, RFQ, estimate, project and customer. Defaults
+            the vendor delivery deadline to two days before the customer commitment.
           </DialogDescription>
         </DialogHeader>
 
@@ -106,8 +116,11 @@ export function CreatePoFromQuoteDialog({
               <Field label="Estimate total" value={formatInr(lock.data.estimate_total)} />
               <Field label="Commercial scenario" value={lock.data.commercial_scenario ?? "—"} />
               <Field label="Advance required" value={formatInr(lock.data.advance_required)} />
-              <Field label="Advance received" value={formatInr(lock.data.advance_received)}
-                tone={lock.data.advance_gap > 0 ? "danger" : "ok"} />
+              <Field
+                label="Advance received"
+                value={formatInr(lock.data.advance_received)}
+                tone={lock.data.advance_gap > 0 ? "danger" : "ok"}
+              />
             </div>
 
             {needsOverride && (
@@ -142,10 +155,14 @@ export function CreatePoFromQuoteDialog({
               <Alert variant={risk === "critical" ? "destructive" : "default"}>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>
-                  Procurement risk: {risk === "critical" ? "vendor deadline exceeds customer commitment" : "less than 2-day buffer"}
+                  Procurement risk:{" "}
+                  {risk === "critical"
+                    ? "vendor deadline exceeds customer commitment"
+                    : "less than 2-day buffer"}
                 </AlertTitle>
                 <AlertDescription>
-                  Vendor deadline {vendorDelivery} vs customer commitment {lock.data.customer_delivery_date}.
+                  Vendor deadline {vendorDelivery} vs customer commitment{" "}
+                  {lock.data.customer_delivery_date}.
                 </AlertDescription>
               </Alert>
             )}
@@ -160,18 +177,54 @@ export function CreatePoFromQuoteDialog({
               <div className="space-y-2">
                 {schedule.map((row, i) => (
                   <div key={i} className="grid grid-cols-[1fr_120px_140px_auto] items-center gap-2">
-                    <Input value={row.label}
-                      onChange={(e) => setSchedule((s) => s.map((r, idx) => idx === i ? { ...r, label: e.target.value } : r))} />
-                    <Input type="number" min={0} max={100} value={row.pct}
-                      onChange={(e) => setSchedule((s) => s.map((r, idx) => idx === i ? { ...r, pct: Number(e.target.value) } : r))} />
-                    <Input value={row.stage}
-                      onChange={(e) => setSchedule((s) => s.map((r, idx) => idx === i ? { ...r, stage: e.target.value } : r))} />
-                    <Button size="sm" variant="ghost"
-                      onClick={() => setSchedule((s) => s.filter((_, idx) => idx !== i))}>×</Button>
+                    <Input
+                      value={row.label}
+                      onChange={(e) =>
+                        setSchedule((s) =>
+                          s.map((r, idx) => (idx === i ? { ...r, label: e.target.value } : r)),
+                        )
+                      }
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={row.pct}
+                      onChange={(e) =>
+                        setSchedule((s) =>
+                          s.map((r, idx) =>
+                            idx === i ? { ...r, pct: Number(e.target.value) } : r,
+                          ),
+                        )
+                      }
+                    />
+                    <Input
+                      value={row.stage}
+                      onChange={(e) =>
+                        setSchedule((s) =>
+                          s.map((r, idx) => (idx === i ? { ...r, stage: e.target.value } : r)),
+                        )
+                      }
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSchedule((s) => s.filter((_, idx) => idx !== i))}
+                    >
+                      ×
+                    </Button>
                   </div>
                 ))}
-                <Button size="sm" variant="outline"
-                  onClick={() => setSchedule((s) => [...s, { label: "Additional stage", pct: 0, stage: "custom" }])}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setSchedule((s) => [
+                      ...s,
+                      { label: "Additional stage", pct: 0, stage: "custom" },
+                    ])
+                  }
+                >
                   + Add stage
                 </Button>
               </div>
@@ -180,18 +233,30 @@ export function CreatePoFromQuoteDialog({
             {needsOverride && (
               <div>
                 <Label>Override reason (admin) *</Label>
-                <Textarea rows={2} value={override} onChange={(e) => setOverride(e.target.value)}
-                  placeholder="Reason will be logged in the procurement lock audit trail." />
+                <Textarea
+                  rows={2}
+                  value={override}
+                  onChange={(e) => setOverride(e.target.value)}
+                  placeholder="Reason will be logged in the procurement lock audit trail."
+                />
               </div>
             )}
           </div>
         ) : null}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => mut.mutate()}
-            disabled={!canSubmit || mut.isPending || Math.abs(totalPct - 100) > 0.01}>
-            {mut.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-1.5 h-4 w-4" />}
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => mut.mutate()}
+            disabled={!canSubmit || mut.isPending || Math.abs(totalPct - 100) > 0.01}
+          >
+            {mut.isPending ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <ShoppingCart className="mr-1.5 h-4 w-4" />
+            )}
             Create Purchase Order
           </Button>
         </DialogFooter>
@@ -200,11 +265,21 @@ export function CreatePoFromQuoteDialog({
   );
 }
 
-function Field({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "ok" | "danger" }) {
+function Field({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: React.ReactNode;
+  tone?: "ok" | "danger";
+}) {
   return (
     <div>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={tone === "danger" ? "font-medium text-destructive" : "font-medium"}>{value}</div>
+      <div className={tone === "danger" ? "font-medium text-destructive" : "font-medium"}>
+        {value}
+      </div>
     </div>
   );
 }

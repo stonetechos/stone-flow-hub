@@ -42,15 +42,21 @@ export function SiteAiPanel({ installationId }: { installationId: string }) {
       <CardContent className="text-sm">
         {!result && !mut.isPending && (
           <p className="text-muted-foreground">
-            Analyse delay risk, labour productivity, material consumption, progress and customer satisfaction.
+            Analyse delay risk, labour productivity, material consumption, progress and customer
+            satisfaction.
           </p>
         )}
         {ai?.scores && (
           <div className="mb-3 grid grid-cols-2 gap-2">
             {Object.entries(ai.scores).map(([k, v]) => (
               <div key={k} className="rounded-md border p-2">
-                <div className="text-xs text-muted-foreground capitalize">{k.replaceAll("_", " ")}</div>
-                <div className="text-lg font-medium">{Number(v)}<span className="text-xs text-muted-foreground">/100</span></div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  {k.replaceAll("_", " ")}
+                </div>
+                <div className="text-lg font-medium">
+                  {Number(v)}
+                  <span className="text-xs text-muted-foreground">/100</span>
+                </div>
               </div>
             ))}
           </div>

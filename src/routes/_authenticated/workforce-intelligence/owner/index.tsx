@@ -10,7 +10,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, SkeletonTable, ErrorBlock } from "@/components/layout/States";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listEmployees, listTasks } from "@/lib/workforce/api";
 import { computeEmployeeScore, type EmployeeScore } from "@/lib/workforce/scoring";
 import { buildOwnerSummary, type OwnerRecommendation } from "@/lib/workforce/owner-intel";
@@ -43,7 +50,9 @@ function OwnerIntelPage() {
       for (const e of employees.data ?? []) {
         try {
           map.set(e.id, await computeEmployeeScore(e.id, e.designation_id, e.user_id));
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
       return map;
     },
@@ -91,16 +100,28 @@ function OwnerIntelPage() {
         <Section icon={<HeartHandshake className="h-4 w-4" />} title="Suggested discussions">
           <RecList items={bucket("discussion")} />
         </Section>
-        <Section icon={<ShieldAlert className="h-4 w-4 text-destructive" />} title="Critical pending work">
+        <Section
+          icon={<ShieldAlert className="h-4 w-4 text-destructive" />}
+          title="Critical pending work"
+        >
           <RecList items={bucket("critical")} />
         </Section>
-        <Section icon={<Award className="h-4 w-4 text-status-success-fg" />} title="Employees needing appreciation">
+        <Section
+          icon={<Award className="h-4 w-4 text-status-success-fg" />}
+          title="Employees needing appreciation"
+        >
           <RecList items={bucket("appreciation")} />
         </Section>
-        <Section icon={<AlertTriangle className="h-4 w-4 text-status-warning-fg" />} title="Employees needing coaching">
+        <Section
+          icon={<AlertTriangle className="h-4 w-4 text-status-warning-fg" />}
+          title="Employees needing coaching"
+        >
           <RecList items={bucket("coaching")} />
         </Section>
-        <Section icon={<ShieldAlert className="h-4 w-4 text-status-warning-fg" />} title="High-risk operational areas">
+        <Section
+          icon={<ShieldAlert className="h-4 w-4 text-status-warning-fg" />}
+          title="High-risk operational areas"
+        >
           <RecList items={bucket("risk")} />
         </Section>
         <Section icon={<Users className="h-4 w-4" />} title="Department summary">
@@ -159,7 +180,9 @@ function OwnerIntelPage() {
                     </Link>
                   </TableCell>
                   <TableCell>{w.pending}</TableCell>
-                  <TableCell>{w.overdue > 0 ? <Badge variant="destructive">{w.overdue}</Badge> : 0}</TableCell>
+                  <TableCell>
+                    {w.overdue > 0 ? <Badge variant="destructive">{w.overdue}</Badge> : 0}
+                  </TableCell>
                   <TableCell>{s ? `${s.overall_pct}%` : "—"}</TableCell>
                 </TableRow>
               );
@@ -171,8 +194,17 @@ function OwnerIntelPage() {
   );
 }
 
-function Metric({ label, value, tone }: { label: string; value: number | string; tone?: "positive" | "danger" }) {
-  const cls = tone === "positive" ? "text-status-success-fg" : tone === "danger" ? "text-destructive" : "";
+function Metric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  tone?: "positive" | "danger";
+}) {
+  const cls =
+    tone === "positive" ? "text-status-success-fg" : tone === "danger" ? "text-destructive" : "";
   return (
     <div className="rounded-md border p-3">
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
@@ -181,11 +213,21 @@ function Metric({ label, value, tone }: { label: string; value: number | string;
   );
 }
 
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">{icon} {title}</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-sm">
+          {icon} {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

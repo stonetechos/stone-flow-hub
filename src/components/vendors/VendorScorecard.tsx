@@ -43,10 +43,13 @@ export function VendorScorecard({ vendorId }: { vendorId: string }) {
 
   const p = q.data;
   const stars = Math.max(0, Math.min(5, Math.round((p?.score ?? 0) / 20)));
-  const tier =
-    p?.is_preferred ? "Preferred" :
-    (p?.score ?? 0) >= 75 ? "Top Performer" :
-    (p?.score ?? 0) >= 50 ? "Reliable" : "Building history";
+  const tier = p?.is_preferred
+    ? "Preferred"
+    : (p?.score ?? 0) >= 75
+      ? "Top Performer"
+      : (p?.score ?? 0) >= 50
+        ? "Reliable"
+        : "Building history";
 
   return (
     <Card className="shadow-1">
@@ -86,14 +89,21 @@ export function VendorScorecard({ vendorId }: { vendorId: string }) {
           <Metric icon={TrendingUp} label="Completion %" value={pct(p?.completion_pct)} />
           <Metric icon={Clock} label="Avg response" value={hours(p?.avg_response_hours)} />
           <Metric icon={Clock} label="Avg dispatch" value={days(p?.avg_dispatch_days)} />
-          <Metric icon={TrendingUp} label="Delay %" value={pct(p?.delay_pct)} tone={((p?.delay_pct ?? 0) > 20 ? "warn" : undefined)} />
+          <Metric
+            icon={TrendingUp}
+            label="Delay %"
+            value={pct(p?.delay_pct)}
+            tone={(p?.delay_pct ?? 0) > 20 ? "warn" : undefined}
+          />
         </div>
 
         {p && (p.quotes_submitted > 0 || p.orders_count > 0) && (
           <p className="mt-4 text-xs text-muted-foreground">
             {p.quotes_approved} of {p.quotes_submitted} vendor quotes approved · Purchase value ₹
             {Math.round(p.purchase_value).toLocaleString("en-IN")}
-            {p.last_order_at ? ` · Last order ${new Date(p.last_order_at).toLocaleDateString()}` : ""}
+            {p.last_order_at
+              ? ` · Last order ${new Date(p.last_order_at).toLocaleDateString()}`
+              : ""}
           </p>
         )}
       </CardContent>
@@ -102,13 +112,28 @@ export function VendorScorecard({ vendorId }: { vendorId: string }) {
 }
 
 function Metric({
-  icon: Icon, label, value, tone,
-}: { icon: typeof Star; label: string; value: string; tone?: "warn" }) {
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Star;
+  label: string;
+  value: string;
+  tone?: "warn";
+}) {
   return (
     <div className="flex items-center gap-2 rounded-lg border p-2">
-      <Icon className={cn("h-4 w-4 shrink-0", tone === "warn" ? "text-destructive" : "text-muted-foreground")} />
+      <Icon
+        className={cn(
+          "h-4 w-4 shrink-0",
+          tone === "warn" ? "text-destructive" : "text-muted-foreground",
+        )}
+      />
       <div className="min-w-0">
-        <p className="truncate text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="truncate text-[10px] uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
         <p className="font-medium tabular-nums">{value}</p>
       </div>
     </div>

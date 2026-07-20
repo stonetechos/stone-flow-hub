@@ -4,10 +4,7 @@
  * Deterministic: given the same signals it always returns the same score,
  * confidence and trace. No ML. See `types.ts` for the contract.
  */
-import type {
-  PredictConfidence,
-  PredictSignal,
-} from "./types";
+import type { PredictConfidence, PredictSignal } from "./types";
 
 export interface ScoreInput {
   /** Fired signals (label + value + weight in [0..1]). */
@@ -23,10 +20,10 @@ export interface ScoreInput {
   expectedSignals: number;
   /** Thresholds override — otherwise defaults below. */
   thresholds?: {
-    sampleHigh?: number;  // default 5
-    sampleMed?: number;   // default 2
+    sampleHigh?: number; // default 5
+    sampleMed?: number; // default 2
     recencyHigh?: number; // default 30
-    recencyMed?: number;  // default 90
+    recencyMed?: number; // default 90
   };
 }
 
@@ -57,23 +54,19 @@ export function score(input: ScoreInput): ScoreOutput {
   const value = clamp01(totalWeight);
 
   // 2. Confidence components (0..1 each).
-  const sampleTier =
-    input.sampleSize >= sampleHigh ? 1
-    : input.sampleSize >= sampleMed ? 0.6
-    : 0.2;
-  const agreement = input.expectedSignals > 0
-    ? clamp01(input.signals.length / input.expectedSignals)
-    : 0;
+  const sampleTier = input.sampleSize >= sampleHigh ? 1 : input.sampleSize >= sampleMed ? 0.6 : 0.2;
+  const agreement =
+    input.expectedSignals > 0 ? clamp01(input.signals.length / input.expectedSignals) : 0;
   const recency =
-    input.recencyDays <= recencyHigh ? 1
-    : input.recencyDays <= recencyMed ? 0.6
-    : 0.2;
+    input.recencyDays <= recencyHigh ? 1 : input.recencyDays <= recencyMed ? 0.6 : 0.2;
 
   const cScore = sampleTier * 0.5 + agreement * 0.3 + recency * 0.2;
   const confidence: PredictConfidence =
-    cScore >= 0.75 && input.signals.length >= 3 ? "high"
-    : cScore >= 0.5 || input.signals.length >= 2 ? "medium"
-    : "low";
+    cScore >= 0.75 && input.signals.length >= 3
+      ? "high"
+      : cScore >= 0.5 || input.signals.length >= 2
+        ? "medium"
+        : "low";
 
   return {
     value,

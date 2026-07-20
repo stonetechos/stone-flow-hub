@@ -9,8 +9,7 @@ import {
   predictStopBuying,
 } from "./sales";
 
-const iso = (daysAgo: number) =>
-  new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+const iso = (daysAgo: number) => new Date(Date.now() - daysAgo * 86_400_000).toISOString();
 const isoDate = (daysAgo: number) => iso(daysAgo).slice(0, 10);
 
 describe("predictQuoteConversion", () => {

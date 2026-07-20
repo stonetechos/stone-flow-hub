@@ -24,12 +24,7 @@ export function SectionHeader({
   as?: "h2" | "h3";
 }) {
   return (
-    <div
-      className={cn(
-        "mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3",
-        className,
-      )}
-    >
+    <div className={cn("mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3", className)}>
       <div className="min-w-0">
         {eyebrow && (
           <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -48,9 +43,7 @@ export function SectionHeader({
           <p className="mt-1 max-w-prose text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>
-      )}
+      {actions && <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
     </div>
   );
 }

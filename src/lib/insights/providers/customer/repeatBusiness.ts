@@ -37,13 +37,19 @@ export const RepeatBusinessProvider: InsightProvider = {
     const salesOrderCountByCustomer = new Map<string, number>();
     for (const so of salesOrders) {
       if (!so.customer_id || so.status === "cancelled") continue;
-      salesOrderCountByCustomer.set(so.customer_id, (salesOrderCountByCustomer.get(so.customer_id) ?? 0) + 1);
+      salesOrderCountByCustomer.set(
+        so.customer_id,
+        (salesOrderCountByCustomer.get(so.customer_id) ?? 0) + 1,
+      );
     }
 
     const enquiryCountByCustomer = new Map<string, number>();
     for (const e of enquiries) {
       if (!e.customer?.id) continue;
-      enquiryCountByCustomer.set(e.customer.id, (enquiryCountByCustomer.get(e.customer.id) ?? 0) + 1);
+      enquiryCountByCustomer.set(
+        e.customer.id,
+        (enquiryCountByCustomer.get(e.customer.id) ?? 0) + 1,
+      );
     }
 
     const now = new Date().toISOString();

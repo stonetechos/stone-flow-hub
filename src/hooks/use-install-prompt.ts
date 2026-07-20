@@ -48,9 +48,7 @@ export function useInstallPrompt(): {
     };
   }, []);
 
-  const promptInstall = useCallback(async (): Promise<
-    "accepted" | "dismissed" | "unavailable"
-  > => {
+  const promptInstall = useCallback(async (): Promise<"accepted" | "dismissed" | "unavailable"> => {
     if (!deferredEvent) return "unavailable";
     await deferredEvent.prompt();
     const { outcome } = await deferredEvent.userChoice;

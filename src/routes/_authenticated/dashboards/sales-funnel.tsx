@@ -15,15 +15,34 @@ export const Route = createFileRoute("/_authenticated/dashboards/sales-funnel")(
 });
 
 function SalesFunnelDashboard() {
-  const q = useQuery({ queryKey: ["lead-analytics", "funnel"], queryFn: getFunnelSummary, staleTime: 60_000 });
-  if (q.isLoading || !q.data) return <><PageHeader title="Sales Funnel" /><LoadingBlock /></>;
-  if (q.error) return <><PageHeader title="Sales Funnel" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
+  const q = useQuery({
+    queryKey: ["lead-analytics", "funnel"],
+    queryFn: getFunnelSummary,
+    staleTime: 60_000,
+  });
+  if (q.isLoading || !q.data)
+    return (
+      <>
+        <PageHeader title="Sales Funnel" />
+        <LoadingBlock />
+      </>
+    );
+  if (q.error)
+    return (
+      <>
+        <PageHeader title="Sales Funnel" />
+        <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />
+      </>
+    );
   const d = q.data!;
   const maxCount = Math.max(1, ...d.stages.map((s) => s.count));
 
   return (
     <div>
-      <PageHeader title="Sales Funnel" subtitle="Volume, value, conversion and drop-off across every active stage." />
+      <PageHeader
+        title="Sales Funnel"
+        subtitle="Volume, value, conversion and drop-off across every active stage."
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Metric label="Total leads" value={String(d.totalLeads)} />
@@ -35,7 +54,9 @@ function SalesFunnelDashboard() {
       </div>
 
       <Card className="mt-4">
-        <CardHeader className="pb-2"><CardTitle className="text-sm">Pipeline funnel</CardTitle></CardHeader>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Pipeline funnel</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-2 pt-2">
           {d.stages.map((s) => {
             const width = Math.max(6, Math.round((s.count / maxCount) * 100));
@@ -50,7 +71,9 @@ function SalesFunnelDashboard() {
                   <span className="font-medium">{s.label}</span>
                   <span className="text-muted-foreground">
                     {s.count} leads · {formatInr(s.revenueInr)} · conv {s.conversionPct}%
-                    {s.dropOffPct > 0 && <span className="ml-2 text-destructive">↓ {s.dropOffPct}%</span>}
+                    {s.dropOffPct > 0 && (
+                      <span className="ml-2 text-destructive">↓ {s.dropOffPct}%</span>
+                    )}
                   </span>
                 </div>
                 <div className="mt-1 h-3 w-full overflow-hidden rounded-sm bg-muted">
@@ -68,8 +91,21 @@ function SalesFunnelDashboard() {
   );
 }
 
-function Metric({ label, value, tone }: { label: string; value: string; tone?: "success" | "danger" }) {
-  const cls = tone === "success" ? "border-success/30 bg-success/5" : tone === "danger" ? "border-destructive/30 bg-destructive/5" : "border-border bg-card";
+function Metric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "success" | "danger";
+}) {
+  const cls =
+    tone === "success"
+      ? "border-success/30 bg-success/5"
+      : tone === "danger"
+        ? "border-destructive/30 bg-destructive/5"
+        : "border-border bg-card";
   return (
     <div className={`rounded-lg border px-3 py-3 ${cls}`}>
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>

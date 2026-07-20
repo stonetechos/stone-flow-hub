@@ -31,9 +31,11 @@ export async function recommendVendorsForRfq(rfqId: string): Promise<Recommended
 }
 
 /** Tier label + star count derived from score + preferred flag. */
-export function tierFor(
-  v: Pick<RecommendedVendor, "score" | "is_preferred" | "stone_match">,
-): { label: string; stars: number; tone: "default" | "secondary" | "outline" } {
+export function tierFor(v: Pick<RecommendedVendor, "score" | "is_preferred" | "stone_match">): {
+  label: string;
+  stars: number;
+  tone: "default" | "secondary" | "outline";
+} {
   if (v.is_preferred || v.score >= 75) return { label: "Recommended", stars: 5, tone: "default" };
   if (v.score >= 50 || v.stone_match) return { label: "Good", stars: 4, tone: "secondary" };
   return { label: "Backup", stars: 3, tone: "outline" };

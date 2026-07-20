@@ -124,9 +124,7 @@ export function EmptyState({
       </div>
       <div className="space-y-1">
         <h3 className="font-display text-[15px] font-semibold text-foreground">{title}</h3>
-        {message && (
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground">{message}</p>
-        )}
+        {message && <p className="mx-auto max-w-sm text-sm text-muted-foreground">{message}</p>}
       </div>
       {action && <div className="pt-1">{action}</div>}
     </div>

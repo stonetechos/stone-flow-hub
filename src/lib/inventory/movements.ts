@@ -49,11 +49,13 @@ export const movementCreateSchema = z.object({
 });
 export type MovementCreateInput = z.infer<typeof movementCreateSchema>;
 
-export async function listMovements(params: {
-  productId?: string | null;
-  inventoryItemId?: string | null;
-  limit?: number;
-} = {}): Promise<InventoryMovementListItem[]> {
+export async function listMovements(
+  params: {
+    productId?: string | null;
+    inventoryItemId?: string | null;
+    limit?: number;
+  } = {},
+): Promise<InventoryMovementListItem[]> {
   let q = supabase
     .from("inventory_movements" as never)
     .select("*, product:products!inventory_movements_product_id_fkey(id,name,product_code)")

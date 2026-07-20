@@ -46,7 +46,9 @@ export function RfqVendorRecommendations({ rfqId }: { rfqId: string }) {
     mutationFn: async (vendorIds: string[]) => {
       if (vendorIds.length === 0) return;
       const rows = vendorIds.map((vid) => ({
-        rfq_id: rfqId, vendor_id: vid, response_status: "pending" as const,
+        rfq_id: rfqId,
+        vendor_id: vid,
+        response_status: "pending" as const,
         sent_at: new Date().toISOString(),
       }));
       const { error } = await supabase.from("vendor_requests").insert(rows);
@@ -82,15 +84,19 @@ export function RfqVendorRecommendations({ rfqId }: { rfqId: string }) {
         </CardTitle>
         {recommendedFresh.length > 0 && (
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={selectAll}>Select all</Button>
+            <Button size="sm" variant="outline" onClick={selectAll}>
+              Select all
+            </Button>
             <Button
               size="sm"
               disabled={selected.size === 0 || invite.isPending}
               onClick={() => invite.mutate(Array.from(selected))}
             >
-              {invite.isPending
-                ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                : <Send className="mr-1.5 h-4 w-4" />}
+              {invite.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-1.5 h-4 w-4" />
+              )}
               Invite {selected.size || ""}
             </Button>
           </div>
@@ -101,8 +107,8 @@ export function RfqVendorRecommendations({ rfqId }: { rfqId: string }) {
           <p className="text-sm text-muted-foreground">Loading recommendations…</p>
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No vendors matched yet — add vendor capabilities and stone-type coverage in the
-            Vendors module to power recommendations.
+            No vendors matched yet — add vendor capabilities and stone-type coverage in the Vendors
+            module to power recommendations.
           </p>
         ) : (
           <ul className="divide-y">
@@ -128,14 +134,25 @@ export function RfqVendorRecommendations({ rfqId }: { rfqId: string }) {
                           {v.company_name} <ExternalLink className="h-3 w-3 shrink-0" />
                         </Link>
                         {v.is_preferred && <Award className="h-3.5 w-3.5 shrink-0 text-primary" />}
-                        {v.stone_match && <Gem className="h-3.5 w-3.5 shrink-0 text-blue-500" aria-label="Stone type match" />}
-                        {invited && <Badge variant="secondary" className="text-[10px]">Invited</Badge>}
+                        {v.stone_match && (
+                          <Gem
+                            className="h-3.5 w-3.5 shrink-0 text-blue-500"
+                            aria-label="Stone type match"
+                          />
+                        )}
+                        {invited && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Invited
+                          </Badge>
+                        )}
                       </div>
                       <p className="truncate text-[11px] text-muted-foreground">
                         <span className="font-mono">{v.vendor_code}</span>
                         {v.city ? ` · ${v.city}` : ""}
                         {v.lead_time_days != null ? ` · ${v.lead_time_days}d lead` : ""}
-                        {v.capability_match_count > 0 ? ` · ${v.capability_match_count} capabilities` : ""}
+                        {v.capability_match_count > 0
+                          ? ` · ${v.capability_match_count} capabilities`
+                          : ""}
                         {v.orders_count > 0 ? ` · ${v.orders_count} orders` : ""}
                         {v.approval_pct > 0 ? ` · ${Math.round(v.approval_pct)}% approval` : ""}
                       </p>
@@ -159,7 +176,13 @@ function Stars({ count }: { count: number }) {
   return (
     <div className="flex" aria-label={`${count} stars`}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={cn("h-3.5 w-3.5", i < count ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
+        <Star
+          key={i}
+          className={cn(
+            "h-3.5 w-3.5",
+            i < count ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30",
+          )}
+        />
       ))}
     </div>
   );

@@ -237,16 +237,15 @@ export const qk = {
   },
   inventoryMovements: {
     all: ["inventory_movements"] as const,
-    list: (productId?: string | null) =>
-      ["inventory_movements", "list", productId ?? ""] as const,
+    list: (productId?: string | null) => ["inventory_movements", "list", productId ?? ""] as const,
     stockLedger: ["inventory_movements", "stock_ledger"] as const,
   },
-  procurementCalendar: (from: string, to: string) =>
-    ["procurement_calendar", from, to] as const,
+  procurementCalendar: (from: string, to: string) => ["procurement_calendar", from, to] as const,
   // Slice 6 — Installation & Field Service
   installations: {
     all: ["installations"] as const,
-    list: (q?: string, status?: string) => ["installations", "list", q ?? "", status ?? ""] as const,
+    list: (q?: string, status?: string) =>
+      ["installations", "list", q ?? "", status ?? ""] as const,
     byId: (id: string) => ["installations", "byId", id] as const,
     bySalesOrder: (id: string) => ["installations", "bySalesOrder", id] as const,
     progress: (id: string) => ["installations", "progress", id] as const,
@@ -266,8 +265,7 @@ export const qk = {
   timeline: {
     customer: (id: string) => ["timeline", "customer", id] as const,
     project: (id: string) => ["timeline", "project", id] as const,
-    entity: (entityType: string, entityId: string) => ["timeline", "entity", entityType, entityId] as const,
+    entity: (entityType: string, entityId: string) =>
+      ["timeline", "entity", entityType, entityId] as const,
   },
 } as const;
-
-

@@ -14,7 +14,13 @@ import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
 import type { ExecutiveHeadline } from "./types";
 import { resolveTone } from "@/lib/ui/tones";
 
-const TONE_RANK: Record<string, number> = { danger: 4, warning: 3, info: 2, success: 1, neutral: 0 };
+const TONE_RANK: Record<string, number> = {
+  danger: 4,
+  warning: 3,
+  info: 2,
+  success: 1,
+  neutral: 0,
+};
 const MODULE_RANK: Record<string, number> = { Finance: 4, Operations: 3, Sales: 2, Customer: 1 };
 
 function headlineScore(insight: ProcessedInsight): [number, number, number] {

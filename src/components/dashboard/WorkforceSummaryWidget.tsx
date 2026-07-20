@@ -33,7 +33,11 @@ export function WorkforceSummaryWidget() {
     queryFn: async () => {
       const m = new Map<string, EmployeeScore>();
       for (const e of employees.data ?? []) {
-        try { m.set(e.id, await computeEmployeeScore(e.id, e.designation_id, e.user_id)); } catch { /* skip */ }
+        try {
+          m.set(e.id, await computeEmployeeScore(e.id, e.designation_id, e.user_id));
+        } catch {
+          /* skip */
+        }
       }
       return m;
     },
@@ -42,7 +46,11 @@ export function WorkforceSummaryWidget() {
 
   if (!canView || (employees.data?.length ?? 0) === 0) return null;
 
-  const summary = buildOwnerSummary(employees.data ?? [], tasks.data ?? [], scores.data ?? new Map());
+  const summary = buildOwnerSummary(
+    employees.data ?? [],
+    tasks.data ?? [],
+    scores.data ?? new Map(),
+  );
   const recs = summary.recommendations.slice(0, 3);
 
   return (
@@ -60,18 +68,40 @@ export function WorkforceSummaryWidget() {
         }
       />
       <StatRow>
-        <Stat label="Team" value={summary.totalEmployees} icon={<Users className="h-3.5 w-3.5" />} to="/workforce-intelligence/employees" />
-        <Stat label="Pending" value={summary.pending + summary.inProgress} to="/workforce-intelligence" />
-        <Stat label="Overdue" value={summary.overdue} tone={summary.overdue > 0 ? "primary" : "default"} to="/workforce-intelligence/owner" />
-        <Stat label="Completion" value={`${summary.completionPct}%`} to="/workforce-intelligence/performance" />
+        <Stat
+          label="Team"
+          value={summary.totalEmployees}
+          icon={<Users className="h-3.5 w-3.5" />}
+          to="/workforce-intelligence/employees"
+        />
+        <Stat
+          label="Pending"
+          value={summary.pending + summary.inProgress}
+          to="/workforce-intelligence"
+        />
+        <Stat
+          label="Overdue"
+          value={summary.overdue}
+          tone={summary.overdue > 0 ? "primary" : "default"}
+          to="/workforce-intelligence/owner"
+        />
+        <Stat
+          label="Completion"
+          value={`${summary.completionPct}%`}
+          to="/workforce-intelligence/performance"
+        />
       </StatRow>
       {(summary.topPerformer || summary.needsAttention) && (
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           {summary.topPerformer && (
-            <Badge variant="secondary">Top: {summary.topPerformer.name} ({summary.topPerformer.pct.toFixed(0)}%)</Badge>
+            <Badge variant="secondary">
+              Top: {summary.topPerformer.name} ({summary.topPerformer.pct.toFixed(0)}%)
+            </Badge>
           )}
           {summary.needsAttention && (
-            <Badge variant="outline">Attention: {summary.needsAttention.name} ({summary.needsAttention.pct.toFixed(0)}%)</Badge>
+            <Badge variant="outline">
+              Attention: {summary.needsAttention.name} ({summary.needsAttention.pct.toFixed(0)}%)
+            </Badge>
           )}
         </div>
       )}

@@ -168,10 +168,7 @@ function Section({
       </div>
       <ul className="divide-y">
         {rows.map((row) => (
-          <li
-            key={row.module}
-            className="flex items-center justify-between gap-3 px-3 py-2"
-          >
+          <li key={row.module} className="flex items-center justify-between gap-3 px-3 py-2">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="tabular-nums">
                 {row.count}
@@ -198,16 +195,27 @@ function Section({
 
 function entityLabelHeading(t: MdmEntityType): string {
   switch (t) {
-    case "customer":       return "customer";
-    case "vendor":         return "vendor";
-    case "project":        return "project";
-    case "product":        return "product";
-    case "estimate":       return "estimate";
-    case "quote":          return "quotation";
-    case "sales_order":    return "sales order";
-    case "purchase_order": return "purchase order";
-    case "enquiry":        return "enquiry";
-    case "invoice":        return "invoice";
-    default:               return t;
+    case "customer":
+      return "customer";
+    case "vendor":
+      return "vendor";
+    case "project":
+      return "project";
+    case "product":
+      return "product";
+    case "estimate":
+      return "estimate";
+    case "quote":
+      return "quotation";
+    case "sales_order":
+      return "sales order";
+    case "purchase_order":
+      return "purchase order";
+    case "enquiry":
+      return "enquiry";
+    case "invoice":
+      return "invoice";
+    default:
+      return t;
   }
 }

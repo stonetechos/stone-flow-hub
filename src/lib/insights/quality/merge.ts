@@ -23,7 +23,13 @@ export interface MergedInsight extends Insight {
 /** Ordinal severity for the 5 canonical tones — the one place this
  *  ranking is defined; dedupe.ts and conflicts.ts both import
  *  `compareSeverity` from here instead of redefining it. */
-const TONE_RANK: Record<string, number> = { danger: 4, warning: 3, info: 2, success: 1, neutral: 0 };
+const TONE_RANK: Record<string, number> = {
+  danger: 4,
+  warning: 3,
+  info: 2,
+  success: 1,
+  neutral: 0,
+};
 
 /** True when `a` should be considered more severe/urgent than `b` — tone
  *  first, then the provider's own raw `priority` as a tiebreaker. Shared
@@ -47,7 +53,9 @@ function combine(group: Insight[]): MergedInsight {
 
   const primary = group.reduce((best, next) => (isMoreSevere(next, best) ? next : best));
   const others = group.filter((i) => i !== primary);
-  const whys = [primary.why, ...others.map((o) => o.why)].filter((w, idx, arr) => arr.indexOf(w) === idx);
+  const whys = [primary.why, ...others.map((o) => o.why)].filter(
+    (w, idx, arr) => arr.indexOf(w) === idx,
+  );
 
   return {
     ...primary,

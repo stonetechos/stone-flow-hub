@@ -110,16 +110,19 @@ function RfqDetail() {
   const submitted = !!existing.data?.submitted_at;
   const locked = submitted || !!existing.data?.is_approved || !!existing.data?.rejected_at;
 
-  const parsed = useMemo(() => ({
-    price_total: draft.price_total ? Number(draft.price_total) : undefined,
-    freight_inr: draft.freight_inr ? Number(draft.freight_inr) : null,
-    dispatch_days: draft.dispatch_days ? parseInt(draft.dispatch_days, 10) : null,
-    gst_included: draft.gst_included,
-    stock_available: draft.stock_available,
-    valid_until: draft.valid_until || null,
-    remarks: draft.remarks || null,
-    quote_pdf_file_id: draft.quote_pdf_file_id,
-  }), [draft]);
+  const parsed = useMemo(
+    () => ({
+      price_total: draft.price_total ? Number(draft.price_total) : undefined,
+      freight_inr: draft.freight_inr ? Number(draft.freight_inr) : null,
+      dispatch_days: draft.dispatch_days ? parseInt(draft.dispatch_days, 10) : null,
+      gst_included: draft.gst_included,
+      stock_available: draft.stock_available,
+      valid_until: draft.valid_until || null,
+      remarks: draft.remarks || null,
+      quote_pdf_file_id: draft.quote_pdf_file_id,
+    }),
+    [draft],
+  );
 
   // Auto-save (debounced).
   useEffect(() => {
@@ -332,7 +335,12 @@ function RfqDetail() {
               </div>
             </CardHeader>
             <CardContent>
-              <QuickForm onSubmit={(e) => { e.preventDefault(); void onSubmitQuote(); }}>
+              <QuickForm
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void onSubmitQuote();
+                }}
+              >
                 <QuickForm.QuickFill>
                   <Field label="Price (₹)" required htmlFor="q-price">
                     <Input
@@ -474,11 +482,7 @@ function RfqDetail() {
                       )}
                       Save draft
                     </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={locked || submitting}
-                    >
+                    <Button type="submit" size="sm" disabled={locked || submitting}>
                       {submitting ? (
                         <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
                       ) : (

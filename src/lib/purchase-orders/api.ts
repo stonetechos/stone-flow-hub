@@ -112,7 +112,9 @@ export async function listOpenPurchaseProductIds(): Promise<Set<string>> {
     .limit(500);
   if (poErr) throw new AppError(mapDbError(poErr));
 
-  const quoteIds = [...new Set((openPOs ?? []).map((p) => p.vendor_quote_id).filter((id): id is string => !!id))];
+  const quoteIds = [
+    ...new Set((openPOs ?? []).map((p) => p.vendor_quote_id).filter((id): id is string => !!id)),
+  ];
   if (quoteIds.length === 0) return new Set();
 
   const { data: items, error: itemsErr } = await getDb()

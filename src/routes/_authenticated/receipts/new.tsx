@@ -9,9 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { Field } from "@/components/forms/Field";
 import {
@@ -62,7 +73,9 @@ function NewReceiptPage() {
   const [allocations, setAllocations] = useState<AllocRow[]>([]);
 
   const invoicesQuery = useQuery({
-    queryKey: customerId ? qk.receipts.openInvoices(customerId) : ["receipts", "openInvoices", "none"],
+    queryKey: customerId
+      ? qk.receipts.openInvoices(customerId)
+      : ["receipts", "openInvoices", "none"],
     queryFn: () => listOpenInvoicesForCustomer(customerId!),
     enabled: !!customerId,
   });
@@ -85,7 +98,10 @@ function NewReceiptPage() {
   }, [invoicesQuery.data, preset.invoice]);
 
   const net = Math.max(0, amount - tds - charges);
-  const alloc = useMemo(() => allocations.reduce((s, a) => s + Number(a.amount || 0), 0), [allocations]);
+  const alloc = useMemo(
+    () => allocations.reduce((s, a) => s + Number(a.amount || 0), 0),
+    [allocations],
+  );
   const unallocated = net - alloc;
   const overAllocated = alloc > net + 0.01;
 
@@ -104,7 +120,9 @@ function NewReceiptPage() {
         tds_amount: tds,
         bank_charges: charges,
         remarks: remarks || null,
-        allocations: allocations.map((a) => ({ invoice_id: a.invoice_id, amount: a.amount })).filter((a) => a.amount > 0),
+        allocations: allocations
+          .map((a) => ({ invoice_id: a.invoice_id, amount: a.amount }))
+          .filter((a) => a.amount > 0),
       }),
     onSuccess: (r) => {
       toast.success(`Receipt ${r.receipt_no} created`);
@@ -116,10 +134,19 @@ function NewReceiptPage() {
 
   function toggleInvoice(inv: { id: string; invoice_no: string; balance_due: number }) {
     setAllocations((prev) => {
-      if (prev.some((p) => p.invoice_id === inv.id)) return prev.filter((p) => p.invoice_id !== inv.id);
+      if (prev.some((p) => p.invoice_id === inv.id))
+        return prev.filter((p) => p.invoice_id !== inv.id);
       const remaining = Math.max(0, net - prev.reduce((s, a) => s + a.amount, 0));
       const suggested = Math.min(Number(inv.balance_due), remaining);
-      return [...prev, { invoice_id: inv.id, amount: suggested, invoice_no: inv.invoice_no, balance_due: Number(inv.balance_due) }];
+      return [
+        ...prev,
+        {
+          invoice_id: inv.id,
+          amount: suggested,
+          invoice_no: inv.invoice_no,
+          balance_due: Number(inv.balance_due),
+        },
+      ];
     });
   }
 
@@ -231,7 +258,11 @@ function NewReceiptPage() {
                   <Input value={chequeNo} onChange={(e) => setChequeNo(e.target.value)} />
                 </Field>
                 <Field label="Cheque date">
-                  <Input type="date" value={chequeDate} onChange={(e) => setChequeDate(e.target.value)} />
+                  <Input
+                    type="date"
+                    value={chequeDate}
+                    onChange={(e) => setChequeDate(e.target.value)}
+                  />
                 </Field>
               </FormGrid>
             </FormSection>
@@ -270,7 +301,9 @@ function NewReceiptPage() {
               description="Select invoices to settle. Anything unallocated stays on the customer ledger as an advance."
             >
               {!customerId ? (
-                <p className="py-6 text-sm text-muted-foreground">Select a customer to view open invoices.</p>
+                <p className="py-6 text-sm text-muted-foreground">
+                  Select a customer to view open invoices.
+                </p>
               ) : invoicesQuery.isLoading ? (
                 <p className="py-6 text-sm text-muted-foreground">Loading open invoices…</p>
               ) : (invoicesQuery.data ?? []).length === 0 ? (
@@ -297,8 +330,12 @@ function NewReceiptPage() {
                           <TableRow key={inv.id}>
                             <TableCell className="font-mono text-xs">{inv.invoice_no}</TableCell>
                             <TableCell className="text-sm">{formatDate(inv.issue_date)}</TableCell>
-                            <TableCell className="text-right tabular-nums">{formatInr(inv.total)}</TableCell>
-                            <TableCell className="text-right tabular-nums">{formatInr(inv.balance_due)}</TableCell>
+                            <TableCell className="text-right tabular-nums">
+                              {formatInr(inv.total)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums">
+                              {formatInr(inv.balance_due)}
+                            </TableCell>
                             <TableCell className="text-right">
                               {row ? (
                                 <Input
@@ -310,13 +347,19 @@ function NewReceiptPage() {
                                   onChange={(e) =>
                                     setAllocations((prev) =>
                                       prev.map((p) =>
-                                        p.invoice_id === inv.id ? { ...p, amount: Number(e.target.value) } : p,
+                                        p.invoice_id === inv.id
+                                          ? { ...p, amount: Number(e.target.value) }
+                                          : p,
                                       ),
                                     )
                                   }
                                 />
                               ) : (
-                                <Button variant="outline" size="sm" onClick={() => toggleInvoice(inv as never)}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => toggleInvoice(inv as never)}
+                                >
                                   Allocate
                                 </Button>
                               )}

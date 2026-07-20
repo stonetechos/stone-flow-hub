@@ -39,7 +39,10 @@ export const ProductionBottleneckProvider: InsightProvider = {
   id: PRODUCTION_BOTTLENECK_PROVIDER_ID,
   label: "Production bottleneck",
   fetch: async () => {
-    const [orders, stages] = await Promise.all([listProductionOrders(), listActiveProductionStages()]);
+    const [orders, stages] = await Promise.all([
+      listProductionOrders(),
+      listActiveProductionStages(),
+    ]);
     const nowDate = new Date();
     const now = nowDate.toISOString();
     const insights: Insight[] = [];

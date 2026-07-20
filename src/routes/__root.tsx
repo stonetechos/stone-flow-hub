@@ -53,7 +53,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component", category: classifyFailure(error) });
+    reportLovableError(error, {
+      boundary: "tanstack_root_error_component",
+      category: classifyFailure(error),
+    });
   }, [error]);
 
   return (
@@ -91,7 +94,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
+      },
       { title: "Stone Tech OS" },
       {
         name: "description",
@@ -107,13 +114,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Stone Tech OS" },
       { property: "og:title", content: "Stone Tech OS" },
-      { property: "og:description", content: "ERP for the natural stone industry — leads, projects, vendors, RFQs." },
+      {
+        property: "og:description",
+        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Stone Tech OS" },
-      { name: "twitter:description", content: "ERP for the natural stone industry — leads, projects, vendors, RFQs." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc" },
+      {
+        name: "twitter:description",
+        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

@@ -68,7 +68,14 @@ export async function getOperationalRiskCounts(): Promise<OperationalRiskCounts>
   const dispatchOverdue = dispatch.filter((i) => i.id.includes(":overdue:"));
   const installationOverdue = installation.filter((i) => i.id.includes(":overdue:"));
 
-  const items = [...cold, ...unassigned, ...dispatchOverdue, ...installationOverdue, ...vendor, ...payment];
+  const items = [
+    ...cold,
+    ...unassigned,
+    ...dispatchOverdue,
+    ...installationOverdue,
+    ...vendor,
+    ...payment,
+  ];
 
   return {
     inactiveEnquiry: cold.length,

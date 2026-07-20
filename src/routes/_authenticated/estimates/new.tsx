@@ -11,19 +11,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { createEstimate } from "@/lib/estimates/api";
 import { toUserMessage } from "@/lib/errors";
 import { invalidateEstimate } from "@/lib/query-invalidation";
 import {
-  ESTIMATE_TEMPLATES, PAYMENT_SCHEDULE_PRESETS, COST_COMPONENT_LABEL, ITEM_CATEGORY_LABEL,
-  type CostComponentKind, type EstimateItemCategoryKey, type EstimateTemplateKey, type PaymentScheduleKind,
+  ESTIMATE_TEMPLATES,
+  PAYMENT_SCHEDULE_PRESETS,
+  COST_COMPONENT_LABEL,
+  ITEM_CATEGORY_LABEL,
+  type CostComponentKind,
+  type EstimateItemCategoryKey,
+  type EstimateTemplateKey,
+  type PaymentScheduleKind,
 } from "@/lib/estimates/templates";
 import { calcEstimate } from "@/lib/estimates/calc";
 import { formatInr } from "@/lib/format";
-import type { EstimateItemInput, EstimateComponentInput, PaymentScheduleRow } from "@/lib/estimates/schema";
+import type {
+  EstimateItemInput,
+  EstimateComponentInput,
+  PaymentScheduleRow,
+} from "@/lib/estimates/schema";
 
 const search = z.object({
   template: z
@@ -249,7 +263,9 @@ function NewEstimatePage() {
                     value={row.category}
                     onValueChange={(v) =>
                       setItems((rs) =>
-                        rs.map((r, i) => (i === idx ? { ...r, category: v as EstimateItemCategoryKey } : r)),
+                        rs.map((r, i) =>
+                          i === idx ? { ...r, category: v as EstimateItemCategoryKey } : r,
+                        ),
                       )
                     }
                   >
@@ -282,7 +298,9 @@ function NewEstimatePage() {
                     value={row.quantity}
                     onChange={(e) =>
                       setItems((rs) =>
-                        rs.map((r, i) => (i === idx ? { ...r, quantity: Number(e.target.value) } : r)),
+                        rs.map((r, i) =>
+                          i === idx ? { ...r, quantity: Number(e.target.value) } : r,
+                        ),
                       )
                     }
                   />
@@ -304,7 +322,9 @@ function NewEstimatePage() {
                     value={row.unit_price}
                     onChange={(e) =>
                       setItems((rs) =>
-                        rs.map((r, i) => (i === idx ? { ...r, unit_price: Number(e.target.value) } : r)),
+                        rs.map((r, i) =>
+                          i === idx ? { ...r, unit_price: Number(e.target.value) } : r,
+                        ),
                       )
                     }
                   />
@@ -411,9 +431,7 @@ function NewEstimatePage() {
                       size="icon"
                       variant="ghost"
                       className="col-span-1"
-                      onClick={() =>
-                        setComponents((cs) => cs.filter((_, i) => i !== idx))
-                      }
+                      onClick={() => setComponents((cs) => cs.filter((_, i) => i !== idx))}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -581,7 +599,9 @@ function Row({
   big?: boolean;
 }) {
   return (
-    <div className={`flex items-center justify-between ${strong ? "font-semibold" : ""} ${big ? "text-base" : ""}`}>
+    <div
+      className={`flex items-center justify-between ${strong ? "font-semibold" : ""} ${big ? "text-base" : ""}`}
+    >
       <span className="text-muted-foreground">{label}</span>
       <span>{formatInr(v)}</span>
     </div>

@@ -87,13 +87,15 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
   if (error) throw new AppError(mapDbError(error));
 
   const phone = normalizeMobile(parsed.mobile);
-  const { error: cErr } = await getDb().from("vendor_contacts").insert({
-    vendor_id: vendor.id,
-    name: parsed.contact_name,
-    phone,
-    email: parsed.email ?? null,
-    is_primary: true,
-  });
+  const { error: cErr } = await getDb()
+    .from("vendor_contacts")
+    .insert({
+      vendor_id: vendor.id,
+      name: parsed.contact_name,
+      phone,
+      email: parsed.email ?? null,
+      is_primary: true,
+    });
   if (cErr) throw new AppError(mapDbError(cErr));
 
   return vendor;
@@ -127,13 +129,15 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       .eq("id", existing.id);
     if (uErr) throw new AppError(mapDbError(uErr));
   } else {
-    const { error: iErr } = await getDb().from("vendor_contacts").insert({
-      vendor_id: id,
-      name: parsed.contact_name,
-      phone,
-      email: parsed.email ?? null,
-      is_primary: true,
-    });
+    const { error: iErr } = await getDb()
+      .from("vendor_contacts")
+      .insert({
+        vendor_id: id,
+        name: parsed.contact_name,
+        phone,
+        email: parsed.email ?? null,
+        is_primary: true,
+      });
     if (iErr) throw new AppError(mapDbError(iErr));
   }
   return vendor;

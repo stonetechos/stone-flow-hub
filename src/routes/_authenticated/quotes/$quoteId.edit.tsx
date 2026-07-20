@@ -1,15 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ArrowDown,
-  ArrowUp,
-  Loader2,
-  Plus,
-  Trash2,
-  UserCheck,
-} from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowUp, Loader2, Plus, Trash2, UserCheck } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
@@ -317,8 +309,13 @@ function LineItemsEditor({
   });
 
   const patchMut = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Parameters<typeof updateQuoteItem>[1] }) =>
-      updateQuoteItem(id, patch),
+    mutationFn: async ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Parameters<typeof updateQuoteItem>[1];
+    }) => updateQuoteItem(id, patch),
     onSuccess: () => invalidate(),
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -339,7 +336,9 @@ function LineItemsEditor({
       const v = row.description.trim();
       if (!v) {
         toast.error("Description is required");
-        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, description: original.description } : r)));
+        setRows((rs) =>
+          rs.map((r) => (r.id === id ? { ...r, description: original.description } : r)),
+        );
         return;
       }
       if (v !== original.description) patchMut.mutate({ id, patch: { description: v } });
@@ -347,7 +346,9 @@ function LineItemsEditor({
       const n = Number(row.quantity);
       if (!Number.isFinite(n) || n <= 0) {
         toast.error("Qty must be > 0");
-        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, quantity: String(original.quantity) } : r)));
+        setRows((rs) =>
+          rs.map((r) => (r.id === id ? { ...r, quantity: String(original.quantity) } : r)),
+        );
         return;
       }
       if (n !== Number(original.quantity)) patchMut.mutate({ id, patch: { quantity: n } });
@@ -355,7 +356,9 @@ function LineItemsEditor({
       const n = Number(row.unit_price);
       if (!Number.isFinite(n) || n < 0) {
         toast.error("Rate must be ≥ 0");
-        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, unit_price: String(original.unit_price) } : r)));
+        setRows((rs) =>
+          rs.map((r) => (r.id === id ? { ...r, unit_price: String(original.unit_price) } : r)),
+        );
         return;
       }
       if (n !== Number(original.unit_price)) patchMut.mutate({ id, patch: { unit_price: n } });
@@ -363,7 +366,9 @@ function LineItemsEditor({
       const n = Number(row.tax_pct);
       if (!Number.isFinite(n) || n < 0 || n > 100) {
         toast.error("GST must be between 0 and 100");
-        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, tax_pct: String(original.tax_pct) } : r)));
+        setRows((rs) =>
+          rs.map((r) => (r.id === id ? { ...r, tax_pct: String(original.tax_pct) } : r)),
+        );
         return;
       }
       if (n !== Number(original.tax_pct)) patchMut.mutate({ id, patch: { tax_pct: n } });
@@ -373,7 +378,11 @@ function LineItemsEditor({
     }
   };
 
-  const commitFulfilment = (id: string, value: string | null, original: QuoteItemRow | undefined) => {
+  const commitFulfilment = (
+    id: string,
+    value: string | null,
+    original: QuoteItemRow | undefined,
+  ) => {
     if (!original) return;
     const cur = (original as unknown as { fulfilment?: string | null }).fulfilment ?? null;
     if (value !== cur) patchMut.mutate({ id, patch: { fulfilment: value } });
@@ -405,7 +414,11 @@ function LineItemsEditor({
           onClick={() => addMut.mutate()}
           disabled={addMut.isPending}
         >
-          {addMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+          {addMut.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="mr-2 h-4 w-4" />
+          )}
           Add line
         </Button>
       </CardHeader>

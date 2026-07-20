@@ -15,14 +15,33 @@ export const Route = createFileRoute("/_authenticated/dashboards/team-performanc
 });
 
 function TeamPerformanceDashboard() {
-  const q = useQuery({ queryKey: ["lead-analytics", "team"], queryFn: getTeamPerformance, staleTime: 60_000 });
-  if (q.isLoading || !q.data) return <><PageHeader title="Team Performance" /><LoadingBlock /></>;
-  if (q.error) return <><PageHeader title="Team Performance" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
+  const q = useQuery({
+    queryKey: ["lead-analytics", "team"],
+    queryFn: getTeamPerformance,
+    staleTime: 60_000,
+  });
+  if (q.isLoading || !q.data)
+    return (
+      <>
+        <PageHeader title="Team Performance" />
+        <LoadingBlock />
+      </>
+    );
+  if (q.error)
+    return (
+      <>
+        <PageHeader title="Team Performance" />
+        <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />
+      </>
+    );
   const rows = q.data!;
 
   return (
     <div>
-      <PageHeader title="Team Performance" subtitle="Per-salesperson leads, quotations, conversions and revenue." />
+      <PageHeader
+        title="Team Performance"
+        subtitle="Per-salesperson leads, quotations, conversions and revenue."
+      />
 
       <Card>
         <CardContent className="overflow-x-auto p-0">
@@ -40,26 +59,39 @@ function TeamPerformanceDashboard() {
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">No sales activity yet.</td></tr>
-              ) : rows.map((r) => (
-                <tr key={r.userId} className="border-t border-border hover:bg-accent/50">
-                  <td className="px-3 py-2 font-medium">{r.name}</td>
-                  <td className="px-3 py-2 text-right">{r.leads}</td>
-                  <td className="px-3 py-2 text-right">{r.quotationPct}%</td>
-                  <td className="px-3 py-2 text-right">{r.conversionPct}%</td>
-                  <td className="px-3 py-2 text-right">{r.ordersClosed}</td>
-                  <td className="px-3 py-2 text-right">{r.lostLeads}</td>
-                  <td className="px-3 py-2 text-right font-mono">{formatInr(r.revenueInr)}</td>
+                <tr>
+                  <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
+                    No sales activity yet.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((r) => (
+                  <tr key={r.userId} className="border-t border-border hover:bg-accent/50">
+                    <td className="px-3 py-2 font-medium">{r.name}</td>
+                    <td className="px-3 py-2 text-right">{r.leads}</td>
+                    <td className="px-3 py-2 text-right">{r.quotationPct}%</td>
+                    <td className="px-3 py-2 text-right">{r.conversionPct}%</td>
+                    <td className="px-3 py-2 text-right">{r.ordersClosed}</td>
+                    <td className="px-3 py-2 text-right">{r.lostLeads}</td>
+                    <td className="px-3 py-2 text-right font-mono">{formatInr(r.revenueInr)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </CardContent>
       </Card>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <BarCard title="Revenue by salesperson" data={rows.slice(0, 10).map((r) => ({ label: r.name, value: r.revenueInr }))} />
-        <BarCard title="Leads handled" data={rows.slice(0, 10).map((r) => ({ label: r.name, value: r.leads }))} formatValue={(v) => String(v)} />
+        <BarCard
+          title="Revenue by salesperson"
+          data={rows.slice(0, 10).map((r) => ({ label: r.name, value: r.revenueInr }))}
+        />
+        <BarCard
+          title="Leads handled"
+          data={rows.slice(0, 10).map((r) => ({ label: r.name, value: r.leads }))}
+          formatValue={(v) => String(v)}
+        />
       </div>
     </div>
   );

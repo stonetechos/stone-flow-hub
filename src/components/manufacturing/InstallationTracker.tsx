@@ -10,27 +10,45 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  listPiecesForOrder, createPiece, updatePieceStatus, deletePiece,
-  INSTALLATION_LABEL, INSTALLATION_STATUSES, type InstallationStatus,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  listPiecesForOrder,
+  createPiece,
+  updatePieceStatus,
+  deletePiece,
+  INSTALLATION_LABEL,
+  INSTALLATION_STATUSES,
+  type InstallationStatus,
 } from "@/lib/installation/api";
 import { toUserMessage } from "@/lib/errors";
 
-const STATUS_TONE: Record<InstallationStatus, "default" | "secondary" | "outline" | "destructive"> = {
-  ready: "outline",
-  packed: "secondary",
-  loaded: "secondary",
-  dispatched: "default",
-  delivered: "default",
-  installed: "default",
-  damaged: "destructive",
-  replacement_required: "destructive",
-  replaced: "secondary",
-  returned: "destructive",
-};
+const STATUS_TONE: Record<InstallationStatus, "default" | "secondary" | "outline" | "destructive"> =
+  {
+    ready: "outline",
+    packed: "secondary",
+    loaded: "secondary",
+    dispatched: "default",
+    delivered: "default",
+    installed: "default",
+    damaged: "destructive",
+    replacement_required: "destructive",
+    replaced: "secondary",
+    returned: "destructive",
+  };
 
-export function InstallationTracker({ orderId, projectId }: { orderId: string; projectId?: string | null }) {
+export function InstallationTracker({
+  orderId,
+  projectId,
+}: {
+  orderId: string;
+  projectId?: string | null;
+}) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["pieces", orderId], queryFn: () => listPiecesForOrder(orderId) });
 
@@ -39,29 +57,35 @@ export function InstallationTracker({ orderId, projectId }: { orderId: string; p
   const [wall, setWall] = useState("");
 
   const add = useMutation({
-    mutationFn: () => createPiece({
-      production_order_id: orderId,
-      project_id: projectId ?? null,
-      piece_no: pieceNo.trim(),
-      bundle_no: null, crate_no: null,
-      room: room.trim() || null,
-      elevation: null,
-      wall: wall.trim() || null,
-      drawing_ref: null, revision: null,
-      install_sequence: null,
-      status: "ready",
-      notes: null,
-    }),
+    mutationFn: () =>
+      createPiece({
+        production_order_id: orderId,
+        project_id: projectId ?? null,
+        piece_no: pieceNo.trim(),
+        bundle_no: null,
+        crate_no: null,
+        room: room.trim() || null,
+        elevation: null,
+        wall: wall.trim() || null,
+        drawing_ref: null,
+        revision: null,
+        install_sequence: null,
+        status: "ready",
+        notes: null,
+      }),
     onSuccess: () => {
       toast.success("Piece added");
-      setPieceNo(""); setRoom(""); setWall("");
+      setPieceNo("");
+      setRoom("");
+      setWall("");
       qc.invalidateQueries({ queryKey: ["pieces", orderId] });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
   const setStatus = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: InstallationStatus }) => updatePieceStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: InstallationStatus }) =>
+      updatePieceStatus(id, status),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pieces", orderId] }),
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -73,7 +97,10 @@ export function InstallationTracker({ orderId, projectId }: { orderId: string; p
   });
 
   const rows = q.data ?? [];
-  const counts = rows.reduce<Record<string, number>>((acc, r) => { acc[r.status] = (acc[r.status] ?? 0) + 1; return acc; }, {});
+  const counts = rows.reduce<Record<string, number>>((acc, r) => {
+    acc[r.status] = (acc[r.status] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <Card>
@@ -89,16 +116,33 @@ export function InstallationTracker({ orderId, projectId }: { orderId: string; p
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-          <Input placeholder="Piece #" value={pieceNo} onChange={(e) => setPieceNo(e.target.value)} />
+          <Input
+            placeholder="Piece #"
+            value={pieceNo}
+            onChange={(e) => setPieceNo(e.target.value)}
+          />
           <Input placeholder="Room" value={room} onChange={(e) => setRoom(e.target.value)} />
           <Input placeholder="Wall" value={wall} onChange={(e) => setWall(e.target.value)} />
-          <Button size="sm" onClick={() => add.mutate()} disabled={!pieceNo.trim() || add.isPending}>
-            {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />Add</>}
+          <Button
+            size="sm"
+            onClick={() => add.mutate()}
+            disabled={!pieceNo.trim() || add.isPending}
+          >
+            {add.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="mr-1 h-4 w-4" />
+                Add
+              </>
+            )}
           </Button>
         </div>
 
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No pieces yet — add the first piece above.</p>
+          <p className="text-sm text-muted-foreground">
+            No pieces yet — add the first piece above.
+          </p>
         ) : (
           <ul className="divide-y rounded-md border">
             {rows.map((p) => (
@@ -115,15 +159,29 @@ export function InstallationTracker({ orderId, projectId }: { orderId: string; p
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Select value={p.status} onValueChange={(v) => setStatus.mutate({ id: p.id, status: v as InstallationStatus })}>
-                    <SelectTrigger className="h-7 w-40 text-xs"><SelectValue /></SelectTrigger>
+                  <Select
+                    value={p.status}
+                    onValueChange={(v) =>
+                      setStatus.mutate({ id: p.id, status: v as InstallationStatus })
+                    }
+                  >
+                    <SelectTrigger className="h-7 w-40 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {INSTALLATION_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>{INSTALLATION_LABEL[s]}</SelectItem>
+                        <SelectItem key={s} value={s}>
+                          {INSTALLATION_LABEL[s]}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button size="icon" variant="ghost" onClick={() => remove.mutate(p.id)} title="Delete">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => remove.mutate(p.id)}
+                    title="Delete"
+                  >
                     <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                 </div>

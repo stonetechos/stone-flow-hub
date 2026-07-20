@@ -22,7 +22,9 @@ export interface CreatePaymentLinkInput {
 function randomToken(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function isProviderEnabled(p: PaymentProvider): Promise<boolean> {
@@ -34,7 +36,10 @@ export async function isProviderEnabled(p: PaymentProvider): Promise<boolean> {
 
 export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<PaymentLinkRow> {
   const enabled = await isProviderEnabled(input.provider);
-  if (!enabled) throw new AppError(`${input.provider} gateway is not yet enabled. Configure it in Settings → Payment Providers.`);
+  if (!enabled)
+    throw new AppError(
+      `${input.provider} gateway is not yet enabled. Configure it in Settings → Payment Providers.`,
+    );
 
   const token = randomToken();
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -43,10 +48,12 @@ export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<
   // Manual mode: the ERP itself hosts /pay/$token and shows bank/UPI details.
   // Gateway providers would exchange the token for a hosted URL — implemented
   // lazily inside their adapters once secrets are configured.
-  const { data, error } = await (supabase.from as unknown as (t: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    insert: (v: unknown) => any;
-  })("payment_links")
+  const { data, error } = await (
+    supabase.from as unknown as (t: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      insert: (v: unknown) => any;
+    }
+  )("payment_links")
     .insert({
       provider: input.provider,
       entity_type: input.entityType,

@@ -5,9 +5,18 @@ import { toast } from "sonner";
 import { Wrench, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { listInstallationsForSalesOrder, setSalesOrderSupplyScope } from "@/lib/installation/orders";
+import {
+  listInstallationsForSalesOrder,
+  setSalesOrderSupplyScope,
+} from "@/lib/installation/orders";
 import { qk } from "@/lib/query-keys";
 import { invalidateInstallation } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -61,7 +70,9 @@ export function SalesOrderInstallationPanel({ salesOrderId }: { salesOrderId: st
             value={scope}
             onValueChange={(v) => setScope.mutate(v as "material_only" | "supply_and_installation")}
           >
-            <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="max-w-xs">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="material_only">Material supply only</SelectItem>
               <SelectItem value="supply_and_installation">Supply + Installation</SelectItem>
@@ -76,7 +87,9 @@ export function SalesOrderInstallationPanel({ salesOrderId }: { salesOrderId: st
                 <div className="font-medium">{inst.installation_no}</div>
               </div>
               <Link to="/installations/$id" params={{ id: inst.id }}>
-                <Button size="sm" variant="outline">Open</Button>
+                <Button size="sm" variant="outline">
+                  Open
+                </Button>
               </Link>
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
@@ -86,7 +99,8 @@ export function SalesOrderInstallationPanel({ salesOrderId }: { salesOrderId: st
         )}
         {scope === "supply_and_installation" && !inst && (
           <p className="text-xs text-muted-foreground">
-            Installation record will appear here once auto-generated (save the sales order to trigger).
+            Installation record will appear here once auto-generated (save the sales order to
+            trigger).
           </p>
         )}
       </CardContent>

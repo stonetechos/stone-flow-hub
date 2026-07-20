@@ -28,7 +28,13 @@ export const teamCreateSchema = z.object({
   supervisor_name: z.string().nullable().optional(),
   supervisor_phone: z.string().nullable().optional(),
   members: z
-    .array(z.object({ name: z.string().min(1), phone: z.string().nullable().optional(), skill: z.string().nullable().optional() }))
+    .array(
+      z.object({
+        name: z.string().min(1),
+        phone: z.string().nullable().optional(),
+        skill: z.string().nullable().optional(),
+      }),
+    )
     .default([]),
   skills: z.array(z.string()).default([]),
   vehicle: z.string().nullable().optional(),
@@ -50,7 +56,9 @@ export async function listInstallationTeams(query = ""): Promise<InstallationTea
   return (data ?? []) as unknown as InstallationTeam[];
 }
 
-export async function listTeamsForPicker(): Promise<Array<{ id: string; name: string; team_code: string | null }>> {
+export async function listTeamsForPicker(): Promise<
+  Array<{ id: string; name: string; team_code: string | null }>
+> {
   const { data, error } = await supabase
     .from("installation_teams" as never)
     .select("id,name,team_code")
@@ -82,7 +90,10 @@ export async function createInstallationTeam(input: TeamCreateInput): Promise<In
   return data as unknown as InstallationTeam;
 }
 
-export async function updateInstallationTeam(id: string, input: Partial<TeamCreateInput>): Promise<void> {
+export async function updateInstallationTeam(
+  id: string,
+  input: Partial<TeamCreateInput>,
+): Promise<void> {
   const { error } = await supabase
     .from("installation_teams" as never)
     .update(input as never)
@@ -91,6 +102,9 @@ export async function updateInstallationTeam(id: string, input: Partial<TeamCrea
 }
 
 export async function deleteInstallationTeam(id: string): Promise<void> {
-  const { error } = await supabase.from("installation_teams" as never).delete().eq("id", id);
+  const { error } = await supabase
+    .from("installation_teams" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

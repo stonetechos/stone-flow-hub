@@ -89,7 +89,8 @@ export function computeLeadScore(input: ScoreInputs): ScoreBreakdown {
   if (input.daysInStage > 30) add("Stuck >30 days in stage", -8);
   else if (input.daysInStage > 14) add("Slow in stage", -4);
 
-  if (input.daysSinceLastActivity != null && input.daysSinceLastActivity > 45) add("Inactive >45 days", -10);
+  if (input.daysSinceLastActivity != null && input.daysSinceLastActivity > 45)
+    add("Inactive >45 days", -10);
 
   if (umb === "lost" || umb === "cancelled") s = 0;
 
@@ -98,9 +99,21 @@ export function computeLeadScore(input: ScoreInputs): ScoreBreakdown {
 }
 
 export const SCORE_TIER_META: Record<ScoreTier, { label: string; className: string }> = {
-  excellent: { label: "Excellent", className: "bg-status-success-bg text-status-success-fg border-status-success-border" },
-  hot: { label: "Hot", className: "bg-status-danger-bg text-status-danger-fg border-status-danger-border" },
-  warm: { label: "Warm", className: "bg-status-warning-bg text-status-warning-fg border-status-warning-border" },
-  cold: { label: "Cold", className: "bg-status-info-bg text-status-info-fg border-status-info-border" },
+  excellent: {
+    label: "Excellent",
+    className: "bg-status-success-bg text-status-success-fg border-status-success-border",
+  },
+  hot: {
+    label: "Hot",
+    className: "bg-status-danger-bg text-status-danger-fg border-status-danger-border",
+  },
+  warm: {
+    label: "Warm",
+    className: "bg-status-warning-bg text-status-warning-fg border-status-warning-border",
+  },
+  cold: {
+    label: "Cold",
+    className: "bg-status-info-bg text-status-info-fg border-status-info-border",
+  },
   dormant: { label: "Dormant", className: "bg-muted text-muted-foreground border-border" },
 };

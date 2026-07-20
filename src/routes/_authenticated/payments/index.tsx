@@ -7,7 +7,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
@@ -59,7 +66,10 @@ function PaymentsPage() {
   // payment_register (receipts + legacy payments), not just the payments
   // table, so every recorded payment stays visible here regardless of
   // which flow created it.
-  const query = useQuery({ queryKey: qk.paymentRegister.list(dq), queryFn: () => listPaymentRegister(dq) });
+  const query = useQuery({
+    queryKey: qk.paymentRegister.list(dq),
+    queryFn: () => listPaymentRegister(dq),
+  });
   const del = useMutation({
     mutationFn: (id: string) => deletePayment(id),
     onSuccess: () => {
@@ -124,7 +134,10 @@ function PaymentsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -148,25 +161,43 @@ function PaymentsPage() {
                       {/* Receipts (the complete system) open on their own detail
                        * page; legacy payments keep their existing route. */}
                       {r.source === "receipt" ? (
-                        <Link to="/receipts/$receiptId" params={{ receiptId: r.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/receipts/$receiptId"
+                          params={{ receiptId: r.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.doc_no}
                         </Link>
                       ) : (
-                        <Link to="/payments/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/payments/$id"
+                          params={{ id: r.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.doc_no}
                         </Link>
                       )}
                     </TableCell>
                   )}
-                  {!isHidden("invoice") && <TableCell className="font-mono text-xs">{r.invoice_no ?? "—"}</TableCell>}
+                  {!isHidden("invoice") && (
+                    <TableCell className="font-mono text-xs">{r.invoice_no ?? "—"}</TableCell>
+                  )}
                   {!isHidden("method") && (
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">{r.method.replace(/_/g, " ")}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {r.method.replace(/_/g, " ")}
+                      </Badge>
                     </TableCell>
                   )}
                   {!isHidden("reference") && <TableCell>{r.reference_no ?? "—"}</TableCell>}
-                  {!isHidden("date") && <TableCell>{new Date(r.paid_at).toLocaleDateString()}</TableCell>}
-                  {!isHidden("amount") && <TableCell className="text-right font-mono tabular-nums">{Number(r.amount).toFixed(2)}</TableCell>}
+                  {!isHidden("date") && (
+                    <TableCell>{new Date(r.paid_at).toLocaleDateString()}</TableCell>
+                  )}
+                  {!isHidden("amount") && (
+                    <TableCell className="text-right font-mono tabular-nums">
+                      {Number(r.amount).toFixed(2)}
+                    </TableCell>
+                  )}
                   <TableCell>
                     {/* Edit/delete only apply to legacy payment rows -- receipts
                      * are managed from their own detail page (void, etc.). */}

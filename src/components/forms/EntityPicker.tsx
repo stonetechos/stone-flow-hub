@@ -118,24 +118,57 @@ export interface EntitySourceRow {
 function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
   switch (type) {
     case "customer":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.customer_code, r.primary_phone, r.city].filter(Boolean).join(" · "),
+      };
     case "vendor":
-      return { id: r.id, label: r.company_name ?? "", sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.company_name ?? "",
+        sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · "),
+      };
     case "project":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · "),
+      };
     case "product":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.product_code, r.stone_type, r.finish].filter(Boolean).join(" · "),
+      };
     case "stone_type":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.mohs_hardness ? `Mohs ${r.mohs_hardness}` : null].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.code, r.mohs_hardness ? `Mohs ${r.mohs_hardness}` : null]
+          .filter(Boolean)
+          .join(" · "),
+      };
     case "surface_finish":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.anti_slip ? "anti-slip" : null].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.code, r.anti_slip ? "anti-slip" : null].filter(Boolean).join(" · "),
+      };
     case "edge_finish":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.machine_required ? "machine" : "hand"].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.code, r.machine_required ? "machine" : "hand"].filter(Boolean).join(" · "),
+      };
     case "product_family":
-      return { id: r.id, label: r.name ?? "", sublabel: [r.code, r.default_uom].filter(Boolean).join(" · ") };
+      return {
+        id: r.id,
+        label: r.name ?? "",
+        sublabel: [r.code, r.default_uom].filter(Boolean).join(" · "),
+      };
   }
 }
-
 
 const LABEL: Record<EntityType, { singular: string; placeholder: string }> = {
   customer: { singular: "customer", placeholder: "Select customer" },
@@ -318,53 +351,84 @@ export function EntityPicker({
 
 function pickerKey(type: EntityType, q: string, filter?: EntityPickerFilter) {
   switch (type) {
-    case "customer": return qk.customers.picker(q);
-    case "vendor": return qk.vendors.picker(q);
-    case "project": return qk.projects.picker(q, filter?.customerId ?? null);
-    case "product": return qk.products.picker(q);
-    case "stone_type": return qk.stoneTypes.picker(q);
-    case "surface_finish": return qk.surfaceFinishes.picker(q);
-    case "edge_finish": return qk.edgeFinishes.picker(q);
-    case "product_family": return qk.productFamilies.picker(q);
+    case "customer":
+      return qk.customers.picker(q);
+    case "vendor":
+      return qk.vendors.picker(q);
+    case "project":
+      return qk.projects.picker(q, filter?.customerId ?? null);
+    case "product":
+      return qk.products.picker(q);
+    case "stone_type":
+      return qk.stoneTypes.picker(q);
+    case "surface_finish":
+      return qk.surfaceFinishes.picker(q);
+    case "edge_finish":
+      return qk.edgeFinishes.picker(q);
+    case "product_family":
+      return qk.productFamilies.picker(q);
   }
 }
 
 function byIdKey(type: EntityType, id: string) {
   switch (type) {
-    case "customer": return qk.customers.byId(id);
-    case "vendor": return qk.vendors.byId(id);
-    case "project": return qk.projects.byId(id);
-    case "product": return ["products", "byId", id] as const;
-    case "stone_type": return qk.stoneTypes.byId(id);
-    case "surface_finish": return qk.surfaceFinishes.byId(id);
-    case "edge_finish": return qk.edgeFinishes.byId(id);
-    case "product_family": return qk.productFamilies.byId(id);
+    case "customer":
+      return qk.customers.byId(id);
+    case "vendor":
+      return qk.vendors.byId(id);
+    case "project":
+      return qk.projects.byId(id);
+    case "product":
+      return ["products", "byId", id] as const;
+    case "stone_type":
+      return qk.stoneTypes.byId(id);
+    case "surface_finish":
+      return qk.surfaceFinishes.byId(id);
+    case "edge_finish":
+      return qk.edgeFinishes.byId(id);
+    case "product_family":
+      return qk.productFamilies.byId(id);
   }
 }
 
 async function fetchList(type: EntityType, q: string, filter?: EntityPickerFilter) {
   switch (type) {
-    case "customer": return listCustomers(q);
-    case "vendor": return listVendorsForPicker(q);
-    case "project": return listProjectsForPicker({ query: q, customerId: filter?.customerId ?? undefined });
-    case "product": return listProducts(q);
-    case "stone_type": return listStoneTypes(q);
-    case "surface_finish": return listSurfaceFinishes(q);
-    case "edge_finish": return listEdgeFinishes(q);
-    case "product_family": return listProductFamilies(q);
+    case "customer":
+      return listCustomers(q);
+    case "vendor":
+      return listVendorsForPicker(q);
+    case "project":
+      return listProjectsForPicker({ query: q, customerId: filter?.customerId ?? undefined });
+    case "product":
+      return listProducts(q);
+    case "stone_type":
+      return listStoneTypes(q);
+    case "surface_finish":
+      return listSurfaceFinishes(q);
+    case "edge_finish":
+      return listEdgeFinishes(q);
+    case "product_family":
+      return listProductFamilies(q);
   }
 }
 
 async function fetchById(type: EntityType, id: string) {
   switch (type) {
-    case "customer": return getCustomer(id);
-    case "vendor": return getVendor(id);
-    case "project": return getProject(id);
-    case "product": return getProduct(id);
-    case "stone_type": return getStoneType(id);
-    case "surface_finish": return getSurfaceFinish(id);
-    case "edge_finish": return getEdgeFinish(id);
-    case "product_family": return getProductFamily(id);
+    case "customer":
+      return getCustomer(id);
+    case "vendor":
+      return getVendor(id);
+    case "project":
+      return getProject(id);
+    case "product":
+      return getProduct(id);
+    case "stone_type":
+      return getStoneType(id);
+    case "surface_finish":
+      return getSurfaceFinish(id);
+    case "edge_finish":
+      return getEdgeFinish(id);
+    case "product_family":
+      return getProductFamily(id);
   }
 }
-

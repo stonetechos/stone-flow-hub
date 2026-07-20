@@ -26,12 +26,7 @@ export const TASK_STATUSES: WorkforceTaskStatus[] = [
   "cancelled",
 ];
 
-export const TASK_PRIORITIES: WorkforceTaskPriority[] = [
-  "urgent",
-  "high",
-  "medium",
-  "low",
-];
+export const TASK_PRIORITIES: WorkforceTaskPriority[] = ["urgent", "high", "medium", "low"];
 
 export const EMPLOYMENT_TYPES: EmploymentType[] = [
   "full_time",

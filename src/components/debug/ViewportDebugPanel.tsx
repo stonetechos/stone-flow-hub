@@ -187,8 +187,7 @@ export function ViewportDebugPanel() {
         bottom: "8px",
         zIndex: 2147483647,
         maxWidth: "calc(100vw - 16px)",
-        fontFamily:
-          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
         fontSize: "10px",
         lineHeight: 1.35,
         color: "#e6edf3",
@@ -238,9 +237,7 @@ export function ViewportDebugPanel() {
               gap: "6px",
             }}
           >
-            <strong style={{ fontSize: "11px", letterSpacing: "0.04em" }}>
-              Viewport debug
-            </strong>
+            <strong style={{ fontSize: "11px", letterSpacing: "0.04em" }}>Viewport debug</strong>
             <div style={{ display: "flex", gap: "4px" }}>
               <button
                 type="button"
@@ -267,13 +264,24 @@ export function ViewportDebugPanel() {
               <Row k="innerWidth" v={snap.innerWidth} />
               <Row k="outerWidth" v={snap.outerWidth} />
               <Row k="html.clientWidth" v={snap.clientWidth} />
-              <Row k="html.scrollWidth" v={snap.docScrollWidth} warn={snap.docScrollWidth > snap.innerWidth} />
-              <Row k="body.scrollWidth" v={snap.bodyScrollWidth} warn={snap.bodyScrollWidth > snap.innerWidth} />
+              <Row
+                k="html.scrollWidth"
+                v={snap.docScrollWidth}
+                warn={snap.docScrollWidth > snap.innerWidth}
+              />
+              <Row
+                k="body.scrollWidth"
+                v={snap.bodyScrollWidth}
+                warn={snap.bodyScrollWidth > snap.innerWidth}
+              />
               <Row k="visualVP.width" v={snap.visualViewportWidth ?? "—"} />
               <Row k="visualVP.scale" v={snap.visualViewportScale ?? "—"} />
               <Row k="visualVP.offsetLeft" v={snap.visualViewportOffsetLeft ?? "—"} />
               <Row k="devicePixelRatio" v={snap.devicePixelRatio} />
-              <Row k="safe-area T/R/B/L" v={`${snap.safeAreaTop} / ${snap.safeAreaRight} / ${snap.safeAreaBottom} / ${snap.safeAreaLeft}`} />
+              <Row
+                k="safe-area T/R/B/L"
+                v={`${snap.safeAreaTop} / ${snap.safeAreaRight} / ${snap.safeAreaBottom} / ${snap.safeAreaLeft}`}
+              />
 
               <div
                 style={{
@@ -295,10 +303,7 @@ export function ViewportDebugPanel() {
                       onClick={() => highlight(o)}
                       style={{
                         ...offBtn,
-                        borderLeft:
-                          o.overflowBy >= 8
-                            ? "3px solid #ff2d55"
-                            : "3px solid #ff9f0a",
+                        borderLeft: o.overflowBy >= 8 ? "3px solid #ff2d55" : "3px solid #ff9f0a",
                       }}
                     >
                       <div style={{ fontWeight: 600 }}>
@@ -312,7 +317,7 @@ export function ViewportDebugPanel() {
                         {o.cls || "(no class)"}
                       </div>
                       <div style={{ opacity: 0.55 }}>
-                        w:{o.w}  L:{o.left}  R:{o.right}
+                        w:{o.w} L:{o.left} R:{o.right}
                       </div>
                     </button>
                   ))

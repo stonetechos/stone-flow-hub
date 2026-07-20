@@ -7,7 +7,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
@@ -116,7 +123,10 @@ function GrnsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -137,7 +147,11 @@ function GrnsPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/grns/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/grns/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.grn_no}
                       </Link>
                     </TableCell>
@@ -146,16 +160,28 @@ function GrnsPage() {
                   {!isHidden("po") && (
                     <TableCell>
                       {r.purchase_order ? (
-                        <Link to="/purchase-orders/$id" params={{ id: r.purchase_order.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/purchase-orders/$id"
+                          params={{ id: r.purchase_order.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.purchase_order.po_no}
                         </Link>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                   )}
                   {!isHidden("received") && <TableCell>{r.received_date}</TableCell>}
-                  {!isHidden("status") && <TableCell><StatusPill status={r.status} /></TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <StatusPill status={r.status} />
+                    </TableCell>
+                  )}
                   {!isHidden("acceptance") && (
-                    <TableCell className="capitalize text-sm">{r.overall_acceptance.replace(/_/g, " ")}</TableCell>
+                    <TableCell className="capitalize text-sm">
+                      {r.overall_acceptance.replace(/_/g, " ")}
+                    </TableCell>
                   )}
                   <TableCell>
                     <RowActions onDelete={() => setToDelete(r)} />
@@ -171,7 +197,11 @@ function GrnsPage() {
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete GRN?"
-        description={toDelete ? `${toDelete.grn_no} will be removed. Inventory and ledger entries are reversed automatically.` : ""}
+        description={
+          toDelete
+            ? `${toDelete.grn_no} will be removed. Inventory and ledger entries are reversed automatically.`
+            : ""
+        }
         busy={del.isPending}
         onConfirm={() => toDelete && del.mutate(toDelete.id)}
       />

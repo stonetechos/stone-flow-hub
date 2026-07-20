@@ -66,7 +66,9 @@ export const InventoryShortageProvider: InsightProvider = {
         severity = 3;
       }
       if (committed > onHand) {
-        reasons.push(`${committed} ${unit} is already committed to open sales orders against ${onHand} on hand`);
+        reasons.push(
+          `${committed} ${unit} is already committed to open sales orders against ${onHand} on hand`,
+        );
         severity = Math.max(severity, 2) as Severity;
       }
       if (reorderLevel > 0 && onHand >= 0 && onHand < reorderLevel) {

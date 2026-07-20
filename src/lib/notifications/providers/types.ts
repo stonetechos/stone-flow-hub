@@ -24,7 +24,7 @@ export interface SendResult {
 }
 
 export interface MessageProvider {
-  readonly id: string;              // "resend", "smtp", "meta_cloud", ...
+  readonly id: string; // "resend", "smtp", "meta_cloud", ...
   readonly channel: MessageChannel;
   send(msg: OutboundMessage): Promise<SendResult>;
 }
@@ -33,7 +33,9 @@ export interface MessageProvider {
 export class ProviderNotConfiguredError extends Error {
   readonly providerId: string;
   constructor(providerId: string) {
-    super(`Notification provider "${providerId}" is not configured yet. Add credentials in Settings → Notifications.`);
+    super(
+      `Notification provider "${providerId}" is not configured yet. Add credentials in Settings → Notifications.`,
+    );
     this.name = "ProviderNotConfiguredError";
     this.providerId = providerId;
   }

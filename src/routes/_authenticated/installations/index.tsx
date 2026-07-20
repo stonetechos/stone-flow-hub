@@ -6,8 +6,21 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -69,11 +82,15 @@ function InstallationsPage() {
         searchPlaceholder="Search installation, site…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-40 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-40 text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {INSTALLATION_ORDER_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -82,13 +99,23 @@ function InstallationsPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
           <>
-            <Link to="/installation-teams"><Button variant="outline" size="sm" className="h-8">Teams</Button></Link>
-            <Link to="/dashboards/installation"><Button variant="outline" size="sm" className="h-8">Dashboard</Button></Link>
+            <Link to="/installation-teams">
+              <Button variant="outline" size="sm" className="h-8">
+                Teams
+              </Button>
+            </Link>
+            <Link to="/dashboards/installation">
+              <Button variant="outline" size="sm" className="h-8">
+                Dashboard
+              </Button>
+            </Link>
           </>
         }
         action={
           <Link to="/sales-orders/new">
-            <Button size="sm" className="h-8"><Plus className="mr-1.5 h-3.5 w-3.5" /> New from SO</Button>
+            <Button size="sm" className="h-8">
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New from SO
+            </Button>
           </Link>
         }
       />
@@ -112,7 +139,10 @@ function InstallationsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -131,17 +161,33 @@ function InstallationsPage() {
             </TableHeader>
             <TableBody>
               {pageRows.map((r) => (
-                <TableRow key={r.id} className="cursor-pointer" onClick={() => nav({ to: "/installations/$id", params: { id: r.id } })}>
-                  {!isHidden("no") && <TableCell className="font-medium">{r.installation_no}</TableCell>}
+                <TableRow
+                  key={r.id}
+                  className="cursor-pointer"
+                  onClick={() => nav({ to: "/installations/$id", params: { id: r.id } })}
+                >
+                  {!isHidden("no") && (
+                    <TableCell className="font-medium">{r.installation_no}</TableCell>
+                  )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
                   {!isHidden("so") && <TableCell>{r.sales_order?.so_no ?? "—"}</TableCell>}
                   {!isHidden("team") && <TableCell>{r.team?.name ?? "—"}</TableCell>}
                   {!isHidden("planned") && (
-                    <TableCell className="text-xs">{r.planned_start_date ?? "—"} → {r.planned_end_date ?? "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {r.planned_start_date ?? "—"} → {r.planned_end_date ?? "—"}
+                    </TableCell>
                   )}
-                  {!isHidden("progress") && <TableCell className="tabular-nums">{Number(r.progress_pct).toFixed(0)}%</TableCell>}
-                  {!isHidden("status") && <TableCell><StatusPill status={r.status} /></TableCell>}
+                  {!isHidden("progress") && (
+                    <TableCell className="tabular-nums">
+                      {Number(r.progress_pct).toFixed(0)}%
+                    </TableCell>
+                  )}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <StatusPill status={r.status} />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

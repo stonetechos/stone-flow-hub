@@ -61,6 +61,9 @@ export async function createProgress(input: ProgressCreateInput): Promise<Progre
 }
 
 export async function deleteProgress(id: string): Promise<void> {
-  const { error } = await getDb().from("installation_progress" as never).delete().eq("id", id);
+  const { error } = await getDb()
+    .from("installation_progress" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

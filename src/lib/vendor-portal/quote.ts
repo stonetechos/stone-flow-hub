@@ -86,7 +86,10 @@ export async function submitQuote(vendorRequestId: string): Promise<VendorQuoteR
     .single();
   if (error) throw new AppError(mapDbError(error));
 
-  await supabase.from("vendor_requests").update({ response_status: "submitted" }).eq("id", vendorRequestId);
+  await supabase
+    .from("vendor_requests")
+    .update({ response_status: "submitted" })
+    .eq("id", vendorRequestId);
 
   await supabase.rpc("log_notification_event", {
     _event: "QUOTE_SUBMITTED",

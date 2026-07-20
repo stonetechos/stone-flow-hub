@@ -60,11 +60,19 @@ export interface HealthResult {
 }
 
 const LEVEL_META: Record<HealthLevel, Pick<HealthResult, "label" | "dotClass" | "textClass">> = {
-  healthy:   { label: "Healthy",           dotClass: "bg-status-success-fg",  textClass: "text-status-success-fg" },
-  warm:      { label: "Warm",              dotClass: "bg-status-warning-fg",  textClass: "text-status-warning-fg" },
-  attention: { label: "Attention Needed",  dotClass: "bg-status-warning-fg",  textClass: "text-status-warning-fg" },
-  cold:      { label: "Cold",              dotClass: "bg-status-danger-fg",   textClass: "text-status-danger-fg" },
-  lost:      { label: "Lost",              dotClass: "bg-muted-foreground/60", textClass: "text-muted-foreground" },
+  healthy: {
+    label: "Healthy",
+    dotClass: "bg-status-success-fg",
+    textClass: "text-status-success-fg",
+  },
+  warm: { label: "Warm", dotClass: "bg-status-warning-fg", textClass: "text-status-warning-fg" },
+  attention: {
+    label: "Attention Needed",
+    dotClass: "bg-status-warning-fg",
+    textClass: "text-status-warning-fg",
+  },
+  cold: { label: "Cold", dotClass: "bg-status-danger-fg", textClass: "text-status-danger-fg" },
+  lost: { label: "Lost", dotClass: "bg-muted-foreground/60", textClass: "text-muted-foreground" },
 };
 
 /**
@@ -79,19 +87,39 @@ const LEVEL_META: Record<HealthLevel, Pick<HealthResult, "label" | "dotClass" | 
  *  - otherwise                     → Healthy
  */
 export function computeLeadHealth(input: HealthInputs): HealthResult {
-  if (input.isTerminalLost) return { ...LEVEL_META.lost, level: "lost", reason: "Marked lost/cancelled" };
+  if (input.isTerminalLost)
+    return { ...LEVEL_META.lost, level: "lost", reason: "Marked lost/cancelled" };
 
   const umb = STAGE_TO_UMBRELLA[input.stage];
   const threshold = STAGE_AGE_WARNING_DAYS[umb];
 
-  if (input.followupOverdue) return { ...LEVEL_META.cold, level: "cold", reason: "Follow-up is overdue" };
-  if (input.daysInStage > threshold * 2) return { ...LEVEL_META.cold, level: "cold", reason: `Stuck ${input.daysInStage} days in stage` };
-  if (input.daysInStage > threshold) return { ...LEVEL_META.attention, level: "attention", reason: `Over ${threshold} days in stage` };
+  if (input.followupOverdue)
+    return { ...LEVEL_META.cold, level: "cold", reason: "Follow-up is overdue" };
+  if (input.daysInStage > threshold * 2)
+    return {
+      ...LEVEL_META.cold,
+      level: "cold",
+      reason: `Stuck ${input.daysInStage} days in stage`,
+    };
+  if (input.daysInStage > threshold)
+    return {
+      ...LEVEL_META.attention,
+      level: "attention",
+      reason: `Over ${threshold} days in stage`,
+    };
   if (input.daysSinceFollowup != null && input.daysSinceFollowup > 14)
-    return { ...LEVEL_META.attention, level: "attention", reason: `No follow-up for ${input.daysSinceFollowup} days` };
+    return {
+      ...LEVEL_META.attention,
+      level: "attention",
+      reason: `No follow-up for ${input.daysSinceFollowup} days`,
+    };
   if (input.pendingQuotation)
     return { ...LEVEL_META.warm, level: "warm", reason: "Quotation awaiting response" };
   if (input.daysSinceFollowup != null && input.daysSinceFollowup > 7)
-    return { ...LEVEL_META.warm, level: "warm", reason: `No follow-up for ${input.daysSinceFollowup} days` };
+    return {
+      ...LEVEL_META.warm,
+      level: "warm",
+      reason: `No follow-up for ${input.daysSinceFollowup} days`,
+    };
   return { ...LEVEL_META.healthy, level: "healthy", reason: "On track" };
 }

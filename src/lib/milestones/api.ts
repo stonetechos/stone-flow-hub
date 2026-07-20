@@ -82,7 +82,9 @@ export async function listProjectMilestones(projectId: string): Promise<ProjectM
   return (data ?? []) as ProjectMilestone[];
 }
 
-export async function listPendingRecommendations(enquiryId: string): Promise<StageRecommendation[]> {
+export async function listPendingRecommendations(
+  enquiryId: string,
+): Promise<StageRecommendation[]> {
   const { data, error } = await supabase
     .from("stage_recommendations" as never)
     .select("*")
@@ -103,7 +105,10 @@ export async function upsertManualMilestone(input: {
   // Cast: types.ts hasn't regenerated for the new table yet; runtime is fine.
   const client = supabase as unknown as {
     from: (t: string) => {
-      upsert: (row: Record<string, unknown>, opts?: { onConflict?: string }) => Promise<{ error: unknown }>;
+      upsert: (
+        row: Record<string, unknown>,
+        opts?: { onConflict?: string },
+      ) => Promise<{ error: unknown }>;
     };
   };
   const { error } = await client.from("project_milestones").upsert(

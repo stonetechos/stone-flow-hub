@@ -41,6 +41,8 @@ const SALES_INSIGHT_PROVIDERS = [
  * existing registration by id rather than duplicating it.
  */
 export function registerSalesInsightProviders(): () => void {
-  const unregisterFns = SALES_INSIGHT_PROVIDERS.map((provider) => registerInsightProvider(provider));
+  const unregisterFns = SALES_INSIGHT_PROVIDERS.map((provider) =>
+    registerInsightProvider(provider),
+  );
   return () => unregisterFns.forEach((unregister) => unregister());
 }

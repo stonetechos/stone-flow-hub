@@ -65,7 +65,8 @@ async function planLogEnquiry(understanding: VieUnderstanding): Promise<VieExecu
     material,
     entities.rate !== undefined ? `at Rs. ${entities.rate}/${unit}` : undefined,
   ].filter((p): p is string => Boolean(p));
-  const requirement = requirementParts.length > 0 ? requirementParts.join(" ") : understanding.canonicalText;
+  const requirement =
+    requirementParts.length > 0 ? requirementParts.join(" ") : understanding.canonicalText;
 
   const budget_inr =
     entities.quantity !== undefined && entities.rate !== undefined

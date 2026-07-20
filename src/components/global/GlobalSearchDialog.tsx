@@ -189,7 +189,9 @@ export function GlobalSearchDialog({
       <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">↑↓</kbd>
+            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">
+              ↑↓
+            </kbd>
             navigate
           </span>
           <span className="flex items-center gap-1">
@@ -197,7 +199,9 @@ export function GlobalSearchDialog({
             open
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">esc</kbd>
+            <kbd className="rounded border border-border bg-background px-1 py-px font-mono">
+              esc
+            </kbd>
             close
           </span>
         </div>

@@ -112,7 +112,7 @@ export async function getRfqComparison(rfqId: string): Promise<RfqCompareBundle>
       quote: q,
       vendor: v,
       perf: p,
-      pdf: q?.quote_pdf_file_id ? pdfs.get(q.quote_pdf_file_id) ?? null : null,
+      pdf: q?.quote_pdf_file_id ? (pdfs.get(q.quote_pdf_file_id) ?? null) : null,
       totalCost,
       responseHours,
       highlights: {
@@ -129,9 +129,7 @@ export async function getRfqComparison(rfqId: string): Promise<RfqCompareBundle>
   const submitted = rows.filter((r) => !!r.quote?.submitted_at);
   if (submitted.length) {
     const minCost = Math.min(...submitted.map((r) => r.totalCost || Infinity));
-    const minDispatch = Math.min(
-      ...submitted.map((r) => r.quote?.dispatch_days ?? Infinity),
-    );
+    const minDispatch = Math.min(...submitted.map((r) => r.quote?.dispatch_days ?? Infinity));
     const maxRating = Math.max(...submitted.map((r) => Number(r.vendor.rating ?? 0)));
     for (const r of submitted) {
       r.highlights.lowestPrice = r.totalCost === minCost && r.totalCost > 0;
@@ -139,8 +137,7 @@ export async function getRfqComparison(rfqId: string): Promise<RfqCompareBundle>
         (r.quote?.dispatch_days ?? Infinity) === minDispatch && minDispatch !== Infinity;
       r.highlights.topRated = Number(r.vendor.rating ?? 0) === maxRating && maxRating > 0;
       // Simple recommendation: lowest price AND submitted AND stock available (fallback: lowest price).
-      r.highlights.recommended =
-        r.highlights.lowestPrice && (r.quote?.stock_available ?? false);
+      r.highlights.recommended = r.highlights.lowestPrice && (r.quote?.stock_available ?? false);
     }
     // If no row satisfied the strict recommendation, fall back to cheapest.
     if (!submitted.some((r) => r.highlights.recommended)) {
@@ -213,10 +210,7 @@ export async function rejectVendorQuote(quoteId: string, reason?: string): Promi
   });
 }
 
-export async function requestQuoteRevision(
-  vendorRequestId: string,
-  note: string,
-): Promise<void> {
+export async function requestQuoteRevision(vendorRequestId: string, note: string): Promise<void> {
   const clean = note.trim();
   if (!clean) throw new AppError("Please describe what needs to change.");
   const { error } = await supabase

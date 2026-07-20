@@ -143,9 +143,7 @@ export async function createEstimate(input: EstimateCreateInput): Promise<Estima
       unit_price: c.unit_price,
       sort_order: idx,
     }));
-    const { error: compErr } = await supabase
-      .from("estimate_cost_components")
-      .insert(compRows);
+    const { error: compErr } = await supabase.from("estimate_cost_components").insert(compRows);
     if (compErr) throw new AppError(mapDbError(compErr));
   }
 
@@ -156,23 +154,14 @@ export async function createEstimate(input: EstimateCreateInput): Promise<Estima
     due_offset_days: s.due_offset_days,
     sort_order: idx,
   }));
-  const { error: schErr } = await supabase
-    .from("estimate_payment_schedules")
-    .insert(scheduleRows);
+  const { error: schErr } = await supabase.from("estimate_payment_schedules").insert(scheduleRows);
   if (schErr) throw new AppError(mapDbError(schErr));
 
-  const { data: reloaded } = await supabase
-    .from("estimates")
-    .select("*")
-    .eq("id", est.id)
-    .single();
+  const { data: reloaded } = await supabase.from("estimates").select("*").eq("id", est.id).single();
   return reloaded ?? est;
 }
 
-export async function updateEstimate(
-  id: string,
-  input: EstimateUpdateInput,
-): Promise<EstimateRow> {
+export async function updateEstimate(id: string, input: EstimateUpdateInput): Promise<EstimateRow> {
   const parsed = estimateUpdateSchema.parse(input);
   const { data, error } = await supabase
     .from("estimates")
@@ -218,9 +207,7 @@ export async function updateEstimate(
       unit_price: c.unit_price,
       sort_order: idx,
     }));
-    const { error: compErr } = await supabase
-      .from("estimate_cost_components")
-      .insert(compRows);
+    const { error: compErr } = await supabase.from("estimate_cost_components").insert(compRows);
     if (compErr) throw new AppError(mapDbError(compErr));
   }
   const scheduleRows = parsed.schedule.map((s, idx) => ({
@@ -230,9 +217,7 @@ export async function updateEstimate(
     due_offset_days: s.due_offset_days,
     sort_order: idx,
   }));
-  const { error: schErr } = await supabase
-    .from("estimate_payment_schedules")
-    .insert(scheduleRows);
+  const { error: schErr } = await supabase.from("estimate_payment_schedules").insert(scheduleRows);
   if (schErr) throw new AppError(mapDbError(schErr));
 
   return data;
@@ -289,8 +274,10 @@ export async function saveEstimateDocument(
 export async function convertEstimateToQuote(estimateId: string) {
   const est = await getEstimate(estimateId);
   if (!est) throw new AppError("Estimate not found", "NOT_FOUND", 404);
-  if (!est.project_id) throw new AppError("Estimate has no project to convert.", "BAD_REQUEST", 400);
-  if (!est.customer_id) throw new AppError("Estimate has no customer to convert.", "BAD_REQUEST", 400);
+  if (!est.project_id)
+    throw new AppError("Estimate has no project to convert.", "BAD_REQUEST", 400);
+  if (!est.customer_id)
+    throw new AppError("Estimate has no customer to convert.", "BAD_REQUEST", 400);
   const items = await getEstimateItems(estimateId);
 
   const { data: quote, error } = await supabase
@@ -324,10 +311,7 @@ export async function convertEstimateToQuote(estimateId: string) {
     if (itemErr) throw new AppError(mapDbError(itemErr));
   }
 
-  await supabase
-    .from("estimates")
-    .update({ status: "converted" })
-    .eq("id", est.id);
+  await supabase.from("estimates").update({ status: "converted" }).eq("id", est.id);
 
   return quote;
 }

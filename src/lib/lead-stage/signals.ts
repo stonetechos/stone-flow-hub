@@ -89,6 +89,8 @@ export async function getEnquirySignal(
   stage: LeadStage,
   updatedAt: string | null,
 ): Promise<EnquirySignal> {
-  const all = await listEnquirySignals([enquiryId], { [enquiryId]: { stage, updated_at: updatedAt } });
+  const all = await listEnquirySignals([enquiryId], {
+    [enquiryId]: { stage, updated_at: updatedAt },
+  });
   return all[enquiryId] ?? EMPTY(enquiryId);
 }

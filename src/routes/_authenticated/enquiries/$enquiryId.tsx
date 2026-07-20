@@ -161,15 +161,16 @@ function EnquiryDetailPage() {
 
   const intelQ = useQuery({
     queryKey: ["enquiry-intelligence", enquiryId],
-    queryFn: () => getEnquiryIntelligence({
-      id: enquiryId,
-      stage: query.data!.stage,
-      projectId: query.data!.project_id ?? null,
-      assignedTo: query.data!.assigned_to ?? null,
-      budgetInr: query.data!.budget_inr ?? null,
-      createdAt: query.data!.created_at ?? null,
-      updatedAt: query.data!.updated_at ?? null,
-    }),
+    queryFn: () =>
+      getEnquiryIntelligence({
+        id: enquiryId,
+        stage: query.data!.stage,
+        projectId: query.data!.project_id ?? null,
+        assignedTo: query.data!.assigned_to ?? null,
+        budgetInr: query.data!.budget_inr ?? null,
+        createdAt: query.data!.created_at ?? null,
+        updatedAt: query.data!.updated_at ?? null,
+      }),
     enabled: !!query.data,
     staleTime: 60_000,
   });
@@ -333,10 +334,15 @@ function EnquiryDetailPage() {
               const umb = stageToUmbrella(enq.stage);
               const suggested = suggestNextStage(enq.stage);
               const sig = signalQ.data ?? null;
-              const daysInStage = daysSince(sig?.stage_entered_at ?? enq.updated_at ?? enq.created_at);
+              const daysInStage = daysSince(
+                sig?.stage_entered_at ?? enq.updated_at ?? enq.created_at,
+              );
               const nextFup = sig?.next_followup ?? null;
-              const daysSinceLastFup = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
-              const followupOverdue = !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+              const daysSinceLastFup = sig?.last_followup_at
+                ? daysSince(sig.last_followup_at)
+                : null;
+              const followupOverdue =
+                !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
               const health = computeLeadHealth({
                 stage: enq.stage,
                 daysInStage,
@@ -363,12 +369,15 @@ function EnquiryDetailPage() {
                     </div>
                     <NextFollowupChip
                       next={nextFup}
-                      assigneeName={nextFup?.assigned_to ? userNameById.get(nextFup.assigned_to) ?? null : null}
+                      assigneeName={
+                        nextFup?.assigned_to
+                          ? (userNameById.get(nextFup.assigned_to) ?? null)
+                          : null
+                      }
                     />
                   </div>
 
                   <SuggestedRecommendations enquiryId={enquiryId} />
-
 
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">
@@ -492,7 +501,6 @@ function EnquiryDetailPage() {
           <TimelinePanel entityType="enquiry" entityId={enquiryId} />
         </div>
       </div>
-
 
       <SendRfqDialog open={rfqOpen} onOpenChange={setRfqOpen} enquiryId={enq.id} />
       <ConvertToProjectDialog open={convertOpen} onOpenChange={setConvertOpen} enquiryId={enq.id} />
@@ -652,7 +660,10 @@ function SendRfqDialog({
   enquiryId: string;
 }) {
   const qc = useQueryClient();
-  const vendors = useQuery({ queryKey: qk.vendors.list(""), queryFn: () => listVendorsForPicker() });
+  const vendors = useQuery({
+    queryKey: qk.vendors.list(""),
+    queryFn: () => listVendorsForPicker(),
+  });
   const [selected, setSelected] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -751,7 +762,9 @@ function RfqsForEnquiry({ enquiryId }: { enquiryId: string }) {
       const { supabase } = await import("@/integrations/supabase/client");
       const { data, error } = await supabase
         .from("rfqs")
-        .select("id, rfq_no, status, due_date, created_at, vendor_requests(id, response_status), vendor_quotes:vendor_requests(vendor_quotes(id, submitted_at, is_approved))")
+        .select(
+          "id, rfq_no, status, due_date, created_at, vendor_requests(id, response_status), vendor_quotes:vendor_requests(vendor_quotes(id, submitted_at, is_approved))",
+        )
         .eq("enquiry_id", enquiryId)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -781,7 +794,9 @@ function RfqsForEnquiry({ enquiryId }: { enquiryId: string }) {
                   </div>
                 </div>
                 <Link to="/rfqs/$rfqId" params={{ rfqId: r.id }}>
-                  <Button size="sm" variant="outline">Compare quotes</Button>
+                  <Button size="sm" variant="outline">
+                    Compare quotes
+                  </Button>
                 </Link>
               </li>
             );
@@ -791,4 +806,3 @@ function RfqsForEnquiry({ enquiryId }: { enquiryId: string }) {
     </Card>
   );
 }
-

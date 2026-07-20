@@ -60,7 +60,10 @@ export const QuoteAgeingProvider: InsightProvider = {
         action: { label: "Open quote", href: `/quotes/${quote.id}` },
         entity: { type: "quote", id: quote.id, label: quote.quote_no },
         value: quote.total,
-        priority: computePriority({ urgencyDays: ageDays - QUOTE_AGEING_THRESHOLDS.healthyMaxDays, valueInr: quote.total }),
+        priority: computePriority({
+          urgencyDays: ageDays - QUOTE_AGEING_THRESHOLDS.healthyMaxDays,
+          valueInr: quote.total,
+        }),
         generatedAt: new Date().toISOString(),
       });
     }

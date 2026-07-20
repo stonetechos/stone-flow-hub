@@ -20,7 +20,11 @@ import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createDispatch, replaceDispatchItems } from "@/lib/dispatch/api";
-import { DISPATCH_STATUSES, type DispatchCreateInput, type DispatchItemInput } from "@/lib/dispatch/schema";
+import {
+  DISPATCH_STATUSES,
+  type DispatchCreateInput,
+  type DispatchItemInput,
+} from "@/lib/dispatch/schema";
 import { getSalesOrder, listSalesOrdersForPicker } from "@/lib/sales-orders/api";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";

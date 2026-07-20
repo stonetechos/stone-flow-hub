@@ -60,7 +60,9 @@ export function registerServiceWorker(): void {
             // src/lib/pwa/sync-queue.ts). Surface it instead of silently
             // dropping, so a future phase's outbox has something to hook
             // into and nothing is lost in the meantime.
-            window.dispatchEvent(new CustomEvent("stone-tech-os:pending-ops-flush", { detail: ops }));
+            window.dispatchEvent(
+              new CustomEvent("stone-tech-os:pending-ops-flush", { detail: ops }),
+            );
           }
         });
       }

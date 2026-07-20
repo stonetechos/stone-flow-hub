@@ -178,7 +178,6 @@ const ROLES = [
   },
 ] as const;
 
-
 function DashboardsIndex() {
   return (
     <div>

@@ -21,10 +21,10 @@ export function LifecycleBadge({ status, showActive = false, className }: Props)
     LifecycleStatus,
     { variant: "default" | "secondary" | "outline" | "destructive"; icon: React.ReactNode }
   > = {
-    active:   { variant: "secondary",   icon: <CircleDot className="mr-1 h-3 w-3" /> },
-    inactive: { variant: "outline",     icon: <Ban className="mr-1 h-3 w-3" /> },
-    archived: { variant: "outline",     icon: <Archive className="mr-1 h-3 w-3" /> },
-    deleted:  { variant: "destructive", icon: <Trash2 className="mr-1 h-3 w-3" /> },
+    active: { variant: "secondary", icon: <CircleDot className="mr-1 h-3 w-3" /> },
+    inactive: { variant: "outline", icon: <Ban className="mr-1 h-3 w-3" /> },
+    archived: { variant: "outline", icon: <Archive className="mr-1 h-3 w-3" /> },
+    deleted: { variant: "destructive", icon: <Trash2 className="mr-1 h-3 w-3" /> },
   };
   const cfg = map[s] ?? map.inactive;
 

@@ -7,12 +7,7 @@
  * explainability trace so the UI never renders a black-box number.
  */
 
-export type PredictModule =
-  | "sales"
-  | "ops"
-  | "finance"
-  | "procurement"
-  | "customer";
+export type PredictModule = "sales" | "ops" | "finance" | "procurement" | "customer";
 
 export type PredictSeverity = "info" | "warning" | "danger";
 
@@ -30,9 +25,9 @@ export interface PredictSignal {
 
 /** A concrete row consulted to build the prediction — always link-able. */
 export interface PredictRecordRef {
-  type: string;         // "quote" | "invoice" | "sales_order" | ...
+  type: string; // "quote" | "invoice" | "sales_order" | ...
   id: string;
-  note?: string;        // e.g. "18 days old"
+  note?: string; // e.g. "18 days old"
 }
 
 /** Explainability payload — every prediction MUST return this. */
@@ -46,15 +41,15 @@ export interface PredictExplanation {
 
 /** Canonical prediction record consumed by the Insight Bus. */
 export interface Prediction {
-  id: string;                       // stable dedup key
+  id: string; // stable dedup key
   module: PredictModule;
-  kind: string;                     // producer id, e.g. "sales.quote-conversion"
+  kind: string; // producer id, e.g. "sales.quote-conversion"
   severity: PredictSeverity;
   confidence: PredictConfidence;
-  score: number;                    // 0..1
-  title: string;                    // imperative recommendation
-  entityRef?: PredictRecordRef;     // primary entity (for grouping / links)
-  value?: number;                   // ₹ or days impact, optional
-  expiresAt?: string;               // ISO — hide after this
+  score: number; // 0..1
+  title: string; // imperative recommendation
+  entityRef?: PredictRecordRef; // primary entity (for grouping / links)
+  value?: number; // ₹ or days impact, optional
+  expiresAt?: string; // ISO — hide after this
   explanation: PredictExplanation;
 }

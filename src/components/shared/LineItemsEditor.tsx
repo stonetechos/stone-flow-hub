@@ -102,9 +102,7 @@ export function LineItemsEditor<T>({
               ))
             )}
           </tbody>
-          {footer && (
-            <tfoot className="border-t border-border/60 bg-muted/20">{footer}</tfoot>
-          )}
+          {footer && <tfoot className="border-t border-border/60 bg-muted/20">{footer}</tfoot>}
         </table>
       </div>
       {onAddRow && (

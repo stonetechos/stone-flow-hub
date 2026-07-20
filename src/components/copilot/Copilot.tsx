@@ -8,7 +8,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { Sparkles, Send, Loader2, X, Bookmark, Trash2, ChevronDown, ArrowRight, SearchX } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  Loader2,
+  X,
+  Bookmark,
+  Trash2,
+  ChevronDown,
+  ArrowRight,
+  SearchX,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -28,7 +38,12 @@ type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
  *  cards instead of AI prose, since the results come from real API
  *  calls (see nl-search/resolve.ts), never from the LLM. */
-type NlResultsMsg = { role: "assistant"; kind: "nl-results"; interpretation: string; results: NlResultItem[] };
+type NlResultsMsg = {
+  role: "assistant";
+  kind: "nl-results";
+  interpretation: string;
+  results: NlResultItem[];
+};
 type Msg = ChatMsg | NlResultsMsg;
 
 // Suggestion prompts are how-to / explanation questions only. They must NEVER
@@ -36,21 +51,102 @@ type Msg = ChatMsg | NlResultsMsg;
 // the assistant has no database access from the chat and would otherwise
 // hallucinate customer, project, quote, PO, or vendor identifiers.
 const CONTEXT_HINTS: Array<{ match: RegExp; entity: string; suggestions: string[] }> = [
-  { match: /^\/customers\/[^/]+/, entity: "customer", suggestions: ["How do I log a follow-up on this customer?", "What does the credit-limit warning mean?"] },
-  { match: /^\/customers/, entity: "customers", suggestions: ["How is customer health scored?", "How do I import customers in bulk?"] },
-  { match: /^\/projects\/[^/]+/, entity: "project", suggestions: ["Explain the project lifecycle stages", "How do I record a project milestone?"] },
-  { match: /^\/projects/, entity: "projects", suggestions: ["How is pipeline value calculated?", "How do I move a project to the next stage?"] },
-  { match: /^\/rfqs\/[^/]+/, entity: "rfq", suggestions: ["How does vendor scoring work?", "How do I convert an RFQ into a purchase order?"] },
-  { match: /^\/rfqs/, entity: "rfqs", suggestions: ["What is the difference between an enquiry and an RFQ?", "How do I invite a vendor to quote?"] },
-  { match: /^\/enquiries\/[^/]+/, entity: "enquiry", suggestions: ["How do I create a quotation from an enquiry?", "How is enquiry health scored?"] },
-  { match: /^\/enquiries/, entity: "enquiries", suggestions: ["What signals indicate a cold enquiry?", "How do I set the next best action?"] },
-  { match: /^\/quotes\/[^/]+/, entity: "quotation", suggestions: ["How is quote margin computed?", "How do I record customer approval on a quote?"] },
-  { match: /^\/manufacturing\/[^/]+/, entity: "production_order", suggestions: ["How do I update production stage progress?", "How does the QC checklist work?"] },
-  { match: /^\/manufacturing/, entity: "manufacturing", suggestions: ["Explain the manufacturing stage flow", "How do I release a sales order to production?"] },
-  { match: /^\/vendors\/[^/]+/, entity: "vendor", suggestions: ["How is the vendor health score calculated?", "How do I record a vendor payment?"] },
-  { match: /^\/inventory/, entity: "inventory", suggestions: ["How is reorder level determined?", "How do I record a stock movement?"] },
-  { match: /^\/dashboard/, entity: "dashboard", suggestions: ["How is the business health score calculated?", "What does the Cash Today figure include?"] },
-  { match: /^\/dashboards\/management/, entity: "management", suggestions: ["How is pipeline value defined?", "How is estimated margin computed?"] },
+  {
+    match: /^\/customers\/[^/]+/,
+    entity: "customer",
+    suggestions: [
+      "How do I log a follow-up on this customer?",
+      "What does the credit-limit warning mean?",
+    ],
+  },
+  {
+    match: /^\/customers/,
+    entity: "customers",
+    suggestions: ["How is customer health scored?", "How do I import customers in bulk?"],
+  },
+  {
+    match: /^\/projects\/[^/]+/,
+    entity: "project",
+    suggestions: ["Explain the project lifecycle stages", "How do I record a project milestone?"],
+  },
+  {
+    match: /^\/projects/,
+    entity: "projects",
+    suggestions: [
+      "How is pipeline value calculated?",
+      "How do I move a project to the next stage?",
+    ],
+  },
+  {
+    match: /^\/rfqs\/[^/]+/,
+    entity: "rfq",
+    suggestions: [
+      "How does vendor scoring work?",
+      "How do I convert an RFQ into a purchase order?",
+    ],
+  },
+  {
+    match: /^\/rfqs/,
+    entity: "rfqs",
+    suggestions: [
+      "What is the difference between an enquiry and an RFQ?",
+      "How do I invite a vendor to quote?",
+    ],
+  },
+  {
+    match: /^\/enquiries\/[^/]+/,
+    entity: "enquiry",
+    suggestions: ["How do I create a quotation from an enquiry?", "How is enquiry health scored?"],
+  },
+  {
+    match: /^\/enquiries/,
+    entity: "enquiries",
+    suggestions: ["What signals indicate a cold enquiry?", "How do I set the next best action?"],
+  },
+  {
+    match: /^\/quotes\/[^/]+/,
+    entity: "quotation",
+    suggestions: ["How is quote margin computed?", "How do I record customer approval on a quote?"],
+  },
+  {
+    match: /^\/manufacturing\/[^/]+/,
+    entity: "production_order",
+    suggestions: ["How do I update production stage progress?", "How does the QC checklist work?"],
+  },
+  {
+    match: /^\/manufacturing/,
+    entity: "manufacturing",
+    suggestions: [
+      "Explain the manufacturing stage flow",
+      "How do I release a sales order to production?",
+    ],
+  },
+  {
+    match: /^\/vendors\/[^/]+/,
+    entity: "vendor",
+    suggestions: [
+      "How is the vendor health score calculated?",
+      "How do I record a vendor payment?",
+    ],
+  },
+  {
+    match: /^\/inventory/,
+    entity: "inventory",
+    suggestions: ["How is reorder level determined?", "How do I record a stock movement?"],
+  },
+  {
+    match: /^\/dashboard/,
+    entity: "dashboard",
+    suggestions: [
+      "How is the business health score calculated?",
+      "What does the Cash Today figure include?",
+    ],
+  },
+  {
+    match: /^\/dashboards\/management/,
+    entity: "management",
+    suggestions: ["How is pipeline value defined?", "How is estimated margin computed?"],
+  },
 ];
 
 /** Insight.entity.type values differ slightly from Copilot's own context
@@ -76,7 +172,14 @@ function deriveContext(path: string) {
       return { entity: hint.entity, entityId: idPart, suggestions: hint.suggestions };
     }
   }
-  return { entity: "app", entityId: undefined, suggestions: ["How do I navigate Stone Tech OS?", "Where do I find real-time business priorities?"] };
+  return {
+    entity: "app",
+    entityId: undefined,
+    suggestions: [
+      "How do I navigate Stone Tech OS?",
+      "Where do I find real-time business priorities?",
+    ],
+  };
 }
 
 export function Copilot() {
@@ -94,13 +197,16 @@ export function Copilot() {
   const { processedInsights } = useExecutiveInsights();
   const scopedInsights = ctx.entityId
     ? processedInsights.filter(
-        (i) => i.entity.type === (ENTITY_TYPE_MAP[ctx.entity] ?? ctx.entity) && i.entity.id === ctx.entityId,
+        (i) =>
+          i.entity.type === (ENTITY_TYPE_MAP[ctx.entity] ?? ctx.entity) &&
+          i.entity.id === ctx.entityId,
       )
     : processedInsights;
   // Phase G.8.6 Task 3: same shared lifecycle EntityInsightPanel and
   // DangerNotifications read/write, so dismissing here also stops the
   // insight from resurfacing on a customer page or as a toast.
-  const { active: activeInsights, setStatus: setInsightStatus } = useInsightLifecycle(scopedInsights);
+  const { active: activeInsights, setStatus: setInsightStatus } =
+    useInsightLifecycle(scopedInsights);
   const topInsights = [...activeInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
@@ -125,7 +231,12 @@ export function Copilot() {
       }
       setMessages((m) => [
         ...m,
-        { role: "assistant", kind: "nl-results", interpretation: res.interpretation, results: res.results },
+        {
+          role: "assistant",
+          kind: "nl-results",
+          interpretation: res.interpretation,
+          results: res.results,
+        },
       ]);
     },
     onError: (_e, query) => {
@@ -184,7 +295,9 @@ export function Copilot() {
   }
 
   function bookmarkLast() {
-    const last = [...messages].reverse().find((m): m is ChatMsg => m.role === "assistant" && m.kind !== "nl-results");
+    const last = [...messages]
+      .reverse()
+      .find((m): m is ChatMsg => m.role === "assistant" && m.kind !== "nl-results");
     if (!last) return;
     setBookmarks((b) => [last, ...b].slice(0, 20));
     toast.success("Bookmarked");
@@ -262,7 +375,6 @@ export function Copilot() {
 
         <ScrollArea className="min-h-0 flex-1">
           <div ref={scrollRef} className="space-y-3 p-4">
-
             {messages.length === 0 && (
               <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
                 <p className="mb-2 font-medium">Try one of these:</p>
@@ -282,7 +394,12 @@ export function Copilot() {
             )}
             {messages.map((m, i) =>
               m.kind === "nl-results" ? (
-                <NlResultsBubble key={i} interpretation={m.interpretation} results={m.results} onNavigate={() => setOpen(false)} />
+                <NlResultsBubble
+                  key={i}
+                  interpretation={m.interpretation}
+                  results={m.results}
+                  onNavigate={() => setOpen(false)}
+                />
               ) : (
                 <Bubble key={i} role={m.role} content={m.content} />
               ),
@@ -316,10 +433,20 @@ export function Copilot() {
          * of how long the conversation or Insights section grows. */}
         <div className="flex-shrink-0 border-t border-border p-3">
           <div className="mb-2 flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={bookmarkLast} disabled={messages.length === 0}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={bookmarkLast}
+              disabled={messages.length === 0}
+            >
               <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setMessages([])} disabled={messages.length === 0}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMessages([])}
+              disabled={messages.length === 0}
+            >
               <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
             </Button>
             <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
@@ -346,7 +473,11 @@ export function Copilot() {
               disabled={isPending || !input.trim()}
               aria-label="Send"
             >
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>

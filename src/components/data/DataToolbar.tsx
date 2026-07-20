@@ -41,12 +41,7 @@ export function DataToolbar({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "mb-3 flex flex-wrap items-center gap-2",
-        className,
-      )}
-    >
+    <div className={cn("mb-3 flex flex-wrap items-center gap-2", className)}>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         {title && (
           <div className="flex items-center gap-2">

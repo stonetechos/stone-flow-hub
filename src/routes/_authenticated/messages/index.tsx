@@ -9,10 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -41,18 +50,27 @@ function MessagesQueuePage() {
   const [channel, setChannel] = useState<string>("");
   const query = useQuery({
     queryKey: qk.messages.list(q, channel),
-    queryFn: () => listMessages(q, (channel || undefined) as "email" | "whatsapp" | "sms" | undefined),
+    queryFn: () =>
+      listMessages(q, (channel || undefined) as "email" | "whatsapp" | "sms" | undefined),
   });
   const rows = query.data ?? [];
 
   const retry = useMutation({
     mutationFn: (id: string) => retryMessage(id),
-    onSuccess: (_d, id) => { toast.success("Requeued"); invalidateMessage(qc, id); query.refetch(); },
+    onSuccess: (_d, id) => {
+      toast.success("Requeued");
+      invalidateMessage(qc, id);
+      query.refetch();
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
   const cancel = useMutation({
     mutationFn: (id: string) => cancelMessage(id),
-    onSuccess: (_d, id) => { toast.success("Cancelled"); invalidateMessage(qc, id); query.refetch(); },
+    onSuccess: (_d, id) => {
+      toast.success("Cancelled");
+      invalidateMessage(qc, id);
+      query.refetch();
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
@@ -69,9 +87,16 @@ function MessagesQueuePage() {
       />
 
       <div className="mb-3 flex items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search #, recipient, subject…" className="max-w-sm" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search #, recipient, subject…"
+          className="max-w-sm"
+        />
         <Select value={channel || "all"} onValueChange={(v) => setChannel(v === "all" ? "" : v)}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="All channels" /></SelectTrigger>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All channels" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All channels</SelectItem>
             <SelectItem value="email">Email</SelectItem>
@@ -87,9 +112,15 @@ function MessagesQueuePage() {
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
-        <Card className="shadow-1"><CardContent className="p-6">
-          <EmptyState icon={<Send className="h-6 w-6" />} title="Queue is empty" message="Messages sent from Estimates, Receipts, Invoices etc. will appear here." />
-        </CardContent></Card>
+        <Card className="shadow-1">
+          <CardContent className="p-6">
+            <EmptyState
+              icon={<Send className="h-6 w-6" />}
+              title="Queue is empty"
+              message="Messages sent from Estimates, Receipts, Invoices etc. will appear here."
+            />
+          </CardContent>
+        </Card>
       ) : (
         <div className="rounded-md border border-border">
           <Table>
@@ -109,18 +140,39 @@ function MessagesQueuePage() {
               {rows.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell className="font-mono text-xs">{m.message_no}</TableCell>
-                  <TableCell><Badge variant="outline" className="uppercase">{m.channel}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="uppercase">
+                      {m.channel}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-sm">{m.to_address}</TableCell>
-                  <TableCell className="text-sm truncate max-w-[240px]">{m.subject ?? "—"}</TableCell>
-                  <TableCell><Badge variant={STATUS_COLOR[m.status] ?? "outline"}>{m.status}</Badge></TableCell>
-                  <TableCell className="text-sm">{m.attempts}/{m.max_attempts}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{formatRelative(m.created_at)}</TableCell>
+                  <TableCell className="text-sm truncate max-w-[240px]">
+                    {m.subject ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_COLOR[m.status] ?? "outline"}>{m.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {m.attempts}/{m.max_attempts}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {formatRelative(m.created_at)}
+                  </TableCell>
                   <TableCell className="text-right">
                     {m.status === "failed" && (
-                      <Button variant="outline" size="sm" onClick={() => retry.mutate(m.id)}>Retry</Button>
+                      <Button variant="outline" size="sm" onClick={() => retry.mutate(m.id)}>
+                        Retry
+                      </Button>
                     )}
                     {(m.status === "queued" || m.status === "failed") && (
-                      <Button variant="ghost" size="sm" className="ml-1" onClick={() => cancel.mutate(m.id)}>Cancel</Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-1"
+                        onClick={() => cancel.mutate(m.id)}
+                      >
+                        Cancel
+                      </Button>
                     )}
                   </TableCell>
                 </TableRow>

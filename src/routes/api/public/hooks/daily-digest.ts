@@ -21,18 +21,36 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
         });
 
         // Load recipient list from app_settings singleton
-        const { data: settings, error: sErr } = await supabase.from("app_settings").select("value").eq("key", "daily_digest_recipients").maybeSingle();
+        const { data: settings, error: sErr } = await supabase
+          .from("app_settings")
+          .select("value")
+          .eq("key", "daily_digest_recipients")
+          .maybeSingle();
         if (sErr) return new Response(sErr.message, { status: 500 });
         type Recipient = { channel: "email" | "whatsapp"; to: string };
-        const recipients: Recipient[] = Array.isArray(settings?.value) ? (settings!.value as Recipient[]) : [];
-        if (recipients.length === 0) return new Response(JSON.stringify({ queued: 0, reason: "no recipients configured" }), { status: 200 });
+        const recipients: Recipient[] = Array.isArray(settings?.value)
+          ? (settings!.value as Recipient[])
+          : [];
+        if (recipients.length === 0)
+          return new Response(JSON.stringify({ queued: 0, reason: "no recipients configured" }), {
+            status: 200,
+          });
 
         // Build a compact snapshot inline (no auth middleware needed for the AI call
         // since we already validated the caller via header).
         const [inv, pay, vp] = await Promise.all([
-          supabase.from("invoices").select("total,balance_due").gte("issue_date", new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)),
-          supabase.from("payments").select("amount").gte("paid_at", new Date(Date.now() - 86_400_000).toISOString()),
-          supabase.from("vendor_payments").select("amount").gte("paid_at", new Date(Date.now() - 86_400_000).toISOString()),
+          supabase
+            .from("invoices")
+            .select("total,balance_due")
+            .gte("issue_date", new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)),
+          supabase
+            .from("payments")
+            .select("amount")
+            .gte("paid_at", new Date(Date.now() - 86_400_000).toISOString()),
+          supabase
+            .from("vendor_payments")
+            .select("amount")
+            .gte("paid_at", new Date(Date.now() - 86_400_000).toISOString()),
         ]);
         const snapshot = {
           date: new Date().toISOString().slice(0, 10),
@@ -52,13 +70,19 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
             model: "google/gemini-2.5-flash",
             temperature: 0.3,
             messages: [
-              { role: "system", content: "You are the Stone Tech OS morning digest. Write a short, actionable snapshot for the owner. Use ONLY the snapshot JSON; never invent numbers. Sections: Business snapshot, Today's priorities (collections/payments/production/installation/procurement), Customer & vendor risks, Recommended actions with reasons. Keep under 250 words. Use ₹ Indian formatting." },
+              {
+                role: "system",
+                content:
+                  "You are the Stone Tech OS morning digest. Write a short, actionable snapshot for the owner. Use ONLY the snapshot JSON; never invent numbers. Sections: Business snapshot, Today's priorities (collections/payments/production/installation/procurement), Customer & vendor risks, Recommended actions with reasons. Keep under 250 words. Use ₹ Indian formatting.",
+              },
               { role: "user", content: `Snapshot:\n${JSON.stringify(snapshot, null, 2)}` },
             ],
           }),
         });
         if (!aiRes.ok) return new Response(`AI ${aiRes.status}`, { status: 502 });
-        const aiJson = (await aiRes.json()) as { choices?: Array<{ message?: { content?: string } }> };
+        const aiJson = (await aiRes.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
         const body = aiJson.choices?.[0]?.message?.content ?? "";
 
         const rows = recipients.map((r) => ({
@@ -72,7 +96,10 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
         const { error: qErr } = await supabase.from("message_queue").insert(rows);
         if (qErr) return new Response(qErr.message, { status: 500 });
 
-        return new Response(JSON.stringify({ queued: rows.length }), { status: 200, headers: { "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ queued: rows.length }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       },
     },
   },

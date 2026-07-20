@@ -90,7 +90,6 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
     }
   }
 
-
   const { data, error } = await getDb()
     .from("enquiries")
     .insert({
@@ -136,10 +135,7 @@ export async function updateEnquiryStage(
 }
 
 /** Bulk-advance many enquiries to a stage. Non-lost only (no reason capture). */
-export async function bulkUpdateEnquiryStage(
-  ids: string[],
-  stage: LeadStage,
-): Promise<number> {
+export async function bulkUpdateEnquiryStage(ids: string[], stage: LeadStage): Promise<number> {
   if (ids.length === 0) return 0;
   const { error, count } = await getDb()
     .from("enquiries")

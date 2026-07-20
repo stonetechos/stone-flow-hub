@@ -34,6 +34,8 @@ const FINANCE_INSIGHT_PROVIDERS = [
  * existing registration by id rather than duplicating it.
  */
 export function registerFinanceInsightProviders(): () => void {
-  const unregisterFns = FINANCE_INSIGHT_PROVIDERS.map((provider) => registerInsightProvider(provider));
+  const unregisterFns = FINANCE_INSIGHT_PROVIDERS.map((provider) =>
+    registerInsightProvider(provider),
+  );
   return () => unregisterFns.forEach((unregister) => unregister());
 }

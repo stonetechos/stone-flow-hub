@@ -44,8 +44,7 @@ function ProcurementCalendarPage() {
   });
 
   const events = useMemo(
-    () =>
-      (query.data ?? []).filter((e) => filter === "all" || e.event_type === filter),
+    () => (query.data ?? []).filter((e) => filter === "all" || e.event_type === filter),
     [query.data, filter],
   );
 
@@ -97,9 +96,7 @@ function ProcurementCalendarPage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() =>
-            setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))
-          }
+          onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -107,9 +104,7 @@ function ProcurementCalendarPage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() =>
-            setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))
-          }
+          onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -144,51 +139,51 @@ function ProcurementCalendarPage() {
             {/* Mobile: horizontally scrolls within this wrapper instead of
              * squeezing 7 columns into the viewport or overflowing the page. */}
             <div className="overflow-x-auto">
-            <div className="grid min-w-[560px] grid-cols-7 gap-1 text-xs">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                <div key={d} className="p-1 text-center font-medium text-muted-foreground">
-                  {d}
-                </div>
-              ))}
-              {grid.map((c, i) => {
-                if (!c.date) return <div key={i} className="min-h-24" />;
-                const key = iso(c.date);
-                const evs = byDay.get(key) ?? [];
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "min-h-24 rounded-md border border-border p-1",
-                      c.date.toDateString() === new Date().toDateString() &&
-                        "border-primary bg-primary/5",
-                    )}
-                  >
-                    <div className="text-[11px] font-medium text-muted-foreground">
-                      {c.date.getDate()}
-                    </div>
-                    <div className="mt-1 space-y-0.5">
-                      {evs.slice(0, 4).map((e) => (
-                        <div
-                          key={`${e.event_type}-${e.id}`}
-                          className={cn(
-                            "truncate rounded px-1 py-0.5 text-[10px]",
-                            EVENT_COLORS[e.event_type],
-                          )}
-                          title={`${EVENT_LABELS[e.event_type]}: ${e.title}`}
-                        >
-                          {e.title}
-                        </div>
-                      ))}
-                      {evs.length > 4 && (
-                        <div className="text-[10px] text-muted-foreground">
-                          +{evs.length - 4} more
-                        </div>
-                      )}
-                    </div>
+              <div className="grid min-w-[560px] grid-cols-7 gap-1 text-xs">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                  <div key={d} className="p-1 text-center font-medium text-muted-foreground">
+                    {d}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+                {grid.map((c, i) => {
+                  if (!c.date) return <div key={i} className="min-h-24" />;
+                  const key = iso(c.date);
+                  const evs = byDay.get(key) ?? [];
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "min-h-24 rounded-md border border-border p-1",
+                        c.date.toDateString() === new Date().toDateString() &&
+                          "border-primary bg-primary/5",
+                      )}
+                    >
+                      <div className="text-[11px] font-medium text-muted-foreground">
+                        {c.date.getDate()}
+                      </div>
+                      <div className="mt-1 space-y-0.5">
+                        {evs.slice(0, 4).map((e) => (
+                          <div
+                            key={`${e.event_type}-${e.id}`}
+                            className={cn(
+                              "truncate rounded px-1 py-0.5 text-[10px]",
+                              EVENT_COLORS[e.event_type],
+                            )}
+                            title={`${EVENT_LABELS[e.event_type]}: ${e.title}`}
+                          >
+                            {e.title}
+                          </div>
+                        ))}
+                        {evs.length > 4 && (
+                          <div className="text-[10px] text-muted-foreground">
+                            +{evs.length - 4} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {events.length === 0 && (

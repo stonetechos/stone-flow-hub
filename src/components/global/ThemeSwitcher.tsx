@@ -164,9 +164,7 @@ export function ThemeSwitcher() {
                   <span className="text-[13px] font-medium text-foreground">{t.label}</span>
                   {active && <Check className="h-3.5 w-3.5 text-primary" aria-hidden />}
                 </span>
-                <span className="truncate text-[11px] text-muted-foreground">
-                  {t.description}
-                </span>
+                <span className="truncate text-[11px] text-muted-foreground">{t.description}</span>
               </span>
             </DropdownMenuItem>
           );

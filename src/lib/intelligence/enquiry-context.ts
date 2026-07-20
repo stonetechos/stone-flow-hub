@@ -36,36 +36,83 @@ async function loadRelatedFlags(ctx: EnquiryContext) {
   const from = (t: string) => (supabase.from as unknown as (n: string) => Any)(t);
   const projectId = ctx.projectId;
   const [
-    quoteRes, soRes, invRes, receiptRes, svRes,
-    rfqRes, vqRes, poRes, prodRes, dispRes, instRes, fupCountRes,
+    quoteRes,
+    soRes,
+    invRes,
+    receiptRes,
+    svRes,
+    rfqRes,
+    vqRes,
+    poRes,
+    prodRes,
+    dispRes,
+    instRes,
+    fupCountRes,
   ] = await Promise.all([
     from("quotes").select("id,status,total").eq("enquiry_id", ctx.id),
-    projectId ? from("sales_orders").select("id,status").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("invoices").select("id,status,due_date,balance_due").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("receipts").select("id,net_amount").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("site_visits").select("id,status,conducted_at").eq("project_id", projectId) : Promise.resolve({ data: [] }),
+    projectId
+      ? from("sales_orders").select("id,status").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("invoices").select("id,status,due_date,balance_due").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("receipts").select("id,net_amount").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("site_visits").select("id,status,conducted_at").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
     from("rfqs").select("id,status").eq("enquiry_id", ctx.id),
-    from("vendor_quotes").select("id,status,rfq:rfqs!inner(enquiry_id)").eq("rfq.enquiry_id", ctx.id),
-    projectId ? from("purchase_orders").select("id,status").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("production_orders").select("id,status").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("dispatches").select("id,status,dispatch_date").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    projectId ? from("installations").select("id,status,actual_end_date").eq("project_id", projectId) : Promise.resolve({ data: [] }),
-    supabase.from("followups").select("id", { count: "exact", head: true }).eq("enquiry_id", ctx.id)
+    from("vendor_quotes")
+      .select("id,status,rfq:rfqs!inner(enquiry_id)")
+      .eq("rfq.enquiry_id", ctx.id),
+    projectId
+      ? from("purchase_orders").select("id,status").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("production_orders").select("id,status").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("dispatches").select("id,status,dispatch_date").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    projectId
+      ? from("installations").select("id,status,actual_end_date").eq("project_id", projectId)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from("followups")
+      .select("id", { count: "exact", head: true })
+      .eq("enquiry_id", ctx.id)
       .gte("created_at", new Date(Date.now() - 30 * 86_400_000).toISOString()),
   ]);
 
   const quotes = (quoteRes.data ?? []) as Array<{ status: string }>;
-  const invoices = (invRes.data ?? []) as Array<{ status: string; due_date: string | null; balance_due: number | null }>;
+  const invoices = (invRes.data ?? []) as Array<{
+    status: string;
+    due_date: string | null;
+    balance_due: number | null;
+  }>;
   const receipts = (receiptRes.data ?? []) as Array<{ net_amount: number | null }>;
   const siteVisits = (svRes.data ?? []) as Array<{ status: string; conducted_at: string | null }>;
   const vqs = (vqRes.data ?? []) as Array<{ status: string }>;
   const prods = (prodRes.data ?? []) as Array<{ status: string }>;
-  const dispatches = (dispRes.data ?? []) as Array<{ status: string; dispatch_date: string | null }>;
-  const installs = (instRes.data ?? []) as Array<{ status: string; actual_end_date: string | null }>;
+  const dispatches = (dispRes.data ?? []) as Array<{
+    status: string;
+    dispatch_date: string | null;
+  }>;
+  const installs = (instRes.data ?? []) as Array<{
+    status: string;
+    actual_end_date: string | null;
+  }>;
 
   const now = Date.now();
   const overdueInv = invoices
-    .filter((i) => i.status !== "paid" && (i.balance_due ?? 0) > 0 && i.due_date && new Date(i.due_date).getTime() < now)
+    .filter(
+      (i) =>
+        i.status !== "paid" &&
+        (i.balance_due ?? 0) > 0 &&
+        i.due_date &&
+        new Date(i.due_date).getTime() < now,
+    )
     .map((i) => Math.max(0, Math.floor((now - new Date(i.due_date!).getTime()) / 86_400_000)));
   const invoiceDaysOverdue = overdueInv.length ? Math.max(...overdueInv) : 0;
 
@@ -78,8 +125,12 @@ async function loadRelatedFlags(ctx: EnquiryContext) {
     hasSiteVisitCompleted: siteVisits.some((s) => s.status === "completed" || !!s.conducted_at),
     hasSampleSent: false, // no dedicated table; treated as unknown
     hasRfq: (rfqRes.data ?? []).length > 0,
-    hasApprovedVendor: vqs.some((v) => v.status === "approved" || v.status === "accepted") || (poRes.data ?? []).length > 0,
-    hasProductionStarted: prods.some((p) => ["in_progress", "completed", "started"].includes(String(p.status))),
+    hasApprovedVendor:
+      vqs.some((v) => v.status === "approved" || v.status === "accepted") ||
+      (poRes.data ?? []).length > 0,
+    hasProductionStarted: prods.some((p) =>
+      ["in_progress", "completed", "started"].includes(String(p.status)),
+    ),
     hasDispatchScheduled: dispatches.length > 0,
     hasInstallationScheduled: installs.length > 0,
     hasInstallationCompleted: installs.some((i) => i.status === "completed" || !!i.actual_end_date),
@@ -95,7 +146,8 @@ export async function getEnquiryIntelligence(ctx: EnquiryContext): Promise<Enqui
 
   const daysInStage = daysSince(signal.stage_entered_at ?? ctx.updatedAt ?? ctx.createdAt);
   const daysSinceLastFollowup = signal.last_followup_at ? daysSince(signal.last_followup_at) : null;
-  const followupOverdue = !!signal.next_followup && new Date(signal.next_followup.scheduled_at).getTime() < Date.now();
+  const followupOverdue =
+    !!signal.next_followup && new Date(signal.next_followup.scheduled_at).getTime() < Date.now();
 
   const inputs: ActionInputs = {
     enquiryId: ctx.id,

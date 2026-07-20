@@ -18,7 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { qk } from "@/lib/query-keys";
@@ -27,7 +31,6 @@ import { toUserMessage } from "@/lib/errors";
 import { InstallationTracker } from "@/components/manufacturing/InstallationTracker";
 import { QcChecklist } from "@/components/manufacturing/QcChecklist";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
-
 
 const STAGE_STATUSES = ["pending", "in_progress", "completed", "on_hold", "skipped"] as const;
 const PO_STATUSES = ["planned", "in_progress", "on_hold", "completed", "cancelled"] as const;
@@ -64,7 +67,7 @@ function ProductionOrderDetail() {
       const { data, error } = await supabase
         .from("production_orders")
         .select(
-          "*, products(id,name,product_code), customers(id,name), projects(id,name), enquiries(id,enquiry_no), sales_orders(id,so_no)"
+          "*, products(id,name,product_code), customers(id,name), projects(id,name), enquiries(id,enquiry_no), sales_orders(id,so_no)",
         )
         .eq("id", id)
         .maybeSingle();
@@ -88,9 +91,15 @@ function ProductionOrderDetail() {
 
   const updateOrder = useMutation({
     mutationFn: async (patch: Record<string, unknown>) => {
-      const { error } = await (supabase.from("production_orders") as unknown as {
-        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
-      }).update(patch).eq("id", id);
+      const { error } = await (
+        supabase.from("production_orders") as unknown as {
+          update: (v: Record<string, unknown>) => {
+            eq: (c: string, id: string) => Promise<{ error: unknown }>;
+          };
+        }
+      )
+        .update(patch)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -102,9 +111,15 @@ function ProductionOrderDetail() {
 
   const updateStage = useMutation({
     mutationFn: async ({ stageId, patch }: { stageId: string; patch: Record<string, unknown> }) => {
-      const { error } = await (supabase.from("production_stages") as unknown as {
-        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
-      }).update(patch).eq("id", stageId);
+      const { error } = await (
+        supabase.from("production_stages") as unknown as {
+          update: (v: Record<string, unknown>) => {
+            eq: (c: string, id: string) => Promise<{ error: unknown }>;
+          };
+        }
+      )
+        .update(patch)
+        .eq("id", stageId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -117,11 +132,21 @@ function ProductionOrderDetail() {
   if (orderQ.isError) return <ErrorBlock message={toUserMessage(orderQ.error)} />;
   if (!orderQ.data) return <ErrorBlock message="Production order not found" />;
   const po = orderQ.data as unknown as {
-    mfg_no: string; status: string; quantity: number; unit: string;
-    room: string | null; elevation: string | null; wall: string | null;
-    drawing_ref: string | null; revision: string | null;
-    bundle_no: string | null; crate_no: string | null; install_sequence: number | null;
-    planned_start: string | null; planned_end: string | null; notes: string | null;
+    mfg_no: string;
+    status: string;
+    quantity: number;
+    unit: string;
+    room: string | null;
+    elevation: string | null;
+    wall: string | null;
+    drawing_ref: string | null;
+    revision: string | null;
+    bundle_no: string | null;
+    crate_no: string | null;
+    install_sequence: number | null;
+    planned_start: string | null;
+    planned_end: string | null;
+    notes: string | null;
     sales_order_id: string | null;
     products: { id: string; name: string; product_code: string } | null;
     customers: { id: string; name: string } | null;
@@ -136,14 +161,15 @@ function ProductionOrderDetail() {
         title={po.mfg_no}
         subtitle={`${po.products?.name ?? "Product"} · ${po.quantity} ${po.unit}`}
         actions={
-          <Select
-            value={po.status}
-            onValueChange={(v) => updateOrder.mutate({ status: v })}
-          >
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <Select value={po.status} onValueChange={(v) => updateOrder.mutate({ status: v })}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {PO_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
+                <SelectItem key={s} value={s}>
+                  {s.replace(/_/g, " ")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -159,27 +185,65 @@ function ProductionOrderDetail() {
         }}
       />
 
-
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <LinkCard label="Customer" value={po.customers?.name} to={po.customers ? `/customers/${po.customers.id}` : undefined} />
-        <LinkCard label="Project" value={po.projects?.name} to={po.projects ? `/projects/${po.projects.id}` : undefined} />
-        <LinkCard label="Enquiry" value={po.enquiries?.enquiry_no} to={po.enquiries ? `/enquiries/${po.enquiries.id}` : undefined} />
-        <LinkCard label="Sales Order" value={po.sales_orders?.so_no} to={po.sales_orders ? `/sales-orders/${po.sales_orders.id}` : undefined} />
+        <LinkCard
+          label="Customer"
+          value={po.customers?.name}
+          to={po.customers ? `/customers/${po.customers.id}` : undefined}
+        />
+        <LinkCard
+          label="Project"
+          value={po.projects?.name}
+          to={po.projects ? `/projects/${po.projects.id}` : undefined}
+        />
+        <LinkCard
+          label="Enquiry"
+          value={po.enquiries?.enquiry_no}
+          to={po.enquiries ? `/enquiries/${po.enquiries.id}` : undefined}
+        />
+        <LinkCard
+          label="Sales Order"
+          value={po.sales_orders?.so_no}
+          to={po.sales_orders ? `/sales-orders/${po.sales_orders.id}` : undefined}
+        />
       </div>
 
       <Card className="p-4">
         <h2 className="mb-3 font-display text-base font-semibold">Installation Coordinates</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <FieldRow label="Room" value={po.room} onSave={(v) => updateOrder.mutate({ room: v })} />
-          <FieldRow label="Elevation" value={po.elevation} onSave={(v) => updateOrder.mutate({ elevation: v })} />
+          <FieldRow
+            label="Elevation"
+            value={po.elevation}
+            onSave={(v) => updateOrder.mutate({ elevation: v })}
+          />
           <FieldRow label="Wall" value={po.wall} onSave={(v) => updateOrder.mutate({ wall: v })} />
-          <FieldRow label="Install seq." value={po.install_sequence?.toString() ?? null} type="number"
-            onSave={(v) => updateOrder.mutate({ install_sequence: v ? Number(v) : null })} />
-          <FieldRow label="Drawing ref" value={po.drawing_ref} onSave={(v) => updateOrder.mutate({ drawing_ref: v })} />
-          <FieldRow label="Revision" value={po.revision} onSave={(v) => updateOrder.mutate({ revision: v })} />
-          <FieldRow label="Bundle" value={po.bundle_no} onSave={(v) => updateOrder.mutate({ bundle_no: v })} />
-          <FieldRow label="Crate" value={po.crate_no} onSave={(v) => updateOrder.mutate({ crate_no: v })} />
+          <FieldRow
+            label="Install seq."
+            value={po.install_sequence?.toString() ?? null}
+            type="number"
+            onSave={(v) => updateOrder.mutate({ install_sequence: v ? Number(v) : null })}
+          />
+          <FieldRow
+            label="Drawing ref"
+            value={po.drawing_ref}
+            onSave={(v) => updateOrder.mutate({ drawing_ref: v })}
+          />
+          <FieldRow
+            label="Revision"
+            value={po.revision}
+            onSave={(v) => updateOrder.mutate({ revision: v })}
+          />
+          <FieldRow
+            label="Bundle"
+            value={po.bundle_no}
+            onSave={(v) => updateOrder.mutate({ bundle_no: v })}
+          />
+          <FieldRow
+            label="Crate"
+            value={po.crate_no}
+            onSave={(v) => updateOrder.mutate({ crate_no: v })}
+          />
         </div>
       </Card>
 
@@ -216,7 +280,10 @@ function LinkCard({ label, value, to }: { label: string; value?: string | null; 
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       {value ? (
         to ? (
-          <Link to={to} className="mt-1 flex items-center gap-1 font-medium text-primary hover:underline">
+          <Link
+            to={to}
+            className="mt-1 flex items-center gap-1 font-medium text-primary hover:underline"
+          >
             {value} <ExternalLink className="h-3 w-3" />
           </Link>
         ) : (
@@ -230,8 +297,16 @@ function LinkCard({ label, value, to }: { label: string; value?: string | null; 
 }
 
 function FieldRow({
-  label, value, type = "text", onSave,
-}: { label: string; value: string | null; type?: string; onSave: (v: string | null) => void }) {
+  label,
+  value,
+  type = "text",
+  onSave,
+}: {
+  label: string;
+  value: string | null;
+  type?: string;
+  onSave: (v: string | null) => void;
+}) {
   return (
     <div>
       <Label className="text-xs text-muted-foreground">{label}</Label>
@@ -247,12 +322,23 @@ function FieldRow({
   );
 }
 
-function StageCard({ stage, onPatch }: { stage: Stage; onPatch: (p: Record<string, unknown>) => void }) {
+function StageCard({
+  stage,
+  onPatch,
+}: {
+  stage: Stage;
+  onPatch: (p: Record<string, unknown>) => void;
+}) {
   const icon =
-    stage.status === "completed" ? <CheckCircle2 className="h-5 w-5 text-primary" /> :
-    stage.status === "in_progress" ? <Clock className="h-5 w-5 text-status-warning-fg" /> :
-    stage.status === "on_hold" ? <AlertTriangle className="h-5 w-5 text-destructive" /> :
-    <Circle className="h-5 w-5 text-muted-foreground" />;
+    stage.status === "completed" ? (
+      <CheckCircle2 className="h-5 w-5 text-primary" />
+    ) : stage.status === "in_progress" ? (
+      <Clock className="h-5 w-5 text-status-warning-fg" />
+    ) : stage.status === "on_hold" ? (
+      <AlertTriangle className="h-5 w-5 text-destructive" />
+    ) : (
+      <Circle className="h-5 w-5 text-muted-foreground" />
+    );
   return (
     <div className="rounded-lg border p-3">
       <div className="flex items-center gap-3">
@@ -263,16 +349,25 @@ function StageCard({ stage, onPatch }: { stage: Stage; onPatch: (p: Record<strin
             {stage.manufacturing_stages?.code}
           </p>
         </div>
-        <Select value={stage.status} onValueChange={(v) => {
-          const patch: Record<string, unknown> = { status: v };
-          if (v === "in_progress" && !stage.actual_start) patch.actual_start = new Date().toISOString();
-          if (v === "completed" && !stage.actual_completed_at) patch.actual_completed_at = new Date().toISOString();
-          onPatch(patch);
-        }}>
-          <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+        <Select
+          value={stage.status}
+          onValueChange={(v) => {
+            const patch: Record<string, unknown> = { status: v };
+            if (v === "in_progress" && !stage.actual_start)
+              patch.actual_start = new Date().toISOString();
+            if (v === "completed" && !stage.actual_completed_at)
+              patch.actual_completed_at = new Date().toISOString();
+            onPatch(patch);
+          }}
+        >
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {STAGE_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {s.replace(/_/g, " ")}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

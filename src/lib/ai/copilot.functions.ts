@@ -9,7 +9,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireStaff } from "./require-staff";
 
-
 const chatInput = z.object({
   prompt: z.string().min(1).max(4000),
   context: z
@@ -48,7 +47,9 @@ export const askCopilot = createServerFn({ method: "POST" })
     ];
     if (data.context?.route) systemLines.push(`Current page: ${data.context.route}`);
     if (data.context?.entity)
-      systemLines.push(`Current entity: ${data.context.entity}${data.context.entityId ? ` (${data.context.entityId})` : ""}`);
+      systemLines.push(
+        `Current entity: ${data.context.entity}${data.context.entityId ? ` (${data.context.entityId})` : ""}`,
+      );
     if (data.context?.summary) systemLines.push(`Page context:\n${data.context.summary}`);
 
     const messages = [
@@ -103,7 +104,11 @@ export const suggestHsnGst = createServerFn({ method: "POST" })
     );
     return {
       hsn: { hsn: String(out.hsn), confidence: Number(out.hsn_confidence), reason: out.hsn_reason },
-      gst: { gst_pct: Number(out.gst_pct), confidence: Number(out.gst_confidence), reason: out.gst_reason },
+      gst: {
+        gst_pct: Number(out.gst_pct),
+        confidence: Number(out.gst_confidence),
+        reason: out.gst_reason,
+      },
     };
   });
 
@@ -222,6 +227,14 @@ export const recognizeStoneImage = createServerFn({ method: "POST" })
     try {
       return JSON.parse(raw);
     } catch {
-      return { stone_type: "", colour: "", finish: "", pattern: "", suggested_application: "", confidence: 0, notes: raw.slice(0, 300) };
+      return {
+        stone_type: "",
+        colour: "",
+        finish: "",
+        pattern: "",
+        suggested_application: "",
+        confidence: 0,
+        notes: raw.slice(0, 300),
+      };
     }
   });

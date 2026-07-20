@@ -20,7 +20,15 @@
  * a private one.
  */
 import { Link } from "@tanstack/react-router";
-import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, ShieldAlert, CircleCheck, X } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRight,
+  AlertTriangle,
+  TrendingUp,
+  ShieldAlert,
+  CircleCheck,
+  X,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,7 +42,11 @@ const KIND_META: Record<
 > = {
   risk: { label: "Risk", icon: ShieldAlert, tone: "text-destructive" },
   warning: { label: "Warning", icon: AlertTriangle, tone: "text-amber-600 dark:text-amber-400" },
-  opportunity: { label: "Opportunity", icon: TrendingUp, tone: "text-emerald-600 dark:text-emerald-400" },
+  opportunity: {
+    label: "Opportunity",
+    icon: TrendingUp,
+    tone: "text-emerald-600 dark:text-emerald-400",
+  },
   action: { label: "Action", icon: CircleCheck, tone: "text-primary" },
 };
 
@@ -43,7 +55,9 @@ const TOP_N = 5;
 export function BusinessInsightsCard() {
   const { processedInsights, loading } = useExecutiveInsights();
   const { active, setStatus } = useInsightLifecycle(processedInsights);
-  const top = [...active].sort((a, b) => b.normalizedPriority - a.normalizedPriority).slice(0, TOP_N);
+  const top = [...active]
+    .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
+    .slice(0, TOP_N);
 
   return (
     <Card className="mt-4">
@@ -67,8 +81,8 @@ export function BusinessInsightsCard() {
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">No actionable priorities found today.</p>
             <p className="mt-1">
-              Recommendations will appear here automatically as real operational data (overdue payments,
-              delayed projects, material shortages, etc.) becomes available.
+              Recommendations will appear here automatically as real operational data (overdue
+              payments, delayed projects, material shortages, etc.) becomes available.
             </p>
           </div>
         ) : (
@@ -101,7 +115,12 @@ export function BusinessInsightsCard() {
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
-                  {i.action.href && <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />}
+                  {i.action.href && (
+                    <ArrowRight
+                      className="mt-1 h-4 w-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                  )}
                 </div>
               );
               return (

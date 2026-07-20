@@ -193,8 +193,16 @@ export const LEAD_STAGES: ReadonlyArray<{
 }> = [
   { value: "new_lead", label: "New Enquiry", group: "active" },
   { value: "contacted", label: "Exploration", group: "active" },
-  { value: "site_visit_scheduled", label: "Requirement Gathering · Site visit scheduled", group: "active" },
-  { value: "site_visit_completed", label: "Requirement Gathering · Site visit completed", group: "active" },
+  {
+    value: "site_visit_scheduled",
+    label: "Requirement Gathering · Site visit scheduled",
+    group: "active",
+  },
+  {
+    value: "site_visit_completed",
+    label: "Requirement Gathering · Site visit completed",
+    group: "active",
+  },
   { value: "sample_sent", label: "Requirement Gathering · Sample sent", group: "active" },
   { value: "customer_quotation_sent", label: "Quotation Sent", group: "active" },
   { value: "negotiation", label: "Negotiation", group: "active" },

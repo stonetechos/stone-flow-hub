@@ -43,7 +43,8 @@ function RolesPage() {
   const designations = useQuery({ queryKey: ["wf", "designations"], queryFn: listDesignations });
   const kras = useQuery({ queryKey: ["wf", "kras", "all"], queryFn: () => listKras() });
   const kraCount = new Map<string, number>();
-  for (const k of kras.data ?? []) kraCount.set(k.designation_id, (kraCount.get(k.designation_id) ?? 0) + 1);
+  for (const k of kras.data ?? [])
+    kraCount.set(k.designation_id, (kraCount.get(k.designation_id) ?? 0) + 1);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<DesignationInput>({
@@ -61,7 +62,15 @@ function RolesPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "designations"] });
       setOpen(false);
-      setForm({ code: "", name: "", purpose: "", responsibilities: "", expected_outcomes: "", level: 0, active: true });
+      setForm({
+        code: "",
+        name: "",
+        purpose: "",
+        responsibilities: "",
+        expected_outcomes: "",
+        level: 0,
+        active: true,
+      });
       toast.success("Designation added");
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -73,11 +82,13 @@ function RolesPage() {
         title="Roles & KRAs"
         subtitle="Every role stores its purpose, responsibilities and KRAs."
         eyebrow="Workforce Intelligence"
-        actions={canWrite && (
-          <Button size="sm" onClick={() => setOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" /> New role
-          </Button>
-        )}
+        actions={
+          canWrite && (
+            <Button size="sm" onClick={() => setOpen(true)}>
+              <Plus className="mr-1 h-4 w-4" /> New role
+            </Button>
+          )
+        }
       />
       {designations.isLoading ? (
         <SkeletonTable />
@@ -111,7 +122,9 @@ function RolesPage() {
                 </TableCell>
                 <TableCell>{d.level}</TableCell>
                 <TableCell>{kraCount.get(d.id) ?? 0}</TableCell>
-                <TableCell className="max-w-md truncate text-muted-foreground">{d.purpose}</TableCell>
+                <TableCell className="max-w-md truncate text-muted-foreground">
+                  {d.purpose}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -120,18 +133,52 @@ function RolesPage() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>New designation</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>New designation</DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="Code (e.g. OPS_COORD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
-            <Input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <Input type="number" placeholder="Level (higher = senior)" value={form.level} onChange={(e) => setForm({ ...form, level: Number(e.target.value) })} />
-            <Textarea placeholder="Purpose" value={form.purpose ?? ""} onChange={(e) => setForm({ ...form, purpose: e.target.value })} />
-            <Textarea placeholder="Responsibilities" value={form.responsibilities ?? ""} onChange={(e) => setForm({ ...form, responsibilities: e.target.value })} />
-            <Textarea placeholder="Expected outcomes" value={form.expected_outcomes ?? ""} onChange={(e) => setForm({ ...form, expected_outcomes: e.target.value })} />
+            <Input
+              placeholder="Code (e.g. OPS_COORD)"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value })}
+            />
+            <Input
+              placeholder="Name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+            <Input
+              type="number"
+              placeholder="Level (higher = senior)"
+              value={form.level}
+              onChange={(e) => setForm({ ...form, level: Number(e.target.value) })}
+            />
+            <Textarea
+              placeholder="Purpose"
+              value={form.purpose ?? ""}
+              onChange={(e) => setForm({ ...form, purpose: e.target.value })}
+            />
+            <Textarea
+              placeholder="Responsibilities"
+              value={form.responsibilities ?? ""}
+              onChange={(e) => setForm({ ...form, responsibilities: e.target.value })}
+            />
+            <Textarea
+              placeholder="Expected outcomes"
+              value={form.expected_outcomes ?? ""}
+              onChange={(e) => setForm({ ...form, expected_outcomes: e.target.value })}
+            />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button disabled={!form.code || !form.name || add.isPending} onClick={() => add.mutate()}>Create</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!form.code || !form.name || add.isPending}
+              onClick={() => add.mutate()}
+            >
+              Create
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

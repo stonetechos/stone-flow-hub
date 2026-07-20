@@ -66,7 +66,9 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
       getDb()
         .from("customers")
         .select("id,name,customer_code,primary_phone,primary_email,city")
-        .or(`name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`)
+        .or(
+          `name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`,
+        )
         .limit(LIMIT),
     ),
     safe(
@@ -101,7 +103,9 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
       getDb()
         .from("enquiries")
         .select("id,enquiry_no,notes,architect_name,contractor_name")
-        .or(`enquiry_no.ilike.${p},notes.ilike.${p},architect_name.ilike.${p},contractor_name.ilike.${p}`)
+        .or(
+          `enquiry_no.ilike.${p},notes.ilike.${p},architect_name.ilike.${p},contractor_name.ilike.${p}`,
+        )
         .limit(LIMIT),
     ),
     safe(
@@ -218,11 +222,13 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   push(payments, "payments", "Payments", "/payments", "payment_no", "reference_no", "Payment");
   push(dispatch, "dispatch", "Dispatch", "/dispatch", "dispatch_no", "tracking_no", "Dispatch");
   // Contacts route into their parent customer detail page.
-  for (const r of contacts as Array<Record<string, unknown> & { id: string; customer_id?: string | null }>) {
+  for (const r of contacts as Array<
+    Record<string, unknown> & { id: string; customer_id?: string | null }
+  >) {
     const cid = typeof r.customer_id === "string" ? r.customer_id : "";
     hits.push({
       id: r.id,
-      label: (val(r as Row, "name") ?? "Contact"),
+      label: val(r as Row, "name") ?? "Contact",
       sublabel: val(r as Row, "phone") ?? val(r as Row, "email"),
       href: cid ? `/customers/${cid}` : `/customers`,
       group: "contacts",
@@ -230,7 +236,15 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     });
   }
   push(salespeople, "salespeople", "Salespeople", "/admin", "full_name", "email", "User");
-  push(architects, "architects", "Architects / Designers / Contractors", "/customers", "name", "city", "Partner");
+  push(
+    architects,
+    "architects",
+    "Architects / Designers / Contractors",
+    "/customers",
+    "name",
+    "city",
+    "Partner",
+  );
 
   return hits;
 }

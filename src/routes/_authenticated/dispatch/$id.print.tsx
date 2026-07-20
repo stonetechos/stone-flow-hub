@@ -144,7 +144,10 @@ function PrintDispatchPage() {
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={4} className="border border-slate-300 px-2 py-4 text-center text-slate-500">
+              <td
+                colSpan={4}
+                className="border border-slate-300 px-2 py-4 text-center text-slate-500"
+              >
                 No line items recorded.
               </td>
             </tr>
@@ -177,10 +180,14 @@ function PrintDispatchPage() {
 
       <section className="mt-16 grid grid-cols-2 gap-8 text-sm">
         <div>
-          {(b.signature_url || b.stamp_url) ? (
+          {b.signature_url || b.stamp_url ? (
             <div className="mb-2 flex items-end gap-2">
               {b.signature_url && (
-                <img src={b.signature_url} alt="Signature" className="h-11 max-w-[120px] object-contain" />
+                <img
+                  src={b.signature_url}
+                  alt="Signature"
+                  className="h-11 max-w-[120px] object-contain"
+                />
               )}
               {b.stamp_url && (
                 <img src={b.stamp_url} alt="Company stamp" className="h-14 w-14 object-contain" />

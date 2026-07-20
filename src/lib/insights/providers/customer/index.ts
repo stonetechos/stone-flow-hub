@@ -43,6 +43,8 @@ const CUSTOMER_INSIGHT_PROVIDERS = [
  * existing registration by id rather than duplicating it.
  */
 export function registerCustomerInsightProviders(): () => void {
-  const unregisterFns = CUSTOMER_INSIGHT_PROVIDERS.map((provider) => registerInsightProvider(provider));
+  const unregisterFns = CUSTOMER_INSIGHT_PROVIDERS.map((provider) =>
+    registerInsightProvider(provider),
+  );
   return () => unregisterFns.forEach((unregister) => unregister());
 }

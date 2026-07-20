@@ -20,7 +20,6 @@ export type DashboardKpis = {
   deliveriesToday: number;
 };
 
-
 export async function getDashboardKpis(): Promise<DashboardKpis> {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
@@ -120,10 +119,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     overdueFollowups: overdueFu.count ?? 0,
     quotesAwaitingApproval: quotesAwaiting.count ?? 0,
     ordersToStart: ordersToStart.count ?? 0,
-    revenuePipelineInr: sumField(
-      revenuePipeline.data as Array<{ total: number }>,
-      "total",
-    ),
+    revenuePipelineInr: sumField(revenuePipeline.data as Array<{ total: number }>, "total"),
     customers: cust.count ?? 0,
     outstandingInr: sumField(outstanding.data as Array<{ balance_due: number }>, "balance_due"),
     paymentsThisMonthInr: sumField(monthPay.data as Array<{ amount: number }>, "amount"),
@@ -133,4 +129,3 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     deliveriesToday: deliveriesToday.count ?? 0,
   };
 }
-

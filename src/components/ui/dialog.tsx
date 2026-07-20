@@ -29,8 +29,9 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-interface DialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+interface DialogContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
   /**
    * When true, children render directly inside the dialog with no auto
    * scroll wrapper. Reserve for consumers (e.g. CommandDialog) that manage
@@ -123,7 +124,10 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("font-display text-lg font-semibold leading-tight tracking-tight text-foreground", className)}
+    className={cn(
+      "font-display text-lg font-semibold leading-tight tracking-tight text-foreground",
+      className,
+    )}
     {...props}
   />
 ));

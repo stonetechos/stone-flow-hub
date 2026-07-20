@@ -53,9 +53,7 @@ export function Stat({
       >
         {value}
       </div>
-      {hint && (
-        <div className="text-xs text-muted-foreground">{hint}</div>
-      )}
+      {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
     </div>
   );
   if (to) {

@@ -106,7 +106,11 @@ export async function executeAction(
       .eq("id", actionId);
     if (applyError) throw new AppError(mapDbError(applyError));
 
-    return { status: "applied", linkedRecordType: result.linkedRecordType, linkedRecordId: result.linkedRecordId };
+    return {
+      status: "applied",
+      linkedRecordType: result.linkedRecordType,
+      linkedRecordId: result.linkedRecordId,
+    };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error executing VIE action";
     await db

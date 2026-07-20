@@ -69,11 +69,7 @@ export function VendorCategoryPicker({ vendorId }: { vendorId: string }) {
         <CardTitle className="flex items-center gap-2 text-base">
           <Tags className="h-4 w-4" /> Service Categories
         </CardTitle>
-        <Button
-          size="sm"
-          disabled={!dirty || save.isPending}
-          onClick={() => save.mutate()}
-        >
+        <Button size="sm" disabled={!dirty || save.isPending} onClick={() => save.mutate()}>
           {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save
         </Button>

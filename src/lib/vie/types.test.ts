@@ -50,7 +50,10 @@ describe("logEnquiryEntitiesSchema", () => {
   });
 
   test("rejects a whitespace-only customerName (trimmed to empty)", () => {
-    expectInvalidEntities(logEnquiryEntitiesSchema, validLogEnquiryEntities({ customerName: "   " }));
+    expectInvalidEntities(
+      logEnquiryEntitiesSchema,
+      validLogEnquiryEntities({ customerName: "   " }),
+    );
   });
 
   test("rejects a non-positive rate", () => {
@@ -92,15 +95,24 @@ describe("noteFollowupEntitiesSchema", () => {
   });
 
   test("rejects a negative relativeDays", () => {
-    expectInvalidEntities(noteFollowupEntitiesSchema, validNoteFollowupEntities({ relativeDays: -1 }));
+    expectInvalidEntities(
+      noteFollowupEntitiesSchema,
+      validNoteFollowupEntities({ relativeDays: -1 }),
+    );
   });
 
   test("rejects a non-integer relativeDays", () => {
-    expectInvalidEntities(noteFollowupEntitiesSchema, validNoteFollowupEntities({ relativeDays: 2.5 }));
+    expectInvalidEntities(
+      noteFollowupEntitiesSchema,
+      validNoteFollowupEntities({ relativeDays: 2.5 }),
+    );
   });
 
   test("rejects a channel outside the known enum", () => {
-    expectInvalidEntities(noteFollowupEntitiesSchema, validNoteFollowupEntities({ channel: "sms" }));
+    expectInvalidEntities(
+      noteFollowupEntitiesSchema,
+      validNoteFollowupEntities({ channel: "sms" }),
+    );
   });
 
   test("accepts a partial AI response matching the prompt's own few-shot example (note + relativeDays only)", () => {

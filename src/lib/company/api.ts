@@ -57,7 +57,10 @@ export interface CompanyProfileRow {
  *  not here, since a full-row requirement would break single-field
  *  patches like the upload handlers. */
 export type CompanyProfileInput = Partial<
-  Omit<CompanyProfileRow, "id" | "is_active" | "created_at" | "updated_at" | "created_by" | "updated_by">
+  Omit<
+    CompanyProfileRow,
+    "id" | "is_active" | "created_at" | "updated_at" | "created_by" | "updated_by"
+  >
 >;
 
 const TABLE = "company_profiles" as never;

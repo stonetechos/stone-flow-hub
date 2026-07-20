@@ -10,10 +10,7 @@ import { type ReactNode } from "react";
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <div
-      key={pathname}
-      className="motion-safe:animate-[stone-page-in_180ms_var(--ease-out)_both]"
-    >
+    <div key={pathname} className="motion-safe:animate-[stone-page-in_180ms_var(--ease-out)_both]">
       {children}
     </div>
   );

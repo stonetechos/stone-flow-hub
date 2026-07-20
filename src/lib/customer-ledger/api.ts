@@ -16,7 +16,7 @@ export type LedgerEntry = {
 export type LedgerSummary = {
   totalDebit: number;
   totalCredit: number;
-  balance: number;   // positive => customer owes; negative => credit balance
+  balance: number; // positive => customer owes; negative => credit balance
   unallocatedAdvance: number;
 };
 

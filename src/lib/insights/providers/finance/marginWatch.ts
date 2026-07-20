@@ -47,7 +47,12 @@ export const MarginWatchProvider: InsightProvider = {
       if (!state) continue;
 
       const customerPart = p.customer_name ? ` (${p.customer_name})` : "";
-      const totalCost = p.material_cost + p.procurement_cost + p.installation_cost + p.labour_cost + p.transport_cost;
+      const totalCost =
+        p.material_cost +
+        p.procurement_cost +
+        p.installation_cost +
+        p.labour_cost +
+        p.transport_cost;
 
       const title =
         state === "negative"

@@ -68,7 +68,10 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         : [...p.collapsedGroups, gid],
     }));
 
-  const moveItem = (payload: DragPayload, target: { to: "starred" | NavGroupId; beforeId?: string }): void => {
+  const moveItem = (
+    payload: DragPayload,
+    target: { to: "starred" | NavGroupId; beforeId?: string },
+  ): void => {
     if (payload.from === target.to && !target.beforeId) return;
     update((p) => {
       const starred = [...p.starred];
@@ -178,11 +181,12 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
       e.dataTransfer.dropEffect = "move";
     }
   };
-  const onRowDrop = (target: { to: "starred" | NavGroupId; beforeId?: string }) => (e: React.DragEvent) => {
-    e.preventDefault();
-    if (drag) moveItem(drag, target);
-    setDrag(null);
-  };
+  const onRowDrop =
+    (target: { to: "starred" | NavGroupId; beforeId?: string }) => (e: React.DragEvent) => {
+      e.preventDefault();
+      if (drag) moveItem(drag, target);
+      setDrag(null);
+    };
 
   const renderItemRow = (item: NavItemDef, container: "starred" | NavGroupId, starred: boolean) => (
     <li
@@ -225,8 +229,8 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         <div>
           <CardTitle className="text-sm">Navigation</CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            Drag to reorder. Star to pin at the top. Hide the modules you never use.
-            Preferences are saved only for you.
+            Drag to reorder. Star to pin at the top. Hide the modules you never use. Preferences are
+            saved only for you.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -308,7 +312,10 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
                   }
                 }}
               >
-                <GripVertical className="h-3.5 w-3.5 cursor-grab text-muted-foreground" aria-hidden />
+                <GripVertical
+                  className="h-3.5 w-3.5 cursor-grab text-muted-foreground"
+                  aria-hidden
+                />
                 <button
                   type="button"
                   onClick={() => toggleCollapse(group.id)}
@@ -321,9 +328,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
                   />
                   {group.label}
                 </button>
-                <span className="text-[10px] text-muted-foreground">
-                  ({group.items.length})
-                </span>
+                <span className="text-[10px] text-muted-foreground">({group.items.length})</span>
               </div>
               {!collapsed && (
                 <ul className="ml-2 space-y-1">
@@ -372,18 +377,16 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         )}
 
         {/* Sanity fallback if all items got hidden */}
-        {resolved.starred.length === 0 &&
-          resolved.groups.every((g) => g.items.length === 0) && (
-            <p className="text-xs text-muted-foreground">
-              You've hidden every module. Click{" "}
-              <button type="button" onClick={onReset} className="underline">
-                Reset
-              </button>{" "}
-              to bring the default navigation back — or reveal individual modules from the Hidden list above.
-            </p>
-          )}
-
-        
+        {resolved.starred.length === 0 && resolved.groups.every((g) => g.items.length === 0) && (
+          <p className="text-xs text-muted-foreground">
+            You've hidden every module. Click{" "}
+            <button type="button" onClick={onReset} className="underline">
+              Reset
+            </button>{" "}
+            to bring the default navigation back — or reveal individual modules from the Hidden list
+            above.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

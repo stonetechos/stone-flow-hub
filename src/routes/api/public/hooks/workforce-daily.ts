@@ -21,11 +21,9 @@ export const Route = createFileRoute("/api/public/hooks/workforce-daily")({
         if (!auth) return new Response("Missing apikey", { status: 401 });
 
         const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(
-          process.env.SUPABASE_URL!,
-          auth.replace(/^Bearer\s+/i, ""),
-          { auth: { autoRefreshToken: false, persistSession: false } },
-        );
+        const supabase = createClient(process.env.SUPABASE_URL!, auth.replace(/^Bearer\s+/i, ""), {
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
 
         // 1. Stale-task cleanup: mark tasks completed if their source row is gone.
         //    Cheap defensive sweep; triggers already keep this current.
@@ -52,10 +50,10 @@ export const Route = createFileRoute("/api/public/hooks/workforce-daily")({
         // 3. Snapshot generation happens client-side on demand today. In a
         //    future phase, compute here and insert into workforce_score_snapshots.
 
-        return new Response(
-          JSON.stringify({ ok: true, ran_at: new Date().toISOString() }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ ok: true, ran_at: new Date().toISOString() }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
       },
     },
   },

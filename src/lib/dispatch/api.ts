@@ -274,8 +274,15 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
   if (openIds.length === 0) return [];
 
   const [itemsRes, dispatchesRes] = await Promise.all([
-    getDb().from("sales_order_items").select("id,product_id,quantity").in("sales_order_id", openIds),
-    getDb().from("dispatches").select("id").in("sales_order_id", openIds).neq("status", "cancelled"),
+    getDb()
+      .from("sales_order_items")
+      .select("id,product_id,quantity")
+      .in("sales_order_id", openIds),
+    getDb()
+      .from("dispatches")
+      .select("id")
+      .in("sales_order_id", openIds)
+      .neq("status", "cancelled"),
   ]);
   if (itemsRes.error) throw new AppError(mapDbError(itemsRes.error));
   if (dispatchesRes.error) throw new AppError(mapDbError(dispatchesRes.error));
@@ -298,12 +305,22 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
   }
 
   const committedByProduct = new Map<string, number>();
-  for (const item of (itemsRes.data ?? []) as Array<{ id: string; product_id: string | null; quantity: number }>) {
+  for (const item of (itemsRes.data ?? []) as Array<{
+    id: string;
+    product_id: string | null;
+    quantity: number;
+  }>) {
     if (!item.product_id) continue;
     const delivered = deliveredByItem.get(item.id) ?? 0;
     const remaining = Math.max(0, Number(item.quantity) - delivered);
     if (remaining <= 0) continue;
-    committedByProduct.set(item.product_id, (committedByProduct.get(item.product_id) ?? 0) + remaining);
+    committedByProduct.set(
+      item.product_id,
+      (committedByProduct.get(item.product_id) ?? 0) + remaining,
+    );
   }
-  return [...committedByProduct.entries()].map(([product_id, committed_qty]) => ({ product_id, committed_qty }));
+  return [...committedByProduct.entries()].map(([product_id, committed_qty]) => ({
+    product_id,
+    committed_qty,
+  }));
 }

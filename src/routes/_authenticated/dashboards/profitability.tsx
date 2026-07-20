@@ -14,12 +14,19 @@ export const Route = createFileRoute("/_authenticated/dashboards/profitability")
 });
 
 function ProfitabilityDashboard() {
-  const q = useQuery({ queryKey: ["exec", "profitability"], queryFn: getProjectProfitability, staleTime: 60_000 });
+  const q = useQuery({
+    queryKey: ["exec", "profitability"],
+    queryFn: getProjectProfitability,
+    staleTime: 60_000,
+  });
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} />;
   return (
     <div>
-      <PageHeader title="Project Profitability" subtitle="Per-project P&L — estimate → sales → costs → net." />
+      <PageHeader
+        title="Project Profitability"
+        subtitle="Per-project P&L — estimate → sales → costs → net."
+      />
       <Card>
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full text-sm">
@@ -43,7 +50,15 @@ function ProfitabilityDashboard() {
             <tbody>
               {(q.data ?? []).map((r) => (
                 <tr key={r.project_id} className="border-b hover:bg-muted/40">
-                  <td className="p-2"><Link to="/projects/$projectId" params={{ projectId: r.project_id }} className="text-primary hover:underline">{r.project_name}</Link></td>
+                  <td className="p-2">
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: r.project_id }}
+                      className="text-primary hover:underline"
+                    >
+                      {r.project_name}
+                    </Link>
+                  </td>
                   <td className="p-2 text-muted-foreground">{r.customer_name ?? "—"}</td>
                   <td className="p-2 text-right">{formatInr(r.estimate_value)}</td>
                   <td className="p-2 text-right">{formatInr(r.quoted_value)}</td>
@@ -54,17 +69,29 @@ function ProfitabilityDashboard() {
                   <td className="p-2 text-right">{formatInr(r.labour_cost)}</td>
                   <td className="p-2 text-right">{formatInr(r.transport_cost)}</td>
                   <td className="p-2 text-right">{formatInr(r.gross_profit)}</td>
-                  <td className={`p-2 text-right font-medium ${r.net_profit < 0 ? "text-status-danger-fg" : "text-status-success-fg"}`}>{formatInr(r.net_profit)}</td>
+                  <td
+                    className={`p-2 text-right font-medium ${r.net_profit < 0 ? "text-status-danger-fg" : "text-status-success-fg"}`}
+                  >
+                    {formatInr(r.net_profit)}
+                  </td>
                   <td className="p-2 text-right">{r.profit_pct.toFixed(1)}%</td>
                 </tr>
               ))}
-              {(q.data ?? []).length === 0 && <tr><td colSpan={13} className="p-4 text-center text-muted-foreground">No projects.</td></tr>}
+              {(q.data ?? []).length === 0 && (
+                <tr>
+                  <td colSpan={13} className="p-4 text-center text-muted-foreground">
+                    No projects.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </CardContent>
       </Card>
       <p className="mt-3 text-xs text-muted-foreground">
-        Cost inputs come from the approved estimate (material, manufacturing, install, freight); procurement uses actual vendor payments linked to project GRNs. Numbers are live — never estimated.
+        Cost inputs come from the approved estimate (material, manufacturing, install, freight);
+        procurement uses actual vendor payments linked to project GRNs. Numbers are live — never
+        estimated.
       </p>
     </div>
   );

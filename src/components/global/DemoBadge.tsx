@@ -35,9 +35,9 @@ export function DemoBadge() {
             className={cn(
               "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold uppercase tracking-wide transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            isDemo
-              ? "bg-status-info-bg text-status-info-fg hover:bg-status-info-bg/80 border border-status-info-border"
-              : "bg-status-success-bg text-status-success-fg hover:bg-status-success-bg/80 border border-status-success-border",
+              isDemo
+                ? "bg-status-info-bg text-status-info-fg hover:bg-status-info-bg/80 border border-status-info-border"
+                : "bg-status-success-bg text-status-success-fg hover:bg-status-success-bg/80 border border-status-success-border",
             )}
             aria-label={`Current mode: ${isDemo ? "Demo" : "Live"}. Change mode`}
           >

@@ -12,21 +12,35 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/time
 
 function TimelinePage() {
   const { customerId } = Route.useParams();
-  const header = useQuery({ queryKey: ["customer-header", customerId], queryFn: () => getCustomerHeader(customerId) });
-  const q = useQuery({ queryKey: ["customer-timeline", customerId], queryFn: () => getCustomerTimeline(customerId) });
+  const header = useQuery({
+    queryKey: ["customer-header", customerId],
+    queryFn: () => getCustomerHeader(customerId),
+  });
+  const q = useQuery({
+    queryKey: ["customer-timeline", customerId],
+    queryFn: () => getCustomerTimeline(customerId),
+  });
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-6">
-      <Link to="/customers/$customerId" params={{ customerId }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/customers/$customerId"
+        params={{ customerId }}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-3 w-3" /> Back to customer
       </Link>
       <div>
         <h1 className="text-2xl font-semibold">{header.data?.name ?? "Customer"} — Timeline</h1>
-        <p className="text-sm text-muted-foreground">Every interaction, document, and message in one feed.</p>
+        <p className="text-sm text-muted-foreground">
+          Every interaction, document, and message in one feed.
+        </p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Activity</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Activity</CardTitle>
+        </CardHeader>
         <CardContent>
           {q.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
           {!q.isLoading && (q.data ?? []).length === 0 && (
@@ -42,7 +56,9 @@ function TimelinePage() {
                     {e.href ? <Link to={e.href}>{e.title}</Link> : e.title}
                   </span>
                   {e.status && <Badge variant="secondary">{e.status}</Badge>}
-                  {e.amount != null && <span className="text-sm text-muted-foreground">{formatInr(e.amount)}</span>}
+                  {e.amount != null && (
+                    <span className="text-sm text-muted-foreground">{formatInr(e.amount)}</span>
+                  )}
                   <span className="ml-auto text-xs text-muted-foreground">
                     {e.at ? new Date(e.at).toLocaleString("en-IN") : ""}
                   </span>

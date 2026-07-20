@@ -51,7 +51,6 @@ import {
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 
-
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
 /* --------------------------------------------------------------------- */
@@ -125,10 +124,7 @@ function NavLinkRow({
         )}
       />
       <Icon
-        className={cn(
-          "h-4 w-4 shrink-0 transition-opacity",
-          active ? "opacity-90" : "opacity-60",
-        )}
+        className={cn("h-4 w-4 shrink-0 transition-opacity", active ? "opacity-90" : "opacity-60")}
         aria-hidden
       />
       {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
@@ -464,7 +460,6 @@ function UserMenu({
   );
 }
 
-
 /* --------------------------------------------------------------------- */
 /* AppShell                                                               */
 /* --------------------------------------------------------------------- */
@@ -778,11 +773,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <NotificationsBell />
               <ThemeSwitcher />
               <div className="ml-1">
-                <UserMenu
-                  onSignOut={onSignOut}
-                  onOpenShortcuts={openShortcuts}
-                  isAdmin={isAdmin}
-                />
+                <UserMenu onSignOut={onSignOut} onOpenShortcuts={openShortcuts} isAdmin={isAdmin} />
               </div>
             </div>
           </header>
@@ -811,5 +802,3 @@ export function AppShell({ children }: { children: ReactNode }) {
     </DemoProvider>
   );
 }
-
-

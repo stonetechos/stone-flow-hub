@@ -21,11 +21,7 @@ type MasterTable =
   | "product_families"
   | "manufacturing_stages";
 
-async function listMaster<T>(
-  table: MasterTable,
-  q: string,
-  extraCols = "*",
-): Promise<T[]> {
+async function listMaster<T>(table: MasterTable, q: string, extraCols = "*"): Promise<T[]> {
   let query = supabase
     .from(table)
     .select(extraCols)
@@ -50,20 +46,16 @@ export const listStoneTypes = (q = "") => listMaster<StoneType>("stone_types", q
 export const getStoneType = (id: string) => getMaster<StoneType>("stone_types", id);
 
 // Surface finishes
-export const listSurfaceFinishes = (q = "") =>
-  listMaster<SurfaceFinish>("surface_finishes", q);
-export const getSurfaceFinish = (id: string) =>
-  getMaster<SurfaceFinish>("surface_finishes", id);
+export const listSurfaceFinishes = (q = "") => listMaster<SurfaceFinish>("surface_finishes", q);
+export const getSurfaceFinish = (id: string) => getMaster<SurfaceFinish>("surface_finishes", id);
 
 // Edge finishes
 export const listEdgeFinishes = (q = "") => listMaster<EdgeFinish>("edge_finishes", q);
 export const getEdgeFinish = (id: string) => getMaster<EdgeFinish>("edge_finishes", id);
 
 // Product families
-export const listProductFamilies = (q = "") =>
-  listMaster<ProductFamily>("product_families", q);
-export const getProductFamily = (id: string) =>
-  getMaster<ProductFamily>("product_families", id);
+export const listProductFamilies = (q = "") => listMaster<ProductFamily>("product_families", q);
+export const getProductFamily = (id: string) => getMaster<ProductFamily>("product_families", id);
 
 // Manufacturing stages — always returned in workflow order
 export async function listManufacturingStages(): Promise<ManufacturingStage[]> {

@@ -198,8 +198,7 @@ function UsersAdminPage() {
   };
 
   const assign = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) =>
-      assignRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => assignRole(userId, role),
     onSuccess: (_d, v) => {
       toast.success(`Granted ${ROLE_LABEL[v.role]}`);
       invalidate();
@@ -208,8 +207,7 @@ function UsersAdminPage() {
   });
 
   const revoke = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) =>
-      revokeRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => revokeRole(userId, role),
     onSuccess: (_d, v) => {
       toast.success(`Removed ${ROLE_LABEL[v.role]}`);
       invalidate();
@@ -239,8 +237,7 @@ function UsersAdminPage() {
         data: {
           email: data.email,
           full_name: data.full_name ?? null,
-          redirect_to:
-            typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
+          redirect_to: typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
         },
       }).then(async (res) => {
         if (res.id && data.role) {
@@ -286,8 +283,7 @@ function UsersAdminPage() {
       resendFn({
         data: {
           email,
-          redirect_to:
-            typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
+          redirect_to: typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
         },
       }),
     onSuccess: () => toast.success("Invitation resent"),
@@ -324,8 +320,7 @@ function UsersAdminPage() {
       if (statusFilter !== "all" && u.status !== statusFilter) return false;
       if (!q) return true;
       return (
-        (u.full_name ?? "").toLowerCase().includes(q) ||
-        (u.email ?? "").toLowerCase().includes(q)
+        (u.full_name ?? "").toLowerCase().includes(q) || (u.email ?? "").toLowerCase().includes(q)
       );
     });
   }, [combined, search, statusFilter]);
@@ -355,7 +350,10 @@ function UsersAdminPage() {
             className="pl-8"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
@@ -407,9 +405,7 @@ function UsersAdminPage() {
                       onReset={() => u.email && reset.mutate(u.email)}
                       onRename={(fullName) => rename.mutate({ userId: u.id, fullName })}
                       onResend={() => u.email && resend.mutate(u.email)}
-                      onSetActive={(isActive) =>
-                        setActive.mutate({ userId: u.id, isActive })
-                      }
+                      onSetActive={(isActive) => setActive.mutate({ userId: u.id, isActive })}
                       onDelete={() => setConfirmDelete(u)}
                       busy={busy}
                       renaming={rename.isPending}
@@ -436,17 +432,14 @@ function UsersAdminPage() {
         onSubmitPassword={(v) => createWithPassword.mutateAsync(v).then(() => setInviteOpen(false))}
       />
 
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this user permanently?</AlertDialogTitle>
             <AlertDialogDescription>
               This removes their sign-in access and profile. Historical records (activity log,
-              comments, assignments) are preserved and continue to show the user's previous
-              display name. For most cases, deactivating instead is safer.
+              comments, assignments) are preserved and continue to show the user's previous display
+              name. For most cases, deactivating instead is safer.
               {confirmDelete?.email ? (
                 <span className="mt-2 block font-medium text-foreground">
                   {confirmDelete.full_name?.trim() || fallbackName(confirmDelete.email)} —{" "}
@@ -766,7 +759,10 @@ function PasswordCreateForm({
         <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
           Cancel
         </Button>
-        <Button type="submit" disabled={busy || !email.trim() || password.length < MIN_PASSWORD_LENGTH}>
+        <Button
+          type="submit"
+          disabled={busy || !email.trim() || password.length < MIN_PASSWORD_LENGTH}
+        >
           {busy ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
           ) : (
@@ -881,9 +877,7 @@ function UserRowView({
       </td>
       <td className="px-4 py-3">
         {user.roles.length === 0 ? (
-          <span className="text-xs text-muted-foreground">
-            No application roles assigned.
-          </span>
+          <span className="text-xs text-muted-foreground">No application roles assigned.</span>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {user.roles.map((r) => (
@@ -906,19 +900,11 @@ function UserRowView({
       <td className="px-4 py-3 text-xs text-muted-foreground">
         {formatDate(user.last_sign_in_at)}
       </td>
-      <td className="px-4 py-3 text-xs text-muted-foreground">
-        {formatDate(user.created_at)}
-      </td>
+      <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-end gap-1.5">
           {available.map((r) => (
-            <Button
-              key={r}
-              size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={() => onAssign(r)}
-            >
+            <Button key={r} size="sm" variant="outline" disabled={busy} onClick={() => onAssign(r)}>
               Grant {ROLE_LABEL[r]}
             </Button>
           ))}
@@ -939,10 +925,7 @@ function UserRowView({
                 <KeyRound className="mr-2 h-4 w-4" /> Send password reset
               </DropdownMenuItem>
               {user.is_active ? (
-                <DropdownMenuItem
-                  onClick={() => onSetActive(false)}
-                  disabled={isSelf}
-                >
+                <DropdownMenuItem onClick={() => onSetActive(false)} disabled={isSelf}>
                   <UserX className="mr-2 h-4 w-4" /> Deactivate user
                 </DropdownMenuItem>
               ) : (

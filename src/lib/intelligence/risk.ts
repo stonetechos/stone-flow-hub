@@ -45,7 +45,8 @@ export interface RiskSummary {
 }
 
 const now = () => Date.now();
-const days = (iso: string | null) => (iso ? Math.max(0, Math.floor((now() - new Date(iso).getTime()) / 86_400_000)) : 0);
+const days = (iso: string | null) =>
+  iso ? Math.max(0, Math.floor((now() - new Date(iso).getTime()) / 86_400_000)) : 0;
 
 export async function getRiskSummary(): Promise<RiskSummary> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,33 +61,90 @@ export async function getRiskSummary(): Promise<RiskSummary> {
   const items: RiskItem[] = [];
   const counts = {} as Record<RiskKey, number>;
   const bump = (k: RiskKey) => (counts[k] = (counts[k] ?? 0) + 1);
-  const add = (r: RiskItem) => { items.push(r); bump(r.key); };
+  const add = (r: RiskItem) => {
+    items.push(r);
+    bump(r.key);
+  };
 
-  for (const e of (enqRes.data ?? []) as Array<{ id: string; enquiry_no: string; stage: LeadStage; assigned_to: string | null; updated_at: string; created_at: string }>) {
+  for (const e of (enqRes.data ?? []) as Array<{
+    id: string;
+    enquiry_no: string;
+    stage: LeadStage;
+    assigned_to: string | null;
+    updated_at: string;
+    created_at: string;
+  }>) {
     const umb = STAGE_TO_UMBRELLA[e.stage];
     if (umb === "lost" || umb === "cancelled" || umb === "completed") continue;
     if (!e.assigned_to) {
       const inactive = days(e.updated_at ?? e.created_at);
-      add({ key: "no_salesperson", severity: "high", entity: "enquiry", entityId: e.id, label: e.enquiry_no, reason: "No salesperson assigned", daysOverdue: inactive, href: `/enquiries/${e.id}` });
+      add({
+        key: "no_salesperson",
+        severity: "high",
+        entity: "enquiry",
+        entityId: e.id,
+        label: e.enquiry_no,
+        reason: "No salesperson assigned",
+        daysOverdue: inactive,
+        href: `/enquiries/${e.id}`,
+      });
     }
   }
 
-  for (const p of (poRes.data ?? []) as Array<{ id: string; po_no: string; status: string; expected_date: string | null }>) {
+  for (const p of (poRes.data ?? []) as Array<{
+    id: string;
+    po_no: string;
+    status: string;
+    expected_date: string | null;
+  }>) {
     if (["received", "closed", "cancelled"].includes(String(p.status))) continue;
     if (p.expected_date && new Date(p.expected_date).getTime() < now()) {
       const od = days(p.expected_date);
-      add({ key: "vendor_delay", severity: od > 14 ? "high" : "medium", entity: "po", entityId: p.id, label: p.po_no, reason: `Vendor delivery late ${od} days`, daysOverdue: od, href: `/purchase-orders/${p.id}` });
+      add({
+        key: "vendor_delay",
+        severity: od > 14 ? "high" : "medium",
+        entity: "po",
+        entityId: p.id,
+        label: p.po_no,
+        reason: `Vendor delivery late ${od} days`,
+        daysOverdue: od,
+        href: `/purchase-orders/${p.id}`,
+      });
     }
   }
 
-  for (const r of (rfqRes.data ?? []) as Array<{ id: string; rfq_no: string; status: string; due_date: string | null }>) {
+  for (const r of (rfqRes.data ?? []) as Array<{
+    id: string;
+    rfq_no: string;
+    status: string;
+    due_date: string | null;
+  }>) {
     if (["closed", "awarded", "cancelled"].includes(String(r.status))) continue;
     if (r.due_date && new Date(r.due_date).getTime() < now()) {
       const od = days(r.due_date);
-      add({ key: "vendor_delay", severity: "medium", entity: "rfq", entityId: r.id, label: r.rfq_no, reason: `RFQ past due ${od} days`, daysOverdue: od, href: `/rfqs/${r.id}` });
+      add({
+        key: "vendor_delay",
+        severity: "medium",
+        entity: "rfq",
+        entityId: r.id,
+        label: r.rfq_no,
+        reason: `RFQ past due ${od} days`,
+        daysOverdue: od,
+        href: `/rfqs/${r.id}`,
+      });
     }
   }
 
-  items.sort((a, b) => (a.severity === b.severity ? b.daysOverdue - a.daysOverdue : (a.severity === "high" ? -1 : b.severity === "high" ? 1 : a.severity === "medium" ? -1 : 1)));
+  items.sort((a, b) =>
+    a.severity === b.severity
+      ? b.daysOverdue - a.daysOverdue
+      : a.severity === "high"
+        ? -1
+        : b.severity === "high"
+          ? 1
+          : a.severity === "medium"
+            ? -1
+            : 1,
+  );
   return { items, counts };
 }

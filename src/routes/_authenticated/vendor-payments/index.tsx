@@ -8,7 +8,14 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
@@ -55,7 +62,10 @@ function VendorPaymentsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.vendorPayments.list(dq), queryFn: () => listVendorPayments(dq) });
+  const query = useQuery({
+    queryKey: qk.vendorPayments.list(dq),
+    queryFn: () => listVendorPayments(dq),
+  });
   useEffect(() => setPage(1), [dq]);
 
   const del = useMutation({
@@ -120,7 +130,10 @@ function VendorPaymentsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -139,30 +152,50 @@ function VendorPaymentsPage() {
             <TableBody>
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
-                  {!isHidden("no") && <TableCell className="font-mono text-xs">{r.payment_no}</TableCell>}
+                  {!isHidden("no") && (
+                    <TableCell className="font-mono text-xs">{r.payment_no}</TableCell>
+                  )}
                   {!isHidden("vendor") && (
                     <TableCell>
                       {r.vendor ? (
-                        <Link to="/vendors/$vendorId" params={{ vendorId: r.vendor.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/vendors/$vendorId"
+                          params={{ vendorId: r.vendor.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.vendor.company_name}
                         </Link>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                   )}
                   {!isHidden("po") && (
                     <TableCell>
                       {r.purchase_order ? (
-                        <Link to="/purchase-orders/$id" params={{ id: r.purchase_order.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/purchase-orders/$id"
+                          params={{ id: r.purchase_order.id }}
+                          className="text-primary hover:underline"
+                        >
                           {r.purchase_order.po_no}
                         </Link>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                   )}
                   {!isHidden("type") && (
-                    <TableCell><Badge variant="secondary" className="capitalize">{r.payment_type.replace(/_/g, " ")}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {r.payment_type.replace(/_/g, " ")}
+                      </Badge>
+                    </TableCell>
                   )}
                   {!isHidden("amount") && (
-                    <TableCell className="text-right font-medium tabular-nums">₹ {Number(r.amount).toLocaleString("en-IN")}</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      ₹ {Number(r.amount).toLocaleString("en-IN")}
+                    </TableCell>
                   )}
                   {!isHidden("paid") && <TableCell>{r.paid_at}</TableCell>}
                   <TableCell>
@@ -179,7 +212,9 @@ function VendorPaymentsPage() {
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete vendor payment?"
-        description={toDelete ? `${toDelete.payment_no} will be reversed from the vendor ledger.` : ""}
+        description={
+          toDelete ? `${toDelete.payment_no} will be reversed from the vendor ledger.` : ""
+        }
         busy={del.isPending}
         onConfirm={() => toDelete && del.mutate(toDelete.id)}
       />

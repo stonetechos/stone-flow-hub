@@ -17,8 +17,7 @@ export type ReceiptListItem = ReceiptRow & {
   customer: { id: string; name: string; customer_code: string } | null;
 };
 
-const JOINS =
-  "*, customer:customers!receipts_customer_id_fkey(id,name,customer_code)";
+const JOINS = "*, customer:customers!receipts_customer_id_fkey(id,name,customer_code)";
 
 export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
   let q = getDb()
@@ -34,11 +33,7 @@ export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
 }
 
 export async function getReceipt(id: string): Promise<ReceiptListItem | null> {
-  const { data, error } = await getDb()
-    .from("receipts")
-    .select(JOINS)
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await getDb().from("receipts").select(JOINS).eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return (data as ReceiptListItem | null) ?? null;
 }
@@ -46,7 +41,9 @@ export async function getReceipt(id: string): Promise<ReceiptListItem | null> {
 export async function getReceiptAllocations(receiptId: string) {
   const { data, error } = await getDb()
     .from("receipt_allocations")
-    .select("*, invoice:invoices!receipt_allocations_invoice_id_fkey(id,invoice_no,total,balance_due,issue_date)")
+    .select(
+      "*, invoice:invoices!receipt_allocations_invoice_id_fkey(id,invoice_no,total,balance_due,issue_date)",
+    )
     .eq("receipt_id", receiptId);
   if (error) throw new AppError(mapDbError(error));
   return data ?? [];
@@ -111,13 +108,15 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
   if (error) throw new AppError(mapDbError(error));
 
   if (parsed.allocations.length) {
-    const { error: aErr } = await getDb().from("receipt_allocations").insert(
-      parsed.allocations.map((a) => ({
-        receipt_id: rcpt.id,
-        invoice_id: a.invoice_id,
-        amount: a.amount,
-      })),
-    );
+    const { error: aErr } = await getDb()
+      .from("receipt_allocations")
+      .insert(
+        parsed.allocations.map((a) => ({
+          receipt_id: rcpt.id,
+          invoice_id: a.invoice_id,
+          amount: a.amount,
+        })),
+      );
     if (aErr) throw new AppError(mapDbError(aErr));
   }
   return rcpt;

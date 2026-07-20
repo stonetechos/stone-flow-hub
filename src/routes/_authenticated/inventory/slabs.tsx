@@ -58,7 +58,10 @@ function SlabRegisterPage() {
     },
   });
 
-  const tree = useMemo(() => buildTree(q.data ?? [], search.trim().toLowerCase()), [q.data, search]);
+  const tree = useMemo(
+    () => buildTree(q.data ?? [], search.trim().toLowerCase()),
+    [q.data, search],
+  );
 
   return (
     <div>

@@ -7,8 +7,21 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
@@ -100,11 +113,15 @@ function PurchaseOrdersPage() {
         searchPlaceholder="Search PO no…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-44 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-44 text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {PURCHASE_ORDER_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s.replace(/_/g, " ")}</SelectItem>
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s.replace(/_/g, " ")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -146,7 +163,10 @@ function PurchaseOrdersPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -167,7 +187,11 @@ function PurchaseOrdersPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/purchase-orders/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/purchase-orders/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.po_no}
                       </Link>
                     </TableCell>
@@ -176,7 +200,11 @@ function PurchaseOrdersPage() {
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
                   {!isHidden("date") && <TableCell>{r.order_date}</TableCell>}
                   {!isHidden("expected") && <TableCell>{r.expected_date ?? "—"}</TableCell>}
-                  {!isHidden("status") && <TableCell><StatusPill status={r.status} /></TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <StatusPill status={r.status} />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       onEdit={() => nav({ to: "/purchase-orders/$id/edit", params: { id: r.id } })}

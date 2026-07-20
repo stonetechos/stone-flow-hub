@@ -35,7 +35,8 @@ export function normalizePriority<T extends Insight>(insights: T[]): WithNormali
 
   return insights.map((insight) => {
     const value = insight.priority ?? 0;
-    const normalizedPriority = spread === 0 ? NEUTRAL_SCORE : Math.round(((value - min) / spread) * 100);
+    const normalizedPriority =
+      spread === 0 ? NEUTRAL_SCORE : Math.round(((value - min) / spread) * 100);
     return { ...insight, normalizedPriority };
   });
 }

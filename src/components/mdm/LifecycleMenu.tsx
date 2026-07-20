@@ -10,13 +10,14 @@ import { toast } from "sonner";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRoles } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
-import {
-  purgeEntity,
-  setLifecycleStatus,
-  type LifecycleStatus,
-} from "@/lib/mdm/lifecycle";
+import { purgeEntity, setLifecycleStatus, type LifecycleStatus } from "@/lib/mdm/lifecycle";
 import type { MdmEntityType } from "@/lib/mdm/dependencies";
-import { invalidateCustomer, invalidateProject, invalidateProduct, invalidateVendor } from "@/lib/query-invalidation";
+import {
+  invalidateCustomer,
+  invalidateProject,
+  invalidateProduct,
+  invalidateVendor,
+} from "@/lib/query-invalidation";
 
 interface Props {
   entityType: MdmEntityType;
@@ -70,7 +71,11 @@ export function LifecycleMenuItems({
     <>
       {s !== "active" && (
         <DropdownMenuItem disabled={busy} onSelect={() => setMut.mutate("active")}>
-          {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowUpCircle className="mr-2 h-4 w-4" />}
+          {busy ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowUpCircle className="mr-2 h-4 w-4" />
+          )}
           Reactivate
         </DropdownMenuItem>
       )}

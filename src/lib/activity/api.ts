@@ -39,7 +39,8 @@ export async function listGlobalActivity(
     .limit(filters.limit ?? 200);
   if (filters.entityType) q = q.eq("entity_type", filters.entityType);
   if (filters.entityId) q = q.eq("entity_id", filters.entityId);
-  else if (filters.entityIds && filters.entityIds.length > 0) q = q.in("entity_id", filters.entityIds);
+  else if (filters.entityIds && filters.entityIds.length > 0)
+    q = q.in("entity_id", filters.entityIds);
   if (filters.projectId) q = q.eq("project_id", filters.projectId);
   if (filters.actorId) q = q.eq("actor_id", filters.actorId);
   if (filters.fromDate) q = q.gte("created_at", filters.fromDate);

@@ -11,10 +11,13 @@ import { buildRecommendations, type RecommendationKind } from "@/lib/procurement
 import { formatInr } from "@/lib/format";
 import { CreatePoFromQuoteDialog } from "@/components/procurement/CreatePoFromQuoteDialog";
 
-const META: Record<RecommendationKind, { title: string; icon: React.ComponentType<{ className?: string }> }> = {
-  best:      { title: "Best overall",     icon: Award },
-  fastest:   { title: "Fastest",          icon: Gauge },
-  cheapest:  { title: "Cheapest",         icon: IndianRupee },
+const META: Record<
+  RecommendationKind,
+  { title: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  best: { title: "Best overall", icon: Award },
+  fastest: { title: "Fastest", icon: Gauge },
+  cheapest: { title: "Cheapest", icon: IndianRupee },
   preferred: { title: "Preferred vendor", icon: Star },
 };
 

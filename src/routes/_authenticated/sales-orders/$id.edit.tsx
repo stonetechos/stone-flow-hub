@@ -118,12 +118,7 @@ function EditSalesOrderPage() {
                   const allowed = allowedNextSalesOrderStatuses(query.data!.status);
                   const disabled = !allowed.includes(s);
                   return (
-                    <SelectItem
-                      key={s}
-                      value={s}
-                      disabled={disabled}
-                      className="capitalize"
-                    >
+                    <SelectItem key={s} value={s} disabled={disabled} className="capitalize">
                       {s.replace(/_/g, " ")}
                       {disabled ? " (blocked)" : ""}
                     </SelectItem>

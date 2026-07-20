@@ -9,9 +9,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
@@ -77,7 +90,10 @@ function FollowupsPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.followups.scope(scope), queryFn: () => listFollowups(scope) });
+  const query = useQuery({
+    queryKey: qk.followups.scope(scope),
+    queryFn: () => listFollowups(scope),
+  });
   useEffect(() => setPage(1), [scope]);
 
   const completeMut = useMutation({
@@ -101,7 +117,10 @@ function FollowupsPage() {
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
-  const openCreate = () => { setEditing(null); setFormOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
 
   return (
     <div>
@@ -112,9 +131,15 @@ function FollowupsPage() {
         primaryFilter={
           <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
             <TabsList className="h-8">
-              <TabsTrigger value="today" className="h-7 text-xs">Today</TabsTrigger>
-              <TabsTrigger value="pending" className="h-7 text-xs">All pending</TabsTrigger>
-              <TabsTrigger value="all" className="h-7 text-xs">All</TabsTrigger>
+              <TabsTrigger value="today" className="h-7 text-xs">
+                Today
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="h-7 text-xs">
+                All pending
+              </TabsTrigger>
+              <TabsTrigger value="all" className="h-7 text-xs">
+                All
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         }
@@ -151,7 +176,10 @@ function FollowupsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -172,28 +200,54 @@ function FollowupsPage() {
                 <TableRow key={f.id}>
                   {!isHidden("when") && (
                     <TableCell className="whitespace-nowrap">
-                      <Link to="/followups/$id" params={{ id: f.id }} className="text-primary hover:underline">
-                        {new Date(f.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                      <Link
+                        to="/followups/$id"
+                        params={{ id: f.id }}
+                        className="text-primary hover:underline"
+                      >
+                        {new Date(f.scheduled_at).toLocaleString("en-IN", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
                       </Link>
                     </TableCell>
                   )}
                   {!isHidden("enquiry") && (
                     <TableCell className="font-mono text-xs">
                       {f.enquiry ? (
-                        <Link to="/enquiries/$enquiryId" params={{ enquiryId: f.enquiry.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/enquiries/$enquiryId"
+                          params={{ enquiryId: f.enquiry.id }}
+                          className="text-primary hover:underline"
+                        >
                           {f.enquiry.enquiry_no}
                         </Link>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                   )}
-                  {!isHidden("customer") && <TableCell>{f.enquiry?.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("channel") && <TableCell className="capitalize">{f.channel.replace("_", " ")}</TableCell>}
+                  {!isHidden("customer") && (
+                    <TableCell>{f.enquiry?.customer?.name ?? "—"}</TableCell>
+                  )}
+                  {!isHidden("channel") && (
+                    <TableCell className="capitalize">{f.channel.replace("_", " ")}</TableCell>
+                  )}
                   {!isHidden("status") && (
                     <TableCell>
-                      <Badge variant={f.status === "done" ? "secondary" : "outline"} className="capitalize">{f.status}</Badge>
+                      <Badge
+                        variant={f.status === "done" ? "secondary" : "outline"}
+                        className="capitalize"
+                      >
+                        {f.status}
+                      </Badge>
                     </TableCell>
                   )}
-                  {!isHidden("notes") && <TableCell className="max-w-xs truncate text-muted-foreground">{f.notes ?? "—"}</TableCell>}
+                  {!isHidden("notes") && (
+                    <TableCell className="max-w-xs truncate text-muted-foreground">
+                      {f.notes ?? "—"}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {f.status === "pending" && (
@@ -210,7 +264,10 @@ function FollowupsPage() {
                         </Button>
                       )}
                       <RowActions
-                        onEdit={() => { setEditing(f); setFormOpen(true); }}
+                        onEdit={() => {
+                          setEditing(f);
+                          setFormOpen(true);
+                        }}
                         onDelete={() => setToDelete(f)}
                       />
                     </div>
@@ -314,10 +371,11 @@ function FollowupFormDialog({
     setForm((f) => ({ ...f, [k]: v }));
 
   const pickerType: "customer" | "project" | "vendor" | null =
-    form.entity_type === "customer" || form.entity_type === "project" || form.entity_type === "vendor"
+    form.entity_type === "customer" ||
+    form.entity_type === "project" ||
+    form.entity_type === "vendor"
       ? form.entity_type
       : null;
-  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -351,12 +409,11 @@ function FollowupFormDialog({
             </Field>
             {form.entity_type === "enquiry" ? (
               <Field label="Enquiry" required>
-                <Select
-                  value={form.entity_id}
-                  onValueChange={(v) => set("entity_id", v)}
-                >
+                <Select value={form.entity_id} onValueChange={(v) => set("entity_id", v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"} />
+                    <SelectValue
+                      placeholder={enquiries.isLoading ? "Loading…" : "Select enquiry"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {(enquiries.data ?? []).map((e) => (

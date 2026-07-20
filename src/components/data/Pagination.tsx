@@ -35,9 +35,13 @@ export function TablePagination({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 px-3 py-2 text-xs text-muted-foreground">
       <div className="tabular-nums">
-        {total === 0 ? "No records" : (
+        {total === 0 ? (
+          "No records"
+        ) : (
           <>
-            <span className="text-foreground">{start.toLocaleString()}–{end.toLocaleString()}</span>{" "}
+            <span className="text-foreground">
+              {start.toLocaleString()}–{end.toLocaleString()}
+            </span>{" "}
             of <span className="text-foreground">{total.toLocaleString()}</span>
           </>
         )}
@@ -46,10 +50,7 @@ export function TablePagination({
         {onPageSizeChange && (
           <div className="flex items-center gap-2">
             <span>Rows</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(v) => onPageSizeChange(Number(v))}
-            >
+            <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
               <SelectTrigger className="h-7 w-[68px] px-2 text-xs">
                 <SelectValue />
               </SelectTrigger>

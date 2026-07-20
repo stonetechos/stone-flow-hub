@@ -17,7 +17,10 @@ import { resolveTone } from "@/lib/ui/tones";
 
 const TOP_ACTIONS_LIMIT = 5;
 
-export function buildTopActions(insights: ProcessedInsight[], limit = TOP_ACTIONS_LIMIT): ExecutiveAction[] {
+export function buildTopActions(
+  insights: ProcessedInsight[],
+  limit = TOP_ACTIONS_LIMIT,
+): ExecutiveAction[] {
   const sorted = [...insights].sort((a, b) => b.normalizedPriority - a.normalizedPriority);
 
   const seenEntities = new Set<string>();

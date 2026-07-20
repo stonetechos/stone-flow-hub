@@ -102,7 +102,10 @@ export const InstallationDelayProvider: InsightProvider = {
         const sinceStart = daysSince(inst.actual_start_date, nowDate);
         const lastReport = progressByInstallation.get(inst.id) ?? null;
         const daysSinceReport = lastReport ? daysSince(lastReport, nowDate) : sinceStart;
-        if (sinceStart >= THRESHOLDS.stalledNoReportDays && daysSinceReport >= THRESHOLDS.stalledNoReportDays) {
+        if (
+          sinceStart >= THRESHOLDS.stalledNoReportDays &&
+          daysSinceReport >= THRESHOLDS.stalledNoReportDays
+        ) {
           insights.push({
             id: `${INSTALLATION_DELAY_PROVIDER_ID}:stalled:${inst.id}`,
             source: INSTALLATION_DELAY_PROVIDER_ID,

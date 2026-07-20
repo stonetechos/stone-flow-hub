@@ -51,13 +51,26 @@ export function seedPickerCache(
   const listPrefixes: readonly string[][] = (() => {
     switch (type) {
       case "customer":
-        return [["customers", "picker"], ["customers", "list"]];
+        return [
+          ["customers", "picker"],
+          ["customers", "list"],
+        ];
       case "vendor":
-        return [["vendors", "picker"], ["vendors", "list"]];
+        return [
+          ["vendors", "picker"],
+          ["vendors", "list"],
+        ];
       case "project":
-        return [["projects", "picker"], ["projects", "list"], ["projects", "byCustomer"]];
+        return [
+          ["projects", "picker"],
+          ["projects", "list"],
+          ["projects", "byCustomer"],
+        ];
       case "product":
-        return [["products", "picker"], ["products", "list"]];
+        return [
+          ["products", "picker"],
+          ["products", "list"],
+        ];
     }
   })();
   for (const prefix of listPrefixes) {
@@ -67,8 +80,7 @@ export function seedPickerCache(
       return [row, ...prev];
     });
   }
-  const byIdKey =
-    type === "product" ? ["products", "byId", row.id] : [`${type}s`, "byId", row.id];
+  const byIdKey = type === "product" ? ["products", "byId", row.id] : [`${type}s`, "byId", row.id];
   qc.setQueryData(byIdKey, row);
 }
 
@@ -112,7 +124,6 @@ export function invalidateProduct(qc: QueryClient, id?: string): void {
   qc.invalidateQueries({ queryKey: ["mdm", "dependencies"] });
   bumpPickers(qc);
 }
-
 
 export function invalidateEnquiry(qc: QueryClient, id?: string): void {
   bump(qc, qk.enquiries.all);
@@ -220,7 +231,11 @@ export function invalidateReceipt(qc: QueryClient, id?: string, customerId?: str
   bump(qc, qk.paymentRegister.all);
 }
 
-export function invalidateMessage(qc: QueryClient, id?: string, entity?: { type: string; id: string }): void {
+export function invalidateMessage(
+  qc: QueryClient,
+  id?: string,
+  entity?: { type: string; id: string },
+): void {
   bump(qc, qk.messages.all);
   if (id) {
     bump(qc, qk.messages.byId(id));
@@ -272,8 +287,6 @@ export function invalidateInventoryMovements(qc: QueryClient): void {
   bump(qc, qk.inventoryMovements.all);
   bump(qc, qk.inventoryMovements.stockLedger);
 }
-
-
 
 export function invalidateFollowup(
   qc: QueryClient,
@@ -365,4 +378,3 @@ export function invalidateInstallationTeam(qc: QueryClient, id?: string): void {
   bump(qc, qk.installationTeams.picker);
   if (id) bump(qc, qk.installationTeams.byId(id));
 }
-

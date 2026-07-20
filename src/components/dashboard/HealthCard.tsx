@@ -44,7 +44,16 @@ export interface HealthCardProps {
   insight: string;
 }
 
-export function HealthCard({ to, icon, label, value, trend, target, tone, insight }: HealthCardProps) {
+export function HealthCard({
+  to,
+  icon,
+  label,
+  value,
+  trend,
+  target,
+  tone,
+  insight,
+}: HealthCardProps) {
   return (
     <Link
       to={to}

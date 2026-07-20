@@ -121,9 +121,8 @@ function HeroPanel({ className }: { className?: string }) {
             Enterprise OS for the Natural Stone Industry
           </h2>
           <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
-            Manage enquiries, quotations, production, inventory, procurement,
-            dispatch, finance and customer relationships from one operating
-            system.
+            Manage enquiries, quotations, production, inventory, procurement, dispatch, finance and
+            customer relationships from one operating system.
           </p>
         </div>
 
@@ -164,8 +163,7 @@ function StoneTechMark() {
         aria-hidden="true"
         className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-md"
         style={{
-          background:
-            "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
+          background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
         }}
       >
         {/* Faceted stone mark — abstract slab silhouette */}
@@ -212,12 +210,8 @@ function Capability({
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <div className="text-[13px] font-medium tracking-tight text-text-on-material">
-          {title}
-        </div>
-        <div className="mt-1 text-[12.5px] leading-relaxed text-text-on-material-muted">
-          {body}
-        </div>
+        <div className="text-[13px] font-medium tracking-tight text-text-on-material">{title}</div>
+        <div className="mt-1 text-[12.5px] leading-relaxed text-text-on-material-muted">{body}</div>
       </div>
     </li>
   );
@@ -318,7 +312,13 @@ function AuthCard({
             background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
           }}
         >
-          <svg viewBox="0 0 32 32" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <svg
+            viewBox="0 0 32 32"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
             <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
           </svg>
         </span>
@@ -338,9 +338,7 @@ function AuthCard({
             {title}
           </h1>
           {description ? (
-            <p className="text-[13.5px] leading-relaxed text-text-secondary">
-              {description}
-            </p>
+            <p className="text-[13.5px] leading-relaxed text-text-secondary">{description}</p>
           ) : null}
         </header>
 
@@ -355,8 +353,7 @@ function AuthCard({
       </div>
 
       <p className="mt-6 text-center text-[11.5px] leading-relaxed text-text-muted">
-        Accounts are provisioned by an administrator. Contact your admin
-        for access.
+        Accounts are provisioned by an administrator. Contact your admin for access.
       </p>
     </div>
   );
@@ -430,11 +427,7 @@ function SignInCard() {
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormError message={formError} />
 
-        <Field
-          label="Work email"
-          htmlFor="signin-email"
-          icon={<Mail className="h-4 w-4" />}
-        >
+        <Field label="Work email" htmlFor="signin-email" icon={<Mail className="h-4 w-4" />}>
           <Input
             ref={emailRef}
             id="signin-email"
@@ -458,11 +451,7 @@ function SignInCard() {
           label="Password"
           htmlFor="signin-password"
           icon={<Lock className="h-4 w-4" />}
-          hint={
-            capsOn ? (
-              <span className="text-status-warning-fg">Caps Lock is on</span>
-            ) : null
-          }
+          hint={capsOn ? <span className="text-status-warning-fg">Caps Lock is on</span> : null}
         >
           <Input
             id="signin-password"
@@ -503,12 +492,7 @@ function SignInCard() {
           </a>
         </div>
 
-        <Button
-          type="submit"
-          size="lg"
-          disabled={!canSubmit}
-          className="w-full h-11 gap-2"
-        >
+        <Button type="submit" size="lg" disabled={!canSubmit} className="w-full h-11 gap-2">
           {busy ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -541,9 +525,7 @@ function ResetPasswordCard() {
     setBusy(true);
     try {
       const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/auth?flow=update`
-          : undefined;
+        typeof window !== "undefined" ? `${window.location.origin}/auth?flow=update` : undefined;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
       });
@@ -797,9 +779,7 @@ function NoticeCard({
             <h1 className="font-display text-[22px] font-medium leading-tight tracking-tight text-text-primary">
               {title}
             </h1>
-            <p className="max-w-[46ch] text-[13.5px] leading-relaxed text-text-secondary">
-              {body}
-            </p>
+            <p className="max-w-[46ch] text-[13.5px] leading-relaxed text-text-secondary">{body}</p>
           </div>
           {primary ? (
             <Button asChild size="lg" className="h-11 gap-2">
@@ -834,10 +814,7 @@ function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <Label
-          htmlFor={htmlFor}
-          className="text-[12.5px] font-medium text-text-secondary"
-        >
+        <Label htmlFor={htmlFor} className="text-[12.5px] font-medium text-text-secondary">
           {label}
         </Label>
         {hint ? <span className="text-[11.5px]">{hint}</span> : null}

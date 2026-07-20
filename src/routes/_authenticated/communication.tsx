@@ -11,8 +11,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toUserMessage } from "@/lib/errors";
 import { dispatchQueueNow } from "@/lib/notifications/dispatch.functions";
@@ -41,7 +54,15 @@ type Row = {
 
 const STATUSES = ["queued", "sending", "retrying", "sent", "failed", "cancelled"] as const;
 const CHANNELS = ["email", "whatsapp", "sms"] as const;
-const RELATED = ["customer", "vendor", "project", "estimate", "quote", "invoice", "reminder"] as const;
+const RELATED = [
+  "customer",
+  "vendor",
+  "project",
+  "estimate",
+  "quote",
+  "invoice",
+  "reminder",
+] as const;
 
 function statusVariant(s: string): "default" | "outline" | "destructive" | "secondary" {
   if (s === "sent") return "default";
@@ -69,7 +90,9 @@ function CommunicationCentre() {
     queryFn: async (): Promise<Row[]> => {
       let q = supabase
         .from("message_queue")
-        .select("id,message_no,channel,status,to_address,subject,related_type,related_id,attempts,last_error,provider_message_id,created_at,sent_at")
+        .select(
+          "id,message_no,channel,status,to_address,subject,related_type,related_id,attempts,last_error,provider_message_id,created_at,sent_at",
+        )
         .order("created_at", { ascending: false })
         .limit(500);
       if (channel !== "all") q = q.eq("channel", channel);
@@ -91,18 +114,27 @@ function CommunicationCentre() {
   const dispatchFn = useServerFn(dispatchQueueNow);
   const dispatch = useMutation({
     mutationFn: () => dispatchFn({ data: { batchSize: 25 } }),
-    onSuccess: (r) => { toast.success(`Dispatched ${r.attempted} · ${r.sent} sent · ${r.failed} failed`); void query.refetch(); },
+    onSuccess: (r) => {
+      toast.success(`Dispatched ${r.attempted} · ${r.sent} sent · ${r.failed} failed`);
+      void query.refetch();
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
   const retry = useMutation({
     mutationFn: (id: string) => retryMessage(id),
-    onSuccess: () => { toast.success("Re-queued"); void qc.invalidateQueries({ queryKey: ["messages"] }); },
+    onSuccess: () => {
+      toast.success("Re-queued");
+      void qc.invalidateQueries({ queryKey: ["messages"] });
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
   const cancel = useMutation({
     mutationFn: (id: string) => cancelMessage(id),
-    onSuccess: () => { toast.success("Cancelled"); void qc.invalidateQueries({ queryKey: ["messages"] }); },
+    onSuccess: () => {
+      toast.success("Cancelled");
+      void qc.invalidateQueries({ queryKey: ["messages"] });
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
@@ -132,48 +164,82 @@ function CommunicationCentre() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {STATUSES.map((s) => (
-          <Badge key={s} variant={statusVariant(s)}>{s}: {counts[s] ?? 0}</Badge>
+          <Badge key={s} variant={statusVariant(s)}>
+            {s}: {counts[s] ?? 0}
+          </Badge>
         ))}
       </div>
 
       <Card className="shadow-1 mb-4">
-        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Filter className="h-4 w-4" /> Filters</CardTitle></CardHeader>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Filter className="h-4 w-4" /> Filters
+          </CardTitle>
+        </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-6">
-          <div className="space-y-1"><Label className="text-xs">Channel</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">Channel</Label>
             <Select value={channel} onValueChange={setChannel}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {CHANNELS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {CHANNELS.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1"><Label className="text-xs">Status</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">Status</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1"><Label className="text-xs">Related entity</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">Related entity</Label>
             <Select value={related} onValueChange={setRelated}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {RELATED.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                {RELATED.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1"><Label className="text-xs">From</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">From</Label>
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
-          <div className="space-y-1"><Label className="text-xs">To</Label>
+          <div className="space-y-1">
+            <Label className="text-xs">To</Label>
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
-          <div className="space-y-1"><Label className="text-xs">Search</Label>
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="No, address, subject" />
+          <div className="space-y-1">
+            <Label className="text-xs">Search</Label>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="No, address, subject"
+            />
           </div>
         </CardContent>
       </Card>
@@ -181,7 +247,9 @@ function CommunicationCentre() {
       <Card className="shadow-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm">{rows.length} messages</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => query.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Refresh</Button>
+          <Button variant="ghost" size="sm" onClick={() => query.refetch()}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+          </Button>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -200,16 +268,31 @@ function CommunicationCentre() {
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">{r.message_no ?? r.id.slice(0, 8)}</TableCell>
-                  <TableCell><Badge variant="outline">{r.channel}</Badge></TableCell>
-                  <TableCell className="max-w-[220px] truncate" title={r.to_address}>{r.to_address}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {r.message_no ?? r.id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{r.channel}</Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[220px] truncate" title={r.to_address}>
+                    {r.to_address}
+                  </TableCell>
                   <TableCell className="max-w-[280px] truncate" title={r.subject ?? ""}>
                     {r.subject ?? <span className="text-muted-foreground">—</span>}
-                    {r.related_type && <span className="ml-2 text-xs text-muted-foreground">({r.related_type})</span>}
+                    {r.related_type && (
+                      <span className="ml-2 text-xs text-muted-foreground">({r.related_type})</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
-                    {r.last_error && <div className="mt-1 text-xs text-destructive truncate max-w-[220px]" title={r.last_error}>{r.last_error}</div>}
+                    {r.last_error && (
+                      <div
+                        className="mt-1 text-xs text-destructive truncate max-w-[220px]"
+                        title={r.last_error}
+                      >
+                        {r.last_error}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>{r.attempts}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">
@@ -217,16 +300,29 @@ function CommunicationCentre() {
                   </TableCell>
                   <TableCell className="text-right">
                     {(r.status === "failed" || r.status === "cancelled") && (
-                      <Button size="sm" variant="ghost" onClick={() => retry.mutate(r.id)}>Retry</Button>
+                      <Button size="sm" variant="ghost" onClick={() => retry.mutate(r.id)}>
+                        Retry
+                      </Button>
                     )}
-                    {(r.status === "queued" || r.status === "retrying" || r.status === "failed") && (
-                      <Button size="sm" variant="ghost" onClick={() => cancel.mutate(r.id)}>Cancel</Button>
+                    {(r.status === "queued" ||
+                      r.status === "retrying" ||
+                      r.status === "failed") && (
+                      <Button size="sm" variant="ghost" onClick={() => cancel.mutate(r.id)}>
+                        Cancel
+                      </Button>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
               {rows.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">No messages match the filters.</TableCell></TableRow>
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    No messages match the filters.
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

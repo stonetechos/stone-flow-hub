@@ -64,10 +64,18 @@ const SCOPE_ITEMS: Array<{ key: keyof TransferScope; label: string; hint?: strin
   { key: "enquiries", label: "Enquiries", hint: "Original enquiry stays visible either way." },
   { key: "quotes", label: "Quotations" },
   { key: "sales_orders", label: "Sales Orders" },
-  { key: "projects", label: "Projects", hint: "Follow-ups, notes, files and site visits move with the project." },
+  {
+    key: "projects",
+    label: "Projects",
+    hint: "Follow-ups, notes, files and site visits move with the project.",
+  },
   { key: "installations", label: "Installations" },
   { key: "payment_schedules", label: "Payment Schedules" },
-  { key: "draft_invoices", label: "Draft Invoices", hint: "Finalised invoices are never modified." },
+  {
+    key: "draft_invoices",
+    label: "Draft Invoices",
+    hint: "Finalised invoices are never modified.",
+  },
 ];
 
 export function TransferOwnershipDialog({
@@ -143,8 +151,8 @@ export function TransferOwnershipDialog({
             <UserCheck className="h-4 w-4" /> Transfer Commercial Ownership — {sourceLabel}
           </DialogTitle>
           <DialogDescription>
-            Move commercial ownership to a different customer. Enquiry history, existing
-            documents and finalised invoices are preserved.
+            Move commercial ownership to a different customer. Enquiry history, existing documents
+            and finalised invoices are preserved.
           </DialogDescription>
         </DialogHeader>
 
@@ -172,16 +180,14 @@ export function TransferOwnershipDialog({
           </div>
         )}
 
-        {step === "compare" && (
-          <ComparePanel from={fromQ.data ?? null} to={toQ.data ?? null} />
-        )}
+        {step === "compare" && <ComparePanel from={fromQ.data ?? null} to={toQ.data ?? null} />}
 
         {step === "scope" && (
           <div className="space-y-3 py-2">
             <p className="text-xs text-muted-foreground">
-              Select which records should be transferred. Follow-ups, notes, files and site
-              visits move automatically with their parent project. Existing receipts and
-              finalised invoices always stay with the original customer.
+              Select which records should be transferred. Follow-ups, notes, files and site visits
+              move automatically with their parent project. Existing receipts and finalised invoices
+              always stay with the original customer.
             </p>
             <div className="grid gap-2 md:grid-cols-2">
               {SCOPE_ITEMS.map((it) => (
@@ -196,9 +202,7 @@ export function TransferOwnershipDialog({
                   />
                   <div>
                     <div className="text-sm font-medium">{it.label}</div>
-                    {it.hint && (
-                      <div className="text-xs text-muted-foreground">{it.hint}</div>
-                    )}
+                    {it.hint && <div className="text-xs text-muted-foreground">{it.hint}</div>}
                   </div>
                 </label>
               ))}
@@ -206,9 +210,7 @@ export function TransferOwnershipDialog({
           </div>
         )}
 
-        {step === "preview" && (
-          <PreviewPanel query={previewQ} scope={scope} />
-        )}
+        {step === "preview" && <PreviewPanel query={previewQ} scope={scope} />}
 
         {step === "done" && (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
@@ -278,9 +280,7 @@ export function TransferOwnershipDialog({
               </Button>
             </>
           )}
-          {step === "done" && (
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
-          )}
+          {step === "done" && <Button onClick={() => onOpenChange(false)}>Close</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -304,7 +304,13 @@ function StepIndicator({ step }: { step: Step }) {
             {i + 1}
           </span>
           <span className={i <= idx ? "text-foreground" : ""}>
-            {s === "pick" ? "Search" : s === "compare" ? "Compare" : s === "scope" ? "Scope" : "Preview"}
+            {s === "pick"
+              ? "Search"
+              : s === "compare"
+                ? "Compare"
+                : s === "scope"
+                  ? "Scope"
+                  : "Preview"}
           </span>
           {i < steps.length - 1 && <ArrowRight className="h-3 w-3" />}
         </div>
@@ -387,7 +393,12 @@ function PreviewPanel({
   }
   const p = query.data;
   if (!p) return null;
-  const rows: Array<{ label: string; key: keyof TransferScope | "invoices_finalised" | "receipts" | "followups"; countKey: string; muted?: boolean }> = [
+  const rows: Array<{
+    label: string;
+    key: keyof TransferScope | "invoices_finalised" | "receipts" | "followups";
+    countKey: string;
+    muted?: boolean;
+  }> = [
     { label: "Enquiries", key: "enquiries", countKey: "enquiries" },
     { label: "Quotations", key: "quotes", countKey: "quotes" },
     { label: "Sales Orders", key: "sales_orders", countKey: "sales_orders" },
@@ -395,8 +406,18 @@ function PreviewPanel({
     { label: "Installations", key: "installations", countKey: "installations" },
     { label: "Payment schedules", key: "payment_schedules", countKey: "payment_schedules" },
     { label: "Draft invoices", key: "draft_invoices", countKey: "invoices_draft" },
-    { label: "Finalised invoices (kept with original)", key: "invoices_finalised", countKey: "invoices_finalised", muted: true },
-    { label: "Historical receipts (kept with original)", key: "receipts", countKey: "receipts", muted: true },
+    {
+      label: "Finalised invoices (kept with original)",
+      key: "invoices_finalised",
+      countKey: "invoices_finalised",
+      muted: true,
+    },
+    {
+      label: "Historical receipts (kept with original)",
+      key: "receipts",
+      countKey: "receipts",
+      muted: true,
+    },
     { label: "Follow-ups on enquiries", key: "followups", countKey: "followups", muted: true },
   ];
   return (
@@ -411,7 +432,8 @@ function PreviewPanel({
 
       <div className="rounded-md border border-border">
         {rows.map((r) => {
-          const willMove = r.key in scope ? (scope as unknown as Record<string, boolean>)[r.key] : false;
+          const willMove =
+            r.key in scope ? (scope as unknown as Record<string, boolean>)[r.key] : false;
           const count = p.counts[r.countKey] ?? 0;
           return (
             <div
@@ -422,11 +444,17 @@ function PreviewPanel({
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{count}</span>
                 {r.muted ? (
-                  <Badge variant="outline" className="text-xs">preserved</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    preserved
+                  </Badge>
                 ) : willMove ? (
-                  <Badge variant="secondary" className="text-xs">will move</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    will move
+                  </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-xs">unchanged</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    unchanged
+                  </Badge>
                 )}
               </div>
             </div>

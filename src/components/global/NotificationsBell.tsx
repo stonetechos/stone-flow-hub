@@ -161,9 +161,7 @@ export function NotificationsBell() {
                             {formatRelative(n.at)}
                           </span>
                         </div>
-                        <div className="line-clamp-2 text-[12px] text-text-secondary">
-                          {n.body}
-                        </div>
+                        <div className="line-clamp-2 text-[12px] text-text-secondary">{n.body}</div>
                       </div>
                     </div>
                   </Link>

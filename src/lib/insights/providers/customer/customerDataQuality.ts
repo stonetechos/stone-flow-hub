@@ -69,7 +69,8 @@ export const CustomerDataQualityProvider: InsightProvider = {
       if (!customer.city) billingGaps.push("city");
       if (!customer.state) billingGaps.push("state");
       if (!customer.pincode) billingGaps.push("pincode");
-      if (billingGaps.length > 0) reasons.push(`incomplete billing information (missing ${billingGaps.join(", ")})`);
+      if (billingGaps.length > 0)
+        reasons.push(`incomplete billing information (missing ${billingGaps.join(", ")})`);
 
       if (GSTIN_REQUIRED_TYPES.has(customer.customer_type) && !customer.gst_number) {
         reasons.push(`missing GSTIN (customer type "${customer.customer_type}" normally has one)`);

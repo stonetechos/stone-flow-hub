@@ -6,7 +6,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireStaff } from "@/lib/ai/require-staff";
 
-
 const input = z.object({
   scope: z.enum(["daily", "weekly", "monthly"]).default("daily"),
 });
@@ -44,20 +43,36 @@ async function buildSnapshot(scope: "daily" | "weekly" | "monthly"): Promise<Sna
     supabase.from("invoices").select("total,balance_due").gte("issue_date", fromDate),
     supabase.from("payments").select("amount").gte("paid_at", fromIso),
     supabase.from("vendor_payments").select("amount").gte("paid_at", fromIso),
-    supabase.from("procurement_kpis" as never).select("*").maybeSingle(),
-    supabase.from("installation_dashboard_kpis" as never).select("*").maybeSingle(),
-    supabase.from("production_orders").select("id", { count: "exact", head: true })
-      .lt("planned_end_at", now.toISOString()).neq("status", "completed"),
+    supabase
+      .from("procurement_kpis" as never)
+      .select("*")
+      .maybeSingle(),
+    supabase
+      .from("installation_dashboard_kpis" as never)
+      .select("*")
+      .maybeSingle(),
+    supabase
+      .from("production_orders")
+      .select("id", { count: "exact", head: true })
+      .lt("planned_end_at", now.toISOString())
+      .neq("status", "completed"),
     supabase.from("customer_ledger").select("debit,credit"),
     supabase.from("vendor_ledger").select("debit,credit"),
-    supabase.from("invoices").select("total,customers(name)").gte("issue_date", fromDate).limit(500),
+    supabase
+      .from("invoices")
+      .select("total,customers(name)")
+      .gte("issue_date", fromDate)
+      .limit(500),
   ]);
 
   const invRows = (inv.data ?? []) as Array<{ total: number; balance_due: number }>;
   const cRows = (cledger.data ?? []) as Array<{ debit: number | null; credit: number | null }>;
   const vRows = (vledger.data ?? []) as Array<{ debit: number | null; credit: number | null }>;
   const cRev = new Map<string, number>();
-  for (const r of (custRev.data ?? []) as Array<{ total: number; customers?: { name?: string } | null }>) {
+  for (const r of (custRev.data ?? []) as Array<{
+    total: number;
+    customers?: { name?: string } | null;
+  }>) {
     const name = r.customers?.name ?? "Unknown";
     cRev.set(name, (cRev.get(name) ?? 0) + Number(r.total ?? 0));
   }
@@ -78,14 +93,31 @@ async function buildSnapshot(scope: "daily" | "weekly" | "monthly"): Promise<Sna
       count: (vp.data ?? []).length,
       total: (vp.data ?? []).reduce((s, r) => s + Number(r.amount ?? 0), 0),
     },
-    procurement_open: Number((proc.data as { purchase_orders_pending?: number } | null)?.purchase_orders_pending ?? 0),
-    procurement_delayed: Number((proc.data as { purchase_orders_delayed?: number } | null)?.purchase_orders_delayed ?? 0),
-    installations_active: Number((install.data as { active_installations?: number } | null)?.active_installations ?? 0),
-    installations_delayed: Number((install.data as { delayed_sites?: number } | null)?.delayed_sites ?? 0),
+    procurement_open: Number(
+      (proc.data as { purchase_orders_pending?: number } | null)?.purchase_orders_pending ?? 0,
+    ),
+    procurement_delayed: Number(
+      (proc.data as { purchase_orders_delayed?: number } | null)?.purchase_orders_delayed ?? 0,
+    ),
+    installations_active: Number(
+      (install.data as { active_installations?: number } | null)?.active_installations ?? 0,
+    ),
+    installations_delayed: Number(
+      (install.data as { delayed_sites?: number } | null)?.delayed_sites ?? 0,
+    ),
     production_delayed: delayedProd.count ?? 0,
-    top_customers: Array.from(cRev.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, revenue]) => ({ name, revenue })),
-    overdue_receivables: Math.max(0, cRows.reduce((s, r) => s + Number(r.debit ?? 0) - Number(r.credit ?? 0), 0)),
-    overdue_payables: Math.max(0, vRows.reduce((s, r) => s + Number(r.debit ?? 0) - Number(r.credit ?? 0), 0)),
+    top_customers: Array.from(cRev.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, revenue]) => ({ name, revenue })),
+    overdue_receivables: Math.max(
+      0,
+      cRows.reduce((s, r) => s + Number(r.debit ?? 0) - Number(r.credit ?? 0), 0),
+    ),
+    overdue_payables: Math.max(
+      0,
+      vRows.reduce((s, r) => s + Number(r.debit ?? 0) - Number(r.credit ?? 0), 0),
+    ),
   };
 }
 
@@ -97,7 +129,11 @@ export const generateBusinessBrief = createServerFn({ method: "POST" })
     const snapshot = await buildSnapshot(data.scope);
 
     const { chat } = await import("@/lib/ai/gateway.server");
-    const scopeLabel = { daily: "Daily Business Brief", weekly: "Weekly Management Report", monthly: "Monthly Performance Report" }[data.scope];
+    const scopeLabel = {
+      daily: "Daily Business Brief",
+      weekly: "Weekly Management Report",
+      monthly: "Monthly Performance Report",
+    }[data.scope];
     const messages = [
       {
         role: "system" as const,

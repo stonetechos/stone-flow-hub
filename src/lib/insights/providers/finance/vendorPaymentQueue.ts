@@ -73,15 +73,23 @@ export const VendorPaymentQueueProvider: InsightProvider = {
       const isCriticalSupplier = vendor.is_preferred && vendor.risk >= THRESHOLDS.criticalRiskScore;
 
       const reasons: string[] = [`${formatInr(vendor.outstanding)} outstanding`];
-      if (sinceDate) reasons.push(`owed for ${outstandingDays} day${outstandingDays === 1 ? "" : "s"}`);
+      if (sinceDate)
+        reasons.push(`owed for ${outstandingDays} day${outstandingDays === 1 ? "" : "s"}`);
       if (vendor.is_preferred) reasons.push("preferred vendor");
       if (openPoCount > 0) {
-        reasons.push(`${openPoCount} open purchase order${openPoCount === 1 ? "" : "s"} depending on this relationship`);
+        reasons.push(
+          `${openPoCount} open purchase order${openPoCount === 1 ? "" : "s"} depending on this relationship`,
+        );
       }
-      if (isCriticalSupplier) reasons.push("high risk score — a payment delay here is more likely to disrupt supply");
+      if (isCriticalSupplier)
+        reasons.push("high risk score — a payment delay here is more likely to disrupt supply");
 
       const tone: Insight["tone"] =
-        isCriticalSupplier || outstandingDays > 30 ? "danger" : outstandingDays > 14 ? "warning" : "info";
+        isCriticalSupplier || outstandingDays > 30
+          ? "danger"
+          : outstandingDays > 14
+            ? "warning"
+            : "info";
 
       let urgency = Math.min(40, outstandingDays);
       if (vendor.is_preferred) urgency += 15;

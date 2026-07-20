@@ -17,11 +17,7 @@ function MastersIndex() {
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {MASTER_CONFIGS.map((m) => (
-          <Link
-            key={m.route}
-            to={`/masters/${m.route}` as string}
-            className="group"
-          >
+          <Link key={m.route} to={`/masters/${m.route}` as string} className="group">
             <Card className="flex items-start gap-3 p-4 transition-colors hover:border-primary/60 hover:bg-accent/40">
               <div className="rounded-md bg-primary/10 p-2 text-primary">
                 <Layers className="h-5 w-5" />
@@ -30,9 +26,7 @@ function MastersIndex() {
                 <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary">
                   {m.title}
                 </h3>
-                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-                  {m.description}
-                </p>
+                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{m.description}</p>
               </div>
             </Card>
           </Link>

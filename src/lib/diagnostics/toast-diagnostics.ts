@@ -137,7 +137,8 @@ function installFetchDiagnostics() {
           module: null,
           page: getPage(),
           mutationOrQueryName: null,
-          rpcOrFunctionName: context.rpcOrFunctionName ?? inferRpcFunctionName(body.message ?? "", ""),
+          rpcOrFunctionName:
+            context.rpcOrFunctionName ?? inferRpcFunctionName(body.message ?? "", ""),
           table: context.table,
           sqlstate: body.code ?? null,
           postgresMessage: body.message ?? null,
@@ -206,20 +207,22 @@ export async function installToastDiagnostics() {
         page: getPage(),
         mutationOrQueryName: inferMutationOrQuery(stack),
         rpcOrFunctionName:
-          db?.context?.rpcOrFunctionName ?? inferRpcFunctionName(dbMessage || message, db?.stack || stack),
+          db?.context?.rpcOrFunctionName ??
+          inferRpcFunctionName(dbMessage || message, db?.stack || stack),
         table: db?.context?.table ?? inferTable(db?.stack || stack),
         sqlstate: db?.error.code ?? null,
         postgresMessage: db?.error.message ?? null,
         constraintName: inferConstraint(dbDetails, dbMessage),
         triggerName: inferTrigger(dbMessage),
         functionName:
-          db?.context?.rpcOrFunctionName ?? inferRpcFunctionName(dbMessage || message, db?.stack || stack),
+          db?.context?.rpcOrFunctionName ??
+          inferRpcFunctionName(dbMessage || message, db?.stack || stack),
         request: db?.context ?? null,
         stackTrace: stack,
         dbStackTrace: db?.stack ?? null,
       });
 
       return original.apply(toast, args);
-    }) as typeof toast[typeof method];
+    }) as (typeof toast)[typeof method];
   }
 }

@@ -18,7 +18,6 @@ import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-
 export const Route = createFileRoute("/_authenticated/settings")({
   ssr: false,
   component: SettingsPage,
@@ -37,7 +36,6 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
-
 
   useEffect(() => {
     void (async () => {
@@ -105,7 +103,6 @@ function SettingsPage() {
     }
   }
 
-
   return (
     <div>
       <PageHeader title="Settings" subtitle="Manage your profile, workspace, and preferences." />
@@ -154,9 +151,7 @@ function SettingsPage() {
                 </Avatar>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Profile photo upload coming soon.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Profile photo upload coming soon.</p>
                 </div>
               </div>
 
@@ -227,7 +222,6 @@ function SettingsPage() {
                 {saving ? "Saving…" : "Save changes"}
               </Button>
             </CardContent>
-
           </Card>
         </TabsContent>
 
@@ -243,13 +237,11 @@ function SettingsPage() {
                 <div className="space-y-1">
                   <Label className="text-sm">Enable Guided Workflow Assistant</Label>
                   <p className="max-w-prose text-xs text-muted-foreground">
-                    Suggests the next logical step in the business lifecycle
-                    (Customer → Enquiry → Project → Quotation → Sales Order →
-                    Procurement → Production → Dispatch → Installation → Invoice
-                    → Receipt → Follow-up) on each detail page. Recommendations
-                    only — nothing happens automatically, and you can always Skip
-                    for now. When disabled, Stone Tech OS behaves exactly as
-                    before with no prompts.
+                    Suggests the next logical step in the business lifecycle (Customer → Enquiry →
+                    Project → Quotation → Sales Order → Procurement → Production → Dispatch →
+                    Installation → Invoice → Receipt → Follow-up) on each detail page.
+                    Recommendations only — nothing happens automatically, and you can always Skip
+                    for now. When disabled, Stone Tech OS behaves exactly as before with no prompts.
                   </p>
                 </div>
                 <Switch
@@ -257,7 +249,9 @@ function SettingsPage() {
                   onCheckedChange={(v) => {
                     setGuidedEnabled(v);
                     toast.success(
-                      v ? "Guided Workflow Assistant enabled" : "Guided Workflow Assistant disabled",
+                      v
+                        ? "Guided Workflow Assistant enabled"
+                        : "Guided Workflow Assistant disabled",
                     );
                   }}
                   aria-label="Enable Guided Workflow Assistant"
@@ -266,8 +260,6 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-
 
         <TabsContent value="company" className="mt-4">
           <CompanyProfileTab />

@@ -91,7 +91,9 @@ export const DispatchRiskProvider: InsightProvider = {
             why: `Dispatch ${d.dispatch_no}${customerPart} left "in_transit" on ${d.dispatch_date} and hasn't been marked delivered ${inTransitDays} days later.`,
             action: { label: "Open dispatch", href: `/dispatch/${d.id}` },
             entity: { type: "dispatch", id: d.id, label: d.dispatch_no },
-            priority: computePriority({ urgencyDays: inTransitDays - THRESHOLDS.inTransitStallDays }),
+            priority: computePriority({
+              urgencyDays: inTransitDays - THRESHOLDS.inTransitStallDays,
+            }),
             generatedAt: now,
           });
         }
@@ -133,7 +135,10 @@ export const DispatchRiskProvider: InsightProvider = {
         action: { label: "Open sales order", href: `/sales-orders/${so.id}` },
         entity: { type: "sales_order", id: so.id, label: so.so_no },
         value: so.total > 0 ? so.total : undefined,
-        priority: computePriority({ urgencyDays: THRESHOLDS.deliveryImminentDays - daysTo, valueInr: so.total }),
+        priority: computePriority({
+          urgencyDays: THRESHOLDS.deliveryImminentDays - daysTo,
+          valueInr: so.total,
+        }),
         generatedAt: now,
       });
     }

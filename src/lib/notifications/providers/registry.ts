@@ -18,7 +18,10 @@ export function listProviders(channel: MessageChannel): string[] {
   return Array.from(registry[channel].keys());
 }
 
-export function resolveProvider(channel: MessageChannel, providerId: string | null | undefined): MessageProvider {
+export function resolveProvider(
+  channel: MessageChannel,
+  providerId: string | null | undefined,
+): MessageProvider {
   const id = providerId ?? "";
   const factory = registry[channel].get(id);
   if (!factory) throw new ProviderNotConfiguredError(id || `<default ${channel}>`);

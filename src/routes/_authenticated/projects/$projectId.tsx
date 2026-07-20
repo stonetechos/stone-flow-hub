@@ -204,7 +204,6 @@ function ProjectHub() {
         />
       )}
 
-
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex h-auto flex-wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -227,11 +226,7 @@ function ProjectHub() {
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <ProjectFinancials projectId={projectId} />
-          <ProjectOverview
-            projectId={projectId}
-            project={p}
-            onJumpToTab={(t) => setTab(t)}
-          />
+          <ProjectOverview projectId={projectId} project={p} onJumpToTab={(t) => setTab(t)} />
         </TabsContent>
 
         <TabsContent value="enquiries" className="mt-4">
@@ -288,13 +283,11 @@ function ProjectHub() {
             columns={[
               {
                 header: "Scheduled",
-                cell: (r) =>
-                  r.scheduled_at ? new Date(r.scheduled_at).toLocaleString() : "—",
+                cell: (r) => (r.scheduled_at ? new Date(r.scheduled_at).toLocaleString() : "—"),
               },
               {
                 header: "Conducted",
-                cell: (r) =>
-                  r.conducted_at ? new Date(r.conducted_at).toLocaleString() : "—",
+                cell: (r) => (r.conducted_at ? new Date(r.conducted_at).toLocaleString() : "—"),
               },
               { header: "Status", cell: (r) => <Badge variant="outline">{r.status}</Badge> },
               {
@@ -306,7 +299,6 @@ function ProjectHub() {
                 ),
               },
             ]}
-
           />
         </TabsContent>
 
@@ -560,9 +552,7 @@ function ProjectOverview({
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {s.nextFollowup.channel} ·{" "}
-                  <span className="font-mono">
-                    {s.nextFollowup.enquiry?.enquiry_no ?? "—"}
-                  </span>
+                  <span className="font-mono">{s.nextFollowup.enquiry?.enquiry_no ?? "—"}</span>
                 </div>
                 {s.nextFollowup.notes && (
                   <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">

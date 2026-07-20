@@ -69,7 +69,7 @@ const SheetContent = React.forwardRef<
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
       {/* Global scroll region — every sheet scrolls internally so long
-        * filter panels and edit forms stay reachable on mobile. */}
+       * filter panels and edit forms stay reachable on mobile. */}
       <div className="flex min-h-0 flex-1 flex-col gap-4 overlay-scroll p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         {children}
       </div>

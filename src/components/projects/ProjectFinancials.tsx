@@ -15,7 +15,10 @@ export function ProjectFinancials({ projectId }: { projectId: string }) {
       const [proj, invs, pays] = await Promise.all([
         supabase.from("projects").select("expected_value_inr").eq("id", projectId).maybeSingle(),
         supabase.from("invoices").select("total, balance_due").eq("project_id", projectId),
-        supabase.from("payments").select("amount, invoice_id, invoice:invoice_id(project_id)").limit(2000),
+        supabase
+          .from("payments")
+          .select("amount, invoice_id, invoice:invoice_id(project_id)")
+          .limit(2000),
       ]);
       const invoices = invs.data ?? [];
       const invoiced = invoices.reduce((s, i) => s + Number(i.total ?? 0), 0);
@@ -23,10 +26,15 @@ export function ProjectFinancials({ projectId }: { projectId: string }) {
       const collected = (pays.data ?? [])
         .filter((p) => (p.invoice as { project_id?: string } | null)?.project_id === projectId)
         .reduce((s, p) => s + Number(p.amount ?? 0), 0);
-      const pipeline = Number((proj.data as { expected_value_inr?: number } | null)?.expected_value_inr ?? 0);
+      const pipeline = Number(
+        (proj.data as { expected_value_inr?: number } | null)?.expected_value_inr ?? 0,
+      );
       const estMargin = invoiced - 0; // Placeholder — hook up PO cost totals when budgeting lands.
       return {
-        pipeline, invoiced, collected, outstanding,
+        pipeline,
+        invoiced,
+        collected,
+        outstanding,
         estMargin,
         marginPct: pipeline > 0 ? (estMargin / pipeline) * 100 : 0,
       };
@@ -38,18 +46,44 @@ export function ProjectFinancials({ projectId }: { projectId: string }) {
       <Kpi icon={TrendingUp} label="Pipeline" value={s ? formatInr(s.pipeline) : "—"} />
       <Kpi icon={TrendingUp} label="Invoiced" value={s ? formatInr(s.invoiced) : "—"} />
       <Kpi icon={Wallet} label="Collected" value={s ? formatInr(s.collected) : "—"} />
-      <Kpi icon={AlertTriangle} label="Outstanding" value={s ? formatInr(s.outstanding) : "—"} tone={s && s.outstanding > 0 ? "warn" : undefined} />
-      <Kpi icon={Sparkles} label="Est. margin" value={s ? `${formatInr(s.estMargin)} (${s.marginPct.toFixed(0)}%)` : "—"} />
+      <Kpi
+        icon={AlertTriangle}
+        label="Outstanding"
+        value={s ? formatInr(s.outstanding) : "—"}
+        tone={s && s.outstanding > 0 ? "warn" : undefined}
+      />
+      <Kpi
+        icon={Sparkles}
+        label="Est. margin"
+        value={s ? `${formatInr(s.estMargin)} (${s.marginPct.toFixed(0)}%)` : "—"}
+      />
     </div>
   );
 }
 
-function Kpi({ icon: Icon, label, value, tone }: { icon: React.ComponentType<{ className?: string }>; label: string; value: React.ReactNode; tone?: "warn" }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: React.ReactNode;
+  tone?: "warn";
+}) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground"><Icon className="h-3 w-3" />{label}</div>
-        <div className={`mt-1 truncate text-lg font-semibold ${tone === "warn" ? "text-status-warning-fg" : ""}`}>{value}</div>
+        <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <Icon className="h-3 w-3" />
+          {label}
+        </div>
+        <div
+          className={`mt-1 truncate text-lg font-semibold ${tone === "warn" ? "text-status-warning-fg" : ""}`}
+        >
+          {value}
+        </div>
       </CardContent>
     </Card>
   );

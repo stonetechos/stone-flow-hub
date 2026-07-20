@@ -7,8 +7,21 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { StatusPill } from "@/components/entity/StatusPill";
@@ -59,7 +72,10 @@ function DispatchPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.dispatch.list(dq, status), queryFn: () => listDispatches(dq, status) });
+  const query = useQuery({
+    queryKey: qk.dispatch.list(dq, status),
+    queryFn: () => listDispatches(dq, status),
+  });
   useEffect(() => setPage(1), [dq, status]);
 
   const del = useMutation({
@@ -96,11 +112,15 @@ function DispatchPage() {
         searchPlaceholder="Search dispatch, carrier, tracking…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-44 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-44 text-sm">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {DISPATCH_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s.replace(/_/g, " ")}</SelectItem>
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s.replace(/_/g, " ")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -142,7 +162,10 @@ function DispatchPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -163,16 +186,28 @@ function DispatchPage() {
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/dispatch/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/dispatch/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.dispatch_no}
                       </Link>
                     </TableCell>
                   )}
-                  {!isHidden("so") && <TableCell className="font-mono text-xs">{r.sales_order?.so_no ?? "—"}</TableCell>}
+                  {!isHidden("so") && (
+                    <TableCell className="font-mono text-xs">
+                      {r.sales_order?.so_no ?? "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
                   {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
                   {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
-                  {!isHidden("status") && <TableCell><StatusPill status={r.status} /></TableCell>}
+                  {!isHidden("status") && (
+                    <TableCell>
+                      <StatusPill status={r.status} />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}

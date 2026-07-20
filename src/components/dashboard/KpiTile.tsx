@@ -36,7 +36,11 @@ export function KpiTile({ label, value, sub, icon: Icon, tone, to, className }: 
         <div className={cn("text-2xl font-semibold tabular-nums", tone && toneText(tone))}>
           {value}
         </div>
-        {sub && <div className={cn("mt-1 text-xs", tone ? toneText(tone) : "text-muted-foreground")}>{sub}</div>}
+        {sub && (
+          <div className={cn("mt-1 text-xs", tone ? toneText(tone) : "text-muted-foreground")}>
+            {sub}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

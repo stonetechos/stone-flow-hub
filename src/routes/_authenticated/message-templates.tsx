@@ -10,9 +10,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
@@ -32,7 +52,10 @@ export const Route = createFileRoute("/_authenticated/message-templates")({
 });
 
 function TemplatesPage() {
-  const query = useQuery({ queryKey: qk.messageTemplates.all, queryFn: () => listMessageTemplates() });
+  const query = useQuery({
+    queryKey: qk.messageTemplates.all,
+    queryFn: () => listMessageTemplates(),
+  });
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 200);
   const [page, setPage] = useState(1);
@@ -77,11 +100,19 @@ function TemplatesPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
           <Button variant="outline" size="sm" className="h-8" asChild>
-            <Link to="/notification-settings"><ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Providers</Link>
+            <Link to="/notification-settings">
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Providers
+            </Link>
           </Button>
         }
         action={
-          <EditTemplateDialog trigger={<Button size="sm" className="h-8"><Plus className="mr-1.5 h-3.5 w-3.5" /> New template</Button>} />
+          <EditTemplateDialog
+            trigger={
+              <Button size="sm" className="h-8">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New template
+              </Button>
+            }
+          />
         }
       />
 
@@ -90,7 +121,10 @@ function TemplatesPage() {
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} />
       ) : filtered.length === 0 ? (
-        <EmptyState title="No templates" message="Create your first template to reuse across the ERP." />
+        <EmptyState
+          title="No templates"
+          message="Create your first template to reuse across the ERP."
+        />
       ) : (
         <DataTableShell
           density={prefs.density}
@@ -100,7 +134,10 @@ function TemplatesPage() {
               pageSize={pageSize}
               total={filtered.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -118,17 +155,33 @@ function TemplatesPage() {
             <TableBody>
               {pageRows.map((t) => (
                 <TableRow key={t.id}>
-                  {!isHidden("code") && <TableCell className="font-mono text-xs">{t.code}</TableCell>}
+                  {!isHidden("code") && (
+                    <TableCell className="font-mono text-xs">{t.code}</TableCell>
+                  )}
                   {!isHidden("name") && <TableCell>{t.name}</TableCell>}
-                  {!isHidden("channel") && <TableCell><Badge variant="outline" className="uppercase">{t.channel}</Badge></TableCell>}
+                  {!isHidden("channel") && (
+                    <TableCell>
+                      <Badge variant="outline" className="uppercase">
+                        {t.channel}
+                      </Badge>
+                    </TableCell>
+                  )}
                   {!isHidden("category") && <TableCell className="text-sm">{t.category}</TableCell>}
                   {!isHidden("active") && (
-                    <TableCell><Badge variant={t.is_active ? "default" : "outline"}>{t.is_active ? "Yes" : "No"}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant={t.is_active ? "default" : "outline"}>
+                        {t.is_active ? "Yes" : "No"}
+                      </Badge>
+                    </TableCell>
                   )}
                   <TableCell className="text-right">
                     <EditTemplateDialog
                       template={{ ...t, channel: t.channel as "email" | "whatsapp" | "sms" }}
-                      trigger={<Button variant="ghost" size="sm">Edit</Button>}
+                      trigger={
+                        <Button variant="ghost" size="sm">
+                          Edit
+                        </Button>
+                      }
                     />
                   </TableCell>
                 </TableRow>
@@ -145,14 +198,24 @@ function EditTemplateDialog({
   template,
   trigger,
 }: {
-  template?: { code: string; name: string; channel: "email" | "whatsapp" | "sms"; category: string; subject: string | null; body: string; is_active: boolean };
+  template?: {
+    code: string;
+    name: string;
+    channel: "email" | "whatsapp" | "sms";
+    category: string;
+    subject: string | null;
+    body: string;
+    is_active: boolean;
+  };
   trigger: React.ReactNode;
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(template?.code ?? "");
   const [name, setName] = useState(template?.name ?? "");
-  const [channel, setChannel] = useState<"email" | "whatsapp" | "sms">(template?.channel ?? "email");
+  const [channel, setChannel] = useState<"email" | "whatsapp" | "sms">(
+    template?.channel ?? "email",
+  );
   const [category, setCategory] = useState(template?.category ?? "general");
   const [subject, setSubject] = useState(template?.subject ?? "");
   const [body, setBody] = useState(template?.body ?? "");
@@ -161,9 +224,13 @@ function EditTemplateDialog({
   const save = useMutation({
     mutationFn: () =>
       upsertMessageTemplate({
-        code, name, channel, category,
+        code,
+        name,
+        channel,
+        category,
         subject: channel === "email" ? subject : null,
-        body, variables: extractPlaceholders(body + " " + (subject ?? "")),
+        body,
+        variables: extractPlaceholders(body + " " + (subject ?? "")),
         is_active: active,
       }),
     onSuccess: () => {
@@ -178,11 +245,18 @@ function EditTemplateDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>{template ? "Edit template" : "New template"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{template ? "Edit template" : "New template"}</DialogTitle>
+        </DialogHeader>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Code *</Label>
-            <Input value={code} onChange={(e) => setCode(e.target.value)} disabled={!!template} placeholder="e.g. estimate.email.v2" />
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              disabled={!!template}
+              placeholder="e.g. estimate.email.v2"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Name *</Label>
@@ -191,7 +265,9 @@ function EditTemplateDialog({
           <div className="space-y-1.5">
             <Label>Channel *</Label>
             <Select value={channel} onValueChange={(v) => setChannel(v as typeof channel)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="whatsapp">WhatsApp</SelectItem>
@@ -201,7 +277,11 @@ function EditTemplateDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Category</Label>
-            <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. estimate / receipt / invoice" />
+            <Input
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. estimate / receipt / invoice"
+            />
           </div>
           {channel === "email" && (
             <div className="space-y-1.5 md:col-span-2">
@@ -213,13 +293,21 @@ function EditTemplateDialog({
             <Label>Body *</Label>
             <Textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
             <p className="text-xs text-muted-foreground">
-              Placeholders: {extractPlaceholders(body + " " + subject).map((v) => `{{${v}}}`).join(", ") || "—"}
+              Placeholders:{" "}
+              {extractPlaceholders(body + " " + subject)
+                .map((v) => `{{${v}}}`)
+                .join(", ") || "—"}
             </p>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setActive(!active)}>{active ? "Deactivate" : "Activate"}</Button>
-          <Button onClick={() => save.mutate()} disabled={!code || !name || !body || save.isPending}>
+          <Button variant="outline" onClick={() => setActive(!active)}>
+            {active ? "Deactivate" : "Activate"}
+          </Button>
+          <Button
+            onClick={() => save.mutate()}
+            disabled={!code || !name || !body || save.isPending}
+          >
             <Save className="mr-2 h-4 w-4" /> Save
           </Button>
         </DialogFooter>

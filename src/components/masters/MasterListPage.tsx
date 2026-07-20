@@ -15,12 +15,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Tabs, TabsList, TabsTrigger,
-} from "@/components/ui/tabs";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -37,7 +46,13 @@ import type { MasterConfig, MasterField } from "@/lib/masters/config";
 import { COMMON_FIELDS, COMMON_TRAILING_FIELDS } from "@/lib/masters/config";
 import { BulkImportDialog } from "@/components/masters/BulkImportDialog";
 
-type Row = { id: string; code: string; name: string; is_active: boolean; sort_order: number } & Record<string, unknown>;
+type Row = {
+  id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+  sort_order: number;
+} & Record<string, unknown>;
 
 export function MasterListPage({ config }: { config: MasterConfig }) {
   const qc = useQueryClient();
@@ -78,7 +93,9 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
       const { id, ...rest } = payload;
       // Generic master writes — schema is validated by DB constraints.
       const tbl = supabase.from(config.table) as unknown as {
-        update: (v: Record<string, unknown>) => { eq: (c: string, id: string) => Promise<{ error: unknown }> };
+        update: (v: Record<string, unknown>) => {
+          eq: (c: string, id: string) => Promise<{ error: unknown }>;
+        };
         insert: (v: Record<string, unknown>) => Promise<{ error: unknown }>;
       };
       if (id) {
@@ -131,9 +148,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
     [config],
   );
 
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs(
-    `masters:${config.table}`,
-  );
+  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs(`masters:${config.table}`);
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -148,10 +163,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
 
   return (
     <div>
-      <PageHeader
-        title={config.title}
-        subtitle={config.description}
-      />
+      <PageHeader title={config.title} subtitle={config.description} />
 
       <DataToolbar
         count={list.data?.length}
@@ -161,19 +173,26 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         primaryFilter={
           <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "inactive")}>
             <TabsList className="h-8">
-              <TabsTrigger value="active" className="h-6 text-xs">Active</TabsTrigger>
-              <TabsTrigger value="inactive" className="h-6 text-xs">Inactive</TabsTrigger>
+              <TabsTrigger value="active" className="h-6 text-xs">
+                Active
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className="h-6 text-xs">
+                Inactive
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         }
-        columns={
-          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
-        }
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Can anyRole={["admin", "sales_manager"]}>
             <div className="flex items-center gap-1.5">
-              <Button size="sm" variant="outline" className="h-8" onClick={() => setImporting(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8"
+                onClick={() => setImporting(true)}
+              >
                 <Upload className="mr-1.5 h-3.5 w-3.5" /> Import
               </Button>
               <Button size="sm" className="h-8" onClick={() => setCreating(true)}>
@@ -206,9 +225,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
                 {!isHidden("code") && <TableHead className="w-[140px]">Code</TableHead>}
                 {!isHidden("name") && <TableHead>Name</TableHead>}
                 {config.extraColumns.map((c) =>
-                  isHidden(c.key) ? null : (
-                    <TableHead key={c.key}>{c.label}</TableHead>
-                  ),
+                  isHidden(c.key) ? null : <TableHead key={c.key}>{c.label}</TableHead>,
                 )}
                 {!isHidden("sort_order") && <TableHead className="w-[100px]">Sort</TableHead>}
                 {!isHidden("is_active") && <TableHead className="w-[100px]">Status</TableHead>}
@@ -221,9 +238,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
                   {!isHidden("code") && (
                     <TableCell className="font-mono text-xs">{row.code}</TableCell>
                   )}
-                  {!isHidden("name") && (
-                    <TableCell className="font-medium">{row.name}</TableCell>
-                  )}
+                  {!isHidden("name") && <TableCell className="font-medium">{row.name}</TableCell>}
                   {config.extraColumns.map((c) =>
                     isHidden(c.key) ? null : (
                       <TableCell key={c.key} className="text-sm text-muted-foreground">
@@ -267,7 +282,6 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         </DataTableShell>
       )}
 
-
       <MasterFormDialog
         open={creating || !!editing}
         onOpenChange={(v) => {
@@ -285,12 +299,16 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
+        onOpenChange={(v) => {
+          if (!v) setDeleteTarget(null);
+        }}
         title={`Delete ${config.singular.toLowerCase()}?`}
         description={`"${deleteTarget?.name ?? ""}" will be removed. This cannot be undone.`}
         confirmLabel="Delete"
         busy={del.isPending}
-        onConfirm={() => { if (deleteTarget) del.mutate(deleteTarget); }}
+        onConfirm={() => {
+          if (deleteTarget) del.mutate(deleteTarget);
+        }}
       />
 
       <BulkImportDialog
@@ -301,7 +319,12 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         columns={[
           { key: "code", label: "Code", required: true },
           { key: "name", label: "Name", required: true },
-          ...config.extraFields.map((f) => ({ key: f.key, label: f.label, type: f.type as "text" | "number" | "boolean" | undefined, required: f.required })),
+          ...config.extraFields.map((f) => ({
+            key: f.key,
+            label: f.label,
+            type: f.type as "text" | "number" | "boolean" | undefined,
+            required: f.required,
+          })),
           { key: "sort_order", label: "Sort order", type: "number" as const },
           { key: "notes", label: "Notes" },
         ]}
@@ -319,7 +342,13 @@ function formatCell(v: unknown): string {
 }
 
 function MasterFormDialog({
-  open, onOpenChange, config, fields, initial, submitting, onSubmit,
+  open,
+  onOpenChange,
+  config,
+  fields,
+  initial,
+  submitting,
+  onSubmit,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -362,7 +391,8 @@ function MasterFormDialog({
                   payload[f.key] = null;
                 } else payload[f.key] = Number(v);
               } else {
-                if (f.required && !String(v ?? "").trim()) return toast.error(`${f.label} required`);
+                if (f.required && !String(v ?? "").trim())
+                  return toast.error(`${f.label} required`);
                 payload[f.key] = v === "" ? null : v;
               }
             }
@@ -372,7 +402,10 @@ function MasterFormDialog({
         >
           {fields.map((f) => (
             <div key={f.key} className="space-y-1">
-              <Label>{f.label}{f.required && <span className="text-destructive"> *</span>}</Label>
+              <Label>
+                {f.label}
+                {f.required && <span className="text-destructive"> *</span>}
+              </Label>
               {f.type === "textarea" ? (
                 <Textarea
                   value={String(values[f.key] ?? "")}
@@ -395,7 +428,9 @@ function MasterFormDialog({
           <div className="flex items-center justify-between rounded-md border p-3">
             <div>
               <Label>Active</Label>
-              <p className="text-xs text-muted-foreground">Inactive records are hidden from pickers.</p>
+              <p className="text-xs text-muted-foreground">
+                Inactive records are hidden from pickers.
+              </p>
             </div>
             <Switch checked={active} onCheckedChange={setActive} />
           </div>

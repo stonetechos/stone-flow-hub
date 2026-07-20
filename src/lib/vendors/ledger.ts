@@ -80,14 +80,14 @@ export function routeForLedgerRow(row: VendorLedgerRow): string | null {
 }
 
 const SOURCE_LABELS: Record<string, string> = {
-  purchase_order:    "Purchase Order",
-  vendor_quote:      "Vendor Quote",
-  grn:               "Material Received",
-  vendor_payment:    "Payment",
+  purchase_order: "Purchase Order",
+  vendor_quote: "Vendor Quote",
+  grn: "Material Received",
+  vendor_payment: "Payment",
   vendor_debit_note: "Debit Note",
-  vendor_credit_note:"Credit Note",
-  opening_balance:   "Opening Balance",
-  adjustment:        "Adjustment",
+  vendor_credit_note: "Credit Note",
+  opening_balance: "Opening Balance",
+  adjustment: "Adjustment",
 };
 
 export function sourceLabel(sourceType: string): string {

@@ -39,6 +39,8 @@ const OPERATIONS_INSIGHT_PROVIDERS = [
  * replaces an existing registration by id rather than duplicating it.
  */
 export function registerOperationsInsightProviders(): () => void {
-  const unregisterFns = OPERATIONS_INSIGHT_PROVIDERS.map((provider) => registerInsightProvider(provider));
+  const unregisterFns = OPERATIONS_INSIGHT_PROVIDERS.map((provider) =>
+    registerInsightProvider(provider),
+  );
   return () => unregisterFns.forEach((unregister) => unregister());
 }

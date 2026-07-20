@@ -10,11 +10,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { GuidedEntity } from "@/lib/guided-workflow/steps";
 
-async function hasAny(
-  table: string,
-  column: string,
-  value: string,
-): Promise<boolean> {
+async function hasAny(table: string, column: string, value: string): Promise<boolean> {
   const { count, error } = await supabase
     // Table name is a build-time literal picked from a fixed allow-list below.
     // Untyped call is intentional to keep this helper generic.
@@ -31,10 +27,7 @@ async function hasAny(
  * exists. Only hops with a direct FK are probed; the rest return `false`
  * so the banner remains visible.
  */
-export async function probeDownstream(
-  entity: GuidedEntity,
-  entityId: string,
-): Promise<boolean> {
+export async function probeDownstream(entity: GuidedEntity, entityId: string): Promise<boolean> {
   switch (entity) {
     case "customer":
       return hasAny("enquiries", "customer_id", entityId);

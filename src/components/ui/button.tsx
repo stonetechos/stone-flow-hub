@@ -33,17 +33,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-[var(--intent-primary-hover)] active:bg-[var(--intent-primary-active)]",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        default:
+          "bg-primary text-primary-foreground hover:bg-[var(--intent-primary-hover)] active:bg-[var(--intent-primary-active)]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
           "border border-border-default bg-transparent text-foreground hover:bg-[var(--intent-ghost-hover)] hover:border-border-strong",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        soft:
-          "bg-[oklch(from_var(--intent-primary)_l_c_h_/_0.12)] text-[var(--intent-primary-active)] hover:bg-[oklch(from_var(--intent-primary)_l_c_h_/_0.18)]",
-        subtle:
-          "bg-surface-panel text-foreground hover:bg-[var(--intent-ghost-hover)]",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        soft: "bg-[oklch(from_var(--intent-primary)_l_c_h_/_0.12)] text-[var(--intent-primary-active)] hover:bg-[oklch(from_var(--intent-primary)_l_c_h_/_0.18)]",
+        subtle: "bg-surface-panel text-foreground hover:bg-[var(--intent-ghost-hover)]",
         ghost: "text-foreground hover:bg-[var(--intent-ghost-hover)]",
         link: "text-[var(--text-link)] underline-offset-4 hover:underline p-0 h-auto",
       },

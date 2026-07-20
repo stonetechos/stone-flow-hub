@@ -58,17 +58,23 @@ export interface CreatePoInput {
 }
 
 export async function createPoFromVendorQuote(input: CreatePoInput): Promise<string> {
-  const { data, error } = await supabase.rpc("create_po_from_vendor_quote" as never, {
-    p_quote_id: input.quoteId,
-    p_vendor_delivery: input.vendorDeliveryDate ?? null,
-    p_override_reason: input.overrideReason ?? null,
-    p_payment_schedule: input.paymentSchedule ?? null,
-  } as never);
+  const { data, error } = await supabase.rpc(
+    "create_po_from_vendor_quote" as never,
+    {
+      p_quote_id: input.quoteId,
+      p_vendor_delivery: input.vendorDeliveryDate ?? null,
+      p_override_reason: input.overrideReason ?? null,
+      p_payment_schedule: input.paymentSchedule ?? null,
+    } as never,
+  );
   if (error) throw new AppError(mapDbError(error));
   return String(data);
 }
 
-export function riskFor(vendorDelivery: string | null, customerDelivery: string | null): "ok" | "warning" | "critical" {
+export function riskFor(
+  vendorDelivery: string | null,
+  customerDelivery: string | null,
+): "ok" | "warning" | "critical" {
   if (!vendorDelivery || !customerDelivery) return "ok";
   const v = new Date(vendorDelivery).getTime();
   const c = new Date(customerDelivery).getTime();

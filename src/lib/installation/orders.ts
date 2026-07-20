@@ -5,7 +5,13 @@ import { sanitizeSearch } from "@/lib/zod";
 import { z } from "zod";
 
 export const INSTALLATION_ORDER_STATUSES = [
-  "planned", "scheduled", "in_progress", "on_hold", "completed", "signed_off", "cancelled",
+  "planned",
+  "scheduled",
+  "in_progress",
+  "on_hold",
+  "completed",
+  "signed_off",
+  "cancelled",
 ] as const;
 export type InstallationOrderStatus = (typeof INSTALLATION_ORDER_STATUSES)[number];
 
@@ -92,7 +98,10 @@ export const installationUpdateSchema = z.object({
 });
 export type InstallationUpdateInput = z.infer<typeof installationUpdateSchema>;
 
-export async function updateInstallation(id: string, input: InstallationUpdateInput): Promise<void> {
+export async function updateInstallation(
+  id: string,
+  input: InstallationUpdateInput,
+): Promise<void> {
   const p = installationUpdateSchema.parse(input);
   const { error } = await getDb()
     .from("installations" as never)
@@ -102,7 +111,10 @@ export async function updateInstallation(id: string, input: InstallationUpdateIn
 }
 
 export async function deleteInstallation(id: string): Promise<void> {
-  const { error } = await getDb().from("installations" as never).delete().eq("id", id);
+  const { error } = await getDb()
+    .from("installations" as never)
+    .delete()
+    .eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 

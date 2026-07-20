@@ -41,7 +41,9 @@ export async function listVendorInbox(): Promise<InboxItem[]> {
     }
   >;
 
-  const projectIds = Array.from(new Set(rows.map((r) => r.rfqs?.project_id).filter(Boolean))) as string[];
+  const projectIds = Array.from(
+    new Set(rows.map((r) => r.rfqs?.project_id).filter(Boolean)),
+  ) as string[];
   const projects = new Map<string, string>();
   if (projectIds.length) {
     const { data: pj } = await supabase.from("projects").select("id, name").in("id", projectIds);

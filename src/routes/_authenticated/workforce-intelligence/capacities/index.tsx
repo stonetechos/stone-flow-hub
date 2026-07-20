@@ -64,7 +64,14 @@ function CapacitiesPage() {
     mutationFn: () => upsertCapacity(form),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "capacities"] });
-      setForm({ ...form, metric_key: "", metric_label: "", ideal_capacity: 0, maximum_capacity: 0, overload_threshold: 0 });
+      setForm({
+        ...form,
+        metric_key: "",
+        metric_label: "",
+        ideal_capacity: 0,
+        maximum_capacity: 0,
+        overload_threshold: 0,
+      });
       toast.success("Capacity saved");
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -130,22 +137,56 @@ function CapacitiesPage() {
         <div className="mt-6 rounded-md border p-4">
           <h4 className="mb-3 text-sm font-semibold">Add capacity</h4>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
-            <Select value={form.designation_id} onValueChange={(v) => setForm({ ...form, designation_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Role" /></SelectTrigger>
+            <Select
+              value={form.designation_id}
+              onValueChange={(v) => setForm({ ...form, designation_id: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
               <SelectContent>
                 {(designations.data ?? []).map((d) => (
-                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Input placeholder="metric_key" value={form.metric_key} onChange={(e) => setForm({ ...form, metric_key: e.target.value })} />
-            <Input placeholder="Label" value={form.metric_label} onChange={(e) => setForm({ ...form, metric_label: e.target.value })} />
-            <Input type="number" placeholder="Ideal" value={form.ideal_capacity} onChange={(e) => setForm({ ...form, ideal_capacity: Number(e.target.value) })} />
-            <Input type="number" placeholder="Max" value={form.maximum_capacity} onChange={(e) => setForm({ ...form, maximum_capacity: Number(e.target.value) })} />
-            <Input type="number" placeholder="Overload" value={form.overload_threshold} onChange={(e) => setForm({ ...form, overload_threshold: Number(e.target.value) })} />
+            <Input
+              placeholder="metric_key"
+              value={form.metric_key}
+              onChange={(e) => setForm({ ...form, metric_key: e.target.value })}
+            />
+            <Input
+              placeholder="Label"
+              value={form.metric_label}
+              onChange={(e) => setForm({ ...form, metric_label: e.target.value })}
+            />
+            <Input
+              type="number"
+              placeholder="Ideal"
+              value={form.ideal_capacity}
+              onChange={(e) => setForm({ ...form, ideal_capacity: Number(e.target.value) })}
+            />
+            <Input
+              type="number"
+              placeholder="Max"
+              value={form.maximum_capacity}
+              onChange={(e) => setForm({ ...form, maximum_capacity: Number(e.target.value) })}
+            />
+            <Input
+              type="number"
+              placeholder="Overload"
+              value={form.overload_threshold}
+              onChange={(e) => setForm({ ...form, overload_threshold: Number(e.target.value) })}
+            />
           </div>
           <div className="mt-3 flex justify-end">
-            <Button size="sm" onClick={() => add.mutate()} disabled={!form.designation_id || !form.metric_key || add.isPending}>
+            <Button
+              size="sm"
+              onClick={() => add.mutate()}
+              disabled={!form.designation_id || !form.metric_key || add.isPending}
+            >
               <Plus className="mr-1 h-4 w-4" /> Save
             </Button>
           </div>

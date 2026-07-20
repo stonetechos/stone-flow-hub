@@ -9,15 +9,31 @@ import { toast } from "sonner";
 import { Loader2, Upload, FileText, Download, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { parseCsv, toCsv, downloadCsv } from "@/lib/csv/parse";
 import { toUserMessage } from "@/lib/errors";
 
-export type BulkColumn = { key: string; label: string; type?: "text" | "number" | "boolean"; required?: boolean };
+export type BulkColumn = {
+  key: string;
+  label: string;
+  type?: "text" | "number" | "boolean";
+  required?: boolean;
+};
 
 export function BulkImportDialog({
-  open, onOpenChange, table, columns, templateName, onDone,
+  open,
+  onOpenChange,
+  table,
+  columns,
+  templateName,
+  onDone,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -35,7 +51,9 @@ export function BulkImportDialog({
   const headers = useMemo(() => columns.map((c) => c.key), [columns]);
 
   function reset() {
-    setRows([]); setErrors([]); setFilename("");
+    setRows([]);
+    setErrors([]);
+    setFilename("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -62,7 +80,10 @@ export function BulkImportDialog({
           }
           if (c.type === "number") {
             const n = Number(raw);
-            if (Number.isNaN(n)) { errs.push(`Row ${idx + 2}: ${c.key} not a number`); continue; }
+            if (Number.isNaN(n)) {
+              errs.push(`Row ${idx + 2}: ${c.key} not a number`);
+              continue;
+            }
             row[c.key] = n;
           } else if (c.type === "boolean") {
             row[c.key] = /^(1|true|yes|y|active)$/i.test(String(raw));
@@ -86,14 +107,22 @@ export function BulkImportDialog({
       if (error) throw error;
       // Audit — best-effort, non-blocking.
       await supabase.from("bulk_imports" as never).insert({
-        target_table: table, filename, row_count: rows.length,
-        success_count: rows.length, error_count: errors.length, errors: errors,
+        target_table: table,
+        filename,
+        row_count: rows.length,
+        success_count: rows.length,
+        error_count: errors.length,
+        errors: errors,
       } as never);
       toast.success(`Imported ${rows.length} rows`);
-      onDone?.(); reset(); onOpenChange(false);
+      onDone?.();
+      reset();
+      onOpenChange(false);
     } catch (e) {
       toast.error(toUserMessage(e));
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   function downloadTemplate() {
@@ -103,7 +132,13 @@ export function BulkImportDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Bulk import · {templateName}</DialogTitle>
@@ -119,7 +154,10 @@ export function BulkImportDialog({
               type="file"
               accept=".csv,text/csv"
               className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+              }}
             />
             <Button size="sm" onClick={() => inputRef.current?.click()}>
               <Upload className="mr-1.5 h-4 w-4" /> Choose CSV
@@ -135,8 +173,13 @@ export function BulkImportDialog({
             <p className="mb-1 font-medium">Columns</p>
             <div className="flex flex-wrap gap-1">
               {columns.map((c) => (
-                <Badge key={c.key} variant={c.required ? "default" : "outline"} className="font-mono">
-                  {c.key}{c.required ? " *" : ""}
+                <Badge
+                  key={c.key}
+                  variant={c.required ? "default" : "outline"}
+                  className="font-mono"
+                >
+                  {c.key}
+                  {c.required ? " *" : ""}
                 </Badge>
               ))}
             </div>
@@ -144,8 +187,14 @@ export function BulkImportDialog({
 
           {errors.length > 0 && (
             <div className="max-h-32 overflow-auto rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
-              <div className="mb-1 flex items-center gap-1 font-medium"><AlertTriangle className="h-3 w-3" /> {errors.length} validation issue(s)</div>
-              <ul className="list-disc pl-4">{errors.slice(0, 20).map((e, i) => <li key={i}>{e}</li>)}</ul>
+              <div className="mb-1 flex items-center gap-1 font-medium">
+                <AlertTriangle className="h-3 w-3" /> {errors.length} validation issue(s)
+              </div>
+              <ul className="list-disc pl-4">
+                {errors.slice(0, 20).map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -157,7 +206,9 @@ export function BulkImportDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={importNow} disabled={busy || rows.length === 0}>
             {busy && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />} Import
           </Button>

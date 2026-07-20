@@ -100,32 +100,71 @@ function RoleDetail() {
         title={role.name}
         subtitle={role.code}
         eyebrow="Role"
-        actions={canWrite && (
-          <Button size="sm" variant="outline" onClick={() =>
-            setEdit({
-              code: role.code, name: role.name, purpose: role.purpose ?? "",
-              responsibilities: role.responsibilities ?? "", expected_outcomes: role.expected_outcomes ?? "",
-              level: role.level, active: role.active,
-            })
-          }>
-            Edit role
-          </Button>
-        )}
+        actions={
+          canWrite && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                setEdit({
+                  code: role.code,
+                  name: role.name,
+                  purpose: role.purpose ?? "",
+                  responsibilities: role.responsibilities ?? "",
+                  expected_outcomes: role.expected_outcomes ?? "",
+                  level: role.level,
+                  active: role.active,
+                })
+              }
+            >
+              Edit role
+            </Button>
+          )
+        }
       />
 
       {edit ? (
         <div className="mb-6 space-y-3 rounded-md border p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Input placeholder="Code" value={edit.code} onChange={(e) => setEdit({ ...edit, code: e.target.value })} />
-            <Input placeholder="Name" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-            <Input type="number" placeholder="Level" value={edit.level} onChange={(e) => setEdit({ ...edit, level: Number(e.target.value) })} />
+            <Input
+              placeholder="Code"
+              value={edit.code}
+              onChange={(e) => setEdit({ ...edit, code: e.target.value })}
+            />
+            <Input
+              placeholder="Name"
+              value={edit.name}
+              onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+            />
+            <Input
+              type="number"
+              placeholder="Level"
+              value={edit.level}
+              onChange={(e) => setEdit({ ...edit, level: Number(e.target.value) })}
+            />
           </div>
-          <Textarea placeholder="Purpose" value={edit.purpose ?? ""} onChange={(e) => setEdit({ ...edit, purpose: e.target.value })} />
-          <Textarea placeholder="Responsibilities" value={edit.responsibilities ?? ""} onChange={(e) => setEdit({ ...edit, responsibilities: e.target.value })} />
-          <Textarea placeholder="Expected outcomes" value={edit.expected_outcomes ?? ""} onChange={(e) => setEdit({ ...edit, expected_outcomes: e.target.value })} />
+          <Textarea
+            placeholder="Purpose"
+            value={edit.purpose ?? ""}
+            onChange={(e) => setEdit({ ...edit, purpose: e.target.value })}
+          />
+          <Textarea
+            placeholder="Responsibilities"
+            value={edit.responsibilities ?? ""}
+            onChange={(e) => setEdit({ ...edit, responsibilities: e.target.value })}
+          />
+          <Textarea
+            placeholder="Expected outcomes"
+            value={edit.expected_outcomes ?? ""}
+            onChange={(e) => setEdit({ ...edit, expected_outcomes: e.target.value })}
+          />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setEdit(null)}>Cancel</Button>
-            <Button onClick={() => saveRole.mutate()} disabled={saveRole.isPending}>Save</Button>
+            <Button variant="ghost" onClick={() => setEdit(null)}>
+              Cancel
+            </Button>
+            <Button onClick={() => saveRole.mutate()} disabled={saveRole.isPending}>
+              Save
+            </Button>
           </div>
         </div>
       ) : (
@@ -178,11 +217,33 @@ function RoleDetail() {
         <div className="mt-6 rounded-md border p-4">
           <h4 className="mb-3 text-sm font-semibold">Add KRA</h4>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
-            <Input placeholder="Name" value={newKra.name} onChange={(e) => setNewKra({ ...newKra, name: e.target.value })} className="md:col-span-2" />
-            <Input type="number" placeholder="Weight %" value={newKra.weightage} onChange={(e) => setNewKra({ ...newKra, weightage: Number(e.target.value) })} />
-            <Input type="number" placeholder="Target" value={newKra.target_value} onChange={(e) => setNewKra({ ...newKra, target_value: Number(e.target.value) })} />
-            <Select value={newKra.target_period} onValueChange={(v) => setNewKra({ ...newKra, target_period: v as KraInput["target_period"] })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Input
+              placeholder="Name"
+              value={newKra.name}
+              onChange={(e) => setNewKra({ ...newKra, name: e.target.value })}
+              className="md:col-span-2"
+            />
+            <Input
+              type="number"
+              placeholder="Weight %"
+              value={newKra.weightage}
+              onChange={(e) => setNewKra({ ...newKra, weightage: Number(e.target.value) })}
+            />
+            <Input
+              type="number"
+              placeholder="Target"
+              value={newKra.target_value}
+              onChange={(e) => setNewKra({ ...newKra, target_value: Number(e.target.value) })}
+            />
+            <Select
+              value={newKra.target_period}
+              onValueChange={(v) =>
+                setNewKra({ ...newKra, target_period: v as KraInput["target_period"] })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">daily</SelectItem>
                 <SelectItem value="weekly">weekly</SelectItem>
@@ -190,10 +251,18 @@ function RoleDetail() {
                 <SelectItem value="quarterly">quarterly</SelectItem>
               </SelectContent>
             </Select>
-            <Input placeholder="metric_source" value={newKra.metric_source ?? ""} onChange={(e) => setNewKra({ ...newKra, metric_source: e.target.value })} />
+            <Input
+              placeholder="metric_source"
+              value={newKra.metric_source ?? ""}
+              onChange={(e) => setNewKra({ ...newKra, metric_source: e.target.value })}
+            />
           </div>
           <div className="mt-3 flex justify-end">
-            <Button size="sm" onClick={() => addKra.mutate()} disabled={!newKra.name || addKra.isPending}>
+            <Button
+              size="sm"
+              onClick={() => addKra.mutate()}
+              disabled={!newKra.name || addKra.isPending}
+            >
               <Plus className="mr-1 h-4 w-4" /> Add
             </Button>
           </div>

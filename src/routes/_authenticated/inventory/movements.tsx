@@ -136,9 +136,7 @@ function MovementsPage() {
                               {m.movement_type.replace(/_/g, " ")}
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            {m.product ? `${m.product.name}` : "—"}
-                          </TableCell>
+                          <TableCell>{m.product ? `${m.product.name}` : "—"}</TableCell>
                           <TableCell className="text-right font-mono text-sm">
                             {m.direction === "in" ? "+" : "-"}
                             {Number(m.quantity)} {m.unit ?? ""}
@@ -234,7 +232,11 @@ function MovementsPage() {
                 value={form.notes ?? ""}
                 onChange={(e) => set("notes", e.target.value || null)}
               />
-              <Button type="submit" disabled={mut.isPending || form.quantity <= 0} className="w-full">
+              <Button
+                type="submit"
+                disabled={mut.isPending || form.quantity <= 0}
+                className="w-full"
+              >
                 <Plus className="mr-2 h-4 w-4" /> Post movement
               </Button>
             </form>

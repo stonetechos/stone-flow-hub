@@ -38,10 +38,7 @@ export function FiltersPanel({
           <Filter className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Filters</span>
           {activeCount > 0 && (
-            <Badge
-              variant="secondary"
-              className="ml-0.5 h-4 min-w-4 px-1 text-[10px] font-medium"
-            >
+            <Badge variant="secondary" className="ml-0.5 h-4 min-w-4 px-1 text-[10px] font-medium">
               {activeCount}
             </Badge>
           )}

@@ -70,7 +70,10 @@ export const CustomerHealthProvider: InsightProvider = {
     for (const f of pendingFollowups) {
       const customerId = f.enquiry?.customer?.id;
       if (!customerId) continue;
-      followupBacklogByCustomer.set(customerId, (followupBacklogByCustomer.get(customerId) ?? 0) + 1);
+      followupBacklogByCustomer.set(
+        customerId,
+        (followupBacklogByCustomer.get(customerId) ?? 0) + 1,
+      );
     }
 
     const nowDate = new Date();
@@ -90,10 +93,14 @@ export const CustomerHealthProvider: InsightProvider = {
       if (score.outstanding > 0) {
         if (score.overdue_days > THRESHOLDS.overdueDaysMajor) {
           points += 3;
-          reasons.push(`${formatInr(score.outstanding)} outstanding, overdue by ${score.overdue_days} days`);
+          reasons.push(
+            `${formatInr(score.outstanding)} outstanding, overdue by ${score.overdue_days} days`,
+          );
         } else if (score.overdue_days > THRESHOLDS.overdueDaysMinor) {
           points += 2;
-          reasons.push(`${formatInr(score.outstanding)} outstanding, overdue by ${score.overdue_days} days`);
+          reasons.push(
+            `${formatInr(score.outstanding)} outstanding, overdue by ${score.overdue_days} days`,
+          );
         } else {
           points += 1;
           reasons.push(`${formatInr(score.outstanding)} outstanding`);
@@ -119,7 +126,8 @@ export const CustomerHealthProvider: InsightProvider = {
       const level = levelFor(points);
       if (level === "Healthy") continue;
 
-      const tone: Insight["tone"] = level === "Critical" ? "danger" : level === "Risk" ? "warning" : "info";
+      const tone: Insight["tone"] =
+        level === "Critical" ? "danger" : level === "Risk" ? "warning" : "info";
       const kind: InsightKind = level === "Watch" ? "warning" : "risk";
 
       insights.push({

@@ -266,7 +266,6 @@ export function TasksPanel({ entityType, entityId, title = "Tasks" }: Props) {
           if (toDelete) del.mutate(toDelete.id);
         }}
       />
-
     </Card>
   );
 }

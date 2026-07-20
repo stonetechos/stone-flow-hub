@@ -36,7 +36,9 @@ export function dedupeInsights(insights: MergedInsight[]): MergedInsight[] {
 
     const primary = group.reduce((best, next) => (isMoreSevere(next, best) ? next : best));
     const others = group.filter((i) => i !== primary);
-    const whys = [primary.why, ...others.map((o) => o.why)].filter((w, idx, arr) => arr.indexOf(w) === idx);
+    const whys = [primary.why, ...others.map((o) => o.why)].filter(
+      (w, idx, arr) => arr.indexOf(w) === idx,
+    );
 
     return {
       ...primary,

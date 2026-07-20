@@ -46,7 +46,12 @@ export async function listEmployees(q = ""): Promise<Employee[]> {
   if (q.trim()) {
     const s = q.trim();
     query = query.or(
-      [`full_name.ilike.%${s}%`, `employee_code.ilike.%${s}%`, `email.ilike.%${s}%`, `phone.ilike.%${s}%`].join(","),
+      [
+        `full_name.ilike.%${s}%`,
+        `employee_code.ilike.%${s}%`,
+        `email.ilike.%${s}%`,
+        `phone.ilike.%${s}%`,
+      ].join(","),
     );
   }
   const { data, error } = await query;
@@ -113,7 +118,11 @@ export async function listDesignations(): Promise<Designation[]> {
 }
 
 export async function getDesignation(id: string): Promise<Designation | null> {
-  const { data, error } = await supabase.from("designations").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("designations")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
@@ -155,7 +164,12 @@ export async function createKra(input: KraInput): Promise<Kra> {
 
 export async function updateKra(id: string, input: KraInput): Promise<Kra> {
   const parsed = kraSchema.parse(input);
-  const { data, error } = await supabase.from("kras").update(parsed).eq("id", id).select("*").single();
+  const { data, error } = await supabase
+    .from("kras")
+    .update(parsed)
+    .eq("id", id)
+    .select("*")
+    .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
@@ -229,11 +243,7 @@ export async function listTasks(filter: TaskFilter = {}): Promise<WorkforceTask[
 export async function updateTask(id: string, input: TaskUpdateInput): Promise<WorkforceTask> {
   const parsed = taskUpdateSchema.parse(input);
   const completed_at =
-    parsed.status === "completed"
-      ? new Date().toISOString()
-      : parsed.status
-        ? null
-        : undefined;
+    parsed.status === "completed" ? new Date().toISOString() : parsed.status ? null : undefined;
   const { data, error } = await supabase
     .from("workforce_tasks")
     .update({ ...parsed, ...(completed_at !== undefined ? { completed_at } : {}) })

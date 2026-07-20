@@ -14,13 +14,20 @@ export const Route = createFileRoute("/_authenticated/dashboards/customer-intell
 });
 
 function CustomerIntelPage() {
-  const q = useQuery({ queryKey: ["exec", "customer-intel"], queryFn: getCustomerIntel, staleTime: 60_000 });
+  const q = useQuery({
+    queryKey: ["exec", "customer-intel"],
+    queryFn: getCustomerIntel,
+    staleTime: 60_000,
+  });
   if (q.isLoading || !q.data) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} />;
   const d = q.data!;
   return (
     <div>
-      <PageHeader title="Customer Intelligence" subtitle="Where revenue comes from, who's at risk, and who's dormant." />
+      <PageHeader
+        title="Customer Intelligence"
+        subtitle="Where revenue comes from, who's at risk, and who's dormant."
+      />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <List title="Top by revenue" rows={d.top_by_revenue} col="revenue" />
         <List title="Most profitable" rows={d.most_profitable} col="revenue" />
@@ -34,17 +41,41 @@ function CustomerIntelPage() {
   );
 }
 
-function List({ title, rows, col, tone }: { title: string; rows: CustomerScore[]; col: "revenue" | "orders" | "outstanding" | "overdue" | "last_order"; tone?: "warn" }) {
+function List({
+  title,
+  rows,
+  col,
+  tone,
+}: {
+  title: string;
+  rows: CustomerScore[];
+  col: "revenue" | "orders" | "outstanding" | "overdue" | "last_order";
+  tone?: "warn";
+}) {
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+      </CardHeader>
       <CardContent>
-        {rows.length === 0 ? <div className="text-xs text-muted-foreground">No data.</div> : (
+        {rows.length === 0 ? (
+          <div className="text-xs text-muted-foreground">No data.</div>
+        ) : (
           <ol className="text-sm space-y-1">
             {rows.map((r, i) => (
               <li key={r.customer_id + i} className="flex justify-between gap-2">
-                <Link to="/customers/$customerId" params={{ customerId: r.customer_id }} className="truncate text-primary hover:underline">{i + 1}. {r.name}</Link>
-                <span className={tone === "warn" ? "text-status-warning-fg" : "text-muted-foreground"}>{formatValue(r, col)}</span>
+                <Link
+                  to="/customers/$customerId"
+                  params={{ customerId: r.customer_id }}
+                  className="truncate text-primary hover:underline"
+                >
+                  {i + 1}. {r.name}
+                </Link>
+                <span
+                  className={tone === "warn" ? "text-status-warning-fg" : "text-muted-foreground"}
+                >
+                  {formatValue(r, col)}
+                </span>
               </li>
             ))}
           </ol>
@@ -54,7 +85,10 @@ function List({ title, rows, col, tone }: { title: string; rows: CustomerScore[]
   );
 }
 
-function formatValue(r: CustomerScore, col: "revenue" | "orders" | "outstanding" | "overdue" | "last_order"): string {
+function formatValue(
+  r: CustomerScore,
+  col: "revenue" | "orders" | "outstanding" | "overdue" | "last_order",
+): string {
   if (col === "revenue") return formatInr(r.revenue);
   if (col === "orders") return `${r.orders_count} orders`;
   if (col === "outstanding") return formatInr(r.outstanding);

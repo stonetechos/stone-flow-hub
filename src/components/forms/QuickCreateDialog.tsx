@@ -185,12 +185,7 @@ function QuickCreateCustomer({
   );
 }
 
-function QuickCreateVendor({
-  open,
-  onOpenChange,
-  initialName,
-  onCreated,
-}: QuickCreateDialogProps) {
+function QuickCreateVendor({ open, onOpenChange, initialName, onCreated }: QuickCreateDialogProps) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     company_name: initialName ?? "",

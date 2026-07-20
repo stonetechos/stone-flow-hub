@@ -128,11 +128,10 @@ function DashboardPage() {
     year: "numeric",
   });
 
-  if (kpisQ.isLoading || !kpisQ.data) return <ShellLoading greeting={greeting} name={name} today={today} />;
+  if (kpisQ.isLoading || !kpisQ.data)
+    return <ShellLoading greeting={greeting} name={name} today={today} />;
   if (kpisQ.error)
-    return (
-      <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />
-    );
+    return <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />;
 
   const kpis = kpisQ.data!;
   const tasks = tasksQ.data ?? [];
@@ -259,10 +258,7 @@ function ExecutiveHero({
                 key={i}
                 className="flex gap-2.5 text-[14px] leading-relaxed text-text-on-material/90"
               >
-                <span
-                  aria-hidden
-                  className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mint-300/80"
-                />
+                <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mint-300/80" />
                 <span>{line}</span>
               </li>
             ))}
@@ -283,8 +279,8 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
     band === "strong"
       ? "text-mint-300"
       : band === "steady"
-      ? "text-status-warning-fg"
-      : "text-status-danger-fg";
+        ? "text-status-warning-fg"
+        : "text-status-danger-fg";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
@@ -336,7 +332,11 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
 
   return (
     <section aria-labelledby="health-heading">
-      <SectionTitle id="health-heading" kicker="Business health" title="Four pillars, one heartbeat" />
+      <SectionTitle
+        id="health-heading"
+        kicker="Business health"
+        title="Four pillars, one heartbeat"
+      />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <HealthCard
           to="/dashboards/sales"
@@ -428,8 +428,7 @@ function OperationalRadar({
       sub: "Exceeds ₹50L threshold",
     });
   const urgentTasks = tasks.filter((t) => t.priority === "urgent").slice(0, 3);
-  for (const t of urgentTasks)
-    critical.push({ label: t.title, to: "/tasks", sub: "Urgent task" });
+  for (const t of urgentTasks) critical.push({ label: t.title, to: "/tasks", sub: "Urgent task" });
 
   const attention: RadarItem[] = [];
   if (kpis.pendingQuotes)
@@ -490,7 +489,10 @@ function OperationalRadar({
     });
   const doneTasks = tasks.filter((t) => t.status === "completed").length;
   if (doneTasks)
-    completed.push({ label: `${doneTasks} task${doneTasks === 1 ? "" : "s"} closed`, to: "/tasks" });
+    completed.push({
+      label: `${doneTasks} task${doneTasks === 1 ? "" : "s"} closed`,
+      to: "/tasks",
+    });
 
   return (
     <section aria-labelledby="radar-heading">
@@ -636,16 +638,10 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
             >
               <span className="flex items-center gap-2 text-[13px] text-text-secondary">
                 {r.tone === "in" && (
-                  <span
-                    aria-hidden
-                    className="h-1.5 w-1.5 rounded-full bg-status-success-fg"
-                  />
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-status-success-fg" />
                 )}
                 {r.tone === "out" && (
-                  <span
-                    aria-hidden
-                    className="h-1.5 w-1.5 rounded-full bg-status-danger-fg"
-                  />
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-status-danger-fg" />
                 )}
                 {r.label}
               </span>
@@ -666,10 +662,30 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
 
 function ProductionAndDispatch({ kpis }: { kpis: DashboardKpis }) {
   const rows = [
-    { icon: <Factory className="h-3.5 w-3.5" />, label: "Sales orders to start", value: kpis.ordersToStart, to: "/sales-orders" },
-    { icon: <Timer className="h-3.5 w-3.5" />, label: "Production queue", value: "—", to: "/manufacturing" },
-    { icon: <Truck className="h-3.5 w-3.5" />, label: "Dispatches today", value: kpis.deliveriesToday, to: "/dispatch" },
-    { icon: <Building2 className="h-3.5 w-3.5" />, label: "Active installations", value: "—", to: "/installations" },
+    {
+      icon: <Factory className="h-3.5 w-3.5" />,
+      label: "Sales orders to start",
+      value: kpis.ordersToStart,
+      to: "/sales-orders",
+    },
+    {
+      icon: <Timer className="h-3.5 w-3.5" />,
+      label: "Production queue",
+      value: "—",
+      to: "/manufacturing",
+    },
+    {
+      icon: <Truck className="h-3.5 w-3.5" />,
+      label: "Dispatches today",
+      value: kpis.deliveriesToday,
+      to: "/dispatch",
+    },
+    {
+      icon: <Building2 className="h-3.5 w-3.5" />,
+      label: "Active installations",
+      value: "—",
+      to: "/installations",
+    },
   ];
   return (
     <SurfaceCard
@@ -713,9 +729,7 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
       ? Math.round((kpis.quotesAwaitingApproval / kpis.activeEnquiries) * 100)
       : 0;
   const aov =
-    kpis.quotesAwaitingApproval > 0
-      ? kpis.revenuePipelineInr / kpis.quotesAwaitingApproval
-      : 0;
+    kpis.quotesAwaitingApproval > 0 ? kpis.revenuePipelineInr / kpis.quotesAwaitingApproval : 0;
   const cells = [
     { label: "Active enquiries", value: kpis.activeEnquiries, to: "/enquiries" },
     { label: "Quotes to approve", value: kpis.pendingQuotes, to: "/quotes", tone: "warn" as const },
@@ -761,10 +775,22 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
 
 function InventoryIntelligence() {
   const groups = [
-    { icon: <Zap className="h-3.5 w-3.5" />, label: "Fast movers", hint: "Top 5 by 30-day movement" },
+    {
+      icon: <Zap className="h-3.5 w-3.5" />,
+      label: "Fast movers",
+      hint: "Top 5 by 30-day movement",
+    },
     { icon: <Timer className="h-3.5 w-3.5" />, label: "Slow movers", hint: "Aged over 90 days" },
-    { icon: <AlertTriangle className="h-3.5 w-3.5" />, label: "Critical stock", hint: "Below reorder point" },
-    { icon: <ClipboardCheck className="h-3.5 w-3.5" />, label: "Purchase recommendations", hint: "Suggested RFQs" },
+    {
+      icon: <AlertTriangle className="h-3.5 w-3.5" />,
+      label: "Critical stock",
+      hint: "Below reorder point",
+    },
+    {
+      icon: <ClipboardCheck className="h-3.5 w-3.5" />,
+      label: "Purchase recommendations",
+      hint: "Suggested RFQs",
+    },
   ];
   return (
     <SurfaceCard
@@ -834,8 +860,8 @@ function CopilotDock({
             {health.band === "strong"
               ? "The business is running well. Focus on growth."
               : health.band === "steady"
-              ? "Steady day. A few items want attention."
-              : "Several risks are open. Address them first."}
+                ? "Steady day. A few items want attention."
+                : "Several risks are open. Address them first."}
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/8 pt-3">
             <MiniStat label="Cash today" value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
@@ -951,9 +977,7 @@ function TodayTimeline({
           hour: "2-digit",
           minute: "2-digit",
         }),
-        label:
-          f.notes?.slice(0, 80) ??
-          `Follow up with ${f.enquiry?.customer?.name ?? "customer"}`,
+        label: f.notes?.slice(0, 80) ?? `Follow up with ${f.enquiry?.customer?.name ?? "customer"}`,
         kind: "follow-up",
         to: "/followups",
       });
@@ -1041,9 +1065,7 @@ function TodayTimeline({
               {e.kind === "task" && (
                 <Checkbox
                   checked={!!e.done}
-                  onCheckedChange={(v) =>
-                    onToggleTask(e.key.replace(/^t-/, ""), v === true)
-                  }
+                  onCheckedChange={(v) => onToggleTask(e.key.replace(/^t-/, ""), v === true)}
                   aria-label={`Mark ${e.label} complete`}
                 />
               )}
@@ -1065,7 +1087,11 @@ function QuickActionsDock() {
     { to: "/enquiries", label: "Enquiry", icon: <FileText className="h-3.5 w-3.5" /> },
     { to: "/quotes/new", label: "Quote", icon: <FileText className="h-3.5 w-3.5" /> },
     { to: "/sales-orders/new", label: "Sales order", icon: <Package className="h-3.5 w-3.5" /> },
-    { to: "/purchase-orders/new", label: "Purchase order", icon: <ClipboardCheck className="h-3.5 w-3.5" /> },
+    {
+      to: "/purchase-orders/new",
+      label: "Purchase order",
+      icon: <ClipboardCheck className="h-3.5 w-3.5" />,
+    },
     { to: "/receipts/new", label: "Receipt", icon: <Wallet className="h-3.5 w-3.5" /> },
     { to: "/dispatch/new", label: "Dispatch", icon: <Truck className="h-3.5 w-3.5" /> },
   ];
@@ -1206,8 +1232,7 @@ function computeHealth(k: DashboardKpis): HealthScore {
   let score = 90;
   score -= Math.min(k.overdueFollowups * 4, 25);
   score -= k.pendingQuotes > 10 ? 10 : k.pendingQuotes > 5 ? 5 : 0;
-  score -=
-    k.outstandingInr > 5_000_000 ? 15 : k.outstandingInr > 1_000_000 ? 8 : 0;
+  score -= k.outstandingInr > 5_000_000 ? 15 : k.outstandingInr > 1_000_000 ? 8 : 0;
   score += k.collectionsTodayInr > 0 ? 4 : 0;
   score += k.salesTodayInr > 0 ? 4 : 0;
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
@@ -1254,8 +1279,7 @@ function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[]): string[]
   const lines = topInsights.map((i) => i.title);
   const urgent = tasks.filter((t) => t.priority === "urgent").length;
   if (urgent) lines.push(`${urgent} urgent task${urgent === 1 ? "" : "s"} on your list.`);
-  if (lines.length === 0)
-    lines.push("Everything is quiet. Production is operating normally.");
+  if (lines.length === 0) lines.push("Everything is quiet. Production is operating normally.");
   return lines.slice(0, 5);
 }
 

@@ -26,14 +26,22 @@ const CONFIG: MasterConfig = {
   description:
     "Reusable checklists by inspection category — surface, dimension, thickness, edge, colour, crack, packing, dispatch.",
   extraFields: [
-    { key: "category", label: "Category", type: "text", required: true, placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch" },
+    {
+      key: "category",
+      label: "Category",
+      type: "text",
+      required: true,
+      placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch",
+    },
   ],
   extraColumns: [{ key: "category", label: "Category" }],
 };
 
 export const Route = createFileRoute("/_authenticated/masters/qc-templates")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => ({ template: (s.template as string) || undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    template: (s.template as string) || undefined,
+  }),
   component: QcTemplatesPage,
 });
 
@@ -44,8 +52,8 @@ function QcTemplatesPage() {
     <div>
       <MasterListPage config={CONFIG} />
       <p className="mt-4 text-xs text-muted-foreground">
-        Tip: open a template in the URL as <code>?template=&lt;id&gt;</code> to manage its checklist items,
-        or use the shortcut on the manufacturing detail page.
+        Tip: open a template in the URL as <code>?template=&lt;id&gt;</code> to manage its checklist
+        items, or use the shortcut on the manufacturing detail page.
       </p>
     </div>
   );
@@ -58,7 +66,11 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
   const tpl = useQuery({
     queryKey: ["qc_template", templateId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("qc_templates" as never).select("*").eq("id", templateId).maybeSingle();
+      const { data, error } = await supabase
+        .from("qc_templates" as never)
+        .select("*")
+        .eq("id", templateId)
+        .maybeSingle();
       if (error) throw error;
       return data as { id: string; name: string; category: string } | null;
     },
@@ -79,16 +91,24 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
   const add = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("qc_template_items" as never).insert({
-        template_id: templateId, label: label.trim(), sort_order: (items.data?.length ?? 0) * 10 + 10,
+        template_id: templateId,
+        label: label.trim(),
+        sort_order: (items.data?.length ?? 0) * 10 + 10,
       } as never);
       if (error) throw error;
     },
-    onSuccess: () => { setLabel(""); qc.invalidateQueries({ queryKey: ["qc_template_items", templateId] }); },
+    onSuccess: () => {
+      setLabel("");
+      qc.invalidateQueries({ queryKey: ["qc_template_items", templateId] });
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("qc_template_items" as never).delete().eq("id", id);
+      const { error } = await supabase
+        .from("qc_template_items" as never)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["qc_template_items", templateId] }),
@@ -102,31 +122,61 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
   return (
     <div>
       <div className="mb-2">
-        <Link to="/masters/qc-templates" search={{ template: undefined }} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/masters/qc-templates"
+          search={{ template: undefined }}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-3 w-3" /> All templates
         </Link>
       </div>
-      <PageHeader title={tpl.data?.name ?? "Template"} subtitle={tpl.data?.category ? `Category · ${tpl.data.category}` : undefined} />
+      <PageHeader
+        title={tpl.data?.name ?? "Template"}
+        subtitle={tpl.data?.category ? `Category · ${tpl.data.category}` : undefined}
+      />
       <Card>
-        <CardHeader><CardTitle className="text-sm">Checklist items</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm">Checklist items</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
-            <Input placeholder="New checklist item…" value={label} onChange={(e) => setLabel(e.target.value)} />
+            <Input
+              placeholder="New checklist item…"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+            />
             <Button onClick={() => add.mutate()} disabled={!label.trim() || add.isPending}>
-              {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="mr-1 h-4 w-4" />Add</>}
+              {add.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
+                </>
+              )}
             </Button>
           </div>
           <ul className="divide-y rounded-md border">
             {list.length === 0 ? (
               <li className="p-4 text-sm text-muted-foreground">No items yet.</li>
-            ) : list.map((i) => (
-              <li key={i.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-                <span>{i.label}</span>
-                <Button size="icon" variant="ghost" onClick={() => remove.mutate(i.id)} title="Remove">
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </li>
-            ))}
+            ) : (
+              list.map((i) => (
+                <li
+                  key={i.id}
+                  className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
+                >
+                  <span>{i.label}</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => remove.mutate(i.id)}
+                    title="Remove"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                </li>
+              ))
+            )}
           </ul>
         </CardContent>
       </Card>

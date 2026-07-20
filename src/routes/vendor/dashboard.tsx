@@ -40,8 +40,7 @@ function toneClasses(tone: CardDef["tone"]): string {
 function VendorDashboard() {
   const q = useQuery({ queryKey: ["vendor", "kpis"], queryFn: getVendorKpis });
   if (q.isLoading || !q.data) return <LoadingBlock />;
-  if (q.error)
-    return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
+  if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   const k = q.data!;
 
   const cards: CardDef[] = [

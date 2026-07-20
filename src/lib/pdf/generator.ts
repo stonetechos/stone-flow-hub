@@ -148,7 +148,8 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   // Payment Details box — only when at least one bank field is set, so a
   // profile that hasn't filled these in yet doesn't show an empty box.
-  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.bank_ifsc || brand.upi_id;
+  const hasBankDetails =
+    brand.bank_name || brand.bank_account_number || brand.bank_ifsc || brand.upi_id;
   const bankBlock = hasBankDetails
     ? `<div style="flex:1;min-width:220px;border:1px solid ${border};border-radius:6px;padding:10px 14px">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">Payment Details</div>

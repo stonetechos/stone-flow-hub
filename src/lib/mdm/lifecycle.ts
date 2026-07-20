@@ -16,12 +16,7 @@ import type { MdmEntityType } from "./dependencies";
 
 export type LifecycleStatus = "active" | "inactive" | "archived" | "deleted";
 
-export const LIFECYCLE_STATUSES: LifecycleStatus[] = [
-  "active",
-  "inactive",
-  "archived",
-  "deleted",
-];
+export const LIFECYCLE_STATUSES: LifecycleStatus[] = ["active", "inactive", "archived", "deleted"];
 
 /** Maps our MDM entity kinds to their base table names. */
 const TABLE_FOR: Record<MdmEntityType, string | null> = {
@@ -56,14 +51,14 @@ export async function setLifecycleStatus(
 }
 
 /** Admin-only permanent purge. Server enforces role + dependency guard. */
-export async function purgeEntity(
-  entityType: MdmEntityType,
-  entityId: string,
-): Promise<void> {
-  const { error } = await supabase.rpc("purge_entity" as never, {
-    _entity_type: entityType,
-    _entity_id: entityId,
-  } as never);
+export async function purgeEntity(entityType: MdmEntityType, entityId: string): Promise<void> {
+  const { error } = await supabase.rpc(
+    "purge_entity" as never,
+    {
+      _entity_type: entityType,
+      _entity_id: entityId,
+    } as never,
+  );
   if (error) throw new AppError(mapDbError(error));
 }
 

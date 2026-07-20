@@ -45,7 +45,7 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   company_name: "Stone Tech",
   tagline: "Natural Stone Excellence",
   primary: "#0d9488", // teal-600
-  accent: "#334155",  // granite slate-700
+  accent: "#334155", // granite slate-700
   logo_url: "",
   address: "",
   phone: "",

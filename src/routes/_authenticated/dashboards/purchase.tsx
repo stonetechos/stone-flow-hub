@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export const Route = createFileRoute("/_authenticated/dashboards/purchase")({ ssr: false, component: PurchaseDashboard });
+export const Route = createFileRoute("/_authenticated/dashboards/purchase")({
+  ssr: false,
+  component: PurchaseDashboard,
+});
 
 function PurchaseDashboard() {
   const stats = useQuery({
@@ -15,7 +18,11 @@ function PurchaseDashboard() {
         supabase.from("rfqs").select("id, status").limit(2000),
         supabase.from("purchase_orders").select("id, status").limit(2000),
         supabase.from("vendors").select("id", { count: "exact", head: true }),
-        supabase.from("vendor_performance_cache").select("vendor:vendor_id(company_name), score").order("score", { ascending: false }).limit(5),
+        supabase
+          .from("vendor_performance_cache")
+          .select("vendor:vendor_id(company_name), score")
+          .order("score", { ascending: false })
+          .limit(5),
       ]);
       const rlist = rfqs.data ?? [];
       const plist = pos.data ?? [];
@@ -35,10 +42,21 @@ function PurchaseDashboard() {
         <Kpi icon={Send} label="Open RFQs" value={s?.rfqs_open ?? "—"} to="/rfqs" />
         <Kpi icon={ShoppingCart} label="Open POs" value={s?.po_open ?? "—"} to="/purchase-orders" />
         <Kpi icon={Package} label="Vendors" value={s?.vendors ?? "—"} to="/vendors" />
-        <Kpi icon={Award} label="Top vendor" value={s?.top[0] ? (s.top[0].vendor as { company_name?: string } | null)?.company_name ?? "—" : "—"} to="/vendors" />
+        <Kpi
+          icon={Award}
+          label="Top vendor"
+          value={
+            s?.top[0]
+              ? ((s.top[0].vendor as { company_name?: string } | null)?.company_name ?? "—")
+              : "—"
+          }
+          to="/vendors"
+        />
       </div>
       <Card className="mt-4">
-        <CardHeader><CardTitle className="text-sm">Top 5 vendors by score</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm">Top 5 vendors by score</CardTitle>
+        </CardHeader>
         <CardContent>
           <ul className="divide-y">
             {(s?.top ?? []).map((t, i) => (
@@ -54,11 +72,26 @@ function PurchaseDashboard() {
   );
 }
 
-function Kpi({ icon: Icon, label, value, to }: { icon: React.ComponentType<{ className?: string }>; label: string; value: React.ReactNode; to: string }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  to,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: React.ReactNode;
+  to: string;
+}) {
   return (
     <Link to={to as never}>
       <Card className="transition-shadow hover:shadow-md">
-        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-3.5 w-3.5" />{label}</CardTitle></CardHeader>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+          </CardTitle>
+        </CardHeader>
         <CardContent className="truncate text-2xl font-semibold">{value}</CardContent>
       </Card>
     </Link>

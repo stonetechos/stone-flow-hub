@@ -17,7 +17,13 @@
  * this app (see the file header comment in hooks/use-roles.tsx).
  */
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Image as ImageIcon, PenTool, Stamp as StampIcon, ShieldCheck } from "lucide-react";
+import {
+  Loader2,
+  Image as ImageIcon,
+  PenTool,
+  Stamp as StampIcon,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -128,7 +134,10 @@ export function CompanyProfileTab() {
     });
   }, [q.data]);
 
-  function set<K extends keyof CompanyProfileFormValues>(key: K, value: CompanyProfileFormValues[K]) {
+  function set<K extends keyof CompanyProfileFormValues>(
+    key: K,
+    value: CompanyProfileFormValues[K],
+  ) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
@@ -137,7 +146,8 @@ export function CompanyProfileTab() {
     setUploading(kind);
     try {
       const url = await uploadCompanyAsset(q.data.id, kind, file);
-      const field = kind === "logo" ? "logo_url" : kind === "signature" ? "signature_url" : "stamp_url";
+      const field =
+        kind === "logo" ? "logo_url" : kind === "signature" ? "signature_url" : "stamp_url";
       set(field, url);
       // Uploads save immediately — the field still shows in the form for
       // context, but there's no reason to make an admin re-click "Save
@@ -172,7 +182,10 @@ export function CompanyProfileTab() {
 
   if (q.isLoading || !q.data) return <LoadingBlock label="Loading company profile…" />;
 
-  const field = (key: keyof CompanyProfileFormValues, opts?: { placeholder?: string; required?: boolean }) => (
+  const field = (
+    key: keyof CompanyProfileFormValues,
+    opts?: { placeholder?: string; required?: boolean },
+  ) => (
     <div className="space-y-1.5">
       <Label>
         {FIELD_LABELS[key]}

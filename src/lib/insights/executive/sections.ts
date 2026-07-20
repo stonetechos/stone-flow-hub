@@ -38,7 +38,11 @@ function toAction(insight: ProcessedInsight): ExecutiveAction {
   };
 }
 
-function buildSection(moduleKey: string, label: string, insights: ProcessedInsight[]): ExecutiveSection {
+function buildSection(
+  moduleKey: string,
+  label: string,
+  insights: ProcessedInsight[],
+): ExecutiveSection {
   const scoped = insights.filter((i) => i.module === moduleKey);
 
   const counts: HealthCounts = { critical: 0, warning: 0, healthy: 0, total: scoped.length };

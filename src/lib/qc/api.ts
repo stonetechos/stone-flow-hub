@@ -41,7 +41,10 @@ export type QcResult = {
 };
 
 export async function listQcTemplates(activeOnly = true): Promise<QcTemplate[]> {
-  const q = supabase.from("qc_templates" as never).select("*").order("sort_order");
+  const q = supabase
+    .from("qc_templates" as never)
+    .select("*")
+    .order("sort_order");
   const { data, error } = activeOnly ? await q.eq("is_active", true) : await q;
   if (error) throw error;
   return (data ?? []) as unknown as QcTemplate[];
@@ -81,9 +84,16 @@ export async function seedResultsFromTemplate(stageId: string, templateId: strin
   if (error) throw error;
 }
 
-export async function updateResult(id: string, patch: Partial<Pick<QcResult, "outcome" | "remarks" | "image_urls">>) {
+export async function updateResult(
+  id: string,
+  patch: Partial<Pick<QcResult, "outcome" | "remarks" | "image_urls">>,
+) {
   const payload: Record<string, unknown> = { ...patch };
-  if (patch.outcome && patch.outcome !== "not_checked") payload.checked_at = new Date().toISOString();
-  const { error } = await supabase.from("qc_results" as never).update(payload as never).eq("id", id);
+  if (patch.outcome && patch.outcome !== "not_checked")
+    payload.checked_at = new Date().toISOString();
+  const { error } = await supabase
+    .from("qc_results" as never)
+    .update(payload as never)
+    .eq("id", id);
   if (error) throw error;
 }

@@ -3,12 +3,7 @@ import { z } from "zod";
 export const GRN_STATUSES = ["received", "partial", "closed", "cancelled"] as const;
 export type GrnStatus = (typeof GRN_STATUSES)[number];
 
-export const GRN_ACCEPTANCE = [
-  "pending",
-  "accepted",
-  "rejected",
-  "accepted_with_remarks",
-] as const;
+export const GRN_ACCEPTANCE = ["pending", "accepted", "rejected", "accepted_with_remarks"] as const;
 export type GrnAcceptance = (typeof GRN_ACCEPTANCE)[number];
 
 export const grnCreateSchema = z.object({

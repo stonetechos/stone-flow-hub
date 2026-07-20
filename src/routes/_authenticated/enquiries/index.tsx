@@ -10,9 +10,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { EntityPicker } from "@/components/forms/EntityPicker";
@@ -112,7 +125,11 @@ function EnquiriesPage() {
     const row = (query.data ?? []).find((r) => r.id === edit);
     if (row) {
       setEditing(row);
-      nav({ to: "/enquiries", search: (s: Record<string, unknown>) => ({ ...s, edit: undefined }), replace: true });
+      nav({
+        to: "/enquiries",
+        search: (s: Record<string, unknown>) => ({ ...s, edit: undefined }),
+        replace: true,
+      });
     }
   }, [edit, query.data, nav]);
 
@@ -141,9 +158,16 @@ function EnquiriesPage() {
 
   const stageMut = useMutation({
     mutationFn: ({
-      id, stage, lost_reason, lost_notes,
-    }: { id: string; stage: LeadStage; lost_reason?: string | null; lost_notes?: string | null }) =>
-      updateEnquiryStage(id, stage, { lost_reason, lost_notes }),
+      id,
+      stage,
+      lost_reason,
+      lost_notes,
+    }: {
+      id: string;
+      stage: LeadStage;
+      lost_reason?: string | null;
+      lost_notes?: string | null;
+    }) => updateEnquiryStage(id, stage, { lost_reason, lost_notes }),
     onSuccess: () => {
       toast.success("Stage updated");
       qc.invalidateQueries({ queryKey: qk.enquiries.all });
@@ -167,7 +191,10 @@ function EnquiriesPage() {
       listEnquirySignals(
         rowIds,
         Object.fromEntries(
-          pageRows.map((r) => [r.id, { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null }]),
+          pageRows.map((r) => [
+            r.id,
+            { stage: r.stage, updated_at: r.updated_at ?? r.created_at ?? null },
+          ]),
         ),
       ),
     enabled: rowIds.length > 0,
@@ -227,7 +254,11 @@ function EnquiriesPage() {
         <EmptyState
           icon={<ClipboardList className="h-6 w-6" />}
           title={umbrella ? "No enquiries in this stage" : "No enquiries yet"}
-          message={umbrella ? "Try a different stage or clear the filter." : "Log your first lead — you can convert it into a project later."}
+          message={
+            umbrella
+              ? "Try a different stage or clear the filter."
+              : "Log your first lead — you can convert it into a project later."
+          }
           action={
             <Button onClick={() => setNewOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> New enquiry
@@ -243,7 +274,10 @@ function EnquiriesPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -256,7 +290,9 @@ function EnquiriesPage() {
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("stage") && <TableHead className="min-w-[200px]">Lead Stage</TableHead>}
                 {!isHidden("health") && <TableHead>Health</TableHead>}
-                {!isHidden("followup") && <TableHead className="min-w-[140px]">Next follow-up</TableHead>}
+                {!isHidden("followup") && (
+                  <TableHead className="min-w-[140px]">Next follow-up</TableHead>
+                )}
                 {!isHidden("priority") && <TableHead>Priority</TableHead>}
                 {!isHidden("budget") && <TableHead>Budget (INR)</TableHead>}
                 <TableHead className="w-12" />
@@ -266,10 +302,15 @@ function EnquiriesPage() {
               {pageRows.map((e) => {
                 const currentUmbrella = stageToUmbrella(e.stage);
                 const sig = signals[e.id] ?? null;
-                const daysInStage = daysSince(sig?.stage_entered_at ?? e.updated_at ?? e.created_at);
+                const daysInStage = daysSince(
+                  sig?.stage_entered_at ?? e.updated_at ?? e.created_at,
+                );
                 const nextFup = sig?.next_followup ?? null;
-                const followupOverdue = !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
-                const daysSinceLast = sig?.last_followup_at ? daysSince(sig.last_followup_at) : null;
+                const followupOverdue =
+                  !!nextFup && new Date(nextFup.scheduled_at).getTime() < Date.now();
+                const daysSinceLast = sig?.last_followup_at
+                  ? daysSince(sig.last_followup_at)
+                  : null;
                 const health = computeLeadHealth({
                   stage: e.stage,
                   daysInStage,
@@ -281,16 +322,28 @@ function EnquiriesPage() {
                   <TableRow key={e.id}>
                     {!isHidden("no") && (
                       <TableCell className="font-mono text-xs">
-                        <Link to="/enquiries/$enquiryId" params={{ enquiryId: e.id }} className="text-primary hover:underline">
+                        <Link
+                          to="/enquiries/$enquiryId"
+                          params={{ enquiryId: e.id }}
+                          className="text-primary hover:underline"
+                        >
                           {e.enquiry_no}
                         </Link>
                       </TableCell>
                     )}
-                    {!isHidden("customer") && <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>}
-                    {!isHidden("requirement") && <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>}
+                    {!isHidden("customer") && (
+                      <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
+                    )}
+                    {!isHidden("requirement") && (
+                      <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>
+                    )}
                     {!isHidden("project") && (
                       <TableCell>
-                        {e.project ? e.project.name : <span className="text-xs text-muted-foreground">Unassigned</span>}
+                        {e.project ? (
+                          e.project.name
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Unassigned</span>
+                        )}
                       </TableCell>
                     )}
                     {!isHidden("stage") && (
@@ -309,10 +362,14 @@ function EnquiriesPage() {
                               stageMut.mutate({ id: e.id, stage: primary });
                             }}
                           >
-                            <SelectTrigger className="h-8 w-full text-xs"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-8 w-full text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
                             <SelectContent>
                               {LEAD_UMBRELLAS.map((u) => (
-                                <SelectItem key={u.id} value={u.id}>{u.label}</SelectItem>
+                                <SelectItem key={u.id} value={u.id}>
+                                  {u.label}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -320,11 +377,23 @@ function EnquiriesPage() {
                         </div>
                       </TableCell>
                     )}
-                    {!isHidden("health") && <TableCell><LeadHealthBadge health={health} compact /></TableCell>}
-                    {!isHidden("followup") && <TableCell><NextFollowupChip next={nextFup} compact /></TableCell>}
-                    {!isHidden("priority") && <TableCell className="capitalize">{e.priority}</TableCell>}
+                    {!isHidden("health") && (
+                      <TableCell>
+                        <LeadHealthBadge health={health} compact />
+                      </TableCell>
+                    )}
+                    {!isHidden("followup") && (
+                      <TableCell>
+                        <NextFollowupChip next={nextFup} compact />
+                      </TableCell>
+                    )}
+                    {!isHidden("priority") && (
+                      <TableCell className="capitalize">{e.priority}</TableCell>
+                    )}
                     {!isHidden("budget") && (
-                      <TableCell className="tabular-nums">{e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}</TableCell>
+                      <TableCell className="tabular-nums">
+                        {e.budget_inr != null ? e.budget_inr.toLocaleString("en-IN") : "—"}
+                      </TableCell>
                     )}
                     <TableCell>
                       <RowActions onEdit={() => setEditing(e)} onDelete={() => setToDelete(e)} />
@@ -337,7 +406,11 @@ function EnquiriesPage() {
         </DataTableShell>
       )}
 
-      <NewEnquiryDialog open={newOpen} onOpenChange={setNewOpen} presetCustomerId={customerParam ?? null} />
+      <NewEnquiryDialog
+        open={newOpen}
+        onOpenChange={setNewOpen}
+        presetCustomerId={customerParam ?? null}
+      />
       <EditEnquiryDialog
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
@@ -357,7 +430,12 @@ function EnquiriesPage() {
         onOpenChange={(o) => !o && setLostFor(null)}
         onConfirm={(reason, notes) => {
           if (!lostFor) return;
-          stageMut.mutate({ id: lostFor.id, stage: lostFor.stage, lost_reason: reason, lost_notes: notes });
+          stageMut.mutate({
+            id: lostFor.id,
+            stage: lostFor.stage,
+            lost_reason: reason,
+            lost_notes: notes,
+          });
           setLostFor(null);
         }}
         stage={lostFor?.stage ?? "lost"}
@@ -365,9 +443,6 @@ function EnquiriesPage() {
     </div>
   );
 }
-
-
-
 
 function emptyNew(): EnquiryCreateInput {
   return {

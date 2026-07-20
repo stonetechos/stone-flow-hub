@@ -23,9 +23,8 @@ const DEFAULT_POLICIES: Record<VieIntent, VieExecutionPolicy> = {
 
 export async function getExecutionPolicy(intent: VieIntent): Promise<VieExecutionPolicy> {
   try {
-    const configured = await getAppSetting<Partial<Record<VieIntent, VieExecutionPolicy>>>(
-      "vie.execution_policies",
-    );
+    const configured =
+      await getAppSetting<Partial<Record<VieIntent, VieExecutionPolicy>>>("vie.execution_policies");
     return configured?.[intent] ?? DEFAULT_POLICIES[intent];
   } catch {
     // getAppSetting reads via the raw anon Supabase singleton, not the

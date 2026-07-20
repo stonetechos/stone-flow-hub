@@ -73,7 +73,10 @@ function EmployeeFormPage() {
     enabled: !!id,
   });
   const designations = useQuery({ queryKey: ["wf", "designations"], queryFn: listDesignations });
-  const managers = useQuery({ queryKey: ["wf", "employees", "list", ""], queryFn: () => listEmployees("") });
+  const managers = useQuery({
+    queryKey: ["wf", "employees", "list", ""],
+    queryFn: () => listEmployees(""),
+  });
 
   const [form, setForm] = useState<EmployeeInput>(empty);
 
@@ -129,41 +132,54 @@ function EmployeeFormPage() {
 
   return (
     <>
-      <PageHeader
-        title={id ? "Edit employee" : "New employee"}
-        eyebrow="Workforce Intelligence"
-      />
+      <PageHeader title={id ? "Edit employee" : "New employee"} eyebrow="Workforce Intelligence" />
       <FormLayout onSubmit={submit} busy={mut.isPending}>
         <FormSection title="Basic information">
           <FormGrid>
             <Field label="Full name" required>
-              <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+              <Input
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              />
             </Field>
             <Field label="Designation">
               <Select
                 value={form.designation_id ?? ""}
                 onValueChange={(v) => setForm({ ...form, designation_id: v || null })}
               >
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
                 <SelectContent>
                   {(designations.data ?? []).map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
             <Field label="Department">
-              <Input value={form.department ?? ""} onChange={(e) => setForm({ ...form, department: e.target.value })} />
+              <Input
+                value={form.department ?? ""}
+                onChange={(e) => setForm({ ...form, department: e.target.value })}
+              />
             </Field>
             <Field label="Employment type">
               <Select
                 value={form.employment_type}
-                onValueChange={(v) => setForm({ ...form, employment_type: v as EmployeeInput["employment_type"] })}
+                onValueChange={(v) =>
+                  setForm({ ...form, employment_type: v as EmployeeInput["employment_type"] })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {EMPLOYMENT_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{t.replace("_", " ")}</SelectItem>
+                    <SelectItem key={t} value={t}>
+                      {t.replace("_", " ")}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -173,26 +189,42 @@ function EmployeeFormPage() {
                 value={form.reporting_manager_id ?? ""}
                 onValueChange={(v) => setForm({ ...form, reporting_manager_id: v || null })}
               >
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
                 <SelectContent>
-                  {(managers.data ?? []).filter((m) => m.id !== id).map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
-                  ))}
+                  {(managers.data ?? [])
+                    .filter((m) => m.id !== id)
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.full_name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </Field>
             <Field label="Joining date">
-              <Input type="date" value={form.joining_date ?? ""} onChange={(e) => setForm({ ...form, joining_date: e.target.value })} />
+              <Input
+                type="date"
+                value={form.joining_date ?? ""}
+                onChange={(e) => setForm({ ...form, joining_date: e.target.value })}
+              />
             </Field>
             <Field label="Employment status">
               <Select
                 value={form.employment_status}
-                onValueChange={(v) => setForm({ ...form, employment_status: v as EmployeeInput["employment_status"] })}
+                onValueChange={(v) =>
+                  setForm({ ...form, employment_status: v as EmployeeInput["employment_status"] })
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {EMPLOYMENT_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>
+                    <SelectItem key={s} value={s}>
+                      {s.replace("_", " ")}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -203,16 +235,28 @@ function EmployeeFormPage() {
         <FormSection title="Contact">
           <FormGrid>
             <Field label="Phone">
-              <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input
+                value={form.phone ?? ""}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
             </Field>
             <Field label="Email">
-              <Input value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input
+                value={form.email ?? ""}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
             </Field>
             <Field label="Emergency contact">
-              <Input value={form.emergency_contact ?? ""} onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })} />
+              <Input
+                value={form.emergency_contact ?? ""}
+                onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })}
+              />
             </Field>
             <Field label="Address">
-              <Textarea value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              <Textarea
+                value={form.address ?? ""}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
             </Field>
           </FormGrid>
         </FormSection>
@@ -220,35 +264,69 @@ function EmployeeFormPage() {
         <FormSection title="Statutory & payroll" description="Visible only to owners.">
           <FormGrid>
             <Field label="Aadhaar">
-              <Input value={form.aadhaar ?? ""} onChange={(e) => setForm({ ...form, aadhaar: e.target.value })} />
+              <Input
+                value={form.aadhaar ?? ""}
+                onChange={(e) => setForm({ ...form, aadhaar: e.target.value })}
+              />
             </Field>
             <Field label="PAN">
-              <Input value={form.pan ?? ""} onChange={(e) => setForm({ ...form, pan: e.target.value })} />
+              <Input
+                value={form.pan ?? ""}
+                onChange={(e) => setForm({ ...form, pan: e.target.value })}
+              />
             </Field>
             <Field label="Salary (CTC)">
               <Input
                 type="number"
                 value={form.salary_ctc ?? ""}
-                onChange={(e) => setForm({ ...form, salary_ctc: e.target.value === "" ? null : Number(e.target.value) })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    salary_ctc: e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
               />
             </Field>
             <Field label="Skills (comma-separated)">
               <Input
                 value={(form.skills ?? []).join(", ")}
-                onChange={(e) => setForm({ ...form, skills: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    skills: e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
+                }
               />
             </Field>
           </FormGrid>
         </FormSection>
 
         <FormSection title="Remarks">
-          <Textarea value={form.remarks ?? ""} onChange={(e) => setForm({ ...form, remarks: e.target.value })} />
+          <Textarea
+            value={form.remarks ?? ""}
+            onChange={(e) => setForm({ ...form, remarks: e.target.value })}
+          />
         </FormSection>
 
         <FormActions
           busy={mut.isPending}
-          secondary={<Button type="button" variant="ghost" onClick={() => nav({ to: "/workforce-intelligence/employees" })}>Cancel</Button>}
-          primary={<Button type="submit" disabled={mut.isPending}>{id ? "Save changes" : "Create employee"}</Button>}
+          secondary={
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => nav({ to: "/workforce-intelligence/employees" })}
+            >
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={mut.isPending}>
+              {id ? "Save changes" : "Create employee"}
+            </Button>
+          }
         />
       </FormLayout>
     </>

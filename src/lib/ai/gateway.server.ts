@@ -24,10 +24,7 @@ function apiKey(): string {
   return k;
 }
 
-export async function chat(
-  messages: ChatMessage[],
-  opts: GatewayOptions = {},
-): Promise<string> {
+export async function chat(messages: ChatMessage[], opts: GatewayOptions = {}): Promise<string> {
   const body: Record<string, unknown> = {
     model: opts.model ?? "google/gemini-2.5-flash",
     messages,
@@ -47,7 +44,8 @@ export async function chat(
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     if (res.status === 429) throw new Error("AI rate limit exceeded. Please try again shortly.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in workspace billing to continue.");
+    if (res.status === 402)
+      throw new Error("AI credits exhausted. Add credits in workspace billing to continue.");
     throw new Error(`AI gateway error ${res.status}: ${text.slice(0, 300)}`);
   }
 

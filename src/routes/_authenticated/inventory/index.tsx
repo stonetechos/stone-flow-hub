@@ -7,7 +7,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
@@ -120,7 +127,10 @@ function InventoryPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -141,7 +151,11 @@ function InventoryPage() {
                 <TableRow key={r.id}>
                   {!isHidden("code") && (
                     <TableCell className="font-mono text-xs">
-                      <Link to="/inventory/$id" params={{ id: r.id }} className="text-primary hover:underline">
+                      <Link
+                        to="/inventory/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
                         {r.stock_code}
                       </Link>
                     </TableCell>
@@ -149,8 +163,12 @@ function InventoryPage() {
                   {!isHidden("product") && <TableCell>{r.product?.name ?? "—"}</TableCell>}
                   {!isHidden("location") && <TableCell>{r.location ?? "—"}</TableCell>}
                   {!isHidden("unit") && <TableCell>{r.unit ?? "—"}</TableCell>}
-                  {!isHidden("onHand") && <TableCell className="text-right tabular-nums">{r.quantity_on_hand}</TableCell>}
-                  {!isHidden("reorder") && <TableCell className="text-right tabular-nums">{r.reorder_level}</TableCell>}
+                  {!isHidden("onHand") && (
+                    <TableCell className="text-right tabular-nums">{r.quantity_on_hand}</TableCell>
+                  )}
+                  {!isHidden("reorder") && (
+                    <TableCell className="text-right tabular-nums">{r.reorder_level}</TableCell>
+                  )}
                   <TableCell>
                     <RowActions
                       onEdit={() => nav({ to: "/inventory/$id/edit", params: { id: r.id } })}

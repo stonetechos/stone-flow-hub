@@ -9,10 +9,19 @@ import { ClipboardCheck, ShieldCheck, ShieldAlert, ShieldQuestion, Loader2 } fro
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  listStageResults, listQcTemplates, seedResultsFromTemplate, updateResult,
+  listStageResults,
+  listQcTemplates,
+  seedResultsFromTemplate,
+  updateResult,
   type QcOutcome,
 } from "@/lib/qc/api";
 import { toUserMessage } from "@/lib/errors";
@@ -38,12 +47,16 @@ export function QcChecklist({ stageId }: { stageId: string }) {
 
   const seed = useMutation({
     mutationFn: () => seedResultsFromTemplate(stageId, templateId),
-    onSuccess: () => { toast.success("Checklist added"); qc.invalidateQueries({ queryKey: ["qc_results", stageId] }); },
+    onSuccess: () => {
+      toast.success("Checklist added");
+      qc.invalidateQueries({ queryKey: ["qc_results", stageId] });
+    },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
   const update = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateResult>[1] }) => updateResult(id, patch),
+    mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateResult>[1] }) =>
+      updateResult(id, patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["qc_results", stageId] }),
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -59,7 +72,9 @@ export function QcChecklist({ stageId }: { stageId: string }) {
           <ClipboardCheck className="h-4 w-4 text-primary" /> Quality Control
           {rows.length > 0 && (
             <span className="ml-2 flex items-center gap-1 text-xs">
-              <Badge variant="default" className="bg-status-success-fg text-status-success-bg">{passed} pass</Badge>
+              <Badge variant="default" className="bg-status-success-fg text-status-success-bg">
+                {passed} pass
+              </Badge>
               {failed > 0 && <Badge variant="destructive">{failed} fail</Badge>}
               <Badge variant="outline">{rows.length} items</Badge>
             </span>
@@ -67,10 +82,14 @@ export function QcChecklist({ stageId }: { stageId: string }) {
         </CardTitle>
         <div className="flex items-center gap-2">
           <Select value={templateId} onValueChange={setTemplateId}>
-            <SelectTrigger className="h-8 w-48 text-xs"><SelectValue placeholder="Add checklist…" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-48 text-xs">
+              <SelectValue placeholder="Add checklist…" />
+            </SelectTrigger>
             <SelectContent>
               {(templates.data ?? []).map((t) => (
-                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -81,18 +100,26 @@ export function QcChecklist({ stageId }: { stageId: string }) {
       </CardHeader>
       <CardContent>
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No QC items yet — pick a template above to seed the checklist.</p>
+          <p className="text-sm text-muted-foreground">
+            No QC items yet — pick a template above to seed the checklist.
+          </p>
         ) : (
           <ul className="space-y-2">
             {rows.map((r) => {
               const Icon =
-                r.outcome === "pass" || r.outcome === "approved" ? ShieldCheck :
-                r.outcome === "fail" || r.outcome === "rejected" ? ShieldAlert :
-                ShieldQuestion;
+                r.outcome === "pass" || r.outcome === "approved"
+                  ? ShieldCheck
+                  : r.outcome === "fail" || r.outcome === "rejected"
+                    ? ShieldAlert
+                    : ShieldQuestion;
               const tone =
-                r.outcome === "pass" || r.outcome === "approved" ? "text-status-success-fg" :
-                r.outcome === "fail" || r.outcome === "rejected" ? "text-destructive" :
-                r.outcome === "rework" ? "text-status-warning-fg" : "text-muted-foreground";
+                r.outcome === "pass" || r.outcome === "approved"
+                  ? "text-status-success-fg"
+                  : r.outcome === "fail" || r.outcome === "rejected"
+                    ? "text-destructive"
+                    : r.outcome === "rework"
+                      ? "text-status-warning-fg"
+                      : "text-muted-foreground";
               return (
                 <li key={r.id} className="rounded-md border p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -102,11 +129,19 @@ export function QcChecklist({ stageId }: { stageId: string }) {
                     </div>
                     <Select
                       value={r.outcome}
-                      onValueChange={(v) => update.mutate({ id: r.id, patch: { outcome: v as QcOutcome } })}
+                      onValueChange={(v) =>
+                        update.mutate({ id: r.id, patch: { outcome: v as QcOutcome } })
+                      }
                     >
-                      <SelectTrigger className="h-7 w-32 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-7 w-32 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {OUTCOMES.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                        {OUTCOMES.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

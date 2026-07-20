@@ -8,9 +8,7 @@ export function median(values: number[]): number | null {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 /** Arbitrary percentile in [0..1]. Returns null when the input is empty. */
@@ -36,8 +34,7 @@ export function coefficientOfVariation(values: number[]): number | null {
   if (values.length < 2) return null;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   if (mean === 0) return null;
-  const variance =
-    values.reduce((a, b) => a + (b - mean) ** 2, 0) / (values.length - 1);
+  const variance = values.reduce((a, b) => a + (b - mean) ** 2, 0) / (values.length - 1);
   return Math.sqrt(variance) / Math.abs(mean);
 }
 

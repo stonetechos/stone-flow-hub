@@ -38,13 +38,9 @@ export function PageHeader({
         <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[26px] truncate">
           {title}
         </h1>
-        {subtitle && (
-          <p className="mt-1 truncate text-sm text-muted-foreground">{subtitle}</p>
-        )}
+        {subtitle && <p className="mt-1 truncate text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>
-      )}
+      {actions && <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
     </div>
   );
 }

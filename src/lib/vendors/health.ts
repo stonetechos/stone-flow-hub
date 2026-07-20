@@ -85,15 +85,20 @@ function classify(
   let tier: HealthTier;
   let label: string;
   if (preferred || score >= 80) {
-    tier = "preferred"; label = "Preferred";
+    tier = "preferred";
+    label = "Preferred";
   } else if (score >= 60) {
-    tier = "good"; label = "Good";
+    tier = "good";
+    label = "Good";
   } else if (score >= 40 || orders === 0) {
-    tier = "average"; label = "Average";
+    tier = "average";
+    label = "Average";
   } else if (delayPct >= 40 || approval < 20) {
-    tier = "risk"; label = "Risk";
+    tier = "risk";
+    label = "Risk";
   } else {
-    tier = "average"; label = "Average";
+    tier = "average";
+    label = "Average";
   }
 
   return { tier, score, label, reasons, perf };

@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 
 export type Grain = "day" | "week" | "month" | "quarter" | "year";
-export interface Range { from: string; to: string }
+export interface Range {
+  from: string;
+  to: string;
+}
 
 export function defaultRange(days = 90): Range {
   const to = new Date();
@@ -30,7 +33,12 @@ function bucket(iso: string, grain: Grain): string {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function group<T>(rows: T[], dateOf: (r: T) => string | null | undefined, valueOf: (r: T) => number, grain: Grain): Array<{ label: string; value: number }> {
+function group<T>(
+  rows: T[],
+  dateOf: (r: T) => string | null | undefined,
+  valueOf: (r: T) => number,
+  grain: Grain,
+): Array<{ label: string; value: number }> {
   const map = new Map<string, number>();
   for (const r of rows) {
     const iso = dateOf(r);
@@ -38,7 +46,9 @@ function group<T>(rows: T[], dateOf: (r: T) => string | null | undefined, valueO
     const key = bucket(iso, grain);
     map.set(key, (map.get(key) ?? 0) + valueOf(r));
   }
-  return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([label, value]) => ({ label, value }));
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([label, value]) => ({ label, value }));
 }
 
 export interface TrendSet {
@@ -50,24 +60,64 @@ export interface TrendSet {
 
 export async function getTrends(range: Range, grain: Grain): Promise<TrendSet> {
   const [inv, pay, po, vp] = await Promise.all([
-    supabase.from("invoices").select("issue_date,total").gte("issue_date", range.from).lte("issue_date", range.to),
-    supabase.from("payments").select("paid_at,amount").gte("paid_at", range.from).lte("paid_at", `${range.to}T23:59:59Z`),
-    supabase.from("purchase_orders").select("order_date,id").gte("order_date", range.from).lte("order_date", range.to),
-    supabase.from("vendor_payments").select("paid_at,amount").gte("paid_at", range.from).lte("paid_at", `${range.to}T23:59:59Z`),
+    supabase
+      .from("invoices")
+      .select("issue_date,total")
+      .gte("issue_date", range.from)
+      .lte("issue_date", range.to),
+    supabase
+      .from("payments")
+      .select("paid_at,amount")
+      .gte("paid_at", range.from)
+      .lte("paid_at", `${range.to}T23:59:59Z`),
+    supabase
+      .from("purchase_orders")
+      .select("order_date,id")
+      .gte("order_date", range.from)
+      .lte("order_date", range.to),
+    supabase
+      .from("vendor_payments")
+      .select("paid_at,amount")
+      .gte("paid_at", range.from)
+      .lte("paid_at", `${range.to}T23:59:59Z`),
   ]);
   for (const r of [inv, pay, po, vp]) if (r.error) throw new AppError(mapDbError(r.error));
   return {
-    sales: group(inv.data ?? [], (r) => r.issue_date, (r) => Number(r.total ?? 0), grain),
-    collections: group(pay.data ?? [], (r) => r.paid_at, (r) => Number(r.amount ?? 0), grain),
-    procurement: group(po.data ?? [], (r) => r.order_date, () => 1, grain),
-    purchases: group(vp.data ?? [], (r) => r.paid_at, (r) => Number(r.amount ?? 0), grain),
+    sales: group(
+      inv.data ?? [],
+      (r) => r.issue_date,
+      (r) => Number(r.total ?? 0),
+      grain,
+    ),
+    collections: group(
+      pay.data ?? [],
+      (r) => r.paid_at,
+      (r) => Number(r.amount ?? 0),
+      grain,
+    ),
+    procurement: group(
+      po.data ?? [],
+      (r) => r.order_date,
+      () => 1,
+      grain,
+    ),
+    purchases: group(
+      vp.data ?? [],
+      (r) => r.paid_at,
+      (r) => Number(r.amount ?? 0),
+      grain,
+    ),
   };
 }
 
-export interface AgingBucket { bucket: string; amount: number; count: number }
+export interface AgingBucket {
+  bucket: string;
+  amount: number;
+  count: number;
+}
 export const AGING_BUCKETS = ["Current", "1–30", "31–60", "61–90", "90+"] as const;
 
-function bucketize(daysOverdue: number): typeof AGING_BUCKETS[number] {
+function bucketize(daysOverdue: number): (typeof AGING_BUCKETS)[number] {
   if (daysOverdue <= 0) return "Current";
   if (daysOverdue <= 30) return "1–30";
   if (daysOverdue <= 60) return "31–60";
@@ -76,8 +126,11 @@ function bucketize(daysOverdue: number): typeof AGING_BUCKETS[number] {
 }
 
 export async function getCustomerAging(): Promise<AgingBucket[]> {
-  const { data, error } = await supabase.from("invoices").select("balance_due,due_date,issue_date")
-    .gt("balance_due", 0).not("status", "in", '("cancelled","draft")');
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("balance_due,due_date,issue_date")
+    .gt("balance_due", 0)
+    .not("status", "in", '("cancelled","draft")');
   if (error) throw new AppError(mapDbError(error));
   const today = Date.now();
   const map = new Map<string, { amount: number; count: number }>();
@@ -90,7 +143,10 @@ export async function getCustomerAging(): Promise<AgingBucket[]> {
     s.amount += Number(r.balance_due ?? 0);
     s.count += 1;
   }
-  return AGING_BUCKETS.map((b) => ({ bucket: b, ...(map.get(b) as { amount: number; count: number }) }));
+  return AGING_BUCKETS.map((b) => ({
+    bucket: b,
+    ...(map.get(b) as { amount: number; count: number }),
+  }));
 }
 
 export async function getVendorAging(): Promise<AgingBucket[]> {
@@ -102,16 +158,24 @@ export async function getVendorAging(): Promise<AgingBucket[]> {
   for (const r of data ?? []) {
     const bal = Number(r.debit ?? 0) - Number(r.credit ?? 0);
     if (bal <= 0) continue;
-    const days = r.entry_date ? Math.floor((today - new Date(r.entry_date).getTime()) / 86_400_000) : 0;
+    const days = r.entry_date
+      ? Math.floor((today - new Date(r.entry_date).getTime()) / 86_400_000)
+      : 0;
     const b = bucketize(days);
     const s = perVendor.get(b)!;
     s.amount += bal;
     s.count += 1;
   }
-  return AGING_BUCKETS.map((b) => ({ bucket: b, ...(perVendor.get(b) as { amount: number; count: number }) }));
+  return AGING_BUCKETS.map((b) => ({
+    bucket: b,
+    ...(perVendor.get(b) as { amount: number; count: number }),
+  }));
 }
 
-export interface RevenueSlice { label: string; value: number }
+export interface RevenueSlice {
+  label: string;
+  value: number;
+}
 
 export async function getRevenueByProductFamily(range: Range): Promise<RevenueSlice[]> {
   const { data, error } = await supabase
@@ -121,23 +185,33 @@ export async function getRevenueByProductFamily(range: Range): Promise<RevenueSl
     .lte("invoices.issue_date", range.to);
   if (error) throw new AppError(mapDbError(error));
   const map = new Map<string, number>();
-  for (const r of (data ?? []) as unknown as Array<{ total: number; products?: { product_families?: { name?: string } | null } | null }>) {
+  for (const r of (data ?? []) as unknown as Array<{
+    total: number;
+    products?: { product_families?: { name?: string } | null } | null;
+  }>) {
     const fam = r.products?.product_families?.name ?? "Unassigned";
     map.set(fam, (map.get(fam) ?? 0) + Number(r.total ?? 0));
   }
-  return Array.from(map.entries()).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value).slice(0, 12);
+  return Array.from(map.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 12);
 }
 
 export async function getRevenueByCustomer(range: Range): Promise<RevenueSlice[]> {
   const { data, error } = await supabase
     .from("invoices")
     .select("total,customer_id,customers(name)")
-    .gte("issue_date", range.from).lte("issue_date", range.to);
+    .gte("issue_date", range.from)
+    .lte("issue_date", range.to);
   if (error) throw new AppError(mapDbError(error));
   const map = new Map<string, number>();
   for (const r of (data ?? []) as Array<{ total: number; customers?: { name?: string } | null }>) {
     const key = r.customers?.name ?? "Unknown";
     map.set(key, (map.get(key) ?? 0) + Number(r.total ?? 0));
   }
-  return Array.from(map.entries()).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value).slice(0, 15);
+  return Array.from(map.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 15);
 }

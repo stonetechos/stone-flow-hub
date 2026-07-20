@@ -98,7 +98,9 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
   }));
-  const { error: itemErr } = await getDb().from("quote_items").insert(rows as never);
+  const { error: itemErr } = await getDb()
+    .from("quote_items")
+    .insert(rows as never);
   if (itemErr) throw new AppError(mapDbError(itemErr));
 
   // Reload to reflect totals
@@ -155,9 +157,7 @@ export async function deleteQuote(id: string): Promise<void> {
 /** 1-click conversion: create a Sales Order (with a full snapshot of line items and
  *  financial totals) from an existing Quote. Idempotent — the server-side RPC
  *  returns the existing SO if one already exists for this quote. */
-export async function convertQuoteToSalesOrder(
-  quoteId: string,
-): Promise<DbTable<"sales_orders">> {
+export async function convertQuoteToSalesOrder(quoteId: string): Promise<DbTable<"sales_orders">> {
   const { data, error } = await getDb().rpc("convert_quote_to_sales_order", {
     p_quote_id: quoteId,
   });
@@ -252,7 +252,10 @@ export async function addQuoteItem(
   return data;
 }
 
-export async function updateQuoteItem(itemId: string, patch: QuoteItemPatch): Promise<QuoteItemRow> {
+export async function updateQuoteItem(
+  itemId: string,
+  patch: QuoteItemPatch,
+): Promise<QuoteItemRow> {
   const { data, error } = await getDb()
     .from("quote_items")
     .update(patch as never)
@@ -272,12 +275,18 @@ export async function reorderQuoteItems(orderedIds: string[]): Promise<void> {
   // Two-phase reorder to avoid unique-index conflicts if one exists.
   await Promise.all(
     orderedIds.map((id, idx) =>
-      getDb().from("quote_items").update({ sort_order: idx + 1000 } as never).eq("id", id),
+      getDb()
+        .from("quote_items")
+        .update({ sort_order: idx + 1000 } as never)
+        .eq("id", id),
     ),
   );
   await Promise.all(
     orderedIds.map((id, idx) =>
-      getDb().from("quote_items").update({ sort_order: idx } as never).eq("id", id),
+      getDb()
+        .from("quote_items")
+        .update({ sort_order: idx } as never)
+        .eq("id", id),
     ),
   );
 }
@@ -304,7 +313,9 @@ export async function reviseQuote(quoteId: string): Promise<QuoteRow> {
     enquiry_id: srcAny.enquiry_id ?? null,
     category: (srcAny.category as never) ?? null,
     valid_until: src.valid_until ?? null,
-    notes: src.notes ? `Revision of ${src.quote_no}\n\n${src.notes}` : `Revision of ${src.quote_no}`,
+    notes: src.notes
+      ? `Revision of ${src.quote_no}\n\n${src.notes}`
+      : `Revision of ${src.quote_no}`,
     terms: src.terms ?? null,
     items: items.map((it) => {
       const anyIt = it as unknown as { fulfilment?: string | null };

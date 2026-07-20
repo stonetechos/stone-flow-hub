@@ -12,7 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
@@ -96,7 +103,10 @@ function VendorsPage() {
 
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
-  const openCreate = () => { setEditing(null); setFormOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
 
   return (
     <div>
@@ -140,7 +150,10 @@ function VendorsPage() {
               pageSize={pageSize}
               total={rows.length}
               onPageChange={setPage}
-              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              onPageSizeChange={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
             />
           }
         >
@@ -164,14 +177,22 @@ function VendorsPage() {
                   <TableRow key={v.id}>
                     {!isHidden("code") && (
                       <TableCell className="font-mono text-xs">
-                        <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                        <Link
+                          to="/vendors/$vendorId"
+                          params={{ vendorId: v.id }}
+                          className="hover:underline"
+                        >
                           {v.vendor_code}
                         </Link>
                       </TableCell>
                     )}
                     {!isHidden("company") && (
                       <TableCell className="font-medium">
-                        <Link to="/vendors/$vendorId" params={{ vendorId: v.id }} className="hover:underline">
+                        <Link
+                          to="/vendors/$vendorId"
+                          params={{ vendorId: v.id }}
+                          className="hover:underline"
+                        >
                           {v.company_name}
                         </Link>
                       </TableCell>
@@ -179,7 +200,11 @@ function VendorsPage() {
                     {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}
                     {!isHidden("gst") && <TableCell>{v.gst_number ?? "—"}</TableCell>}
                     {!isHidden("terms") && <TableCell>{v.payment_terms ?? "—"}</TableCell>}
-                    {!isHidden("status") && <TableCell><LifecycleBadge status={status} /></TableCell>}
+                    {!isHidden("status") && (
+                      <TableCell>
+                        <LifecycleBadge status={status} />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <RowActions
                         extra={
@@ -190,10 +215,17 @@ function VendorsPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <LifecycleMenuItems entityType="vendor" entityId={v.id} currentStatus={status} />
+                            <LifecycleMenuItems
+                              entityType="vendor"
+                              entityId={v.id}
+                              currentStatus={status}
+                            />
                           </>
                         }
-                        onEdit={() => { setEditing(v); setFormOpen(true); }}
+                        onEdit={() => {
+                          setEditing(v);
+                          setFormOpen(true);
+                        }}
                         onDelete={() => setToDelete(v)}
                       />
                     </TableCell>

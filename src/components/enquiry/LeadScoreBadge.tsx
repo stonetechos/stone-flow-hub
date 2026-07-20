@@ -23,7 +23,10 @@ export function LeadScoreBadge({ score, compact }: Props) {
           {score.reasons.map((r, i) => (
             <div key={i} className="flex justify-between gap-3">
               <span>{r.label}</span>
-              <span className={r.delta >= 0 ? "text-status-success-fg" : "text-status-danger-fg"}>{r.delta > 0 ? "+" : ""}{r.delta}</span>
+              <span className={r.delta >= 0 ? "text-status-success-fg" : "text-status-danger-fg"}>
+                {r.delta > 0 ? "+" : ""}
+                {r.delta}
+              </span>
             </div>
           ))}
         </div>

@@ -102,7 +102,8 @@ export const CustomerHygieneProvider: InsightProvider = {
     for (const invoice of invoices) {
       if (invoice.status !== "draft" || !invoice.customer) continue;
       const customer = customersById.get(invoice.customer.id);
-      if (!customer || !GSTIN_REQUIRED_TYPES.has(customer.customer_type) || customer.gst_number) continue;
+      if (!customer || !GSTIN_REQUIRED_TYPES.has(customer.customer_type) || customer.gst_number)
+        continue;
 
       const ageDays = daysSince(invoice.created_at, nowMs);
       insights.push({

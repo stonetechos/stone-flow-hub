@@ -46,7 +46,10 @@ async function countActiveAdminsExcluding(
   supabaseAdmin: {
     from: (t: string) => {
       select: (c: string) => {
-        eq: (col: string, val: string) => Promise<{ data: { user_id: string }[] | null; error: { message: string } | null }>;
+        eq: (
+          col: string,
+          val: string,
+        ) => Promise<{ data: { user_id: string }[] | null; error: { message: string } | null }>;
       };
     };
   },
@@ -57,15 +60,19 @@ async function countActiveAdminsExcluding(
     .select("user_id")
     .eq("role", "admin");
   if (error) throw new Error(error.message);
-  const ids = (admins ?? [])
-    .map((r) => r.user_id)
-    .filter((id) => id !== excludeUserId);
+  const ids = (admins ?? []).map((r) => r.user_id).filter((id) => id !== excludeUserId);
   if (ids.length === 0) return 0;
   const { data: profiles, error: pErr } = await (
     supabaseAdmin as unknown as {
       from: (t: string) => {
         select: (c: string) => {
-          in: (col: string, vals: string[]) => Promise<{ data: { id: string; is_active: boolean }[] | null; error: { message: string } | null }>;
+          in: (
+            col: string,
+            vals: string[],
+          ) => Promise<{
+            data: { id: string; is_active: boolean }[] | null;
+            error: { message: string } | null;
+          }>;
         };
       };
     }
@@ -110,7 +117,7 @@ export const listAuthUsers = createServerFn({ method: "GET" })
     const all: AdminUserRow[] = [];
     let page = 1;
     const perPage = 200;
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
       if (error) throw new Error(error.message);
@@ -177,10 +184,7 @@ export const inviteUser = createServerFn({ method: "POST" })
 
 const createWithPasswordInput = z.object({
   email: z.string().email("Enter a valid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
   full_name: z.string().trim().max(200).optional().nullable(),
 });
 
@@ -259,10 +263,7 @@ export const deleteAuthUser = createServerFn({ method: "POST" })
       .maybeSingle();
     if (rErr) throw new Error(rErr.message);
     if (targetIsAdmin) {
-      const remaining = await countActiveAdminsExcluding(
-        supabaseAdmin as never,
-        data.user_id,
-      );
+      const remaining = await countActiveAdminsExcluding(supabaseAdmin as never, data.user_id);
       if (remaining < 1) {
         throw new Error("Cannot delete the last active admin.");
       }
@@ -297,10 +298,7 @@ export const setUserActive = createServerFn({ method: "POST" })
         .eq("role", "admin")
         .maybeSingle();
       if (targetIsAdmin) {
-        const remaining = await countActiveAdminsExcluding(
-          supabaseAdmin as never,
-          data.user_id,
-        );
+        const remaining = await countActiveAdminsExcluding(supabaseAdmin as never, data.user_id);
         if (remaining < 1) {
           throw new Error("Cannot deactivate the last active admin.");
         }

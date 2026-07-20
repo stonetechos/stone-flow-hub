@@ -26,13 +26,7 @@ export type { TimelineEvent };
 export type TimelineKind = TimelineEventKind;
 
 export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent[]> {
-  const [
-    activityRes,
-    requestsRes,
-    quotesRes,
-    posRes,
-    ledgerRes,
-  ] = await Promise.all([
+  const [activityRes, requestsRes, quotesRes, posRes, ledgerRes] = await Promise.all([
     getDb()
       .from("activity_log")
       .select("id,action,summary,field_name,created_at")
@@ -42,7 +36,9 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       .limit(200),
     getDb()
       .from("vendor_requests")
-      .select("id,rfq_id,response_status,sent_at,created_at,rfq:rfqs!vendor_requests_rfq_id_fkey(rfq_no)")
+      .select(
+        "id,rfq_id,response_status,sent_at,created_at,rfq:rfqs!vendor_requests_rfq_id_fkey(rfq_no)",
+      )
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false })
       .limit(200),
@@ -69,9 +65,9 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
 
   if (activityRes.error) throw new AppError(mapDbError(activityRes.error));
   if (requestsRes.error) throw new AppError(mapDbError(requestsRes.error));
-  if (quotesRes.error)   throw new AppError(mapDbError(quotesRes.error));
-  if (posRes.error)      throw new AppError(mapDbError(posRes.error));
-  if (ledgerRes.error)   throw new AppError(mapDbError(ledgerRes.error));
+  if (quotesRes.error) throw new AppError(mapDbError(quotesRes.error));
+  if (posRes.error) throw new AppError(mapDbError(posRes.error));
+  if (ledgerRes.error) throw new AppError(mapDbError(ledgerRes.error));
 
   const out: TimelineEvent[] = [];
 
@@ -125,7 +121,9 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       kind: "vendor_quote",
       title: q.quote_no
         ? `Quote submitted · ${q.quote_no}`
-        : rfqNo ? `Quote for ${rfqNo}` : "Vendor quote submitted",
+        : rfqNo
+          ? `Quote for ${rfqNo}`
+          : "Vendor quote submitted",
       detail: q.remarks ?? null,
       refNo: q.quote_no ?? rfqNo,
       status: q.is_approved ? "approved" : "submitted",
@@ -145,7 +143,7 @@ export async function getVendorTimeline(vendorId: string): Promise<TimelineEvent
       at: p.created_at ?? p.order_date,
       kind: "purchase_order",
       title: `Purchase Order · ${p.po_no}`,
-      detail: p.expected_date ? `Expected ${p.expected_date}` : p.notes ?? null,
+      detail: p.expected_date ? `Expected ${p.expected_date}` : (p.notes ?? null),
       refNo: p.po_no,
       status: p.status,
       route: "/purchase-orders",

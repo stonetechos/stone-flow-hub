@@ -60,16 +60,29 @@ async function loadUpcomingNotices(): Promise<Notice[]> {
   const nowIso = new Date(now).toISOString();
 
   const [visits, installs] = await Promise.all([
-    supabase.from("site_visits").select("id,project_id,scheduled_at,status").gte("scheduled_at", nowIso).lte("scheduled_at", in7).limit(50),
-    supabase.from("installations").select("id,installation_no,planned_start_date,status").gte("planned_start_date", nowIso).lte("planned_start_date", in7).limit(50),
+    supabase
+      .from("site_visits")
+      .select("id,project_id,scheduled_at,status")
+      .gte("scheduled_at", nowIso)
+      .lte("scheduled_at", in7)
+      .limit(50),
+    supabase
+      .from("installations")
+      .select("id,installation_no,planned_start_date,status")
+      .gte("planned_start_date", nowIso)
+      .lte("planned_start_date", in7)
+      .limit(50),
   ]);
   const notices: Notice[] = [];
   for (const v of (visits.data ?? []) as UpcomingRow[]) {
     if (v.status === "completed" || v.status === "cancelled") continue;
     if (!v.scheduled_at) continue;
     notices.push({
-      key: `sv-${v.id}`, category: "upcoming site visit", severity: "info",
-      title: "Upcoming site visit", detail: `Scheduled ${new Date(v.scheduled_at).toLocaleString()}`,
+      key: `sv-${v.id}`,
+      category: "upcoming site visit",
+      severity: "info",
+      title: "Upcoming site visit",
+      detail: `Scheduled ${new Date(v.scheduled_at).toLocaleString()}`,
       href: v.project_id ? `/projects/${v.project_id}` : "/enquiries",
       when: v.scheduled_at,
     });
@@ -77,7 +90,9 @@ async function loadUpcomingNotices(): Promise<Notice[]> {
   for (const i of (installs.data ?? []) as UpcomingInstallRow[]) {
     if (i.status === "completed" || i.status === "cancelled") continue;
     notices.push({
-      key: `ins-${i.id}`, category: "upcoming installation", severity: "info",
+      key: `ins-${i.id}`,
+      category: "upcoming installation",
+      severity: "info",
       title: `Upcoming installation ${i.installation_no ?? ""}`.trim(),
       detail: `Starts ${new Date(i.planned_start_date!).toLocaleDateString()}`,
       href: `/installations/${i.id}`,
@@ -93,11 +108,27 @@ export const Route = createFileRoute("/_authenticated/dashboards/smart-notificat
 });
 
 function SmartNotifications() {
-  const q = useQuery({ queryKey: ["intel", "smart-notifications", "upcoming"], queryFn: loadUpcomingNotices, staleTime: 60_000 });
+  const q = useQuery({
+    queryKey: ["intel", "smart-notifications", "upcoming"],
+    queryFn: loadUpcomingNotices,
+    staleTime: 60_000,
+  });
   const { processedInsights, loading: insightsLoading } = useExecutiveInsights();
 
-  if (q.isLoading || insightsLoading) return <><PageHeader title="Smart Notifications" /><LoadingBlock /></>;
-  if (q.error) return <><PageHeader title="Smart Notifications" /><ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} /></>;
+  if (q.isLoading || insightsLoading)
+    return (
+      <>
+        <PageHeader title="Smart Notifications" />
+        <LoadingBlock />
+      </>
+    );
+  if (q.error)
+    return (
+      <>
+        <PageHeader title="Smart Notifications" />
+        <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />
+      </>
+    );
 
   const riskNotices: Notice[] = processedInsights
     .filter((i) => {
@@ -123,24 +154,43 @@ function SmartNotifications() {
 
   return (
     <div>
-      <PageHeader title="Smart Notifications" subtitle="System-generated alerts. Nothing executes automatically — every action requires user confirmation." />
+      <PageHeader
+        title="Smart Notifications"
+        subtitle="System-generated alerts. Nothing executes automatically — every action requires user confirmation."
+      />
       <div className="grid gap-3 lg:grid-cols-2">
         {Array.from(groups.entries()).map(([cat, list]) => (
           <Card key={cat}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 capitalize"><Bell className="h-4 w-4" /> {cat} <span className="text-xs text-muted-foreground">({list.length})</span></CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2 capitalize">
+                <Bell className="h-4 w-4" /> {cat}{" "}
+                <span className="text-xs text-muted-foreground">({list.length})</span>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               {list.slice(0, 15).map((n) => (
-                <Link key={n.key} to={n.href} className="flex items-start justify-between gap-2 rounded-md p-2 text-xs hover:bg-muted/60">
+                <Link
+                  key={n.key}
+                  to={n.href}
+                  className="flex items-start justify-between gap-2 rounded-md p-2 text-xs hover:bg-muted/60"
+                >
                   <div>
                     <div className="font-medium">{n.title}</div>
                     <div className="text-muted-foreground">{n.detail}</div>
                   </div>
-                  <Badge variant="outline" className={cn("text-[10px] uppercase",
-                    n.severity === "danger" ? "border-status-danger-border text-status-danger-fg" :
-                    n.severity === "warn" ? "border-status-warning-border text-status-warning-fg" : "border-status-info-border text-status-info-fg"
-                  )}>{n.severity}</Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] uppercase",
+                      n.severity === "danger"
+                        ? "border-status-danger-border text-status-danger-fg"
+                        : n.severity === "warn"
+                          ? "border-status-warning-border text-status-warning-fg"
+                          : "border-status-info-border text-status-info-fg",
+                    )}
+                  >
+                    {n.severity}
+                  </Badge>
                 </Link>
               ))}
             </CardContent>

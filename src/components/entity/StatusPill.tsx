@@ -48,16 +48,11 @@ const TONE_MAP: Record<string, Tone> = {
 };
 
 const TONE_CLASS: Record<Tone, string> = {
-  neutral:
-    "border-border-subtle bg-surface-panel text-muted-foreground",
-  info:
-    "border-status-info-border bg-status-info-bg text-status-info-fg",
-  warning:
-    "border-status-warning-border bg-status-warning-bg text-status-warning-fg",
-  success:
-    "border-status-success-border bg-status-success-bg text-status-success-fg",
-  danger:
-    "border-status-danger-border bg-status-danger-bg text-status-danger-fg",
+  neutral: "border-border-subtle bg-surface-panel text-muted-foreground",
+  info: "border-status-info-border bg-status-info-bg text-status-info-fg",
+  warning: "border-status-warning-border bg-status-warning-bg text-status-warning-fg",
+  success: "border-status-success-border bg-status-success-bg text-status-success-fg",
+  danger: "border-status-danger-border bg-status-danger-bg text-status-danger-fg",
 };
 
 export function StatusPill({

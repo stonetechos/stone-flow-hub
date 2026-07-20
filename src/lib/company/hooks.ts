@@ -3,11 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import {
-  getActiveCompanyProfile,
-  updateCompanyProfile,
-  type CompanyProfileInput,
-} from "./api";
+import { getActiveCompanyProfile, updateCompanyProfile, type CompanyProfileInput } from "./api";
 
 export function useCompanyProfile() {
   return useQuery({

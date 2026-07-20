@@ -26,11 +26,7 @@
 import { coefficientOfVariation, daysBetween, slope } from "./baselines";
 import { score, shouldEmit } from "./score";
 import { THRESHOLDS } from "./thresholds";
-import type {
-  Prediction,
-  PredictRecordRef,
-  PredictSignal,
-} from "./types";
+import type { Prediction, PredictRecordRef, PredictSignal } from "./types";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -58,17 +54,13 @@ export interface QuoteConversionInput {
   lastActivityAt: string | null;
 }
 
-export function predictQuoteConversion(
-  input: QuoteConversionInput,
-): Prediction | null {
+export function predictQuoteConversion(input: QuoteConversionInput): Prediction | null {
   const q = input.quote;
   // Only meaningful for live quotes.
   if (!["draft", "sent"].includes(q.status)) return null;
 
   const signals: PredictSignal[] = [];
-  const records: PredictRecordRef[] = [
-    { type: "quote", id: q.id, note: q.quote_no ?? undefined },
-  ];
+  const records: PredictRecordRef[] = [{ type: "quote", id: q.id, note: q.quote_no ?? undefined }];
 
   const ageDays = q.issue_date ? daysBetween(q.issue_date) : null;
   if (q.status === "sent" && ageDays !== null) {
@@ -83,12 +75,24 @@ export function predictQuoteConversion(
 
   // Customer conversion rate.
   const hist = input.customerQuoteHistory;
-  const closed = hist.filter((h) => ["accepted", "converted", "rejected", "expired"].includes(h.status));
+  const closed = hist.filter((h) =>
+    ["accepted", "converted", "rejected", "expired"].includes(h.status),
+  );
   const wins = hist.filter((h) => ["accepted", "converted"].includes(h.status)).length;
   const rate = closed.length ? wins / closed.length : null;
   if (rate !== null && closed.length >= 2) {
-    if (rate >= 0.5) signals.push({ label: "Strong customer win-rate", value: `${Math.round(rate * 100)}%`, weight: 0.3 });
-    else if (rate >= 0.25) signals.push({ label: "Moderate customer win-rate", value: `${Math.round(rate * 100)}%`, weight: 0.15 });
+    if (rate >= 0.5)
+      signals.push({
+        label: "Strong customer win-rate",
+        value: `${Math.round(rate * 100)}%`,
+        weight: 0.3,
+      });
+    else if (rate >= 0.25)
+      signals.push({
+        label: "Moderate customer win-rate",
+        value: `${Math.round(rate * 100)}%`,
+        weight: 0.15,
+      });
   }
 
   // Late-funnel enquiry stages count as strong signal.
@@ -100,7 +104,11 @@ export function predictQuoteConversion(
     "customer_quotation_sent",
   ]);
   if (input.enquiryStage && lateStages.has(input.enquiryStage)) {
-    signals.push({ label: `Enquiry in ${input.enquiryStage}`, value: input.enquiryStage, weight: 0.2 });
+    signals.push({
+      label: `Enquiry in ${input.enquiryStage}`,
+      value: input.enquiryStage,
+      weight: 0.2,
+    });
   }
 
   if (input.hasScheduledFollowup) {
@@ -109,14 +117,18 @@ export function predictQuoteConversion(
 
   // Expiring soon adds urgency (raises severity, not likelihood).
   const expiringSoon =
-    q.valid_until && daysBetween(new Date(), q.valid_until) <= 3 && daysBetween(new Date(), q.valid_until) >= 0;
+    q.valid_until &&
+    daysBetween(new Date(), q.valid_until) <= 3 &&
+    daysBetween(new Date(), q.valid_until) >= 0;
 
   if (!shouldEmit(signals)) return null;
 
   const s = score({
     signals,
     sampleSize: closed.length,
-    recencyDays: input.lastActivityAt ? Math.max(0, daysBetween(input.lastActivityAt)) : ageDays ?? 30,
+    recencyDays: input.lastActivityAt
+      ? Math.max(0, daysBetween(input.lastActivityAt))
+      : (ageDays ?? 30),
     expectedSignals: 4,
     thresholds: THRESHOLDS.confidence,
   });
@@ -267,9 +279,7 @@ export interface CustomerOrderCadenceInput {
   orders: Array<{ id: string; order_date: string; status: string }>;
 }
 
-export function predictRepeatOrderThisMonth(
-  input: CustomerOrderCadenceInput,
-): Prediction | null {
+export function predictRepeatOrderThisMonth(input: CustomerOrderCadenceInput): Prediction | null {
   const orders = [...input.orders]
     .filter((o) => o.status !== "cancelled" && o.order_date)
     .sort((a, b) => a.order_date.localeCompare(b.order_date));
@@ -298,8 +308,10 @@ export function predictRepeatOrderThisMonth(
       weight: 0.25,
     });
   }
-  if (cv < 0.4) signals.push({ label: "Stable cadence", value: `CV ${cv.toFixed(2)}`, weight: 0.3 });
-  else if (cv < 0.7) signals.push({ label: "Fairly stable cadence", value: `CV ${cv.toFixed(2)}`, weight: 0.15 });
+  if (cv < 0.4)
+    signals.push({ label: "Stable cadence", value: `CV ${cv.toFixed(2)}`, weight: 0.3 });
+  else if (cv < 0.7)
+    signals.push({ label: "Fairly stable cadence", value: `CV ${cv.toFixed(2)}`, weight: 0.15 });
 
   const dueRatio = avg > 0 ? daysSinceLast / avg : 0;
   if (dueRatio >= 0.85 && dueRatio <= 1.5) {
@@ -350,9 +362,7 @@ export function predictRepeatOrderThisMonth(
 
 /* ───────────────────────── Customer stop buying ───────────────────────── */
 
-export function predictStopBuying(
-  input: CustomerOrderCadenceInput,
-): Prediction | null {
+export function predictStopBuying(input: CustomerOrderCadenceInput): Prediction | null {
   const orders = [...input.orders]
     .filter((o) => o.status !== "cancelled" && o.order_date)
     .sort((a, b) => a.order_date.localeCompare(b.order_date));
@@ -394,7 +404,8 @@ export function predictStopBuying(
   // Fewer orders in the recent half vs earlier half.
   if (orders.length >= 4) {
     const mid = Math.floor(orders.length / 2);
-    const firstHalfSpan = daysBetween(orders[0].order_date, orders[mid - 1]?.order_date ?? orders[0].order_date) || 1;
+    const firstHalfSpan =
+      daysBetween(orders[0].order_date, orders[mid - 1]?.order_date ?? orders[0].order_date) || 1;
     const secondHalfSpan = daysBetween(orders[mid].order_date, last.order_date) || 1;
     const firstRate = mid / firstHalfSpan;
     const secondRate = (orders.length - mid) / secondHalfSpan;
@@ -417,8 +428,7 @@ export function predictStopBuying(
     thresholds: THRESHOLDS.confidence,
   });
 
-  const severity: Prediction["severity"] =
-    daysSinceLast > avg * 3 ? "danger" : "warning";
+  const severity: Prediction["severity"] = daysSinceLast > avg * 3 ? "danger" : "warning";
   return {
     id: `sales.stop-buying:${input.customer.id}`,
     module: "sales",

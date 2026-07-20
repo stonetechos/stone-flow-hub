@@ -147,9 +147,7 @@ function RfqInbox() {
                     >
                       {it.projectName ?? "Untitled project"}
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {it.rfq.rfq_no}
-                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">{it.rfq.rfq_no}</span>
                     {it.overdue && (
                       <Badge variant="destructive" className="text-[10px]">
                         Overdue

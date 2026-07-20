@@ -107,7 +107,10 @@ export function computeNextBestActions(input: ActionInputs): NextBestAction[] {
 
   if (input.invoiceDaysOverdue > 0) {
     push({
-      key: input.hasSalesOrder && input.hasInvoice && !input.hasFullPayment ? "collect_final_payment" : "collect_advance",
+      key:
+        input.hasSalesOrder && input.hasInvoice && !input.hasFullPayment
+          ? "collect_final_payment"
+          : "collect_advance",
       label: "Collect overdue payment",
       reason: `Invoice is ${input.invoiceDaysOverdue} day(s) past due.`,
       priority: input.invoiceDaysOverdue > 7 ? "urgent" : "high",
@@ -296,7 +299,11 @@ export function computeNextBestActions(input: ActionInputs): NextBestAction[] {
       break;
   }
 
-  if (input.daysSinceLastFollowup != null && input.daysSinceLastFollowup > 14 && !out.some((a) => a.key === "follow_up")) {
+  if (
+    input.daysSinceLastFollowup != null &&
+    input.daysSinceLastFollowup > 14 &&
+    !out.some((a) => a.key === "follow_up")
+  ) {
     push({
       key: "follow_up",
       label: "Log a follow-up",
@@ -308,7 +315,10 @@ export function computeNextBestActions(input: ActionInputs): NextBestAction[] {
     });
   }
 
-  out.sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || b.daysOverdue - a.daysOverdue);
+  out.sort(
+    (a, b) =>
+      PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || b.daysOverdue - a.daysOverdue,
+  );
   return out;
 }
 

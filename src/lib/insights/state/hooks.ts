@@ -103,10 +103,11 @@ export function useInsightLifecycle(insights: ProcessedInsight[]): UseInsightLif
     () =>
       insights.map((i) => {
         const row = stateMap.get(stateKey(i.source, i.id));
-        const expiredByOwnClock = !row && i.expiresAt && new Date(i.expiresAt).getTime() <= Date.now();
+        const expiredByOwnClock =
+          !row && i.expiresAt && new Date(i.expiresAt).getTime() <= Date.now();
         return {
           ...i,
-          lifecycleStatus: expiredByOwnClock ? "expired" : row?.status ?? "new",
+          lifecycleStatus: expiredByOwnClock ? "expired" : (row?.status ?? "new"),
           snoozedUntil: row?.snoozed_until ?? null,
         };
       }),
@@ -119,8 +120,12 @@ export function useInsightLifecycle(insights: ProcessedInsight[]): UseInsightLif
   );
 
   const mutation = useMutation({
-    mutationFn: (vars: { source: string; id: string; status: InsightLifecycleStatus; snoozedUntil?: string }) =>
-      setInsightState(vars.source, vars.id, vars.status, vars.snoozedUntil),
+    mutationFn: (vars: {
+      source: string;
+      id: string;
+      status: InsightLifecycleStatus;
+      snoozedUntil?: string;
+    }) => setInsightState(vars.source, vars.id, vars.status, vars.snoozedUntil),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.insightStates.all }),
   });
 

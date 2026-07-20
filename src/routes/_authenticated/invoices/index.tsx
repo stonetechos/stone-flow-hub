@@ -133,9 +133,7 @@ function InvoicesPage() {
             </SelectContent>
           </Select>
         }
-        columns={
-          <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
-        }
+        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite && (
@@ -236,7 +234,6 @@ function InvoicesPage() {
           </Table>
         </DataTableShell>
       )}
-
 
       <SafeDeleteDialog
         open={!!toDelete}

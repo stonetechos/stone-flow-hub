@@ -16,25 +16,21 @@ import { cn } from "@/lib/utils";
  *                  themselves — use here only for standalone cards)
  *  - `interactive` hairline + hover lift (border strengthens on hover)
  */
-const cardVariants = cva(
-  "rounded-lg text-card-foreground",
-  {
-    variants: {
-      variant: {
-        default: "border border-border bg-card",
-        subtle: "bg-surface-panel",
-        elevated: "border border-border-subtle bg-card shadow-e2",
-        interactive:
-          "border border-border bg-card cursor-pointer transition-[border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-border-strong hover:shadow-e2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      },
+const cardVariants = cva("rounded-lg text-card-foreground", {
+  variants: {
+    variant: {
+      default: "border border-border bg-card",
+      subtle: "bg-surface-panel",
+      elevated: "border border-border-subtle bg-card shadow-e2",
+      interactive:
+        "border border-border bg-card cursor-pointer transition-[border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-border-strong hover:shadow-e2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     },
-    defaultVariants: { variant: "default" },
   },
-);
+  defaultVariants: { variant: "default" },
+});
 
 export interface CardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, ...props }, ref) => (
@@ -45,11 +41,7 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("flex flex-col space-y-1 px-5 pt-4 pb-3", className)}
-      {...props}
-    />
+    <div ref={ref} className={cn("flex flex-col space-y-1 px-5 pt-4 pb-3", className)} {...props} />
   ),
 );
 CardHeader.displayName = "CardHeader";
@@ -86,22 +78,11 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        "flex items-center border-t border-border-subtle px-5 py-3",
-        className,
-      )}
+      className={cn("flex items-center border-t border-border-subtle px-5 py-3", className)}
       {...props}
     />
   ),
 );
 CardFooter.displayName = "CardFooter";
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  cardVariants,
-};
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants };

@@ -16,10 +16,26 @@ import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 
 const CAPABILITIES = [
-  "cnc", "waterjet", "rockface", "splitface", "shot_blast", "bush_hammer",
-  "polished", "honed", "leather", "calibration", "bevel", "bullnose",
-  "flexible_stone", "semi_precious_inlay", "metal_inlay", "brass_inlay",
-  "inlay", "edge_processing", "polishing", "sculpture",
+  "cnc",
+  "waterjet",
+  "rockface",
+  "splitface",
+  "shot_blast",
+  "bush_hammer",
+  "polished",
+  "honed",
+  "leather",
+  "calibration",
+  "bevel",
+  "bullnose",
+  "flexible_stone",
+  "semi_precious_inlay",
+  "metal_inlay",
+  "brass_inlay",
+  "inlay",
+  "edge_processing",
+  "polishing",
+  "sculpture",
 ] as const;
 
 const LABELS: Record<string, string> = {

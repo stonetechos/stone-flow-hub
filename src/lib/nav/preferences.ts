@@ -294,9 +294,7 @@ export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav
       };
     });
 
-  const hidden = NAV_ITEMS.filter(
-    (i) => hiddenSet.has(i.id) && (i.adminOnly ? isAdmin : true),
-  );
+  const hidden = NAV_ITEMS.filter((i) => hiddenSet.has(i.id) && (i.adminOnly ? isAdmin : true));
 
   return { starred, groups, hidden };
 }

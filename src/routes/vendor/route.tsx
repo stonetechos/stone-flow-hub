@@ -23,8 +23,7 @@ function VendorLayout() {
     staleTime: 60_000,
   });
   if (q.isLoading) return <LoadingBlock />;
-  if (q.error)
-    return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
+  if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) {
     return (
       <div className="mx-auto max-w-md p-8 text-center">

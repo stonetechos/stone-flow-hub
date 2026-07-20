@@ -62,10 +62,7 @@ export function MiniTable<T>({
           {rows.map((row, i) => (
             <tr
               key={rowKey(row, i)}
-              className={cn(
-                "transition-colors",
-                onRowClick && "cursor-pointer hover:bg-muted/40",
-              )}
+              className={cn("transition-colors", onRowClick && "cursor-pointer hover:bg-muted/40")}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((c) => (

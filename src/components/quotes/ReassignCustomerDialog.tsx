@@ -101,10 +101,7 @@ export function ReassignCustomerDialog({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const rows = useMemo(
-    () => diffRows(current, next),
-    [current, next],
-  );
+  const rows = useMemo(() => diffRows(current, next), [current, next]);
 
   function handleClose(v: boolean) {
     if (!v) {
@@ -114,10 +111,7 @@ export function ReassignCustomerDialog({
     onOpenChange(v);
   }
 
-  const invalid =
-    !newCustomerId ||
-    newCustomerId === currentCustomerId ||
-    !next;
+  const invalid = !newCustomerId || newCustomerId === currentCustomerId || !next;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

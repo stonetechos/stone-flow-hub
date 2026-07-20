@@ -97,13 +97,9 @@ function ActivityPage() {
   useEffect(() => {
     const channel = supabase
       .channel("activity_log_feed")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "activity_log" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["activity"] });
-        },
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_log" }, () => {
+        qc.invalidateQueries({ queryKey: ["activity"] });
+      })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
@@ -120,18 +116,23 @@ function ActivityPage() {
     [rows],
   );
   const customerEntityIds = useMemo(
-    () => Array.from(new Set(rows.filter((r) => r.entity_type === "customer").map((r) => r.entity_id))),
+    () =>
+      Array.from(new Set(rows.filter((r) => r.entity_type === "customer").map((r) => r.entity_id))),
     [rows],
   );
   const enquiryEntityIds = useMemo(
-    () => Array.from(new Set(rows.filter((r) => r.entity_type === "enquiry").map((r) => r.entity_id))),
+    () =>
+      Array.from(new Set(rows.filter((r) => r.entity_type === "enquiry").map((r) => r.entity_id))),
     [rows],
   );
   const actors = useQuery({
     queryKey: ["activity", "actors", actorIds.sort().join(",")],
     enabled: actorIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", actorIds);
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", actorIds);
       const m = new Map<string, string>();
       for (const p of data ?? []) m.set(p.id, p.full_name || p.email || p.id.slice(0, 8));
       return m;
@@ -151,7 +152,10 @@ function ActivityPage() {
     queryKey: ["activity", "customers", customerEntityIds.sort().join(",")],
     enabled: customerEntityIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("customers").select("id, name").in("id", customerEntityIds);
+      const { data } = await supabase
+        .from("customers")
+        .select("id, name")
+        .in("id", customerEntityIds);
       const m = new Map<string, string>();
       for (const c of data ?? []) m.set(c.id, c.name);
       return m;
@@ -166,7 +170,11 @@ function ActivityPage() {
         .select("id, enquiry_no, customer:customers!enquiries_customer_id_fkey(name)")
         .in("id", enquiryEntityIds);
       const m = new Map<string, { no: string; customer: string | null }>();
-      for (const e of (data ?? []) as Array<{ id: string; enquiry_no: string; customer: { name: string } | null }>) {
+      for (const e of (data ?? []) as Array<{
+        id: string;
+        enquiry_no: string;
+        customer: { name: string } | null;
+      }>) {
         m.set(e.id, { no: e.enquiry_no, customer: e.customer?.name ?? null });
       }
       return m;
@@ -179,7 +187,9 @@ function ActivityPage() {
     const list = q
       ? rows.filter((r) => {
           const hay = [r.summary, r.entity_type, r.field_name, r.action]
-            .filter(Boolean).join(" ").toLowerCase();
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
           return hay.includes(q);
         })
       : rows;
@@ -220,23 +230,38 @@ function ActivityPage() {
   }
 
   function exportCsv() {
-    const header = ["timestamp","user","module","action","entity","project","field","previous","new","summary"].join(",");
+    const header = [
+      "timestamp",
+      "user",
+      "module",
+      "action",
+      "entity",
+      "project",
+      "field",
+      "previous",
+      "new",
+      "summary",
+    ].join(",");
     const escape = (v: unknown) => {
       const s = v == null ? "" : typeof v === "string" ? v : JSON.stringify(v);
       return `"${s.replace(/"/g, '""')}"`;
     };
-    const lines = filtered.map((r) => [
-      new Date(r.created_at).toISOString(),
-      r.actor_id ? actors.data?.get(r.actor_id) ?? "" : "",
-      r.entity_type,
-      r.action,
-      entityLabel(r),
-      r.project_id ? projects.data?.get(r.project_id) ?? "" : "",
-      r.field_name ?? "",
-      r.old_value,
-      r.new_value,
-      r.summary ?? "",
-    ].map(escape).join(","));
+    const lines = filtered.map((r) =>
+      [
+        new Date(r.created_at).toISOString(),
+        r.actor_id ? (actors.data?.get(r.actor_id) ?? "") : "",
+        r.entity_type,
+        r.action,
+        entityLabel(r),
+        r.project_id ? (projects.data?.get(r.project_id) ?? "") : "",
+        r.field_name ?? "",
+        r.old_value,
+        r.new_value,
+        r.summary ?? "",
+      ]
+        .map(escape)
+        .join(","),
+    );
     const blob = new Blob([header + "\n" + lines.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -267,38 +292,77 @@ function ActivityPage() {
           <div className="space-y-1">
             <Label className="text-xs">Module</Label>
             <Select value={module || "all"} onValueChange={(v) => setModule(v === "all" ? "" : v)}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All modules</SelectItem>
-                {MODULES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                {MODULES.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>
+                    {m.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Customer</Label>
-            <EntityPicker type="customer" value={customerId} onChange={setCustomerId} placeholder="Any customer" />
+            <EntityPicker
+              type="customer"
+              value={customerId}
+              onChange={setCustomerId}
+              placeholder="Any customer"
+            />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Project</Label>
-            <EntityPicker type="project" value={projectId} onChange={setProjectId} placeholder="Any project" />
+            <EntityPicker
+              type="project"
+              value={projectId}
+              onChange={setProjectId}
+              placeholder="Any project"
+            />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">From</Label>
-            <Input type="date" className="h-9 text-xs" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            <Input
+              type="date"
+              className="h-9 text-xs"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">To</Label>
-            <Input type="date" className="h-9 text-xs" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <Input
+              type="date"
+              className="h-9 text-xs"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
           </div>
           <div className="col-span-full flex flex-wrap items-center justify-between gap-2">
             <div className="text-xs text-muted-foreground">
-              {filtered.length} entr{filtered.length === 1 ? "y" : "ies"} · page {currentPage} of {totalPages}
+              {filtered.length} entr{filtered.length === 1 ? "y" : "ies"} · page {currentPage} of{" "}
+              {totalPages}
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="h-8" onClick={() => setSortDesc((s) => !s)}>
-                <ArrowUpDown className="mr-1 h-3 w-3" /> {sortDesc ? "Newest first" : "Oldest first"}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8"
+                onClick={() => setSortDesc((s) => !s)}
+              >
+                <ArrowUpDown className="mr-1 h-3 w-3" />{" "}
+                {sortDesc ? "Newest first" : "Oldest first"}
               </Button>
-              <Button size="sm" variant="outline" className="h-8" onClick={exportCsv} disabled={filtered.length === 0}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8"
+                onClick={exportCsv}
+                disabled={filtered.length === 0}
+              >
                 <Download className="mr-1 h-3 w-3" /> Export CSV
               </Button>
             </div>
@@ -343,9 +407,24 @@ function ActivityPage() {
                         ) : (
                           <span>{label}</span>
                         )}
-                        {r.field_name && <><span>·</span><span>{r.field_name}</span></>}
-                        {projectName && <><span>·</span><span>{projectName}</span></>}
-                        {actorName && <><span>·</span><span>by {actorName}</span></>}
+                        {r.field_name && (
+                          <>
+                            <span>·</span>
+                            <span>{r.field_name}</span>
+                          </>
+                        )}
+                        {projectName && (
+                          <>
+                            <span>·</span>
+                            <span>{projectName}</span>
+                          </>
+                        )}
+                        {actorName && (
+                          <>
+                            <span>·</span>
+                            <span>by {actorName}</span>
+                          </>
+                        )}
                       </div>
                       {hasDiff && r.field_name && (
                         <div className="mt-1 text-xs">
@@ -375,11 +454,41 @@ function ActivityPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setPage(1)} disabled={currentPage === 1}>« First</Button>
-          <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>‹ Prev</Button>
-          <span className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</span>
-          <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next ›</Button>
-          <Button size="sm" variant="outline" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages}>Last »</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage(1)}
+            disabled={currentPage === 1}
+          >
+            « First
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            ‹ Prev
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next ›
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            Last »
+          </Button>
         </div>
       )}
     </div>

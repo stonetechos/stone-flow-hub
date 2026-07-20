@@ -32,18 +32,31 @@ function keyFor(date: Date, grain: ForecastGrain): string {
   return `${y}-W${String(w).padStart(2, "0")}`;
 }
 
-export async function getForecast(horizonDays = 90, grain: ForecastGrain = "week"): Promise<ForecastResult> {
+export async function getForecast(
+  horizonDays = 90,
+  grain: ForecastGrain = "week",
+): Promise<ForecastResult> {
   const today = new Date();
   const horizonEnd = new Date(today.getTime() + horizonDays * 86_400_000);
   const [inflowRes, outflowRes, historicPay] = await Promise.all([
-    supabase.from("customer_payment_dashboard" as never).select("balance_due,due_date")
-      .gt("balance_due", 0).lte("due_date", horizonEnd.toISOString().slice(0, 10)),
-    supabase.from("purchase_orders").select("expected_date,id").not("expected_date", "is", null)
+    supabase
+      .from("customer_payment_dashboard" as never)
+      .select("balance_due,due_date")
+      .gt("balance_due", 0)
+      .lte("due_date", horizonEnd.toISOString().slice(0, 10)),
+    supabase
+      .from("purchase_orders")
+      .select("expected_date,id")
+      .not("expected_date", "is", null)
       .lte("expected_date", horizonEnd.toISOString().slice(0, 10))
       .not("status", "in", '("cancelled")'),
-    supabase.from("payments").select("amount,paid_at").gte("paid_at", new Date(today.getTime() - 90 * 86_400_000).toISOString()),
+    supabase
+      .from("payments")
+      .select("amount,paid_at")
+      .gte("paid_at", new Date(today.getTime() - 90 * 86_400_000).toISOString()),
   ]);
-  for (const r of [inflowRes, outflowRes, historicPay]) if (r.error) throw new AppError(mapDbError(r.error));
+  for (const r of [inflowRes, outflowRes, historicPay])
+    if (r.error) throw new AppError(mapDbError(r.error));
 
   const map = new Map<string, ForecastPoint>();
   const add = (iso: string, side: "inflow" | "outflow", amount: number) => {
@@ -53,23 +66,32 @@ export async function getForecast(horizonDays = 90, grain: ForecastGrain = "week
     p.net = p.inflow - p.outflow;
     map.set(k, p);
   };
-  let totalInflow = 0, totalOutflow = 0;
+  let totalInflow = 0,
+    totalOutflow = 0;
   for (const r of (inflowRes.data ?? []) as Array<{ balance_due: number; due_date: string }>) {
     add(r.due_date, "inflow", Number(r.balance_due ?? 0));
     totalInflow += Number(r.balance_due ?? 0);
   }
   // Approximate outflow per open PO by average vendor payment last 90d
   const historic = (historicPay.data ?? []) as Array<{ amount: number }>;
-  const avgPo = historic.length > 0
-    ? historic.reduce((s, r) => s + Number(r.amount ?? 0), 0) / historic.length
-    : 0;
+  const avgPo =
+    historic.length > 0
+      ? historic.reduce((s, r) => s + Number(r.amount ?? 0), 0) / historic.length
+      : 0;
   for (const r of (outflowRes.data ?? []) as Array<{ expected_date: string }>) {
     add(r.expected_date, "outflow", avgPo);
     totalOutflow += avgPo;
   }
 
   const points = Array.from(map.values()).sort((a, b) => a.period.localeCompare(b.period));
-  const coverage = points.length > 0 ? Math.min(1, points.length / (grain === "week" ? Math.ceil(horizonDays / 7) : Math.ceil(horizonDays / 30))) : 0;
+  const coverage =
+    points.length > 0
+      ? Math.min(
+          1,
+          points.length /
+            (grain === "week" ? Math.ceil(horizonDays / 7) : Math.ceil(horizonDays / 30)),
+        )
+      : 0;
   const historicVar = historic.length > 5 ? 1 : 0.5;
   const confidencePct = Math.round(coverage * 60 + historicVar * 40);
 

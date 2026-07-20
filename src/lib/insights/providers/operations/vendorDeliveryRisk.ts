@@ -44,9 +44,10 @@ export const VendorDeliveryRiskProvider: InsightProvider = {
       tone: r.severity === "high" ? "danger" : "warning",
       confidence: computeConfidence(0),
       title: `${r.label} — ${r.reason}`,
-      why: r.entity === "po"
-        ? `Purchase order ${r.label} is past its expected delivery date. ${r.reason}.`
-        : `RFQ ${r.label} is past its due date with vendors. ${r.reason}.`,
+      why:
+        r.entity === "po"
+          ? `Purchase order ${r.label} is past its expected delivery date. ${r.reason}.`
+          : `RFQ ${r.label} is past its due date with vendors. ${r.reason}.`,
       action: { label: r.entity === "po" ? "Open purchase order" : "Open RFQ", href: r.href },
       entity: { type: r.entity, id: r.entityId, label: r.label },
       priority: computePriority({ urgencyDays: r.daysOverdue }),

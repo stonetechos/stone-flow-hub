@@ -41,7 +41,13 @@ async function computeCustomerScores(): Promise<CustomerScore[]> {
   ]);
   for (const r of [custs, invs]) if (r.error) throw new AppError(mapDbError(r.error));
 
-  type Inv = { customer_id: string; total: number; balance_due: number; issue_date: string; due_date: string | null };
+  type Inv = {
+    customer_id: string;
+    total: number;
+    balance_due: number;
+    issue_date: string;
+    due_date: string | null;
+  };
   const invByCust = new Map<string, Inv[]>();
   for (const i of (invs.data ?? []) as Inv[]) {
     const arr = invByCust.get(i.customer_id) ?? [];
@@ -63,7 +69,10 @@ async function computeCustomerScores(): Promise<CustomerScore[]> {
       const d = Math.floor((now - new Date(ref).getTime()) / 86_400_000);
       return d > max ? d : max;
     }, 0);
-    const lastOrder = rows.reduce<string | null>((acc, r) => (!acc || r.issue_date > acc ? r.issue_date : acc), null);
+    const lastOrder = rows.reduce<string | null>(
+      (acc, r) => (!acc || r.issue_date > acc ? r.issue_date : acc),
+      null,
+    );
     const recentRevenue = rows.reduce((s, r) => {
       const t = new Date(r.issue_date).getTime();
       return t >= recentCutoff ? s + Number(r.total ?? 0) : s;
@@ -115,14 +124,28 @@ export async function getCustomerIntel(): Promise<CustomerIntel> {
 
   return {
     top_by_revenue: [...scores].sort((a, b) => b.revenue - a.revenue).slice(0, 15),
-    most_profitable: [...scores].sort((a, b) => (b.revenue - b.outstanding) - (a.revenue - a.outstanding)).slice(0, 15),
-    repeat: scores.filter((s) => s.orders_count >= 3).sort((a, b) => b.orders_count - a.orders_count).slice(0, 15),
-    high_outstanding: [...scores].sort((a, b) => b.outstanding - a.outstanding).filter((s) => s.outstanding > 0).slice(0, 15),
-    delayed_payers: [...scores].sort((a, b) => b.overdue_days - a.overdue_days).filter((s) => s.overdue_days > 15).slice(0, 15),
-    inactive: scores.filter((s) => !s.last_order_at || new Date(s.last_order_at).getTime() < inactiveCutoff).slice(0, 20),
+    most_profitable: [...scores]
+      .sort((a, b) => b.revenue - b.outstanding - (a.revenue - a.outstanding))
+      .slice(0, 15),
+    repeat: scores
+      .filter((s) => s.orders_count >= 3)
+      .sort((a, b) => b.orders_count - a.orders_count)
+      .slice(0, 15),
+    high_outstanding: [...scores]
+      .sort((a, b) => b.outstanding - a.outstanding)
+      .filter((s) => s.outstanding > 0)
+      .slice(0, 15),
+    delayed_payers: [...scores]
+      .sort((a, b) => b.overdue_days - a.overdue_days)
+      .filter((s) => s.overdue_days > 15)
+      .slice(0, 15),
+    inactive: scores
+      .filter((s) => !s.last_order_at || new Date(s.last_order_at).getTime() < inactiveCutoff)
+      .slice(0, 20),
     potential_high_value: Array.from(enqPot.entries())
       .map(([id, v]) => ({ ...scores.find((s) => s.customer_id === id)!, revenue: v }))
       .filter((s) => s && s.name)
-      .sort((a, b) => b.revenue - a.revenue).slice(0, 15),
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 15),
   };
 }

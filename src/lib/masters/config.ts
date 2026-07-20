@@ -37,7 +37,13 @@ export type MasterConfig = {
 };
 
 const COMMON = {
-  code: { key: "code", label: "Code", type: "text" as const, required: true, hint: "Short unique code (e.g. MARBLE-WHITE)" },
+  code: {
+    key: "code",
+    label: "Code",
+    type: "text" as const,
+    required: true,
+    hint: "Short unique code (e.g. MARBLE-WHITE)",
+  },
   name: { key: "name", label: "Name", type: "text" as const, required: true },
   sort_order: { key: "sort_order", label: "Sort order", type: "number" as const },
   notes: { key: "notes", label: "Notes", type: "textarea" as const },
@@ -64,7 +70,12 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     singular: "Stone Colour",
     description: "Named colour families used across catalogues and quotes.",
     extraFields: [
-      { key: "family", label: "Colour family", type: "text", placeholder: "white / beige / black…" },
+      {
+        key: "family",
+        label: "Colour family",
+        type: "text",
+        placeholder: "white / beige / black…",
+      },
       { key: "hex", label: "Hex sample", type: "text", placeholder: "#eeeeee" },
     ],
     extraColumns: [
@@ -120,9 +131,7 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     title: "Thicknesses",
     singular: "Thickness",
     description: "Standard slab / tile thicknesses in mm.",
-    extraFields: [
-      { key: "mm", label: "Millimetres", type: "number", required: true },
-    ],
+    extraFields: [{ key: "mm", label: "Millimetres", type: "number", required: true }],
     extraColumns: [{ key: "mm", label: "mm" }],
   },
   {
@@ -151,9 +160,7 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     title: "Quality Grades",
     singular: "Quality Grade",
     description: "Commercial / Standard / Premium / Export…",
-    extraFields: [
-      { key: "rank", label: "Rank", type: "number", hint: "Higher = better" },
-    ],
+    extraFields: [{ key: "rank", label: "Rank", type: "number", hint: "Higher = better" }],
     extraColumns: [{ key: "rank", label: "Rank" }],
   },
   {
@@ -162,9 +169,7 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     title: "Packaging Types",
     singular: "Packaging Type",
     description: "Wooden crate, Fumigated crate, Pallet, Carton, Bundle…",
-    extraFields: [
-      { key: "typical_weight_kg", label: "Typical weight (kg)", type: "number" },
-    ],
+    extraFields: [{ key: "typical_weight_kg", label: "Typical weight (kg)", type: "number" }],
     extraColumns: [{ key: "typical_weight_kg", label: "Weight (kg)" }],
   },
   {
@@ -175,7 +180,12 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     description: "Sqft, Sqm, Piece, Kg, Ton, Linear m…",
     extraFields: [
       { key: "symbol", label: "Symbol", type: "text", required: true },
-      { key: "dimension", label: "Dimension", type: "text", placeholder: "area / length / mass / count" },
+      {
+        key: "dimension",
+        label: "Dimension",
+        type: "text",
+        placeholder: "area / length / mass / count",
+      },
     ],
     extraColumns: [
       { key: "symbol", label: "Symbol" },
@@ -187,9 +197,16 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     route: "qc-templates",
     title: "QC Templates",
     singular: "QC Template",
-    description: "Reusable QC checklists (surface, dimension, thickness, edge, colour, crack, packing, dispatch).",
+    description:
+      "Reusable QC checklists (surface, dimension, thickness, edge, colour, crack, packing, dispatch).",
     extraFields: [
-      { key: "category", label: "Category", type: "text", required: true, placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch" },
+      {
+        key: "category",
+        label: "Category",
+        type: "text",
+        required: true,
+        placeholder: "surface / dimension / thickness / edge / colour / crack / packing / dispatch",
+      },
     ],
     extraColumns: [{ key: "category", label: "Category" }],
   },

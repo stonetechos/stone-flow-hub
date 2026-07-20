@@ -98,8 +98,7 @@ function CompareRfqPage() {
   });
 
   if (q.isLoading) return <LoadingBlock />;
-  if (q.error)
-    return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
+  if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="RFQ not found." />;
 
   const bundle = q.data;
@@ -223,7 +222,6 @@ function CompareRfqPage() {
         busy={rejectMut.isPending}
       />
 
-
       {/* Revision dialog */}
       <RevisionDialog
         row={revisionFor}
@@ -244,10 +242,16 @@ function CompareRfqPage() {
 }
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <th className={cn("border-b border-border px-3 py-2 font-medium", className)}>{children}</th>;
+  return (
+    <th className={cn("border-b border-border px-3 py-2 font-medium", className)}>{children}</th>
+  );
 }
 function Td({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={cn("border-b border-border/60 px-3 py-2 align-middle", className)}>{children}</td>;
+  return (
+    <td className={cn("border-b border-border/60 px-3 py-2 align-middle", className)}>
+      {children}
+    </td>
+  );
 }
 
 function ComparisonRow({
@@ -320,14 +324,24 @@ function ComparisonRow({
           </div>
         </div>
       </Td>
-      <Td className={cn("text-right tabular-nums", row.highlights.lowestPrice && "font-semibold text-success")}>
+      <Td
+        className={cn(
+          "text-right tabular-nums",
+          row.highlights.lowestPrice && "font-semibold text-success",
+        )}
+      >
         {q ? Number(q.total_inr ?? 0).toLocaleString("en-IN") : "—"}
       </Td>
       <Td className="text-right tabular-nums">
         {q?.freight_inr != null ? Number(q.freight_inr).toLocaleString("en-IN") : "—"}
       </Td>
       <Td>{q ? (q.gst_included ? "Incl." : "Excl.") : "—"}</Td>
-      <Td className={cn("text-right tabular-nums", row.highlights.fastestDispatch && "font-semibold text-warning")}>
+      <Td
+        className={cn(
+          "text-right tabular-nums",
+          row.highlights.fastestDispatch && "font-semibold text-warning",
+        )}
+      >
         {q?.dispatch_days != null ? `${q.dispatch_days}d` : "—"}
       </Td>
       <Td>
@@ -362,7 +376,9 @@ function ComparisonRow({
               </span>
             </div>
             <div>
-              {row.perf.orders_count ?? 0} orders · {row.perf.approval_pct != null ? Math.round(Number(row.perf.approval_pct)) : 0}% approved
+              {row.perf.orders_count ?? 0} orders ·{" "}
+              {row.perf.approval_pct != null ? Math.round(Number(row.perf.approval_pct)) : 0}%
+              approved
             </div>
           </div>
         ) : (
@@ -384,7 +400,12 @@ function ComparisonRow({
       </Td>
       <Td>
         {row.pdf ? (
-          <PdfLink fileId={row.pdf.id} bucket={row.pdf.bucket} path={row.pdf.object_path} name={row.pdf.file_name} />
+          <PdfLink
+            fileId={row.pdf.id}
+            bucket={row.pdf.bucket}
+            path={row.pdf.object_path}
+            name={row.pdf.file_name}
+          />
         ) : (
           <span className="text-xs text-muted-foreground">—</span>
         )}

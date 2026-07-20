@@ -29,7 +29,9 @@ function read(key: string): TablePrefs {
     const parsed = JSON.parse(raw) as Partial<TablePrefs>;
     return {
       density: (parsed.density as Density) ?? DEFAULTS.density,
-      hidden: Array.isArray(parsed.hidden) ? parsed.hidden.filter((x) => typeof x === "string") : [],
+      hidden: Array.isArray(parsed.hidden)
+        ? parsed.hidden.filter((x) => typeof x === "string")
+        : [],
     };
   } catch {
     return DEFAULTS;
@@ -72,10 +74,7 @@ export function useTablePrefs(key: string) {
     [prefs, write],
   );
 
-  const isHidden = useCallback(
-    (column: string) => prefs.hidden.includes(column),
-    [prefs.hidden],
-  );
+  const isHidden = useCallback((column: string) => prefs.hidden.includes(column), [prefs.hidden]);
 
   return { prefs, setDensity, toggleColumn, isHidden };
 }

@@ -134,7 +134,10 @@ const ENTITY_DETAIL_PATH: Record<NlEntityType, string> = {
   installation: "installations",
 };
 
-async function resolveCustomer(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+async function resolveCustomer(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
   if (filters?.status === "overdue" || filters?.status === "unpaid") {
     const [collection, adherence] = await Promise.all([
       CollectionPriorityProvider.fetch(),
@@ -195,17 +198,36 @@ async function resolveCustomer(searchText: string | undefined, filters: NlFilter
   const rows = await listCustomers(searchText ?? "");
   return rows
     .filter((c) => nameMatches(c.name, filters?.customerName))
-    .map((c) => ({ id: c.id, entityType: "customer" as const, title: c.name, subtitle: c.customer_code, href: `/customers/${c.id}`, rank: 0, updatedAt: c.updated_at, isActive: c.is_active }));
+    .map((c) => ({
+      id: c.id,
+      entityType: "customer" as const,
+      title: c.name,
+      subtitle: c.customer_code,
+      href: `/customers/${c.id}`,
+      rank: 0,
+      updatedAt: c.updated_at,
+      isActive: c.is_active,
+    }));
 }
 
-async function resolveInvoice(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+async function resolveInvoice(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
   const rows = await listInvoices(searchText ?? "");
   const window = dateRangeWindow(filters?.dateRange);
   return rows
     .filter((inv) => {
-      if (filters?.status === "unpaid" && !(inv.status !== "cancelled" && Number(inv.balance_due ?? 0) > 0)) return false;
+      if (
+        filters?.status === "unpaid" &&
+        !(inv.status !== "cancelled" && Number(inv.balance_due ?? 0) > 0)
+      )
+        return false;
       if (filters?.status === "overdue") {
-        const overdue = inv.due_date && new Date(inv.due_date).getTime() < Date.now() && Number(inv.balance_due ?? 0) > 0;
+        const overdue =
+          inv.due_date &&
+          new Date(inv.due_date).getTime() < Date.now() &&
+          Number(inv.balance_due ?? 0) > 0;
         if (!overdue) return false;
       }
       if (window && !inRange(inv.due_date, window[0], window[1])) return false;
@@ -216,7 +238,9 @@ async function resolveInvoice(searchText: string | undefined, filters: NlFilters
       id: inv.id,
       entityType: "invoice" as const,
       title: inv.invoice_no,
-      subtitle: inv.customer?.name ? `${inv.customer.name} · ₹${Number(inv.balance_due ?? 0).toLocaleString("en-IN")} due` : null,
+      subtitle: inv.customer?.name
+        ? `${inv.customer.name} · ₹${Number(inv.balance_due ?? 0).toLocaleString("en-IN")} due`
+        : null,
       href: `/invoices/${inv.id}`,
       rank: 0,
       updatedAt: inv.updated_at,
@@ -224,22 +248,46 @@ async function resolveInvoice(searchText: string | undefined, filters: NlFilters
     }));
 }
 
-async function resolveDispatch(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+async function resolveDispatch(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
   if (filters?.status === "overdue" || filters?.status === "late") {
     const insights = await DispatchRiskProvider.fetch();
-    return insights.filter((i) => i.id.includes(":overdue:")).map((i) => fromInsight(i, "dispatch"));
+    return insights
+      .filter((i) => i.id.includes(":overdue:"))
+      .map((i) => fromInsight(i, "dispatch"));
   }
-  const statusMap: Record<string, string> = { pending: "planned", planned: "planned", "in transit": "in_transit" };
+  const statusMap: Record<string, string> = {
+    pending: "planned",
+    planned: "planned",
+    "in transit": "in_transit",
+  };
   const status = filters?.status ? (statusMap[filters.status] ?? "") : "";
   const rows = await listDispatches(searchText ?? "", status);
   const window = dateRangeWindow(filters?.dateRange);
   return rows
     .filter((d) => !window || inRange(d.dispatch_date, window[0], window[1]))
-    .map((d) => ({ id: d.id, entityType: "dispatch" as const, title: d.dispatch_no ?? "Dispatch", subtitle: d.status, href: `/dispatch/${d.id}`, rank: 0, updatedAt: d.updated_at }));
+    .map((d) => ({
+      id: d.id,
+      entityType: "dispatch" as const,
+      title: d.dispatch_no ?? "Dispatch",
+      subtitle: d.status,
+      href: `/dispatch/${d.id}`,
+      rank: 0,
+      updatedAt: d.updated_at,
+    }));
 }
 
-async function resolveInstallation(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
-  if (filters?.status === "late" || filters?.status === "overdue" || filters?.status === "delayed") {
+async function resolveInstallation(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
+  if (
+    filters?.status === "late" ||
+    filters?.status === "overdue" ||
+    filters?.status === "delayed"
+  ) {
     const insights = await InstallationDelayProvider.fetch();
     return insights.map((i) => fromInsight(i, "installation"));
   }
@@ -279,11 +327,20 @@ async function resolveInstallation(searchText: string | undefined, filters: NlFi
   }));
 }
 
-async function resolveInventory(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
-  if (filters?.status === "low_stock" || filters?.status === "shortage" || filters?.status === "low") {
+async function resolveInventory(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
+  if (
+    filters?.status === "low_stock" ||
+    filters?.status === "shortage" ||
+    filters?.status === "low"
+  ) {
     const insights = await InventoryShortageProvider.fetch();
     return insights
-      .filter((i) => !searchText || nameMatches(i.title, searchText) || nameMatches(i.why, searchText))
+      .filter(
+        (i) => !searchText || nameMatches(i.title, searchText) || nameMatches(i.why, searchText),
+      )
       .map((i) => fromInsight(i, "inventory_item"));
   }
   const rows = await listInventory(searchText ?? "");
@@ -298,7 +355,10 @@ async function resolveInventory(searchText: string | undefined, filters: NlFilte
   }));
 }
 
-async function resolveProject(searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+async function resolveProject(
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
   const rows = await listProjects(searchText ?? "");
   const window = dateRangeWindow(filters?.dateRange);
   return rows
@@ -310,15 +370,33 @@ async function resolveProject(searchText: string | undefined, filters: NlFilters
       const dateToCheck = p.expected_start_date ?? p.expected_completion_date;
       return inRange(dateToCheck, window[0], window[1]);
     })
-    .map((p) => ({ id: p.id, entityType: "project" as const, title: p.name, subtitle: p.customer?.name ?? p.city, href: `/projects/${p.id}`, rank: 0, updatedAt: p.updated_at, isActive: p.is_active }));
+    .map((p) => ({
+      id: p.id,
+      entityType: "project" as const,
+      title: p.name,
+      subtitle: p.customer?.name ?? p.city,
+      href: `/projects/${p.id}`,
+      rank: 0,
+      updatedAt: p.updated_at,
+      isActive: p.is_active,
+    }));
 }
 
 /** Entity types below that carry a `customer` relationship on their own
  *  rows — used by resolveGeneric() to decide when a named customer must
  *  narrow the result set (see the `filters?.customerName` block there). */
-const CUSTOMER_SCOPED_ENTITY_TYPES = new Set<NlEntityType>(["enquiry", "quote", "sales_order", "receipt"]);
+const CUSTOMER_SCOPED_ENTITY_TYPES = new Set<NlEntityType>([
+  "enquiry",
+  "quote",
+  "sales_order",
+  "receipt",
+]);
 
-async function resolveGeneric(entityType: NlEntityType, searchText: string | undefined, filters?: NlFilters): Promise<NlResultItem[]> {
+async function resolveGeneric(
+  entityType: NlEntityType,
+  searchText: string | undefined,
+  filters?: NlFilters,
+): Promise<NlResultItem[]> {
   const q = searchText ?? "";
 
   // Bug found in a Phase RC-4 live audit: a query naming a specific
@@ -351,35 +429,101 @@ async function resolveGeneric(entityType: NlEntityType, searchText: string | und
   switch (entityType) {
     case "enquiry": {
       const rows = await listEnquiries(q);
-      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
-      return filtered.map((r) => ({ id: r.id, entityType, title: r.enquiry_no, subtitle: r.customer?.name ?? null, href: `/enquiries/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter
+        ? rows.filter((r) => r.customer?.id === customerFilter!.id)
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.enquiry_no,
+        subtitle: r.customer?.name ?? null,
+        href: `/enquiries/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
     }
     case "quote": {
       const rows = await listQuotes(q);
-      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
-      return filtered.map((r) => ({ id: r.id, entityType, title: r.quote_no, subtitle: r.customer?.name ?? null, href: `/quotes/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter
+        ? rows.filter((r) => r.customer?.id === customerFilter!.id)
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.quote_no,
+        subtitle: r.customer?.name ?? null,
+        href: `/quotes/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
     }
     case "sales_order": {
       const rows = await listSalesOrders(q);
-      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
-      return filtered.map((r) => ({ id: r.id, entityType, title: r.so_no, subtitle: r.customer?.name ?? null, href: `/sales-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter
+        ? rows.filter((r) => r.customer?.id === customerFilter!.id)
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.so_no,
+        subtitle: r.customer?.name ?? null,
+        href: `/sales-orders/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
     }
     case "receipt": {
       const rows = await listReceipts(q);
-      const filtered = customerFilter ? rows.filter((r) => r.customer?.id === customerFilter!.id) : rows;
-      return filtered.map((r) => ({ id: r.id, entityType, title: r.receipt_no, subtitle: r.customer?.name ?? null, href: `/receipts/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      const filtered = customerFilter
+        ? rows.filter((r) => r.customer?.id === customerFilter!.id)
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.receipt_no,
+        subtitle: r.customer?.name ?? null,
+        href: `/receipts/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
     }
     case "purchase_order": {
       const rows = await listPurchaseOrders(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.po_no, subtitle: r.vendor?.company_name ?? null, href: `/purchase-orders/${r.id}`, rank: 0, updatedAt: r.updated_at }));
+      return rows.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.po_no,
+        subtitle: r.vendor?.company_name ?? null,
+        href: `/purchase-orders/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
     }
     case "vendor": {
       const rows = await listVendors(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.company_name, subtitle: r.vendor_code, href: `/vendors/${r.id}`, rank: 0, updatedAt: r.updated_at, isActive: r.is_active }));
+      return rows.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.company_name,
+        subtitle: r.vendor_code,
+        href: `/vendors/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+        isActive: r.is_active,
+      }));
     }
     case "product": {
       const rows = await listProducts(q);
-      return rows.map((r) => ({ id: r.id, entityType, title: r.name, subtitle: r.product_code, href: `/products/${r.id}`, rank: 0, updatedAt: r.updated_at, isActive: r.is_active }));
+      return rows.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.name,
+        subtitle: r.product_code,
+        href: `/products/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+        isActive: r.is_active,
+      }));
     }
     default:
       return [];
@@ -424,7 +568,11 @@ function fromSearchHits(hits: SearchHit[], entityType?: NlEntityType): NlResultI
  *  resolveTimelineIntent() (Phase G.10) can fall back to the exact same
  *  per-entity resolver when it can't confidently resolve one specific
  *  record — one dispatch table, reused, not two. */
-async function resolveByEntityType(entityType: NlEntityType, searchText: string | undefined, filters: NlFilters | undefined): Promise<NlResultItem[]> {
+async function resolveByEntityType(
+  entityType: NlEntityType,
+  searchText: string | undefined,
+  filters: NlFilters | undefined,
+): Promise<NlResultItem[]> {
   switch (entityType) {
     case "customer":
       return resolveCustomer(searchText, filters);
@@ -443,7 +591,10 @@ async function resolveByEntityType(entityType: NlEntityType, searchText: string 
   }
 }
 
-type NameResolution<T> = { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[] } | { kind: "none" };
+type NameResolution<T> =
+  | { kind: "one"; row: T }
+  | { kind: "ambiguous"; rows: T[] }
+  | { kind: "none" };
 
 /** Resolves the single specific record a timeline question is about —
  *  and, per user feedback, never silently guesses across a genuinely
@@ -455,9 +606,14 @@ type NameResolution<T> = { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[
  *  Two or more remaining rows with no exact match is genuinely
  *  ambiguous — the caller renders every candidate as its own card so
  *  the user picks, instead of resolve.ts guessing on their behalf. */
-export function resolveByName<T>(rows: T[], needle: string | undefined, getName: (r: T) => string): NameResolution<T> {
+export function resolveByName<T>(
+  rows: T[],
+  needle: string | undefined,
+  getName: (r: T) => string,
+): NameResolution<T> {
   if (rows.length === 0) return { kind: "none" };
-  if (!needle) return rows.length === 1 ? { kind: "one", row: rows[0] } : { kind: "ambiguous", rows };
+  if (!needle)
+    return rows.length === 1 ? { kind: "one", row: rows[0] } : { kind: "ambiguous", rows };
   const lower = needle.toLowerCase();
   const exact = rows.filter((r) => getName(r).toLowerCase() === lower);
   if (exact.length === 1) return { kind: "one", row: exact[0] };
@@ -479,7 +635,14 @@ function ambiguousMatchResults<T>(
 ): NlResultItem[] {
   return rows.slice(0, 8).map((row) => {
     const card = toCard(row);
-    return { id: card.id, entityType, title: card.title, subtitle: card.subtitle, href: card.href, rank: 0 };
+    return {
+      id: card.id,
+      entityType,
+      title: card.title,
+      subtitle: card.subtitle,
+      href: card.href,
+      rank: 0,
+    };
   });
 }
 
@@ -519,7 +682,12 @@ async function resolveTimelineIntent(
   // currently looking at. The client sends that as page context (the
   // same {entity, entityId} Copilot's own chat already uses), never
   // something the LLM inferred, so this is exact, not a guess.
-  if (!nameNeedle && !intent.identifier && pageContext?.entityId && pageContext.entity === entityType) {
+  if (
+    !nameNeedle &&
+    !intent.identifier &&
+    pageContext?.entityId &&
+    pageContext.entity === entityType
+  ) {
     scope =
       entityType === "customer"
         ? { customerId: pageContext.entityId }
@@ -605,7 +773,9 @@ async function resolveTimelineIntent(
         id: `timeline-empty:${entityHref}`,
         entityType,
         title: `No recorded history for ${entityLabel}`,
-        subtitle: sinceDays ? `in the last ${sinceDays} days` : "activity will appear here once it happens",
+        subtitle: sinceDays
+          ? `in the last ${sinceDays} days`
+          : "activity will appear here once it happens",
         href: entityHref,
         rank: 100,
       },
@@ -640,7 +810,16 @@ export async function resolveIntent(
   if (intent.intent === "navigate" && intent.entityType) {
     const navItem = NAV_ITEMS_BY_ID[ENTITY_NAV_ID[intent.entityType]];
     if (navItem) {
-      return [{ id: navItem.id, entityType: intent.entityType, title: navItem.label, subtitle: "Open module", href: navItem.to, rank: 100 }];
+      return [
+        {
+          id: navItem.id,
+          entityType: intent.entityType,
+          title: navItem.label,
+          subtitle: "Open module",
+          href: navItem.to,
+          rank: 100,
+        },
+      ];
     }
   }
 
@@ -681,6 +860,8 @@ export async function resolveIntent(
   // is what produced "no matching records" for a query as simple as
   // "give me all updates about shiv" when the classifier didn't also set
   // entityType. customerName is now a real fallback search term too.
-  const hits = await globalSearch(intent.searchText ?? intent.filters?.customerName ?? intent.identifier ?? "");
+  const hits = await globalSearch(
+    intent.searchText ?? intent.filters?.customerName ?? intent.identifier ?? "",
+  );
   return fromSearchHits(hits);
 }

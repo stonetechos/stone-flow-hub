@@ -87,9 +87,7 @@ export function DispatchItemsEditor({
       },
     ]);
 
-  const deliveredMap = new Map(
-    (status.data?.lines ?? []).map((l) => [l.sales_order_item_id, l]),
-  );
+  const deliveredMap = new Map((status.data?.lines ?? []).map((l) => [l.sales_order_item_id, l]));
 
   return (
     <div className="space-y-2">
@@ -169,12 +167,7 @@ export function DispatchItemsEditor({
                       />
                     </TableCell>
                     <TableCell className="align-top">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove(idx)}
-                      >
+                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(idx)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

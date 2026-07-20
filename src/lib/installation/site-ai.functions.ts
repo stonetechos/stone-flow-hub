@@ -4,7 +4,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireStaff } from "@/lib/ai/require-staff";
 
-
 const input = z.object({ installation_id: z.string().uuid() });
 
 type Snapshot = {
@@ -49,7 +48,6 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
     const { chat } = await import("@/lib/ai/gateway.server");
     const { supabase } = context;
 
-
     const [inst, progress, materials, signoff] = await Promise.all([
       supabase.from("installations").select("*").eq("id", data.installation_id).maybeSingle(),
       supabase
@@ -71,11 +69,17 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
 
     const i = (inst.data ?? null) as Row | null;
     if (!i) throw new Error("installation not found");
-    const reports = ((progress.data ?? []) as Row[]);
-    const mats = ((materials.data ?? []) as Row[]);
+    const reports = (progress.data ?? []) as Row[];
+    const mats = (materials.data ?? []) as Row[];
     const sign = (signoff.data ?? null) as Row | null;
 
-    type Totals = { dispatched: number; received: number; installed: number; damaged: number; returned: number };
+    type Totals = {
+      dispatched: number;
+      received: number;
+      installed: number;
+      damaged: number;
+      returned: number;
+    };
     const totals: Totals = mats.reduce<Totals>(
       (acc, m) => ({
         dispatched: acc.dispatched + n(m.qty_dispatched),
@@ -86,7 +90,6 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
       }),
       { dispatched: 0, received: 0, installed: 0, damaged: 0, returned: 0 },
     );
-
 
     const snapshot: Snapshot = {
       installation_no: s(i.installation_no),

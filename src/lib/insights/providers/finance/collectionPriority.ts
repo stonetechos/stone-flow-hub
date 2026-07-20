@@ -15,7 +15,10 @@
  * into the explanation and the total.
  */
 import { listPaymentDashboard } from "@/lib/customer-payments/schedule";
-import { rankCollectionPriorities, type CollectionPriority } from "@/lib/customer-payments/collection";
+import {
+  rankCollectionPriorities,
+  type CollectionPriority,
+} from "@/lib/customer-payments/collection";
 import { formatInr } from "@/lib/format";
 import type { Insight, InsightKind, InsightProvider } from "@/lib/insights/types";
 import { computePriority } from "@/lib/insights/shared/priority";
@@ -35,7 +38,12 @@ function groupByCustomer(priorities: CollectionPriority[]): CustomerQueue[] {
     if (!id) continue;
     const existing = map.get(id);
     if (existing) existing.items.push(p);
-    else map.set(id, { customerId: id, customerName: p.row.customer_name ?? "Unknown customer", items: [p] });
+    else
+      map.set(id, {
+        customerId: id,
+        customerName: p.row.customer_name ?? "Unknown customer",
+        items: [p],
+      });
   }
   return [...map.values()];
 }

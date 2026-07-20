@@ -1,4 +1,10 @@
-import { CatchBoundary, createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router";
+import {
+  CatchBoundary,
+  createFileRoute,
+  Outlet,
+  redirect,
+  useRouter,
+} from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBlock } from "@/components/layout/States";

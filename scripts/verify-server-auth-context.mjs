@@ -114,16 +114,22 @@ for (const relPath of MIGRATED_FILES) {
   try {
     content = read(relPath);
   } catch {
-    fail(`${relPath}: could not read file (has it moved? update MIGRATED_FILES and resolve.ts's imports together)`);
+    fail(
+      `${relPath}: could not read file (has it moved? update MIGRATED_FILES and resolve.ts's imports together)`,
+    );
     continue;
   }
 
   if (content.includes(ANON_IMPORT)) {
-    fail(`${relPath}: imports the anonymous module-level Supabase singleton directly. Server-side callers (AI/NL Search) would run unauthenticated and RLS-filtered to zero rows — this is the exact bug that made Copilot's customer search always return "No matching records found". Import getDb from "@/integrations/supabase/server-context" instead.`);
+    fail(
+      `${relPath}: imports the anonymous module-level Supabase singleton directly. Server-side callers (AI/NL Search) would run unauthenticated and RLS-filtered to zero rows — this is the exact bug that made Copilot's customer search always return "No matching records found". Import getDb from "@/integrations/supabase/server-context" instead.`,
+    );
     continue;
   }
   if (!content.includes(AUTH_IMPORT)) {
-    fail(`${relPath}: does not import getDb from "@/integrations/supabase/server-context" — expected every query in this file to be built off getDb() so it respects a request's authenticated scope when called from a server function.`);
+    fail(
+      `${relPath}: does not import getDb from "@/integrations/supabase/server-context" — expected every query in this file to be built off getDb() so it respects a request's authenticated scope when called from a server function.`,
+    );
     continue;
   }
   pass(`${relPath}: uses getDb() (authenticated-aware), not the anonymous singleton`);
@@ -140,7 +146,9 @@ for (const relPath of MIGRATED_FILES) {
       `${relPath}: nlSearch's handler no longer calls withAuthenticatedClient(context.supabase, ...). Without this, every resolver it calls (resolveIntent's full call graph) silently falls back to the anonymous client again, regardless of how correct those resolvers' own logic is.`,
     );
   } else {
-    pass(`${relPath}: nlSearch wraps its handler in withAuthenticatedClient(context.supabase, ...)`);
+    pass(
+      `${relPath}: nlSearch wraps its handler in withAuthenticatedClient(context.supabase, ...)`,
+    );
   }
 }
 
@@ -150,8 +158,8 @@ for (const relPath of MIGRATED_FILES) {
   const content = read(relPath);
   const importedApiPaths = [...content.matchAll(/from\s+"(@\/lib\/[^"]+\/api)"/g)].map((m) => m[1]);
   const knownApiModules = new Set(
-    MIGRATED_FILES.filter((f) => f.endsWith("/api.ts")).map((f) =>
-      "@/" + f.replace(/^src\//, "").replace(/\.ts$/, ""),
+    MIGRATED_FILES.filter((f) => f.endsWith("/api.ts")).map(
+      (f) => "@/" + f.replace(/^src\//, "").replace(/\.ts$/, ""),
     ),
   );
   const unknown = importedApiPaths.filter((p) => !knownApiModules.has(p));
@@ -160,7 +168,9 @@ for (const relPath of MIGRATED_FILES) {
       `${relPath}: imports data-access module(s) not covered by this guard: ${unknown.join(", ")}. If this is a genuinely new NL Search resolver, migrate it to getDb() (see integrations/supabase/server-context.ts) and add it to MIGRATED_FILES in scripts/verify-server-auth-context.mjs.`,
     );
   } else {
-    pass(`${relPath}: every .../api module it imports is a known, migrated (authenticated-aware) data source`);
+    pass(
+      `${relPath}: every .../api module it imports is a known, migrated (authenticated-aware) data source`,
+    );
   }
 }
 
@@ -175,7 +185,9 @@ for (const relPath of MIGRATED_FILES) {
       `${relPath}: no VIE server function calls withAuthenticatedClient(context.supabase, ...). Without this, every Planner resolver and Workflow Engine handler it calls (several layers deep) would silently fall back to the anonymous client, the same regression class check 3 guards for NL Search.`,
     );
   } else {
-    pass(`${relPath}: VIE server functions wrap their handlers in withAuthenticatedClient(context.supabase, ...)`);
+    pass(
+      `${relPath}: VIE server functions wrap their handlers in withAuthenticatedClient(context.supabase, ...)`,
+    );
   }
 }
 
@@ -198,7 +210,9 @@ for (const relPath of MIGRATED_FILES) {
   );
 
   if (dirEntries.length > 0 && handlerFiles.length === 0) {
-    fail(`${actionsDir}: no handler files found alongside registry.ts/index.ts — has the naming convention changed?`);
+    fail(
+      `${actionsDir}: no handler files found alongside registry.ts/index.ts — has the naming convention changed?`,
+    );
   }
 
   for (const file of handlerFiles) {

@@ -73,9 +73,7 @@ export async function listAppUsers(): Promise<UserRow[]> {
     .order("created_at", { ascending: true });
   if (pErr) throw new AppError(mapDbError(pErr));
 
-  const { data: roles, error: rErr } = await supabase
-    .from("user_roles")
-    .select("user_id, role");
+  const { data: roles, error: rErr } = await supabase.from("user_roles").select("user_id, role");
   if (rErr) throw new AppError(mapDbError(rErr));
 
   const rolesByUser = new Map<string, AppRole[]>();
@@ -192,4 +190,3 @@ export async function currentUserIsAdmin(): Promise<boolean> {
     .maybeSingle();
   return !!data;
 }
-

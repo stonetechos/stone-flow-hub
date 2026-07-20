@@ -170,7 +170,7 @@ export async function computeEmployeeScore(
     });
   }
 
-  const overall = totalWeight > 0 ? weightedSum / totalWeight * 100 : 0;
+  const overall = totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
   const overallCapped = Math.min(200, overall);
   return {
     employee_id: employeeId,

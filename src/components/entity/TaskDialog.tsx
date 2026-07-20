@@ -34,12 +34,7 @@ import {
 import { toUserMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
-const PICKER_TYPES: ReadonlyArray<EntityType> = [
-  "customer",
-  "project",
-  "vendor",
-  "product",
-];
+const PICKER_TYPES: ReadonlyArray<EntityType> = ["customer", "project", "vendor", "product"];
 
 interface Props {
   open: boolean;
@@ -258,11 +253,7 @@ export function TaskDialog({
                     allowClear
                   />
                 ) : (
-                  <Input
-                    disabled
-                    value={entityId ?? ""}
-                    placeholder="Select an entity type"
-                  />
+                  <Input disabled value={entityId ?? ""} placeholder="Select an entity type" />
                 )}
               </div>
             </div>
@@ -272,11 +263,7 @@ export function TaskDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            form="task-dialog-form"
-            disabled={!title.trim() || save.isPending}
-          >
+          <Button type="submit" form="task-dialog-form" disabled={!title.trim() || save.isPending}>
             {editing ? "Save changes" : "Create task"}
           </Button>
         </DialogFooter>

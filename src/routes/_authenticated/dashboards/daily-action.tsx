@@ -12,7 +12,18 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CalendarClock, CircleDollarSign, Clock, Flame, Snowflake, Truck, Wrench, Users, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarClock,
+  CircleDollarSign,
+  Clock,
+  Flame,
+  Snowflake,
+  Truck,
+  Wrench,
+  Users,
+  Zap,
+} from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -41,10 +52,18 @@ async function loadLeadBuckets() {
   const now = Date.now();
   for (const r of rows) {
     const umb = STAGE_TO_UMBRELLA[r.stage];
-    const ageDays = r.updated_at ? Math.floor((now - new Date(r.updated_at).getTime()) / 86_400_000) : 0;
-    if (umb === "lost") { if (lostReview.length < 8) lostReview.push(r); continue; }
+    const ageDays = r.updated_at
+      ? Math.floor((now - new Date(r.updated_at).getTime()) / 86_400_000)
+      : 0;
+    if (umb === "lost") {
+      if (lostReview.length < 8) lostReview.push(r);
+      continue;
+    }
     if (Number(r.budget_inr ?? 0) >= 1_000_000 && highValue.length < 8) highValue.push(r);
-    if (["negotiation", "qualified", "order_confirmed", "quotation_sent"].includes(umb) && ageDays <= 7) {
+    if (
+      ["negotiation", "qualified", "order_confirmed", "quotation_sent"].includes(umb) &&
+      ageDays <= 7
+    ) {
       if (hot.length < 8) hot.push(r);
     }
     if (ageDays > 30 && !["completed", "after_sales", "cancelled"].includes(umb)) {
@@ -55,38 +74,123 @@ async function loadLeadBuckets() {
 }
 
 function DailyActionDashboard() {
-  const riskQ = useQuery({ queryKey: ["intel", "operational-risk-counts"], queryFn: getOperationalRiskCounts, staleTime: 60_000 });
-  const fupQ = useQuery({ queryKey: ["intel", "followup-buckets"], queryFn: getFollowupBuckets, staleTime: 60_000 });
-  const leadsQ = useQuery({ queryKey: ["intel", "lead-buckets"], queryFn: loadLeadBuckets, staleTime: 60_000 });
+  const riskQ = useQuery({
+    queryKey: ["intel", "operational-risk-counts"],
+    queryFn: getOperationalRiskCounts,
+    staleTime: 60_000,
+  });
+  const fupQ = useQuery({
+    queryKey: ["intel", "followup-buckets"],
+    queryFn: getFollowupBuckets,
+    staleTime: 60_000,
+  });
+  const leadsQ = useQuery({
+    queryKey: ["intel", "lead-buckets"],
+    queryFn: loadLeadBuckets,
+    staleTime: 60_000,
+  });
 
-  if (riskQ.isLoading || fupQ.isLoading || leadsQ.isLoading || !riskQ.data || !fupQ.data || !leadsQ.data)
-    return <><PageHeader title="Daily Action" /><LoadingBlock /></>;
+  if (
+    riskQ.isLoading ||
+    fupQ.isLoading ||
+    leadsQ.isLoading ||
+    !riskQ.data ||
+    !fupQ.data ||
+    !leadsQ.data
+  )
+    return (
+      <>
+        <PageHeader title="Daily Action" />
+        <LoadingBlock />
+      </>
+    );
   // Phase G.8.9 Task A2: each of these three queries is independent — the
   // original guard only checked riskQ.error, so a transient failure in
   // just fupQ or leadsQ (both still succeed for riskQ) fell through to an
   // unguarded .data! on the failed query and crashed the whole page.
-  if (riskQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(riskQ.error)} onRetry={() => riskQ.refetch()} /></>;
-  if (fupQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(fupQ.error)} onRetry={() => fupQ.refetch()} /></>;
-  if (leadsQ.error) return <><PageHeader title="Daily Action" /><ErrorBlock message={toUserMessage(leadsQ.error)} onRetry={() => leadsQ.refetch()} /></>;
+  if (riskQ.error)
+    return (
+      <>
+        <PageHeader title="Daily Action" />
+        <ErrorBlock message={toUserMessage(riskQ.error)} onRetry={() => riskQ.refetch()} />
+      </>
+    );
+  if (fupQ.error)
+    return (
+      <>
+        <PageHeader title="Daily Action" />
+        <ErrorBlock message={toUserMessage(fupQ.error)} onRetry={() => fupQ.refetch()} />
+      </>
+    );
+  if (leadsQ.error)
+    return (
+      <>
+        <PageHeader title="Daily Action" />
+        <ErrorBlock message={toUserMessage(leadsQ.error)} onRetry={() => leadsQ.refetch()} />
+      </>
+    );
 
   const risks = riskQ.data!;
   const fup = fupQ.data!;
   const leads = leadsQ.data!;
 
   const priorities = [
-    { icon: <CalendarClock className="h-4 w-4" />, label: "Today's follow-ups", value: fup.today, href: "/followups?scope=today" },
-    { icon: <AlertTriangle className="h-4 w-4" />, label: "Overdue follow-ups", value: fup.overdue, href: "/followups?scope=pending" },
-    { icon: <CircleDollarSign className="h-4 w-4" />, label: "Payments overdue", value: risks.paymentOverdue, href: "/invoices" },
-    { icon: <Truck className="h-4 w-4" />, label: "Dispatches due", value: risks.dispatchOverdue, href: "/dispatch" },
-    { icon: <Wrench className="h-4 w-4" />, label: "Installations due", value: risks.installationOverdue, href: "/installations" },
-    { icon: <Users className="h-4 w-4" />, label: "Vendor follow-ups", value: risks.vendorDelay, href: "/purchase-orders" },
-    { icon: <Clock className="h-4 w-4" />, label: "Inactive leads", value: risks.inactiveEnquiry, href: "/enquiries" },
-    { icon: <Zap className="h-4 w-4" />, label: "Unassigned leads", value: risks.unassignedEnquiry, href: "/enquiries" },
+    {
+      icon: <CalendarClock className="h-4 w-4" />,
+      label: "Today's follow-ups",
+      value: fup.today,
+      href: "/followups?scope=today",
+    },
+    {
+      icon: <AlertTriangle className="h-4 w-4" />,
+      label: "Overdue follow-ups",
+      value: fup.overdue,
+      href: "/followups?scope=pending",
+    },
+    {
+      icon: <CircleDollarSign className="h-4 w-4" />,
+      label: "Payments overdue",
+      value: risks.paymentOverdue,
+      href: "/invoices",
+    },
+    {
+      icon: <Truck className="h-4 w-4" />,
+      label: "Dispatches due",
+      value: risks.dispatchOverdue,
+      href: "/dispatch",
+    },
+    {
+      icon: <Wrench className="h-4 w-4" />,
+      label: "Installations due",
+      value: risks.installationOverdue,
+      href: "/installations",
+    },
+    {
+      icon: <Users className="h-4 w-4" />,
+      label: "Vendor follow-ups",
+      value: risks.vendorDelay,
+      href: "/purchase-orders",
+    },
+    {
+      icon: <Clock className="h-4 w-4" />,
+      label: "Inactive leads",
+      value: risks.inactiveEnquiry,
+      href: "/enquiries",
+    },
+    {
+      icon: <Zap className="h-4 w-4" />,
+      label: "Unassigned leads",
+      value: risks.unassignedEnquiry,
+      href: "/enquiries",
+    },
   ];
 
   return (
     <div>
-      <PageHeader title="Daily Action Dashboard" subtitle="Everything that needs attention today — recommendations only, nothing runs automatically." />
+      <PageHeader
+        title="Daily Action Dashboard"
+        subtitle="Everything that needs attention today — recommendations only, nothing runs automatically."
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {priorities.map((p) => (
@@ -94,7 +198,9 @@ function DailyActionDashboard() {
             <Card className="h-full transition-shadow hover:shadow-md">
               <CardContent className="flex items-center justify-between p-3">
                 <div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">{p.icon} {p.label}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    {p.icon} {p.label}
+                  </div>
                   <div className="mt-1 text-2xl font-bold tabular-nums">{p.value}</div>
                 </div>
               </CardContent>
@@ -105,39 +211,91 @@ function DailyActionDashboard() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Top risks</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Top risks</CardTitle>
+          </CardHeader>
           <CardContent>
             {risks.items.length === 0 ? (
               <div className="text-xs text-muted-foreground">No risks detected.</div>
             ) : (
-              <InsightList insights={risks.items.slice(0, 12)} className="sm:grid-cols-1 xl:grid-cols-1" />
+              <InsightList
+                insights={risks.items.slice(0, 12)}
+                className="sm:grid-cols-1 xl:grid-cols-1"
+              />
             )}
           </CardContent>
         </Card>
-        <LeadColumn title="Hot leads" icon={<Flame className="h-4 w-4 text-status-warning-fg" />} rows={leads.hot} />
-        <LeadColumn title="High-value opportunities" icon={<CircleDollarSign className="h-4 w-4 text-status-success-fg" />} rows={leads.highValue} />
-        <LeadColumn title="Cold leads" icon={<Snowflake className="h-4 w-4 text-status-info-fg" />} rows={leads.cold} />
-        <LeadColumn title="Lost leads to review" icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />} rows={leads.lostReview} />
+        <LeadColumn
+          title="Hot leads"
+          icon={<Flame className="h-4 w-4 text-status-warning-fg" />}
+          rows={leads.hot}
+        />
+        <LeadColumn
+          title="High-value opportunities"
+          icon={<CircleDollarSign className="h-4 w-4 text-status-success-fg" />}
+          rows={leads.highValue}
+        />
+        <LeadColumn
+          title="Cold leads"
+          icon={<Snowflake className="h-4 w-4 text-status-info-fg" />}
+          rows={leads.cold}
+        />
+        <LeadColumn
+          title="Lost leads to review"
+          icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+          rows={leads.lostReview}
+        />
       </div>
     </div>
   );
 }
 
-interface LeadRow { id: string; enquiry_no: string | null; budget_inr: number | null; customer?: { name: string | null } | null; updated_at?: string | null }
-function LeadColumn({ title, icon, rows }: { title: string; icon: React.ReactNode; rows: LeadRow[] }) {
+interface LeadRow {
+  id: string;
+  enquiry_no: string | null;
+  budget_inr: number | null;
+  customer?: { name: string | null } | null;
+  updated_at?: string | null;
+}
+function LeadColumn({
+  title,
+  icon,
+  rows,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: LeadRow[];
+}) {
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2">{icon} {title}</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          {icon} {title}
+        </CardTitle>
+      </CardHeader>
       <CardContent className="space-y-1">
-        {rows.length === 0 ? <div className="text-xs text-muted-foreground">Nothing here.</div> : rows.map((r) => (
-          <Link key={r.id} to="/enquiries/$enquiryId" params={{ enquiryId: r.id }} className="flex items-center justify-between rounded-md p-1.5 text-xs hover:bg-muted/60">
-            <div className="truncate">
-              <span className="font-medium">{r.enquiry_no ?? "—"}</span>
-              <span className="text-muted-foreground"> · {r.customer?.name ?? "—"}</span>
-            </div>
-            {Number(r.budget_inr ?? 0) > 0 && <span className="tabular-nums text-muted-foreground">₹{Number(r.budget_inr).toLocaleString("en-IN")}</span>}
-          </Link>
-        ))}
+        {rows.length === 0 ? (
+          <div className="text-xs text-muted-foreground">Nothing here.</div>
+        ) : (
+          rows.map((r) => (
+            <Link
+              key={r.id}
+              to="/enquiries/$enquiryId"
+              params={{ enquiryId: r.id }}
+              className="flex items-center justify-between rounded-md p-1.5 text-xs hover:bg-muted/60"
+            >
+              <div className="truncate">
+                <span className="font-medium">{r.enquiry_no ?? "—"}</span>
+                <span className="text-muted-foreground"> · {r.customer?.name ?? "—"}</span>
+              </div>
+              {Number(r.budget_inr ?? 0) > 0 && (
+                <span className="tabular-nums text-muted-foreground">
+                  ₹{Number(r.budget_inr).toLocaleString("en-IN")}
+                </span>
+              )}
+            </Link>
+          ))
+        )}
       </CardContent>
     </Card>
   );

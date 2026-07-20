@@ -11,8 +11,14 @@ import { resolveEffectiveMode } from "./index";
 import type { VieExecutionPolicy } from "../types";
 
 const auto = (autoThreshold = 0.85): VieExecutionPolicy => ({ mode: "auto", autoThreshold });
-const confirmPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({ mode: "confirm", autoThreshold });
-const draftPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({ mode: "draft", autoThreshold });
+const confirmPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({
+  mode: "confirm",
+  autoThreshold,
+});
+const draftPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({
+  mode: "draft",
+  autoThreshold,
+});
 
 describe("resolveEffectiveMode", () => {
   describe("blockers always force draft, regardless of policy or confidence", () => {

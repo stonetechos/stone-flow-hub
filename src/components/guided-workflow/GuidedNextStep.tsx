@@ -51,8 +51,7 @@ export function GuidedNextStep({ entity, entityId, ctx, hasNext, reasonOverride 
 
   // Only probe when we actually might show the card — cheap, but no reason
   // to hit the DB on disabled/skipped/already-known cases.
-  const probeEnabled =
-    !!step && !!enabled && !skipped && hasNext === undefined;
+  const probeEnabled = !!step && !!enabled && !skipped && hasNext === undefined;
 
   const probe = useQuery({
     queryKey: downstreamQueryKey(entity, entityId),
@@ -63,11 +62,9 @@ export function GuidedNextStep({ entity, entityId, ctx, hasNext, reasonOverride 
     retry: 1,
   });
 
-  const downstreamExists =
-    hasNext !== undefined ? hasNext : probe.data === true;
+  const downstreamExists = hasNext !== undefined ? hasNext : probe.data === true;
 
-  const visible =
-    !!step && !!enabled && !skipped && !downstreamExists && !probe.isLoading;
+  const visible = !!step && !!enabled && !skipped && !downstreamExists && !probe.isLoading;
 
   // Bind `n` → Continue while the banner is visible. Guarded by the hook's
   // own typing-target check so it never fires inside inputs/dialogs.
