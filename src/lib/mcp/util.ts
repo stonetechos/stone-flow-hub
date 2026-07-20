@@ -45,12 +45,16 @@ export async function requireStaffClient(ctx: ToolContext): Promise<StaffClientR
   }
   const client = supabaseAsUser(token);
   const { data, error } = await client.rpc("has_staff_access", { _user_id: userId });
-  if (error) return { ok: false, error: errorResult(new Error(`Role check failed: ${error.message}`)) };
+  if (error)
+    return { ok: false, error: errorResult(new Error(`Role check failed: ${error.message}`)) };
   if (!data) return { ok: false, error: forbidden() };
   return { ok: true, client, userId };
 }
 
 /** Sanitize a search term for Supabase `.ilike()`/`.or()` filters. */
 export function sanitize(term: string): string {
-  return term.replace(/[,%()]/g, "").trim().slice(0, 100);
+  return term
+    .replace(/[,%()]/g, "")
+    .trim()
+    .slice(0, 100);
 }

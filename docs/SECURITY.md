@@ -43,12 +43,12 @@
 
 ## Server-Side Access Model
 
-| Client | When | RLS |
-|---|---|---|
-| `@/integrations/supabase/client` | Browser components | As user |
-| Server publishable (in-handler) | Public read fns / server routes | As anon |
-| `requireSupabaseAuth` (server fn) | User-scoped writes/reads | As user |
-| `supabaseAdmin` (`client.server.ts`) | Verified webhooks + admin ops | BYPASSED |
+| Client                               | When                            | RLS      |
+| ------------------------------------ | ------------------------------- | -------- |
+| `@/integrations/supabase/client`     | Browser components              | As user  |
+| Server publishable (in-handler)      | Public read fns / server routes | As anon  |
+| `requireSupabaseAuth` (server fn)    | User-scoped writes/reads        | As user  |
+| `supabaseAdmin` (`client.server.ts`) | Verified webhooks + admin ops   | BYPASSED |
 
 `SUPABASE_SERVICE_ROLE_KEY` is server-only and never surfaces to the
 browser. `supabaseAdmin` is imported lazily inside handlers in

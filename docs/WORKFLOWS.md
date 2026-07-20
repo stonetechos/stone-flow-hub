@@ -48,7 +48,7 @@ server-fn / cron) that fires.
 ## 5. Goods Receipt (PO → GRN → Inventory)
 
 1. **Create GRN** — `/grns` against a PO line. Writes `grns` + `grn_items`
-   + `grn_inspections`.
+   - `grn_inspections`.
 2. **Trigger**: `AFTER INSERT` on `grn_items` posts a row into
    `inventory_movements` (positive quantity). Duplicate prevention via
    `UNIQUE (source_type, source_line_id)`.
@@ -61,7 +61,7 @@ server-fn / cron) that fires.
    `inventory_movements` row. Duplicate prevention via UNIQUE constraint on
    `(dispatch_id, sales_order_item_id)`.
 3. **Update Delivery Status** — status transitions (`prepared → in_transit →
-   delivered`) each write `activity_log` + enqueue notification.
+delivered`) each write `activity_log` + enqueue notification.
 
 ## 7. Delivery → Installation
 
@@ -85,7 +85,7 @@ server-fn / cron) that fires.
    `/api/public/webhooks/razorpay` marks the link paid and inserts a
    `payments` row after HMAC verification.
 3. **Record Receipt** — `/receipts` with `AllocationTable`. Writes `receipts`
-   + `receipt_allocations`. Customer ledger view recomputes.
+   - `receipt_allocations`. Customer ledger view recomputes.
 4. **Credit / Debit Notes / Refunds** — `credit_notes`, `debit_notes`,
    `refunds` for corrections; each linked back to the source invoice.
 
@@ -120,7 +120,7 @@ via `suppressed_emails` and `email_unsubscribe_tokens`.
 - Sequence-stamped documents (EST/QUO/SO/PO/INV/RCT/DC/GRN) are unique by
   `number`.
 - `activity_log` is deduped on `(entity_type, entity_id, action, actor_id,
-  created_at)` at the query layer; the v1.0 cleanup migration removed
+created_at)` at the query layer; the v1.0 cleanup migration removed
   legacy backfill duplicates.
 - `inventory_movements` is UNIQUE on `(source_type, source_line_id)`.
 - `dispatch_items` is UNIQUE on `(dispatch_id, sales_order_item_id)`.

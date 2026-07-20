@@ -10,11 +10,11 @@ Successor to `docs/deployment-guide.md` (kept for historical reference).
 
 ## Environments
 
-| Env | URL | Notes |
-|---|---|---|
-| Preview | `project--{project-id}-dev.lovable.app` | Auto-built on save |
-| Production | `project--{project-id}.lovable.app` | On **Publish** |
-| Custom domain | `erp.stonetech.in` | CNAME to production |
+| Env           | URL                                     | Notes               |
+| ------------- | --------------------------------------- | ------------------- |
+| Preview       | `project--{project-id}-dev.lovable.app` | Auto-built on save  |
+| Production    | `project--{project-id}.lovable.app`     | On **Publish**      |
+| Custom domain | `erp.stonetech.in`                      | CNAME to production |
 
 Preview and production share the same Supabase database. Destructive
 scripts must gate on `is_demo=true` and admin role.
@@ -22,11 +22,13 @@ scripts must gate on `is_demo=true` and admin role.
 ## Environment Variables
 
 ### Client (bundled, safe)
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_PROJECT_ID`
 
 ### Server (never in the browser)
+
 - `SUPABASE_URL`
 - `SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` — Lovable-managed; not user-accessible
@@ -78,7 +80,7 @@ the client bundle and Worker-compatible SSR bundle.
    - `POST /api/public/hooks/customer-payment-reminders`
    - `POST /api/public/hooks/dispatch-queue`
    - `POST /api/public/hooks/workforce-daily`
-   (send `x-cron-secret: $CRON_SHARED_SECRET`)
+     (send `x-cron-secret: $CRON_SHARED_SECRET`)
 10. Manual smoke: `/auth` loads, sign in, `/dashboard` renders, one create
     flow end-to-end (see `docs/rc1-manual-qa.md`).
 

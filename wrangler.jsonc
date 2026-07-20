@@ -3,6 +3,6 @@
   "main": ".output/server/index.mjs",
   "compatibility_date": "2026-07-16",
   "assets": {
-    "directory": ".output/public"
-  }
+    "directory": ".output/public",
+  },
 }

@@ -19,16 +19,9 @@ export default defineTool({
         .from("enquiries")
         .select("id", { count: "exact", head: true })
         .not("stage", "in", "(completed,lost,cancelled)"),
-      client
-        .from("quotes")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "sent"),
+      client.from("quotes").select("id", { count: "exact", head: true }).eq("status", "sent"),
       client.from("invoices").select("balance_due").gt("balance_due", 0),
-      client
-        .from("invoices")
-        .select("balance_due")
-        .gt("balance_due", 0)
-        .lt("due_date", today),
+      client.from("invoices").select("balance_due").gt("balance_due", 0).lt("due_date", today),
       client.from("receipts").select("amount").gte("received_at", `${today}T00:00:00Z`),
     ]);
 

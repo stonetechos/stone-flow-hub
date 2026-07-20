@@ -4,19 +4,19 @@ Version 1.0 Foundation baseline. This document describes the shipped system, not
 
 ## High-Level Stack
 
-| Layer | Technology |
-|---|---|
-| UI framework | React 19 |
-| Routing / SSR | TanStack Start v1 + TanStack Router (file-based) |
-| Build | Vite 7 |
-| Server runtime | Cloudflare Workers (nodejs_compat) |
-| Data / Auth / Storage | Supabase (Lovable Cloud), Postgres 15 |
-| Server RPC | `createServerFn` from `@tanstack/react-start` |
-| Server HTTP (webhooks, cron) | TanStack server routes under `src/routes/api/public/*` |
-| Client data | TanStack Query v5 (loader `ensureQueryData` + `useSuspenseQuery`) |
-| Styling | Tailwind v4 (native `@import` + `@theme` in `src/styles.css`) |
-| Components | shadcn/ui primitives in `src/components/ui/*` |
-| AI | Lovable AI Gateway (`LOVABLE_API_KEY`) |
+| Layer                        | Technology                                                        |
+| ---------------------------- | ----------------------------------------------------------------- |
+| UI framework                 | React 19                                                          |
+| Routing / SSR                | TanStack Start v1 + TanStack Router (file-based)                  |
+| Build                        | Vite 7                                                            |
+| Server runtime               | Cloudflare Workers (nodejs_compat)                                |
+| Data / Auth / Storage        | Supabase (Lovable Cloud), Postgres 15                             |
+| Server RPC                   | `createServerFn` from `@tanstack/react-start`                     |
+| Server HTTP (webhooks, cron) | TanStack server routes under `src/routes/api/public/*`            |
+| Client data                  | TanStack Query v5 (loader `ensureQueryData` + `useSuspenseQuery`) |
+| Styling                      | Tailwind v4 (native `@import` + `@theme` in `src/styles.css`)     |
+| Components                   | shadcn/ui primitives in `src/components/ui/*`                     |
+| AI                           | Lovable AI Gateway (`LOVABLE_API_KEY`)                            |
 
 ## Module Relationships
 
@@ -151,10 +151,10 @@ src/
   installed. Only the static app shell (JS/CSS/fonts/icons) is cached,
   stale-while-revalidate.
 - `src/lib/pwa/sync-queue.ts` — an IndexedDB pending-operations primitive
-  + Background Sync registration. Foundation only: no mutation call site
-  enqueues into it yet. A later phase would need to wire specific writes
-  (estimates, quotes, dispatches, …) through it to get true offline
-  editing.
+  - Background Sync registration. Foundation only: no mutation call site
+    enqueues into it yet. A later phase would need to wire specific writes
+    (estimates, quotes, dispatches, …) through it to get true offline
+    editing.
 - `src/hooks/use-online-status.ts` / `use-install-prompt.ts` +
   `src/components/layout/SyncStatusIndicator.tsx` — connectivity pill and
   install affordance mounted once in `AppShell`'s topbar.

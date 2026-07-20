@@ -9,7 +9,8 @@ const STATUSES: QuoteStatus[] = ["draft", "sent", "accepted", "rejected", "expir
 export default defineTool({
   name: "list_quotes",
   title: "List quotes",
-  description: "List sales quotes filtered by status, customer or free-text search on quote number.",
+  description:
+    "List sales quotes filtered by status, customer or free-text search on quote number.",
   inputSchema: {
     query: z.string().optional(),
     status: z.enum(STATUSES as [QuoteStatus, ...QuoteStatus[]]).optional(),

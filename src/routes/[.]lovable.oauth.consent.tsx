@@ -66,9 +66,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
       <h1 className="mb-2 text-xl font-semibold text-text-primary">
         Could not load this authorization request
       </h1>
-      <p className="text-sm text-text-secondary">
-        {String((error as Error)?.message ?? error)}
-      </p>
+      <p className="text-sm text-text-secondary">{String((error as Error)?.message ?? error)}</p>
     </main>
   ),
 });

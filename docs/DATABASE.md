@@ -6,14 +6,14 @@ the `public` schema. `auth`, `storage`, `realtime`, `supabase_functions` and
 
 ## Totals (v1.0 baseline)
 
-| Metric | Count |
-|---|---|
-| Tables (public) | 126 |
-| Triggers (public, non-internal) | 199 |
-| Functions (public) | 127 |
-| RLS policies (public) | 268 |
-| Indexes (public) | 468 |
-| Forward-only migrations | 159 files under `supabase/migrations/` |
+| Metric                          | Count                                  |
+| ------------------------------- | -------------------------------------- |
+| Tables (public)                 | 126                                    |
+| Triggers (public, non-internal) | 199                                    |
+| Functions (public)              | 127                                    |
+| RLS policies (public)           | 268                                    |
+| Indexes (public)                | 468                                    |
+| Forward-only migrations         | 159 files under `supabase/migrations/` |
 
 ## Table Groups
 
@@ -118,7 +118,7 @@ own uniqueness constraints where duplicates would cause double-counting.
   use narrow `TO anon` SELECT policies on specific columns only.
 - **`GRANT`** is issued explicitly for every table:
   `GRANT SELECT, INSERT, UPDATE, DELETE ON public.<t> TO authenticated;
-   GRANT ALL ON public.<t> TO service_role;` (+ `TO anon` only where a
+ GRANT ALL ON public.<t> TO service_role;` (+ `TO anon` only where a
   matching policy exists).
 
 ## Indexes (468 total)

@@ -27,7 +27,7 @@ a required static `preconnect` method that plain DOM `fetch` doesn't have.
 TypeScript's global augmentations apply to the whole program being
 checked, not just the files that reference them — so the moment any
 included file pulls in bun-types' globals, `typeof fetch` changes meaning
-for *every* file in that `tsc` run, including production files reached
+for _every_ file in that `tsc` run, including production files reached
 transitively from a test file (e.g. `src/integrations/supabase/client.ts`,
 imported by `resolve.test.ts` via `resolve.ts`). That's not test-only
 isolation, it's a Bun global leaking into production code's types — the
@@ -119,7 +119,7 @@ actually ambiguous (the empty array), not a workaround.
   folders, and Milestone-1-and-later work should keep following that
   convention rather than introducing one.
 - **Reusable test helpers** — fixtures, shared assertion wrappers, anything
-  imported *by* more than one test file but not itself a test — live in a
+  imported _by_ more than one test file but not itself a test — live in a
   `testSupport/` folder alongside the code it supports, e.g.
   `src/lib/vie/testSupport/testUtils.ts`. A file belongs in `testSupport/`
   only once it's shared; a one-off helper used by a single test file can

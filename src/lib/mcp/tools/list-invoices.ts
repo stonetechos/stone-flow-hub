@@ -4,7 +4,14 @@ import type { Database } from "@/integrations/supabase/types";
 import { errorResult, jsonResult, requireStaffClient, sanitize } from "../util";
 
 type InvoiceStatus = Database["public"]["Enums"]["invoice_status"];
-const STATUSES: InvoiceStatus[] = ["draft", "sent", "partially_paid", "paid", "overdue", "cancelled"];
+const STATUSES: InvoiceStatus[] = [
+  "draft",
+  "sent",
+  "partially_paid",
+  "paid",
+  "overdue",
+  "cancelled",
+];
 
 export default defineTool({
   name: "list_invoices",
@@ -15,7 +22,10 @@ export default defineTool({
     query: z.string().optional(),
     status: z.enum(STATUSES as [InvoiceStatus, ...InvoiceStatus[]]).optional(),
     customer_id: z.string().uuid().optional(),
-    only_overdue: z.boolean().optional().describe("If true, return only invoices with a positive balance past their due date."),
+    only_overdue: z
+      .boolean()
+      .optional()
+      .describe("If true, return only invoices with a positive balance past their due date."),
     limit: z.number().int().min(1).max(100).default(25),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -24,9 +34,7 @@ export default defineTool({
     if (!staff.ok) return staff.error;
     let q = staff.client
       .from("invoices")
-      .select(
-        "id, invoice_no, status, issue_date, due_date, total, balance_due, customer_id",
-      )
+      .select("id, invoice_no, status, issue_date, due_date, total, balance_due, customer_id")
       .order("issue_date", { ascending: false })
       .limit(limit);
     if (status) q = q.eq("status", status);

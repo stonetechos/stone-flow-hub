@@ -97,62 +97,62 @@
    *  `bg-surface-card`, `text-text-primary`, `border-border-subtle`,
    *  `bg-intent-primary`, etc.
    */
-  --color-surface-base:      var(--surface-base);
-  --color-surface-panel:     var(--surface-panel);
-  --color-surface-card:      var(--surface-card);
+  --color-surface-base: var(--surface-base);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-card: var(--surface-card);
   --color-surface-card-hover: var(--surface-card-hover);
-  --color-surface-elevated:  var(--surface-elevated);
-  --color-surface-overlay:   var(--surface-overlay);
-  --color-surface-header:    var(--surface-header);
-  --color-surface-nav:       var(--surface-nav);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-header: var(--surface-header);
+  --color-surface-nav: var(--surface-nav);
   --color-surface-nav-hover: var(--surface-nav-hover);
   --color-surface-nav-active: var(--surface-nav-active);
   --color-surface-executive: var(--surface-executive);
-  --color-surface-inverse:   var(--surface-inverse);
-  --color-surface-scrim:     var(--surface-scrim);
-  --color-surface-disabled:  var(--surface-disabled);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-surface-scrim: var(--surface-scrim);
+  --color-surface-disabled: var(--surface-disabled);
 
-  --color-text-primary:        var(--text-primary);
-  --color-text-secondary:      var(--text-secondary);
-  --color-text-muted:          var(--text-muted);
-  --color-text-disabled:       var(--text-disabled);
-  --color-text-inverse:        var(--text-inverse);
-  --color-text-inverse-muted:  var(--text-inverse-muted);
-  --color-text-on-material:       var(--text-on-material);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-inverse-muted: var(--text-inverse-muted);
+  --color-text-on-material: var(--text-on-material);
   --color-text-on-material-muted: var(--text-on-material-muted);
-  --color-text-on-intent:      var(--text-on-intent);
-  --color-text-link:           var(--text-link);
+  --color-text-on-intent: var(--text-on-intent);
+  --color-text-link: var(--text-link);
 
-  --color-border-subtle:  var(--border-subtle);
+  --color-border-subtle: var(--border-subtle);
   --color-border-default: var(--border-default);
-  --color-border-intent:  var(--border-intent);
-  --color-border-danger:  var(--border-danger);
+  --color-border-intent: var(--border-intent);
+  --color-border-danger: var(--border-danger);
   --color-border-inverse: var(--border-inverse);
 
-  --color-intent-primary:         var(--intent-primary);
-  --color-intent-primary-hover:   var(--intent-primary-hover);
-  --color-intent-primary-active:  var(--intent-primary-active);
-  --color-intent-primary-fg:      var(--intent-primary-fg);
-  --color-intent-secondary:       var(--intent-secondary);
-  --color-intent-secondary-fg:    var(--intent-secondary-fg);
-  --color-intent-ghost-hover:     var(--intent-ghost-hover);
-  --color-intent-destructive:     var(--intent-destructive);
-  --color-intent-destructive-fg:  var(--intent-destructive-fg);
-  --color-intent-focus-ring:      var(--intent-focus-ring);
-  --color-intent-selection:       var(--intent-selection);
+  --color-intent-primary: var(--intent-primary);
+  --color-intent-primary-hover: var(--intent-primary-hover);
+  --color-intent-primary-active: var(--intent-primary-active);
+  --color-intent-primary-fg: var(--intent-primary-fg);
+  --color-intent-secondary: var(--intent-secondary);
+  --color-intent-secondary-fg: var(--intent-secondary-fg);
+  --color-intent-ghost-hover: var(--intent-ghost-hover);
+  --color-intent-destructive: var(--intent-destructive);
+  --color-intent-destructive-fg: var(--intent-destructive-fg);
+  --color-intent-focus-ring: var(--intent-focus-ring);
+  --color-intent-selection: var(--intent-selection);
 
-  --color-status-success-fg:      var(--status-success-fg);
-  --color-status-success-bg:      var(--status-success-bg);
-  --color-status-success-border:  var(--status-success-border);
-  --color-status-warning-fg:      var(--status-warning-fg);
-  --color-status-warning-bg:      var(--status-warning-bg);
-  --color-status-warning-border:  var(--status-warning-border);
-  --color-status-danger-fg:       var(--status-danger-fg);
-  --color-status-danger-bg:       var(--status-danger-bg);
-  --color-status-danger-border:   var(--status-danger-border);
-  --color-status-info-fg:         var(--status-info-fg);
-  --color-status-info-bg:         var(--status-info-bg);
-  --color-status-info-border:     var(--status-info-border);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-warning-fg: var(--status-warning-fg);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-danger-fg: var(--status-danger-fg);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-danger-border: var(--status-danger-border);
+  --color-status-info-fg: var(--status-info-fg);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-border: var(--status-info-border);
 
   /* Brand primitive exposed for chart / accent utilities */
   --color-mint-100: var(--mint-100);
@@ -167,7 +167,7 @@
   --shadow-1: 0 1px 0 0 rgb(15 23 42 / 0.03);
   --shadow-2: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 1px -1px rgb(15 23 42 / 0.03);
   --shadow-3: 0 4px 12px -4px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
-  --shadow-4: 0 12px 32px -12px rgb(15 23 42 / 0.10), 0 4px 12px -6px rgb(15 23 42 / 0.05);
+  --shadow-4: 0 12px 32px -12px rgb(15 23 42 / 0.1), 0 4px 12px -6px rgb(15 23 42 / 0.05);
 
   /* STDL elevation scale */
   --shadow-e0: var(--elev-e0);
@@ -198,87 +198,87 @@
    * ------------------------------------------------------------ */
 
   /* Stone neutrals */
-  --stone-travertine-50:  oklch(0.988 0.006 85);
+  --stone-travertine-50: oklch(0.988 0.006 85);
   --stone-travertine-100: oklch(0.975 0.007 85);
   --stone-travertine-200: oklch(0.955 0.008 85);
 
-  --stone-limestone-50:   oklch(0.995 0.003 85);
-  --stone-limestone-100:  oklch(0.982 0.004 85);
-  --stone-limestone-200:  oklch(0.965 0.005 85);
-  --stone-limestone-300:  oklch(0.945 0.006 85);
+  --stone-limestone-50: oklch(0.995 0.003 85);
+  --stone-limestone-100: oklch(0.982 0.004 85);
+  --stone-limestone-200: oklch(0.965 0.005 85);
+  --stone-limestone-300: oklch(0.945 0.006 85);
 
-  --stone-slate-300:      oklch(0.78 0.010 250);
-  --stone-slate-400:      oklch(0.62 0.012 250);
-  --stone-slate-500:      oklch(0.48 0.014 250);
-  --stone-slate-600:      oklch(0.36 0.014 250);
-  --stone-slate-700:      oklch(0.26 0.014 250);
+  --stone-slate-300: oklch(0.78 0.01 250);
+  --stone-slate-400: oklch(0.62 0.012 250);
+  --stone-slate-500: oklch(0.48 0.014 250);
+  --stone-slate-600: oklch(0.36 0.014 250);
+  --stone-slate-700: oklch(0.26 0.014 250);
 
-  --stone-graphite-800:   oklch(0.20 0.014 250);
-  --stone-graphite-900:   oklch(0.14 0.014 250);
+  --stone-graphite-800: oklch(0.2 0.014 250);
+  --stone-graphite-900: oklch(0.14 0.014 250);
 
-  --stone-basalt-800:     oklch(0.19 0.010 250);
-  --stone-basalt-900:     oklch(0.14 0.010 250);
-  --stone-basalt-950:     oklch(0.10 0.010 250);
+  --stone-basalt-800: oklch(0.19 0.01 250);
+  --stone-basalt-900: oklch(0.14 0.01 250);
+  --stone-basalt-950: oklch(0.1 0.01 250);
 
-  --stone-granite-700:    oklch(0.24 0.012 250);
-  --stone-granite-800:    oklch(0.18 0.012 250);
-  --stone-granite-900:    oklch(0.12 0.012 250);
+  --stone-granite-700: oklch(0.24 0.012 250);
+  --stone-granite-800: oklch(0.18 0.012 250);
+  --stone-granite-900: oklch(0.12 0.012 250);
 
   /* Brand — Mint Sandstone */
-  --mint-100: oklch(0.94 0.030 165);
-  --mint-200: oklch(0.88 0.050 165);
-  --mint-300: oklch(0.80 0.070 165);
+  --mint-100: oklch(0.94 0.03 165);
+  --mint-200: oklch(0.88 0.05 165);
+  --mint-300: oklch(0.8 0.07 165);
   --mint-400: oklch(0.72 0.085 165);
   --mint-500: oklch(0.62 0.095 165);
-  --mint-600: oklch(0.54 0.090 165);
+  --mint-600: oklch(0.54 0.09 165);
   --mint-700: oklch(0.46 0.075 165);
 
   /* Semantic hues (muted) */
   --hue-success-100: oklch(0.94 0.04 155);
   --hue-success-200: oklch(0.88 0.07 155);
   --hue-success-500: oklch(0.58 0.11 155);
-  --hue-success-700: oklch(0.42 0.10 155);
+  --hue-success-700: oklch(0.42 0.1 155);
 
   --hue-warning-100: oklch(0.95 0.05 75);
   --hue-warning-200: oklch(0.88 0.09 75);
   --hue-warning-500: oklch(0.72 0.13 75);
   --hue-warning-700: oklch(0.52 0.12 75);
 
-  --hue-danger-100:  oklch(0.94 0.04 25);
-  --hue-danger-200:  oklch(0.88 0.08 25);
-  --hue-danger-500:  oklch(0.58 0.17 25);
-  --hue-danger-700:  oklch(0.44 0.15 25);
+  --hue-danger-100: oklch(0.94 0.04 25);
+  --hue-danger-200: oklch(0.88 0.08 25);
+  --hue-danger-500: oklch(0.58 0.17 25);
+  --hue-danger-700: oklch(0.44 0.15 25);
 
-  --hue-info-100:    oklch(0.94 0.03 235);
-  --hue-info-200:    oklch(0.88 0.06 235);
-  --hue-info-500:    oklch(0.60 0.11 235);
-  --hue-info-700:    oklch(0.44 0.11 235);
+  --hue-info-100: oklch(0.94 0.03 235);
+  --hue-info-200: oklch(0.88 0.06 235);
+  --hue-info-500: oklch(0.6 0.11 235);
+  --hue-info-700: oklch(0.44 0.11 235);
 
   /* ------------------------------------------------------------
    * 2. SEMANTIC — the contract components consume
    * ------------------------------------------------------------ */
 
   /* Surfaces */
-  --surface-base:        var(--stone-travertine-50);
-  --surface-panel:       var(--stone-travertine-100);
-  --surface-card:        var(--stone-limestone-50);
-  --surface-card-hover:  var(--stone-limestone-200);
-  --surface-elevated:    var(--stone-limestone-50);
-  --surface-overlay:     var(--stone-limestone-50);
-  --surface-header:      var(--stone-limestone-100);
-  --surface-nav:         var(--stone-basalt-900);
-  --surface-nav-hover:   var(--stone-basalt-800);
-  --surface-nav-active:  oklch(from var(--mint-500) l c h / 0.14);
-  --surface-executive:   var(--stone-granite-800);
-  --surface-inverse:     var(--stone-graphite-900);
-  --surface-scrim:       oklch(from var(--stone-basalt-950) l c h / 0.40);
-  --surface-disabled:    var(--stone-limestone-100);
+  --surface-base: var(--stone-travertine-50);
+  --surface-panel: var(--stone-travertine-100);
+  --surface-card: var(--stone-limestone-50);
+  --surface-card-hover: var(--stone-limestone-200);
+  --surface-elevated: var(--stone-limestone-50);
+  --surface-overlay: var(--stone-limestone-50);
+  --surface-header: var(--stone-limestone-100);
+  --surface-nav: var(--stone-basalt-900);
+  --surface-nav-hover: var(--stone-basalt-800);
+  --surface-nav-active: oklch(from var(--mint-500) l c h / 0.14);
+  --surface-executive: var(--stone-granite-800);
+  --surface-inverse: var(--stone-graphite-900);
+  --surface-scrim: oklch(from var(--stone-basalt-950) l c h / 0.4);
+  --surface-disabled: var(--stone-limestone-100);
 
   /* Text */
-  --text-primary:        var(--stone-graphite-800);
-  --text-secondary:      var(--stone-slate-400);
-  --text-muted:          var(--stone-slate-500);
-  --text-disabled:       var(--stone-slate-300);
+  --text-primary: var(--stone-graphite-800);
+  --text-secondary: var(--stone-slate-400);
+  --text-muted: var(--stone-slate-500);
+  --text-disabled: var(--stone-slate-300);
   /* --text-inverse pairs with --surface-inverse (tooltip.tsx only) — both
    * intentionally flip lightness per theme so a tooltip always contrasts
    * the page behind it. Everything that sits on a permanently-dark Stone
@@ -289,111 +289,117 @@
    * Phase G.11 Section 3: two dark themes previously reused
    * --text-inverse for material text too, which flips it dark exactly
    * when the surface stays dark — that was the contrast bug. */
-  --text-inverse:        var(--stone-limestone-50);
-  --text-inverse-muted:  oklch(0.75 0.010 250);
-  --text-on-material:       var(--stone-limestone-50);
-  --text-on-material-muted: oklch(0.75 0.010 250);
-  --text-on-intent:      var(--stone-graphite-900);
-  --text-link:           var(--mint-700);
+  --text-inverse: var(--stone-limestone-50);
+  --text-inverse-muted: oklch(0.75 0.01 250);
+  --text-on-material: var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.01 250);
+  --text-on-intent: var(--stone-graphite-900);
+  --text-link: var(--mint-700);
 
   /* Borders */
-  --border-subtle:  oklch(from var(--stone-slate-400) l c h / 0.12);
-  --border-default: oklch(from var(--stone-slate-400) l c h / 0.20);
-  --border-intent:  var(--mint-500);
-  --border-danger:  var(--hue-danger-500);
-  --border-inverse: oklch(from white l c h / 0.10);
+  --border-subtle: oklch(from var(--stone-slate-400) l c h / 0.12);
+  --border-default: oklch(from var(--stone-slate-400) l c h / 0.2);
+  --border-intent: var(--mint-500);
+  --border-danger: var(--hue-danger-500);
+  --border-inverse: oklch(from white l c h / 0.1);
 
   /* Intent */
-  --intent-primary:         var(--mint-500);
-  --intent-primary-hover:   var(--mint-600);
-  --intent-primary-active:  var(--mint-700);
-  --intent-primary-fg:      var(--text-on-intent);
-  --intent-secondary:       var(--surface-card);
-  --intent-secondary-fg:    var(--text-primary);
-  --intent-ghost-hover:     oklch(from var(--stone-slate-400) l c h / 0.08);
-  --intent-destructive:     var(--hue-danger-500);
-  --intent-destructive-fg:  var(--stone-limestone-50);
-  --intent-focus-ring:      var(--mint-500);
-  --intent-selection:       oklch(from var(--mint-500) l c h / 0.08);
+  --intent-primary: var(--mint-500);
+  --intent-primary-hover: var(--mint-600);
+  --intent-primary-active: var(--mint-700);
+  --intent-primary-fg: var(--text-on-intent);
+  --intent-secondary: var(--surface-card);
+  --intent-secondary-fg: var(--text-primary);
+  --intent-ghost-hover: oklch(from var(--stone-slate-400) l c h / 0.08);
+  --intent-destructive: var(--hue-danger-500);
+  --intent-destructive-fg: var(--stone-limestone-50);
+  --intent-focus-ring: var(--mint-500);
+  --intent-selection: oklch(from var(--mint-500) l c h / 0.08);
 
   /* Status */
-  --status-success-fg:     var(--hue-success-700);
-  --status-success-bg:     var(--hue-success-100);
+  --status-success-fg: var(--hue-success-700);
+  --status-success-bg: var(--hue-success-100);
   --status-success-border: var(--hue-success-200);
-  --status-warning-fg:     var(--hue-warning-700);
-  --status-warning-bg:     var(--hue-warning-100);
+  --status-warning-fg: var(--hue-warning-700);
+  --status-warning-bg: var(--hue-warning-100);
   --status-warning-border: var(--hue-warning-200);
-  --status-danger-fg:      var(--hue-danger-700);
-  --status-danger-bg:      var(--hue-danger-100);
-  --status-danger-border:  var(--hue-danger-200);
-  --status-info-fg:        var(--hue-info-700);
-  --status-info-bg:        var(--hue-info-100);
-  --status-info-border:    var(--hue-info-200);
+  --status-danger-fg: var(--hue-danger-700);
+  --status-danger-bg: var(--hue-danger-100);
+  --status-danger-border: var(--hue-danger-200);
+  --status-info-fg: var(--hue-info-700);
+  --status-info-bg: var(--hue-info-100);
+  --status-info-border: var(--hue-info-200);
 
   /* Elevation — cool, Basalt-tinted */
   --elev-e0: none;
   --elev-e1: 0 1px 0 0 oklch(from var(--stone-basalt-900) l c h / 0.04);
   --elev-e2:
     0 2px 8px -2px oklch(from var(--stone-basalt-900) l c h / 0.08),
-    0 1px 2px 0    oklch(from var(--stone-basalt-900) l c h / 0.04);
+    0 1px 2px 0 oklch(from var(--stone-basalt-900) l c h / 0.04);
   --elev-e3:
     0 12px 32px -12px oklch(from var(--stone-basalt-900) l c h / 0.16),
-    0 4px 12px -6px   oklch(from var(--stone-basalt-900) l c h / 0.08);
+    0 4px 12px -6px oklch(from var(--stone-basalt-900) l c h / 0.08);
   --elev-e4:
     0 24px 64px -24px oklch(from var(--stone-basalt-900) l c h / 0.24),
-    0 8px 24px -12px  oklch(from var(--stone-basalt-900) l c h / 0.12);
-  --elev-focus:
-    0 0 0 2px var(--surface-base),
-    0 0 0 4px var(--intent-focus-ring);
+    0 8px 24px -12px oklch(from var(--stone-basalt-900) l c h / 0.12);
+  --elev-focus: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--intent-focus-ring);
 
   /* Material engine layers */
-  --material-basalt-fill:
-    linear-gradient(180deg, var(--stone-basalt-800), var(--stone-basalt-900));
-  --material-granite-fill:
-    linear-gradient(160deg, var(--stone-granite-700), var(--stone-granite-900));
-  --material-travertine-fill:
-    linear-gradient(180deg, var(--stone-travertine-50), var(--stone-travertine-100));
-  --material-specular:
-    radial-gradient(ellipse at top, oklch(from white l c h / 0.06), transparent 60%);
+  --material-basalt-fill: linear-gradient(180deg, var(--stone-basalt-800), var(--stone-basalt-900));
+  --material-granite-fill: linear-gradient(
+    160deg,
+    var(--stone-granite-700),
+    var(--stone-granite-900)
+  );
+  --material-travertine-fill: linear-gradient(
+    180deg,
+    var(--stone-travertine-50),
+    var(--stone-travertine-100)
+  );
+  --material-specular: radial-gradient(
+    ellipse at top,
+    oklch(from white l c h / 0.06),
+    transparent 60%
+  );
   --material-grain-opacity-nav: 0.06;
-  --material-grain-opacity-hero: 0.10;
+  --material-grain-opacity-hero: 0.1;
   --material-grain-opacity-exec: 0.12;
 
   /* ------------------------------------------------------------
    * 3. LEGACY — original v1 tokens, now aliases to semantic layer
    *     Kept so every existing component keeps rendering.
    * ------------------------------------------------------------ */
-  --background:            var(--surface-base);
-  --surface:               var(--surface-panel);
-  --foreground:            var(--text-primary);
-  --card:                  var(--surface-card);
-  --card-foreground:       var(--text-primary);
-  --popover:               var(--surface-elevated);
-  --popover-foreground:    var(--text-primary);
+  --background: var(--surface-base);
+  --surface: var(--surface-panel);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--text-primary);
 
-  --primary:               var(--intent-primary);
-  --primary-foreground:    var(--intent-primary-fg);
+  --primary: var(--intent-primary);
+  --primary-foreground: var(--intent-primary-fg);
 
-  --secondary:             oklch(0.965 0.004 90);
-  --secondary-foreground:  oklch(0.26 0.015 250);
-  --muted:                 oklch(0.965 0.004 90);
-  --muted-foreground:      var(--text-muted);
-  --accent:                oklch(0.965 0.004 90);
-  --accent-foreground:     oklch(0.22 0.015 250);
+  --secondary: oklch(0.965 0.004 90);
+  --secondary-foreground: oklch(0.26 0.015 250);
+  --muted: oklch(0.965 0.004 90);
+  --muted-foreground: var(--text-muted);
+  --accent: oklch(0.965 0.004 90);
+  --accent-foreground: oklch(0.22 0.015 250);
 
-  --destructive:            var(--intent-destructive);
+  --destructive: var(--intent-destructive);
   --destructive-foreground: var(--intent-destructive-fg);
-  --success:                var(--hue-success-500);
-  --success-foreground:     oklch(0.99 0.005 150);
-  --warning:                var(--hue-warning-500);
-  --warning-foreground:     oklch(0.22 0.03 75);
-  --info:                   var(--hue-info-500);
-  --info-foreground:        oklch(0.99 0.005 235);
+  --success: var(--hue-success-500);
+  --success-foreground: oklch(0.99 0.005 150);
+  --warning: var(--hue-warning-500);
+  --warning-foreground: oklch(0.22 0.03 75);
+  --info: var(--hue-info-500);
+  --info-foreground: oklch(0.99 0.005 235);
 
-  --border:         oklch(0.92 0.005 250);
-  --border-strong:  oklch(0.86 0.006 250);
-  --input:          oklch(0.90 0.006 250);
-  --ring:           var(--intent-focus-ring);
+  --border: oklch(0.92 0.005 250);
+  --border-strong: oklch(0.86 0.006 250);
+  --input: oklch(0.9 0.006 250);
+  --ring: var(--intent-focus-ring);
 
   --chart-1: var(--mint-500);
   --chart-2: var(--stone-slate-500);
@@ -402,18 +408,20 @@
   --chart-5: var(--hue-danger-500);
   --chart-6: oklch(0.55 0.08 300);
 
-  --sidebar:                        var(--surface-nav);
-  --sidebar-foreground:             var(--text-inverse);
-  --sidebar-primary:                var(--mint-400);
-  --sidebar-primary-foreground:     var(--stone-basalt-900);
-  --sidebar-accent:                 var(--surface-nav-hover);
-  --sidebar-accent-foreground:      var(--text-inverse);
-  --sidebar-border:                 var(--border-inverse);
-  --sidebar-ring:                   var(--mint-400);
+  --sidebar: var(--surface-nav);
+  --sidebar-foreground: var(--text-inverse);
+  --sidebar-primary: var(--mint-400);
+  --sidebar-primary-foreground: var(--stone-basalt-900);
+  --sidebar-accent: var(--surface-nav-hover);
+  --sidebar-accent-foreground: var(--text-inverse);
+  --sidebar-border: var(--border-inverse);
+  --sidebar-ring: var(--mint-400);
 }
 
 /* Alias: explicit Quarry class matches :root */
-.theme-quarry { color-scheme: light; }
+.theme-quarry {
+  color-scheme: light;
+}
 
 /* ==============================================================
  * .dark / .theme-foundry — dark theme
@@ -423,121 +431,116 @@
   color-scheme: dark;
 
   /* Surfaces */
-  --surface-base:        var(--stone-basalt-900);
-  --surface-panel:       var(--stone-basalt-800);
-  --surface-card:        var(--stone-basalt-800);
-  --surface-card-hover:  oklch(0.23 0.010 250);
-  --surface-elevated:    var(--stone-granite-800);
-  --surface-overlay:     var(--stone-granite-800);
-  --surface-header:      var(--stone-basalt-800);
-  --surface-nav:         var(--stone-basalt-950);
-  --surface-nav-hover:   var(--stone-basalt-800);
-  --surface-nav-active:  oklch(from var(--mint-500) l c h / 0.18);
-  --surface-executive:   var(--stone-granite-900);
-  --surface-inverse:     var(--stone-limestone-50);
-  --surface-scrim:       oklch(from black l c h / 0.55);
-  --surface-disabled:    oklch(0.22 0.012 250);
+  --surface-base: var(--stone-basalt-900);
+  --surface-panel: var(--stone-basalt-800);
+  --surface-card: var(--stone-basalt-800);
+  --surface-card-hover: oklch(0.23 0.01 250);
+  --surface-elevated: var(--stone-granite-800);
+  --surface-overlay: var(--stone-granite-800);
+  --surface-header: var(--stone-basalt-800);
+  --surface-nav: var(--stone-basalt-950);
+  --surface-nav-hover: var(--stone-basalt-800);
+  --surface-nav-active: oklch(from var(--mint-500) l c h / 0.18);
+  --surface-executive: var(--stone-granite-900);
+  --surface-inverse: var(--stone-limestone-50);
+  --surface-scrim: oklch(from black l c h / 0.55);
+  --surface-disabled: oklch(0.22 0.012 250);
 
   /* Text */
-  --text-primary:       var(--stone-limestone-50);
-  --text-secondary:     oklch(0.78 0.010 250);
-  --text-muted:         oklch(0.62 0.012 250);
-  --text-disabled:      oklch(0.44 0.012 250);
+  --text-primary: var(--stone-limestone-50);
+  --text-secondary: oklch(0.78 0.01 250);
+  --text-muted: oklch(0.62 0.012 250);
+  --text-disabled: oklch(0.44 0.012 250);
   /* --text-inverse correctly flips dark here to pair with --surface-inverse
    * (also flipped light below) for tooltip.tsx. Stone Material surfaces
    * (sidebar/hero/etc.) never lighten in this theme, so their text uses
    * --text-on-material, which stays the same light value as :root. */
-  --text-inverse:       var(--stone-graphite-900);
+  --text-inverse: var(--stone-graphite-900);
   --text-inverse-muted: var(--stone-slate-500);
-  --text-on-material:       var(--stone-limestone-50);
-  --text-on-material-muted: oklch(0.75 0.010 250);
-  --text-on-intent:     var(--stone-graphite-900);
-  --text-link:          var(--mint-300);
+  --text-on-material: var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.01 250);
+  --text-on-intent: var(--stone-graphite-900);
+  --text-link: var(--mint-300);
 
   /* Borders */
-  --border-subtle:  oklch(from white l c h / 0.08);
+  --border-subtle: oklch(from white l c h / 0.08);
   --border-default: oklch(from white l c h / 0.14);
-  --border-intent:  var(--mint-400);
-  --border-danger:  var(--hue-danger-500);
-  --border-inverse: oklch(from black l c h / 0.20);
+  --border-intent: var(--mint-400);
+  --border-danger: var(--hue-danger-500);
+  --border-inverse: oklch(from black l c h / 0.2);
 
   /* Intent */
-  --intent-primary:        var(--mint-500);
-  --intent-primary-hover:  var(--mint-400);
+  --intent-primary: var(--mint-500);
+  --intent-primary-hover: var(--mint-400);
   --intent-primary-active: var(--mint-300);
-  --intent-primary-fg:     var(--stone-graphite-900);
-  --intent-secondary:      var(--surface-card);
-  --intent-secondary-fg:   var(--text-primary);
-  --intent-ghost-hover:    oklch(from white l c h / 0.06);
-  --intent-focus-ring:     var(--mint-400);
-  --intent-selection:      oklch(from var(--mint-500) l c h / 0.14);
+  --intent-primary-fg: var(--stone-graphite-900);
+  --intent-secondary: var(--surface-card);
+  --intent-secondary-fg: var(--text-primary);
+  --intent-ghost-hover: oklch(from white l c h / 0.06);
+  --intent-focus-ring: var(--mint-400);
+  --intent-selection: oklch(from var(--mint-500) l c h / 0.14);
 
   /* Status (darker tints) */
-  --status-success-fg:     oklch(0.86 0.10 155);
-  --status-success-bg:     oklch(from var(--hue-success-500) l c h / 0.16);
+  --status-success-fg: oklch(0.86 0.1 155);
+  --status-success-bg: oklch(from var(--hue-success-500) l c h / 0.16);
   --status-success-border: oklch(from var(--hue-success-500) l c h / 0.32);
-  --status-warning-fg:     oklch(0.88 0.13 75);
-  --status-warning-bg:     oklch(from var(--hue-warning-500) l c h / 0.16);
+  --status-warning-fg: oklch(0.88 0.13 75);
+  --status-warning-bg: oklch(from var(--hue-warning-500) l c h / 0.16);
   --status-warning-border: oklch(from var(--hue-warning-500) l c h / 0.32);
-  --status-danger-fg:      oklch(0.82 0.14 25);
-  --status-danger-bg:      oklch(from var(--hue-danger-500) l c h / 0.18);
-  --status-danger-border:  oklch(from var(--hue-danger-500) l c h / 0.34);
-  --status-info-fg:        oklch(0.84 0.11 235);
-  --status-info-bg:        oklch(from var(--hue-info-500) l c h / 0.16);
-  --status-info-border:    oklch(from var(--hue-info-500) l c h / 0.32);
+  --status-danger-fg: oklch(0.82 0.14 25);
+  --status-danger-bg: oklch(from var(--hue-danger-500) l c h / 0.18);
+  --status-danger-border: oklch(from var(--hue-danger-500) l c h / 0.34);
+  --status-info-fg: oklch(0.84 0.11 235);
+  --status-info-bg: oklch(from var(--hue-info-500) l c h / 0.16);
+  --status-info-border: oklch(from var(--hue-info-500) l c h / 0.32);
 
   /* Elevation on dark — deeper, still restrained */
-  --elev-e1: 0 1px 0 0 oklch(from black l c h / 0.40);
+  --elev-e1: 0 1px 0 0 oklch(from black l c h / 0.4);
   --elev-e2:
-    0 2px 8px -2px oklch(from black l c h / 0.50),
-    0 1px 2px 0    oklch(from black l c h / 0.30);
+    0 2px 8px -2px oklch(from black l c h / 0.5), 0 1px 2px 0 oklch(from black l c h / 0.3);
   --elev-e3:
-    0 12px 32px -12px oklch(from black l c h / 0.60),
-    0 4px 12px -6px   oklch(from black l c h / 0.40);
+    0 12px 32px -12px oklch(from black l c h / 0.6), 0 4px 12px -6px oklch(from black l c h / 0.4);
   --elev-e4:
-    0 24px 64px -24px oklch(from black l c h / 0.70),
-    0 8px 24px -12px  oklch(from black l c h / 0.45);
-  --elev-focus:
-    0 0 0 2px var(--surface-base),
-    0 0 0 4px var(--intent-focus-ring);
+    0 24px 64px -24px oklch(from black l c h / 0.7), 0 8px 24px -12px oklch(from black l c h / 0.45);
+  --elev-focus: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--intent-focus-ring);
 
   /* Legacy aliases */
-  --background:            var(--surface-base);
-  --surface:               var(--surface-panel);
-  --foreground:            var(--text-primary);
-  --card:                  var(--surface-card);
-  --card-foreground:       var(--text-primary);
-  --popover:               var(--surface-elevated);
-  --popover-foreground:    var(--text-primary);
-  --primary:               var(--intent-primary);
-  --primary-foreground:    var(--intent-primary-fg);
-  --secondary:             oklch(0.26 0.015 250);
-  --secondary-foreground:  oklch(0.96 0.005 250);
-  --muted:                 oklch(0.26 0.015 250);
-  --muted-foreground:      var(--text-muted);
-  --accent:                oklch(0.28 0.015 250);
-  --accent-foreground:     oklch(0.96 0.005 250);
-  --destructive:            var(--intent-destructive);
+  --background: var(--surface-base);
+  --surface: var(--surface-panel);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--intent-primary);
+  --primary-foreground: var(--intent-primary-fg);
+  --secondary: oklch(0.26 0.015 250);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.26 0.015 250);
+  --muted-foreground: var(--text-muted);
+  --accent: oklch(0.28 0.015 250);
+  --accent-foreground: oklch(0.96 0.005 250);
+  --destructive: var(--intent-destructive);
   --destructive-foreground: var(--intent-destructive-fg);
-  --success:                var(--hue-success-500);
-  --success-foreground:     var(--stone-basalt-900);
-  --warning:                var(--hue-warning-500);
-  --warning-foreground:     var(--stone-basalt-900);
-  --info:                   var(--hue-info-500);
-  --info-foreground:        var(--stone-basalt-900);
-  --border:         oklch(1 0 0 / 10%);
-  --border-strong:  oklch(1 0 0 / 16%);
-  --input:          oklch(1 0 0 / 12%);
-  --ring:           var(--intent-focus-ring);
+  --success: var(--hue-success-500);
+  --success-foreground: var(--stone-basalt-900);
+  --warning: var(--hue-warning-500);
+  --warning-foreground: var(--stone-basalt-900);
+  --info: var(--hue-info-500);
+  --info-foreground: var(--stone-basalt-900);
+  --border: oklch(1 0 0 / 10%);
+  --border-strong: oklch(1 0 0 / 16%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: var(--intent-focus-ring);
 
-  --sidebar:                    var(--surface-nav);
-  --sidebar-foreground:         var(--text-inverse);
-  --sidebar-primary:            var(--mint-400);
+  --sidebar: var(--surface-nav);
+  --sidebar-foreground: var(--text-inverse);
+  --sidebar-primary: var(--mint-400);
   --sidebar-primary-foreground: var(--stone-basalt-900);
-  --sidebar-accent:             var(--surface-nav-hover);
-  --sidebar-accent-foreground:  var(--text-inverse);
-  --sidebar-border:             var(--border-inverse);
-  --sidebar-ring:               var(--mint-400);
+  --sidebar-accent: var(--surface-nav-hover);
+  --sidebar-accent-foreground: var(--text-inverse);
+  --sidebar-border: var(--border-inverse);
+  --sidebar-ring: var(--mint-400);
 }
 
 /* ==============================================================
@@ -546,106 +549,104 @@
 .theme-executive {
   color-scheme: dark;
 
-  --surface-base:       var(--stone-granite-900);
-  --surface-panel:      var(--stone-granite-800);
-  --surface-card:       var(--stone-granite-700);
+  --surface-base: var(--stone-granite-900);
+  --surface-panel: var(--stone-granite-800);
+  --surface-card: var(--stone-granite-700);
   --surface-card-hover: oklch(0.28 0.012 250);
-  --surface-elevated:   var(--stone-granite-800);
-  --surface-overlay:    var(--stone-granite-800);
-  --surface-header:     var(--stone-granite-800);
-  --surface-nav:        var(--stone-basalt-950);
-  --surface-nav-hover:  var(--stone-basalt-800);
-  --surface-nav-active: oklch(from var(--mint-500) l c h / 0.20);
-  --surface-executive:  var(--stone-granite-700);
-  --surface-inverse:    var(--stone-limestone-50);
-  --surface-scrim:      oklch(from black l c h / 0.60);
-  --surface-disabled:   oklch(0.24 0.012 250);
+  --surface-elevated: var(--stone-granite-800);
+  --surface-overlay: var(--stone-granite-800);
+  --surface-header: var(--stone-granite-800);
+  --surface-nav: var(--stone-basalt-950);
+  --surface-nav-hover: var(--stone-basalt-800);
+  --surface-nav-active: oklch(from var(--mint-500) l c h / 0.2);
+  --surface-executive: var(--stone-granite-700);
+  --surface-inverse: var(--stone-limestone-50);
+  --surface-scrim: oklch(from black l c h / 0.6);
+  --surface-disabled: oklch(0.24 0.012 250);
 
-  --text-primary:       var(--stone-limestone-50);
-  --text-secondary:     oklch(0.82 0.010 250);
-  --text-muted:         oklch(0.66 0.012 250);
-  --text-disabled:      oklch(0.44 0.012 250);
-  --text-inverse:       var(--stone-graphite-900);
+  --text-primary: var(--stone-limestone-50);
+  --text-secondary: oklch(0.82 0.01 250);
+  --text-muted: oklch(0.66 0.012 250);
+  --text-disabled: oklch(0.44 0.012 250);
+  --text-inverse: var(--stone-graphite-900);
   --text-inverse-muted: var(--stone-slate-500);
-  --text-on-material:       var(--stone-limestone-50);
-  --text-on-material-muted: oklch(0.75 0.010 250);
-  --text-on-intent:     var(--stone-graphite-900);
-  --text-link:          var(--mint-300);
+  --text-on-material: var(--stone-limestone-50);
+  --text-on-material-muted: oklch(0.75 0.01 250);
+  --text-on-intent: var(--stone-graphite-900);
+  --text-link: var(--mint-300);
 
-  --border-subtle:  oklch(from white l c h / 0.08);
+  --border-subtle: oklch(from white l c h / 0.08);
   --border-default: oklch(from white l c h / 0.14);
-  --border-intent:  var(--mint-400);
-  --border-danger:  var(--hue-danger-500);
+  --border-intent: var(--mint-400);
+  --border-danger: var(--hue-danger-500);
   --border-inverse: oklch(from black l c h / 0.24);
 
-  --intent-primary:        var(--mint-500);
-  --intent-primary-hover:  var(--mint-400);
+  --intent-primary: var(--mint-500);
+  --intent-primary-hover: var(--mint-400);
   --intent-primary-active: var(--mint-300);
-  --intent-primary-fg:     var(--stone-graphite-900);
-  --intent-secondary:      var(--surface-card);
-  --intent-secondary-fg:   var(--text-primary);
-  --intent-ghost-hover:    oklch(from white l c h / 0.06);
-  --intent-focus-ring:     var(--mint-400);
-  --intent-selection:      oklch(from var(--mint-500) l c h / 0.16);
+  --intent-primary-fg: var(--stone-graphite-900);
+  --intent-secondary: var(--surface-card);
+  --intent-secondary-fg: var(--text-primary);
+  --intent-ghost-hover: oklch(from white l c h / 0.06);
+  --intent-focus-ring: var(--mint-400);
+  --intent-selection: oklch(from var(--mint-500) l c h / 0.16);
 
-  --status-success-fg:     oklch(0.88 0.10 155);
-  --status-success-bg:     oklch(from var(--hue-success-500) l c h / 0.18);
+  --status-success-fg: oklch(0.88 0.1 155);
+  --status-success-bg: oklch(from var(--hue-success-500) l c h / 0.18);
   --status-success-border: oklch(from var(--hue-success-500) l c h / 0.32);
-  --status-warning-fg:     oklch(0.90 0.13 75);
-  --status-warning-bg:     oklch(from var(--hue-warning-500) l c h / 0.18);
+  --status-warning-fg: oklch(0.9 0.13 75);
+  --status-warning-bg: oklch(from var(--hue-warning-500) l c h / 0.18);
   --status-warning-border: oklch(from var(--hue-warning-500) l c h / 0.32);
-  --status-danger-fg:      oklch(0.84 0.14 25);
-  --status-danger-bg:      oklch(from var(--hue-danger-500) l c h / 0.20);
-  --status-danger-border:  oklch(from var(--hue-danger-500) l c h / 0.34);
-  --status-info-fg:        oklch(0.86 0.11 235);
-  --status-info-bg:        oklch(from var(--hue-info-500) l c h / 0.18);
-  --status-info-border:    oklch(from var(--hue-info-500) l c h / 0.32);
+  --status-danger-fg: oklch(0.84 0.14 25);
+  --status-danger-bg: oklch(from var(--hue-danger-500) l c h / 0.2);
+  --status-danger-border: oklch(from var(--hue-danger-500) l c h / 0.34);
+  --status-info-fg: oklch(0.86 0.11 235);
+  --status-info-bg: oklch(from var(--hue-info-500) l c h / 0.18);
+  --status-info-border: oklch(from var(--hue-info-500) l c h / 0.32);
 
-  --elev-e1: 0 1px 0 0 oklch(from black l c h / 0.50);
+  --elev-e1: 0 1px 0 0 oklch(from black l c h / 0.5);
   --elev-e2:
-    0 2px 12px -2px oklch(from black l c h / 0.55),
-    0 1px 2px 0    oklch(from black l c h / 0.35);
+    0 2px 12px -2px oklch(from black l c h / 0.55), 0 1px 2px 0 oklch(from black l c h / 0.35);
   --elev-e3:
-    0 16px 40px -12px oklch(from black l c h / 0.65),
-    0 6px 16px -6px   oklch(from black l c h / 0.45);
+    0 16px 40px -12px oklch(from black l c h / 0.65), 0 6px 16px -6px oklch(from black l c h / 0.45);
   --elev-e4:
     0 32px 80px -24px oklch(from black l c h / 0.75),
-    0 10px 32px -12px oklch(from black l c h / 0.50);
+    0 10px 32px -12px oklch(from black l c h / 0.5);
 
   /* Slightly heavier grain to earn the Polished Granite feel */
-  --material-grain-opacity-nav:  0.08;
+  --material-grain-opacity-nav: 0.08;
   --material-grain-opacity-hero: 0.12;
   --material-grain-opacity-exec: 0.14;
 
-  --background:            var(--surface-base);
-  --surface:               var(--surface-panel);
-  --foreground:            var(--text-primary);
-  --card:                  var(--surface-card);
-  --card-foreground:       var(--text-primary);
-  --popover:               var(--surface-elevated);
-  --popover-foreground:    var(--text-primary);
-  --primary:               var(--intent-primary);
-  --primary-foreground:    var(--intent-primary-fg);
-  --secondary:             var(--stone-granite-800);
-  --secondary-foreground:  var(--text-primary);
-  --muted:                 var(--stone-granite-800);
-  --muted-foreground:      var(--text-muted);
-  --accent:                var(--stone-granite-700);
-  --accent-foreground:     var(--text-primary);
-  --destructive:            var(--intent-destructive);
+  --background: var(--surface-base);
+  --surface: var(--surface-panel);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--intent-primary);
+  --primary-foreground: var(--intent-primary-fg);
+  --secondary: var(--stone-granite-800);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--stone-granite-800);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--stone-granite-700);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--intent-destructive);
   --destructive-foreground: var(--intent-destructive-fg);
-  --border:         oklch(1 0 0 / 10%);
-  --border-strong:  oklch(1 0 0 / 18%);
-  --input:          oklch(1 0 0 / 12%);
-  --ring:           var(--intent-focus-ring);
-  --sidebar:                    var(--surface-nav);
-  --sidebar-foreground:         var(--text-inverse);
-  --sidebar-primary:            var(--mint-400);
+  --border: oklch(1 0 0 / 10%);
+  --border-strong: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: var(--intent-focus-ring);
+  --sidebar: var(--surface-nav);
+  --sidebar-foreground: var(--text-inverse);
+  --sidebar-primary: var(--mint-400);
   --sidebar-primary-foreground: var(--stone-basalt-900);
-  --sidebar-accent:             var(--surface-nav-hover);
-  --sidebar-accent-foreground:  var(--text-inverse);
-  --sidebar-border:             var(--border-inverse);
-  --sidebar-ring:               var(--mint-400);
+  --sidebar-accent: var(--surface-nav-hover);
+  --sidebar-accent-foreground: var(--text-inverse);
+  --sidebar-border: var(--border-inverse);
+  --sidebar-ring: var(--mint-400);
 }
 
 /* ==============================================================
@@ -654,89 +655,94 @@
 .theme-atelier {
   color-scheme: light;
 
-  --surface-base:       oklch(1 0 0);
-  --surface-panel:      oklch(0.985 0 0);
-  --surface-card:       oklch(1 0 0);
+  --surface-base: oklch(1 0 0);
+  --surface-panel: oklch(0.985 0 0);
+  --surface-card: oklch(1 0 0);
   --surface-card-hover: oklch(0.96 0 0);
-  --surface-elevated:   oklch(1 0 0);
-  --surface-overlay:    oklch(1 0 0);
-  --surface-header:     oklch(0.98 0 0);
-  --surface-nav:        var(--stone-graphite-900);
-  --surface-nav-hover:  var(--stone-graphite-800);
+  --surface-elevated: oklch(1 0 0);
+  --surface-overlay: oklch(1 0 0);
+  --surface-header: oklch(0.98 0 0);
+  --surface-nav: var(--stone-graphite-900);
+  --surface-nav-hover: var(--stone-graphite-800);
   --surface-nav-active: oklch(from var(--mint-500) l c h / 0.22);
-  --surface-executive:  var(--stone-graphite-900);
-  --surface-inverse:    var(--stone-graphite-900);
-  --surface-scrim:      oklch(from black l c h / 0.55);
-  --surface-disabled:   oklch(0.94 0 0);
+  --surface-executive: var(--stone-graphite-900);
+  --surface-inverse: var(--stone-graphite-900);
+  --surface-scrim: oklch(from black l c h / 0.55);
+  --surface-disabled: oklch(0.94 0 0);
 
-  --text-primary:       var(--stone-graphite-900);
-  --text-secondary:     var(--stone-graphite-900);
-  --text-muted:         var(--stone-slate-700);
-  --text-disabled:      var(--stone-slate-400);
-  --text-inverse:       oklch(1 0 0);
+  --text-primary: var(--stone-graphite-900);
+  --text-secondary: var(--stone-graphite-900);
+  --text-muted: var(--stone-slate-700);
+  --text-disabled: var(--stone-slate-400);
+  --text-inverse: oklch(1 0 0);
   --text-inverse-muted: oklch(0.85 0 0);
-  --text-on-material:       oklch(1 0 0);
+  --text-on-material: oklch(1 0 0);
   --text-on-material-muted: oklch(0.85 0 0);
-  --text-on-intent:     var(--stone-graphite-900);
-  --text-link:          var(--mint-700);
+  --text-on-intent: var(--stone-graphite-900);
+  --text-link: var(--mint-700);
 
-  --border-subtle:  oklch(from var(--stone-graphite-900) l c h / 0.24);
-  --border-default: oklch(from var(--stone-graphite-900) l c h / 0.40);
-  --border-intent:  var(--mint-700);
-  --border-danger:  var(--hue-danger-700);
+  --border-subtle: oklch(from var(--stone-graphite-900) l c h / 0.24);
+  --border-default: oklch(from var(--stone-graphite-900) l c h / 0.4);
+  --border-intent: var(--mint-700);
+  --border-danger: var(--hue-danger-700);
   --border-inverse: oklch(from white l c h / 0.18);
 
-  --intent-primary:        var(--mint-600);
-  --intent-primary-hover:  var(--mint-700);
+  --intent-primary: var(--mint-600);
+  --intent-primary-hover: var(--mint-700);
   --intent-primary-active: var(--mint-700);
-  --intent-primary-fg:     var(--stone-graphite-900);
-  --intent-secondary:      oklch(1 0 0);
-  --intent-secondary-fg:   var(--stone-graphite-900);
-  --intent-ghost-hover:    oklch(from var(--stone-graphite-900) l c h / 0.08);
-  --intent-focus-ring:     var(--stone-graphite-900);
-  --intent-selection:      oklch(from var(--mint-500) l c h / 0.14);
+  --intent-primary-fg: var(--stone-graphite-900);
+  --intent-secondary: oklch(1 0 0);
+  --intent-secondary-fg: var(--stone-graphite-900);
+  --intent-ghost-hover: oklch(from var(--stone-graphite-900) l c h / 0.08);
+  --intent-focus-ring: var(--stone-graphite-900);
+  --intent-selection: oklch(from var(--mint-500) l c h / 0.14);
 
   /* Suppress the material engine — atelier is austere paper */
-  --material-grain-opacity-nav:  0;
+  --material-grain-opacity-nav: 0;
   --material-grain-opacity-hero: 0;
   --material-grain-opacity-exec: 0;
 
-  --background:            var(--surface-base);
-  --surface:               var(--surface-panel);
-  --foreground:            var(--text-primary);
-  --card:                  var(--surface-card);
-  --card-foreground:       var(--text-primary);
-  --popover:               var(--surface-overlay);
-  --popover-foreground:    var(--text-primary);
-  --primary:               var(--intent-primary);
-  --primary-foreground:    var(--intent-primary-fg);
-  --secondary:             oklch(0.94 0 0);
-  --secondary-foreground:  var(--text-primary);
-  --muted:                 oklch(0.94 0 0);
-  --muted-foreground:      var(--text-muted);
-  --accent:                oklch(0.92 0 0);
-  --accent-foreground:     var(--text-primary);
-  --destructive:            var(--hue-danger-700);
+  --background: var(--surface-base);
+  --surface: var(--surface-panel);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-overlay);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--intent-primary);
+  --primary-foreground: var(--intent-primary-fg);
+  --secondary: oklch(0.94 0 0);
+  --secondary-foreground: var(--text-primary);
+  --muted: oklch(0.94 0 0);
+  --muted-foreground: var(--text-muted);
+  --accent: oklch(0.92 0 0);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--hue-danger-700);
   --destructive-foreground: oklch(1 0 0);
-  --border:         oklch(from var(--stone-graphite-900) l c h / 0.32);
-  --border-strong:  oklch(from var(--stone-graphite-900) l c h / 0.52);
-  --input:          oklch(from var(--stone-graphite-900) l c h / 0.40);
-  --ring:           var(--stone-graphite-900);
-  --sidebar:                    var(--surface-nav);
-  --sidebar-foreground:         oklch(1 0 0);
-  --sidebar-primary:            var(--mint-300);
+  --border: oklch(from var(--stone-graphite-900) l c h / 0.32);
+  --border-strong: oklch(from var(--stone-graphite-900) l c h / 0.52);
+  --input: oklch(from var(--stone-graphite-900) l c h / 0.4);
+  --ring: var(--stone-graphite-900);
+  --sidebar: var(--surface-nav);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: var(--mint-300);
   --sidebar-primary-foreground: var(--stone-graphite-900);
-  --sidebar-accent:             var(--surface-nav-hover);
-  --sidebar-accent-foreground:  oklch(1 0 0);
-  --sidebar-border:             var(--border-inverse);
-  --sidebar-ring:               var(--mint-300);
+  --sidebar-accent: var(--surface-nav-hover);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: var(--border-inverse);
+  --sidebar-ring: var(--mint-300);
 }
 
 /* ==============================================================
  * Accessibility media overrides — apply across all themes
  * ============================================================== */
 @media (prefers-reduced-motion: reduce) {
-  :root, .dark, .theme-quarry, .theme-foundry, .theme-executive, .theme-atelier {
+  :root,
+  .dark,
+  .theme-quarry,
+  .theme-foundry,
+  .theme-executive,
+  .theme-atelier {
     --duration-fast: 60ms;
     --duration-base: 80ms;
     --duration-slow: 100ms;
@@ -745,7 +751,12 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  :root, .dark, .theme-quarry, .theme-foundry, .theme-executive, .theme-atelier {
+  :root,
+  .dark,
+  .theme-quarry,
+  .theme-foundry,
+  .theme-executive,
+  .theme-atelier {
     --material-grain-opacity-nav: 0;
     --material-grain-opacity-hero: 0;
     --material-grain-opacity-exec: 0;
@@ -754,15 +765,21 @@
 }
 
 @media (prefers-contrast: more) {
-  :root, .theme-quarry {
+  :root,
+  .theme-quarry {
     --text-secondary: var(--text-primary);
-    --border-subtle:  var(--border-default);
+    --border-subtle: var(--border-default);
   }
 }
 
 @media (max-width: 767px) {
   /* Perf: disable the SVG grain filter on mobile */
-  :root, .dark, .theme-quarry, .theme-foundry, .theme-executive, .theme-atelier {
+  :root,
+  .dark,
+  .theme-quarry,
+  .theme-foundry,
+  .theme-executive,
+  .theme-atelier {
     --material-grain-opacity-nav: 0;
     --material-grain-opacity-hero: 0;
     --material-grain-opacity-exec: 0;
@@ -776,7 +793,8 @@
   * {
     border-color: var(--color-border);
   }
-  html, body {
+  html,
+  body {
     font-family: var(--font-sans);
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -787,7 +805,12 @@
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
     color: var(--color-foreground);
@@ -934,7 +957,7 @@
     background: linear-gradient(
       100deg,
       transparent 0%,
-      oklch(from white l c h / 0.10) 50%,
+      oklch(from white l c h / 0.1) 50%,
       transparent 100%
     );
     animation: stone-specular-sweep 3.6s var(--ease-out) 0.3s 1 forwards;
@@ -942,29 +965,50 @@
     z-index: 1;
   }
   @media (prefers-reduced-motion: reduce) {
-    &::before { animation: none; display: none; }
+    &::before {
+      animation: none;
+      display: none;
+    }
   }
 }
 
 @keyframes stone-specular-sweep {
-  0%   { left: -50%; opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { left: 110%; opacity: 0; }
+  0% {
+    left: -50%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 110%;
+    opacity: 0;
+  }
 }
 
 /* STDL-approved page-transition: opacity fade only. */
 @keyframes stone-page-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Skeleton shimmer — a single translucent bar sweeping across the panel.
  * Respects `prefers-reduced-motion` at the call site (Skeleton primitive
  * falls back to `animate-pulse`). */
 @keyframes stone-shimmer {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Shared focus-ring utility — components that need to paint the STDL
@@ -1031,6 +1075,3 @@
 body[data-scroll-locked] {
   overscroll-behavior: none;
 }
-
-
-

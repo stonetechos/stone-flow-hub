@@ -4,20 +4,20 @@
 
 ## Executive summary
 
-| Category            | Signal                                                             | Verdict            |
-| ------------------- | ------------------------------------------------------------------ | ------------------ |
-| TypeScript build    | `tsgo --noEmit` → 0 errors                                          | ✅ Green            |
-| Dev server / HMR    | Clean log, no runtime errors                                       | ✅ Green            |
-| DB integrity        | 0 orphans across all hot tables, 0 duplicate ledger entries        | ✅ Green            |
-| Ledger balance      | 0 receipts over-allocated, 0 negative inventory balances           | ✅ Green            |
-| Invoice arithmetic  | 0 invoices where header total disagrees with item sum              | ✅ Green            |
-| RLS coverage        | 0 public tables with RLS disabled or with no policies              | ✅ Green            |
-| RLS quality         | **5 tables previously had `USING (true)` — now fixed this pass**   | ✅ Fixed            |
-| Supabase linter     | 50 → 47 issues after fix (1 ERROR + 46 WARN)                        | ⚠️ Follow-up       |
-| Code smells         | 0 TODO/FIXME/HACK, 0 stray console.log in feature code             | ✅ Green            |
-| Public route render | `/`, `/auth` render HTTP 200                                        | ✅ Green            |
-| Auth hydration      | React logs hydration mismatch on `/auth` — cosmetic, page works    | ⚠️ Minor           |
-| Authenticated E2E   | **NOT RUN** — no session available in sandbox                       | ⏸️ User to execute |
+| Category            | Signal                                                           | Verdict            |
+| ------------------- | ---------------------------------------------------------------- | ------------------ |
+| TypeScript build    | `tsgo --noEmit` → 0 errors                                       | ✅ Green           |
+| Dev server / HMR    | Clean log, no runtime errors                                     | ✅ Green           |
+| DB integrity        | 0 orphans across all hot tables, 0 duplicate ledger entries      | ✅ Green           |
+| Ledger balance      | 0 receipts over-allocated, 0 negative inventory balances         | ✅ Green           |
+| Invoice arithmetic  | 0 invoices where header total disagrees with item sum            | ✅ Green           |
+| RLS coverage        | 0 public tables with RLS disabled or with no policies            | ✅ Green           |
+| RLS quality         | **5 tables previously had `USING (true)` — now fixed this pass** | ✅ Fixed           |
+| Supabase linter     | 50 → 47 issues after fix (1 ERROR + 46 WARN)                     | ⚠️ Follow-up       |
+| Code smells         | 0 TODO/FIXME/HACK, 0 stray console.log in feature code           | ✅ Green           |
+| Public route render | `/`, `/auth` render HTTP 200                                     | ✅ Green           |
+| Auth hydration      | React logs hydration mismatch on `/auth` — cosmetic, page works  | ⚠️ Minor           |
+| Authenticated E2E   | **NOT RUN** — no session available in sandbox                    | ⏸️ User to execute |
 
 **Production Readiness (based on what was verifiable): ~80% — Ready for Pilot. Not Ready for Production until the authenticated E2E script passes.**
 

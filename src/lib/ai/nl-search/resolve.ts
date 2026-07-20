@@ -592,9 +592,7 @@ async function resolveByEntityType(
 }
 
 type NameResolution<T> =
-  | { kind: "one"; row: T }
-  | { kind: "ambiguous"; rows: T[] }
-  | { kind: "none" };
+  { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[] } | { kind: "none" };
 
 /** Resolves the single specific record a timeline question is about —
  *  and, per user feedback, never silently guesses across a genuinely
