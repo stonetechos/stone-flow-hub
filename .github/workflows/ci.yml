@@ -1,4 +1,3 @@
-```yaml
 name: CI
 
 on:
@@ -14,14 +13,11 @@ jobs:
   verify:
     name: Install (frozen lockfile), typecheck, lint, guardrails, test, build
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Pinned to match the version used to generate bun.lock locally, so CI
-      # resolves dependencies the same way a contributor's machine does.
-      # This is a reproducibility pin only — it is not required for the
-      # frozen-lockfile check itself to work correctly.
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -32,36 +28,23 @@ jobs:
         with:
           node-version: 22
 
-      # Fails the build if package.json and bun.lock are out of sync,
-      # instead of letting that surface later as a Cloudflare deploy failure.
-      - name: Install dependencies (bun install --frozen-lockfile)
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Typecheck (tsc --noEmit)
+      - name: Typecheck
         run: npx tsc --noEmit
 
-      # Tests (and testSupport/ helpers) live under a separate compiler
-      # context — tsconfig.test.json — so Bun's globals never leak into the
-      # production tsconfig.json above. Both must pass independently; see
-      # docs/TESTING.md.
-      - name: Typecheck tests (tsc --noEmit -p tsconfig.test.json)
+      - name: Typecheck tests
         run: npm run typecheck:tests
 
-      - name: Lint (eslint)
+      - name: Lint
         run: npm run lint
 
-      # Fast, static, no-framework regression guard (see scripts/verify-server-auth-context.mjs) —
-      # runs before the test suite since it's a source-text check with no
-      # runtime setup cost, and should fail loudest/fastest on the exact
-      # regression class it exists to catch (an AI server function silently
-      # running unauthenticated, or a VIE action bypassing the approved
-      # execution architecture).
-      - name: Guardrails (server-auth-context + VIE execution architecture)
+      - name: Verify auth context
         run: npm run verify:auth-context
 
-      - name: Test (bun test)
+      - name: Run tests
         run: bun test
 
-      - name: Build (vite build)
+      - name: Build
         run: npm run build
-```
