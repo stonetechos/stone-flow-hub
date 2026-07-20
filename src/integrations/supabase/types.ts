@@ -8444,11 +8444,24 @@ export type Database = {
       enquiry_priority: "low" | "normal" | "high" | "urgent";
       estimate_document_kind: "customer_pdf" | "cost_sheet_pdf" | "whatsapp_text" | "email_html";
       estimate_item_category:
-        "material" | "manufacturing" | "installation" | "consumable" | "other";
+        | "material"
+        | "manufacturing"
+        | "installation"
+        | "consumable"
+        | "other";
       estimate_status:
-        "draft" | "sent" | "accepted" | "rejected" | "expired" | "converted" | "cancelled";
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "converted"
+        | "cancelled";
       estimate_template:
-        "material_supply" | "material_install" | "custom_articles" | "custom_manufacturing";
+        | "material_supply"
+        | "material_install"
+        | "custom_articles"
+        | "custom_manufacturing";
       file_folder:
         | "product_image"
         | "site_image"
@@ -8542,13 +8555,29 @@ export type Database = {
         | "apartment"
         | "other";
       purchase_order_status:
-        "draft" | "sent" | "acknowledged" | "partially_received" | "received" | "cancelled";
+        | "draft"
+        | "sent"
+        | "acknowledged"
+        | "partially_received"
+        | "received"
+        | "cancelled";
       qc_outcome: "pass" | "fail" | "rework" | "approved" | "rejected" | "not_checked";
       quote_status: "draft" | "sent" | "accepted" | "rejected" | "expired" | "converted";
       rfq_status:
-        "draft" | "sent" | "partially_received" | "fully_received" | "closed" | "cancelled";
+        | "draft"
+        | "sent"
+        | "partially_received"
+        | "fully_received"
+        | "closed"
+        | "cancelled";
       sales_order_status:
-        "draft" | "confirmed" | "in_production" | "ready" | "shipped" | "delivered" | "cancelled";
+        | "draft"
+        | "confirmed"
+        | "in_production"
+        | "ready"
+        | "shipped"
+        | "delivered"
+        | "cancelled";
       site_visit_status: "scheduled" | "completed" | "cancelled" | "rescheduled";
       stage_owner: "vendor" | "employee" | "either";
       stone_finish:
@@ -8625,12 +8654,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8650,12 +8679,13 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8674,12 +8704,13 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8698,12 +8729,13 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8714,12 +8746,13 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
