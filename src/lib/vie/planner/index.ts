@@ -8,6 +8,7 @@
  * calling the pre-existing module api.ts functions.
  */
 import {
+  createCustomerEntitiesSchema,
   logEnquiryEntitiesSchema,
   noteFollowupEntitiesSchema,
   type VieActionContext,
@@ -20,6 +21,7 @@ import { getExecutionPolicy } from "../policy";
 import { resolveCustomer } from "./resolveCustomer";
 import { resolveProduct } from "./resolveProduct";
 import { resolveFollowupTarget } from "./resolveFollowupTarget";
+import { resolveCustomerDuplicate } from "./resolveCustomerDuplicate";
 
 /**
  * The one safety rule from ADR-0001 §6: an unresolved prerequisite always
@@ -31,10 +33,6 @@ import { resolveFollowupTarget } from "./resolveFollowupTarget";
  * "confirm" and "draft" policies are a ceiling, never upgraded by
  * confidence — that's the point of setting them per-intent.
  */
-// Exported (Milestone 1 — Hardening & Guardrails) purely for direct unit
-// testing — see resolveEffectiveMode.test.ts, the canonical specification
-// for this function's behaviour. No change to how planLogEnquiry /
-// planNoteFollowup call it below.
 export function resolveEffectiveMode(
   policy: VieExecutionPolicy,
   confidence: number,
@@ -122,6 +120,50 @@ async function planNoteFollowup(
   return { operation: "note_followup", params, mode: policy.mode, effectiveMode, blockers };
 }
 
+/**
+ * create_customer (VIE Phase 2 — Milestone 2). See
+ * VIE-CreateCustomer-UX-Contract.md for the full behavioral contract this
+ * implements. Unlike log_enquiry/note_followup, this Planner branch does
+ * not look up an EXISTING record — it prepares a NEW one — so its only
+ * resolver check is the duplicate-phone guard (§9 of the contract), never a
+ * name-based lookup like resolveCustomer.ts.
+ */
+async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieExecutionPlan> {
+  const entities = createCustomerEntitiesSchema.parse(understanding.entities);
+
+  const blockers: string[] = [];
+
+  if (!entities.customerName) {
+    blockers.push("No customer name was extracted from the utterance.");
+  }
+
+  // Same "10 digits after stripping non-digits" bar enquiryCreateSchema's
+  // own inline-create fallback already uses — mobile is a hard requirement
+  // of createCustomer() itself (customerCreateSchema.mobile, via zMobile),
+  // so an unresolvable number always forces "draft" here too (§4/§6 of the
+  // UX contract).
+  const normalizedMobile = (entities.mobile ?? "").replace(/\D/g, "");
+  if (normalizedMobile.length < 10) {
+    blockers.push("No valid mobile number was extracted from the utterance.");
+  } else {
+    const duplicate = await resolveCustomerDuplicate(entities.mobile);
+    if (duplicate.blocker) blockers.push(duplicate.blocker);
+  }
+
+  const params: Record<string, unknown> = {
+    name: entities.customerName,
+    mobile: entities.mobile,
+    city: entities.city,
+    customer_type: entities.customerType ?? "individual",
+    notes: `AI-logged from: "${understanding.originalText}"`,
+  };
+
+  const policy = await getExecutionPolicy("create_customer");
+  const effectiveMode = resolveEffectiveMode(policy, understanding.confidence, blockers);
+
+  return { operation: "create_customer", params, mode: policy.mode, effectiveMode, blockers };
+}
+
 /** Returns null for "unsupported" classifications — there is nothing to
  *  plan, and the caller (vie.functions.ts) records the row as rejected. */
 export async function planAction(
@@ -133,6 +175,8 @@ export async function planAction(
       return planLogEnquiry(understanding);
     case "note_followup":
       return planNoteFollowup(understanding, context);
+    case "create_customer":
+      return planCreateCustomer(understanding);
     case "unsupported":
       return null;
   }

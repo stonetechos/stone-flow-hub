@@ -9,10 +9,15 @@
  * `bun test`.
  */
 import { describe, expect, test } from "bun:test";
-import { logEnquiryEntitiesSchema, noteFollowupEntitiesSchema } from "./types";
+import {
+  createCustomerEntitiesSchema,
+  logEnquiryEntitiesSchema,
+  noteFollowupEntitiesSchema,
+} from "./types";
 import {
   expectValidEntities,
   expectInvalidEntities,
+  validCreateCustomerEntities,
   validLogEnquiryEntities,
   validNoteFollowupEntities,
 } from "./testSupport/testUtils";
@@ -122,6 +127,63 @@ describe("noteFollowupEntitiesSchema", () => {
   test("silently strips an unexpected/unknown field rather than rejecting the whole payload", () => {
     const parsed = expectValidEntities(noteFollowupEntitiesSchema, {
       ...validNoteFollowupEntities(),
+      someUnexpectedField: "xyz",
+    });
+    expect((parsed as Record<string, unknown>).someUnexpectedField).toBeUndefined();
+  });
+});
+
+describe("createCustomerEntitiesSchema", () => {
+  test("accepts a fully-populated, well-formed AI response", () => {
+    const parsed = expectValidEntities(createCustomerEntitiesSchema, validCreateCustomerEntities());
+    expect(parsed.customerName).toBe("Meera");
+    expect(parsed.mobile).toBe("9724455663");
+    expect(parsed.customerType).toBe("contractor");
+  });
+
+  test("has no required fields — an empty object is valid on its own", () => {
+    // Documented behaviour, not an oversight: a create_customer utterance
+    // with no phone number extracted still reaches the Planner, whose
+    // blocker logic (planCreateCustomer) is what forces "draft" — not this
+    // schema. Mirrors logEnquiryEntitiesSchema's own documented behaviour.
+    expectValidEntities(createCustomerEntitiesSchema, {});
+  });
+
+  test("accepts a partial AI response with only customerName present", () => {
+    expectValidEntities(createCustomerEntitiesSchema, { customerName: "Ramesh" });
+  });
+
+  test("rejects an empty customerName", () => {
+    expectInvalidEntities(
+      createCustomerEntitiesSchema,
+      validCreateCustomerEntities({ customerName: "" }),
+    );
+  });
+
+  test("rejects a whitespace-only customerName (trimmed to empty)", () => {
+    expectInvalidEntities(
+      createCustomerEntitiesSchema,
+      validCreateCustomerEntities({ customerName: "   " }),
+    );
+  });
+
+  test("rejects mobile given as a number instead of a string", () => {
+    expectInvalidEntities(
+      createCustomerEntitiesSchema,
+      validCreateCustomerEntities({ mobile: 9724455663 }),
+    );
+  });
+
+  test("rejects a customerType outside the known enum", () => {
+    expectInvalidEntities(
+      createCustomerEntitiesSchema,
+      validCreateCustomerEntities({ customerType: "wholesaler" }),
+    );
+  });
+
+  test("silently strips an unexpected/unknown field rather than rejecting the whole payload", () => {
+    const parsed = expectValidEntities(createCustomerEntitiesSchema, {
+      ...validCreateCustomerEntities(),
       someUnexpectedField: "xyz",
     });
     expect((parsed as Record<string, unknown>).someUnexpectedField).toBeUndefined();

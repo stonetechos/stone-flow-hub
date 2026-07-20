@@ -19,6 +19,14 @@ const DEFAULT_POLICIES: Record<VieIntent, VieExecutionPolicy> = {
   // and an implied budget figure, so they get a one-tap check first.
   note_followup: { mode: "auto", autoThreshold: 0.85 },
   log_enquiry: { mode: "confirm", autoThreshold: 0.85 },
+  // A wrongly-created customer record is costlier to unwind than a
+  // slightly-off enquiry note or follow-up (enquiries/quotes/invoices can
+  // end up linked to it) — seeded at "confirm", a ceiling never upgraded by
+  // confidence, until the create_customer/log_enquiry classification
+  // boundary (VIE-CreateCustomer-UX-Contract.md §7/§8/§12) has been
+  // observed in production. Retune via app_settings, same as any intent —
+  // no deploy needed to later allow "auto".
+  create_customer: { mode: "confirm", autoThreshold: 0.9 },
 };
 
 export async function getExecutionPolicy(intent: VieIntent): Promise<VieExecutionPolicy> {

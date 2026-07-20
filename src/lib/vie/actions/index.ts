@@ -6,3 +6,4 @@
  */
 import "./logEnquiry";
 import "./noteFollowup";
+import "./createCustomer";

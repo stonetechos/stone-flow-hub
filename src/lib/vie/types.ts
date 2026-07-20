@@ -13,16 +13,20 @@
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
-// Intents — Phase 1 supports exactly two. Adding a third is meant to be
-// additive (a new union member + a new Action Registry handler), never a
-// change to VIE/Planner/Workflow Engine core files.
+// Intents — Phase 1 shipped two (log_enquiry, note_followup). Phase 2
+// Milestone 2 adds a third, create_customer, exactly the way this comment
+// always said a new intent should arrive: additively (a new union member +
+// a new Action Registry handler), with no change to VIE/Planner/Workflow
+// Engine core files. See engineering/VIE-Phase2-Milestone2-Review.md and
+// VIE-CreateCustomer-UX-Contract.md (Claude project docs) for the full
+// design behind create_customer specifically.
 // ---------------------------------------------------------------------------
 
-export const VIE_INTENTS = ["log_enquiry", "note_followup"] as const;
+export const VIE_INTENTS = ["log_enquiry", "note_followup", "create_customer"] as const;
 export type VieIntent = (typeof VIE_INTENTS)[number];
 
 /** What VIE classifies an utterance as. "unsupported" covers everything
- *  outside Phase 1's two intents (dispatch, payment, quotation, general
+ *  outside VIE's supported intents (dispatch, payment, quotation, general
  *  chat, ...) — it is never executed, only recorded (see vie.functions.ts). */
 export type VieClassifiedIntent = VieIntent | "unsupported";
 
@@ -49,6 +53,41 @@ export const noteFollowupEntitiesSchema = z.object({
   channel: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]).optional(),
 });
 export type NoteFollowupEntities = z.infer<typeof noteFollowupEntitiesSchema>;
+
+/**
+ * create_customer entities (VIE-CreateCustomer-UX-Contract.md §4/§5). Kept
+ * fully optional at this extraction layer, same discipline as the two
+ * schemas above — a partial extraction (e.g. no mobile mentioned) must
+ * still reach the Planner, whose blocker logic (planner/index.ts's
+ * planCreateCustomer) decides what forces "draft," not this schema. The
+ * deeper, stricter requirement (a valid mobile number is mandatory to
+ * actually create a customer) is enforced downstream by
+ * customers/schema.ts's customerCreateSchema, invoked only inside
+ * createCustomer() — this schema intentionally does not duplicate that
+ * strictness. customerType's enum is a redundant, standalone literal
+ * (rather than importing customers/schema.ts's CUSTOMER_TYPES) to keep
+ * VIE's entity layer decoupled from ERP module internals — the same choice
+ * noteFollowupEntitiesSchema's `channel` enum already makes relative to
+ * followups/schema.ts.
+ */
+export const createCustomerEntitiesSchema = z.object({
+  customerName: z.string().trim().min(1).optional(),
+  mobile: z.string().trim().min(1).optional(),
+  city: z.string().trim().min(1).optional(),
+  customerType: z
+    .enum([
+      "individual",
+      "company",
+      "builder",
+      "architect",
+      "interior_designer",
+      "contractor",
+      "government",
+      "other",
+    ])
+    .optional(),
+});
+export type CreateCustomerEntities = z.infer<typeof createCustomerEntitiesSchema>;
 
 // ---------------------------------------------------------------------------
 // VIE output

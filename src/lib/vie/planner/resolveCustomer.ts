@@ -39,14 +39,20 @@ export async function resolveCustomer(name: string | undefined): Promise<Custome
       .slice(0, 5)
       .map((m) => `${m.name} (${m.customer_code})`)
       .join(", ");
+
     return {
       customerId: null,
       customerLabel: null,
-      blocker: `"${name}" matches ${matches.length} customers: ${labels}${
-        matches.length > 5 ? ", ..." : ""
-      }.`,
+      blocker:
+        matches.length > 5
+          ? `"${name}" matches ${matches.length} customers: ${labels}, ...`
+          : `"${name}" matches ${matches.length} customers: ${labels}.`,
     };
   }
 
-  return { customerId: matches[0].id, customerLabel: matches[0].name, blocker: null };
+  return {
+    customerId: matches[0].id,
+    customerLabel: matches[0].name,
+    blocker: null,
+  };
 }

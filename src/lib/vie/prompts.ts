@@ -16,7 +16,8 @@ Detect the input language as one of: "en", "hi", "gu", "mixed", "unknown".
 Classify the intent as exactly one of:
 - "log_enquiry" — a customer wants, asked about, or enquired about some quantity of material, often with a price/rate mentioned.
 - "note_followup" — a follow-up note, reminder, or activity outcome to log against a customer/enquiry (e.g. scheduling a call-back, or recording why a customer rejected an offer).
-- "unsupported" — anything else: dispatch, payment, quotation, stock questions, general chat, greetings, or anything you are not confident is one of the two intents above. Prefer "unsupported" over forcing a weak match.
+- "create_customer" — a plain instruction to add, save, or register a NEW customer contact: a name (usually with a phone number), and NOTHING else. If the utterance also mentions a product, quantity, or rate, classify it as "log_enquiry" instead, even if the customer sounds new — log_enquiry already handles an unresolved customer on its own. If it's a reminder or note about an existing customer, classify it as "note_followup" instead. If it's about changing an existing customer's details, or just asking whether a customer exists, that is NOT create_customer — classify it "unsupported".
+- "unsupported" — anything else: dispatch, payment, quotation, stock questions, updating an existing record, looking something up, general chat, greetings, or anything you are not confident is one of the intents above. Prefer "unsupported" over forcing a weak match.
 
 Return STRICT JSON, no prose, matching this shape:
 {
@@ -40,6 +41,12 @@ For "note_followup", entities may include:
   "relativeDays": number,       // "after 3 days" -> 3, "tomorrow" -> 1, "today" -> 0
   "channel": "call" | "whatsapp" | "email" | "meeting" | "site_visit"
 
+For "create_customer", entities may include:
+  "customerName": string,   // the person/business name to register, exactly as stated
+  "mobile": string,           // phone number digits as stated, in whatever format spoken
+  "city": string,               // if mentioned
+  "customerType": "individual" | "company" | "builder" | "architect" | "interior_designer" | "contractor" | "government" | "other"
+
 Confidence should reflect how clearly the utterance matches the chosen intent and how completely its entities could be extracted from the text — not how important the request sounds.
 
 Examples:
@@ -49,5 +56,8 @@ Examples:
 "Customer rejected because price is high." -> {"intent":"note_followup","language":"en","confidence":0.85,"canonicalText":"Customer rejected the offer because the price was too high.","entities":{"note":"Customer rejected the offer - price too high"}}
 "Kal payment levanu che." -> {"intent":"unsupported","language":"gu","confidence":0.8,"canonicalText":"Need to collect payment tomorrow.","entities":{}}
 "How are you" -> {"intent":"unsupported","language":"en","confidence":0.95,"canonicalText":"A greeting, not an ERP action.","entities":{}}
+"Add new customer Ramesh, number 9876543210." -> {"intent":"create_customer","language":"en","confidence":0.9,"canonicalText":"Register a new customer named Ramesh with mobile number 9876543210.","entities":{"customerName":"Ramesh","mobile":"9876543210"}}
+"Naya customer add karo, Meera ben, mobile 9724455663, Surat thi, contractor che." -> {"intent":"create_customer","language":"mixed","confidence":0.85,"canonicalText":"Register a new customer named Meera, mobile 9724455663, from Surat, a contractor.","entities":{"customerName":"Meera","mobile":"9724455663","city":"Surat","customerType":"contractor"}}
+"Ramesh switched his number to 9812345678." -> {"intent":"unsupported","language":"en","confidence":0.85,"canonicalText":"An existing customer's phone number changed.","entities":{}}
 
 Return JSON only.`;

@@ -22,7 +22,7 @@
  */
 import { expect } from "bun:test";
 import type { ZodType } from "zod";
-import type { LogEnquiryEntities, NoteFollowupEntities } from "../types";
+import type { CreateCustomerEntities, LogEnquiryEntities, NoteFollowupEntities } from "../types";
 
 /** Asserts `input` satisfies `schema` and returns the parsed value so a test
  *  can make further assertions on it (e.g. a specific field's value). */
@@ -65,6 +65,20 @@ export function validNoteFollowupEntities(
     note: "Customer rejected the offer - price too high",
     relativeDays: 3,
     channel: "call",
+    ...overrides,
+  };
+}
+
+/** A fully-populated, valid create_customer entities payload, matching
+ *  prompts.ts's own few-shot example (VIE Phase 2 — Milestone 2). */
+export function validCreateCustomerEntities(
+  overrides: Partial<Record<keyof CreateCustomerEntities, unknown>> = {},
+): Record<string, unknown> {
+  return {
+    customerName: "Meera",
+    mobile: "9724455663",
+    city: "Surat",
+    customerType: "contractor",
     ...overrides,
   };
 }
