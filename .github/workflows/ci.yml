@@ -1,3 +1,4 @@
+```yaml
 name: CI
 
 on:
@@ -11,7 +12,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Install (frozen lockfile), typecheck, lint, build
+    name: Install (frozen lockfile), typecheck, lint, guardrails, test, build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,8 +40,28 @@ jobs:
       - name: Typecheck (tsc --noEmit)
         run: npx tsc --noEmit
 
+      # Tests (and testSupport/ helpers) live under a separate compiler
+      # context — tsconfig.test.json — so Bun's globals never leak into the
+      # production tsconfig.json above. Both must pass independently; see
+      # docs/TESTING.md.
+      - name: Typecheck tests (tsc --noEmit -p tsconfig.test.json)
+        run: npm run typecheck:tests
+
       - name: Lint (eslint)
         run: npm run lint
 
+      # Fast, static, no-framework regression guard (see scripts/verify-server-auth-context.mjs) —
+      # runs before the test suite since it's a source-text check with no
+      # runtime setup cost, and should fail loudest/fastest on the exact
+      # regression class it exists to catch (an AI server function silently
+      # running unauthenticated, or a VIE action bypassing the approved
+      # execution architecture).
+      - name: Guardrails (server-auth-context + VIE execution architecture)
+        run: npm run verify:auth-context
+
+      - name: Test (bun test)
+        run: bun test
+
       - name: Build (vite build)
         run: npm run build
+```

@@ -17,7 +17,7 @@
  *   caller-supplied patch (e.g. a manually-picked customer_id) first.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireStaff } from "@/lib/ai/require-staff";
 import { withAuthenticatedClient, getDb } from "@/integrations/supabase/server-context";
@@ -27,7 +27,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { understand } from "./understand";
 import { planAction } from "./planner";
 import { executeAction } from "./workflowEngine";
-import type { VieActionContext, VieActionStatus } from "./types";
+import type { VieActionContext, VieActionStatus, VieExecutionPlan, VieUnderstanding } from "./types";
 
 /**
  * entities/plan originate as Record<string, unknown> (VieUnderstanding.entities,
@@ -76,13 +76,53 @@ export const understandAndStage = createServerFn({ method: "POST" })
       if (existing) return existing;
 
       // --- VIE: understand ---
-      const understanding = await understand(data.text);
+      // Wrapped (Milestone 1 — Hardening & Guardrails): a Lovable AI Gateway
+      // failure (rate limit, credits exhausted, network error) or a
+      // non-JSON response from gateway.server.ts's chatJson() previously
+      // propagated as a raw, unclassified exception. Converted here into the
+      // same AppError model every other trust boundary in this codebase
+      // already uses (see lib/errors.ts) — no new error framework introduced.
+      let understanding: VieUnderstanding;
+      try {
+        understanding = await understand(data.text);
+      } catch (err) {
+        throw new AppError(
+          err instanceof Error ? err.message : "The AI understanding step failed. Please try again.",
+          "VIE_UNDERSTAND_FAILED",
+          502,
+        );
+      }
 
       // --- Planner: plan (null for "unsupported") ---
       const actionContext: VieActionContext | undefined = data.context
         ? { entityType: data.context.entityType, entityId: data.context.entityId }
         : undefined;
-      const plan = understanding.intent === "unsupported" ? null : await planAction(understanding, actionContext);
+
+      // Wrapped (Milestone 1): planAction() throws a raw ZodError when the
+      // LLM's entities don't match the classified intent's schema
+      // (logEnquiryEntitiesSchema / noteFollowupEntitiesSchema in ./types) —
+      // e.g. a misclassified intent, or malformed/partial extraction. That's
+      // a validation failure, not a server bug; it's now classified the same
+      // way every other validation failure in this codebase is (see
+      // lib/errors.ts's toUserMessage handling of ZodError), instead of
+      // reaching the caller as an unhandled exception.
+      let plan: VieExecutionPlan | null;
+      try {
+        plan = understanding.intent === "unsupported" ? null : await planAction(understanding, actionContext);
+      } catch (err) {
+        if (err instanceof ZodError) {
+          throw new AppError(
+            `Couldn't understand that clearly enough to act on it: ${err.issues.map((i) => i.message).join(" • ")}`,
+            "VIE_ENTITY_VALIDATION_FAILED",
+            422,
+          );
+        }
+        throw new AppError(
+          err instanceof Error ? err.message : "Planning this action failed. Please try again.",
+          "VIE_PLANNING_FAILED",
+          502,
+        );
+      }
 
       const initialStatus: VieActionStatus = !plan
         ? "rejected"

@@ -31,7 +31,11 @@ import { resolveFollowupTarget } from "./resolveFollowupTarget";
  * "confirm" and "draft" policies are a ceiling, never upgraded by
  * confidence — that's the point of setting them per-intent.
  */
-function resolveEffectiveMode(
+// Exported (Milestone 1 — Hardening & Guardrails) purely for direct unit
+// testing — see resolveEffectiveMode.test.ts, the canonical specification
+// for this function's behaviour. No change to how planLogEnquiry /
+// planNoteFollowup call it below.
+export function resolveEffectiveMode(
   policy: VieExecutionPolicy,
   confidence: number,
   blockers: string[],

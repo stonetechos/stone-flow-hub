@@ -54,7 +54,16 @@ describe("resolveByName", () => {
   });
 
   test("no rows resolves to none, never a guess", () => {
-    const resolution = resolveByName([], "Darshan Shah", (r) => r.name);
+    // Explicit <Row> is required here, not stylistic: with an empty array
+    // literal and an unannotated callback, nothing else in this call gives
+    // TypeScript a value to infer T from, so T collapses to `never` and
+    // `(r) => r.name` fails to compile ("Property 'name' does not exist on
+    // type 'never'"). This is a plain generic-inference gotcha with empty
+    // array literals, unrelated to any global typing — it was only ever
+    // invisible because tsconfig.test.json is the first config to type
+    // check *.test.ts files at all (tsconfig.json has always excluded
+    // them, so `npx tsc --noEmit` never saw this file before).
+    const resolution = resolveByName<Row>([], "Darshan Shah", (r) => r.name);
     expect(resolution.kind).toBe("none");
   });
 });

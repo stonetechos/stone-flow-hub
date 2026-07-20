@@ -1,0 +1,56 @@
+{
+  /**
+   * Dedicated compiler context for test code (VIE Phase 2 — testing
+   * architecture hardening). Exists so `bun:test`'s types can be resolved
+   * wherever tests actually import them, WITHOUT ever being visible to the
+   * production compiler context in tsconfig.json — a Bun global leaking
+   * into application code would be a real bug (the app runs in the browser
+   * and on Cloudflare Workers, neither of which is Bun), so the two
+   * contexts must stay strictly separate.
+   *
+   * Deliberately NOT done via `"types": ["bun", ...]` — that pulls in
+   * bun-types' entire package (globals.d.ts, bun.d.ts, s3.d.ts, sql.d.ts,
+   * ffi.d.ts, and more), which redeclares global symbols like `fetch`
+   * (adding a required static `preconnect` method) that would then apply
+   * to every file in this program, including production files reached
+   * transitively from a test file. Instead, src/testSupport/bun-test-types.d.ts
+   * references only bun-types/test.d.ts directly — the one, self-contained
+   * file that declares the `bun:test` module — so tests get exactly the
+   * types they import and nothing else leaks in. See that file and
+   * docs/TESTING.md for the full explanation.
+   *
+   * Scope is intentionally narrow: only test files and the testSupport/
+   * helper convention they import from. Nothing here should ever change
+   * how production source under src/**\/*.ts is type-checked — see
+   * tsconfig.json, which excludes exactly the files this config includes.
+   *
+   * Run via: npm run typecheck:tests (tsc --noEmit -p tsconfig.test.json)
+   *
+   * "node" IS listed below, deliberately, unlike "bun". This isn't the same
+   * mistake reintroduced: test files transitively reach real production
+   * code that is genuinely Node-dependent by design —
+   * src/integrations/supabase/client.ts reads `process.env` as its SSR
+   * fallback, and src/integrations/supabase/server-context.ts imports
+   * `node:async_hooks` — both correct for this app's TanStack Start
+   * server functions, which do run under Node. Production gets these same
+   * @types/node globals today too, but only as a side effect of
+   * vite.config.ts (a production-only root file) importing `vite`, whose
+   * own node/index.d.ts starts with `/// <reference types="node" />` —
+   * confirmed by reading that file directly. Since this test config's
+   * `include` never pulls in vite.config.ts, that path doesn't exist here,
+   * so @types/node has to be requested explicitly instead. Verified safe
+   * against the exact class of conflict "bun" caused:
+   * @types/node/web-globals/fetch.d.ts guards its own `fetch` merge with
+   * `typeof globalThis extends { onmessage: any } ? {} : ...` — it
+   * detects `lib.dom` (already loaded here) and defers to DOM's own
+   * Request/Response/Headers/fetch instead of redeclaring them, so it
+   * does not add a required property the way bun-types' unconditional
+   * `fetch` + `preconnect` merge did. See docs/TESTING.md.
+   */
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/testSupport/**/*.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "types": ["node", "vite/client"]
+  }
+}

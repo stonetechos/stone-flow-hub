@@ -35,8 +35,24 @@
  *      script's known-migrated set — a signal that a future AI feature
  *      added a new resolver without threading the authenticated client
  *      through it.
+ *
+ * Milestone 1 (VIE Phase 2 — Hardening & Guardrails) extended this same
+ * script, rather than adding a second one, to guard the equivalent risks in
+ * src/lib/vie/**:
+ *
+ *   5. vie.functions.ts's server functions stop opening the authenticated
+ *      scope (the same class of regression as check 3, for VIE's own
+ *      entry points).
+ *   6. Any handler registered in the VIE Action Registry
+ *      (src/lib/vie/actions/*.ts) writes to a business table directly
+ *      instead of calling an existing, already-reviewed @/lib/*\/api
+ *      function — the automated version of ADR-0001's "no parallel write
+ *      path" rule, which previously relied on manual code review alone.
+ *      Unlike check 4's hardcoded MIGRATED_FILES list, this scans the
+ *      actions directory itself, so a newly-added handler is checked
+ *      automatically with nothing to remember to update here.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -145,6 +161,69 @@ for (const relPath of MIGRATED_FILES) {
     );
   } else {
     pass(`${relPath}: every .../api module it imports is a known, migrated (authenticated-aware) data source`);
+  }
+}
+
+// --- Check 5: VIE server functions must open the authenticated scope. ---
+{
+  const relPath = "src/lib/vie/vie.functions.ts";
+  const content = read(relPath);
+  const opensScope =
+    content.includes("withAuthenticatedClient") && content.includes("context.supabase");
+  if (!opensScope) {
+    fail(
+      `${relPath}: no VIE server function calls withAuthenticatedClient(context.supabase, ...). Without this, every Planner resolver and Workflow Engine handler it calls (several layers deep) would silently fall back to the anonymous client, the same regression class check 3 guards for NL Search.`,
+    );
+  } else {
+    pass(`${relPath}: VIE server functions wrap their handlers in withAuthenticatedClient(context.supabase, ...)`);
+  }
+}
+
+// --- Check 6: VIE Action Registry handlers must never write directly —
+// only via an existing module's api.ts function (ADR-0001: "no parallel
+// write path"). Scans the directory itself rather than a hardcoded list,
+// so a newly-added handler is covered automatically. ---
+{
+  const actionsDir = "src/lib/vie/actions";
+  let dirEntries;
+  try {
+    dirEntries = readdirSync(path.join(ROOT, actionsDir));
+  } catch {
+    fail(`${actionsDir}: could not read directory (has the Action Registry moved?)`);
+    dirEntries = [];
+  }
+
+  const handlerFiles = dirEntries.filter(
+    (f) => f.endsWith(".ts") && f !== "registry.ts" && f !== "index.ts" && !f.endsWith(".test.ts"),
+  );
+
+  if (dirEntries.length > 0 && handlerFiles.length === 0) {
+    fail(`${actionsDir}: no handler files found alongside registry.ts/index.ts — has the naming convention changed?`);
+  }
+
+  for (const file of handlerFiles) {
+    const relPath = `${actionsDir}/${file}`;
+    const content = read(relPath);
+
+    const importsRawSupabase =
+      content.includes('from "@supabase/supabase-js"') ||
+      content.includes('from "@/integrations/supabase/client"') ||
+      content.includes('from "@/integrations/supabase/server-context"');
+    const importsExistingApiModule = /from\s+"@\/lib\/[^"]+\/api"/.test(content);
+
+    if (importsRawSupabase) {
+      fail(
+        `${relPath}: imports a Supabase client directly. Action Registry handlers must call an existing module's api.ts function only (ADR-0001: "no parallel write path") — never write to a business table themselves. If this handler is missing a data-access function it needs, add it to the relevant module's api.ts first, then call it from here.`,
+      );
+      continue;
+    }
+    if (!importsExistingApiModule) {
+      fail(
+        `${relPath}: does not import any @/lib/*/api module. Every Action Registry handler must delegate its write to an existing, already-reviewed api.ts function — the same one the manual UI form for this action already calls.`,
+      );
+      continue;
+    }
+    pass(`${relPath}: delegates to an existing @/lib/*/api module, imports no raw Supabase client`);
   }
 }
 
