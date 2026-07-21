@@ -5,57 +5,53 @@
  * VIE Phase 1 with no dedicated test file; adding one here alongside
  * resolveCustomerDuplicate.test.ts closes a pre-existing gap in the same
  * "customers" resolver family this Milestone-2 work touches (flagged in
- * VIE-Phase2-Milestone2-Review.md §3). resolveProduct.ts and
- * resolveFollowupTarget.ts remain untested and are intentionally out of
- * scope here — they belong to log_enquiry/note_followup, not create_customer.
+ * VIE-Phase2-Milestone2-Review.md §3).
  *
- * Same module-mocking approach as resolveCustomerDuplicate.test.ts, and for
- * the same reason: resolveCustomer.ts calls @/lib/customers/api's
- * listCustomers(), real I/O that must be mocked before the module under
- * test is ever imported.
+ * Uses the shared, full-shape module mock from testSupport/moduleMocks.ts
+ * (Milestone 3 — Validation & Coverage) rather than a private, partial
+ * mock.module() call for @/lib/customers/api. A partial mock here collided
+ * with resolveCustomerDuplicate.test.ts's own partial mock of the same
+ * module when the whole suite ran together — see moduleMocks.ts's header
+ * comment for the full reproduction. Importing the shared mock BEFORE
+ * dynamically importing the module under test keeps this file's mocked
+ * behavior correct regardless of what order bun evaluates test files in.
  */
-import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
-
-const listCustomersMock = mock(async (_query?: string): Promise<unknown[]> => []);
-
-mock.module("@/lib/customers/api", () => ({
-  listCustomers: listCustomersMock,
-}));
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { customersApiMock, resetAllModuleMocks } from "../testSupport/moduleMocks";
 
 const { resolveCustomer } = await import("./resolveCustomer");
 
 describe("resolveCustomer", () => {
   beforeEach(() => {
-    listCustomersMock.mockReset();
-    listCustomersMock.mockImplementation(async () => []);
+    resetAllModuleMocks();
   });
 
-  afterAll(() => {
-    mock.restore();
+  afterEach(() => {
+    resetAllModuleMocks();
   });
 
   test("no name extracted -> blocker, and no lookup is even attempted", async () => {
     const result = await resolveCustomer(undefined);
     expect(result.customerId).toBeNull();
     expect(result.blocker).toBe("No customer name was extracted from the utterance.");
-    expect(listCustomersMock).not.toHaveBeenCalled();
+    expect(customersApiMock.listCustomers).not.toHaveBeenCalled();
   });
 
   test("whitespace-only name -> treated the same as no name", async () => {
     const result = await resolveCustomer("   ");
     expect(result.blocker).toBe("No customer name was extracted from the utterance.");
-    expect(listCustomersMock).not.toHaveBeenCalled();
+    expect(customersApiMock.listCustomers).not.toHaveBeenCalled();
   });
 
   test("name given, zero matches -> blocker naming the search term", async () => {
-    listCustomersMock.mockImplementation(async () => []);
+    customersApiMock.listCustomers.mockImplementation(async () => []);
     const result = await resolveCustomer("Ramesh");
     expect(result.customerId).toBeNull();
     expect(result.blocker).toBe('No existing customer matches "Ramesh".');
   });
 
   test("name given, exactly one match -> resolved, no blocker", async () => {
-    listCustomersMock.mockImplementation(async () => [
+    customersApiMock.listCustomers.mockImplementation(async () => [
       { id: "cust-1", name: "Ramesh Patel", customer_code: "CUST-0001" },
     ]);
     const result = await resolveCustomer("Ramesh");
@@ -65,7 +61,7 @@ describe("resolveCustomer", () => {
   });
 
   test("name given, multiple matches -> blocker listing each candidate", async () => {
-    listCustomersMock.mockImplementation(async () => [
+    customersApiMock.listCustomers.mockImplementation(async () => [
       { id: "cust-1", name: "Ramesh Patel", customer_code: "CUST-0001" },
       { id: "cust-2", name: "Ramesh Shah", customer_code: "CUST-0002" },
     ]);
@@ -76,8 +72,8 @@ describe("resolveCustomer", () => {
     );
   });
 
-  test("more than 5 matches...", async () => {
-    listCustomersMock.mockImplementation(async () =>
+  test("more than 5 matches -> lists only the first 5, with a trailing ellipsis", async () => {
+    customersApiMock.listCustomers.mockImplementation(async () =>
       Array.from({ length: 7 }, (_, i) => ({
         id: `cust-${i}`,
         name: `Ramesh ${i}`,
@@ -90,5 +86,11 @@ describe("resolveCustomer", () => {
     expect(result.blocker).toContain("matches 7 customers:");
     expect(result.blocker?.endsWith(", ...")).toBe(true);
     expect((result.blocker?.match(/CUST-000/g) ?? []).length).toBe(5);
+  });
+
+  test("passes the trimmed name through to listCustomers", async () => {
+    customersApiMock.listCustomers.mockImplementation(async () => []);
+    await resolveCustomer("  Ramesh  ");
+    expect(customersApiMock.listCustomers).toHaveBeenCalledWith("Ramesh");
   });
 });

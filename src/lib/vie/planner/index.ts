@@ -9,6 +9,7 @@
  */
 import {
   createCustomerEntitiesSchema,
+  createQuotationEntitiesSchema,
   logEnquiryEntitiesSchema,
   noteFollowupEntitiesSchema,
   type VieActionContext,
@@ -22,6 +23,7 @@ import { resolveCustomer } from "./resolveCustomer";
 import { resolveProduct } from "./resolveProduct";
 import { resolveFollowupTarget } from "./resolveFollowupTarget";
 import { resolveCustomerDuplicate } from "./resolveCustomerDuplicate";
+import { resolveProject } from "./resolveProject";
 
 /**
  * The one safety rule from ADR-0001 §6: an unresolved prerequisite always
@@ -164,6 +166,156 @@ async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieE
   return { operation: "create_customer", params, mode: policy.mode, effectiveMode, blockers };
 }
 
+/**
+ * create_quotation (VIE Phase 3). Milestone 2 wired Milestone 1's
+ * resolveProject() into the Planner via the same planX() shape every
+ * existing intent already uses, proving the resolveCustomer() ->
+ * resolveProject() resolution chain and its blockers end to end, with line
+ * items deliberately out of scope. Milestone 5 (this one) adds line-item
+ * extraction, exactly as specified in
+ * engineering/VIE-CreateQuotation-LineItems-Design.md — no further
+ * redesign of the customer/project chain below.
+ *
+ * Unlike every existing multi-resolver planX() (planLogEnquiry resolves
+ * customer and product independently via Promise.all, since neither depends
+ * on the other), project resolution genuinely depends on customer
+ * resolution's own output — a project is FK'd to a customer, so there is
+ * nothing to look up until a customer_id exists. resolveProject() therefore
+ * runs strictly AFTER resolveCustomer(), and only when resolveCustomer()
+ * actually produced a customer_id — mirroring the existing short-circuit
+ * pattern planCreateCustomer() already uses above for its own
+ * duplicate-phone check (skipped entirely when the mobile fails its own
+ * length check first). See VIE-CreateQuotation-Architecture-Review.md §4
+ * for the full rationale against implementing this as Promise.all, which
+ * would call resolveProject() before a customer_id exists.
+ *
+ * Line-item product resolution has no such dependency in either direction
+ * (a product is not FK'd to a customer or project, and line items don't
+ * depend on each other) — per the Line-Items Design §7 and Architecture
+ * Review §3/§12 step 7, every item's resolveProduct() call is kicked off
+ * up front, in parallel with itself (Promise.all across items) AND in
+ * parallel with the sequential customer -> project chain below, and only
+ * awaited once both are needed to build `params`.
+ *
+ * resolveProduct() itself is reused completely unmodified (per this
+ * milestone's own direction: "reuse the existing resolveProduct() behavior
+ * consistently across intents," "do not introduce quotation-specific
+ * product resolution semantics that differ from log_enquiry"). Per its own
+ * verified implementation and tests (resolveProduct.ts /
+ * resolveProduct.test.ts), it has no `blocker` field and cannot distinguish
+ * zero matches from multiple matches — both an unknown product and an
+ * ambiguous product resolve to `{ productId: null, productLabel: null }`
+ * and are NEVER a Planner blocker here, exactly as log_enquiry already
+ * treats them (planLogEnquiry above). There is likewise no "unsupported
+ * unit" concept — quoteItemInputSchema's `unit` field is free text, so an
+ * unrecognized unit is passed straight through, same as `unit`'s existing
+ * "sqft" convenience default when quantity is stated with no unit
+ * (mirroring planLogEnquiry's own `entities.unit ?? "sqft"` above).
+ *
+ * Two per-item/plan-level blockers exist (Line-Items Design §3/§4;
+ * unit_price extended by Milestone 6 — see below): every other field
+ * either resolves best-effort (product/description) or defaults safely
+ * (unit). Per the UX Contract/Architecture Review's all-or-nothing rule, a
+ * blocker on any one line item blocks the whole plan — no special logic
+ * beyond pushing into the same flat `blockers` array resolveEffectiveMode()
+ * already treats as forcing "draft".
+ *
+ * Milestone 6 (VIE-CreateQuotation-Midpoint-Review.md §2/§7/§8) brings this
+ * function into alignment with the UX Contract (§3 item 4, §6 item 1) and
+ * Architecture Review (§6), both of which specify a missing `unit_price` as
+ * a Planner-level blocker — Milestone 5 had deliberately left this solely
+ * to actions/createQuotation.ts's execution-time quoteCreateSchema check,
+ * which meant a plan with every item quantified but unpriced could reach
+ * "confirm" with an EMPTY blockers array, only failing once a human had
+ * already been asked to confirm it. That gap is closed below: a missing
+ * `unit_price` is now pushed onto the same flat `blockers` array as a
+ * missing quantity, so resolveEffectiveMode() (unmodified) forces "draft"
+ * before any confirmation is ever shown, and vie.functions.ts/
+ * workflowEngine.ts (unmodified, out of scope for this milestone) already
+ * guarantee `executeAction()` is only ever invoked automatically for a
+ * "planned" status, which requires effectiveMode "auto" with zero
+ * blockers — so a plan with this blocker can never reach execution without
+ * a human first seeing and resolving it via completeDraftAction's patch.
+ * The action handler's own quoteCreateSchema check is left completely
+ * unchanged as a second line of defense (the same defense-in-depth pattern
+ * already established for resolveProject()/resolveCustomerDuplicate()'s own
+ * "second line of defense" callouts in the Architecture Review), never
+ * removed.
+ *
+ * Milestone 6 also threads two previously-silently-dropped entities through
+ * to `params`, closing the other two gaps the Midpoint Review found:
+ * `category` (a real, already-existing quoteCreateSchema field
+ * actions/createQuotation.ts has read via `params.category ?? null` since
+ * Milestone 4 — the Planner simply never populated it) and `projectText`
+ * (passed to resolveProject() as an optional disambiguation hint, and
+ * preserved on `params` so it's never silently lost even when it wasn't
+ * needed to resolve an ambiguity). Neither is fabricated: both are passed
+ * through exactly as extracted, `undefined` when not stated.
+ */
+async function planCreateQuotation(understanding: VieUnderstanding): Promise<VieExecutionPlan> {
+  const entities = createQuotationEntitiesSchema.parse(understanding.entities);
+
+  const blockers: string[] = [];
+  const rawItems = entities.items ?? [];
+
+  // Kicked off before the sequential customer -> project chain below — no
+  // data dependency either way (see header comment above).
+  const productsPromise = Promise.all(rawItems.map((item) => resolveProduct(item.productText)));
+
+  const customer = await resolveCustomer(entities.customerName);
+  if (customer.blocker) blockers.push(customer.blocker);
+
+  let projectId: string | null = null;
+  if (customer.customerId) {
+    const project = await resolveProject(
+      customer.customerId,
+      customer.customerLabel,
+      entities.projectText,
+    );
+    if (project.blocker) blockers.push(project.blocker);
+    projectId = project.projectId;
+  }
+
+  const resolvedProducts = await productsPromise;
+
+  const items = rawItems.map((item, index) => {
+    const product = resolvedProducts[index];
+
+    if (item.quantity === undefined) {
+      blockers.push(`Line item ${index + 1}: no quantity was extracted from the utterance.`);
+    }
+    // Milestone 6: mirrors the missing-quantity check immediately above —
+    // never fabricated, always a real blocker, never silently deferred to
+    // execution time (see the function header comment for the full
+    // before/after rationale).
+    if (item.rate === undefined) {
+      blockers.push(`Line item ${index + 1}: no unit price was extracted from the utterance.`);
+    }
+
+    return {
+      product_id: product.productId,
+      description: product.productLabel ?? item.productText,
+      quantity: item.quantity,
+      unit: item.unit ?? "sqft",
+      unit_price: item.rate,
+    };
+  });
+
+  const params: Record<string, unknown> = {
+    customer_id: customer.customerId,
+    project_id: projectId,
+    project_text: entities.projectText,
+    category: entities.category,
+    items,
+    notes: `AI-logged from: "${understanding.originalText}"`,
+  };
+
+  const policy = await getExecutionPolicy("create_quotation");
+  const effectiveMode = resolveEffectiveMode(policy, understanding.confidence, blockers);
+
+  return { operation: "create_quotation", params, mode: policy.mode, effectiveMode, blockers };
+}
+
 /** Returns null for "unsupported" classifications — there is nothing to
  *  plan, and the caller (vie.functions.ts) records the row as rejected. */
 export async function planAction(
@@ -177,6 +329,8 @@ export async function planAction(
       return planNoteFollowup(understanding, context);
     case "create_customer":
       return planCreateCustomer(understanding);
+    case "create_quotation":
+      return planCreateQuotation(understanding);
     case "unsupported":
       return null;
   }

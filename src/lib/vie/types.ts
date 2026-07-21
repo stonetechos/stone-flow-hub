@@ -20,9 +20,25 @@ import { z } from "zod";
 // Engine core files. See engineering/VIE-Phase2-Milestone2-Review.md and
 // VIE-CreateCustomer-UX-Contract.md (Claude project docs) for the full
 // design behind create_customer specifically.
+//
+// Phase 3 (create_quotation) Milestone 2 adds a fourth intent, additively,
+// the same way — but note this member is not yet reachable end to end: VIE's
+// own classifier (understand.ts's KNOWN_INTENTS, and prompts.ts) has its own
+// separate, hardcoded intent list and was NOT updated here (out of scope for
+// this milestone — see planner/index.ts's planCreateQuotation for why).
+// Until a later milestone updates those, understand() can never actually
+// classify an utterance as "create_quotation" — this union member exists
+// solely so the Planner has a branch ready to receive it once VIE does. See
+// VIE-CreateQuotation-Architecture-Review.md §12 for the full staged order
+// this follows.
 // ---------------------------------------------------------------------------
 
-export const VIE_INTENTS = ["log_enquiry", "note_followup", "create_customer"] as const;
+export const VIE_INTENTS = [
+  "log_enquiry",
+  "note_followup",
+  "create_customer",
+  "create_quotation",
+] as const;
 export type VieIntent = (typeof VIE_INTENTS)[number];
 
 /** What VIE classifies an utterance as. "unsupported" covers everything
@@ -88,6 +104,77 @@ export const createCustomerEntitiesSchema = z.object({
     .optional(),
 });
 export type CreateCustomerEntities = z.infer<typeof createCustomerEntitiesSchema>;
+
+/**
+ * A single raw, unresolved line item as VIE extracts it (VIE Phase 3 —
+ * Milestone 5: Line-Item Extraction, per
+ * engineering/VIE-CreateQuotation-LineItems-Design.md §2/§3). Field names
+ * intentionally mirror logEnquiryEntitiesSchema's existing
+ * productText/quantity/unit/rate above — prompts.ts (Milestone 3) already
+ * emits exactly these names per line item, and reusing them keeps VIE's
+ * raw-extraction vocabulary for "a material mention with quantity and rate"
+ * identical across log_enquiry and create_quotation rather than inventing a
+ * quotation-specific dialect. All fields are optional at this layer for the
+ * same reason every other entities schema here is fully optional: a partial
+ * extraction must still reach the Planner, whose blocker logic decides what
+ * forces "draft," not this schema.
+ */
+export const createQuotationLineItemEntitySchema = z.object({
+  productText: z.string().trim().min(1).optional(),
+  quantity: z.number().positive().optional(),
+  unit: z.string().trim().min(1).optional(),
+  rate: z.number().positive().optional(),
+});
+export type CreateQuotationLineItemEntity = z.infer<typeof createQuotationLineItemEntitySchema>;
+
+/**
+ * create_quotation entities (VIE Phase 3). Milestone 2 shipped a single
+ * optional `customerName`, just enough surface for planCreateQuotation() to
+ * drive the resolveCustomer() -> resolveProject() chain. Milestone 5 added
+ * `items`, an optional array of createQuotationLineItemEntitySchema —
+ * per VIE-CreateQuotation-LineItems-Design.md §2, this is the raw
+ * extraction shape only; resolution against real products (resolveProduct()),
+ * per-item blocker computation, and the rename to the quote schema's field
+ * names (rate -> unit_price, productText -> description / product_id) all
+ * happen in the Planner (planCreateQuotation), never here.
+ *
+ * Milestone 6 (VIE-CreateQuotation-Midpoint-Review.md §2/§7/§8) adds two
+ * fields prompts.ts (Milestone 3) already documents and demonstrates in its
+ * few-shot examples but which were never declared here — meaning both were
+ * being silently stripped by `.parse()` before the Planner ever saw them,
+ * the same "prompt promises, schema doesn't deliver" gap the Midpoint
+ * Review flagged for exactly these two fields:
+ *
+ * - `projectText`: an optional explicit reference to which of the
+ *   customer's projects the utterance means (e.g. "the Shah project"),
+ *   letting resolveProject() narrow among multiple candidates instead of
+ *   always blocking on ambiguity — per
+ *   VIE-CreateQuotation-UX-Contract.md §4's own anticipation of "an
+ *   explicit project reference" as a legitimate resolution path alongside
+ *   the existing single-obvious-candidate-or-blocker approach.
+ * - `category`: the quotation-level installation/fulfilment category
+ *   ("supply_only" | "supply_and_installation" | "installation_only" |
+ *   "material_and_labour") — a real, already-existing field on the write
+ *   path (quotes/schema.ts's QUOTE_CATEGORIES / quoteCreateSchema.category)
+ *   that actions/createQuotation.ts (Milestone 4) already reads from
+ *   `params.category` and has always been ready to receive; the Planner
+ *   simply never populated it. The enum is redundantly restated here rather
+ *   than imported from quotes/schema.ts, the same decoupling choice
+ *   createCustomerEntitiesSchema's own `customerType` enum already makes
+ *   relative to customers/schema.ts.
+ *
+ * Both fields are optional, extracted permissively, and never fabricated —
+ * same discipline as every other field on this schema.
+ */
+export const createQuotationEntitiesSchema = z.object({
+  customerName: z.string().trim().min(1).optional(),
+  projectText: z.string().trim().min(1).optional(),
+  items: z.array(createQuotationLineItemEntitySchema).optional(),
+  category: z
+    .enum(["supply_only", "supply_and_installation", "installation_only", "material_and_labour"])
+    .optional(),
+});
+export type CreateQuotationEntities = z.infer<typeof createQuotationEntitiesSchema>;
 
 // ---------------------------------------------------------------------------
 // VIE output

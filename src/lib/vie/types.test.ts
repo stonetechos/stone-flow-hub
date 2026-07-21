@@ -11,6 +11,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   createCustomerEntitiesSchema,
+  createQuotationEntitiesSchema,
+  createQuotationLineItemEntitySchema,
   logEnquiryEntitiesSchema,
   noteFollowupEntitiesSchema,
 } from "./types";
@@ -18,6 +20,7 @@ import {
   expectValidEntities,
   expectInvalidEntities,
   validCreateCustomerEntities,
+  validCreateQuotationEntities,
   validLogEnquiryEntities,
   validNoteFollowupEntities,
 } from "./testSupport/testUtils";
@@ -187,5 +190,162 @@ describe("createCustomerEntitiesSchema", () => {
       someUnexpectedField: "xyz",
     });
     expect((parsed as Record<string, unknown>).someUnexpectedField).toBeUndefined();
+  });
+});
+
+describe("createQuotationLineItemEntitySchema (VIE Phase 3 — Milestone 5: Line-Item Extraction)", () => {
+  test("accepts a fully-populated, well-formed line item", () => {
+    const parsed = expectValidEntities(createQuotationLineItemEntitySchema, {
+      productText: "Mint",
+      quantity: 250,
+      unit: "sqft",
+      rate: 145,
+    });
+    expect(parsed.productText).toBe("Mint");
+    expect(parsed.quantity).toBe(250);
+    expect(parsed.unit).toBe("sqft");
+    expect(parsed.rate).toBe(145);
+  });
+
+  test("has no required fields — an empty object is valid on its own (the Planner's missing-quantity blocker decides what to do, not this schema)", () => {
+    expectValidEntities(createQuotationLineItemEntitySchema, {});
+  });
+
+  test("accepts a partial line item with only productText and quantity present", () => {
+    expectValidEntities(createQuotationLineItemEntitySchema, { productText: "Mint", quantity: 10 });
+  });
+
+  test("rejects a non-positive quantity", () => {
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { quantity: -5 });
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { quantity: 0 });
+  });
+
+  test("rejects a quantity given as a string instead of a number", () => {
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { quantity: "250" });
+  });
+
+  test("rejects a non-positive rate", () => {
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { rate: -145 });
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { rate: 0 });
+  });
+
+  test("rejects an empty productText (trimmed to empty)", () => {
+    expectInvalidEntities(createQuotationLineItemEntitySchema, { productText: "   " });
+  });
+
+  test("silently strips an unexpected/unknown per-item field rather than rejecting the whole payload", () => {
+    const parsed = expectValidEntities(createQuotationLineItemEntitySchema, {
+      productText: "Mint",
+      quantity: 10,
+      someUnexpectedField: "xyz",
+    });
+    expect((parsed as Record<string, unknown>).someUnexpectedField).toBeUndefined();
+  });
+});
+
+describe("createQuotationEntitiesSchema (VIE Phase 3 — Milestone 5: Line-Item Extraction)", () => {
+  test("accepts a fully-populated, well-formed AI response with multiple items", () => {
+    const parsed = expectValidEntities(
+      createQuotationEntitiesSchema,
+      validCreateQuotationEntities(),
+    );
+    expect(parsed.customerName).toBe("Ramesh");
+    expect(parsed.items).toHaveLength(2);
+    expect(parsed.items?.[0]).toMatchObject({ productText: "Mint", quantity: 250 });
+  });
+
+  test("has no required fields — an empty object is valid on its own", () => {
+    // Same discipline as every other entities schema here: a partial
+    // extraction (e.g. no items mentioned) must still reach the Planner,
+    // whose blocker logic (planCreateQuotation) decides what forces
+    // "draft," not this schema.
+    expectValidEntities(createQuotationEntitiesSchema, {});
+  });
+
+  test("accepts customerName with no items at all", () => {
+    expectValidEntities(createQuotationEntitiesSchema, { customerName: "Ramesh" });
+  });
+
+  test("accepts an explicitly empty items array", () => {
+    const parsed = expectValidEntities(createQuotationEntitiesSchema, {
+      customerName: "Ramesh",
+      items: [],
+    });
+    expect(parsed.items).toEqual([]);
+  });
+
+  test("accepts a single-item array", () => {
+    const parsed = expectValidEntities(createQuotationEntitiesSchema, {
+      customerName: "Ramesh",
+      items: [{ productText: "Mint", quantity: 300, unit: "sqft", rate: 145 }],
+    });
+    expect(parsed.items).toHaveLength(1);
+  });
+
+  test("rejects when one item in the array is malformed (non-positive quantity) — the whole payload fails, not just that item", () => {
+    expectInvalidEntities(
+      createQuotationEntitiesSchema,
+      validCreateQuotationEntities({
+        items: [
+          { productText: "Mint", quantity: 250, unit: "sqft", rate: 145 },
+          { productText: "Kadappa", quantity: -1, unit: "sqft", rate: 210 },
+        ],
+      }),
+    );
+  });
+
+  test("rejects an empty customerName", () => {
+    expectInvalidEntities(
+      createQuotationEntitiesSchema,
+      validCreateQuotationEntities({ customerName: "" }),
+    );
+  });
+
+  test("silently strips an unexpected/unknown top-level field rather than rejecting the whole payload", () => {
+    const parsed = expectValidEntities(createQuotationEntitiesSchema, {
+      ...validCreateQuotationEntities(),
+      someUnexpectedField: "xyz",
+    });
+    expect((parsed as Record<string, unknown>).someUnexpectedField).toBeUndefined();
+  });
+
+  describe("projectText and category (VIE Phase 3 — Milestone 6: Planner Alignment)", () => {
+    test("accepts a well-formed projectText", () => {
+      const parsed = expectValidEntities(createQuotationEntitiesSchema, {
+        customerName: "Ramesh",
+        projectText: "Shah Villa",
+      });
+      expect(parsed.projectText).toBe("Shah Villa");
+    });
+
+    test("rejects an empty projectText", () => {
+      expectInvalidEntities(createQuotationEntitiesSchema, { projectText: "" });
+    });
+
+    test("rejects a whitespace-only projectText (trimmed to empty)", () => {
+      expectInvalidEntities(createQuotationEntitiesSchema, { projectText: "   " });
+    });
+
+    test("accepts every real QUOTE_CATEGORIES value", () => {
+      for (const category of [
+        "supply_only",
+        "supply_and_installation",
+        "installation_only",
+        "material_and_labour",
+      ] as const) {
+        const parsed = expectValidEntities(createQuotationEntitiesSchema, { category });
+        expect(parsed.category).toBe(category);
+      }
+    });
+
+    test("rejects a category outside the known enum", () => {
+      expectInvalidEntities(createQuotationEntitiesSchema, { category: "free_shipping" });
+    });
+
+    test("projectText and category are both absent by default — never fabricated", () => {
+      const parsed = expectValidEntities(createQuotationEntitiesSchema, { customerName: "Ramesh" });
+      expect(parsed.projectText).toBeUndefined();
+      expect(parsed.category).toBeUndefined();
+    });
   });
 });

@@ -14,6 +14,7 @@ const KNOWN_INTENTS: readonly VieClassifiedIntent[] = [
   "log_enquiry",
   "note_followup",
   "create_customer",
+  "create_quotation",
   "unsupported",
 ];
 const KNOWN_LANGUAGES: readonly VieLanguage[] = ["en", "hi", "gu", "mixed", "unknown"];

@@ -27,6 +27,16 @@ const DEFAULT_POLICIES: Record<VieIntent, VieExecutionPolicy> = {
   // observed in production. Retune via app_settings, same as any intent —
   // no deploy needed to later allow "auto".
   create_customer: { mode: "confirm", autoThreshold: 0.9 },
+  // A wrongly-created quotation is a customer-facing commercial document —
+  // at least as costly to unwind as a wrongly-created customer record,
+  // arguably more. Seeded confirm-only, at least as conservative as
+  // create_customer's own 0.9, per
+  // VIE-CreateQuotation-UX-Contract.md §5 and
+  // VIE-CreateQuotation-Architecture-Review.md §9's explicit recommendation.
+  // Not intended to reach "auto" in Phase 3 at all (see the UX Contract's
+  // own "not recommended... under any confidence threshold" guidance) —
+  // this default is a ceiling only, same mechanism as every other intent.
+  create_quotation: { mode: "confirm", autoThreshold: 0.9 },
 };
 
 export async function getExecutionPolicy(intent: VieIntent): Promise<VieExecutionPolicy> {
