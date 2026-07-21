@@ -168,9 +168,8 @@ export const NumericInput = React.forwardRef<
 });
 
 /** Percentage — capped 0..100 by default. */
-export const PercentInput = React.forwardRef<HTMLInputElement, BaseProps>(function PercentInput(
-  props,
-  ref,
-) {
-  return <NumericInput ref={ref} min={0} max={100} {...props} />;
-});
+export const PercentInput = React.forwardRef<HTMLInputElement, Omit<BaseProps, "min" | "max">>(
+  function PercentInput(props, ref) {
+    return <NumericInput ref={ref} min={0} max={100} {...props} />;
+  },
+);
