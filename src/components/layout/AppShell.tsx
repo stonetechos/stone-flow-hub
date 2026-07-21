@@ -581,6 +581,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           className={cn(
             "material-basalt stone-grain",
             "hidden shrink-0 flex-col border-r border-border-inverse text-sidebar-foreground md:flex",
+            "pt-[env(safe-area-inset-top)]",
             "transition-[width] duration-200 ease-out",
             sidebarWidth,
           )}
@@ -663,7 +664,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             demo banner are plain shrink-0 flow items instead of sticky. */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Topbar (48px) — fixed chrome, no longer sticky-against-scroll */}
-          <header className="z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
+          <header className="z-20 flex min-h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
             {/* Mobile nav trigger */}
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
@@ -789,7 +790,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <main
             id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-8 md:py-6"
+            className="min-h-0 flex-1 overflow-y-auto px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             <PageTransition>{children}</PageTransition>
           </main>

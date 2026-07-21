@@ -310,7 +310,7 @@ export function Copilot() {
           type="button"
           aria-label="Open AI Copilot (⌘J)"
           className={cn(
-            "fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
+            "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
             "bg-primary text-primary-foreground shadow-3 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >

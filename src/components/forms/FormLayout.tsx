@@ -46,9 +46,12 @@ export function FormLayout({
     <form
       onSubmit={onSubmit}
       aria-busy={busy || undefined}
-      // pb-24 leaves room for the sticky FormActions footer so the last
-      // field is never covered.
-      className={cn("space-y-10 pb-28", className)}
+      // pb leaves room for the sticky FormActions footer so the last field
+      // is never covered; the safe-area term keeps that clearance intact
+      // on devices with a bottom gesture bar (the footer itself grows by
+      // the same inset — see FormActions below — so this buffer must grow
+      // with it rather than being capped by max()).
+      className={cn("space-y-10 pb-[calc(7rem+env(safe-area-inset-bottom))]", className)}
       noValidate
     >
       {children}
@@ -139,6 +142,7 @@ export function FormActions({
       className={cn(
         "fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur",
         "supports-[backdrop-filter]:bg-background/80",
+        "pb-[env(safe-area-inset-bottom)]",
         className,
       )}
       role="group"
