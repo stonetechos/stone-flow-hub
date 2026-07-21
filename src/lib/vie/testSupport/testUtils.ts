@@ -22,7 +22,12 @@
  */
 import { expect } from "bun:test";
 import type { ZodType } from "zod";
-import type { CreateCustomerEntities, LogEnquiryEntities, NoteFollowupEntities } from "../types";
+import type {
+  CreateCustomerEntities,
+  CreateQuotationEntities,
+  LogEnquiryEntities,
+  NoteFollowupEntities,
+} from "../types";
 
 /** Asserts `input` satisfies `schema` and returns the parsed value so a test
  *  can make further assertions on it (e.g. a specific field's value). */
@@ -79,6 +84,22 @@ export function validCreateCustomerEntities(
     mobile: "9724455663",
     city: "Surat",
     customerType: "contractor",
+    ...overrides,
+  };
+}
+
+/** A fully-populated, valid create_quotation entities payload — customerName
+ *  plus a two-item `items[]`, matching prompts.ts's own multi-product
+ *  few-shot example (VIE Phase 3 — Milestone 5: Line-Item Extraction). */
+export function validCreateQuotationEntities(
+  overrides: Partial<Record<keyof CreateQuotationEntities, unknown>> = {},
+): Record<string, unknown> {
+  return {
+    customerName: "Ramesh",
+    items: [
+      { productText: "Mint", quantity: 250, unit: "sqft", rate: 145 },
+      { productText: "Kadappa", quantity: 100, unit: "sqft", rate: 210 },
+    ],
     ...overrides,
   };
 }
