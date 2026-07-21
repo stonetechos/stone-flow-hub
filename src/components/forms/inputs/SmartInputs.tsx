@@ -123,7 +123,12 @@ export const EmailInput = React.forwardRef<HTMLInputElement, BaseProps>(function
 /** Numeric input: allows digits + one decimal point + optional negative. */
 export const NumericInput = React.forwardRef<
   HTMLInputElement,
-  BaseProps & { allowDecimal?: boolean; allowNegative?: boolean; min?: number; max?: number }
+  Omit<BaseProps, "min" | "max"> & {
+    allowDecimal?: boolean;
+    allowNegative?: boolean;
+    min?: number;
+    max?: number;
+  }
 >(function NumericInput(
   { value, onChange, allowDecimal = true, allowNegative = false, min, max, ...rest },
   ref,
