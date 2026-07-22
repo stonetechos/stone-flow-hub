@@ -13,7 +13,15 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { canManageTargetUser } from "@/lib/admin/permissions";
+import type { Database } from "@/integrations/supabase/types";
+
+/** Matches the real shape of `supabaseAdmin` (see client.server.ts) without
+ * importing that module at type-check time — it's dynamically imported
+ * inside each handler so it's never pulled into the client bundle. */
+type SupabaseAdminClient = SupabaseClient<Database>;
 
 export type AdminUserStatus = "active" | "invited" | "expired" | "deactivated";
 
@@ -30,16 +38,74 @@ export interface AdminUserRow {
 
 const INVITE_EXPIRY_DAYS = 7;
 
-async function requireAdmin(ctx: { supabase: unknown; userId: string }): Promise<void> {
+/**
+ * Sprint 1.7, Parts 2-4 — every handler below must accept both Admin *and*
+ * Super Admin callers. The Super Admin account is granted only the
+ * `super_admin` role (never also `admin`), so the old `requireAdmin`, which
+ * checked `has_role(..., 'admin')` alone, would have locked the Platform
+ * Owner out of their own admin server functions. This checks both roles and
+ * returns which one(s) matched so callers can also enforce the Super-Admin-
+ * only rules (Part 3) without a second round trip.
+ */
+async function requireAdminActor(ctx: {
+  supabase: unknown;
+  userId: string;
+}): Promise<{ isAdmin: boolean; isSuperAdmin: boolean }> {
   const sb = ctx.supabase as {
     rpc: (
       fn: "has_role",
-      args: { _user_id: string; _role: "admin" },
+      args: { _user_id: string; _role: "admin" | "super_admin" },
     ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
   };
-  const { data, error } = await sb.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+  const [adminRes, superAdminRes] = await Promise.all([
+    sb.rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
+    sb.rpc("has_role", { _user_id: ctx.userId, _role: "super_admin" }),
+  ]);
+  if (adminRes.error) throw new Error(adminRes.error.message);
+  if (superAdminRes.error) throw new Error(superAdminRes.error.message);
+  const isAdmin = !!adminRes.data;
+  const isSuperAdmin = !!superAdminRes.data;
+  if (!isAdmin && !isSuperAdmin) throw new Error("Forbidden");
+  return { isAdmin, isSuperAdmin };
+}
+
+/** Sprint 1.7, Part 3 — is this target user the protected Super Admin? */
+async function targetIsSuperAdmin(admin: SupabaseAdminClient, userId: string): Promise<boolean> {
+  const { data, error } = await admin
+    .from("user_roles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("role", "super_admin")
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden");
+  return !!data;
+}
+
+/**
+ * Sprint 1.7, Part 8 — audit log helper for the server-function paths
+ * (client-side direct-table paths log via the equivalent helper in
+ * users.ts). Never throws: a failed audit write must not roll back or mask
+ * the outcome of the primary action it's describing.
+ */
+async function logAuditEvent(
+  admin: SupabaseAdminClient,
+  entry: {
+    entityId: string;
+    action: Database["public"]["Enums"]["activity_action"];
+    actorId: string;
+    summary: string;
+  },
+): Promise<void> {
+  const { error } = await admin.from("activity_log").insert({
+    entity_type: "user",
+    entity_id: entry.entityId,
+    action: entry.action,
+    actor_id: entry.actorId,
+    summary: entry.summary,
+  });
+  if (error) {
+    console.error("[audit] failed to record activity_log entry", error.message);
+  }
 }
 
 async function countActiveAdminsExcluding(
@@ -102,7 +168,7 @@ function deriveStatus(u: {
 export const listAuthUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireAdmin(context);
+    await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Fetch is_active from profiles (bypass RLS is fine — admin only).
@@ -161,7 +227,7 @@ export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => inviteInput.parse(raw))
   .handler(async ({ context, data }) => {
-    await requireAdmin(context);
+    await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.trim().toLowerCase();
     const fullName = data.full_name?.trim() || null;
@@ -178,6 +244,14 @@ export const inviteUser = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("profiles")
         .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+    }
+    if (userId) {
+      await logAuditEvent(supabaseAdmin, {
+        entityId: userId,
+        action: "user_created",
+        actorId: context.userId,
+        summary: `User invited: ${email}`,
+      });
     }
     return { id: userId ?? null, email };
   });
@@ -203,7 +277,7 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => createWithPasswordInput.parse(raw))
   .handler(async ({ context, data }) => {
-    await requireAdmin(context);
+    await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.trim().toLowerCase();
     const fullName = data.full_name?.trim() || null;
@@ -216,10 +290,27 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const userId = result.user?.id;
-    if (userId && fullName) {
-      await supabaseAdmin
-        .from("profiles")
-        .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+    if (userId) {
+      // Sprint 1.7, Part 5: the password above is exactly what the admin
+      // typed — nothing is generated. Since it's a temporary credential the
+      // admin now has to share with the user out of band, force a password
+      // change before the account can be used (Part 7 enforces the
+      // redirect; this just sets the flag that triggers it).
+      await supabaseAdmin.from("profiles").upsert(
+        {
+          id: userId,
+          email,
+          ...(fullName ? { full_name: fullName } : {}),
+          force_password_change: true,
+        },
+        { onConflict: "id" },
+      );
+      await logAuditEvent(supabaseAdmin, {
+        entityId: userId,
+        action: "user_created",
+        actorId: context.userId,
+        summary: `User created: ${email}`,
+      });
     }
     return { id: userId ?? null, email };
   });
@@ -233,7 +324,7 @@ export const resendInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => emailInput.parse(raw))
   .handler(async ({ context, data }) => {
-    await requireAdmin(context);
+    await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       redirectTo: data.redirect_to ?? undefined,
@@ -248,11 +339,33 @@ export const deleteAuthUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => userIdInput.parse(raw))
   .handler(async ({ context, data }) => {
-    await requireAdmin(context);
+    const actor = await requireAdminActor(context);
     if (data.user_id === context.userId) {
       throw new Error("You cannot delete your own account.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Sprint 1.7, Part 3: the Super Admin account can never be deleted, by
+    // anyone, including another Super Admin. This is checked here (in
+    // addition to the DB trigger in migration 20260722150003) so the
+    // denial surfaces as this exact message immediately and so the
+    // "attempted" audit event is recorded — the DB trigger's own AFTER
+    // logger never fires for a blocked BEFORE-trigger mutation.
+    const targetSuperAdmin = await targetIsSuperAdmin(supabaseAdmin, data.user_id);
+    const decision = canManageTargetUser(
+      { id: context.userId, isSuperAdmin: actor.isSuperAdmin, isAdmin: actor.isAdmin },
+      { id: data.user_id, isSuperAdmin: targetSuperAdmin },
+      "delete",
+    );
+    if (!decision.allowed) {
+      await logAuditEvent(supabaseAdmin, {
+        entityId: data.user_id,
+        action: "super_admin_delete_attempted",
+        actorId: context.userId,
+        summary: "Attempted to delete the protected Super Admin account.",
+      });
+      throw new Error(decision.reason ?? "Forbidden");
+    }
 
     // Safeguard: prevent removing the last active admin.
     const { data: targetIsAdmin, error: rErr } = await supabaseAdmin
@@ -271,6 +384,14 @@ export const deleteAuthUser = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: data.user_id,
+      action: "user_deleted",
+      actorId: context.userId,
+      summary: "User deleted.",
+    });
+
     return { ok: true };
   });
 
@@ -283,13 +404,25 @@ export const setUserActive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => setActiveInput.parse(raw))
   .handler(async ({ context, data }) => {
-    await requireAdmin(context);
+    const actor = await requireAdminActor(context);
     if (data.user_id === context.userId && !data.is_active) {
       throw new Error("You cannot deactivate your own account.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (!data.is_active) {
+      // Sprint 1.7, Part 3: the Super Admin account can never be
+      // deactivated. The DB trigger (migration 20260722150003) blocks the
+      // underlying UPDATE regardless, but this check surfaces the exact
+      // "This account is protected." message without a round trip.
+      const targetSuperAdmin = await targetIsSuperAdmin(supabaseAdmin, data.user_id);
+      const decision = canManageTargetUser(
+        { id: context.userId, isSuperAdmin: actor.isSuperAdmin, isAdmin: actor.isAdmin },
+        { id: data.user_id, isSuperAdmin: targetSuperAdmin },
+        "deactivate",
+      );
+      if (!decision.allowed) throw new Error(decision.reason ?? "Forbidden");
+
       // Prevent deactivating the last active admin.
       const { data: targetIsAdmin } = await supabaseAdmin
         .from("user_roles")
@@ -319,5 +452,64 @@ export const setUserActive = createServerFn({ method: "POST" })
     } catch {
       // Non-fatal: profile flag still prevents app usage via RLS/gates.
     }
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: data.user_id,
+      action: data.is_active ? "user_activated" : "user_deactivated",
+      actorId: context.userId,
+      summary: data.is_active ? "User reactivated." : "User deactivated.",
+    });
+
+    return { ok: true };
+  });
+
+const resetPasswordInput = z.object({
+  user_id: z.string().uuid(),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+});
+
+/**
+ * Sprint 1.7, Part 6 — direct password reset by an Admin or Super Admin.
+ * Distinct from `sendPasswordReset` in users.ts, which emails the user a
+ * self-service reset link and is unchanged by this sprint. This sets the
+ * exact password the caller supplies (Part 5: never generated) and marks
+ * `force_password_change` so the recipient must set their own password on
+ * next sign-in (Part 7), same as a freshly created account.
+ */
+export const resetUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => resetPasswordInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const actor = await requireAdminActor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Sprint 1.7, Part 6: Admins may reset any password except the Super
+    // Admin's; only the Super Admin may reset their own.
+    const targetSuperAdmin = await targetIsSuperAdmin(supabaseAdmin, data.user_id);
+    const decision = canManageTargetUser(
+      { id: context.userId, isSuperAdmin: actor.isSuperAdmin, isAdmin: actor.isAdmin },
+      { id: data.user_id, isSuperAdmin: targetSuperAdmin },
+      "reset_password",
+    );
+    if (!decision.allowed) throw new Error(decision.reason ?? "Forbidden");
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+
+    const { error: profErr } = await supabaseAdmin
+      .from("profiles")
+      .update({ force_password_change: true })
+      .eq("id", data.user_id);
+    if (profErr) throw new Error(profErr.message);
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: data.user_id,
+      action: "password_reset",
+      actorId: context.userId,
+      summary: "Password reset by administrator.",
+    });
+
     return { ok: true };
   });

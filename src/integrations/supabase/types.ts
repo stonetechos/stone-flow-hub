@@ -24,6 +24,7 @@ export type Database = {
           entity_type: string
           field_name: string | null
           id: number
+          ip_address: string | null
           is_demo: boolean
           new_value: Json | null
           old_value: Json | null
@@ -39,6 +40,7 @@ export type Database = {
           entity_type: string
           field_name?: string | null
           id?: number
+          ip_address?: string | null
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
@@ -54,6 +56,7 @@ export type Database = {
           entity_type?: string
           field_name?: string | null
           id?: number
+          ip_address?: string | null
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
@@ -4549,6 +4552,7 @@ export type Database = {
           created_at: string
           department: string | null
           email: string | null
+          force_password_change: boolean
           full_name: string | null
           id: string
           initials: string | null
@@ -4564,6 +4568,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id: string
           initials?: string | null
@@ -4579,6 +4584,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id?: string
           initials?: string | null
@@ -8113,6 +8119,7 @@ export type Database = {
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_vendor_of: {
         Args: { _user_id: string; _vendor_id: string }
         Returns: boolean
@@ -8438,7 +8445,15 @@ export type Database = {
         | "quote_accepted"
         | "invoice_issued"
         | "payment_received"
-      app_role: "admin" | "sales_manager" | "sales" | "purchase"
+        | "user_created"
+        | "password_reset"
+        | "role_changed"
+        | "user_activated"
+        | "user_deactivated"
+        | "user_deleted"
+        | "super_admin_delete_attempted"
+        | "super_admin_role_change_attempted"
+      app_role: "admin" | "sales_manager" | "sales" | "purchase" | "super_admin"
       contact_designation:
         | "owner"
         | "architect"
@@ -8865,8 +8880,16 @@ export const Constants = {
         "quote_accepted",
         "invoice_issued",
         "payment_received",
+        "user_created",
+        "password_reset",
+        "role_changed",
+        "user_activated",
+        "user_deactivated",
+        "user_deleted",
+        "super_admin_delete_attempted",
+        "super_admin_role_change_attempted",
       ],
-      app_role: ["admin", "sales_manager", "sales", "purchase"],
+      app_role: ["admin", "sales_manager", "sales", "purchase", "super_admin"],
       contact_designation: [
         "owner",
         "architect",

@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { Database } from "@/integrations/supabase/types";
+import { canManageTargetUser, type ActingUserRef } from "@/lib/admin/permissions";
 
 export type AppRole = Database["public"]["Enums"]["app_role"];
 export const APP_ROLES: readonly AppRole[] = [
@@ -115,6 +116,84 @@ export async function revokeRole(userId: string, role: AppRole): Promise<void> {
   if (error) throw new AppError(mapDbError(error));
 }
 
+/**
+ * Sprint 1.7, Part 8 — records a denied Super Admin role-change attempt.
+ * The `user_roles` table itself is guarded by a DB trigger (see migration
+ * 20260722150003) that rolls back the mutation before it happens, which
+ * means the AFTER-trigger audit logger never fires for a blocked attempt —
+ * so the attempt is recorded here, at the one call site that already knows
+ * it was denied. RLS's "al insert auth" policy allows any authenticated
+ * user to write an activity_log row, matching the existing generic
+ * log_activity() trigger's pattern of trusting the app layer for actor_id.
+ */
+async function logRoleChangeAttempt(
+  entityId: string,
+  actorId: string,
+  summary: string,
+): Promise<void> {
+  const { error } = await supabase.from("activity_log").insert({
+    entity_type: "user",
+    entity_id: entityId,
+    action: "super_admin_role_change_attempted",
+    actor_id: actorId,
+    summary,
+  });
+  if (error) {
+    // Audit logging must never block the caller from seeing the original
+    // denial reason — log and continue.
+    console.error("[audit] failed to record activity_log entry", error.message);
+  }
+}
+
+/**
+ * Sprint 1.7, Parts 2-4 — the guarded entry point the Users & Roles page
+ * should call instead of `assignRole` directly. Denies (and logs) any
+ * attempt to change the protected Super Admin's role; otherwise behaves
+ * exactly like `assignRole`.
+ */
+export async function assignRoleGuarded(
+  actor: ActingUserRef,
+  target: { id: string; roles: AppRole[] },
+  role: AppRole,
+): Promise<void> {
+  const decision = canManageTargetUser(
+    actor,
+    { id: target.id, isSuperAdmin: target.roles.includes("super_admin") },
+    "change_role",
+  );
+  if (!decision.allowed) {
+    await logRoleChangeAttempt(
+      target.id,
+      actor.id,
+      "Attempted to grant a role to the protected Super Admin account.",
+    );
+    throw new AppError(decision.reason ?? "Forbidden");
+  }
+  return assignRole(target.id, role);
+}
+
+/** Guarded counterpart to `assignRoleGuarded` for role revocation. */
+export async function revokeRoleGuarded(
+  actor: ActingUserRef,
+  target: { id: string; roles: AppRole[] },
+  role: AppRole,
+): Promise<void> {
+  const decision = canManageTargetUser(
+    actor,
+    { id: target.id, isSuperAdmin: target.roles.includes("super_admin") },
+    "revoke_role",
+  );
+  if (!decision.allowed) {
+    await logRoleChangeAttempt(
+      target.id,
+      actor.id,
+      "Attempted to revoke a role from the protected Super Admin account.",
+    );
+    throw new AppError(decision.reason ?? "Forbidden");
+  }
+  return revokeRole(target.id, role);
+}
+
 export async function sendPasswordReset(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/auth`,
@@ -187,6 +266,20 @@ export async function currentUserIsAdmin(): Promise<boolean> {
     .select("role")
     .eq("user_id", uid)
     .eq("role", "admin")
+    .maybeSingle();
+  return !!data;
+}
+
+/** Sprint 1.7, Part 2 — mirrors `currentUserIsAdmin` for the new tier. */
+export async function currentUserIsSuperAdmin(): Promise<boolean> {
+  const { data: sess } = await supabase.auth.getUser();
+  const uid = sess.user?.id;
+  if (!uid) return false;
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", uid)
+    .eq("role", "super_admin")
     .maybeSingle();
   return !!data;
 }

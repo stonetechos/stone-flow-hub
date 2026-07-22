@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { POWERED_BY_LINE } from "@/lib/branding/platform";
 
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
@@ -37,6 +39,9 @@ import { cn } from "@/lib/utils";
  *   /auth?flow=reset              → reset password
  *   /auth?flow=update             → set a new password (after email link)
  *   /auth?flow=invite             → accept invite (uses update password)
+ *   /auth?flow=force-change       → mandatory first-login password change
+ *                                    (Sprint 1.7, Part 7 — reuses the same
+ *                                    update-password UI as `update`/`invite`)
  *   /auth?flow=expired            → session expired notice
  *   /auth?flow=denied             → access denied notice
  *   /auth?flow=loading            → transitional loading state
@@ -44,7 +49,7 @@ import { cn } from "@/lib/utils";
 
 const flowSchema = z.object({
   flow: z
-    .enum(["signin", "reset", "update", "invite", "expired", "denied", "loading"])
+    .enum(["signin", "reset", "update", "invite", "force-change", "expired", "denied", "loading"])
     .catch("signin"),
   redirect: z.string().optional().catch(undefined),
 });
@@ -54,6 +59,11 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
+    // Sprint 1.7, Part 1: see the matching comment in
+    // `_authenticated/route.tsx` — the root route already replaces the
+    // entire app with the configuration screen when misconfigured, so this
+    // only needs to avoid throwing.
+    if (!getSupabaseConfigStatus().ok) return;
     // Only bounce authenticated users away from the sign-in surface.
     if (search.flow && search.flow !== "signin") return;
     const { data } = await supabase.auth.getSession();
@@ -257,6 +267,8 @@ function FormArea({ flow }: { flow: string }) {
     case "update":
     case "invite":
       return <UpdatePasswordCard invite={flow === "invite"} />;
+    case "force-change":
+      return <UpdatePasswordCard forceChange />;
     case "expired":
       return (
         <NoticeCard
@@ -355,6 +367,10 @@ function AuthCard({
       <p className="mt-6 text-center text-[11.5px] leading-relaxed text-text-muted">
         Accounts are provisioned by an administrator. Contact your admin for access.
       </p>
+      {/* Sprint 1.7, Part 9: subtle platform attribution — does not replace
+          the Stone Tech OS wordmark shown above, just credits the company
+          that builds and operates it. */}
+      <p className="mt-2 text-center text-[11px] text-text-muted">{POWERED_BY_LINE}</p>
     </div>
   );
 }
@@ -594,7 +610,7 @@ function ResetPasswordCard() {
 /* ============================================================
  * Update password (after email link) — also handles invite accept
  * ============================================================ */
-function UpdatePasswordCard({ invite }: { invite?: boolean }) {
+function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceChange?: boolean }) {
   const navigate = useNavigate();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -620,8 +636,27 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw error;
+
+      let isVendor = false;
+      if (forceChange) {
+        // Sprint 1.7, Part 7: clears the flag that forced this screen so
+        // the very next `beforeLoad` check on `_authenticated` lets the
+        // user through normally.
+        const { data: sess } = await supabase.auth.getUser();
+        const uid = sess.user?.id;
+        if (uid) {
+          await supabase.from("profiles").update({ force_password_change: false }).eq("id", uid);
+          const { data: vu } = await supabase
+            .from("vendor_users")
+            .select("vendor_id")
+            .eq("user_id", uid)
+            .maybeSingle();
+          isVendor = !!vu;
+        }
+      }
+
       toast.success(invite ? "Welcome to Stone Tech OS" : "Password updated");
-      await navigate({ to: "/dashboard" });
+      await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
       setFormError(msg);
@@ -633,12 +668,20 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
 
   return (
     <AuthCard
-      eyebrow={invite ? "Accept your invite" : "Set a new password"}
-      title={invite ? "Welcome to Stone Tech OS" : "Choose a new password"}
+      eyebrow={forceChange ? "Required" : invite ? "Accept your invite" : "Set a new password"}
+      title={
+        forceChange
+          ? "Set your permanent password"
+          : invite
+            ? "Welcome to Stone Tech OS"
+            : "Choose a new password"
+      }
       description={
-        invite
-          ? "Create a password to activate your account. You'll be signed in immediately."
-          : "Pick a strong password. Use at least 8 characters — a mix of letters, numbers and symbols is best."
+        forceChange
+          ? "Your administrator created this account with a temporary password. Choose a new password to continue — you can't access Stone Tech OS until this is done."
+          : invite
+            ? "Create a password to activate your account. You'll be signed in immediately."
+            : "Pick a strong password. Use at least 8 characters — a mix of letters, numbers and symbols is best."
       }
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
@@ -696,7 +739,13 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
           className="w-full h-11 gap-2"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {busy ? "Saving…" : invite ? "Activate account" : "Update password"}
+          {busy
+            ? "Saving…"
+            : forceChange
+              ? "Set password and continue"
+              : invite
+                ? "Activate account"
+                : "Update password"}
         </Button>
       </form>
     </AuthCard>

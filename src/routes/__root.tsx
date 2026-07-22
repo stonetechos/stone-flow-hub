@@ -20,6 +20,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -173,6 +175,13 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  // Sprint 1.7, Part 1: computed once (module-level memoized in
+  // config-status.ts), checked here before any child route mounts. When
+  // misconfigured, the effects below skip touching `supabase` entirely and
+  // the component renders the global configuration screen instead of
+  // `<Outlet/>` — no page ever gets a chance to render its own "Missing
+  // Supabase environment variable(s)" error.
+  const configStatus = getSupabaseConfigStatus();
 
   useEffect(() => {
     void installToastDiagnostics();
@@ -180,6 +189,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    if (!configStatus.ok) return;
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         // Phase G.8.9 root-cause fix: clearing the query cache in place
@@ -210,7 +220,11 @@ function RootComponent() {
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [router, queryClient]);
+  }, [router, queryClient, configStatus.ok]);
+
+  if (!configStatus.ok) {
+    return <ConfigurationRequiredScreen missing={configStatus.missing} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

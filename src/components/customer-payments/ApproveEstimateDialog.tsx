@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
@@ -24,6 +24,7 @@ import { approveEstimate, type ScheduleMilestone } from "@/lib/customer-payments
 import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import { invalidateEstimate } from "@/lib/query-invalidation";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 
 export interface ApproveEstimateDialogProps {
   open: boolean;
@@ -65,20 +66,23 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<ScheduleMilestone[]>([]);
 
+  // Sprint 1.7, Part 10 — snapshot for the unsaved-changes close guard.
+  const initialSnapshot = useRef("");
+
   useEffect(() => {
     if (!open) return;
-    if (currentSchedule.length) {
-      setRows(
-        currentSchedule.map((s) => ({
+    const next = currentSchedule.length
+      ? currentSchedule.map((s) => ({
           label: s.label,
           pct: Number(s.pct),
           due_offset_days: Number(s.due_offset_days),
-        })),
-      );
-    } else {
-      setRows(defaultFor(template, estimateTotal));
-    }
+        }))
+      : defaultFor(template, estimateTotal);
+    setRows(next);
+    initialSnapshot.current = JSON.stringify(next);
   }, [open, currentSchedule, template, estimateTotal]);
+
+  const dirty = open && initialSnapshot.current !== JSON.stringify(rows);
 
   const totalPct = rows.reduce((s, r) => s + Number(r.pct || 0), 0);
   const valid = Math.abs(totalPct - 100) < 0.01 && rows.every((r) => r.label.trim());
@@ -97,8 +101,23 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
 
   const applyStoneTechDefault = () => setRows(defaultFor(template, estimateTotal));
 
+  // Sprint 1.7, Part 10 — Ctrl/Cmd+Enter submits, matching the shortcut
+  // convention used across the other converted dialogs.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (!valid || mut.isPending) return;
+        e.preventDefault();
+        mut.mutate();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, valid, mut]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Approve estimate &amp; create payment schedule</DialogTitle>
@@ -202,7 +221,10 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button onClick={() => mut.mutate()} disabled={!valid || mut.isPending}>

@@ -1,5 +1,5 @@
 /** Customer sign-off dialog. Signature is captured via SignaturePad or uploaded photo. */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -20,6 +20,7 @@ import { createSignoff } from "@/lib/installation/signoff";
 import { invalidateInstallation } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 
 export function SignoffDialog({
   installationId,
@@ -34,6 +35,10 @@ export function SignoffDialog({
   const [rating, setRating] = useState<number | null>(null);
   const [remarks, setRemarks] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
+
+  // Sprint 1.7, Part 10 — this dialog has no server-fetched baseline (it
+  // always starts blank), so "dirty" is simply "has anything been typed".
+  const dirty = open && (!!customer || rating != null || !!remarks || !!signature);
 
   const mut = useMutation({
     mutationFn: () =>
@@ -52,8 +57,23 @@ export function SignoffDialog({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  // Sprint 1.7, Part 10 — Ctrl/Cmd+Enter submits, matching the shortcut
+  // convention used across the other converted dialogs.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (mut.isPending) return;
+        e.preventDefault();
+        mut.mutate();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, mut]);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && setOpen(o)}>
       <DialogTrigger asChild>
         <Button size="sm" disabled={disabled}>
           <CheckCheck className="mr-1 h-4 w-4" /> Customer sign-off
@@ -99,7 +119,10 @@ export function SignoffDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => confirmCloseIfDirty(false, dirty) && setOpen(false)}
+          >
             Cancel
           </Button>
           <Button onClick={() => mut.mutate()} disabled={mut.isPending}>

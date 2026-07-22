@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { User, Building2, Palette, Shield, Bell, Compass } from "lucide-react";
+import { User, Building2, Palette, Shield, Bell, Compass, Info } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,12 @@ import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  PRODUCT_NAME,
+  PRODUCT_CATEGORY,
+  BUILT_BY_LINE,
+  copyrightLine,
+} from "@/lib/branding/platform";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   ssr: false,
@@ -133,6 +139,10 @@ function SettingsPage() {
           <TabsTrigger value="security">
             <Shield className="mr-2 h-4 w-4" />
             Security
+          </TabsTrigger>
+          <TabsTrigger value="about">
+            <Info className="mr-2 h-4 w-4" />
+            About
           </TabsTrigger>
         </TabsList>
 
@@ -312,6 +322,22 @@ function SettingsPage() {
               </Button>
               <p className="text-xs text-muted-foreground">
                 Two-factor authentication and audit logs are planned.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="about" className="mt-4">
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">About</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <p className="text-base font-medium">{PRODUCT_NAME}</p>
+              <p className="text-sm text-muted-foreground">{PRODUCT_CATEGORY}</p>
+              <p className="text-sm text-muted-foreground">{BUILT_BY_LINE}</p>
+              <p className="mt-4 text-xs text-muted-foreground">
+                {copyrightLine(new Date().getFullYear())}
               </p>
             </CardContent>
           </Card>

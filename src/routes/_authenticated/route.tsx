@@ -10,6 +10,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBlock } from "@/components/layout/States";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import { classifyFailure } from "@/lib/errors";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -27,8 +28,30 @@ export const Route = createFileRoute("/_authenticated")({
   // behavior changes — this only closes the race window.
   pendingMinMs: 300,
   beforeLoad: async () => {
+    // Sprint 1.7, Part 1: when Supabase isn't configured, the root route
+    // (`__root.tsx`) renders the global configuration screen instead of
+    // this route's `<Outlet/>` regardless of what beforeLoad returns here —
+    // so the only requirement in this branch is "don't throw". Touching
+    // `supabase` while misconfigured would throw before this function even
+    // reaches its first `await`, which previously surfaced as a generic
+    // router error instead of the configuration screen.
+    if (!getSupabaseConfigStatus().ok) return { user: null };
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
+
+    // Sprint 1.7, Part 7: a temporary password (Part 5) or an admin-driven
+    // reset (Part 6) both set `force_password_change` — checked here so it
+    // applies no matter which authenticated route the user lands on first,
+    // and the dashboard is unreachable until they set their own password.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("force_password_change")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (profile?.force_password_change) {
+      throw redirect({ to: "/auth", search: { flow: "force-change" } });
+    }
+
     return { user: data.user };
   },
   component: AuthenticatedLayout,
