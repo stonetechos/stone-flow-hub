@@ -42,6 +42,7 @@ import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
+import { sanitizeSearch } from "@/lib/zod";
 import type { MasterConfig, MasterField } from "@/lib/masters/config";
 import { COMMON_FIELDS, COMMON_TRAILING_FIELDS } from "@/lib/masters/config";
 import { BulkImportDialog } from "@/components/masters/BulkImportDialog";
