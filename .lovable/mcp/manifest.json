@@ -5,9 +5,7 @@
   "auth": {
     "type": "oauth",
     "issuer": "https://apaeysllltlhleocmdhv.supabase.co/auth/v1",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "accepted_audiences": ["authenticated"]
   },
   "mcp": {
     "server": {
@@ -78,9 +76,7 @@
               "description": "Customer UUID (e.g. from list_customers)."
             }
           },
-          "required": [
-            "id"
-          ],
+          "required": ["id"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
@@ -157,13 +153,7 @@
             },
             "status": {
               "type": "string",
-              "enum": [
-                "draft",
-                "sent",
-                "accepted",
-                "rejected",
-                "expired"
-              ]
+              "enum": ["draft", "sent", "accepted", "rejected", "expired"]
             },
             "customer_id": {
               "type": "string",
@@ -198,14 +188,7 @@
             },
             "status": {
               "type": "string",
-              "enum": [
-                "draft",
-                "sent",
-                "partially_paid",
-                "paid",
-                "overdue",
-                "cancelled"
-              ]
+              "enum": ["draft", "sent", "partially_paid", "paid", "overdue", "cancelled"]
             },
             "customer_id": {
               "type": "string",

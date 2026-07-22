@@ -29,38 +29,38 @@ them into modules progressively.
 
 ### Critical
 
-| ID  | Area | Issue | Fix |
-| --- | --- | --- | --- |
-| C-1 | Every phone field (Customers, Vendors, Employees, Enquiries, Delivery) | Accepts letters, +91 prefixes, spaces, dashes — user typing "+91 98765 43210" fails Zod later with "Use digits only". | `<PhoneInput>` sanitises to 10 digits on every keystroke. |
-| C-2 | GSTIN inputs (Customers, Vendors, Company Profile) | Accepts lowercase / spaces; validation error only appears on submit. | `<GstInput>` uppercases + caps at 15 chars live. |
-| C-3 | Receipt / Invoice / Payment forms | Save button does not disable during mutation → duplicate receipts observed under slow network. | `<FormActions busy>` already exists; ensuring `disabled={mutation.isPending}` on all primary buttons. |
-| C-4 | All modal create dialogs | Backdrop click discards unsaved input silently. | `useUnsavedChanges` + `confirmCloseIfDirty` helper wired into `Dialog.onOpenChange`. |
+| ID  | Area                                                                   | Issue                                                                                                                 | Fix                                                                                                   |
+| --- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| C-1 | Every phone field (Customers, Vendors, Employees, Enquiries, Delivery) | Accepts letters, +91 prefixes, spaces, dashes — user typing "+91 98765 43210" fails Zod later with "Use digits only". | `<PhoneInput>` sanitises to 10 digits on every keystroke.                                             |
+| C-2 | GSTIN inputs (Customers, Vendors, Company Profile)                     | Accepts lowercase / spaces; validation error only appears on submit.                                                  | `<GstInput>` uppercases + caps at 15 chars live.                                                      |
+| C-3 | Receipt / Invoice / Payment forms                                      | Save button does not disable during mutation → duplicate receipts observed under slow network.                        | `<FormActions busy>` already exists; ensuring `disabled={mutation.isPending}` on all primary buttons. |
+| C-4 | All modal create dialogs                                               | Backdrop click discards unsaved input silently.                                                                       | `useUnsavedChanges` + `confirmCloseIfDirty` helper wired into `Dialog.onOpenChange`.                  |
 
 ### High
 
-| ID  | Area | Issue | Fix |
-| --- | --- | --- | --- |
-| H-1 | Percentage / discount / tax fields | Allow values >100 or negative. | `<PercentInput>` (0–100) and `<NumericInput min max>`. |
-| H-2 | Pincode fields | Accept alphabetic; no length cap. | `<PincodeInput>` — 6 digits max. |
-| H-3 | Email inputs (Users, Customers, Vendors) | Accept trailing/leading spaces; typos survive to backend. | `<EmailInput>` — trims + lowercases live. |
-| H-4 | Address blocks | "Billing = Shipping" toggle inconsistent across modules. | Introduce shared `<AddressBlock mirrorFrom>` (Phase 2). |
-| H-5 | Search dialogs and combos | Debounce inconsistent (100 ms in EntityPicker, 300 ms in GlobalSearch, unset in FiltersPanel). | Standardise on 250 ms via `useDebouncedValue`. |
+| ID  | Area                                     | Issue                                                                                          | Fix                                                     |
+| --- | ---------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| H-1 | Percentage / discount / tax fields       | Allow values >100 or negative.                                                                 | `<PercentInput>` (0–100) and `<NumericInput min max>`.  |
+| H-2 | Pincode fields                           | Accept alphabetic; no length cap.                                                              | `<PincodeInput>` — 6 digits max.                        |
+| H-3 | Email inputs (Users, Customers, Vendors) | Accept trailing/leading spaces; typos survive to backend.                                      | `<EmailInput>` — trims + lowercases live.               |
+| H-4 | Address blocks                           | "Billing = Shipping" toggle inconsistent across modules.                                       | Introduce shared `<AddressBlock mirrorFrom>` (Phase 2). |
+| H-5 | Search dialogs and combos                | Debounce inconsistent (100 ms in EntityPicker, 300 ms in GlobalSearch, unset in FiltersPanel). | Standardise on 250 ms via `useDebouncedValue`.          |
 
 ### Medium
 
-| ID  | Area | Issue | Fix |
-| --- | --- | --- | --- |
-| M-1 | Long forms (Estimation Studio, Quotes, Sales Orders) | No Ctrl/⌘+Enter shortcut to submit. | Extend `useHotkey` binding inside `<FormLayout>` (Phase 2). |
-| M-2 | Table filter panels | Loading state absent — table looks empty while a filter fetches. | Consume existing `isFetching` in `<DataTableShell>`. |
-| M-3 | Auto-defaults | Order date, current user, current branch not pre-populated in ~8 create dialogs. | Wire via schema `.default(new Date())` or dialog `defaultValues`. |
-| M-4 | Field indicator | Required asterisk present, but no accessible name ("required"). | `<Field>` — add `aria-required` propagation. |
+| ID  | Area                                                 | Issue                                                                            | Fix                                                               |
+| --- | ---------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| M-1 | Long forms (Estimation Studio, Quotes, Sales Orders) | No Ctrl/⌘+Enter shortcut to submit.                                              | Extend `useHotkey` binding inside `<FormLayout>` (Phase 2).       |
+| M-2 | Table filter panels                                  | Loading state absent — table looks empty while a filter fetches.                 | Consume existing `isFetching` in `<DataTableShell>`.              |
+| M-3 | Auto-defaults                                        | Order date, current user, current branch not pre-populated in ~8 create dialogs. | Wire via schema `.default(new Date())` or dialog `defaultValues`. |
+| M-4 | Field indicator                                      | Required asterisk present, but no accessible name ("required").                  | `<Field>` — add `aria-required` propagation.                      |
 
 ### Low
 
-| ID  | Area | Issue | Fix |
-| --- | --- | --- | --- |
-| L-1 | Copy | Mixed "Save" / "Create" / "Add" labels for equivalent actions. | Style guide entry (Phase 3). |
-| L-2 | Icons | Some primary actions lack leading icon; visual weight inconsistent. | Design pass. |
+| ID  | Area          | Issue                                                               | Fix                            |
+| --- | ------------- | ------------------------------------------------------------------- | ------------------------------ |
+| L-1 | Copy          | Mixed "Save" / "Create" / "Add" labels for equivalent actions.      | Style guide entry (Phase 3).   |
+| L-2 | Icons         | Some primary actions lack leading icon; visual weight inconsistent. | Design pass.                   |
 | L-3 | Accessibility | A few icon-only buttons in `RowActions` still missing `aria-label`. | Follow-up accessibility sweep. |
 
 ## Files changed in this turn
