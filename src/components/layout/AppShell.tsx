@@ -51,6 +51,14 @@ import {
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 import { useRoles } from "@/hooks/use-roles";
+// Sprint 1.8, Part 6 — plain-text "Stone Tech OS" labels in this file now
+// read from the Sprint 1.7.1 single source of truth instead of repeating
+// the literal a third and fourth time. The stylized sidebar logo mark
+// (`Stone Tech` + mint-colored `OS` in separate spans, below) is left as a
+// literal on purpose — it's the customer-facing brand mark itself, not a
+// duplicated string, and splitting APPLICATION_NAME to recolor half of it
+// would be a fragile hack for a purely cosmetic consistency win.
+import { APPLICATION_NAME } from "@/lib/platform/application";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -413,7 +421,7 @@ function UserMenu({
                   {isAdmin ? "Admin" : "Member"}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
-                  Stone Tech OS
+                  {APPLICATION_NAME}
                 </span>
               </div>
             </div>
@@ -690,7 +698,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-2 md:hidden">
               <Gem className="h-4 w-4 text-primary" aria-hidden />
-              <span className="font-display text-sm font-semibold">Stone Tech OS</span>
+              <span className="font-display text-sm font-semibold">{APPLICATION_NAME}</span>
             </div>
 
             {/* Search — the visual focus of the topbar */}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Save } from "lucide-react";
@@ -38,8 +38,8 @@ import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
-import { useTablePrefs } from "@/hooks/use-table-prefs";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useListPageState } from "@/hooks/use-list-page-state";
+import { useRoles } from "@/hooks/use-roles";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listMessageTemplates, upsertMessageTemplate } from "@/lib/notifications/templates-api";
@@ -56,11 +56,18 @@ function TemplatesPage() {
     queryKey: qk.messageTemplates.all,
     queryFn: () => listMessageTemplates(),
   });
-  const [q, setQ] = useState("");
-  const dq = useDebouncedValue(q, 200);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("message-templates");
+  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // shared list-page hook (same 200ms debounce and prefs key as before).
+  const list = useListPageState("message-templates", { debounceMs: 200 });
+  const dq = list.debouncedQuery;
+  const { prefs, setDensity, toggleColumn, isHidden } = list;
+  // Sprint 1.8, Part 7 — message_templates RLS allows writes only for the
+  // admin role ("admin manage templates", migration 20260707063953);
+  // useRoles().isAdmin is inheritance-aware, so the Platform Super Admin
+  // passes too. Previously New/Edit rendered for every staff user and their
+  // save failed at the database. The policy itself is unchanged — this only
+  // stops showing affordances the DB was already rejecting.
+  const canManage = useRoles().isAdmin;
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -81,8 +88,7 @@ function TemplatesPage() {
       [t.code, t.name, t.channel, t.category].some((v) => v?.toLowerCase().includes(term)),
     );
   }, [query.data, dq]);
-  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
-  useEffect(() => setPage(1), [dq]);
+  const pageRows = list.paginate(filtered);
 
   return (
     <div>
@@ -93,8 +99,8 @@ function TemplatesPage() {
 
       <DataToolbar
         count={filtered.length}
-        search={q}
-        onSearchChange={setQ}
+        search={list.query}
+        onSearchChange={list.setQuery}
         searchPlaceholder="Search code, name, category…"
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
@@ -106,13 +112,15 @@ function TemplatesPage() {
           </Button>
         }
         action={
-          <EditTemplateDialog
-            trigger={
-              <Button size="sm" className="h-8">
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> New template
-              </Button>
-            }
-          />
+          canManage ? (
+            <EditTemplateDialog
+              trigger={
+                <Button size="sm" className="h-8">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New template
+                </Button>
+              }
+            />
+          ) : undefined
         }
       />
 
@@ -123,23 +131,16 @@ function TemplatesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No templates"
-          message="Create your first template to reuse across the ERP."
+          message={
+            canManage
+              ? "Create your first template to reuse across the ERP."
+              : "Ask an admin to add templates."
+          }
         />
       ) : (
         <DataTableShell
           density={prefs.density}
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={filtered.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
-            />
-          }
+          footer={<TablePagination {...list.paginationProps(filtered.length)} />}
         >
           <Table>
             <TableHeader>
@@ -149,7 +150,7 @@ function TemplatesPage() {
                 {!isHidden("channel") && <TableHead>Channel</TableHead>}
                 {!isHidden("category") && <TableHead>Category</TableHead>}
                 {!isHidden("active") && <TableHead>Active</TableHead>}
-                <TableHead className="text-right">Edit</TableHead>
+                {canManage && <TableHead className="text-right">Edit</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -174,16 +175,18 @@ function TemplatesPage() {
                       </Badge>
                     </TableCell>
                   )}
-                  <TableCell className="text-right">
-                    <EditTemplateDialog
-                      template={{ ...t, channel: t.channel as "email" | "whatsapp" | "sms" }}
-                      trigger={
-                        <Button variant="ghost" size="sm">
-                          Edit
-                        </Button>
-                      }
-                    />
-                  </TableCell>
+                  {canManage && (
+                    <TableCell className="text-right">
+                      <EditTemplateDialog
+                        template={{ ...t, channel: t.channel as "email" | "whatsapp" | "sms" }}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        }
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

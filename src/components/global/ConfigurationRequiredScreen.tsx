@@ -9,8 +9,15 @@
  * route's existing `NotFoundComponent` / `ErrorComponent` (centered card,
  * `bg-background`, same button styles) — this is a new state for an
  * existing pattern, not a new design language.
+ *
+ * Sprint 1.8, Part 6 — branding strings now read from
+ * `src/lib/platform/application.ts` (Sprint 1.7.1's single source of
+ * truth) instead of being hardcoded here a second time. No visible text
+ * changed — `APPLICATION_NAME`/`POWERED_BY_LINE` produce byte-identical
+ * output to the literals this replaced.
  */
 import { ServerCog } from "lucide-react";
+import { APPLICATION_NAME, POWERED_BY_LINE } from "@/lib/platform/application";
 
 export function ConfigurationRequiredScreen({ missing }: { missing: string[] }) {
   return (
@@ -20,7 +27,7 @@ export function ConfigurationRequiredScreen({ missing }: { missing: string[] }) 
           <ServerCog className="h-6 w-6" aria-hidden />
         </span>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Stone Tech OS isn't configured yet
+          {APPLICATION_NAME} isn't configured yet
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           This deployment is missing the backend connection details it needs to start. Nothing is
@@ -45,9 +52,7 @@ export function ConfigurationRequiredScreen({ missing }: { missing: string[] }) 
           </div>
         ) : null}
 
-        <p className="mt-6 text-xs text-muted-foreground">
-          Stone Tech OS · Powered by Vedora Vision
-        </p>
+        <p className="mt-6 text-xs text-muted-foreground">{POWERED_BY_LINE}</p>
       </div>
     </div>
   );

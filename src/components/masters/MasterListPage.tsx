@@ -38,12 +38,15 @@ import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
-import { useTablePrefs } from "@/hooks/use-table-prefs";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useListPageState } from "@/hooks/use-list-page-state";
 import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
 import type { MasterConfig, MasterField } from "@/lib/masters/config";
-import { COMMON_FIELDS, COMMON_TRAILING_FIELDS } from "@/lib/masters/config";
+import {
+  COMMON_FIELDS,
+  COMMON_TRAILING_FIELDS,
+  DEFAULT_MASTER_WRITE_ROLES,
+} from "@/lib/masters/config";
 import { BulkImportDialog } from "@/components/masters/BulkImportDialog";
 
 type Row = {
@@ -57,9 +60,24 @@ type Row = {
 export function MasterListPage({ config }: { config: MasterConfig }) {
   const qc = useQueryClient();
   const roles = useRoles();
+  // Sprint 1.8, Part 4 — configurable write-affordance roles; identical to
+  // the previous hardcoded ["admin", "sales_manager"] for every existing
+  // config (none sets writeRoles). Mutable copy because Can/hasAnyRole take
+  // a readonly AppRole[] but the literal here is a narrower tuple type.
+  const writeRoles = [...(config.writeRoles ?? DEFAULT_MASTER_WRITE_ROLES)];
+  const canWrite = roles.hasAnyRole(writeRoles);
   const [tab, setTab] = useState<"active" | "inactive">("active");
-  const [query, setQuery] = useState("");
-  const q = useDebouncedValue(query, 200);
+  // Sprint 1.8, Part 3 — shared list-page state (search debounce 200ms and
+  // the `masters:` prefs key are unchanged from the previous inline state).
+  const {
+    query,
+    setQuery,
+    debouncedQuery: q,
+    prefs,
+    setDensity,
+    toggleColumn,
+    isHidden,
+  } = useListPageState(`masters:${config.table}`, { debounceMs: 200 });
   const [editing, setEditing] = useState<Row | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
@@ -148,8 +166,6 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
     [config],
   );
 
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs(`masters:${config.table}`);
-
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "code", label: "Code", required: true },
@@ -185,7 +201,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
-          <Can anyRole={["admin", "sales_manager"]}>
+          <Can anyRole={writeRoles}>
             <div className="flex items-center gap-1.5">
               <Button
                 size="sm"
@@ -212,7 +228,7 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
           icon={<Layers className="h-6 w-6" />}
           title={`No ${config.title.toLowerCase()}`}
           message={
-            roles.hasAnyRole(["admin", "sales_manager"])
+            canWrite
               ? `Create the first ${config.singular.toLowerCase()} to get started.`
               : "Ask an admin to add records."
           }
@@ -261,13 +277,9 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
                   <TableCell>
                     <RowActions
                       onEdit={() => setEditing(row)}
-                      onDelete={
-                        roles.hasAnyRole(["admin", "sales_manager"])
-                          ? () => setDeleteTarget(row)
-                          : undefined
-                      }
+                      onDelete={canWrite ? () => setDeleteTarget(row) : undefined}
                       extra={
-                        roles.hasAnyRole(["admin", "sales_manager"]) ? (
+                        canWrite ? (
                           <DropdownMenuItem onSelect={() => toggleActive.mutate(row)}>
                             Mark {row.is_active ? "inactive" : "active"}
                           </DropdownMenuItem>
@@ -365,7 +377,9 @@ function MasterFormDialog({
   useEffect(() => {
     if (open) {
       const seed: Record<string, unknown> = {};
-      for (const f of fields) seed[f.key] = initial?.[f.key] ?? (f.type === "number" ? "" : "");
+      for (const f of fields) {
+        seed[f.key] = initial?.[f.key] ?? (f.type === "boolean" ? false : "");
+      }
       setValues(seed);
       setActive(initial?.is_active ?? true);
     }
@@ -390,6 +404,10 @@ function MasterFormDialog({
                   if (f.required) return toast.error(`${f.label} required`);
                   payload[f.key] = null;
                 } else payload[f.key] = Number(v);
+              } else if (f.type === "boolean") {
+                // Sprint 1.8, Part 4 — booleans always submit true/false;
+                // "required" is meaningless for a two-state switch.
+                payload[f.key] = Boolean(v);
               } else {
                 if (f.required && !String(v ?? "").trim())
                   return toast.error(`${f.label} required`);
@@ -406,7 +424,17 @@ function MasterFormDialog({
                 {f.label}
                 {f.required && <span className="text-destructive"> *</span>}
               </Label>
-              {f.type === "textarea" ? (
+              {f.type === "boolean" ? (
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <span className="text-xs text-muted-foreground">
+                    {values[f.key] ? "Yes" : "No"}
+                  </span>
+                  <Switch
+                    checked={Boolean(values[f.key])}
+                    onCheckedChange={(v) => setValues((s) => ({ ...s, [f.key]: v }))}
+                  />
+                </div>
+              ) : f.type === "textarea" ? (
                 <Textarea
                   value={String(values[f.key] ?? "")}
                   onChange={(e) => setValues((s) => ({ ...s, [f.key]: e.target.value }))}

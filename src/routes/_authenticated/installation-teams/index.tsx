@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Users, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,8 +31,8 @@ import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
-import { useTablePrefs } from "@/hooks/use-table-prefs";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useListPageState } from "@/hooks/use-list-page-state";
+import { Can } from "@/hooks/use-roles";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -52,12 +52,12 @@ export const Route = createFileRoute("/_authenticated/installation-teams/")({
 function TeamsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const [q, setQ] = useState("");
-  const dq = useDebouncedValue(q, 250);
+  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // shared list-page hook (same 250ms debounce and prefs key as before).
+  const list = useListPageState("installation-teams");
+  const dq = list.debouncedQuery;
   const [toDelete, setToDelete] = useState<InstallationTeam | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("installation-teams");
+  const { prefs, setDensity, toggleColumn, isHidden } = list;
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -76,7 +76,6 @@ function TeamsPage() {
     queryKey: qk.installationTeams.list(dq),
     queryFn: () => listInstallationTeams(dq),
   });
-  useEffect(() => setPage(1), [dq]);
 
   const del = useMutation({
     mutationFn: (id: string) => deleteInstallationTeam(id),
@@ -89,7 +88,7 @@ function TeamsPage() {
   });
 
   const rows = query.data ?? [];
-  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const pageRows = list.paginate(rows);
 
   return (
     <div>
@@ -100,8 +99,8 @@ function TeamsPage() {
 
       <DataToolbar
         count={rows.length}
-        search={q}
-        onSearchChange={setQ}
+        search={list.query}
+        onSearchChange={list.setQuery}
         searchPlaceholder="Search team, supervisor…"
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
@@ -115,7 +114,16 @@ function TeamsPage() {
             Installations
           </Button>
         }
-        action={<NewTeamDialog />}
+        action={
+          /* Sprint 1.8, Part 7 — installation_teams RLS only allows admin /
+             sales_manager writes (migration 20260707171536); previously the
+             button rendered for read-only users and their save failed at the
+             database. The policy itself is unchanged — this only stops
+             showing an affordance the DB was already rejecting. */
+          <Can anyRole={["admin", "sales_manager"]}>
+            <NewTeamDialog />
+          </Can>
+        }
       />
 
       {query.isLoading ? (
@@ -131,18 +139,7 @@ function TeamsPage() {
       ) : (
         <DataTableShell
           density={prefs.density}
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={rows.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
-            />
-          }
+          footer={<TablePagination {...list.paginationProps(rows.length)} />}
         >
           <Table>
             <TableHeader>
@@ -177,14 +174,18 @@ function TeamsPage() {
                   {!isHidden("vehicle") && <TableCell>{t.vehicle ?? "—"}</TableCell>}
                   {!isHidden("capacity") && <TableCell>{t.daily_capacity_sqft ?? "—"}</TableCell>}
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setToDelete(t)}
-                      aria-label="Remove team"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/* Sprint 1.8, Part 7 — same RLS alignment as the New
+                        team button: delete is admin / sales_manager only. */}
+                    <Can anyRole={["admin", "sales_manager"]}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setToDelete(t)}
+                        aria-label="Remove team"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </Can>
                   </TableCell>
                 </TableRow>
               ))}

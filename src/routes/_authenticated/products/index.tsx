@@ -7,7 +7,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useListPageState } from "@/hooks/use-list-page-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,6 @@ import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
-import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { invalidateProduct, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -68,14 +67,14 @@ function ProductsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
-  const [q, setQ] = useState("");
-  const dq = useDebouncedValue(q, 250);
+  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // shared list-page hook (same 250ms debounce and "products" prefs key).
+  const list = useListPageState("products");
+  const dq = list.debouncedQuery;
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("products");
+  const { prefs, setDensity, toggleColumn, isHidden } = list;
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -90,7 +89,6 @@ function ProductsPage() {
   );
 
   const query = useQuery({ queryKey: qk.products.list(dq), queryFn: () => listProducts(dq) });
-  useEffect(() => setPage(1), [dq]);
 
   useEffect(() => {
     if (!edit) return;
@@ -113,7 +111,7 @@ function ProductsPage() {
   });
 
   const rows = query.data ?? [];
-  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const pageRows = list.paginate(rows);
   const openCreate = () => {
     setEditing(null);
     setFormOpen(true);
@@ -125,8 +123,8 @@ function ProductsPage() {
 
       <DataToolbar
         count={rows.length}
-        search={q}
-        onSearchChange={setQ}
+        search={list.query}
+        onSearchChange={list.setQuery}
         searchPlaceholder="Search by name or code…"
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
@@ -160,18 +158,7 @@ function ProductsPage() {
       ) : (
         <DataTableShell
           density={prefs.density}
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={rows.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
-            />
-          }
+          footer={<TablePagination {...list.paginationProps(rows.length)} />}
         >
           <Table>
             <TableHeader>
