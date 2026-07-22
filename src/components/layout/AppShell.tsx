@@ -176,11 +176,26 @@ function NavList({
   onNavigate,
   isAdmin,
   collapsed,
+  scrollable = true,
 }: {
   path: string;
   onNavigate?: () => void;
   isAdmin: boolean;
   collapsed?: boolean;
+  /**
+   * The desktop <aside> has no scroll region of its own, so NavList must
+   * own its own overflow-y-auto there. The mobile nav Sheet is different:
+   * SheetContent (sheet.tsx) already wraps ALL of its children — the
+   * branding header row AND this nav — in its own single vertical scroll
+   * region. Leaving NavList's overflow-y-auto on in that context nests
+   * two independent vertical-scroll containers inside one another, which
+   * is a real mobile bug (touch-scroll capture becomes ambiguous, and the
+   * branding row ends up inside the same scrollable area it shouldn't be
+   * part of). Pass scrollable={false} for the mobile Sheet usage so
+   * SheetContent's own scroll region is the single owner; desktop's
+   * <aside> usage is unaffected by this default.
+   */
+  scrollable?: boolean;
 }) {
   const { prefs, update } = useNavPreferences();
   const recent = useRecentNav();
@@ -214,7 +229,8 @@ function NavList({
   return (
     <nav
       className={cn(
-        "flex-1 overflow-y-auto overflow-x-hidden",
+        "flex-1",
+        scrollable ? "overflow-y-auto overflow-x-hidden" : "overflow-visible",
         collapsed ? "px-1.5 py-2 space-y-1" : "px-2 py-2 space-y-3",
       )}
       aria-label="Primary"
@@ -558,7 +574,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <DemoProvider>
-      <div className="flex h-dvh overflow-hidden bg-surface-base">
+      <div className="flex h-screen supports-[height:100dvh]:h-dvh overflow-hidden bg-surface-base">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"
@@ -574,6 +590,22 @@ export function AppShell({ children }: { children: ReactNode }) {
           never moves the other, and the header/breadcrumb/demo banner
           stay put as shrink-0 chrome instead of relying on sticky
           positioning against a scrolling ancestor.
+
+          Sprint R0: h-dvh alone has no fallback. A browser/webview that
+          doesn't recognize the dvh unit drops the whole `height` value
+          (invalid, not partially applied), leaving this container with no
+          explicit height at all — overflow-hidden then has nothing to
+          clip, <main>'s min-h-0/overflow-y-auto lose their bounding
+          height, and the entire shell (header, breadcrumb rail, demo
+          banner, any fixed-position footer painted inside <main>) falls
+          back to one continuous page-level scroll instead of staying
+          pinned chrome around an independently-scrolling content pane —
+          this is the mechanism behind the reported "footer/banner merged
+          with page content" bug. h-screen (100vh, universally supported)
+          is now the base value, with supports-[height:100dvh]:h-dvh
+          layered on top only where the browser actually understands the
+          unit — same @supports progressive-enhancement idiom already used
+          for backdrop-filter on the header below and in FormActions.
         */}
 
         {/* Desktop sidebar — Basalt material with restrained grain */}
@@ -697,6 +729,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     path={path}
                     isAdmin={isAdmin}
                     onNavigate={() => setMobileNavOpen(false)}
+                    // SheetContent already owns the single scroll region for
+                    // this drawer (see NavList's scrollable prop doc above).
+                    scrollable={false}
                   />
                 </div>
               </SheetContent>
@@ -707,8 +742,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="font-display text-sm font-semibold">Stone Tech OS</span>
             </div>
 
-            {/* Search — the visual focus of the topbar */}
-            <div className="ml-auto flex flex-1 items-center md:ml-0">
+            {/* Search — the visual focus of the topbar. min-w-0 lets this
+                flex-1 region shrink to make room for the icon cluster below
+                on narrow phones instead of forcing the header to overflow
+                horizontally. */}
+            <div className="ml-auto flex min-w-0 flex-1 items-center md:ml-0">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
@@ -742,7 +780,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Button>
             </div>
 
-            <div className="flex items-center gap-0.5 sm:gap-1">
+            {/* shrink-0: this icon cluster is the header's priority content
+                on narrow phones — the search region above absorbs any
+                squeeze first (via min-w-0) rather than these tap targets
+                getting compressed or overlapping. */}
+            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <DemoBadge />
 
               {/* AI entry point — placeholder for the Stone Tech Copilot */}
@@ -792,7 +834,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             id="main-content"
             className="min-h-0 flex-1 overflow-y-auto px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
-            <PageTransition>{children}</PageTransition>
+            {/* Single consistent content container (Sprint 1.1): every
+                route previously decided its own width ad hoc, or didn't
+                constrain it at all, so content could stretch full-bleed on
+                an ultrawide monitor. --stos-content-max-width (styles.css)
+                is the same 1400px ceiling FormActions' footer already used,
+                centralized here as one token instead of a second hardcoded
+                number. */}
+            <div className="mx-auto w-full max-w-[var(--stos-content-max-width)]">
+              <PageTransition>{children}</PageTransition>
+            </div>
           </main>
         </div>
 

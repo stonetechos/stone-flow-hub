@@ -193,6 +193,13 @@
 :root {
   --radius: 0.5rem; /* 8px — legacy alias; STDL uses --radius-md */
 
+  /* Shared content-column ceiling for the app shell's <main> and any
+   * sticky/fixed row that should line up under it (e.g. FormActions'
+   * footer in FormLayout.tsx, which already used this same 1400px value
+   * before this token existed). Centralized here so future consumers
+   * reference one source instead of re-hardcoding the number. */
+  --stos-content-max-width: 1400px;
+
   /* ------------------------------------------------------------
    * 1. PRIMITIVES — the raw stone palette
    * ------------------------------------------------------------ */

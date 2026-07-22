@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { LoadingBlock, ErrorBlock, EmptyState } from "@/components/layout/States";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppError, mapDbError, toUserMessage } from "@/lib/errors";
@@ -35,9 +35,7 @@ function OrdersList() {
     <div>
       <PageHeader title="Orders" subtitle="Purchase orders confirmed by Stone Tech" />
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          No orders yet. Approved quotes will show up here.
-        </div>
+        <EmptyState title="No orders yet" message="Approved quotes will show up here." />
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((po) => (

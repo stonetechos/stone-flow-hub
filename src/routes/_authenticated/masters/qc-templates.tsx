@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { LoadingBlock } from "@/components/layout/States";
+import { EmptyState, LoadingBlock } from "@/components/layout/States";
 import { MasterListPage } from "@/components/masters/MasterListPage";
 import type { MasterConfig } from "@/lib/masters/config";
 import { toUserMessage } from "@/lib/errors";
@@ -156,11 +156,11 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
               )}
             </Button>
           </div>
-          <ul className="divide-y rounded-md border">
-            {list.length === 0 ? (
-              <li className="p-4 text-sm text-muted-foreground">No items yet.</li>
-            ) : (
-              list.map((i) => (
+          {list.length === 0 ? (
+            <EmptyState title="No items yet." />
+          ) : (
+            <ul className="divide-y rounded-md border">
+              {list.map((i) => (
                 <li
                   key={i.id}
                   className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
@@ -175,9 +175,9 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
                     <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                 </li>
-              ))
-            )}
-          </ul>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>

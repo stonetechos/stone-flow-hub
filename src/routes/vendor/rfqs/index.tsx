@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { Card } from "@/components/ui/card";
 import { listVendorInbox, applyFilter, type InboxFilter } from "@/lib/vendor-portal/rfq";
 import { toUserMessage } from "@/lib/errors";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -119,63 +120,72 @@ function RfqInbox() {
           No RFQs match this view.
         </div>
       ) : (
-        <ul className="divide-y divide-border rounded-md border border-border bg-card">
-          {filtered.map((it) => (
-            <li key={it.request.id}>
-              <Link
-                to="/vendor/rfqs/$rfqId"
-                params={{ rfqId: it.request.id }}
-                className={cn(
-                  "flex items-start gap-3 px-3 py-3 hover:bg-muted/40 sm:items-center",
-                  it.unread && "bg-primary/[0.04]",
-                )}
-              >
-                <span
+        // Card supplies the shared border/bg/corner-radius chrome; the <ul>
+        // itself keeps its semantic list role and divide-y row rule
+        // untouched — migrating this list's own row markup to <Table> is a
+        // separate, deferred decision (Sprint 1.2 audit, Phase D), not part
+        // of this card-chrome-only change.
+        <Card className="overflow-hidden p-0">
+          <ul className="divide-y divide-border">
+            {filtered.map((it) => (
+              <li key={it.request.id}>
+                <Link
+                  to="/vendor/rfqs/$rfqId"
+                  params={{ rfqId: it.request.id }}
                   className={cn(
-                    "mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full sm:mt-0",
-                    it.unread ? "bg-primary" : "bg-transparent",
+                    "flex items-start gap-3 px-3 py-3 hover:bg-muted/40 sm:items-center",
+                    it.unread && "bg-primary/[0.04]",
                   )}
-                  aria-hidden
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={cn(
-                        "truncate font-medium",
-                        it.unread ? "text-foreground" : "text-foreground/80",
+                >
+                  <span
+                    className={cn(
+                      "mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full sm:mt-0",
+                      it.unread ? "bg-primary" : "bg-transparent",
+                    )}
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "truncate font-medium",
+                          it.unread ? "text-foreground" : "text-foreground/80",
+                        )}
+                      >
+                        {it.projectName ?? "Untitled project"}
+                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {it.rfq.rfq_no}
+                      </span>
+                      {it.overdue && (
+                        <Badge variant="destructive" className="text-[10px]">
+                          Overdue
+                        </Badge>
                       )}
-                    >
-                      {it.projectName ?? "Untitled project"}
-                    </span>
-                    <span className="font-mono text-xs text-muted-foreground">{it.rfq.rfq_no}</span>
-                    {it.overdue && (
-                      <Badge variant="destructive" className="text-[10px]">
-                        Overdue
-                      </Badge>
-                    )}
-                    {it.hasDraft && !it.submitted && (
-                      <Badge variant="outline" className="text-[10px]">
-                        Draft
-                      </Badge>
-                    )}
-                    {it.submitted && (
-                      <Badge variant="secondary" className="text-[10px]">
-                        Submitted
-                      </Badge>
-                    )}
+                      {it.hasDraft && !it.submitted && (
+                        <Badge variant="outline" className="text-[10px]">
+                          Draft
+                        </Badge>
+                      )}
+                      {it.submitted && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          Submitted
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {it.itemCount} {it.itemCount === 1 ? "item" : "items"}
+                      {it.rfq.due_date && <> · due {it.rfq.due_date}</>}
+                      {it.request.sent_at && (
+                        <> · {formatDistanceToNow(new Date(it.request.sent_at))} ago</>
+                      )}
+                    </div>
                   </div>
-                  <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {it.itemCount} {it.itemCount === 1 ? "item" : "items"}
-                    {it.rfq.due_date && <> · due {it.rfq.due_date}</>}
-                    {it.request.sent_at && (
-                      <> · {formatDistanceToNow(new Date(it.request.sent_at))} ago</>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

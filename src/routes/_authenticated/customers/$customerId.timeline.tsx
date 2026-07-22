@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { getCustomerTimeline, getCustomerHeader } from "@/lib/customer-timeline/api";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { EmptyState } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatInr } from "@/lib/format";
@@ -30,12 +32,10 @@ function TimelinePage() {
       >
         <ArrowLeft className="h-3 w-3" /> Back to customer
       </Link>
-      <div>
-        <h1 className="text-2xl font-semibold">{header.data?.name ?? "Customer"} — Timeline</h1>
-        <p className="text-sm text-muted-foreground">
-          Every interaction, document, and message in one feed.
-        </p>
-      </div>
+      <PageHeader
+        title={`${header.data?.name ?? "Customer"} — Timeline`}
+        subtitle="Every interaction, document, and message in one feed."
+      />
 
       <Card>
         <CardHeader>
@@ -43,9 +43,7 @@ function TimelinePage() {
         </CardHeader>
         <CardContent>
           {q.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-          {!q.isLoading && (q.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No activity yet.</p>
-          )}
+          {!q.isLoading && (q.data ?? []).length === 0 && <EmptyState title="No activity yet." />}
           <ol className="relative border-l border-border pl-6 space-y-4">
             {(q.data ?? []).map((e) => (
               <li key={e.id} className="relative">

@@ -9,6 +9,7 @@ import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -124,7 +125,7 @@ function NewInvoicePage() {
           action={<Button onClick={() => nav({ to: "/quotes" })}>Go to quotes</Button>}
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <Card className="shadow-1">
           <Table>
             <TableHeader>
               <TableRow>
@@ -177,7 +178,7 @@ function NewInvoicePage() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </Card>
       )}
     </div>
   );

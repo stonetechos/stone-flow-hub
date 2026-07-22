@@ -1,0 +1,50 @@
+---
+description: Stone Tech OS (stone-flow-hub) project map — what the repo contains and what to extract
+alwaysApply: true
+---
+
+# Stone Tech OS — Project Extraction Map
+
+**Product:** Stone Tech OS v1.0 Foundation — full-stack ERP for stone/construction businesses (Lovable-connected).
+
+## Business modules (shipped v1.0)
+
+- **CRM/Sales:** Customers, Enquiries, Projects, Follow-ups, Estimates, Quotes, Sales Orders
+- **Procurement:** RFQs, Vendor Portal, Vendor Quotes, POs, GRN, Vendors, Vendor Payments
+- **Operations:** Manufacturing, QC, Inventory, Dispatch, Installation (teams/progress/materials/sign-off)
+- **Finance:** Invoices, Receipts, Payment Links (`/pay/$linkId`), Razorpay, Customer & Vendor Ledger, Credit/Debit Notes
+- **Intelligence:** Executive Command Centre, AI Copilot, BI dashboards, Workforce Intelligence, VIE (voice/intent)
+- **Cross-cutting:** Global search (⌘K), Notifications, Activity, Comments, Tasks, Tags, Documents, Admin/Roles, Favorites, Bulk Imports
+
+## Tech stack
+
+React 19 · TanStack Start/Router/Query · Vite · Tailwind v4 · shadcn/ui · Supabase (Postgres 15, ~126 tables, RLS) · Cloudflare Workers · Capacitor Android · Lovable AI Gateway · Bun tests
+
+## Key paths
+
+| Area | Location |
+|------|----------|
+| Routes | `src/routes/` (file-based; don't hand-edit `routeTree.gen.ts`) |
+| Domain APIs | `src/lib/<module>/` |
+| UI components | `src/components/` (`ui/`, `layout/`, `forms/`, `data/`, `entity/`, `<module>/`) |
+| Supabase | `supabase/migrations/`, `src/integrations/supabase/` |
+| Android | `android/` (Capacitor) |
+| Docs | `docs/` — start with `ARCHITECTURE.md`, `MODULES.md`, `IMPLEMENTATION_STATUS.md`, `v1.1-backlog.md` |
+
+## Entity lifecycle
+
+Customer → Enquiry → Project · Estimate → Quote → Sales Order → (RFQ/PO/Manufacturing) → Dispatch → Installation → Invoice → Receipt → Ledger
+
+Inventory bridges PO → Manufacturing → Dispatch via `inventory_movements`.
+
+## What to extract / help with
+
+- Module/route/API/data-flow explanations
+- Implementation vs v1.1 backlog (`docs/IMPLEMENTATION_STATUS.md`)
+- Features, bugs, CI/lint, UX, migrations, mobile (Capacitor)
+- Git/PR work (respect Lovable: no force-push/rebase of pushed commits)
+- Integrations: Razorpay, WhatsApp, email webhooks, MCP tools (`src/lib/mcp/`)
+
+## Lovable constraint
+
+Do not rewrite published git history (force push, rebase/amend/squash pushed commits) — syncs to Lovable editor.

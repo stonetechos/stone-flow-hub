@@ -1,0 +1,97 @@
+diff --git a/src/components/copilot/Copilot.tsx b/src/components/copilot/Copilot.tsx
+index e687ffc..5dfd15d 100644
+--- a/src/components/copilot/Copilot.tsx
++++ b/src/components/copilot/Copilot.tsx
+@@ -310,7 +310,7 @@ export function Copilot() {
+           type="button"
+           aria-label="Open AI Copilot (⌘J)"
+           className={cn(
+-            "fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
++            "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
+             "bg-primary text-primary-foreground shadow-3 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+           )}
+         >
+diff --git a/src/components/forms/FormLayout.tsx b/src/components/forms/FormLayout.tsx
+index 9da567b..6cb05ba 100644
+--- a/src/components/forms/FormLayout.tsx
++++ b/src/components/forms/FormLayout.tsx
+@@ -46,9 +46,12 @@ export function FormLayout({
+     <form
+       onSubmit={onSubmit}
+       aria-busy={busy || undefined}
+-      // pb-24 leaves room for the sticky FormActions footer so the last
+-      // field is never covered.
+-      className={cn("space-y-10 pb-28", className)}
++      // pb leaves room for the sticky FormActions footer so the last field
++      // is never covered; the safe-area term keeps that clearance intact
++      // on devices with a bottom gesture bar (the footer itself grows by
++      // the same inset — see FormActions below — so this buffer must grow
++      // with it rather than being capped by max()).
++      className={cn("space-y-10 pb-[calc(7rem+env(safe-area-inset-bottom))]", className)}
+       noValidate
+     >
+       {children}
+@@ -139,6 +142,7 @@ export function FormActions({
+       className={cn(
+         "fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur",
+         "supports-[backdrop-filter]:bg-background/80",
++        "pb-[env(safe-area-inset-bottom)]",
+         className,
+       )}
+       role="group"
+diff --git a/src/components/layout/AppShell.tsx b/src/components/layout/AppShell.tsx
+index 4f77b87..799db3a 100644
+--- a/src/components/layout/AppShell.tsx
++++ b/src/components/layout/AppShell.tsx
+@@ -581,6 +581,7 @@ export function AppShell({ children }: { children: ReactNode }) {
+           className={cn(
+             "material-basalt stone-grain",
+             "hidden shrink-0 flex-col border-r border-border-inverse text-sidebar-foreground md:flex",
++            "pt-[env(safe-area-inset-top)]",
+             "transition-[width] duration-200 ease-out",
+             sidebarWidth,
+           )}
+@@ -663,7 +664,7 @@ export function AppShell({ children }: { children: ReactNode }) {
+             demo banner are plain shrink-0 flow items instead of sticky. */}
+         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+           {/* Topbar (48px) — fixed chrome, no longer sticky-against-scroll */}
+-          <header className="z-20 flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
++          <header className="z-20 flex min-h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
+             {/* Mobile nav trigger */}
+             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+               <SheetTrigger asChild>
+@@ -789,7 +790,7 @@ export function AppShell({ children }: { children: ReactNode }) {
+ 
+           <main
+             id="main-content"
+-            className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-8 md:py-6"
++            className="min-h-0 flex-1 overflow-y-auto px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+           >
+             <PageTransition>{children}</PageTransition>
+           </main>
+diff --git a/src/components/ui/dialog.tsx b/src/components/ui/dialog.tsx
+index 2c63f2a..f56c0ec 100644
+--- a/src/components/ui/dialog.tsx
++++ b/src/components/ui/dialog.tsx
+@@ -56,7 +56,7 @@ const DialogContent = React.forwardRef
+         "w-[calc(100vw-1rem)] max-w-lg sm:w-full",
+         "max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]",
+         "overflow-hidden rounded-lg border border-border-subtle bg-[var(--surface-elevated)] shadow-e3",
+-        noAutoScroll ? "" : "p-6",
++        noAutoScroll ? "pb-[env(safe-area-inset-bottom)]" : "p-6",
+         "duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+         className,
+       )}
+diff --git a/src/routes/vendor/rfqs/$rfqId.tsx b/src/routes/vendor/rfqs/$rfqId.tsx
+index 551b800..7e3412b 100644
+--- a/src/routes/vendor/rfqs/$rfqId.tsx
++++ b/src/routes/vendor/rfqs/$rfqId.tsx
+@@ -446,7 +446,7 @@ function RfqDetail() {
+                   </div>
+                 </QuickForm.MoreDetails>
+ 
+-                <div className="sticky bottom-0 -mx-4 mt-3 flex items-center justify-between gap-2 border-t border-border bg-card/95 px-4 py-3 backdrop-blur">
++                <div className="sticky bottom-0 -mx-4 mt-3 flex items-center justify-between gap-2 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+                   <div className="text-xs text-muted-foreground">
+                     {locked
+                       ? submitted

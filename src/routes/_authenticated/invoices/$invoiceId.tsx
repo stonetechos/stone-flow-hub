@@ -47,6 +47,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Field } from "@/components/forms/Field";
+import { QuickForm } from "@/components/forms/QuickForm";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -492,14 +493,14 @@ function RecordPaymentDialog({
         <DialogHeader>
           <DialogTitle>Record payment</DialogTitle>
         </DialogHeader>
-        <form
-          className="space-y-4"
+        <QuickForm
           onSubmit={(e) => {
             e.preventDefault();
             mutation.mutate(form);
           }}
+          busy={mutation.isPending}
         >
-          <div className="grid gap-3 md:grid-cols-2">
+          <QuickForm.QuickFill>
             <Field label="Amount (INR)" required hint={`Balance: ${formatInr(maxAmount)}`}>
               <Input
                 type="number"
@@ -526,6 +527,9 @@ function RecordPaymentDialog({
                 </SelectContent>
               </Select>
             </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
             <Field label="Paid on">
               <Input
                 type="date"
@@ -539,23 +543,24 @@ function RecordPaymentDialog({
                 onChange={(e) => set("reference_no", e.target.value || null)}
               />
             </Field>
-          </div>
-          <Field label="Notes">
-            <Textarea
-              rows={2}
-              value={form.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value || null)}
-            />
-          </Field>
-          <div className="flex justify-end gap-2">
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value || null)}
+              />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             </Button>
-          </div>
-        </form>
+          </QuickForm.Actions>
+        </QuickForm>
       </DialogContent>
     </Dialog>
   );

@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, cardVariants } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
@@ -727,7 +727,11 @@ function MiniStat({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md border border-border bg-card px-2 py-2 text-left transition-shadow hover:shadow-2"
+      // MiniStat is a real <button>, not a <div>, so it can't render the
+      // <Card> component directly — cardVariants (exported from ui/card.tsx
+      // for exactly this case) applies the same shared card chrome to a
+      // non-div interactive element instead of hand-rolling an equivalent.
+      className={cn(cardVariants({ variant: "interactive" }), "px-2 py-2 text-left")}
     >
       <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
         {icon} {label}

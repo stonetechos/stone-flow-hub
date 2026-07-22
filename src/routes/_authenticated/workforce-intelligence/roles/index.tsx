@@ -11,13 +11,7 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -26,6 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import { listDesignations, listKras, createDesignation } from "@/lib/workforce/api";
 import type { DesignationInput } from "@/lib/workforce/schema";
 import { toUserMessage } from "@/lib/errors";
@@ -136,50 +132,67 @@ function RolesPage() {
           <DialogHeader>
             <DialogTitle>New designation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <Input
-              placeholder="Code (e.g. OPS_COORD)"
-              value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value })}
-            />
-            <Input
-              placeholder="Name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-            <Input
-              type="number"
-              placeholder="Level (higher = senior)"
-              value={form.level}
-              onChange={(e) => setForm({ ...form, level: Number(e.target.value) })}
-            />
-            <Textarea
-              placeholder="Purpose"
-              value={form.purpose ?? ""}
-              onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-            />
-            <Textarea
-              placeholder="Responsibilities"
-              value={form.responsibilities ?? ""}
-              onChange={(e) => setForm({ ...form, responsibilities: e.target.value })}
-            />
-            <Textarea
-              placeholder="Expected outcomes"
-              value={form.expected_outcomes ?? ""}
-              onChange={(e) => setForm({ ...form, expected_outcomes: e.target.value })}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              disabled={!form.code || !form.name || add.isPending}
-              onClick={() => add.mutate()}
-            >
-              Create
-            </Button>
-          </DialogFooter>
+          <QuickForm
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!form.code || !form.name) return;
+              add.mutate();
+            }}
+            busy={add.isPending}
+          >
+            <QuickForm.QuickFill>
+              <Field label="Code" required>
+                <Input
+                  placeholder="e.g. OPS_COORD"
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                />
+              </Field>
+              <Field label="Name" required>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </Field>
+            </QuickForm.QuickFill>
+
+            <QuickForm.MoreDetails>
+              <Field label="Level" hint="Higher = senior">
+                <Input
+                  type="number"
+                  value={form.level}
+                  onChange={(e) => setForm({ ...form, level: Number(e.target.value) })}
+                />
+              </Field>
+              <Field label="Purpose" className="md:col-span-2">
+                <Textarea
+                  value={form.purpose ?? ""}
+                  onChange={(e) => setForm({ ...form, purpose: e.target.value })}
+                />
+              </Field>
+              <Field label="Responsibilities" className="md:col-span-2">
+                <Textarea
+                  value={form.responsibilities ?? ""}
+                  onChange={(e) => setForm({ ...form, responsibilities: e.target.value })}
+                />
+              </Field>
+              <Field label="Expected outcomes" className="md:col-span-2">
+                <Textarea
+                  value={form.expected_outcomes ?? ""}
+                  onChange={(e) => setForm({ ...form, expected_outcomes: e.target.value })}
+                />
+              </Field>
+            </QuickForm.MoreDetails>
+
+            <QuickForm.Actions>
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!form.code || !form.name || add.isPending}>
+                Create
+              </Button>
+            </QuickForm.Actions>
+          </QuickForm>
         </DialogContent>
       </Dialog>
     </>

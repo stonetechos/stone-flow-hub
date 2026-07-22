@@ -1,0 +1,83 @@
+From 9136fd04cade762dd48eafb14d0c68744257ce7c Mon Sep 17 00:00:00 2001
+From: "Claude (Cowork)" <assistant@stonetech.local>
+Date: Tue, 21 Jul 2026 15:31:16 +0530
+Subject: [PATCH] Fix CI lint formatting
+
+---
+ src/routes/[.mcp]/invoke-tool/$tool.ts               | 6 +++++-
+ src/routes/[.mcp]/list-tools.ts                      | 6 +++++-
+ src/routes/[.well-known]/oauth-protected-resource.ts | 6 +++++-
+ src/routes/mcp.ts                                    | 6 +++++-
+ 4 files changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/src/routes/[.mcp]/invoke-tool/$tool.ts b/src/routes/[.mcp]/invoke-tool/$tool.ts
+index 4f9c6a09..e631701c 100644
+--- a/src/routes/[.mcp]/invoke-tool/$tool.ts
++++ b/src/routes/[.mcp]/invoke-tool/$tool.ts
+@@ -13,7 +13,11 @@ export const Route = createFileRoute("/.mcp/invoke-tool/$tool")({
+   server: {
+     handlers: {
+       // ANY: TanStack returns SPA HTML for methods not in `handlers`; the SDK 405s instead.
+-      ANY: createTanStackInvokeToolHandler(mcp, { resourcePath: "/mcp", metadataPath: "/.well-known/oauth-protected-resource", trustForwardedHost: true }),
++      ANY: createTanStackInvokeToolHandler(mcp, {
++        resourcePath: "/mcp",
++        metadataPath: "/.well-known/oauth-protected-resource",
++        trustForwardedHost: true,
++      }),
+     },
+   },
+ });
+diff --git a/src/routes/[.mcp]/list-tools.ts b/src/routes/[.mcp]/list-tools.ts
+index ce5de60c..5104f6ef 100644
+--- a/src/routes/[.mcp]/list-tools.ts
++++ b/src/routes/[.mcp]/list-tools.ts
+@@ -13,7 +13,11 @@ export const Route = createFileRoute("/.mcp/list-tools")({
+   server: {
+     handlers: {
+       // ANY: TanStack returns SPA HTML for methods not in `handlers`; the SDK 405s instead.
+-      ANY: createTanStackListToolsHandler(mcp, { resourcePath: "/mcp", metadataPath: "/.well-known/oauth-protected-resource", trustForwardedHost: true }),
++      ANY: createTanStackListToolsHandler(mcp, {
++        resourcePath: "/mcp",
++        metadataPath: "/.well-known/oauth-protected-resource",
++        trustForwardedHost: true,
++      }),
+     },
+   },
+ });
+diff --git a/src/routes/[.well-known]/oauth-protected-resource.ts b/src/routes/[.well-known]/oauth-protected-resource.ts
+index 87fe0ac5..ac78a6d3 100644
+--- a/src/routes/[.well-known]/oauth-protected-resource.ts
++++ b/src/routes/[.well-known]/oauth-protected-resource.ts
+@@ -12,7 +12,11 @@ import mcp from "../../lib/mcp/index";
+ export const Route = createFileRoute("/.well-known/oauth-protected-resource")({
+   server: {
+     handlers: {
+-      ANY: createTanStackOAuthProtectedResourceMetadataHandler(mcp, { resourcePath: "/mcp", metadataPath: "/.well-known/oauth-protected-resource", trustForwardedHost: true }),
++      ANY: createTanStackOAuthProtectedResourceMetadataHandler(mcp, {
++        resourcePath: "/mcp",
++        metadataPath: "/.well-known/oauth-protected-resource",
++        trustForwardedHost: true,
++      }),
+     },
+   },
+ });
+diff --git a/src/routes/mcp.ts b/src/routes/mcp.ts
+index a13662d6..0436bb4a 100644
+--- a/src/routes/mcp.ts
++++ b/src/routes/mcp.ts
+@@ -12,7 +12,11 @@ import mcp from "../lib/mcp/index";
+ export const Route = createFileRoute("/mcp")({
+   server: {
+     handlers: {
+-      ANY: createTanStackMcpHandler(mcp, { resourcePath: "/mcp", metadataPath: "/.well-known/oauth-protected-resource", trustForwardedHost: true }),
++      ANY: createTanStackMcpHandler(mcp, {
++        resourcePath: "/mcp",
++        metadataPath: "/.well-known/oauth-protected-resource",
++        trustForwardedHost: true,
++      }),
+     },
+   },
+ });
+-- 
+2.50.1 (Apple Git-155)
+

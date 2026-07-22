@@ -38,9 +38,15 @@ const sheetVariants = cva(
         top: "inset-x-0 top-0 max-h-[85dvh] border-b border-border-subtle pt-[max(1.5rem,env(safe-area-inset-top))] data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
           "inset-x-0 bottom-0 max-h-[85dvh] border-t border-border-subtle rounded-t-lg pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-dvh w-[85vw] border-r border-border-subtle data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        // Sprint R0: h-dvh with no fallback drops the whole `height` value
+        // in a browser/webview that doesn't recognize the unit, leaving
+        // this drawer auto-height instead of full-viewport. h-screen is
+        // the universally-supported base; supports-[...]:h-dvh layers the
+        // dynamic-viewport value on top where it's actually understood
+        // (same idiom as AppShell's root shell and its backdrop-filter use).
+        left: "inset-y-0 left-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-r border-border-subtle data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
         right:
-          "inset-y-0 right-0 h-dvh w-[85vw] border-l border-border-subtle data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "inset-y-0 right-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-l border-border-subtle data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
       },
     },
     defaultVariants: {

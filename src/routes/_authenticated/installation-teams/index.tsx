@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,12 +19,13 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
@@ -262,76 +262,82 @@ function NewTeamDialog() {
         <DialogHeader>
           <DialogTitle>New installation team</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label>Team name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Supervisor</Label>
+        <QuickForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!form.name) return;
+            create.mutate();
+          }}
+          busy={create.isPending}
+        >
+          <QuickForm.QuickFill>
+            <Field label="Team name" required className="md:col-span-2">
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </Field>
+            <Field label="Supervisor">
               <Input
                 value={form.supervisor_name}
                 onChange={(e) => setForm({ ...form, supervisor_name: e.target.value })}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>Supervisor phone</Label>
+            </Field>
+            <Field label="Supervisor phone">
               <Input
                 value={form.supervisor_phone}
                 onChange={(e) => setForm({ ...form, supervisor_phone: e.target.value })}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>Vehicle</Label>
+            </Field>
+            <Field label="Vehicle">
               <Input
                 value={form.vehicle}
                 onChange={(e) => setForm({ ...form, vehicle: e.target.value })}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>Daily capacity (sqft)</Label>
+            </Field>
+            <Field label="Daily capacity (sqft)">
               <Input
                 type="number"
                 value={form.daily_capacity_sqft}
                 onChange={(e) => setForm({ ...form, daily_capacity_sqft: e.target.value })}
               />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label>Skills (comma separated)</Label>
-            <Input
-              value={form.skills}
-              onChange={(e) => setForm({ ...form, skills: e.target.value })}
-              placeholder="fabrication, chemical, edge polish"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>Members (one per line: name | phone | skill)</Label>
-            <Textarea
-              rows={3}
-              value={form.members}
-              onChange={(e) => setForm({ ...form, members: e.target.value })}
-              placeholder="Ramesh | 9876543210 | Lead installer"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>Notes</Label>
-            <Textarea
-              rows={2}
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => create.mutate()} disabled={!form.name || create.isPending}>
-            {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
-          </Button>
-        </DialogFooter>
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Skills (comma separated)" className="md:col-span-2">
+              <Input
+                value={form.skills}
+                onChange={(e) => setForm({ ...form, skills: e.target.value })}
+                placeholder="fabrication, chemical, edge polish"
+              />
+            </Field>
+            <Field label="Members (one per line: name | phone | skill)" className="md:col-span-2">
+              <Textarea
+                rows={3}
+                value={form.members}
+                onChange={(e) => setForm({ ...form, members: e.target.value })}
+                placeholder="Ramesh | 9876543210 | Lead installer"
+              />
+            </Field>
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!form.name || create.isPending}>
+              {create.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
       </DialogContent>
     </Dialog>
   );

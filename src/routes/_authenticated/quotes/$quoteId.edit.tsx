@@ -6,7 +6,7 @@ import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDial
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -424,11 +424,9 @@ function LineItemsEditor({
       </CardHeader>
       <CardContent>
         {itemsQuery.isLoading ? (
-          <div className="py-4 text-sm text-muted-foreground">Loading items…</div>
+          <LoadingBlock label="Loading items…" />
         ) : rows.length === 0 ? (
-          <div className="py-4 text-sm text-muted-foreground">
-            No line items yet. Use “Add line” to add one.
-          </div>
+          <EmptyState title="No line items yet" message="Use “Add line” to add one." />
         ) : (
           <div className="space-y-3">
             {rows.map((r, i) => {
