@@ -11,9 +11,19 @@
  * types.ts) instead of a plain string — built right here, where the real
  * candidate list already exists, rather than reconstructed later from
  * formatted text.
+ *
+ * Sprint AI-1.6: the search / zero-one-many classification / blocker
+ * assembly this file used to implement inline now lives once in
+ * entityResolution.ts (the generic Entity Resolution Framework) — this file
+ * is a thin adapter that only specifies what's actually customer-specific:
+ * the search function, the candidate label/subtitle, and the blocker
+ * message text. Behavior (including the exact byte-for-byte PlannerBlocker
+ * shape) is unchanged — resolveCustomer.test.ts is unmodified by this
+ * sprint and still passes against this file.
  */
 import { listCustomers } from "@/lib/customers/api";
 import type { PlannerBlocker } from "../types";
+import { requiredInputBlocker, resolveEntityByQuery } from "./entityResolution";
 
 export interface CustomerResolution {
   customerId: string | null;
@@ -21,68 +31,34 @@ export interface CustomerResolution {
   blocker: PlannerBlocker | null;
 }
 
-/** Selection blockers hand the UI every match rather than the old string
- *  blocker's first-5-then-ellipsis (a prose-readability limit that doesn't
- *  apply to a rendered list) — capped generously so one pathological search
- *  term can't hand the UI an unbounded list. */
-const MAX_CANDIDATES = 20;
-
 export async function resolveCustomer(name: string | undefined): Promise<CustomerResolution> {
   if (!name || !name.trim()) {
     return {
       customerId: null,
       customerLabel: null,
-      blocker: {
+      blocker: requiredInputBlocker({
         id: "customer_id",
-        type: "text_required",
-        message: "No customer name was extracted from the utterance.",
         field: "customer_name",
-        required: true,
-      },
+        message: "No customer name was extracted from the utterance.",
+      }),
     };
   }
 
-  const matches = await listCustomers(name.trim());
+  // `query` here is deliberately the RAW (untrimmed) `name` — matches the
+  // pre-Sprint-AI-1.6 behavior of interpolating the raw name into the
+  // blocker's message/currentValue while only ever trimming it for the
+  // actual listCustomers() call itself. The framework doesn't trim on a
+  // caller's behalf, so that split is expressed here via the `search`
+  // wrapper below rather than in entityResolution.ts.
+  const { record, blocker } = await resolveEntityByQuery(name, {
+    id: "customer_id",
+    type: "customer_selection",
+    search: (query) => listCustomers(query.trim()),
+    toCandidate: (m) => ({ id: m.id, label: m.name, subtitle: m.customer_code }),
+    noMatchMessage: (q) => `No existing customer matches "${q}".`,
+    multipleMatchesMessage: (q, count) => `"${q}" matches ${count} customers — choose one.`,
+  });
 
-  if (matches.length === 0) {
-    return {
-      customerId: null,
-      customerLabel: null,
-      blocker: {
-        id: "customer_id",
-        type: "customer_selection",
-        message: `No existing customer matches "${name}".`,
-        field: "customer_id",
-        required: true,
-        currentValue: name,
-        candidates: [],
-      },
-    };
-  }
-
-  if (matches.length > 1) {
-    return {
-      customerId: null,
-      customerLabel: null,
-      blocker: {
-        id: "customer_id",
-        type: "customer_selection",
-        message: `"${name}" matches ${matches.length} customers — choose one.`,
-        field: "customer_id",
-        required: true,
-        currentValue: name,
-        candidates: matches.slice(0, MAX_CANDIDATES).map((m) => ({
-          id: m.id,
-          label: m.name,
-          subtitle: m.customer_code,
-        })),
-      },
-    };
-  }
-
-  return {
-    customerId: matches[0].id,
-    customerLabel: matches[0].name,
-    blocker: null,
-  };
+  if (!record) return { customerId: null, customerLabel: null, blocker };
+  return { customerId: record.id, customerLabel: record.name, blocker: null };
 }

@@ -19,9 +19,18 @@
  * (not a `*_selection` — there's nothing to pick between, just one existing
  * record the employee needs to see before deciding whether to proceed) with
  * that record as its sole candidate, for reference/linking, not a picker.
+ *
+ * Sprint AI-1.6: blocker assembly now goes through entityResolution.ts's
+ * confirmationBlocker() — the same helper any future "does this already
+ * exist" check (e.g. a duplicate-vendor guard) would reuse. The lookup
+ * itself (findCustomerByPhone) and the decision to check at all are
+ * unchanged. Behavior (including the exact byte-for-byte PlannerBlocker
+ * shape) is unchanged — resolveCustomerDuplicate.test.ts is unmodified by
+ * this sprint and still passes against this file.
  */
 import { findCustomerByPhone } from "@/lib/customers/api";
 import type { PlannerBlocker } from "../types";
+import { confirmationBlocker } from "./entityResolution";
 
 export interface CustomerDuplicateResolution {
   blocker: PlannerBlocker | null;
@@ -41,14 +50,12 @@ export async function resolveCustomerDuplicate(
   if (!existing) return { blocker: null };
 
   return {
-    blocker: {
+    blocker: confirmationBlocker(existing, {
       id: "mobile",
-      type: "confirmation_required",
-      message: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
       field: "mobile",
-      required: true,
+      message: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
+      toCandidate: (c) => ({ id: c.id, label: `${c.name} (${c.customer_code})` }),
       currentValue: mobile,
-      candidates: [{ id: existing.id, label: `${existing.name} (${existing.customer_code})` }],
-    },
+    }),
   };
 }

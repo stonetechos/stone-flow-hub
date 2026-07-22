@@ -12,20 +12,27 @@
  * same discipline as resolveCustomer.ts — built here, where the real
  * candidate list already exists, rather than reconstructed later from
  * formatted text.
+ *
+ * Sprint AI-1.6: the name-lookup branch (search + zero/one/many
+ * classification + blocker assembly) now delegates to
+ * entityResolution.ts's resolveEntityByQuery() — the same generic framework
+ * resolveCustomer.ts uses, since this branch is the exact same "customer
+ * name -> customer record" shape. The caller-supplied-context short-circuit
+ * above it (nothing to search for) and the no-targetName precondition
+ * blocker are specific to this resolver and stay here. Behavior (including
+ * the exact byte-for-byte PlannerBlocker shape) is unchanged —
+ * resolveFollowupTarget.test.ts is unmodified by this sprint and still
+ * passes against this file.
  */
 import { listCustomers } from "@/lib/customers/api";
 import type { PlannerBlocker, VieActionContext } from "../types";
+import { requiredInputBlocker, resolveEntityByQuery } from "./entityResolution";
 
 export interface FollowupTargetResolution {
   entityType: string | null;
   entityId: string | null;
   blocker: PlannerBlocker | null;
 }
-
-/** Same generous, non-prose-truncated cap as resolveCustomer.ts — see that
- *  file's own comment for why a UI candidate list doesn't need the
- *  first-5-then-ellipsis limit a formatted sentence did. */
-const MAX_CANDIDATES = 20;
 
 export async function resolveFollowupTarget(
   targetName: string | undefined,
@@ -39,49 +46,26 @@ export async function resolveFollowupTarget(
     return {
       entityType: null,
       entityId: null,
-      blocker: {
+      blocker: requiredInputBlocker({
         id: "entity_id",
-        type: "text_required",
-        message: "No customer/record name was extracted and no current-page context was supplied.",
         field: "target_name",
-        required: true,
-      },
+        message: "No customer/record name was extracted and no current-page context was supplied.",
+      }),
     };
   }
 
-  const matches = await listCustomers(targetName.trim());
+  // `query` is deliberately the RAW (untrimmed) `targetName` — see
+  // resolveCustomer.ts's own comment on this same split; only the actual
+  // listCustomers() call trims, the blocker message/currentValue don't.
+  const { record, blocker } = await resolveEntityByQuery(targetName, {
+    id: "entity_id",
+    type: "customer_selection",
+    search: (query) => listCustomers(query.trim()),
+    toCandidate: (m) => ({ id: m.id, label: m.name }),
+    noMatchMessage: (q) => `No existing customer matches "${q}".`,
+    multipleMatchesMessage: (q, count) => `"${q}" matches ${count} customers — choose one.`,
+  });
 
-  if (matches.length === 0) {
-    return {
-      entityType: null,
-      entityId: null,
-      blocker: {
-        id: "entity_id",
-        type: "customer_selection",
-        message: `No existing customer matches "${targetName}".`,
-        field: "entity_id",
-        required: true,
-        currentValue: targetName,
-        candidates: [],
-      },
-    };
-  }
-
-  if (matches.length > 1) {
-    return {
-      entityType: null,
-      entityId: null,
-      blocker: {
-        id: "entity_id",
-        type: "customer_selection",
-        message: `"${targetName}" matches ${matches.length} customers — choose one.`,
-        field: "entity_id",
-        required: true,
-        currentValue: targetName,
-        candidates: matches.slice(0, MAX_CANDIDATES).map((m) => ({ id: m.id, label: m.name })),
-      },
-    };
-  }
-
-  return { entityType: "customer", entityId: matches[0].id, blocker: null };
+  if (!record) return { entityType: null, entityId: null, blocker };
+  return { entityType: "customer", entityId: record.id, blocker: null };
 }
