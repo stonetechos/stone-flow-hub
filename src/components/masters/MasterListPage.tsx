@@ -77,7 +77,8 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true })
         .limit(500);
-      if (q.trim()) qb = qb.or(`name.ilike.%${q}%,code.ilike.%${q}%`);
+      const s = sanitizeSearch(q);
+      if (s) qb = qb.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
       const { data, error } = await qb;
       if (error) throw error;
       return (data ?? []) as unknown as Row[];
