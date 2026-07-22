@@ -25,14 +25,18 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { askCopilot } from "@/lib/ai/copilot.functions";
 import { nlSearch } from "@/lib/ai/nl-search.functions";
 import type { NlResultItem } from "@/lib/ai/nl-search/types";
+import { understandAndStage, confirmVieAction, completeDraftAction } from "@/lib/vie/vie.functions";
+import type { VieActionStatus } from "@/lib/vie/types";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
+import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieActionCard";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
@@ -44,7 +48,23 @@ type NlResultsMsg = {
   interpretation: string;
   results: NlResultItem[];
 };
-type Msg = ChatMsg | NlResultsMsg;
+/** Sprint AI-1 — one `vie_actions` row, staged via understandAndStage() and
+ *  advanced via confirmVieAction()/completeDraftAction() as the user acts on
+ *  it. Rendering lives entirely in VieActionCard.tsx; this file only owns
+ *  the mutations that call the three VIE server functions and keeps the
+ *  row's local copy in sync with what they return. */
+type VieActionMsg = { role: "assistant"; kind: "vie-action"; row: VieActionRow };
+type Msg = ChatMsg | NlResultsMsg | VieActionMsg;
+
+/** "Do" mode prompt starters — illustrative examples of the four intents
+ *  VIE currently supports (log_enquiry, note_followup, create_customer,
+ *  create_quotation), not tied to the current route the way "Ask" mode's
+ *  CONTEXT_HINTS suggestions are. */
+const DO_MODE_SUGGESTIONS = [
+  "Log an enquiry for Ramesh Patel, 200 sqft Mint marble at Rs 85/sqft",
+  "Remind me to follow up with this customer in 3 days",
+  "Add a new customer: Shantilal Patel, 9876543210, Naroda",
+];
 
 // Suggestion prompts are how-to / explanation questions only. They must NEVER
 // invite the assistant to list, rank, or invent specific business records —
@@ -187,6 +207,13 @@ export function Copilot() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [bookmarks, setBookmarks] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
+  // Sprint AI-1 — explicit mode toggle rather than an auto-router: "Ask" is
+  // the existing nl-search/askCopilot path, completely unchanged below;
+  // "Do" sends the message to understandAndStage() instead. Keeping the
+  // choice explicit (rather than guessing intent with a third classifier)
+  // avoids adding a new routing layer on top of two LLM systems that don't
+  // share a decision boundary today.
+  const [mode, setMode] = useState<"ask" | "do">("ask");
   // Insights layout only (Phase G.7 data untouched): expanded by default,
   // independently scrollable, and collapsible so it can never grow large
   // enough to push the chat composer off-screen.
@@ -249,7 +276,7 @@ export function Copilot() {
   const send = useMutation({
     mutationFn: async (prompt: string) => {
       const history = messages
-        .filter((m): m is ChatMsg => m.kind !== "nl-results")
+        .filter((m): m is ChatMsg => m.kind !== "nl-results" && m.kind !== "vie-action")
         .slice(-8)
         .map(({ role, content }) => ({ role, content }));
       return askCopilot({
@@ -268,7 +295,78 @@ export function Copilot() {
     },
   });
 
-  const isPending = send.isPending || nlSearchMutation.isPending;
+  // Sprint AI-1 — "Do" mode's only entry point. Calls understandAndStage()
+  // exactly as vie.functions.ts defines it: a fresh client-generated
+  // requestId per submission (its idempotency key), the raw text, and the
+  // same page-context passthrough nl-search already sends. The returned row
+  // is rendered by VieActionMessage based purely on its `status` — this
+  // mutation's only job is staging it and appending it to the thread.
+  const stageAction = useMutation({
+    mutationFn: (text: string) =>
+      understandAndStage({
+        data: {
+          requestId: crypto.randomUUID(),
+          text,
+          context: { entityType: ctx.entity, entityId: ctx.entityId },
+        },
+      }),
+    onSuccess: (row) => setMessages((m) => [...m, { role: "assistant", kind: "vie-action", row }]),
+    onError: (e) => {
+      const msg = toUserMessage(e);
+      toast.error(msg);
+      setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${msg}` }]);
+    },
+  });
+
+  /** Both confirmVieAction() and completeDraftAction() return an
+   *  ExecuteActionResult (status/linkedRecordType/linkedRecordId/message),
+   *  not a full row — merge it into the matching message's stored row
+   *  rather than re-fetching, mirroring how the rest of this panel keeps
+   *  state client-side. */
+  function applyActionResult(
+    actionId: string,
+    result: {
+      status: VieActionStatus;
+      linkedRecordType: string | null;
+      linkedRecordId: string | null;
+      message?: string;
+    },
+  ) {
+    setMessages((msgs) =>
+      msgs.map((m) =>
+        m.kind === "vie-action" && m.row.id === actionId
+          ? {
+              ...m,
+              row: {
+                ...m.row,
+                status: result.status,
+                linked_record_type: result.linkedRecordType,
+                linked_record_id: result.linkedRecordId,
+                error_message:
+                  result.status === "failed"
+                    ? (result.message ?? m.row.error_message)
+                    : m.row.error_message,
+              },
+            }
+          : m,
+      ),
+    );
+  }
+
+  const confirmAction = useMutation({
+    mutationFn: (actionId: string) => confirmVieAction({ data: { actionId } }),
+    onSuccess: (result, actionId) => applyActionResult(actionId, result),
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const completeDraft = useMutation({
+    mutationFn: ({ actionId, patch }: { actionId: string; patch: Record<string, unknown> }) =>
+      completeDraftAction({ data: { actionId, patch } }),
+    onSuccess: (result, { actionId }) => applyActionResult(actionId, result),
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const isPending = send.isPending || nlSearchMutation.isPending || stageAction.isPending;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -291,13 +389,20 @@ export function Copilot() {
     if (!text || isPending) return;
     setMessages((m) => [...m, { role: "user", content: text }]);
     setInput("");
-    nlSearchMutation.mutate(text);
+    if (mode === "do") {
+      stageAction.mutate(text);
+    } else {
+      nlSearchMutation.mutate(text);
+    }
   }
 
   function bookmarkLast() {
     const last = [...messages]
       .reverse()
-      .find((m): m is ChatMsg => m.role === "assistant" && m.kind !== "nl-results");
+      .find(
+        (m): m is ChatMsg =>
+          m.role === "assistant" && m.kind !== "nl-results" && m.kind !== "vie-action",
+      );
     if (!last) return;
     setBookmarks((b) => [last, ...b].slice(0, 20));
     toast.success("Bookmarked");
@@ -327,10 +432,22 @@ export function Copilot() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            How-to guidance for the current page. The assistant does not read your database — for
-            real customer, project, invoice or vendor data, open the relevant page or the Business
-            Priorities card on the dashboard.
+            {mode === "do"
+              ? "Describe what you want to do. I'll show you exactly what I'm about to create — or ask for confirmation — before anything is written."
+              : "How-to guidance for the current page. The assistant does not read your database — for real customer, project, invoice or vendor data, open the relevant page or the Business Priorities card on the dashboard."}
           </p>
+          {/* Sprint AI-1 — explicit Ask/Do toggle (see the `mode` state
+           * comment above for why this isn't an auto-router). */}
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "ask" | "do")}>
+            <TabsList className="h-7">
+              <TabsTrigger value="ask" className="h-5 text-xs">
+                Ask
+              </TabsTrigger>
+              <TabsTrigger value="do" className="h-5 text-xs">
+                Do
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </SheetHeader>
 
         <div className="flex-shrink-0 border-b border-border">
@@ -379,7 +496,7 @@ export function Copilot() {
               <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
                 <p className="mb-2 font-medium">Try one of these:</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {ctx.suggestions.map((s) => (
+                  {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -399,6 +516,17 @@ export function Copilot() {
                   interpretation={m.interpretation}
                   results={m.results}
                   onNavigate={() => setOpen(false)}
+                />
+              ) : m.kind === "vie-action" ? (
+                <VieActionMessage
+                  key={i}
+                  row={m.row}
+                  onConfirm={(actionId) => confirmAction.mutate(actionId)}
+                  onCompleteDraft={(actionId, patch) => completeDraft.mutate({ actionId, patch })}
+                  confirmPending={confirmAction.isPending && confirmAction.variables === m.row.id}
+                  completePending={
+                    completeDraft.isPending && completeDraft.variables?.actionId === m.row.id
+                  }
                 />
               ) : (
                 <Bubble key={i} role={m.role} content={m.content} />
@@ -463,7 +591,11 @@ export function Copilot() {
                   submit();
                 }
               }}
-              placeholder="Ask about this page… (Enter to send, Shift+Enter for newline)"
+              placeholder={
+                mode === "do"
+                  ? "Describe what you want to do… (Enter to send, Shift+Enter for newline)"
+                  : "Ask about this page… (Enter to send, Shift+Enter for newline)"
+              }
               rows={2}
               className="min-h-[56px] resize-none"
             />
