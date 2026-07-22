@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "@/lib/admin/users";
+import { roleSatisfies, roleSatisfiesAny } from "@/lib/admin/permissions";
 import { useAuthReady } from "./use-auth-ready";
 
 export type { AppRole };
@@ -18,13 +19,25 @@ export type { AppRole };
 interface RolesState {
   isReady: boolean;
   roles: AppRole[];
+  /** True for both plain `admin` holders and the Platform Super Admin
+   * (Sprint 1.7.1, Part 6 — `super_admin` inherits every `admin` check via
+   * `roleSatisfies`, mirroring the database's `has_role` function). */
   isAdmin: boolean;
+  /** True only for the literal `super_admin` role — use this when a check
+   * is genuinely Super-Admin-only (e.g. the Users & Roles protections in
+   * `src/lib/admin/permissions.ts`), not as a substitute for `isAdmin`. */
+  isSuperAdmin: boolean;
   isSalesManager: boolean;
+  /** Inheritance-aware — `hasRole("admin")` is true for a Platform Super
+   * Admin too (see `roleSatisfies`). Every other role is an exact check, as
+   * there is no other inheritance rule. */
   hasRole: (role: AppRole) => boolean;
+  /** Inheritance-aware — a `super_admin` holder satisfies `["admin", ...]`
+   * even without literally holding `admin`. See `roleSatisfiesAny`. */
   hasAnyRole: (roles: readonly AppRole[]) => boolean;
-  /** Can create/edit rows (any staff role). */
+  /** Can create/edit rows (any staff role, or the Platform Super Admin). */
   canWrite: boolean;
-  /** Can delete rows (admin or sales_manager). */
+  /** Can delete rows (admin, sales_manager, or the Platform Super Admin). */
   canDelete: boolean;
 }
 
@@ -45,13 +58,18 @@ export function useRoles(): RolesState {
   });
   const roles = q.data ?? [];
   return useMemo<RolesState>(() => {
-    const set = new Set(roles);
-    const has = (r: AppRole) => set.has(r);
-    const hasAny = (rs: readonly AppRole[]) => rs.some((r) => set.has(r));
+    // Sprint 1.7.1, Part 6/7 — routed through the single shared
+    // roleSatisfies[Any] implementation in src/lib/admin/permissions.ts
+    // rather than a bespoke Set-membership check, so this hook and the
+    // database's has_role/has_any_role functions can never drift apart on
+    // the admin/super_admin inheritance rule.
+    const has = (r: AppRole) => roleSatisfies(roles, r);
+    const hasAny = (rs: readonly AppRole[]) => roleSatisfiesAny(roles, rs);
     return {
       isReady: auth.isReady && (!uid || q.isFetched),
       roles,
       isAdmin: has("admin"),
+      isSuperAdmin: roles.includes("super_admin"),
       isSalesManager: has("sales_manager"),
       hasRole: has,
       hasAnyRole: hasAny,

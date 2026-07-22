@@ -17,12 +17,18 @@ import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRoles } from "@/hooks/use-roles";
 import {
-  PRODUCT_NAME,
-  PRODUCT_CATEGORY,
+  APPLICATION_NAME,
+  APPLICATION_CATEGORY,
+  APPLICATION_VERSION,
+  BUILD_VERSION,
+  GIT_COMMIT_HASH,
+  DB_SCHEMA_VERSION,
   BUILT_BY_LINE,
   copyrightLine,
-} from "@/lib/branding/platform";
+} from "@/lib/platform/application";
+import { PLATFORM_NAME, PLATFORM_VERSION, PLATFORM_SUPPORT_EMAIL } from "@/lib/platform/platform";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   ssr: false,
@@ -40,7 +46,14 @@ function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
+  // truth for role checks (see docs/authentication.md § Permission
+  // hierarchy). This previously ran its own ad hoc `user_roles` query that
+  // checked literal `role = 'admin'`, which would have left the Platform
+  // Super Admin (who holds only `super_admin`) seeing the non-admin
+  // Preferences tab.
+  const roles = useRoles();
+  const isAdmin = roles.isAdmin;
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
 
   useEffect(() => {
@@ -65,13 +78,6 @@ function SettingsPage() {
         setDepartment(prof?.department ?? "");
         setPhone(prof?.phone ?? "");
         setAvatarUrl(prof?.avatar_url ?? null);
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        setIsAdmin(!!role);
       }
     })();
   }, []);
@@ -333,16 +339,72 @@ function SettingsPage() {
               <CardTitle className="text-sm">About</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p className="text-base font-medium">{PRODUCT_NAME}</p>
-              <p className="text-sm text-muted-foreground">{PRODUCT_CATEGORY}</p>
+              <p className="text-base font-medium">{APPLICATION_NAME}</p>
+              <p className="text-sm text-muted-foreground">{APPLICATION_CATEGORY}</p>
               <p className="text-sm text-muted-foreground">{BUILT_BY_LINE}</p>
               <p className="mt-4 text-xs text-muted-foreground">
                 {copyrightLine(new Date().getFullYear())}
               </p>
             </CardContent>
           </Card>
+
+          {/* Sprint 1.7.1, Part 5 — Platform Information. Every value here is
+              read from src/lib/platform/{platform,application}.ts; any field
+              this deployment genuinely doesn't have (e.g. no git repo at
+              build time) renders "Not available" rather than a fabricated
+              value — see those modules for exactly how each is sourced. */}
+          <Card className="mt-4 shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Platform Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+                <AboutRow label="Application Name" value={APPLICATION_NAME} />
+                <AboutRow label="Application Version" value={APPLICATION_VERSION} />
+                <AboutRow label="Build Version" value={BUILD_VERSION} />
+                <AboutRow label="Git Commit Hash" value={GIT_COMMIT_HASH} mono />
+                <AboutRow label="Platform Version" value={PLATFORM_VERSION} />
+                <AboutRow label="Database Schema Version" value={DB_SCHEMA_VERSION} mono />
+                <AboutRow label="Platform Owner" value={PLATFORM_NAME} />
+                <AboutRow label="Support Email" value={PLATFORM_SUPPORT_EMAIL} />
+                <AboutRow
+                  label="Copyright"
+                  value={copyrightLine(new Date().getFullYear())}
+                  className="sm:col-span-2"
+                />
+              </dl>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/**
+ * Sprint 1.7.1, Part 5 — one label/value row in the Platform Information
+ * grid. `value` may be `null` for any field this deployment genuinely
+ * couldn't determine (see src/lib/platform/application.ts) — rendered as
+ * "Not available" rather than omitted, so it's visibly a known gap rather
+ * than looking like the row was forgotten.
+ */
+function AboutRow({
+  label,
+  value,
+  mono,
+  className,
+}: {
+  label: string;
+  value: string | null;
+  mono?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className={`mt-0.5 ${mono ? "font-mono text-xs" : "text-sm"}`}>
+        {value ? value : <span className="text-muted-foreground">Not available</span>}
+      </dd>
     </div>
   );
 }

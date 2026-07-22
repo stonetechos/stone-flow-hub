@@ -11,6 +11,10 @@ import { describe, test, expect } from "bun:test";
 import {
   canManageTargetUser,
   assertCanManageTargetUser,
+  roleSatisfies,
+  roleSatisfiesAny,
+  ADMIN_ROLE,
+  PLATFORM_SUPER_ADMIN_ROLE,
   type ActingUserRef,
   type ManagedUserRef,
 } from "./permissions";
@@ -112,5 +116,35 @@ describe("assertCanManageTargetUser", () => {
 
   test("does not throw when allowed", () => {
     expect(() => assertCanManageTargetUser(admin, employeeTarget, "delete")).not.toThrow();
+  });
+});
+
+describe("roleSatisfies / roleSatisfiesAny — Sprint 1.7.1, Part 6 admin inheritance", () => {
+  test("a literal admin role holder satisfies an admin check", () => {
+    expect(roleSatisfies([ADMIN_ROLE], ADMIN_ROLE)).toBe(true);
+  });
+
+  test("a Platform Super Admin satisfies an admin check without literally holding admin", () => {
+    expect(roleSatisfies([PLATFORM_SUPER_ADMIN_ROLE], ADMIN_ROLE)).toBe(true);
+  });
+
+  test("a non-admin, non-super-admin role does not satisfy an admin check", () => {
+    expect(roleSatisfies(["sales"], ADMIN_ROLE)).toBe(false);
+  });
+
+  test("super_admin does NOT satisfy an unrelated exact-role check (no broader inheritance)", () => {
+    expect(roleSatisfies([PLATFORM_SUPER_ADMIN_ROLE], "sales_manager")).toBe(false);
+  });
+
+  test("roleSatisfiesAny: a Platform Super Admin satisfies a list that includes admin", () => {
+    expect(roleSatisfiesAny([PLATFORM_SUPER_ADMIN_ROLE], [ADMIN_ROLE, "sales_manager"])).toBe(true);
+  });
+
+  test("roleSatisfiesAny: a Platform Super Admin does not satisfy a list without admin", () => {
+    expect(roleSatisfiesAny([PLATFORM_SUPER_ADMIN_ROLE], ["sales_manager", "sales"])).toBe(false);
+  });
+
+  test("roleSatisfiesAny: empty held-roles never satisfies anything", () => {
+    expect(roleSatisfiesAny([], [ADMIN_ROLE])).toBe(false);
   });
 });

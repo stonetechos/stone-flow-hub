@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { Database } from "@/integrations/supabase/types";
 import { canManageTargetUser, type ActingUserRef } from "@/lib/admin/permissions";
+import { parseUserAgent, derivePlatformFromOrigin } from "@/lib/audit/user-agent";
 
 export type AppRole = Database["public"]["Enums"]["app_role"];
 export const APP_ROLES: readonly AppRole[] = [
@@ -125,18 +126,33 @@ export async function revokeRole(userId: string, role: AppRole): Promise<void> {
  * it was denied. RLS's "al insert auth" policy allows any authenticated
  * user to write an activity_log row, matching the existing generic
  * log_activity() trigger's pattern of trusting the app layer for actor_id.
+ *
+ * Sprint 1.7.1, Part 4 — this is a client-side write, so there's no server
+ * request to read a User-Agent header or IP from (`ip_address` stays null
+ * here, same as before this sprint — only the server-function audit path
+ * in users.functions.ts can genuinely observe a caller's IP). What the
+ * client-side context genuinely has is `navigator.userAgent` and its own
+ * origin, so those populate `user_agent`/`browser`/`os`/`platform`.
  */
 async function logRoleChangeAttempt(
   entityId: string,
   actorId: string,
   summary: string,
 ): Promise<void> {
+  const userAgent = typeof navigator !== "undefined" ? navigator.userAgent : null;
+  const { browser, os } = parseUserAgent(userAgent);
+  const platform =
+    typeof window !== "undefined" ? derivePlatformFromOrigin(window.location.origin) : null;
   const { error } = await supabase.from("activity_log").insert({
     entity_type: "user",
     entity_id: entityId,
     action: "super_admin_role_change_attempted",
     actor_id: actorId,
     summary,
+    user_agent: userAgent,
+    browser,
+    os,
+    platform,
   });
   if (error) {
     // Audit logging must never block the caller from seeing the original
@@ -257,6 +273,14 @@ export async function updateProfileFields(
   if (error) throw new AppError(mapDbError(error));
 }
 
+/**
+ * Sprint 1.7.1, Part 6/7 — "is admin" now means "admin OR the Platform
+ * Super Admin" everywhere in the app (see `roleSatisfies` in
+ * `src/lib/admin/permissions.ts`, and `useRoles().isAdmin` for the
+ * equivalent hook-based check most UI code should prefer over calling this
+ * directly). Previously this checked the literal `admin` role only, which
+ * would have reported `false` for the Platform Super Admin.
+ */
 export async function currentUserIsAdmin(): Promise<boolean> {
   const { data: sess } = await supabase.auth.getUser();
   const uid = sess.user?.id;
@@ -265,9 +289,8 @@ export async function currentUserIsAdmin(): Promise<boolean> {
     .from("user_roles")
     .select("role")
     .eq("user_id", uid)
-    .eq("role", "admin")
-    .maybeSingle();
-  return !!data;
+    .in("role", ["admin", "super_admin"]);
+  return !!data && data.length > 0;
 }
 
 /** Sprint 1.7, Part 2 — mirrors `currentUserIsAdmin` for the new tier. */

@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id: string | null
+          browser: string | null
           created_at: string
           dedupe_key: string | null
           entity_id: string
@@ -28,12 +29,16 @@ export type Database = {
           is_demo: boolean
           new_value: Json | null
           old_value: Json | null
+          os: string | null
+          platform: string | null
           project_id: string | null
           summary: string | null
+          user_agent: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id: string
@@ -44,12 +49,16 @@ export type Database = {
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id?: string
@@ -60,8 +69,11 @@ export type Database = {
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {
@@ -8067,6 +8079,10 @@ export type Database = {
           p_vendor_delivery?: string
         }
         Returns: string
+      }
+      bootstrap_platform_super_admin: {
+        Args: { _email: string }
+        Returns: undefined
       }
       current_demo_mode: { Args: never; Returns: boolean }
       current_employee_id: { Args: never; Returns: string }

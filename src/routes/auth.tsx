@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
-import { POWERED_BY_LINE } from "@/lib/branding/platform";
+import { POWERED_BY_LINE } from "@/lib/platform/application";
 
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.

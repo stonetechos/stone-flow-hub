@@ -50,6 +50,7 @@ import {
   useRecentNav,
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
+import { useRoles } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -470,27 +471,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
+  // truth for role checks (see docs/authentication.md § Permission
+  // hierarchy). This previously ran its own ad hoc `user_roles` query that
+  // checked literal `role = 'admin'`, which meant the Platform Super Admin
+  // (who holds only `super_admin`) saw the sidebar and nav as a non-admin.
+  const isAdmin = useRoles().isAdmin;
   const [collapsed, setCollapsed] = useSidebarCollapsed(uid);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const { data: sess } = await supabase.auth.getUser();
-      const uid = sess.user?.id;
-      if (!uid) return;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", uid)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!cancelled) setIsAdmin(!!data);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     trackNavVisit(path);

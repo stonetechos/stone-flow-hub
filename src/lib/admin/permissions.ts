@@ -20,6 +20,18 @@
  * docs/authentication.md for the full mapping and why).
  */
 
+/**
+ * Sprint 1.7.1, Part 1 — named role constants, so nothing in the codebase
+ * spells the role literal out by hand. Typed as bare `string` (not
+ * `AppRole`) deliberately: `AppRole` is defined in `src/lib/admin/users.ts`,
+ * which already imports FROM this file — importing the type back here
+ * would create a circular module dependency. Every real call site narrows
+ * these to `AppRole` implicitly by comparing against `role` columns that
+ * are already typed as `AppRole`.
+ */
+export const ADMIN_ROLE = "admin";
+export const PLATFORM_SUPER_ADMIN_ROLE = "super_admin";
+
 export interface ManagedUserRef {
   id: string;
   isSuperAdmin: boolean;
@@ -37,6 +49,33 @@ export type UserManagementAction =
   | "reset_password"
   | "revoke_role"
   | "change_role";
+
+/**
+ * Sprint 1.7.1, Part 6/7 — single client-side source of truth for "does
+ * this set of held roles satisfy a required role". Encodes exactly one
+ * inheritance rule: a caller holding `PLATFORM_SUPER_ADMIN_ROLE` satisfies
+ * any check for `ADMIN_ROLE`, since the Platform Super Admin is a strict
+ * superset of Admin capability and is granted only the `super_admin` row
+ * (never also `admin`) — see docs/authentication.md § Permission hierarchy.
+ * No other inheritance is implied. This mirrors the `has_role`/
+ * `has_any_role` Postgres functions (see the Part 6 migration) so client
+ * UI gating and database enforcement agree on the same rule; consumed by
+ * `useRoles()` in `src/hooks/use-roles.tsx` rather than re-implemented at
+ * each call site.
+ */
+export function roleSatisfies(heldRoles: readonly string[], required: string): boolean {
+  if (heldRoles.includes(required)) return true;
+  if (required === ADMIN_ROLE && heldRoles.includes(PLATFORM_SUPER_ADMIN_ROLE)) return true;
+  return false;
+}
+
+/** `roleSatisfies`, but true if ANY of `required` is satisfied. */
+export function roleSatisfiesAny(
+  heldRoles: readonly string[],
+  required: readonly string[],
+): boolean {
+  return required.some((r) => roleSatisfies(heldRoles, r));
+}
 
 export interface PermissionResult {
   allowed: boolean;

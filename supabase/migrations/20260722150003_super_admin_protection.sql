@@ -156,13 +156,25 @@ CREATE TRIGGER log_user_roles_activity
   AFTER INSERT OR DELETE ON public.user_roles
   FOR EACH ROW EXECUTE FUNCTION public.log_role_change();
 
--- ----- SEED: the sole initial Super Admin / Platform Owner.
--- No-op if that auth user doesn't exist yet in this environment — create
--- the account first (sign up / invite as usual), then re-run this INSERT
--- once, or promote manually:
---   insert into public.user_roles (user_id, role)
---   select id, 'super_admin' from auth.users where email = 'info@stonetech.in';
+-- ----- Sprint 1.7.1, Part 1 — the original version of this migration
+-- ended with a one-time seed INSERT that hardcoded 'info@stonetech.in' as
+-- the initial Super Admin / Platform Owner. That hardcoded the Platform
+-- Owner's *identity* to an email address, which is exactly what Part 1 of
+-- Sprint 1.7.1 requires removing: "the identity of the Platform Super
+-- Admin must never depend upon an email address."
+--
+-- This migration has never been applied to any live database (see
+-- docs/sprint-1.7-completion-report.md § Regression risks / Migration
+-- notes — no live Supabase project existed in either sprint's sandbox), so
+-- editing it in place here is safe; the general rule in this codebase is
+-- to never edit an already-applied migration, and that rule still holds —
+-- this is a deliberate, narrow exception for a migration that has never
+-- run anywhere.
+--
+-- Bootstrapping the first Platform Super Admin is now done via the
+-- idempotent, parameterized `public.bootstrap_platform_super_admin(_email)`
+-- function instead (see migration 20260722160001) — call it once for
+-- whichever account should hold the role; nothing here does it
+-- automatically, and the email is a one-time lookup key, not a stored
+-- identity.
 -- -----
-INSERT INTO public.user_roles (user_id, role)
-SELECT id, 'super_admin' FROM auth.users WHERE email = 'info@stonetech.in'
-ON CONFLICT DO NOTHING;

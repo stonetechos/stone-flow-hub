@@ -12,10 +12,13 @@
  * function is required.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { canManageTargetUser } from "@/lib/admin/permissions";
+import { requireAdminOrSuperAdmin, type HasRoleClient } from "@/lib/admin/server-auth";
+import { parseUserAgent, derivePlatformFromOrigin } from "@/lib/audit/user-agent";
 import type { Database } from "@/integrations/supabase/types";
 
 /** Matches the real shape of `supabaseAdmin` (see client.server.ts) without
@@ -39,34 +42,23 @@ export interface AdminUserRow {
 const INVITE_EXPIRY_DAYS = 7;
 
 /**
- * Sprint 1.7, Parts 2-4 — every handler below must accept both Admin *and*
- * Super Admin callers. The Super Admin account is granted only the
- * `super_admin` role (never also `admin`), so the old `requireAdmin`, which
- * checked `has_role(..., 'admin')` alone, would have locked the Platform
- * Owner out of their own admin server functions. This checks both roles and
- * returns which one(s) matched so callers can also enforce the Super-Admin-
- * only rules (Part 3) without a second round trip.
+ * Sprint 1.7, Parts 2-4 / Sprint 1.7.1, Part 6-7 — every handler below must
+ * accept both Admin *and* Platform Super Admin callers. The Super Admin
+ * account is granted only the `super_admin` role (never also `admin`), so
+ * a plain `has_role(..., 'admin')` check alone would lock the Platform
+ * Owner out of their own admin server functions.
+ *
+ * Now a thin wrapper around the shared `requireAdminOrSuperAdmin` in
+ * `src/lib/admin/server-auth.ts` (previously this duplicated that same
+ * has_role-pair check inline; Sprint 1.7.1 Part 7 consolidated it into one
+ * implementation shared with `dispatch.functions.ts` and
+ * `dispatch-queue.ts`).
  */
 async function requireAdminActor(ctx: {
   supabase: unknown;
   userId: string;
 }): Promise<{ isAdmin: boolean; isSuperAdmin: boolean }> {
-  const sb = ctx.supabase as {
-    rpc: (
-      fn: "has_role",
-      args: { _user_id: string; _role: "admin" | "super_admin" },
-    ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
-  };
-  const [adminRes, superAdminRes] = await Promise.all([
-    sb.rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
-    sb.rpc("has_role", { _user_id: ctx.userId, _role: "super_admin" }),
-  ]);
-  if (adminRes.error) throw new Error(adminRes.error.message);
-  if (superAdminRes.error) throw new Error(superAdminRes.error.message);
-  const isAdmin = !!adminRes.data;
-  const isSuperAdmin = !!superAdminRes.data;
-  if (!isAdmin && !isSuperAdmin) throw new Error("Forbidden");
-  return { isAdmin, isSuperAdmin };
+  return requireAdminOrSuperAdmin(ctx.supabase as HasRoleClient, ctx.userId);
 }
 
 /** Sprint 1.7, Part 3 — is this target user the protected Super Admin? */
@@ -82,10 +74,18 @@ async function targetIsSuperAdmin(admin: SupabaseAdminClient, userId: string): P
 }
 
 /**
- * Sprint 1.7, Part 8 — audit log helper for the server-function paths
- * (client-side direct-table paths log via the equivalent helper in
- * users.ts). Never throws: a failed audit write must not roll back or mask
- * the outcome of the primary action it's describing.
+ * Sprint 1.7, Part 8 / Sprint 1.7.1, Part 4 — audit log helper for the
+ * server-function paths (client-side direct-table paths log via the
+ * equivalent helper in users.ts). Never throws: a failed audit write must
+ * not roll back or mask the outcome of the primary action it's describing.
+ *
+ * Captures User Agent / Browser / OS / Platform / IP from the live request
+ * via TanStack Start's request-context accessors — genuine values, not
+ * fabricated ones. Every accessor call is wrapped in try/catch: outside an
+ * active request lifecycle (e.g. a unit test invoking this directly) these
+ * throw rather than return undefined, and per Part 4 ("If IP cannot be
+ * obtained ... leave the field nullable. Do not fake values") the correct
+ * response to not having a value is `null`, never a guess.
  */
 async function logAuditEvent(
   admin: SupabaseAdminClient,
@@ -96,25 +96,59 @@ async function logAuditEvent(
     summary: string;
   },
 ): Promise<void> {
+  let userAgent: string | null = null;
+  let ipAddress: string | null = null;
+  let platform: string | null = null;
+  try {
+    userAgent = getRequestHeader("user-agent") ?? null;
+    ipAddress = getRequestIP({ xForwardedFor: true }) ?? null;
+    platform = derivePlatformFromOrigin(getRequestHeader("origin") ?? null);
+  } catch {
+    // No active request context available — every field stays null.
+  }
+  const { browser, os } = parseUserAgent(userAgent);
+
   const { error } = await admin.from("activity_log").insert({
     entity_type: "user",
     entity_id: entry.entityId,
     action: entry.action,
     actor_id: entry.actorId,
     summary: entry.summary,
+    user_agent: userAgent,
+    browser,
+    os,
+    platform,
+    ip_address: ipAddress,
   });
   if (error) {
     console.error("[audit] failed to record activity_log entry", error.message);
   }
 }
 
+/**
+ * Sprint 1.7.1, Part 6 — counts remaining *admin-capable* active users, i.e.
+ * `admin` OR `super_admin` holders, not literal `admin` alone.
+ *
+ * Judgment call (Part 6 permission audit): the Platform Super Admin has a
+ * strict superset of Admin capability (Part 6's `has_role` inheritance
+ * fix), so a deployment with zero literal-`admin` holders but one active
+ * Super Admin is not actually locked out of admin capability — the Super
+ * Admin account itself is separately guaranteed to always exist (the
+ * `limit_single_super_admin` trigger blocks removing the only one, and
+ * `canManageTargetUser` blocks deleting/deactivating it outright, both
+ * checked before this function is ever called for a Super Admin target).
+ * Counting only literal `admin` here would have blocked deleting the last
+ * plain Admin even when the Super Admin remains fully able to administer
+ * the platform — an unnecessarily strict, now-inconsistent restriction
+ * given this sprint's own inheritance rule.
+ */
 async function countActiveAdminsExcluding(
   supabaseAdmin: {
     from: (t: string) => {
       select: (c: string) => {
-        eq: (
+        in: (
           col: string,
-          val: string,
+          vals: string[],
         ) => Promise<{ data: { user_id: string }[] | null; error: { message: string } | null }>;
       };
     };
@@ -124,9 +158,11 @@ async function countActiveAdminsExcluding(
   const { data: admins, error } = await supabaseAdmin
     .from("user_roles")
     .select("user_id")
-    .eq("role", "admin");
+    .in("role", ["admin", "super_admin"]);
   if (error) throw new Error(error.message);
-  const ids = (admins ?? []).map((r) => r.user_id).filter((id) => id !== excludeUserId);
+  const ids = Array.from(
+    new Set((admins ?? []).map((r) => r.user_id).filter((id) => id !== excludeUserId)),
+  );
   if (ids.length === 0) return 0;
   const { data: profiles, error: pErr } = await (
     supabaseAdmin as unknown as {
