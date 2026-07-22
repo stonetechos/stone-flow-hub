@@ -10,6 +10,17 @@
  * and calls back into the two confirm/complete callbacks the parent wires
  * to those same functions. No resolution, execution, or policy logic lives
  * here — that stays entirely in `src/lib/vie/**`, untouched by this sprint.
+ *
+ * Sprint AI-1.5 — Structured Planner & Intelligent Clarification: the
+ * "draft" card below now renders `plan_blockers` as real controls (radio
+ * lists, a searchable candidate list, number/date/text inputs) driven
+ * purely by each blocker's structured `type`, instead of a flat bullet
+ * list of English sentences with a generic top-level-field patch form
+ * underneath. This file still performs zero resolution/reasoning — it only
+ * ever inspects `blocker.type` to pick a control and `blocker.field` to
+ * know where a chosen value belongs in the eventual patch; it never parses
+ * `blocker.message`. See docs/VIE-Structured-Blockers.md for the full
+ * rendering contract this implements.
  */
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -18,8 +29,17 @@ import { CheckCircle2, XCircle, HelpCircle, Loader2, ArrowRight } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { DbTable } from "@/lib/types";
+import type { PlannerBlocker } from "@/lib/vie/types";
 
 export type VieActionRow = DbTable<"vie_actions">;
 
@@ -48,6 +68,30 @@ function humanizeKey(key: string): string {
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function isPlannerBlocker(v: unknown): v is PlannerBlocker {
+  return (
+    isPlainObject(v) &&
+    typeof v.id === "string" &&
+    typeof v.type === "string" &&
+    typeof v.message === "string" &&
+    typeof v.field === "string"
+  );
+}
+
+/** `plan_blockers` is the generated `Json` column type at rest — this
+ *  narrows it back to `PlannerBlocker[]` the same lightweight way `plan` is
+ *  cast below, with one added safety net: any element that doesn't look
+ *  like a structured PlannerBlocker (e.g. a legacy plain string, from a
+ *  `vie_actions` row staged before Sprint AI-1.5 shipped) is dropped rather
+ *  than crashing the render. There is no DB migration backfilling old rows
+ *  — `draft` rows are short-lived (an employee completes or dismisses them,
+ *  they aren't kept around as a historical record the way `applied`/
+ *  `failed` rows are), so defending against the old shape here is enough. */
+function parseBlockers(value: unknown): PlannerBlocker[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isPlannerBlocker);
 }
 
 /** Renders `plan.params` generically — primitives as label/value rows,
@@ -223,6 +267,150 @@ export function VieActionMessage({
   );
 }
 
+/** A blocker's `candidates` list, rendered as a picker. Covers every
+ *  `*_selection` blocker type generically (customer_selection,
+ *  vendor_selection, project_selection, product_selection, stone_selection,
+ *  colour_selection, finish_selection, thickness_selection) rather than one
+ *  component per type — per the sprint's own "keep it generic and reusable"
+ *  allowance. A short list renders as radio buttons (matches the sprint's
+ *  own customer_selection/vendor_selection examples); once a list is long
+ *  enough that scanning it stops being the fastest way to find one entry,
+ *  it renders as a searchable filter list instead (matches the sprint's own
+ *  project_selection/stone_selection "searchable" examples). Zero
+ *  candidates (e.g. resolveCustomer's "no existing customer matches…"
+ *  blocker) means there's nothing to pick — resolving that case is a
+ *  manual-form job on the record's own page, same as the pre-Sprint-AI-1.5
+ *  card already deferred complex fields to. */
+function CandidatePicker({
+  blocker,
+  value,
+  onChange,
+}: {
+  blocker: PlannerBlocker;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const candidates = blocker.candidates ?? [];
+
+  if (candidates.length === 0) {
+    return (
+      <p className="text-xs italic text-muted-foreground">
+        No matches — resolve this from the regular {humanizeKey(blocker.field)} page, then dismiss
+        this draft.
+      </p>
+    );
+  }
+
+  const SHORT_LIST_MAX = 6;
+  if (candidates.length <= SHORT_LIST_MAX) {
+    return (
+      <RadioGroup value={value} onValueChange={onChange} className="gap-1.5">
+        {candidates.map((c) => (
+          <div key={c.id} className="flex items-center gap-2">
+            <RadioGroupItem value={c.id} id={`${blocker.id}-${c.id}`} className="h-3.5 w-3.5" />
+            <Label htmlFor={`${blocker.id}-${c.id}`} className="cursor-pointer text-xs font-normal">
+              {c.label}
+              {c.subtitle && <span className="text-muted-foreground"> ({c.subtitle})</span>}
+            </Label>
+          </div>
+        ))}
+      </RadioGroup>
+    );
+  }
+
+  return (
+    <Command className="rounded border border-border">
+      <CommandInput placeholder="Search…" className="h-8 text-xs" />
+      <CommandList>
+        <CommandEmpty className="py-2 text-xs">No match.</CommandEmpty>
+        {candidates.map((c) => (
+          <CommandItem
+            key={c.id}
+            value={`${c.label} ${c.subtitle ?? ""}`}
+            onSelect={() => onChange(c.id)}
+            className={cn("text-xs", value === c.id && "bg-accent text-accent-foreground")}
+          >
+            {c.label}
+            {c.subtitle && <span className="ml-1 text-muted-foreground">({c.subtitle})</span>}
+          </CommandItem>
+        ))}
+      </CommandList>
+    </Command>
+  );
+}
+
+/** `confirmation_required` is informational, not a value to fill in — a
+ *  human just needs to see it before deciding whether to proceed (e.g.
+ *  resolveCustomerDuplicate.ts's "a customer with this phone number already
+ *  exists" blocker) — so unlike every other blocker type, it renders no
+ *  input and contributes nothing to the completion patch. */
+function ConfirmationNotice({ blocker }: { blocker: PlannerBlocker }) {
+  const candidate = blocker.candidates?.[0];
+  return (
+    <div className="rounded border border-amber-300 bg-amber-100/60 px-2 py-1.5 text-xs dark:border-amber-900 dark:bg-amber-950/40">
+      <p>{blocker.message}</p>
+      {candidate && <p className="mt-0.5 font-medium">{candidate.label}</p>}
+    </div>
+  );
+}
+
+/** Dispatches purely on `blocker.type` to pick a control — never parses
+ *  `blocker.message`. This is the entire rendering contract Sprint AI-1.5
+ *  requires: the Planner decides WHAT is missing and how it can be
+ *  resolved (via `type`/`candidates`), this file only decides HOW to draw
+ *  it. See docs/VIE-Structured-Blockers.md. */
+function BlockerField({
+  blocker,
+  value,
+  onChange,
+}: {
+  blocker: PlannerBlocker;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  switch (blocker.type) {
+    case "quantity_required":
+    case "unit_price_required":
+    case "number_required":
+      return (
+        <Input
+          type="number"
+          className="h-8 text-xs"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    case "delivery_date_required":
+    case "date_required":
+      return (
+        <Input
+          type="date"
+          className="h-8 text-xs"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    case "text_required":
+      return (
+        <Input
+          className="h-8 text-xs"
+          value={value}
+          placeholder={typeof blocker.currentValue === "string" ? blocker.currentValue : ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    case "confirmation_required":
+      return <ConfirmationNotice blocker={blocker} />;
+    // customer_selection / vendor_selection / project_selection /
+    // product_selection / stone_selection / colour_selection /
+    // finish_selection / thickness_selection, and any future *_selection
+    // type this switch doesn't need to know by name — see CandidatePicker's
+    // own header comment for why one generic control covers all of them.
+    default:
+      return <CandidatePicker blocker={blocker} value={value} onChange={onChange} />;
+  }
+}
+
 function DraftCard({
   row,
   params,
@@ -236,26 +424,34 @@ function DraftCard({
   completePending: boolean;
   onDismiss: () => void;
 }) {
-  // Only primitive top-level fields are editable inline — plan_blockers is
-  // still an untyped string[] today (VIE Phase 2's own Milestone 5 would
-  // structure it with resolved candidates; not implemented, and out of
-  // scope for this UI-only sprint), so there's no reliable way to know
-  // which specific field a given blocker refers to, or to offer a picker
-  // for an ambiguous match. Complex fields (e.g. a quotation's line items)
-  // stay read-only here — editing them is a manual-form job for now.
-  const editableKeys = Object.keys(params).filter((k) => {
-    const v = params[k];
-    return v === null || v === undefined || typeof v === "string" || typeof v === "number";
-  });
-  const [edits, setEdits] = useState<Record<string, string>>({});
-  const blockers = Array.isArray(row.plan_blockers) ? (row.plan_blockers as unknown[]) : [];
+  const blockers = parseBlockers(row.plan_blockers);
+  // Keyed by blocker.id (always unique within a plan), not blocker.field —
+  // two blockers could in principle share a field, and id is guaranteed
+  // collision-free where field is only guaranteed collision-free today.
+  const [blockerEdits, setBlockerEdits] = useState<Record<string, string>>({});
 
   function submit() {
     const patch: Record<string, unknown> = {};
-    for (const [key, raw] of Object.entries(edits)) {
-      if (raw.trim() === "") continue;
-      const original = params[key];
-      patch[key] = typeof original === "number" ? Number(raw) : raw;
+    for (const b of blockers) {
+      const raw = blockerEdits[b.id];
+      if (b.type === "confirmation_required" || raw === undefined || raw.trim() === "") continue;
+      if (
+        b.type === "quantity_required" ||
+        b.type === "unit_price_required" ||
+        b.type === "number_required"
+      ) {
+        const n = Number(raw);
+        if (!Number.isNaN(n)) patch[b.field] = n;
+        continue;
+      }
+      if (b.type === "delivery_date_required" || b.type === "date_required") {
+        const d = new Date(raw);
+        patch[b.field] = Number.isNaN(d.getTime()) ? raw : d.toISOString();
+        continue;
+      }
+      // text_required, and every *_selection type (the picked candidate's
+      // id, or hand-typed replacement text) — passed straight through.
+      patch[b.field] = raw;
     }
     if (Object.keys(patch).length === 0) return;
     onCompleteDraft(row.id, patch);
@@ -265,25 +461,20 @@ function DraftCard({
     <ActionShell tone="warning" icon={<HelpCircle className="h-3.5 w-3.5 text-amber-600" />}>
       <p className="mb-1.5 font-medium">Needs a bit more — {humanizeKey(row.intent)}</p>
       <p className="mb-2 text-xs text-muted-foreground">&quot;{row.canonical_text}&quot;</p>
-      {blockers.length > 0 && (
-        <ul className="mb-2 list-disc space-y-0.5 pl-4 text-xs text-amber-800 dark:text-amber-400">
-          {blockers.map((b, i) => (
-            <li key={i}>{String(b)}</li>
-          ))}
-        </ul>
-      )}
       <ParamsPreview params={params} />
-      {editableKeys.length > 0 && (
-        <div className="mt-3 space-y-2 border-t border-border pt-2">
+      {blockers.length > 0 && (
+        <div className="mt-3 space-y-3 border-t border-border pt-2">
           <p className="text-xs font-medium text-muted-foreground">Fill in what&apos;s missing:</p>
-          {editableKeys.map((key) => (
-            <div key={key} className="space-y-1">
-              <Label className="text-xs">{humanizeKey(key)}</Label>
-              <Input
-                className="h-8 text-xs"
-                value={edits[key] ?? ""}
-                placeholder={params[key] == null ? "" : String(params[key])}
-                onChange={(e) => setEdits((s) => ({ ...s, [key]: e.target.value }))}
+          {blockers.map((b) => (
+            <div key={b.id} className="space-y-1">
+              {b.type !== "confirmation_required" && (
+                <Label className="text-xs">{humanizeKey(b.field)}</Label>
+              )}
+              <p className="text-xs text-amber-800 dark:text-amber-400">{b.message}</p>
+              <BlockerField
+                blocker={b}
+                value={blockerEdits[b.id] ?? ""}
+                onChange={(v) => setBlockerEdits((s) => ({ ...s, [b.id]: v }))}
               />
             </div>
           ))}

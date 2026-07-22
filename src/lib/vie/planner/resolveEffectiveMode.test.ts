@@ -8,7 +8,21 @@
  */
 import { describe, expect, test } from "bun:test";
 import { resolveEffectiveMode } from "./index";
-import type { VieExecutionPolicy } from "../types";
+import type { PlannerBlocker, VieExecutionPolicy } from "../types";
+
+/** Minimal, valid PlannerBlocker fixture — resolveEffectiveMode() only ever
+ *  cares about array length, never a blocker's contents, so these tests
+ *  don't need realistic field values. Sprint AI-1.5: `blockers` is now
+ *  `PlannerBlocker[]` instead of `string[]`; this function's own logic —
+ *  `blockers.length > 0` — is completely unchanged, so only the literal
+ *  test fixtures below needed retyping. */
+const blocker = (message: string): PlannerBlocker => ({
+  id: "x",
+  type: "text_required",
+  message,
+  field: "x",
+  required: true,
+});
 
 const auto = (autoThreshold = 0.85): VieExecutionPolicy => ({ mode: "auto", autoThreshold });
 const confirmPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({
@@ -23,19 +37,25 @@ const draftPolicy = (autoThreshold = 0.85): VieExecutionPolicy => ({
 describe("resolveEffectiveMode", () => {
   describe("blockers always force draft, regardless of policy or confidence", () => {
     test("auto policy + high confidence + a blocker -> draft", () => {
-      expect(resolveEffectiveMode(auto(), 0.99, ["ambiguous customer"])).toBe("draft");
+      expect(resolveEffectiveMode(auto(), 0.99, [blocker("ambiguous customer")])).toBe("draft");
     });
 
     test("confirm policy + a blocker -> draft", () => {
-      expect(resolveEffectiveMode(confirmPolicy(), 0.99, ["ambiguous customer"])).toBe("draft");
+      expect(resolveEffectiveMode(confirmPolicy(), 0.99, [blocker("ambiguous customer")])).toBe(
+        "draft",
+      );
     });
 
     test("draft policy + a blocker -> draft (already the ceiling)", () => {
-      expect(resolveEffectiveMode(draftPolicy(), 0.99, ["ambiguous customer"])).toBe("draft");
+      expect(resolveEffectiveMode(draftPolicy(), 0.99, [blocker("ambiguous customer")])).toBe(
+        "draft",
+      );
     });
 
     test("more than one blocker still just needs length > 0 -> draft", () => {
-      expect(resolveEffectiveMode(auto(), 0.99, ["blocker one", "blocker two"])).toBe("draft");
+      expect(
+        resolveEffectiveMode(auto(), 0.99, [blocker("blocker one"), blocker("blocker two")]),
+      ).toBe("draft");
     });
   });
 

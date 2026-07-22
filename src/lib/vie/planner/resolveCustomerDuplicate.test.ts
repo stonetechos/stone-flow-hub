@@ -13,6 +13,10 @@
  * not a hypothetical one. See moduleMocks.ts's header comment for the full
  * writeup and the fix (one shared, full-shape mock object per module,
  * reused by every file that needs it).
+ *
+ * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * (type "confirmation_required", with the matched customer as its sole
+ * `candidates` entry) instead of a plain string.
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { customersApiMock, resetAllModuleMocks } from "../testSupport/moduleMocks";
@@ -54,8 +58,14 @@ describe("resolveCustomerDuplicate", () => {
       customer_code: "CUST-0042",
     }));
     const result = await resolveCustomerDuplicate("9876543210");
-    expect(result.blocker).toBe(
-      "A customer with this phone number already exists: Ramesh Patel (CUST-0042).",
-    );
+    expect(result.blocker).toEqual({
+      id: "mobile",
+      type: "confirmation_required",
+      message: "A customer with this phone number already exists: Ramesh Patel (CUST-0042).",
+      field: "mobile",
+      required: true,
+      currentValue: "9876543210",
+      candidates: [{ id: "cust-abc-123", label: "Ramesh Patel (CUST-0042)" }],
+    });
   });
 });

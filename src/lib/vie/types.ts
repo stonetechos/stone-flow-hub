@@ -221,6 +221,120 @@ export interface VieActionContext {
   entityId?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Structured Planner blockers (Sprint AI-1.5).
+//
+// Before this sprint, `VieExecutionPlan.blockers` was `string[]` — a
+// human-readable sentence per unresolved prerequisite ("Customer ambiguous",
+// "No quantity was extracted..."). That was fine for a completion-report
+// bullet point but unusable for a UI: rendering a real control (a radio list
+// of candidate customers, a date picker, a number input) from an English
+// sentence means parsing prose, which is exactly the "UI performs AI
+// reasoning" anti-pattern this sprint exists to remove. `PlannerBlocker`
+// replaces the string with the same information a human already had (via
+// `message`, kept verbatim for anything that still just displays text) PLUS
+// the structure a renderer needs to pick the right control without parsing
+// anything: which kind of blocker it is (`type`), which `plan.params` key it
+// resolves (`field`), and — for anything selection-shaped — the real
+// candidate records the resolver already had in hand when it decided the
+// match was ambiguous (`candidates`).
+//
+// This does NOT change what makes a plan blocked: `resolveEffectiveMode()`
+// still only ever asks `blockers.length > 0` (see planner/index.ts) — the
+// execution-mode downgrade rule from ADR-0001 §6 is completely unchanged.
+// This only changes what each blocker IS, not whether one exists or what it
+// does once it does.
+// ---------------------------------------------------------------------------
+
+/**
+ * The closed set of blocker shapes a renderer needs to know about. Every
+ * blocker any existing intent produces today fits one of these; a future
+ * intent adding a genuinely new kind of unresolved prerequisite should add
+ * a new member here rather than overloading an existing one (see
+ * docs/VIE-Structured-Blockers.md "How future intents add blockers").
+ *
+ * "vendor_selection" has no producer yet (VIE has no vendor-facing intent
+ * today) — included because the sprint's own model names it explicitly as
+ * a real future case (a purchase/RFQ intent would need it) and the type is
+ * free to declare; the UI's generic renderer (see VieActionCard.tsx) treats
+ * it identically to every other `*_selection` type, so adding the producer
+ * later needs no UI change.
+ */
+export const PLANNER_BLOCKER_TYPES = [
+  "customer_selection",
+  "vendor_selection",
+  "project_selection",
+  "product_selection",
+  "stone_selection",
+  "colour_selection",
+  "finish_selection",
+  "thickness_selection",
+  "quantity_required",
+  "unit_price_required",
+  "delivery_date_required",
+  "date_required",
+  "text_required",
+  "number_required",
+  "confirmation_required",
+] as const;
+export type PlannerBlockerType = (typeof PLANNER_BLOCKER_TYPES)[number];
+
+/** One option a `*_selection`/`confirmation_required` blocker offers —
+ *  always a REAL record the resolver already fetched (a customer, a
+ *  project, ...), never invented for display. `subtitle` is whatever
+ *  secondary identifier that record type already shows elsewhere (a
+ *  customer/project code) — optional because not every candidate kind has
+ *  one. */
+export interface PlannerBlockerCandidate {
+  id: string;
+  label: string;
+  subtitle?: string;
+}
+
+/**
+ * One unresolved prerequisite a Planner `planX()` function found while
+ * preparing a plan. See docs/VIE-Structured-Blockers.md for the full
+ * rendering contract and lifecycle.
+ */
+export interface PlannerBlocker {
+  /** Stable within one plan — every current producer uses `field` itself
+   *  (fields are unique per blocker instance within a single plan, even
+   *  across create_quotation's per-line-item blockers, since those fields
+   *  are already index-qualified — see `field` below), so this never needs
+   *  a separate counter or random id. */
+  id: string;
+  type: PlannerBlockerType;
+  /** Human-readable, same content a pre-Sprint-AI-1.5 string blocker would
+   *  have carried — still shown as-is by any renderer (or log line) that
+   *  doesn't special-case `type`, so nothing that only ever displayed text
+   *  loses information. */
+  message: string;
+  /** Dot-path into `VieExecutionPlan.params` this blocker resolves once
+   *  filled in, e.g. `"customer_id"`, `"scheduled_at"`, or
+   *  `"items.0.quantity"` for a per-line-item field. `completeDraftAction`'s
+   *  `patch` is still a flat `Record<string, unknown>` keyed by top-level
+   *  `params` keys (unchanged — see vie.functions.ts); a dotted `field` on
+   *  a nested blocker is informational for the renderer today, not (yet) a
+   *  literal patch key the Workflow Engine merges positionally. */
+  field: string;
+  /** Every blocker any current Planner function produces is a hard
+   *  requirement — a non-empty `blockers` array always forces "draft"
+   *  (resolveEffectiveMode, unchanged). This field exists so the model
+   *  doesn't have to be revisited if a future intent ever wants to record
+   *  an advisory, non-blocking note alongside real blockers — none does
+   *  today, so every producer in this codebase sets it `true`. */
+  required: boolean;
+  /** Whatever raw value is already known for this field — the extracted
+   *  text that failed to resolve uniquely, for a selection blocker; omitted
+   *  (never fabricated as `null`) when nothing was extracted at all. */
+  currentValue?: unknown;
+  /** Only present on `*_selection` and `confirmation_required` blockers —
+   *  the resolver's own real match list, already fetched, never a second
+   *  lookup by the UI. Absent (not empty) when the blocker type has no
+   *  concept of candidates (e.g. `quantity_required`). */
+  candidates?: PlannerBlockerCandidate[];
+}
+
 /** Prepared by planAction(). Contains fully-resolved parameters ready to
  *  hand to the Workflow Engine's registered handler. The Planner NEVER
  *  writes to the database — see ADR-0001 §2/§3. */
@@ -234,8 +348,10 @@ export interface VieExecutionPlan {
   effectiveMode: VieExecutionMode;
   /** Unresolved prerequisites (ambiguous/missing customer, missing date,
    *  ...). Any non-empty blockers list forces effectiveMode to "draft"
-   *  regardless of the configured policy. */
-  blockers: string[];
+   *  regardless of the configured policy — unchanged from before Sprint
+   *  AI-1.5; only the shape of each entry changed, from a plain string to
+   *  a PlannerBlocker (see above). */
+  blockers: PlannerBlocker[];
 }
 
 // ---------------------------------------------------------------------------

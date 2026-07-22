@@ -7,15 +7,25 @@
  * floating-assistant call can pass "the record currently open" the same
  * way NL Search already does, with no change to this function. Falls back
  * to a customer-name lookup extracted from the utterance itself.
+ *
+ * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` (types.ts),
+ * same discipline as resolveCustomer.ts — built here, where the real
+ * candidate list already exists, rather than reconstructed later from
+ * formatted text.
  */
 import { listCustomers } from "@/lib/customers/api";
-import type { VieActionContext } from "../types";
+import type { PlannerBlocker, VieActionContext } from "../types";
 
 export interface FollowupTargetResolution {
   entityType: string | null;
   entityId: string | null;
-  blocker: string | null;
+  blocker: PlannerBlocker | null;
 }
+
+/** Same generous, non-prose-truncated cap as resolveCustomer.ts — see that
+ *  file's own comment for why a UI candidate list doesn't need the
+ *  first-5-then-ellipsis limit a formatted sentence did. */
+const MAX_CANDIDATES = 20;
 
 export async function resolveFollowupTarget(
   targetName: string | undefined,
@@ -29,7 +39,13 @@ export async function resolveFollowupTarget(
     return {
       entityType: null,
       entityId: null,
-      blocker: "No customer/record name was extracted and no current-page context was supplied.",
+      blocker: {
+        id: "entity_id",
+        type: "text_required",
+        message: "No customer/record name was extracted and no current-page context was supplied.",
+        field: "target_name",
+        required: true,
+      },
     };
   }
 
@@ -39,7 +55,15 @@ export async function resolveFollowupTarget(
     return {
       entityType: null,
       entityId: null,
-      blocker: `No existing customer matches "${targetName}".`,
+      blocker: {
+        id: "entity_id",
+        type: "customer_selection",
+        message: `No existing customer matches "${targetName}".`,
+        field: "entity_id",
+        required: true,
+        currentValue: targetName,
+        candidates: [],
+      },
     };
   }
 
@@ -47,7 +71,15 @@ export async function resolveFollowupTarget(
     return {
       entityType: null,
       entityId: null,
-      blocker: `"${targetName}" matches ${matches.length} customers — cannot determine which one.`,
+      blocker: {
+        id: "entity_id",
+        type: "customer_selection",
+        message: `"${targetName}" matches ${matches.length} customers — choose one.`,
+        field: "entity_id",
+        required: true,
+        currentValue: targetName,
+        candidates: matches.slice(0, MAX_CANDIDATES).map((m) => ({ id: m.id, label: m.name })),
+      },
     };
   }
 

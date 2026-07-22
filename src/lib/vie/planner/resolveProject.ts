@@ -31,14 +31,21 @@
  * projects only. That is inherited behavior from reusing the existing
  * module API, not a new decision made by this resolver: an
  * archived/inactive project is treated the same as "no project" here.
+ *
+ * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` (types.ts),
+ * same discipline as resolveCustomer.ts/resolveFollowupTarget.ts.
  */
 import { listProjectsByCustomer } from "@/lib/projects/api";
+import type { PlannerBlocker } from "../types";
 
 export interface ProjectResolution {
   projectId: string | null;
   projectLabel: string | null;
-  blocker: string | null;
+  blocker: PlannerBlocker | null;
 }
+
+/** Same generous, non-prose-truncated cap as resolveCustomer.ts. */
+const MAX_CANDIDATES = 20;
 
 /**
  * @param customerId The already-resolved customer_id to find a project
@@ -73,7 +80,13 @@ export async function resolveProject(
     return {
       projectId: null,
       projectLabel: null,
-      blocker: "No resolved customer to look up a project for.",
+      blocker: {
+        id: "project_id",
+        type: "project_selection",
+        message: "No resolved customer to look up a project for.",
+        field: "project_id",
+        required: true,
+      },
     };
   }
 
@@ -99,23 +112,33 @@ export async function resolveProject(
     return {
       projectId: null,
       projectLabel: null,
-      blocker: `${who} has no existing project to quote against.`,
+      blocker: {
+        id: "project_id",
+        type: "project_selection",
+        message: `${who} has no existing project to quote against.`,
+        field: "project_id",
+        required: true,
+        candidates: [],
+      },
     };
   }
 
   if (candidates.length > 1) {
-    const labels = candidates
-      .slice(0, 5)
-      .map((m) => `${m.name} (${m.project_code})`)
-      .join(", ");
-
     return {
       projectId: null,
       projectLabel: null,
-      blocker:
-        candidates.length > 5
-          ? `${who} has ${candidates.length} projects: ${labels}, ...`
-          : `${who} has ${candidates.length} projects: ${labels}.`,
+      blocker: {
+        id: "project_id",
+        type: "project_selection",
+        message: `${who} has ${candidates.length} projects — choose one.`,
+        field: "project_id",
+        required: true,
+        candidates: candidates.slice(0, MAX_CANDIDATES).map((m) => ({
+          id: m.id,
+          label: m.name,
+          subtitle: m.project_code,
+        })),
+      },
     };
   }
 

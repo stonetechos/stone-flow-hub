@@ -14,11 +14,17 @@
  * log_enquiry/note_followup to LOOK UP a record), this resolver never
  * returns an id to link against — create_customer always prepares a new
  * record; a match here is purely a safety check, not a lookup result.
+ *
+ * Sprint AI-1.5: a match is reported as a `confirmation_required` blocker
+ * (not a `*_selection` — there's nothing to pick between, just one existing
+ * record the employee needs to see before deciding whether to proceed) with
+ * that record as its sole candidate, for reference/linking, not a picker.
  */
 import { findCustomerByPhone } from "@/lib/customers/api";
+import type { PlannerBlocker } from "../types";
 
 export interface CustomerDuplicateResolution {
-  blocker: string | null;
+  blocker: PlannerBlocker | null;
 }
 
 export async function resolveCustomerDuplicate(
@@ -35,6 +41,14 @@ export async function resolveCustomerDuplicate(
   if (!existing) return { blocker: null };
 
   return {
-    blocker: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
+    blocker: {
+      id: "mobile",
+      type: "confirmation_required",
+      message: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
+      field: "mobile",
+      required: true,
+      currentValue: mobile,
+      candidates: [{ id: existing.id, label: `${existing.name} (${existing.customer_code})` }],
+    },
   };
 }

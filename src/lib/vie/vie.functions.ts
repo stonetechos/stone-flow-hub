@@ -155,7 +155,11 @@ export const understandAndStage = createServerFn({ method: "POST" })
         // Same Record<string, unknown> (via VieExecutionPlan.params) issue as
         // entities above.
         plan: plan ? toJson(plan) : null,
-        plan_blockers: plan?.blockers ?? null,
+        // Sprint AI-1.5: blockers are now PlannerBlocker[] (with an optional
+        // `currentValue?: unknown`), so this needs the same toJson() round-trip
+        // `plan` above already gets — a plain `plan?.blockers ?? null` assignment
+        // is no longer structurally compatible with the generated Json type.
+        plan_blockers: plan ? toJson(plan.blockers) : null,
         status: initialStatus,
         error_message: plan
           ? null

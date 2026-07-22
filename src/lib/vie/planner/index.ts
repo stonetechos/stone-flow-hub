@@ -12,6 +12,7 @@ import {
   createQuotationEntitiesSchema,
   logEnquiryEntitiesSchema,
   noteFollowupEntitiesSchema,
+  type PlannerBlocker,
   type VieActionContext,
   type VieExecutionMode,
   type VieExecutionPlan,
@@ -34,11 +35,15 @@ import { resolveProject } from "./resolveProject";
  * the threshold, downgrading one step to "confirm" otherwise. Configured
  * "confirm" and "draft" policies are a ceiling, never upgraded by
  * confidence — that's the point of setting them per-intent.
+ *
+ * Sprint AI-1.5: `blockers` is now `PlannerBlocker[]` (types.ts) instead of
+ * `string[]` — this function's own logic is completely unchanged, it still
+ * only ever asks `blockers.length > 0`. Only the element type changed.
  */
 export function resolveEffectiveMode(
   policy: VieExecutionPolicy,
   confidence: number,
-  blockers: string[],
+  blockers: PlannerBlocker[],
 ): VieExecutionMode {
   if (blockers.length > 0) return "draft";
   if (policy.mode === "auto") {
@@ -55,7 +60,7 @@ async function planLogEnquiry(understanding: VieUnderstanding): Promise<VieExecu
     resolveProduct(entities.productText),
   ]);
 
-  const blockers: string[] = [];
+  const blockers: PlannerBlocker[] = [];
   if (customer.blocker) blockers.push(customer.blocker);
 
   const unit = entities.unit ?? "sqft";
@@ -95,10 +100,16 @@ async function planNoteFollowup(
 
   const target = await resolveFollowupTarget(entities.targetName, context);
 
-  const blockers: string[] = [];
+  const blockers: PlannerBlocker[] = [];
   if (target.blocker) blockers.push(target.blocker);
   if (entities.relativeDays === undefined) {
-    blockers.push("No follow-up date could be determined from the utterance.");
+    blockers.push({
+      id: "scheduled_at",
+      type: "date_required",
+      message: "No follow-up date could be determined from the utterance.",
+      field: "scheduled_at",
+      required: true,
+    });
   }
 
   // Date arithmetic is deterministic application code, not something the LLM
@@ -133,10 +144,16 @@ async function planNoteFollowup(
 async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieExecutionPlan> {
   const entities = createCustomerEntitiesSchema.parse(understanding.entities);
 
-  const blockers: string[] = [];
+  const blockers: PlannerBlocker[] = [];
 
   if (!entities.customerName) {
-    blockers.push("No customer name was extracted from the utterance.");
+    blockers.push({
+      id: "name",
+      type: "text_required",
+      message: "No customer name was extracted from the utterance.",
+      field: "name",
+      required: true,
+    });
   }
 
   // Same "10 digits after stripping non-digits" bar enquiryCreateSchema's
@@ -146,7 +163,14 @@ async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieE
   // UX contract).
   const normalizedMobile = (entities.mobile ?? "").replace(/\D/g, "");
   if (normalizedMobile.length < 10) {
-    blockers.push("No valid mobile number was extracted from the utterance.");
+    blockers.push({
+      id: "mobile",
+      type: "text_required",
+      message: "No valid mobile number was extracted from the utterance.",
+      field: "mobile",
+      required: true,
+      currentValue: entities.mobile,
+    });
   } else {
     const duplicate = await resolveCustomerDuplicate(entities.mobile);
     if (duplicate.blocker) blockers.push(duplicate.blocker);
@@ -255,7 +279,7 @@ async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieE
 async function planCreateQuotation(understanding: VieUnderstanding): Promise<VieExecutionPlan> {
   const entities = createQuotationEntitiesSchema.parse(understanding.entities);
 
-  const blockers: string[] = [];
+  const blockers: PlannerBlocker[] = [];
   const rawItems = entities.items ?? [];
 
   // Kicked off before the sequential customer -> project chain below — no
@@ -282,14 +306,26 @@ async function planCreateQuotation(understanding: VieUnderstanding): Promise<Vie
     const product = resolvedProducts[index];
 
     if (item.quantity === undefined) {
-      blockers.push(`Line item ${index + 1}: no quantity was extracted from the utterance.`);
+      blockers.push({
+        id: `items.${index}.quantity`,
+        type: "quantity_required",
+        message: `Line item ${index + 1}: no quantity was extracted from the utterance.`,
+        field: `items.${index}.quantity`,
+        required: true,
+      });
     }
     // Milestone 6: mirrors the missing-quantity check immediately above —
     // never fabricated, always a real blocker, never silently deferred to
     // execution time (see the function header comment for the full
     // before/after rationale).
     if (item.rate === undefined) {
-      blockers.push(`Line item ${index + 1}: no unit price was extracted from the utterance.`);
+      blockers.push({
+        id: `items.${index}.unit_price`,
+        type: "unit_price_required",
+        message: `Line item ${index + 1}: no unit price was extracted from the utterance.`,
+        field: `items.${index}.unit_price`,
+        required: true,
+      });
     }
 
     return {

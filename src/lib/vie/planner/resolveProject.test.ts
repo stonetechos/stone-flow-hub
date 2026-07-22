@@ -13,6 +13,14 @@
  * when the whole suite runs together. This file follows that pattern from
  * its first line specifically to avoid reintroducing the cross-file
  * pollution bug Milestone 3 found and fixed for @/lib/customers/api.
+ *
+ * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * instead of a plain string. The old "more than 5 matches -> ellipsis" and
+ * "exactly 5 matches -> no ellipsis" tests pinned prose-truncation behavior
+ * that no longer exists under the new design (candidates are capped
+ * generously at 20, see resolveProject.ts's MAX_CANDIDATES, with no
+ * ellipsis since a rendered list isn't prose) — replaced below with a test
+ * of that 20-item cap instead.
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { projectsApiMock, resetAllModuleMocks } from "../testSupport/moduleMocks";
@@ -33,25 +41,31 @@ describe("resolveProject", () => {
       const result = await resolveProject(undefined);
       expect(result.projectId).toBeNull();
       expect(result.projectLabel).toBeNull();
-      expect(result.blocker).toBe("No resolved customer to look up a project for.");
+      expect(result.blocker).toEqual({
+        id: "project_id",
+        type: "project_selection",
+        message: "No resolved customer to look up a project for.",
+        field: "project_id",
+        required: true,
+      });
       expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
     });
 
     test("whitespace-only customerId -> treated the same as no customerId", async () => {
       const result = await resolveProject("   ");
-      expect(result.blocker).toBe("No resolved customer to look up a project for.");
+      expect(result.blocker?.message).toBe("No resolved customer to look up a project for.");
       expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
     });
 
     test("empty-string customerId -> treated the same as no customerId", async () => {
       const result = await resolveProject("");
-      expect(result.blocker).toBe("No resolved customer to look up a project for.");
+      expect(result.blocker?.message).toBe("No resolved customer to look up a project for.");
       expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
     });
 
     test("a customerLabel alone, with no customerId, still blocks without a lookup", async () => {
       const result = await resolveProject(undefined, "Ramesh Patel");
-      expect(result.blocker).toBe("No resolved customer to look up a project for.");
+      expect(result.blocker?.message).toBe("No resolved customer to look up a project for.");
       expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
     });
   });
@@ -62,19 +76,30 @@ describe("resolveProject", () => {
       const result = await resolveProject("cust-1", "Ramesh Patel");
       expect(result.projectId).toBeNull();
       expect(result.projectLabel).toBeNull();
-      expect(result.blocker).toBe('"Ramesh Patel" has no existing project to quote against.');
+      expect(result.blocker).toEqual({
+        id: "project_id",
+        type: "project_selection",
+        message: '"Ramesh Patel" has no existing project to quote against.',
+        field: "project_id",
+        required: true,
+        candidates: [],
+      });
     });
 
     test("blocker falls back to a generic phrase when no label was supplied", async () => {
       projectsApiMock.listProjectsByCustomer.mockImplementation(async () => []);
       const result = await resolveProject("cust-1");
-      expect(result.blocker).toBe("This customer has no existing project to quote against.");
+      expect(result.blocker?.message).toBe(
+        "This customer has no existing project to quote against.",
+      );
     });
 
     test("blocker falls back to a generic phrase when the label is explicitly null", async () => {
       projectsApiMock.listProjectsByCustomer.mockImplementation(async () => []);
       const result = await resolveProject("cust-1", null);
-      expect(result.blocker).toBe("This customer has no existing project to quote against.");
+      expect(result.blocker?.message).toBe(
+        "This customer has no existing project to quote against.",
+      );
     });
   });
 
@@ -127,9 +152,17 @@ describe("resolveProject", () => {
       ]);
       const result = await resolveProject("cust-1", "Ramesh Patel");
       expect(result.projectId).toBeNull();
-      expect(result.blocker).toBe(
-        '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
-      );
+      expect(result.blocker).toEqual({
+        id: "project_id",
+        type: "project_selection",
+        message: '"Ramesh Patel" has 2 projects — choose one.',
+        field: "project_id",
+        required: true,
+        candidates: [
+          { id: "proj-1", label: "Shah Residence", subtitle: "PRJ-0001" },
+          { id: "proj-2", label: "Shah Villa", subtitle: "PRJ-0002" },
+        ],
+      });
     });
 
     test("blocker uses the generic phrase when no label was supplied", async () => {
@@ -148,43 +181,23 @@ describe("resolveProject", () => {
         },
       ]);
       const result = await resolveProject("cust-1");
-      expect(result.blocker).toBe(
-        "This customer has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).",
-      );
+      expect(result.blocker?.message).toBe("This customer has 2 projects — choose one.");
     });
 
-    test("more than 5 matches -> lists only the first 5, with a trailing ellipsis", async () => {
+    test("more than 20 matches -> candidates capped at 20, message still reports the true count", async () => {
       projectsApiMock.listProjectsByCustomer.mockImplementation(async () =>
-        Array.from({ length: 7 }, (_, i) => ({
+        Array.from({ length: 25 }, (_, i) => ({
           id: `proj-${i}`,
           name: `Project ${i}`,
-          project_code: `PRJ-000${i}`,
+          project_code: `PRJ-0${i}`,
           customer_id: "cust-1",
         })),
       );
 
       const result = await resolveProject("cust-1", "Ramesh Patel");
 
-      expect(result.blocker).toContain("has 7 projects:");
-      expect(result.blocker?.endsWith(", ...")).toBe(true);
-      expect((result.blocker?.match(/PRJ-000/g) ?? []).length).toBe(5);
-    });
-
-    test("exactly 5 matches -> lists all 5, no trailing ellipsis", async () => {
-      projectsApiMock.listProjectsByCustomer.mockImplementation(async () =>
-        Array.from({ length: 5 }, (_, i) => ({
-          id: `proj-${i}`,
-          name: `Project ${i}`,
-          project_code: `PRJ-000${i}`,
-          customer_id: "cust-1",
-        })),
-      );
-
-      const result = await resolveProject("cust-1", "Ramesh Patel");
-
-      expect(result.blocker).toContain("has 5 projects:");
-      expect(result.blocker?.endsWith(", ...")).toBe(false);
-      expect(result.blocker?.endsWith(".")).toBe(true);
+      expect(result.blocker?.message).toBe('"Ramesh Patel" has 25 projects — choose one.');
+      expect(result.blocker?.candidates).toHaveLength(20);
     });
   });
 
@@ -200,7 +213,14 @@ describe("resolveProject", () => {
     expect(result).toEqual({
       projectId: null,
       projectLabel: null,
-      blocker: "This customer has no existing project to quote against.",
+      blocker: {
+        id: "project_id",
+        type: "project_selection",
+        message: "This customer has no existing project to quote against.",
+        field: "project_id",
+        required: true,
+        candidates: [],
+      },
     });
   });
 
@@ -231,9 +251,7 @@ describe("resolveProject", () => {
       ]);
       const result = await resolveProject("cust-1", "Ramesh Patel", "Nonexistent Project");
       expect(result.projectId).toBeNull();
-      expect(result.blocker).toBe(
-        '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
-      );
+      expect(result.blocker?.message).toBe('"Ramesh Patel" has 2 projects — choose one.');
     });
 
     test("a hint matching more than one candidate falls back to the full candidate set (still ambiguous, never a wrong guess)", async () => {
@@ -243,9 +261,7 @@ describe("resolveProject", () => {
       ]);
       const result = await resolveProject("cust-1", "Ramesh Patel", "Shah");
       expect(result.projectId).toBeNull();
-      expect(result.blocker).toBe(
-        '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
-      );
+      expect(result.blocker?.message).toBe('"Ramesh Patel" has 2 projects — choose one.');
     });
 
     test("a hint is irrelevant and ignored entirely when there is only one candidate anyway", async () => {
@@ -264,9 +280,7 @@ describe("resolveProject", () => {
       ]);
       const result = await resolveProject("cust-1", "Ramesh Patel", "   ");
       expect(result.projectId).toBeNull();
-      expect(result.blocker).toBe(
-        '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
-      );
+      expect(result.blocker?.message).toBe('"Ramesh Patel" has 2 projects — choose one.');
     });
 
     test("omitting the hint entirely (existing call sites, pre-Milestone-6) behaves exactly as before", async () => {
