@@ -241,7 +241,7 @@ function SettingsPage() {
                     Project → Quotation → Sales Order → Procurement → Production → Dispatch →
                     Installation → Invoice → Receipt → Follow-up) on each detail page.
                     Recommendations only — nothing happens automatically, and you can always Skip
-                    for now. When disabled, Stone Tech OS behaves exactly as before with no prompts.
+                    for now. When disabled, STOS behaves exactly as before with no prompts.
                   </p>
                 </div>
                 <Switch

@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS table — Phase D.
+ * STOS table — Phase D.
  *
  * Calm, editorial density. Header uses uppercase 11px caps, body rows
  * transition to `--surface-card-hover` on hover, selected rows use

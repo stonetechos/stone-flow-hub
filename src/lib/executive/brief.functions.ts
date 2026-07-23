@@ -138,7 +138,7 @@ export const generateBusinessBrief = createServerFn({ method: "POST" })
       {
         role: "system" as const,
         content: [
-          "You are the executive analyst for Stone Tech OS (natural-stone ERP, India).",
+          "You are the executive analyst for STOS (natural-stone ERP, India).",
           "Write a concise business brief for the owner. Use the JSON snapshot as the ONLY source of truth.",
           "Never invent numbers or entities absent from the snapshot; if data is missing say so.",
           "Structure: 1) Business Snapshot, 2) What's Working, 3) Sales Opportunities, 4) Risks (high-risk projects, delayed procurement, installation delays, slow-paying customers, vendor risks, cash flow bottlenecks, material shortages), 5) Recommended Actions.",

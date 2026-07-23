@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — service worker (Phase G.10A: PWA Foundation).
+ * STOS — service worker (Phase G.10A: PWA Foundation).
  *
  * Scope is intentionally narrow: cache the static app shell (built JS/CSS,
  * fonts, icons) so the app installs and boots offline, while every request
@@ -12,8 +12,8 @@
  */
 
 const CACHE_VERSION = "g10a-2";
-const STATIC_CACHE = `stone-tech-os-static-${CACHE_VERSION}`;
-const PAGES_CACHE = `stone-tech-os-pages-${CACHE_VERSION}`;
+const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
+const PAGES_CACHE = `stos-pages-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
 // Small, known-stable set precached at install. Hashed build output
@@ -145,7 +145,7 @@ self.addEventListener("fetch", (event) => {
 // IndexedDB pending-operations queue (see src/lib/pwa/sync-queue.ts).
 // Genuine gap note: no ERP mutation currently enqueues into that queue —
 // this phase ships the primitive only, per "PWA Foundation" scope.
-const SYNC_TAG = "stone-tech-os-pending-ops";
+const SYNC_TAG = "stos-pending-ops";
 
 self.addEventListener("sync", (event) => {
   if (event.tag !== SYNC_TAG) return;
@@ -169,9 +169,9 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: "Stone Tech OS", body: event.data.text() };
+    payload = { title: "STOS", body: event.data.text() };
   }
-  const title = payload.title || "Stone Tech OS";
+  const title = payload.title || "STOS";
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payload.body || "",

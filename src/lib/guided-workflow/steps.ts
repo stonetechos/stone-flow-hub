@@ -2,7 +2,7 @@
  * Guided Workflow Assistant — pure step map.
  *
  * Given a source entity that the user has just landed on (or completed), this
- * returns the recommended next step in the Stone Tech OS lifecycle:
+ * returns the recommended next step in the STOS lifecycle:
  *
  *   Customer → Enquiry → Project → Quotation → Sales Order
  *     → Purchase Order → Production → Dispatch → Installation

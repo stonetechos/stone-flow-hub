@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Stone Tech OS</string>
-    <string name="title_activity_main">Stone Tech OS</string>
+    <string name="app_name">STOS</string>
+    <string name="title_activity_main">STOS</string>
     <string name="package_name">in.vedoravision.stonetechos.app</string>
     <string name="custom_url_scheme">in.vedoravision.stonetechos.app</string>
 </resources>

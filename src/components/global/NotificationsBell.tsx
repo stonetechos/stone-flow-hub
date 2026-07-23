@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Notification centre.
+ * STOS — Notification centre.
  *
  * Presentation only. Groups notifications into Unread / Today / Yesterday
  * / Earlier tabs and follows STDL surface and text tokens. Realtime-ready:

@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Form Layout primitives (Phase 5, UI v0.8)
+ * STOS — Form Layout primitives (Phase 5, UI v0.8)
  *
  * Full-page create/edit experience. Typography-first, minimal borders,
  * predictable rhythm. Every major form composes:

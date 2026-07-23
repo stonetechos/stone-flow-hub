@@ -11,15 +11,15 @@
   },
   "mcp": {
     "server": {
-      "name": "stone-tech-os-mcp",
+      "name": "stos-mcp",
       "version": "1.0.0",
-      "title": "Stone Tech OS"
+      "title": "STOS"
     },
     "tools": [
       {
         "name": "whoami",
         "title": "Who am I",
-        "description": "Return the signed-in Stone Tech OS user's id, email, display name and roles. Use this to confirm the MCP connection is bound to the right account.",
+        "description": "Return the signed-in STOS user's id, email, display name and roles. Use this to confirm the MCP connection is bound to the right account.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

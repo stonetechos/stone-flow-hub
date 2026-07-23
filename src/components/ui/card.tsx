@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS card — Phase D.
+ * STOS card — Phase D.
  *
  * Quiet by default: hairline border on the card surface, zero shadow.
  * Variants let modules opt in to more prominent grouping without

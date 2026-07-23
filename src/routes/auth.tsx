@@ -149,7 +149,7 @@ function HeroPanel({ className }: { className?: string }) {
       <div className="relative z-10 mt-16">
         <QuarryLines />
         <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
-          Stone Tech OS · v1.0
+          STOS · v1.0
         </p>
       </div>
     </aside>
@@ -273,7 +273,7 @@ function FormArea({ flow }: { flow: string }) {
           tone="danger"
           icon={ShieldOff}
           title="Access denied"
-          body="You don't have permission to view that area. If you believe this is a mistake, contact your Stone Tech OS administrator."
+          body="You don't have permission to view that area. If you believe this is a mistake, contact your STOS administrator."
           primary={{ label: "Back to sign in", to: "/auth" }}
         />
       );
@@ -410,7 +410,7 @@ function SignInCard() {
   return (
     <AuthCard
       eyebrow="Welcome back"
-      title="Sign in to Stone Tech OS"
+      title="Sign in to STOS"
       description="Sign in using your company credentials."
       footer={
         <span>
@@ -620,7 +620,7 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw error;
-      toast.success(invite ? "Welcome to Stone Tech OS" : "Password updated");
+      toast.success(invite ? "Welcome to STOS" : "Password updated");
       await navigate({ to: "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
@@ -634,7 +634,7 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
   return (
     <AuthCard
       eyebrow={invite ? "Accept your invite" : "Set a new password"}
-      title={invite ? "Welcome to Stone Tech OS" : "Choose a new password"}
+      title={invite ? "Welcome to STOS" : "Choose a new password"}
       description={
         invite
           ? "Create a password to activate your account. You'll be signed in immediately."

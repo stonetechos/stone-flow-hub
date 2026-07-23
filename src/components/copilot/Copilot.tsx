@@ -176,7 +176,7 @@ function deriveContext(path: string) {
     entity: "app",
     entityId: undefined,
     suggestions: [
-      "How do I navigate Stone Tech OS?",
+      "How do I navigate STOS?",
       "Where do I find real-time business priorities?",
     ],
   };

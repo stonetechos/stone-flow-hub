@@ -76,7 +76,7 @@ export const generateProcurementHealth = createServerFn({ method: "POST" })
 
     const { chatJson } = await import("@/lib/ai/gateway.server");
     const system = [
-      "You are the Stone Tech OS Procurement Health analyst.",
+      "You are the STOS Procurement Health analyst.",
       "Analyse the raw facts and return a JSON report grading procurement health across these dimensions:",
       "vendor_reliability, material_quality, price_stability, delay_prediction, cash_flow, project_risk, payment_priority, procurement_priority.",
       "Every finding MUST include a specific, evidence-based explanation citing numbers or vendor names from the facts.",

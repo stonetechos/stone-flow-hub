@@ -99,12 +99,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      { title: "Stone Tech OS" },
+      { title: "STOS" },
       {
         name: "description",
         content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
       },
-      { name: "author", content: "Stone Tech OS" },
+      { name: "author", content: "STOS" },
       // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
       // the branding primary in src/lib/branding/index.ts; background here
       // matches the icon tile so browser chrome doesn't clash with the mark.
@@ -112,15 +112,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Stone Tech OS" },
-      { property: "og:title", content: "Stone Tech OS" },
+      { name: "apple-mobile-web-app-title", content: "STOS" },
+      { property: "og:title", content: "STOS" },
       {
         property: "og:description",
         content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Stone Tech OS" },
+      { name: "twitter:title", content: "STOS" },
       {
         name: "twitter:description",
         content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",

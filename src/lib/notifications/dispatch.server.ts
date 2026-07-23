@@ -339,10 +339,10 @@ export async function sendTest(
 ): Promise<DispatchResult> {
   const s = await getSettings(supabase);
   const isTest = (s.mode.mode ?? "test") === "test";
-  const subject = override?.subject ?? "Stone Tech OS — Test message";
+  const subject = override?.subject ?? "STOS — Test message";
   const body =
     override?.body ??
-    "This is a test message from Stone Tech OS. If you received it, delivery is configured correctly.";
+    "This is a test message from STOS. If you received it, delivery is configured correctly.";
   if (channel === "email") {
     const to = isTest ? s.mode.test_email || override?.to : override?.to;
     if (!to)
