@@ -621,3 +621,119 @@ investigation.)
   would benefit from a preview deployment, which this sandbox cannot
   produce (per the Sprint 1.8 audit — Lovable's Publish button is the only
   deploy trigger, and this sandbox has no Lovable dashboard access).
+
+---
+
+## Milestone 6 — Source-of-truth enforcement + final sprint report
+
+### What "GitHub as single source of truth" actually requires
+
+None of this is a code change — it's GitHub repository settings and a
+process change, neither reachable from this sandbox (no `gh` CLI, no
+GitHub API token, no push access). Documented here as a concrete,
+actionable checklist for whoever has admin access, rather than left as an
+abstract recommendation:
+
+1. **Merge the two lineages once**, per Milestone 5's plan, so `main` and
+   `feature/vie-quotation` stop being two independent histories that
+   happen to share an ancestor. Until this happens, "GitHub is the source
+   of truth" is not yet a true statement — there are two sources of truth
+   on GitHub itself.
+2. **Turn on branch protection on `main`**: require a pull request before
+   merging (no direct pushes, including from this sandbox or any future
+   Claude/Cowork session — route everything through a PR), require the CI
+   status checks to pass before merge. Given Milestone 4's fix, the checks
+   worth marking *required* right now are `Typecheck`, `Typecheck tests`,
+   `Verify auth context`, `Run tests`, and `Build` — not `Lint`, until the
+   315-file formatting debt is actually resolved (marking a
+   known-permanently-red check as required just blocks all merges
+   outright, the same failure mode this sprint's Milestone 4 fix
+   escaped).
+3. **Decide what to do about Lovable's direct-to-`main` auto-sync**
+   (`gpt-engineer-app[bot]` commits, confirmed in the Sprint 1.8 audit).
+   If Lovable's bot account has (or can be given) a branch-protection
+   bypass, live-editing in Lovable keeps working exactly as today, but
+   every bot commit should still be confirmed to trigger CI (even
+   non-blocking) so regressions are visible after the fact rather than
+   silently shipped. If it can't bypass, Lovable's auto-sync would need to
+   target a branch instead of `main` directly, with review before merging
+   — a bigger workflow change, flagged here as a decision to make
+   deliberately rather than discover by accident.
+4. **Standardize on short-lived branches for future work** — this
+   engagement's own `feature/vie-quotation` is the counter-example: 8
+   commits and multiple sprints deep before ever being compared against
+   `main`, which is exactly how a 19-file conflict surface accumulates
+   unnoticed. Future sessions (this sandbox or any other) should branch
+   from current `main`, open a PR reasonably promptly, and merge or
+   explicitly re-sync rather than let a long-lived branch drift for
+   weeks.
+5. **Re-confirm Lovable's live editor state has nothing beyond what's on
+   GitHub `main`** — the Sprint 1.8 audit flagged this as unverifiable
+   from this sandbox (no Lovable dashboard access) and it remains so;
+   check directly in Lovable's own project history/sync status before
+   treating `main` as complete.
+
+None of steps 1-5 were executed this sprint — all require either GitHub
+admin access, Lovable dashboard access, or the Milestone 5 merge decision
+this sandbox correctly declined to make blind. They're sequenced here
+(merge first, then protect, then decide on Lovable's bypass, then adopt
+the branching discipline going forward) because each depends on the one
+before it holding.
+
+### Files changed
+
+None — recommendations only, matching Milestones 2 and 5's pattern of
+"verification/analysis found nothing to safely change in-repo."
+
+### Verification
+
+```
+npm run typecheck        clean
+npm run typecheck:tests  clean
+eslint (full repo)       7409 pre-existing problems, unchanged baseline
+bun test                 323 pass, 0 fail
+npm run build             succeeds
+```
+
+### Remaining blockers
+
+All of Milestone 6's action items require credentials this sandbox
+doesn't have: GitHub repository admin access (branch protection, merge
+settings), Lovable Cloud dashboard access (confirming/reconfiguring the
+auto-sync target and bot permissions), and — transitively — the Milestone
+5 merge, which itself needs either more investigation time or a human
+product decision before it can be executed safely.
+
+---
+
+## Sprint 1.9 summary
+
+| Milestone | Outcome |
+|---|---|
+| 1. Fix Users & Roles | Root-caused the reported production bug to a deployment secrets gap (external, needs dashboard access) plus one genuine code gap (no dedicated UI for that failure mode) — fixed the code gap. |
+| 2. Verify Supabase server integration | Clean bill of health — auth middleware, service-role usage, `has_role` security-definer functions, and RLS coverage all verified correct. No changes needed. |
+| 3. Verify Cloudflare deployment configuration | Found and fixed a real bug: `workforce-daily`'s cron endpoint didn't implement its own documented auth contract and silently discarded write errors — likely never ran successfully in production. Also aligned `wrangler.jsonc` and `docs/DEPLOYMENT.md` with what's actually deployed. |
+| 4. Verify GitHub integration | Found that CI has been unable to reach its Test/Build steps on any commit since 2026-07-18 because of pre-existing lint debt blocking the pipeline early — fixed the pipeline structure without touching the underlying debt. |
+| 5. Eliminate deployment inconsistencies | Corrected the known branch-conflict surface from 2 files to the real 19, characterized the risk with actual evidence, and deliberately did not force a blind merge — left an evidence-based, ordered plan instead. |
+| 6. Source-of-truth enforcement | Documented the concrete, sequenced checklist for making GitHub `main` the enforced source of truth — all steps require access this sandbox doesn't have. |
+
+**Genuine production defects found and fixed this sprint:** 2 —
+`workforce-daily.ts`'s unimplemented auth contract (Milestone 3) and the
+missing dedicated UI for the server-config error on Users & Roles
+(Milestone 1). One CI-pipeline defect fixed (Milestone 4). One repo-level
+documentation/config drift fixed (Milestone 3's `wrangler.jsonc`/
+`CRON_SECRET` naming). Two milestones (2, 6) found nothing further to
+safely change. One milestone (5) produced analysis and a plan rather than
+a code change, by design.
+
+**What remains blocked on external credentials, consolidated:**
+Cloudflare Worker / Lovable Cloud secrets (`SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and confirming
+which `CRON_*` name is actually set); live Supabase database state and
+auth-provider configuration; GitHub push access (every commit this sprint
+made remains local or committed to the SANDBOX's copy of the previously-pushed
+`origin/feature/vie-quotation`, unpushed — the standing limitation
+reconfirmed throughout); GitHub repository admin settings (branch
+protection); Lovable dashboard access (sync status, bot permissions). None
+of these are things more investigation from this sandbox can resolve —
+they're the sprint's honest stopping points, not gaps in effort.
