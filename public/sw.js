@@ -11,7 +11,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "g10a-1";
+const CACHE_VERSION = "g10a-2";
 const STATIC_CACHE = `stone-tech-os-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `stone-tech-os-pages-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
