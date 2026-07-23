@@ -111,3 +111,100 @@ npm run build             succeeds
   `parseMissingSupabaseEnvError` + `ServerConfigurationErrorState` pair is
   ready to reuse — rolling it out preemptively everywhere would be
   unrelated feature-adjacent work outside this milestone's scope.
+
+---
+
+## Milestone 2 — Verify Supabase server integration
+
+Verification-only milestone: every check below passed. No code changes
+were made because no genuine defect was found.
+
+### What was verified
+
+- **Env-var handling consistency.** Re-confirmed the three-way split
+  (`client.ts`'s browser/SSR-fallback pair, `auth-middleware.ts`'s
+  server-only pair, `client.server.ts`'s service-role pair) is internally
+  consistent and matches `docs/DEPLOYMENT.md`'s documented split. This is
+  the same finding Milestone 1 fixed the *symptom* of; the underlying
+  three files are correct as designed.
+- **Every `createServerFn` in the repo requires authentication.**
+  Enumerated all 18 `createServerFn` definitions across 8 files
+  (`copilot.functions.ts` x5, `nl-search.functions.ts`, `users.functions.ts`
+  x7, `brief.functions.ts`, `ai-health.functions.ts`,
+  `dispatch.functions.ts` x5, `vie.functions.ts` x3, `razorpay.functions.ts`
+  x2, `site-ai.functions.ts`) — every single one carries
+  `.middleware([requireSupabaseAuth])`. No unauthenticated privileged
+  server function exists.
+- **The 3 routes that legitimately bypass `requireSupabaseAuth`** (they
+  can't use it — the caller is Razorpay/Meta/a cron scheduler, not one of
+  our signed-in users) all verify a shared secret before touching
+  `supabaseAdmin`:
+  `src/routes/api/public/webhooks/razorpay.ts` (HMAC-SHA256 over the raw
+  body via `RAZORPAY_WEBHOOK_SECRET`, `timingSafeEqual`),
+  `src/routes/api/public/hooks/whatsapp.ts` (Meta's `X-Hub-Signature-256`
+  HMAC via `WHATSAPP_APP_SECRET`, `timingSafeEqual`, plus a separate
+  verify-token handshake for `GET`), and
+  `src/routes/api/public/hooks/customer-payment-reminders.ts` (bearer
+  `CRON_SECRET`, `timingSafeEqual` with an added HMAC-based
+  length-side-channel guard). All three correctly use timing-safe
+  comparison rather than `===`.
+- **Service-role (`supabaseAdmin`) usage sites** — same 4 files identified
+  in the Sprint 1.8 audit (`users.functions.ts` and the 3 webhook/hook
+  routes above), re-confirmed as the complete set and all legitimate:
+  admin operations and unauthenticated inbound webhooks are exactly the
+  two cases that need to bypass RLS.
+- **`has_role(uid, role)` / `has_any_role(uid, roles)`** — the
+  security-definer functions every RLS policy and every server-side
+  permission check ultimately calls. Read the current definition
+  (`supabase/migrations/20260722160002_has_role_super_admin_inheritance.sql`,
+  Sprint 1.7.1) in full: `SECURITY DEFINER` with `SET search_path = public`
+  pinned explicitly — the standard defense against the classic Postgres
+  search-path-hijack risk for `SECURITY DEFINER` functions. Logic correctly
+  implements the one documented inheritance rule (`super_admin` satisfies
+  an `admin` check) without loosening anything else, and preserves the
+  earlier role-lookup disclosure guard (a caller looking up someone else's
+  role must themselves hold admin-or-above).
+- **RLS policy coverage** — re-ran the Sprint 1.8 audit's static check
+  (every `CREATE TABLE` has a matching `ENABLE ROW LEVEL SECURITY`) and
+  went one step further this time: checked every RLS-enabled table also
+  has at least one matching `CREATE POLICY`, to catch the case where RLS
+  is enabled but zero policies exist (which would silently deny *all*
+  access, including to admins — a production correctness bug, not a
+  security hole). Two passes of a regex-based scan produced false
+  positives (16 "gaps" total across both attempts) purely from two
+  different `CREATE POLICY` naming conventions in the migration history —
+  quoted string names (`CREATE POLICY "Staff manage dispatch items" ON
+  ...`) on multiple lines, and bare identifier names (`CREATE POLICY
+  grn_items_staff ON public.grn_items FOR ALL ...`) on one line. Manually
+  inspected every flagged table's migration source directly; all 16 do
+  have a policy — this was a static-analysis limitation, not a real gap.
+  No RLS coverage issue found.
+
+### Files changed
+
+None. This milestone found no genuine defect to fix.
+
+### Verification
+
+```
+npm run typecheck        clean
+npm run typecheck:tests  clean
+eslint (full repo)       7409 pre-existing problems, unchanged from the
+                          documented baseline (docs/CI_LINT_DEBT.md) —
+                          zero new issues, since zero files changed
+bun test                 323 pass, 0 fail (unchanged from Milestone 1)
+npm run build             succeeds
+```
+
+### Remaining blockers
+
+- **Live database state is unverifiable from this sandbox.** Everything
+  above is a static analysis of the migration files in this repo. Whether
+  the live Supabase project has actually applied every one of these
+  migrations — especially given the branch divergence the Sprint 1.8 audit
+  found (1 migration only on `origin/main`, 6 only on
+  `feature/vie-quotation`) — cannot be checked without Supabase
+  dashboard/CLI credentials, which this sandbox doesn't have.
+- **Auth provider configuration** (HIBP/leaked-password protection, email
+  verification settings, session/JWT lifetime) lives entirely in the
+  Supabase dashboard and was not and cannot be checked from here.
