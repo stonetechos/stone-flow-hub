@@ -63,7 +63,8 @@ import {
   Copy,
   ShieldAlert,
 } from "lucide-react";
-import { toUserMessage } from "@/lib/errors";
+import { toUserMessage, parseMissingSupabaseEnvError } from "@/lib/errors";
+import { ServerConfigurationErrorState } from "@/components/global/ServerConfigurationErrorState";
 import {
   listAppUsers,
   assignRoleGuarded,
@@ -376,6 +377,13 @@ function UsersAdminPage() {
 
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
+  // Sprint 1.9, Milestone 1: `listAuthUsers` is gated by `requireSupabaseAuth`,
+  // which throws this exact message when the deployment's server-side
+  // Supabase env vars aren't set — independently of the client-side vars the
+  // root route already gates on, so this page (the one place that surfaced
+  // the production bug) is where that gap is first visible. See
+  // parseMissingSupabaseEnvError's doc comment for the full picture.
+  const missingServerEnv = error ? parseMissingSupabaseEnvError(error) : null;
   const busy = assign.isPending || revoke.isPending;
 
   return (
@@ -421,6 +429,8 @@ function UsersAdminPage() {
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
+          ) : missingServerEnv ? (
+            <ServerConfigurationErrorState missing={missingServerEnv} />
           ) : error ? (
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
           ) : filtered.length === 0 ? (
