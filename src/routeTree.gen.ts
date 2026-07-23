@@ -151,6 +151,7 @@ import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/
 import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/public/hooks/dispatch-queue'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
+import { Route as ApiPublicDiagnosticsEnvStatusRouteImport } from './routes/api/public/diagnostics/env-status'
 import { Route as AuthenticatedWorkforceIntelligenceRolesIdRouteImport } from './routes/_authenticated/workforce-intelligence/roles/$id'
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport } from './routes/_authenticated/workforce-intelligence/employees/new'
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesIdRouteImport } from './routes/_authenticated/workforce-intelligence/employees/$id'
@@ -985,6 +986,12 @@ const ApiPublicHooksCustomerPaymentRemindersRoute =
     path: '/api/public/hooks/customer-payment-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDiagnosticsEnvStatusRoute =
+  ApiPublicDiagnosticsEnvStatusRouteImport.update({
+    id: '/api/public/diagnostics/env-status',
+    path: '/api/public/diagnostics/env-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedWorkforceIntelligenceRolesIdRoute =
   AuthenticatedWorkforceIntelligenceRolesIdRouteImport.update({
     id: '/workforce-intelligence/roles/$id',
@@ -1211,6 +1218,7 @@ export interface FileRoutesByFullPath {
   '/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
+  '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
@@ -1368,6 +1376,7 @@ export interface FileRoutesByTo {
   '/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
+  '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
@@ -1527,6 +1536,7 @@ export interface FileRoutesById {
   '/_authenticated/workforce-intelligence/employees/$id': typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   '/_authenticated/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/_authenticated/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
+  '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
@@ -1686,6 +1696,7 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/$id'
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
+    | '/api/public/diagnostics/env-status'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
@@ -1843,6 +1854,7 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/$id'
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
+    | '/api/public/diagnostics/env-status'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
@@ -2001,6 +2013,7 @@ export interface FileRouteTypes {
     | '/_authenticated/workforce-intelligence/employees/$id'
     | '/_authenticated/workforce-intelligence/employees/new'
     | '/_authenticated/workforce-intelligence/roles/$id'
+    | '/api/public/diagnostics/env-status'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
@@ -2029,6 +2042,7 @@ export interface RootRouteChildren {
   PayLinkIdRoute: typeof PayLinkIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
@@ -3036,6 +3050,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCustomerPaymentRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/diagnostics/env-status': {
+      id: '/api/public/diagnostics/env-status'
+      path: '/api/public/diagnostics/env-status'
+      fullPath: '/api/public/diagnostics/env-status'
+      preLoaderRoute: typeof ApiPublicDiagnosticsEnvStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/workforce-intelligence/roles/$id': {
       id: '/_authenticated/workforce-intelligence/roles/$id'
       path: '/workforce-intelligence/roles/$id'
@@ -3585,6 +3606,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayLinkIdRoute: PayLinkIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
