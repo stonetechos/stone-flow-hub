@@ -37,7 +37,7 @@ export function VendorShell({
       <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:flex md:flex-col">
         <div className="border-b border-border px-4 py-4">
           <div className="font-display text-sm font-bold tracking-tight">
-            Stone Tech <span className="text-primary">Vendor</span>
+            <span className="text-primary">STOS</span> Vendor
           </div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">{companyName}</div>
         </div>
@@ -85,7 +85,7 @@ export function VendorShell({
             <Menu className="h-5 w-5" />
           </button>
           <div className="truncate font-display text-sm font-bold">
-            Stone Tech <span className="text-primary">Vendor</span>
+            <span className="text-primary">STOS</span> Vendor
           </div>
           <Button variant="ghost" size="icon" aria-label="Sign out" onClick={signOut}>
             <LogOut className="h-4 w-4" />
