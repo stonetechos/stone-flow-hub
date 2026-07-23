@@ -118,12 +118,13 @@ function HeroPanel({ className }: { className?: string }) {
       <div className="relative z-10 mt-16 max-w-[520px] space-y-10 lg:mt-24">
         <div className="space-y-5">
           <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-on-material sm:text-[38px] lg:text-[44px]">
-            Enterprise OS for the Natural Stone Industry
+            Professional ERP for the Natural Stone Industry
           </h2>
           <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
             Manage enquiries, quotations, production, inventory, procurement, dispatch, finance and
             customer relationships from one operating system.
           </p>
+
         </div>
 
         <ul className="space-y-4">
