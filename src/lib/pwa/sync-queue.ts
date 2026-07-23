@@ -14,10 +14,10 @@
  * Supabase directly.
  */
 
-const DB_NAME = "stone-tech-os-pwa";
+const DB_NAME = "stos-pwa";
 const DB_VERSION = 1;
 const STORE_NAME = "pending-ops";
-export const SYNC_TAG = "stone-tech-os-pending-ops";
+export const SYNC_TAG = "stos-pending-ops";
 
 export interface PendingOperation {
   id: string;

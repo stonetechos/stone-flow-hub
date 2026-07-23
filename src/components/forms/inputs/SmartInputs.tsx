@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Intelligent Input primitives (UX Audit Phase 1).
+ * STOS — Intelligent Input primitives (UX Audit Phase 1).
  *
  * These wrappers around the shadcn <Input> component prevent invalid data
  * at the point of entry instead of relying on post-submit toasts. They are

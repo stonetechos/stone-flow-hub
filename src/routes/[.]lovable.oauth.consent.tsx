@@ -114,14 +114,14 @@ function Consent() {
                 Authorize access
               </div>
               <h1 className="font-display text-xl font-medium tracking-tight text-text-primary">
-                Connect {clientName} to Stone Tech OS
+                Connect {clientName} to STOS
               </h1>
             </div>
           </div>
 
           <p className="mb-4 text-sm leading-relaxed text-text-secondary">
             <strong className="font-medium text-text-primary">{clientName}</strong> will be able to
-            use Stone Tech OS as you. It can read customers, enquiries, quotes, invoices and other
+            use STOS as you. It can read customers, enquiries, quotes, invoices and other
             business data that you can already see in the app, and act on tools you invoke — always
             respecting your permissions.
           </p>
@@ -129,7 +129,7 @@ function Consent() {
           <ul className="mb-6 space-y-2 rounded-md border border-border-subtle bg-surface-muted p-3 text-[13px]">
             <li>
               <span className="text-text-muted">Signed in as</span>{" "}
-              <span className="font-medium text-text-primary">your Stone Tech OS account</span>
+              <span className="font-medium text-text-primary">your STOS account</span>
             </li>
             {redirectUri && (
               <li className="truncate">
@@ -146,7 +146,7 @@ function Consent() {
           </ul>
 
           <p className="mb-6 text-[12.5px] leading-relaxed text-text-muted">
-            This does not bypass Stone Tech OS permissions or row-level security. You can revoke
+            This does not bypass STOS permissions or row-level security. You can revoke
             access at any time from your account.
           </p>
 

@@ -118,12 +118,13 @@ function HeroPanel({ className }: { className?: string }) {
       <div className="relative z-10 mt-16 max-w-[520px] space-y-10 lg:mt-24">
         <div className="space-y-5">
           <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-on-material sm:text-[38px] lg:text-[44px]">
-            Enterprise OS for the Natural Stone Industry
+            Professional ERP for the Natural Stone Industry
           </h2>
           <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
             Manage enquiries, quotations, production, inventory, procurement, dispatch, finance and
             customer relationships from one operating system.
           </p>
+
         </div>
 
         <ul className="space-y-4">
@@ -149,7 +150,7 @@ function HeroPanel({ className }: { className?: string }) {
       <div className="relative z-10 mt-16">
         <QuarryLines />
         <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
-          Stone Tech OS · v1.0
+          STOS · v1.0
         </p>
       </div>
     </aside>
@@ -182,12 +183,13 @@ function StoneTechMark() {
       </div>
       <div className="leading-tight">
         <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
-          Stone Tech <span className="text-mint-300">OS</span>
+          <span className="text-mint-300">STOS</span>
         </div>
         <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-          Natural Stone Industry
+          By Vedora Vision
         </div>
       </div>
+
     </div>
   );
 }
@@ -273,7 +275,7 @@ function FormArea({ flow }: { flow: string }) {
           tone="danger"
           icon={ShieldOff}
           title="Access denied"
-          body="You don't have permission to view that area. If you believe this is a mistake, contact your Stone Tech OS administrator."
+          body="You don't have permission to view that area. If you believe this is a mistake, contact your STOS administrator."
           primary={{ label: "Back to sign in", to: "/auth" }}
         />
       );
@@ -410,7 +412,7 @@ function SignInCard() {
   return (
     <AuthCard
       eyebrow="Welcome back"
-      title="Sign in to Stone Tech OS"
+      title="Sign in to STOS"
       description="Sign in using your company credentials."
       footer={
         <span>
@@ -620,7 +622,7 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw error;
-      toast.success(invite ? "Welcome to Stone Tech OS" : "Password updated");
+      toast.success(invite ? "Welcome to STOS" : "Password updated");
       await navigate({ to: "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
@@ -634,7 +636,7 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
   return (
     <AuthCard
       eyebrow={invite ? "Accept your invite" : "Set a new password"}
-      title={invite ? "Welcome to Stone Tech OS" : "Choose a new password"}
+      title={invite ? "Welcome to STOS" : "Choose a new password"}
       description={
         invite
           ? "Create a password to activate your account. You'll be signed in immediately."

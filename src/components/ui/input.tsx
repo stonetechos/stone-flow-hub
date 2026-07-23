@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS input — Phase D.
+ * STOS input — Phase D.
  *
  * Hairline on card surface, hover strengthens the border, focus paints a
  * 2px mint ring using --intent-focus-ring so it lives on top of any

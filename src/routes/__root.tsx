@@ -99,12 +99,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      { title: "Stone Tech OS" },
+      { title: "STOS — Professional ERP for the Natural Stone Industry" },
       {
         name: "description",
-        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+        content: "STOS — Professional ERP for the Natural Stone Industry. By Vedora Vision.",
       },
-      { name: "author", content: "Stone Tech OS" },
+      { name: "author", content: "Vedora Vision" },
       // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
       // the branding primary in src/lib/branding/index.ts; background here
       // matches the icon tile so browser chrome doesn't clash with the mark.
@@ -112,29 +112,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Stone Tech OS" },
-      { property: "og:title", content: "Stone Tech OS" },
+      { name: "apple-mobile-web-app-title", content: "STOS" },
+      { property: "og:title", content: "STOS — Professional ERP for the Natural Stone Industry" },
       {
         property: "og:description",
-        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+        content: "Professional ERP for the Natural Stone Industry. By Vedora Vision.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Stone Tech OS" },
+      { property: "og:site_name", content: "STOS" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "STOS — Professional ERP for the Natural Stone Industry" },
       {
         name: "twitter:description",
-        content: "ERP for the natural stone industry — leads, projects, vendors, RFQs.",
+        content: "Professional ERP for the Natural Stone Industry. By Vedora Vision.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0071bcea-b836-4adf-b66a-25bd10d454dc",
-      },
+
     ],
     links: [
       { rel: "stylesheet", href: appCss },

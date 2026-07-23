@@ -2,7 +2,7 @@
  * User preference for the Guided Workflow Assistant.
  *
  * Persisted in localStorage (per browser, per user). When disabled, every
- * `<GuidedNextStep>` returns null and Stone Tech OS behaves exactly as it did
+ * `<GuidedNextStep>` returns null and STOS behaves exactly as it did
  * before the assistant was introduced — no other code path is affected.
  */
 import { useCallback, useEffect, useState } from "react";

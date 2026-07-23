@@ -4,7 +4,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS tabs.
+ * STOS tabs.
  *
  * Underline style, not a pill background — quieter, more editorial. The
  * list is a bottom hairline; the active trigger paints a 2px accent bar

@@ -428,7 +428,7 @@ function UserMenu({
                   {isAdmin ? "Admin" : "Member"}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
-                  Stone Tech OS
+                  STOS
                 </span>
               </div>
             </div>
@@ -633,7 +633,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
             {!collapsed && (
               // Phase G.11 Section 4: leading-none clipped the ascenders of
-              // "Stone Tech OS" in font-display (Inter/Roboto Slab) at this
+              // "STOS" in font-display (Inter/Roboto Slab) at this
               // weight/size — a tight single-purpose line-height with no
               // vertical headroom is a known culprit for custom display
               // fonts. leading-tight (1.25) gives just enough room to stop
@@ -739,7 +739,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-2 md:hidden">
               <Gem className="h-4 w-4 text-primary" aria-hidden />
-              <span className="font-display text-sm font-semibold">Stone Tech OS</span>
+              <span className="font-display text-sm font-semibold">STOS</span>
             </div>
 
             {/* Search — the visual focus of the topbar. min-w-0 lets this
