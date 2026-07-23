@@ -327,3 +327,95 @@ npm run build             succeeds; generated .output/server/wrangler.json
   (again, per the Sprint 1.8 audit) that this project uses Workers
   exclusively — no Pages project exists, so "Pages configuration" from
   the sprint's original ask doesn't apply.
+
+---
+
+## Milestone 4 — Verify GitHub integration
+
+### Root cause
+
+**GitHub Actions CI has not actually verified any commit since at least
+2026-07-18.** `.github/workflows/ci.yml` runs `Typecheck` → `Typecheck
+tests` → `Lint` (`npm run lint`, a full, unscoped `eslint .`) →
+`Verify auth context` → `Run tests` → `Build`, as sequential steps in a
+single job — a failure at any step stops the job, and the later steps
+never execute. `npm run lint` fails today with the same 7,409 pre-existing
+problems Milestones 2 and 3's verification runs kept reporting as an
+unchanged baseline — and this is not new: the repo's own
+`docs/CI_LINT_DEBT.md` (dated 2026-07-18, from a prior, unrelated CI-fix
+effort) documents that the *moment* CI's typecheck step was fixed and
+lint became reachable for the first time, it immediately started failing
+on ~315 files' worth of pre-existing formatting drift, and flags the bulk
+reformat as a deliberate human call, not something to auto-apply. That
+call was apparently never made — meaning every push to `main` and every
+PR since has had its CI job die at the `Lint` step, and `Verify auth
+context`, `Run tests`, and `Build` — the three steps that would actually
+catch a *new* regression — have not run in CI for any commit in that
+entire window. Combined with the Sprint 1.8 audit's finding that GitHub
+Actions is verification-only and has no deploy step, this means: nothing
+has been gating deployment on CI status, and even if it had been, CI
+itself would have blocked on the same known, tracked, non-regressive
+issue indefinitely.
+
+### Fix
+
+- **`.github/workflows/ci.yml`** — added `continue-on-error: true` to the
+  `Lint` step, with a comment explaining exactly why (references
+  `docs/CI_LINT_DEBT.md`, states plainly that this does not silence or fix
+  the debt — the step still runs and still reports failure in the Actions
+  UI). This is the minimal change that restores the pipeline's ability to
+  catch real regressions: `Verify auth context`, `Run tests`, and `Build`
+  now execute and report accurately on every push/PR again, instead of
+  never running at all. Ran `verify:auth-context` directly to confirm it
+  currently passes cleanly (24 checks, all green) on this branch, and
+  would have been silently unverified in CI otherwise.
+- **Not done, deliberately:** bulk-reformatting the ~315 files / fixing
+  the 7,409 lint problems. `docs/CI_LINT_DEBT.md` already frames this
+  correctly as a judgment call for a human (auto-format now vs. add
+  `lint-staged` to stop new debt vs. relax the rule) — re-litigating that
+  decision unilaterally, as a single very large diff across the entire
+  repo, is exactly the kind of redesign-adjacent, high-blast-radius change
+  this sprint's "fix platform issues only" / "no redesign" constraint
+  rules out. Re-confirming the pre-existing baseline is unchanged
+  (Milestones 2 and 3 already did this) was the appropriate scope here.
+
+### Verification
+
+```
+npm run typecheck        clean
+npm run typecheck:tests  clean
+eslint (full repo)       7409 pre-existing problems, unchanged baseline —
+                          zero new issues; ci.yml itself isn't lint-covered
+                          (expected "file ignored" notice)
+verify:auth-context      24/24 checks pass
+bun test                 323 pass, 0 fail (unchanged from Milestone 3)
+npm run build             succeeds
+```
+
+### Remaining blockers
+
+- **Cannot push this fix (or any commit) to GitHub from this sandbox** —
+  the standing limitation confirmed throughout this engagement (no
+  credentials configured here; `git fetch` works, `git push` doesn't).
+  Until someone with push access lands this branch, CI on GitHub keeps
+  failing at `Lint` for real, and this milestone's fix exists only in this
+  local, unpushed history. Re-confirmed current divergence for the
+  record: `feature/vie-quotation` is 18 commits ahead of
+  `origin/feature/vie-quotation` (`e50995d`, still a clean fast-forward,
+  no conflicts on this branch specifically) and 8 commits ahead of the
+  `24174f0` fork point with `origin/main`, which remains 31 commits ahead
+  on its own, separate lineage — unchanged from the Sprint 1.8 audit
+  except for this sprint's own new commits.
+- **The underlying lint debt itself is still unresolved** — this milestone
+  restored CI's ability to *see* new regressions but did not reduce the
+  315-file formatting debt by one file. That remains an open decision for
+  whoever owns this repo, framed with options already in
+  `docs/CI_LINT_DEBT.md`.
+- **Branch protection rules, required-status-check configuration, and
+  whether GitHub Actions results are wired to anything (merge gates,
+  notifications) all live in GitHub's repository settings** and are not
+  visible from `git` alone — this sandbox has no `gh` CLI and no GitHub
+  API token, so this could not be checked. Worth confirming directly in
+  GitHub settings whether "Lint" was ever configured as a required check
+  (if so, it's been permanently red and blocking merges by design;
+  if not, its failure has simply been invisible/ignored).

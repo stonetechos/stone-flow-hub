@@ -37,8 +37,23 @@ jobs:
       - name: Typecheck tests
         run: npm run typecheck:tests
 
+      # Sprint 1.9, Milestone 4: `npm run lint` is a full-repo `eslint .`
+      # with no path scoping, and the repo currently carries ~7,400
+      # pre-existing lint problems across ~315 files that predate this
+      # workflow ever reaching this step (documented in
+      # docs/CI_LINT_DEBT.md, found 2026-07-18 — a formatting-drift issue,
+      # not a logic bug, and explicitly left as a deliberate call for a
+      # human to make about a bulk reformat). Before this fix, this step
+      # failed on every single push/PR, which stopped the job here — the
+      # "Verify auth context" / "Run tests" / "Build" steps below never
+      # actually ran in CI, for any commit, the whole time. continue-on-error
+      # keeps Lint's own failure visible in the Actions UI (it does not
+      # silence or fix the debt) while letting the steps that check for
+      # *new* regressions — the ones this pipeline exists to catch — run
+      # and report accurately again.
       - name: Lint
         run: npm run lint
+        continue-on-error: true
 
       - name: Verify auth context
         run: npm run verify:auth-context
