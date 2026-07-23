@@ -182,12 +182,13 @@ function StoneTechMark() {
       </div>
       <div className="leading-tight">
         <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
-          Stone Tech <span className="text-mint-300">OS</span>
+          <span className="text-mint-300">STOS</span>
         </div>
         <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-          Natural Stone Industry
+          By Vedora Vision
         </div>
       </div>
+
     </div>
   );
 }
