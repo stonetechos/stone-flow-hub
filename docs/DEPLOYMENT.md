@@ -38,7 +38,15 @@ scripts must gate on `is_demo=true` and admin role.
 - `RESEND_API_KEY` — optional; without it, email deliveries queue
 - `WHATSAPP_PHONE_ID` / `WHATSAPP_TOKEN` — optional; without them, WA
   deliveries queue
-- `CRON_SHARED_SECRET` — required if you enable external cron hooks
+- `CRON_SECRET` (alias: `CRON_SHARED_SECRET`) — required to enable
+  `customer-payment-reminders` and `workforce-daily`, the two cron endpoints
+  that require a shared-secret bearer/`x-cron-secret` header (see the
+  Production Checklist below). Sprint 1.9, Milestone 3: the two endpoints
+  previously disagreed on which of these two names to read — both are now
+  accepted by either endpoint, `CRON_SECRET` checked first, so either name
+  works regardless of which one is actually set in this deployment's
+  secrets. Set one (either name); do not rely on both being read as two
+  independent secrets — the fallback is a name alias, not two credentials.
 
 Client env is loaded via `import.meta.env.VITE_*`. Server env is read via
 `process.env.*` **inside `.handler()` bodies only** — never at module scope
@@ -77,10 +85,13 @@ the client bundle and Worker-compatible SSR bundle.
 8. Auth: HIBP on, email verification on, anonymous sign-in off.
 9. External cron pointed at:
    - `POST /api/public/hooks/daily-digest`
+     (send `apikey: $SUPABASE_SERVICE_ROLE_KEY`)
    - `POST /api/public/hooks/customer-payment-reminders`
+     (send `x-cron-secret: $CRON_SECRET`)
    - `POST /api/public/hooks/dispatch-queue`
+     (send an admin/Super Admin user's access token as `Authorization: Bearer …`)
    - `POST /api/public/hooks/workforce-daily`
-     (send `x-cron-secret: $CRON_SHARED_SECRET`)
+     (send `x-cron-secret: $CRON_SECRET`)
 10. Manual smoke: `/auth` loads, sign in, `/dashboard` renders, one create
     flow end-to-end (see `docs/rc1-manual-qa.md`).
 

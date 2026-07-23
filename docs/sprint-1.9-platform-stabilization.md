@@ -208,3 +208,122 @@ npm run build             succeeds
 - **Auth provider configuration** (HIBP/leaked-password protection, email
   verification settings, session/JWT lifetime) lives entirely in the
   Supabase dashboard and was not and cannot be checked from here.
+
+---
+
+## Milestone 3 — Verify Cloudflare deployment configuration
+
+### Root cause(s)
+
+Two separate findings, one purely a documentation/config completeness gap
+and one a genuine, previously-invisible functional defect surfaced while
+cross-referencing the Cloudflare/cron deployment surface against
+`docs/DEPLOYMENT.md`:
+
+1. **`wrangler.jsonc` didn't declare `compatibility_flags: ["nodejs_compat"]`**,
+   even though `docs/DEPLOYMENT.md` documents this project's runtime as
+   "Cloudflare Workers (nodejs_compat)". In practice this was harmless
+   *today* — the real publish pipeline (Lovable's build, via
+   `@lovable.dev/vite-tanstack-config`'s nitro `cloudflare-module` preset)
+   generates its own `.output/server/wrangler.json` at build time and
+   injects the flag automatically (confirmed in the generated file) — but
+   the checked-in file silently diverged from what the docs promise, which
+   would only surface as a real failure (missing Node built-ins at
+   runtime) for anyone who ran `wrangler dev`/`wrangler deploy` directly
+   against a built output without going through that pipeline.
+2. **`workforce-daily.ts` didn't implement the auth contract
+   `docs/DEPLOYMENT.md`'s own Production Checklist documents for it**
+   ("send `x-cron-secret: $CRON_SHARED_SECRET`"). The actual handler
+   checked only that an `apikey`/`authorization` header was *present* (any
+   non-empty value passed), then used that value directly as the Supabase
+   client's API key — never validating it against any configured secret.
+   Combined with `workforce_tasks` and `customer_payment_schedules` both
+   being granted to `authenticated`/`service_role` only (confirmed via
+   their `CREATE TABLE` migrations — no `anon` grant exists on either
+   table), and neither of the handler's two `.update()` calls checking its
+   `error`, the practical effect was: this cron endpoint could never
+   successfully write to either table with any caller short of one holding
+   the real service-role key, and — because errors were silently
+   discarded — it always returned `{ ok: true }` regardless of whether
+   anything actually happened. This daily workforce-housekeeping job has
+   in all likelihood never run successfully in production. Separately, its
+   sibling `customer-payment-reminders.ts` (which *does* implement the
+   secret-validated pattern correctly) reads the secret from
+   `process.env.CRON_SECRET` — a different env var name than the
+   `CRON_SHARED_SECRET` the docs document — a second, smaller inconsistency
+   discovered while fixing the first.
+
+### Fix
+
+- **`wrangler.jsonc`** — added `"compatibility_flags": ["nodejs_compat"]`,
+  plus a comment explaining exactly which fields the real publish pipeline
+  overrides vs. respects (only `main`/`assets` are overridden; `name` and
+  `compatibility_date` — and now `compatibility_flags` — carry through or
+  match what's auto-injected).
+- **`src/routes/api/public/hooks/workforce-daily.ts`** — rewritten to
+  match `customer-payment-reminders.ts`'s already-correct pattern exactly:
+  validate a shared secret from `Authorization: Bearer …` or
+  `x-cron-secret` via `timingSafeEqual` (with the same HMAC length-side-channel
+  guard), then use `supabaseAdmin` (service-role, bypasses RLS) for both
+  writes, each now checking its `error` and returning 500 on failure.
+  Behavior for a caller that supplies the correct secret is otherwise
+  unchanged (same two operations, same conditions).
+- **`src/routes/api/public/hooks/customer-payment-reminders.ts`** — now
+  reads `process.env.CRON_SECRET || process.env.CRON_SHARED_SECRET`
+  instead of only `CRON_SECRET`. This sandbox cannot confirm which of the
+  two names is actually configured as a secret in the live deployment
+  (previously used inconsistently between this file and the docs), so
+  both endpoints now accept either name rather than risking silently
+  disabling whichever cron job doesn't match a guess.
+- **`docs/DEPLOYMENT.md`** — corrected the `CRON_SHARED_SECRET` env var
+  entry to document both accepted names and the alias relationship;
+  corrected the Production Checklist's cron list to show the actual auth
+  each of the 4 endpoints requires (`daily-digest`'s service-role-key
+  pattern and `dispatch-queue`'s admin-user-token pattern were previously
+  undocumented there — only `workforce-daily`'s had a note, and it
+  described a contract the code didn't yet implement).
+
+No architectural change: `workforce-daily.ts` now matches a pattern that
+already existed correctly elsewhere in this same codebase
+(`customer-payment-reminders.ts`), rather than introducing a new one.
+
+### Verification
+
+```
+npm run typecheck        clean
+npm run typecheck:tests  clean
+eslint (files touched)   clean (wrangler.jsonc itself isn't lint-covered —
+                          expected "file ignored" notice, not an error)
+bun test                 323 pass, 0 fail (unchanged — no test scaffolding
+                          exists for any route-handler file in this repo,
+                          webhooks/hooks included; noted as a gap below)
+npm run build             succeeds; generated .output/server/wrangler.json
+                          still correctly includes nodejs_compat
+```
+
+### Remaining blockers
+
+- **Cannot confirm which `CRON_*` env var name (or whether either) is
+  actually set in the live deployment**, or whether the live secret used
+  by whoever configured the external scheduler for
+  `customer-payment-reminders` matches what would need to be sent to
+  `workforce-daily` now that it enforces the same check. Requires
+  Lovable Cloud dashboard access to confirm and, if needed, set — not
+  available in this sandbox. Until confirmed, `workforce-daily`'s cron
+  job may still not run successfully — but it will now fail loudly (401
+  "Unauthorized" or 500 with the real database error) instead of silently
+  reporting fake success, which is the fixable part of this milestone.
+- **No test coverage exists for any of the 6 route-handler files under
+  `src/routes/api/public/`** (webhooks and hooks alike) — this predates
+  Sprint 1.9 and wasn't introduced by it, but is worth flagging: the
+  defect this milestone found (silently-swallowed errors, an
+  unimplemented auth contract) is exactly the class of bug route-handler
+  tests would have caught. Adding that test scaffolding is a real
+  improvement but is more than a "platform fix" — flagged as a Sprint 1.10
+  candidate, not attempted here.
+- **Cloudflare Worker environment variables, KV/D1/R2 bindings (none
+  currently declared), and Pages-specific settings** remain unverifiable
+  from this sandbox — no Cloudflare dashboard/API credentials. Confirmed
+  (again, per the Sprint 1.8 audit) that this project uses Workers
+  exclusively — no Pages project exists, so "Pages configuration" from
+  the sprint's original ask doesn't apply.
