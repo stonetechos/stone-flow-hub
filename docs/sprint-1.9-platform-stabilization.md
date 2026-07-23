@@ -419,3 +419,205 @@ npm run build             succeeds
   GitHub settings whether "Lint" was ever configured as a required check
   (if so, it's been permanently red and blocking merges by design;
   if not, its failure has simply been invisible/ignored).
+
+---
+
+## Milestone 5 — Eliminate deployment inconsistencies / reconcile branches
+
+### What this milestone did, and what it deliberately did not do
+
+The Sprint 1.8 audit flagged 2 files (`AppShell.tsx`, `Copilot.tsx`) as
+likely merge conflicts between `origin/main` and `feature/vie-quotation`,
+based on a quick "which files did both sides touch" scan. This milestone
+ran a real, non-destructive 3-way merge analysis
+(`git merge-tree <merge-base> feature/vie-quotation origin/main`, which
+computes the actual merge result without touching the working tree or
+creating any commit) to get the true picture, then read enough of the
+actual content on both sides of the highest-risk files to make an
+evidence-based call on whether to proceed.
+
+**The corrected number is 19 files with real overlapping changes, not 2.**
+Full list:
+
+```
+src/components/copilot/Copilot.tsx
+src/components/layout/AppShell.tsx
+src/components/masters/MasterListPage.tsx
+src/lib/vie/planner/index.test.ts
+src/lib/vie/planner/index.ts
+src/lib/vie/planner/resolveCustomer.test.ts
+src/lib/vie/planner/resolveCustomerDuplicate.test.ts
+src/lib/vie/planner/resolveFollowupTarget.test.ts
+src/lib/vie/planner/resolveProject.test.ts
+src/lib/vie/planner/resolveProject.ts
+src/lib/vie/prompts.ts
+src/lib/vie/types.ts
+src/routes/__root.tsx
+src/routes/_authenticated/admin/users.tsx
+src/routes/_authenticated/installation-teams/index.tsx
+src/routes/_authenticated/message-templates.tsx
+src/routes/_authenticated/route.tsx
+src/routes/_authenticated/settings.tsx
+src/routes/auth.tsx
+```
+
+**This milestone did not attempt the actual merge.** Two of the files
+sampled in detail below show genuinely different risk profiles — one
+category where blind resolution would very likely be safe, and one where
+it would very likely destroy real, independent work or make an
+undocumented product decision (see `AppShell.tsx` below). Since the file
+list mixes both categories and this sandbox has no way to test a merged
+result against a live environment, forcing a resolution across all 19
+files in one pass — the only way to actually produce a mergeable branch —
+was judged too risky to do blind. This is the sprint's own documented
+escape hatch ("if genuinely too risky/ambiguous to resolve blind, document
+precisely why and produce a merge plan instead"), used deliberately here.
+
+### Evidence gathered (why this isn't a blanket "too risky" guess)
+
+Sampled actual content — not just diff size — on the files most likely to
+be either trivially safe or genuinely dangerous, and found both patterns
+present:
+
+**Pattern A — "earlier snapshot vs. continued evolution" (lower risk).**
+`src/lib/vie/planner/resolveProject.ts`: both sides show as ~130-line
+near-total rewrites against the merge-base (which didn't have this file at
+all), which looked like two independent implementations at a glance. Direct
+diff between the two versions shows otherwise: `origin/main`'s version is
+byte-for-byte identical in structure, docstrings, and function signature to
+an *earlier draft* of the exact same file — it still uses the old inline
+`blocker: string | null` shape from before Sprint AI-1.5's structured
+`PlannerBlocker` refactor, and has none of Sprint AI-1.6's
+`entityResolution.ts` framework calls. `src/lib/vie/planner/index.ts` shows
+the same pattern at the function level: both sides export exactly the same
+6 functions (`planAction`, `planCreateCustomer`, `planCreateQuotation`,
+`planLogEnquiry`, `planNoteFollowup`, `resolveEffectiveMode`) — zero
+additions or removals on either side, only internal-implementation
+differences consistent with `origin/main` having imported a pre-AI-1.5/1.6
+snapshot of this branch's own work (matching the Sprint 1.8 audit's
+earlier finding of a byte-identical commit shared by both lineages via an
+`import/vie-foundation` PR) and never receiving this branch's later
+refinements. If this pattern holds across the other VIE files in the list
+(`resolveCustomer.test.ts`, `resolveCustomerDuplicate.test.ts`,
+`resolveFollowupTarget.test.ts`, `resolveProject.test.ts`, `types.ts`,
+`prompts.ts`, `index.test.ts` — not individually sampled), `feature/vie-
+quotation`'s version is very likely the correct one to keep almost
+everywhere in this group. "Very likely" is doing real work in that
+sentence — each file still needs its own confirmation before committing to
+that as a rule; two samples inform a hypothesis, not a verified list of 7.
+
+**Pattern B — genuinely independent, non-overlapping work on both sides
+(real risk).** `src/components/layout/AppShell.tsx`'s `origin/main` side
+is not a snapshot of anything — it's independent, well-reasoned work this
+branch doesn't have at all: a real mobile-nav double-scroll-region bug fix
+(`NavList`'s new `scrollable` prop, with a detailed comment on why nesting
+two scroll containers breaks touch-scroll capture), a `h-dvh` →
+`h-screen supports-[height:100dvh]:h-dvh` fallback fix with a comment
+describing the exact production bug this fixes ("footer/banner merged
+with page content" on browsers that don't recognize `dvh` and silently
+drop the whole `height` declaration), and `safe-area-inset` padding for
+notched devices. None of that exists on `feature/vie-quotation`. On the
+same lines, `origin/main` also hardcodes the "STOS" rebrand text directly
+("Stone Tech OS" → "STOS", literal string), while this branch's own Sprint
+1.8 branding work (Milestone verified in the Sprint 1.8 platform audit —
+not this sprint) centralized the equivalent strings onto an
+`APPLICATION_NAME` constant instead. Resolving this file requires an
+actual product decision (is the brand name now "STOS", staying "Stone
+Tech OS", or something the constant should be updated to say?) plus
+carrying forward a real bug fix this branch is currently missing outright.
+Neither is something to decide unilaterally while trying to reconcile
+branches — getting either wrong either silently reintroduces the mobile
+scroll bug or ships the wrong brand name.
+
+**`src/components/masters/MasterListPage.tsx`'s `origin/main` side** is a
+small (4-line), additive, non-overlapping fix (wraps the search query
+through `sanitizeSearch()` before building the `ilike` filter) that
+doesn't touch any line this branch's own Sprint 1.8 MasterListPage
+standardization work touched — genuinely low risk, likely a clean
+auto-merge.
+
+**`src/routes/_authenticated/route.tsx`, `settings.tsx`, and part of
+`Copilot.tsx`'s `origin/main` side** are all trivial single-line "Stone
+Tech OS" → "STOS" text swaps — low risk in isolation, but the same open
+branding question `AppShell.tsx` raises applies to all of them together,
+not each in isolation.
+
+**Not sampled, unknown risk:** `src/routes/_authenticated/admin/users.tsx`
+(theirs shows 48 insertions/48 deletions — a restructuring, not a small
+edit — and this branch's own version now also carries this sprint's own
+Milestone 1 fix, adding a third layer to reconcile),
+`src/routes/_authenticated/installation-teams/index.tsx`,
+`src/routes/_authenticated/message-templates.tsx` (both show substantial
+changes on both sides), and `src/routes/__root.tsx`/`src/routes/auth.tsx`.
+
+### Recommended merge process (not executed)
+
+1. Start with the low-risk group confirmed or strongly suggested by
+   sampling: `resolveProject.ts` and its test, `MasterListPage.tsx`,
+   `route.tsx`, `settings.tsx`. For the VIE-internal ones, confirm the
+   "earlier snapshot" hypothesis holds (diff each file's `origin/main`
+   side against the merge-base and skim for anything past a
+   structural/formatting difference) before taking `feature/vie-
+   quotation`'s side wholesale.
+2. Resolve the branding question once, explicitly, with whoever owns
+   product naming — "STOS" (as origin/main's rebrand commit already
+   shipped in 4+ places) vs. the `APPLICATION_NAME` constant's current
+   value — then apply that single decision consistently across
+   `AppShell.tsx`, `Copilot.tsx`, `route.tsx`, `settings.tsx` rather than
+   letting the merge tool or a blind per-file choice decide it
+   inconsistently.
+3. Hand-merge `AppShell.tsx` specifically to keep *both* real changes: this
+   branch's Sprint 1.8 branding-constant work and `origin/main`'s mobile
+   scroll-region/`h-dvh`-fallback bug fixes are not mutually exclusive —
+   losing either is a regression, not a simplification.
+4. Review `admin/users.tsx`, `installation-teams/index.tsx`,
+   `message-templates.tsx`, `__root.tsx`, `auth.tsx` individually — none
+   were sampled deeply enough this milestone to characterize their risk
+   the way `AppShell.tsx`/`resolveProject.ts` were. `admin/users.tsx` in
+   particular now needs three-way reconciliation (merge-base, `origin/
+   main`'s independent changes, and this sprint's own Milestone 1 fix).
+5. After every file is resolved, run the full verification suite
+   (typecheck/typecheck:tests/lint/test/build) against the merged result
+   before considering it done — the same bar every milestone in this
+   sprint has held to.
+6. Only then would pushing become relevant — moot from this sandbox
+   regardless (see Remaining blockers), but the merge work itself doesn't
+   have to wait for push access; it can be prepared and reviewed locally
+   or in a PR first.
+
+### Files changed
+
+None. This milestone's output is analysis (a corrected conflict-file list
+and a risk assessment), not a code change — consistent with treating an
+under-evidenced merge as more dangerous than no merge at all.
+
+### Verification
+
+```
+npm run typecheck        clean
+npm run typecheck:tests  clean
+bun test                 323 pass, 0 fail (unchanged — no files changed)
+```
+
+(`git merge-tree` is a read-only analysis command; the working tree was
+confirmed clean — zero diff — before and after this milestone's
+investigation.)
+
+### Remaining blockers
+
+- **Actually executing this merge requires either deeper investigation
+  this sandbox has time for, or a human decision on the open branding
+  question** — neither is a credentials problem, but both are real
+  prerequisites this milestone intentionally left undone rather than
+  guess through.
+- **Cannot push from this sandbox regardless** (standing limitation) —
+  even a fully-resolved merge would need to be handed off for someone
+  with GitHub push access to land, same as every other commit this sprint
+  has made.
+- **No live environment to test a merged result against** — everything
+  above is static analysis of source text. Confirming a resolved merge is
+  actually correct (not just "compiles and passes existing tests," since
+  neither lineage's tests were written with the other's changes in mind)
+  would benefit from a preview deployment, which this sandbox cannot
+  produce (per the Sprint 1.8 audit — Lovable's Publish button is the only
+  deploy trigger, and this sandbox has no Lovable dashboard access).
