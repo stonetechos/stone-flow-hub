@@ -56,7 +56,14 @@ export const GstInput = React.forwardRef<HTMLInputElement, BaseProps>(function G
       placeholder="15-character GSTIN"
       maxLength={15}
       value={value ?? ""}
-      onChange={(e) => onChange(e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 15))}
+      onChange={(e) =>
+        onChange(
+          e.target.value
+            .replace(/[^A-Za-z0-9]/g, "")
+            .toUpperCase()
+            .slice(0, 15),
+        )
+      }
       {...rest}
     />
   );
@@ -75,7 +82,14 @@ export const PanInput = React.forwardRef<HTMLInputElement, BaseProps>(function P
       placeholder="10-character PAN"
       maxLength={10}
       value={value ?? ""}
-      onChange={(e) => onChange(e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10))}
+      onChange={(e) =>
+        onChange(
+          e.target.value
+            .replace(/[^A-Za-z0-9]/g, "")
+            .toUpperCase()
+            .slice(0, 10),
+        )
+      }
       {...rest}
     />
   );
