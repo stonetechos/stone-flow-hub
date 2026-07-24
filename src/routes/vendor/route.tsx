@@ -29,7 +29,7 @@ function VendorLayout() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h2 className="font-display text-lg font-semibold">Vendor access not enabled</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Your account is not linked to a vendor company. Please contact Stone Tech to request
+          Your account is not linked to a vendor company. please contact STOS to request
           access.
         </p>
       </div>

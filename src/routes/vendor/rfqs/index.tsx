@@ -69,7 +69,7 @@ function RfqInbox() {
 
   return (
     <div>
-      <PageHeader title="RFQ Inbox" subtitle="Quotes requested by Stone Tech" />
+      <PageHeader title="RFQ Inbox" subtitle="Quotes requested by STOS" />
 
       <div className="sticky top-0 z-20 -mx-3 mb-3 border-b border-border bg-background/95 px-3 py-2 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

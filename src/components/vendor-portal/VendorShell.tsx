@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
 
 const NAV = [
   { to: "/vendor/dashboard", label: "Today", icon: LayoutDashboard },
@@ -36,10 +37,12 @@ export function VendorShell({
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:flex md:flex-col">
         <div className="border-b border-border px-4 py-4">
-          <div className="font-display text-sm font-bold tracking-tight">
-            <span className="text-primary">STOS</span> Vendor
+          <div className="flex items-center gap-2 font-display text-sm font-bold tracking-tight">
+            <img src={stosAppIcon.url} alt="STOS" width={22} height={22} className="h-[22px] w-[22px] rounded" />
+            <span><span className="text-primary">STOS</span> Vendor</span>
           </div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">{companyName}</div>
+          <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">By Vedora Vision</div>
         </div>
         <nav className="flex-1 space-y-1 p-2">
           {NAV.map((n) => {

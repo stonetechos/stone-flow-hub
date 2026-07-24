@@ -33,7 +33,7 @@ function OrdersList() {
   const rows = q.data ?? [];
   return (
     <div>
-      <PageHeader title="Orders" subtitle="Purchase orders confirmed by Stone Tech" />
+      <PageHeader title="Orders" subtitle="Purchase orders confirmed by STOS" />
       {rows.length === 0 ? (
         <EmptyState title="No orders yet" message="Approved quotes will show up here." />
       ) : (

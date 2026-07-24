@@ -27,7 +27,7 @@ function VendorProfile() {
   ];
   return (
     <div>
-      <PageHeader title="Company profile" subtitle="Contact Stone Tech to update these details" />
+      <PageHeader title="Company profile" subtitle="Contact STOS to update these details" />
       <Card className="max-w-2xl shadow-1">
         <CardHeader>
           <CardTitle className="text-sm">{vendor.company_name}</CardTitle>

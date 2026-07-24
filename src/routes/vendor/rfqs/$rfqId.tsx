@@ -291,7 +291,7 @@ function RfqDetail() {
           {rfq.notes && (
             <Card className="shadow-1">
               <CardHeader>
-                <CardTitle className="text-sm">Notes from Stone Tech</CardTitle>
+                <CardTitle className="text-sm">Notes from STOS</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm">{rfq.notes}</p>

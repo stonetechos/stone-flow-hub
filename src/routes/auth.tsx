@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import stosBanner from "@/assets/stos-banner.png.asset.json";
 
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
@@ -87,19 +89,17 @@ function AuthPage() {
 }
 
 /* ============================================================
- * Hero panel — Basalt material, logo, copy, capabilities, quarry illustration
+ * Hero panel — STOS banner + capabilities
  * ============================================================ */
 function HeroPanel({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
         "material-basalt relative flex-col justify-between overflow-hidden px-10 py-12 lg:px-14 lg:py-16",
-        // Border only where it butts up to the form panel on desktop.
         "lg:border-r lg:border-border-inverse",
         className,
       )}
     >
-      {/* Layered specular / grain accent, purely decorative. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0"
@@ -109,23 +109,32 @@ function HeroPanel({ className }: { className?: string }) {
         }}
       />
 
-      {/* Top: logo */}
-      <div className="relative z-10">
-        <StoneTechMark />
+      {/* Top: STOS mark */}
+      <div className="relative z-10 flex items-center gap-3">
+        <img
+          src={stosAppIcon.url}
+          alt="STOS"
+          width={44}
+          height={44}
+          className="h-11 w-11 rounded-md shadow-e2 ring-1 ring-white/10"
+        />
+        <div className="leading-tight">
+          <div className="font-display text-lg font-semibold tracking-tight text-text-on-material">
+            STOS
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
+            By Vedora Vision
+          </div>
+        </div>
       </div>
 
-      {/* Middle: headline + copy + capabilities */}
-      <div className="relative z-10 mt-16 max-w-[520px] space-y-10 lg:mt-24">
-        <div className="space-y-5">
-          <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-on-material sm:text-[38px] lg:text-[44px]">
-            Professional ERP for the Natural Stone Industry
-          </h2>
-          <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
-            Manage enquiries, quotations, production, inventory, procurement, dispatch, finance and
-            customer relationships from one operating system.
-          </p>
-
-        </div>
+      {/* Middle: STOS banner (official product hero) + copy */}
+      <div className="relative z-10 mt-10 max-w-[560px] space-y-10 lg:mt-14">
+        <img
+          src={stosBanner.url}
+          alt="STOS — Professional ERP for the Natural Stone Industry"
+          className="w-full max-w-[520px] rounded-lg shadow-e2 ring-1 ring-white/10"
+        />
 
         <ul className="space-y-4">
           <Capability
@@ -146,53 +155,16 @@ function HeroPanel({ className }: { className?: string }) {
         </ul>
       </div>
 
-      {/* Bottom: quarry line illustration + wordmark */}
-      <div className="relative z-10 mt-16">
-        <QuarryLines />
-        <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
-          STOS · v1.0
+      {/* Bottom: attribution */}
+      <div className="relative z-10 mt-12">
+        <p className="text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
+          STOS · v1.0 · By Vedora Vision
         </p>
       </div>
     </aside>
   );
 }
 
-function StoneTechMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        aria-hidden="true"
-        className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-md"
-        style={{
-          background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
-        }}
-      >
-        {/* Faceted stone mark — abstract slab silhouette */}
-        <svg
-          viewBox="0 0 32 32"
-          className="h-6 w-6 text-text-on-intent"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinejoin="round"
-        >
-          <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
-          <path d="M4 10 L16 16 L28 10" />
-          <path d="M16 16 L16 28" />
-        </svg>
-      </div>
-      <div className="leading-tight">
-        <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
-          <span className="text-mint-300">STOS</span>
-        </div>
-        <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-          By Vedora Vision
-        </div>
-      </div>
-
-    </div>
-  );
-}
 
 function Capability({
   icon: Icon,
@@ -325,7 +297,7 @@ function AuthCard({
           </svg>
         </span>
         <span className="font-display text-base font-medium tracking-tight text-text-primary">
-          Stone Tech <span className="text-intent-primary">OS</span>
+          STOS
         </span>
       </div>
 
