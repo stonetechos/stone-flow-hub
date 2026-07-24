@@ -734,9 +734,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
 
             <div className="flex items-center gap-2 md:hidden">
-              <Gem className="h-4 w-4 text-primary" aria-hidden />
+              <img src={stosAppIcon.url} alt="STOS" width={20} height={20} className="h-5 w-5 rounded" />
               <span className="font-display text-sm font-semibold">STOS</span>
             </div>
+
 
             {/* Search — the visual focus of the topbar. min-w-0 lets this
                 flex-1 region shrink to make room for the icon cluster below
