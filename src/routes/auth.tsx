@@ -166,6 +166,30 @@ function HeroPanel({ className }: { className?: string }) {
 }
 
 
+function Capability({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  body: string;
+}) {
+  return (
+    <li className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
+      <span
+        aria-hidden="true"
+        className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-md border border-border-inverse bg-white/[0.04] text-mint-300"
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[13px] font-medium tracking-tight text-text-on-material">{title}</div>
+        <div className="mt-1 text-[12.5px] leading-relaxed text-text-on-material-muted">{body}</div>
+      </div>
+    </li>
+  );
+}
 
 /** Quiet architectural line drawing — quarry steps + stacked slabs. */
 function QuarryLines() {
