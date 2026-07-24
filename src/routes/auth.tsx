@@ -24,9 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
-import stosBanner from "@/assets/stos-banner.png.asset.json";
-
+const stosAppIcon = "/branding/stos-app-icon.png";
+const stosBanner = "/branding/stos-banner.png";
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
  *
@@ -112,7 +111,7 @@ function HeroPanel({ className }: { className?: string }) {
       {/* Top: STOS mark */}
       <div className="relative z-10 flex items-center gap-3">
         <img
-          src={stosAppIcon.url}
+          src={stosAppIcon}
           alt="STOS"
           width={44}
           height={44}
@@ -131,7 +130,7 @@ function HeroPanel({ className }: { className?: string }) {
       {/* Middle: STOS banner (official product hero) + copy */}
       <div className="relative z-10 mt-10 max-w-[560px] space-y-10 lg:mt-14">
         <img
-          src={stosBanner.url}
+          src={stosBanner}
           alt="STOS — Professional ERP for the Natural Stone Industry"
           className="w-full max-w-[520px] rounded-lg shadow-e2 ring-1 ring-white/10"
         />
