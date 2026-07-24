@@ -321,7 +321,7 @@ export function Copilot() {
         <SheetHeader className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <SheetTitle className="text-base">Stone Tech Copilot</SheetTitle>
+            <SheetTitle className="text-base">STOS Copilot</SheetTitle>
             <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
               {ctx.entity}
             </Badge>

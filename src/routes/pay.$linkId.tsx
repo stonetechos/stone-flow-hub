@@ -16,7 +16,7 @@ function PayPage() {
     <div className="mx-auto max-w-md p-6">
       <Card>
         <CardHeader>
-          <CardTitle>Stone Tech · Secure Payment</CardTitle>
+          <CardTitle>STOS · Secure Payment</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {q.isLoading && <p>Loading…</p>}
@@ -29,7 +29,7 @@ function PayPage() {
               </p>
               <div className="rounded-md border p-4 text-sm space-y-1">
                 <div className="font-medium">Bank transfer details</div>
-                <div>Beneficiary: Stone Tech</div>
+                <div>Beneficiary: STOS</div>
                 <div>Please email/whatsapp UTR after transfer to confirm.</div>
               </div>
               <p className="text-xs text-muted-foreground">Status: {q.data.status}</p>

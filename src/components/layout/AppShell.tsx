@@ -783,7 +783,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <DemoBadge />
 
-              {/* AI entry point — placeholder for the Stone Tech Copilot */}
+              {/* AI entry point — placeholder for the STOS Copilot */}
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -791,9 +791,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-text-secondary hover:text-intent-primary"
-                      aria-label="Ask Stone Tech AI (coming soon)"
+                      aria-label="Ask STOS AI (coming soon)"
                       onClick={() =>
-                        toast("Stone Tech AI", {
+                        toast("STOS AI", {
                           description: "The intelligence layer arrives in a later phase.",
                         })
                       }
