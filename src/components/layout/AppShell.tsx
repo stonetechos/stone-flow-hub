@@ -709,14 +709,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
               >
                 <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
-                  <span
-                    aria-hidden
-                    className="grid h-7 w-7 place-items-center rounded-md bg-white/6 ring-1 ring-white/8"
-                  >
-                    <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
-                  </span>
+                  <img
+                    src={stosAppIcon.url}
+                    alt="STOS"
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10"
+                  />
                   <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
-                    Stone Tech <span className="text-mint-300">OS</span>
+                    STOS
                   </SheetTitle>
                 </SheetHeader>
                 <div className="relative z-10 flex min-h-0 flex-1 flex-col">
