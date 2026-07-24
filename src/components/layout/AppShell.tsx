@@ -2,7 +2,6 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LogOut,
   Search,
-  Gem,
   Menu,
   Star,
   ChevronDown,
