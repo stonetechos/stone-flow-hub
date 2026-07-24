@@ -38,6 +38,7 @@ import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
+import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
