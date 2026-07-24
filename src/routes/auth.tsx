@@ -297,7 +297,7 @@ function AuthCard({
           </svg>
         </span>
         <span className="font-display text-base font-medium tracking-tight text-text-primary">
-          Stone Tech <span className="text-intent-primary">OS</span>
+          STOS
         </span>
       </div>
 
