@@ -625,26 +625,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
-            <span
-              aria-hidden
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/6 shadow-e1 ring-1 ring-white/8"
-            >
-              <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
-            </span>
+            <img
+              src={stosAppIcon.url}
+              alt="STOS"
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 rounded-md shadow-e1 ring-1 ring-white/10"
+            />
             {!collapsed && (
-              // Phase G.11 Section 4: leading-none clipped the ascenders of
-              // "STOS" in font-display (Inter/Roboto Slab) at this
-              // weight/size — a tight single-purpose line-height with no
-              // vertical headroom is a known culprit for custom display
-              // fonts. leading-tight (1.25) gives just enough room to stop
-              // the crop without visibly changing the row's height or
-              // alignment.
               <div className="flex min-w-0 flex-col justify-center leading-tight">
                 <span className="font-display text-[14px] font-semibold tracking-tight text-text-on-material">
-                  Stone Tech <span className="text-mint-300">OS</span>
+                  STOS
                 </span>
                 <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-text-on-material-muted">
-                  Workspace
+                  By Vedora Vision
                 </span>
               </div>
             )}
