@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
+import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import stosBanner from "@/assets/stos-banner.png.asset.json";
 
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
