@@ -25,6 +25,7 @@ import {
   BarChart3,
   Settings,
   Activity,
+  ArrowLeftRight,
   CheckSquare,
   FolderOpen,
   Star,
@@ -103,6 +104,19 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/inventory/slabs",
     label: "Slab Register",
     icon: Layers,
+    group: "operations",
+  },
+  // `/inventory/movements` is a complete page — the stock movement ledger
+  // plus the only form in the app that records a manual adjustment — but
+  // nothing linked to it, from here or from the Inventory index, so the
+  // only way to reach it was to type the URL. It sits alongside the Slab
+  // Register for the same reason that one does: both are inventory views
+  // that the Inventory list page does not itself contain.
+  {
+    id: "inventory-movements",
+    to: "/inventory/movements",
+    label: "Stock Movements",
+    icon: ArrowLeftRight,
     group: "operations",
   },
   { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "operations" },

@@ -235,7 +235,22 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
       groupLabel: "Contacts",
     });
   }
-  push(salespeople, "salespeople", "Salespeople", "/admin", "full_name", "email", "User");
+  // Salespeople are `profiles` rows, and there is no per-profile detail
+  // route — nor is there a bare `/admin`; the only route under it is
+  // `/admin/users`. `push` would have built `/admin/<profile id>`, so
+  // every salesperson result in global search was a link to a 404. They
+  // all point at Users & Roles instead, which is the page that can
+  // actually show them.
+  for (const r of salespeople as Row[]) {
+    hits.push({
+      id: r.id,
+      label: val(r, "full_name") ?? "User",
+      sublabel: val(r, "email"),
+      href: "/admin/users",
+      group: "salespeople",
+      groupLabel: "Salespeople",
+    });
+  }
   push(
     architects,
     "architects",

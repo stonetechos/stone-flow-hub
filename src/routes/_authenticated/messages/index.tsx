@@ -80,9 +80,23 @@ function MessagesQueuePage() {
         title="Notification Queue"
         subtitle="Every outbound email, WhatsApp and SMS message with delivery status and retry controls."
         actions={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/notification-settings">Configure providers</Link>
-          </Button>
+          <div className="flex gap-2">
+            {/* `/communication` is the Communication Centre: this same queue
+                plus date-range and related-record filters, per-status counts,
+                and "Run dispatcher now" — the only manual trigger for the
+                outbound dispatcher anywhere in the app. It is a complete,
+                working page that no link and no nav entry pointed at, so all
+                of that was reachable only by typing the URL. Surfacing it
+                from here, rather than as a second sidebar entry beside this
+                page, keeps one "Notifications Queue" in the nav and treats
+                the Centre as the deeper view of it. */}
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/communication">Communication Centre</Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/notification-settings">Configure providers</Link>
+            </Button>
+          </div>
         }
       />
 
