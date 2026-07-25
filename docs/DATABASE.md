@@ -118,7 +118,7 @@ own uniqueness constraints where duplicates would cause double-counting.
   use narrow `TO anon` SELECT policies on specific columns only.
 - **`GRANT`** is issued explicitly for every table:
   `GRANT SELECT, INSERT, UPDATE, DELETE ON public.<t> TO authenticated;
- GRANT ALL ON public.<t> TO service_role;` (+ `TO anon` only where a
+GRANT ALL ON public.<t> TO service_role;` (+ `TO anon` only where a
   matching policy exists).
 
 ## Indexes (468 total)
