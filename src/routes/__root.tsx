@@ -22,6 +22,7 @@ import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
+import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -194,6 +195,16 @@ function RootComponent() {
         // navigation first and skip the doomed re-render entirely. Only
         // mutate the cache in place when we're NOT navigating (i.e.
         // already on /auth, so nothing will unmount the tree for us).
+        // One exception to all of the above: when a route signed the user
+        // out itself in order to redirect somewhere specific (see
+        // `lib/auth/managed-sign-out.ts`), a full-page replace here would
+        // win the race and throw that destination away. Cancel the queries
+        // so nothing refetches against a dead token, and let the route's
+        // own redirect unmount the tree.
+        if (consumeManagedSignOut()) {
+          void queryClient.cancelQueries();
+          return;
+        }
         const onAuthPage =
           typeof window !== "undefined" && window.location.pathname.startsWith("/auth");
         if (!onAuthPage && typeof window !== "undefined") {

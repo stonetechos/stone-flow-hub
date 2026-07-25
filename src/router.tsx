@@ -46,9 +46,14 @@ export const getRouter = () => {
     // pending component, a `beforeLoad` that never settles — a hung auth
     // call, an offline Supabase host — leaves the match in `pending` and the
     // user looking at a blank white page with no error and no spinner.
-    // These two defaults guarantee the screen is never empty: something is
-    // always rendered while a match resolves, and anything that throws
-    // surfaces as a readable error instead of nothing at all.
+    // These two defaults cover the pending half of that: something is
+    // always rendered while a match resolves. The thrown half is already
+    // covered elsewhere and deliberately not duplicated here — no
+    // `defaultErrorComponent` is set, so a match without its own boundary
+    // re-throws to the root route's `errorComponent`, which is what should
+    // handle a failure that reaches this far. Adding a default here would
+    // catch those errors per-match instead and quietly replace that
+    // full-page report with a fragment nested inside a half-built screen.
     defaultPendingMs: 300,
     defaultPendingComponent: () => <LoadingBlock />,
   });

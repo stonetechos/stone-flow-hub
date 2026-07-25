@@ -32,9 +32,29 @@ function computeSupabaseConfigStatus(): SupabaseConfigStatus {
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
 
+  // A truthiness check alone is not enough. A build that substitutes an
+  // empty or placeholder value leaves a string that passes `!value` but
+  // still fails inside `createClient` — and that failure happens at module
+  // scope, before any component renders, so it takes the whole app down
+  // with a stack trace instead of routing to the configuration screen this
+  // check exists to reach. Whitespace and a URL that does not parse are
+  // therefore treated as missing, which is what they are.
+  const url = typeof SUPABASE_URL === "string" ? SUPABASE_URL.trim() : "";
+  const key = typeof SUPABASE_PUBLISHABLE_KEY === "string" ? SUPABASE_PUBLISHABLE_KEY.trim() : "";
+
+  let urlUsable = url.length > 0;
+  if (urlUsable) {
+    try {
+      const parsed = new URL(url);
+      urlUsable = parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      urlUsable = false;
+    }
+  }
+
   const missing = [
-    ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
-    ...(!SUPABASE_PUBLISHABLE_KEY ? ["SUPABASE_PUBLISHABLE_KEY"] : []),
+    ...(!urlUsable ? ["SUPABASE_URL"] : []),
+    ...(!key ? ["SUPABASE_PUBLISHABLE_KEY"] : []),
   ];
 
   return { ok: missing.length === 0, missing };

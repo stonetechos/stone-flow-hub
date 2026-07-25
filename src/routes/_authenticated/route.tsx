@@ -11,6 +11,7 @@ import { ErrorBlock } from "@/components/layout/States";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import { classifyFailure } from "@/lib/errors";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -50,7 +51,19 @@ export const Route = createFileRoute("/_authenticated")({
     if (error || !data.user) {
       const { data: stored } = await supabase.auth.getSession();
       if (!stored.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
-      await supabase.auth.signOut({ scope: "local" });
+      // `beginManagedSignOut` tells the root shell's `SIGNED_OUT` listener
+      // to leave this one alone; otherwise its `window.location.replace`
+      // fires first and the redirect below — the part that explains what
+      // happened and breaks the loop — never runs. The sign-out itself is
+      // best-effort: it clears local storage, and if it fails the redirect
+      // still has to happen, because leaving the user on a route that just
+      // rejected them is the one outcome with no way out.
+      beginManagedSignOut();
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch (signOutError) {
+        console.warn("[auth] local sign-out failed while clearing a dead session", signOutError);
+      }
       throw redirect({ to: "/auth", search: { flow: "expired" } });
     }
 

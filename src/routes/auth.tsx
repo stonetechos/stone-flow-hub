@@ -656,7 +656,19 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
         const { data: sess } = await supabase.auth.getUser();
         const uid = sess.user?.id;
         if (uid) {
-          await supabase.from("profiles").update({ force_password_change: false }).eq("id", uid);
+          // This write is what releases the user from the force-change
+          // screen — `_authenticated`'s `beforeLoad` sends them straight
+          // back here while the flag is set. Discarding its error meant a
+          // failed update (an RLS denial, a row that does not exist yet)
+          // presented as success and then bounced the user back to this
+          // same screen with their new password already saved, forever.
+          // Surfacing it keeps them on the screen with a reason, and the
+          // "Sign out" link below is the way out.
+          const { error: clearError } = await supabase
+            .from("profiles")
+            .update({ force_password_change: false })
+            .eq("id", uid);
+          if (clearError) throw clearError;
           const { data: vu } = await supabase
             .from("vendor_users")
             .select("vendor_id")
@@ -758,6 +770,30 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
                 ? "Activate account"
                 : "Update password"}
         </Button>
+
+        {/* The force-change screen is the one place in the app a user can
+            be held with no navigation and no way back: the shell is not
+            rendered, and every authenticated route redirects here. If the
+            password update itself keeps failing, this is the only exit. */}
+        {forceChange ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await supabase.auth.signOut();
+                } catch (err) {
+                  console.warn("[auth] sign-out from the force-change screen failed", err);
+                }
+                await navigate({ to: "/auth", search: { flow: "signin" } });
+              })();
+            }}
+            className="w-full text-center text-[13px] text-text-muted underline-offset-4 transition-colors hover:text-text-primary hover:underline disabled:opacity-50"
+          >
+            Sign out and use a different account
+          </button>
+        ) : null}
       </form>
     </AuthCard>
   );
