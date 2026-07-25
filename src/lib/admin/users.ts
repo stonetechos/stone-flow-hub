@@ -118,7 +118,7 @@ export async function revokeRole(userId: string, role: AppRole): Promise<void> {
 }
 
 /**
- * Sprint 1.7, Part 8 — records a denied Super Admin role-change attempt.
+ * Records a denied Super Admin role-change attempt.
  * The `user_roles` table itself is guarded by a DB trigger (see migration
  * 20260722150003) that rolls back the mutation before it happens, which
  * means the AFTER-trigger audit logger never fires for a blocked attempt —
@@ -127,7 +127,7 @@ export async function revokeRole(userId: string, role: AppRole): Promise<void> {
  * user to write an activity_log row, matching the existing generic
  * log_activity() trigger's pattern of trusting the app layer for actor_id.
  *
- * Sprint 1.7.1, Part 4 — this is a client-side write, so there's no server
+ * This is a client-side write, so there's no server
  * request to read a User-Agent header or IP from (`ip_address` stays null
  * here, same as before this sprint — only the server-function audit path
  * in users.functions.ts can genuinely observe a caller's IP). What the

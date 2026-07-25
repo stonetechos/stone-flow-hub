@@ -7,12 +7,12 @@
  * "no match" and "ambiguous match" are both blockers rather than an
  * auto-create — see ADR-0001 §8.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` (see
+ * `blocker` is now a structured `PlannerBlocker` (see
  * types.ts) instead of a plain string — built right here, where the real
  * candidate list already exists, rather than reconstructed later from
  * formatted text.
  *
- * Sprint AI-1.6: the search / zero-one-many classification / blocker
+ * The search / zero-one-many classification / blocker
  * assembly this file used to implement inline now lives once in
  * entityResolution.ts (the generic Entity Resolution Framework) — this file
  * is a thin adapter that only specifies what's actually customer-specific:

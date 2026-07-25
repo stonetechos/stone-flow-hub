@@ -105,7 +105,7 @@ const ROLE_LABEL: Record<AppRole, string> = {
   sales_manager: "Sales Manager",
   sales: "Sales",
   purchase: "Purchase",
-  // Sprint 1.7, Part 2: rendered read-only (see UserRowView) — there is no
+  // Rendered read-only (see UserRowView) — there is no
   // "Grant Super Admin" action anywhere in this UI (APP_ROLES deliberately
   // excludes it), and the badge's remove control is disabled for it.
   super_admin: "Super Admin",
@@ -123,7 +123,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
     const { data: sess, error } = await supabase.auth.getUser();
     if (error || !sess.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
-    // Sprint 1.7, Part 4: the Super Admin is granted only the `super_admin`
+    // The Super Admin is granted only the `super_admin`
     // role (never also `admin`), so this must accept either — checking
     // `admin` alone would lock the Platform Owner out of Users & Roles.
     const { data } = await supabase
@@ -381,7 +381,7 @@ function UsersAdminPage() {
 
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
-  // Sprint 1.9, Milestone 1: `listAuthUsers` is gated by `requireSupabaseAuth`,
+  // `listAuthUsers` is gated by `requireSupabaseAuth`,
   // which throws this exact message when the deployment's server-side
   // Supabase env vars aren't set — independently of the client-side vars the
   // root route already gates on, so this page (the one place that surfaced
@@ -572,7 +572,7 @@ function CreateUserDialog({
   }) => Promise<unknown>;
 }) {
   const [mode, setMode] = useState<"invite" | "password">("invite");
-  // Sprint 1.7, Part 10 — dirty-tracking (and the close-confirmation guard
+  // Dirty-tracking (and the close-confirmation guard
   // below) only covers the "Set password now" tab: it's the one tab that
   // collects a real credential worth protecting against an accidental
   // close. The invite tab has no local secret, so it's left unguarded.
@@ -721,7 +721,7 @@ function PasswordCreateForm({
   const tooShort = password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Sprint 1.7, Part 10 — reports unsaved-edit state up to CreateUserDialog,
+  // Reports unsaved-edit state up to CreateUserDialog,
   // which uses it to guard against an accidental close.
   useEffect(() => {
     onDirtyChange?.(!!email || !!fullName || !!password || role !== "none");
@@ -887,7 +887,7 @@ function PasswordCreateForm({
 }
 
 /**
- * Sprint 1.7, Part 6 — Admin/Super Admin-driven direct password reset.
+ * Admin/Super Admin-driven direct password reset.
  * Distinct from "Send password reset" (an email link the user completes
  * themselves): here the caller enters the new password directly and it
  * takes effect immediately. Permission (including the Super Admin
@@ -1035,7 +1035,7 @@ function UserRowView({
   const [draft, setDraft] = useState(user.full_name ?? "");
   const pendingInvite = user.status === "invited" || user.status === "expired";
 
-  // Sprint 1.7, Part 3: the same decision matrix `users.functions.ts`
+  // The same decision matrix `users.functions.ts`
   // enforces server-side, evaluated here purely to disable/hide row
   // actions the request would be denied anyway — the server (and, for
   // user_roles, the DB trigger) remains the authoritative check.
@@ -1122,7 +1122,7 @@ function UserRowView({
           <div className="flex flex-wrap items-center gap-1.5">
             {user.roles.map((r) =>
               r === "super_admin" ? (
-                // Sprint 1.7, Part 3: never revocable, by anyone — no
+                // Never revocable, by anyone — no
                 // remove control at all, not even a disabled one, so
                 // there's nothing here that looks actionable.
                 <Badge

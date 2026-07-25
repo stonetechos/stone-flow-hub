@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7.1, Part 4 — best-effort User-Agent parsing and platform
+ * Best-effort User-Agent parsing and platform
  * detection for audit log enrichment (the `browser`/`os`/`platform`
  * columns added to `activity_log` by migration 20260722160003).
  *

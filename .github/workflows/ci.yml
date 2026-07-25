@@ -37,19 +37,8 @@ jobs:
       - name: Typecheck tests
         run: npm run typecheck:tests
 
-      # Sprint 2.2, DX/CI audit: `npm run lint` is a real, blocking gate
-      # again. The `continue-on-error` added in Sprint 1.9 M4 was a
-      # deliberately temporary shim — 7,385 of the 7,391 problems it was
-      # muting (documented in docs/CI_LINT_DEBT.md) came from a single
-      # file, src/integrations/supabase/types.ts, an auto-generated
-      # Supabase types file that had never been excluded from ESLint the
-      # way src/routeTree.gen.ts already was. Excluding it (see
-      # eslint.config.js) plus fixing the handful of genuinely-drifted
-      # files brought `eslint .` to a clean, real 0 errors — see
-      # docs/sprint-2.2-developer-experience-ci-audit.md for the full
-      # root-cause analysis. Do not reintroduce continue-on-error here as
-      # a shortcut for future lint failures — fix the lint issue, or if a
-      # generated file is the culprit again, exclude it the same way.
+      # Blocking. Do not add continue-on-error here — if a generated file
+      # is the cause, exclude it in eslint.config.js instead.
       - name: Lint
         run: npm run lint
 

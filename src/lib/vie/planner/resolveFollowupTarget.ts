@@ -8,12 +8,12 @@
  * way NL Search already does, with no change to this function. Falls back
  * to a customer-name lookup extracted from the utterance itself.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` (types.ts),
+ * `blocker` is now a structured `PlannerBlocker` (types.ts),
  * same discipline as resolveCustomer.ts — built here, where the real
  * candidate list already exists, rather than reconstructed later from
  * formatted text.
  *
- * Sprint AI-1.6: the name-lookup branch (search + zero/one/many
+ * The name-lookup branch (search + zero/one/many
  * classification + blocker assembly) now delegates to
  * entityResolution.ts's resolveEntityByQuery() — the same generic framework
  * resolveCustomer.ts uses, since this branch is the exact same "customer

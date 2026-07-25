@@ -3,13 +3,13 @@
  * decides which record a note_followup attaches to. Flagged as an untested
  * resolver in VIE-Phase2-Milestone2-Review.md §3 ("resolveProduct.ts and
  * resolveFollowupTarget.ts remain untested"); closed here as part of
- * Milestone 3 — Validation & Coverage.
+ * Validation & Coverage.
  *
  * Uses the shared, full-shape module mock from testSupport/moduleMocks.ts —
  * see that file's header comment for why a private partial mock.module()
  * call is unsafe when the whole suite runs together.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * `blocker` is now a structured `PlannerBlocker` object
  * instead of a plain string.
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";

@@ -1,5 +1,5 @@
 /**
- * Sprint 2.0 — Production Recovery.
+ * Production Recovery.
  *
  * Read-only diagnostic for the exact question this sprint exists to answer:
  * "is the deployed Cloudflare Worker actually missing the server-side
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
           // needed once requireSupabaseAuth already let the request
           // through, for the actual privileged auth.admin.* calls.
           supabase_service_role_key: present("SUPABASE_SERVICE_ROLE_KEY"),
-          // Sprint 1.9, Milestone 3 — the two cron endpoints accept either
+          // The two cron endpoints accept either
           // name; reported together since either being present is enough.
           cron_secret: present("CRON_SECRET") || present("CRON_SHARED_SECRET"),
           lovable_api_key: present("LOVABLE_API_KEY"),

@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7, Part 1 — global configuration screen.
+ * Global configuration screen.
  *
  * Rendered by the root route (`src/routes/__root.tsx`) in place of the
  * entire app when `getSupabaseConfigStatus()` reports missing environment
@@ -10,7 +10,7 @@
  * `bg-background`, same button styles) — this is a new state for an
  * existing pattern, not a new design language.
  *
- * Sprint 1.8, Part 6 — branding strings now read from
+ * Branding strings now read from
  * `src/lib/platform/application.ts` (Sprint 1.7.1's single source of
  * truth) instead of being hardcoded here a second time. No visible text
  * changed — `APPLICATION_NAME`/`POWERED_BY_LINE` produce byte-identical

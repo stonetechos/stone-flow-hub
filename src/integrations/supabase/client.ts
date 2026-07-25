@@ -37,7 +37,7 @@ function createSupabaseClient() {
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
 
-  // Sprint 1.7, Part 1: the root route (`src/routes/__root.tsx`) checks
+  // The root route (`src/routes/__root.tsx`) checks
   // `getSupabaseConfigStatus()` before ever rendering `<Outlet/>`, so in the
   // normal app tree this constructor is never reached while misconfigured.
   // This throw is now a defense-in-depth backstop only — for any code path

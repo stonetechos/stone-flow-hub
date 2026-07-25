@@ -14,7 +14,7 @@ import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  // Phase RC-3: `ssr: false` means the server renders nothing for this
+  // `ssr: false` means the server renders nothing for this
   // route (and everything nested under it) and TanStack Start defers to a
   // client-only render — by design, and not itself the bug. The actual
   // defect was a timing race: `beforeLoad`'s auth check (and its redirect
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated")({
   // behavior changes — this only closes the race window.
   pendingMinMs: 300,
   beforeLoad: async () => {
-    // Sprint 1.7, Part 1: when Supabase isn't configured, the root route
+    // When Supabase isn't configured, the root route
     // (`__root.tsx`) renders the global configuration screen instead of
     // this route's `<Outlet/>` regardless of what beforeLoad returns here —
     // so the only requirement in this branch is "don't throw". Touching
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated")({
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
 
-    // Sprint 1.7, Part 7: a temporary password (Part 5) or an admin-driven
+    // A temporary password (Part 5) or an admin-driven
     // reset (Part 6) both set `force_password_change` — checked here so it
     // applies no matter which authenticated route the user lands on first,
     // and the dashboard is unreachable until they set their own password.

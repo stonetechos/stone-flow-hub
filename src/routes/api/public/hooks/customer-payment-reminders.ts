@@ -7,7 +7,7 @@ import { createHmac, timingSafeEqual } from "crypto";
  * underlying SECURITY DEFINER RPC is only granted to `service_role`, so
  * the handler uses the service-role admin client after the bearer is verified.
  *
- * Sprint 1.9, Milestone 3: reads `CRON_SECRET` (this endpoint's original,
+ * Reads `CRON_SECRET` (this endpoint's original,
  * still-primary name) with a fallback to `CRON_SHARED_SECRET` (the name
  * docs/DEPLOYMENT.md documents, and what workforce-daily.ts's identical
  * cron endpoint also now accepts) — this sandbox has no way to confirm

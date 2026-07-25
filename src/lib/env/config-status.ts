@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7, Part 1 — single source of truth for "is Supabase configured".
+ * Single source of truth for "is Supabase configured".
  *
  * Previously, `src/integrations/supabase/client.ts` lazily checked env vars
  * the first time any property on the `supabase` proxy was touched, and threw

@@ -1,20 +1,9 @@
-// Sprint 1.9, Milestone 3: this file is the checked-in Wrangler config, but
-// the actual publish pipeline (Lovable's build, via
-// @lovable.dev/vite-tanstack-config's nitro/cloudflare-module preset — see
-// vite.config.ts) generates its own .output/server/wrangler.json at build
-// time and OVERRIDES this file's "main" and "assets" fields (a WARN in the
-// build log confirms this every build: "[cloudflare] Wrangler config main
-// is overridden and will be ignored" / "...assets is overridden..."). Only
-// "name" and "compatibility_date" actually carry through unmodified.
-// "compatibility_flags" below is likewise redundant against that pipeline
-// (nitro's cloudflare-module preset injects "nodejs_compat" automatically,
-// confirmed in the generated wrangler.json), but is declared here anyway so
-// this file stays accurate and self-sufficient for anyone running `wrangler
-// dev`/`wrangler deploy` directly against a build's output without going
-// through the full Lovable/nitro pipeline — previously this file silently
-// omitted the nodejs_compat flag docs/DEPLOYMENT.md documents as required,
-// which would have produced a real runtime failure (missing Node built-ins)
-// in that direct-invocation path.
+// The Lovable publish pipeline generates its own .output/server/wrangler.json
+// at build time and overrides "main" and "assets" here; only "name" and
+// "compatibility_date" carry through. This file is kept complete so
+// `wrangler dev` / `wrangler deploy` also work when run directly against a
+// build output, which is why nodejs_compat is declared explicitly even
+// though nitro's cloudflare-module preset injects it.
 {
   "name": "stone-flow-hub",
   "main": ".output/server/index.mjs",

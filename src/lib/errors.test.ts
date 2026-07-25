@@ -1,5 +1,5 @@
 /**
- * Sprint 1.9, Milestone 1 — unit tests for `parseMissingSupabaseEnvError`,
+ * Unit tests for `parseMissingSupabaseEnvError`,
  * added alongside the fix for the "Missing Supabase environment
  * variable(s)" error leaking into the Users & Roles page as raw text (see
  * ServerConfigurationErrorState.tsx and admin/users.tsx). Pure string

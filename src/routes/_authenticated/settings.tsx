@@ -382,7 +382,7 @@ function SettingsPage() {
 }
 
 /**
- * Sprint 1.7.1, Part 5 — one label/value row in the Platform Information
+ * One label/value row in the Platform Information
  * grid. `value` may be `null` for any field this deployment genuinely
  * couldn't determine (see src/lib/platform/application.ts) — rendered as
  * "Not available" rather than omitted, so it's visibly a known gap rather

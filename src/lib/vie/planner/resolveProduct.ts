@@ -5,7 +5,7 @@
  * require a product reference at all, so an unresolved product just falls
  * back to the raw text in the enquiry's requirement string.
  *
- * Sprint AI-1.6: the search + zero/one/many classification now goes through
+ * The search + zero/one/many classification now goes through
  * entityResolution.ts's classifyMatches() — this file uses ONLY that,
  * never the framework's blocker-building helpers, since it deliberately
  * never blocks (see above). The returned shape still has no `blocker` key

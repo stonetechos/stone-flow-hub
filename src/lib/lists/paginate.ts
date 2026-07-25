@@ -1,5 +1,5 @@
 /**
- * Sprint 1.8, Part 3 — pure client-side pagination slice, extracted from the
+ * Pure client-side pagination slice, extracted from the
  * identical inline `rows.slice((page - 1) * pageSize, page * pageSize)`
  * expression previously repeated by the Products, Installation Teams and
  * Message Templates list pages. Kept pure (no React) so it's directly

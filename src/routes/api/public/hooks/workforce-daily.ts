@@ -17,7 +17,7 @@
  * `authenticated`/`service_role` only — no `anon` grant at all — so nothing
  * short of the service role could ever write here).
  *
- * Sprint 1.9, Milestone 3: previously this handler didn't check any secret
+ * Previously this handler didn't check any secret
  * at all — it accepted any non-empty `apikey`/`authorization` header value
  * and used it directly as the Supabase client key, which (a) could never
  * actually succeed against these tables' grants no matter what was passed,

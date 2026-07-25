@@ -1,5 +1,5 @@
 /**
- * Sprint 1.9, Milestone 1 — inline counterpart to `ConfigurationRequiredScreen`.
+ * Inline counterpart to `ConfigurationRequiredScreen`.
  *
  * That component replaces the *entire app shell* when the client-side
  * Supabase env vars are missing (checked once at the root route, before

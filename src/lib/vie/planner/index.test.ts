@@ -21,7 +21,7 @@
  * see that file's header comment for why a private partial mock.module()
  * call is unsafe when the whole suite runs together.
  *
- * Sprint AI-1.5: `blockers` is now `PlannerBlocker[]` instead of `string[]`.
+ * `blockers` is now `PlannerBlocker[]` instead of `string[]`.
  * Assertions that pinned an exact single-blocker array now assert the full
  * structured object; assertions that merely checked a blocker's presence
  * among possibly-others (the old `.toContain(str)` pattern) now check

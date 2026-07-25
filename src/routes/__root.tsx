@@ -166,7 +166,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-  // Sprint 1.7, Part 1: computed once (module-level memoized in
+  // Computed once (module-level memoized in
   // config-status.ts), checked here before any child route mounts. When
   // misconfigured, the effects below skip touching `supabase` entirely and
   // the component renders the global configuration screen instead of

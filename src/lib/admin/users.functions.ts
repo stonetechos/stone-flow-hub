@@ -126,7 +126,7 @@ async function logAuditEvent(
 }
 
 /**
- * Sprint 1.7.1, Part 6 — counts remaining *admin-capable* active users, i.e.
+ * Counts remaining *admin-capable* active users, i.e.
  * `admin` OR `super_admin` holders, not literal `admin` alone.
  *
  * Judgment call (Part 6 permission audit): the Platform Super Admin has a
@@ -327,7 +327,7 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const userId = result.user?.id;
     if (userId) {
-      // Sprint 1.7, Part 5: the password above is exactly what the admin
+      // The password above is exactly what the admin
       // typed — nothing is generated. Since it's a temporary credential the
       // admin now has to share with the user out of band, force a password
       // change before the account can be used (Part 7 enforces the
@@ -381,7 +381,7 @@ export const deleteAuthUser = createServerFn({ method: "POST" })
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Sprint 1.7, Part 3: the Super Admin account can never be deleted, by
+    // The Super Admin account can never be deleted, by
     // anyone, including another Super Admin. This is checked here (in
     // addition to the DB trigger in migration 20260722150003) so the
     // denial surfaces as this exact message immediately and so the
@@ -447,7 +447,7 @@ export const setUserActive = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (!data.is_active) {
-      // Sprint 1.7, Part 3: the Super Admin account can never be
+      // The Super Admin account can never be
       // deactivated. The DB trigger (migration 20260722150003) blocks the
       // underlying UPDATE regardless, but this check surfaces the exact
       // "This account is protected." message without a round trip.
@@ -505,7 +505,7 @@ const resetPasswordInput = z.object({
 });
 
 /**
- * Sprint 1.7, Part 6 — direct password reset by an Admin or Super Admin.
+ * Direct password reset by an Admin or Super Admin.
  * Distinct from `sendPasswordReset` in users.ts, which emails the user a
  * self-service reset link and is unchanged by this sprint. This sets the
  * exact password the caller supplies (Part 5: never generated) and marks
@@ -519,7 +519,7 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     const actor = await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Sprint 1.7, Part 6: Admins may reset any password except the Super
+    // Admins may reset any password except the Super
     // Admin's; only the Super Admin may reset their own.
     const targetSuperAdmin = await targetIsSuperAdmin(supabaseAdmin, data.user_id);
     const decision = canManageTargetUser(

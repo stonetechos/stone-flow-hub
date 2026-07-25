@@ -59,7 +59,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
-    // Sprint 1.7, Part 1: see the matching comment in
+    // See the matching comment in
     // `_authenticated/route.tsx` — the root route already replaces the
     // entire app with the configuration screen when misconfigured, so this
     // only needs to avoid throwing.
@@ -639,7 +639,7 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
 
       let isVendor = false;
       if (forceChange) {
-        // Sprint 1.7, Part 7: clears the flag that forced this screen so
+        // Clears the flag that forced this screen so
         // the very next `beforeLoad` check on `_authenticated` lets the
         // user through normally.
         const { data: sess } = await supabase.auth.getUser();

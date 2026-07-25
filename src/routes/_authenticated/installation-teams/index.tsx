@@ -52,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/installation-teams/")({
 function TeamsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // Search/debounce/pagination/table-prefs via the
   // shared list-page hook (same 250ms debounce and prefs key as before).
   const list = useListPageState("installation-teams");
   const dq = list.debouncedQuery;

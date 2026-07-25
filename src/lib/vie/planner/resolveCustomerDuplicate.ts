@@ -15,12 +15,12 @@
  * returns an id to link against — create_customer always prepares a new
  * record; a match here is purely a safety check, not a lookup result.
  *
- * Sprint AI-1.5: a match is reported as a `confirmation_required` blocker
+ * A match is reported as a `confirmation_required` blocker
  * (not a `*_selection` — there's nothing to pick between, just one existing
  * record the employee needs to see before deciding whether to proceed) with
  * that record as its sole candidate, for reference/linking, not a picker.
  *
- * Sprint AI-1.6: blocker assembly now goes through entityResolution.ts's
+ * Blocker assembly now goes through entityResolution.ts's
  * confirmationBlocker() — the same helper any future "does this already
  * exist" check (e.g. a duplicate-vendor guard) would reuse. The lookup
  * itself (findCustomerByPhone) and the decision to check at all are

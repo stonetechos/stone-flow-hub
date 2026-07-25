@@ -32,10 +32,10 @@
  * module API, not a new decision made by this resolver: an
  * archived/inactive project is treated the same as "no project" here.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` (types.ts),
+ * `blocker` is now a structured `PlannerBlocker` (types.ts),
  * same discipline as resolveCustomer.ts/resolveFollowupTarget.ts.
  *
- * Sprint AI-1.6: the zero/one/many classification and both blocker shapes
+ * The zero/one/many classification and both blocker shapes
  * (the "no customer_id at all" precondition blocker, and the ambiguous/
  * empty selection blocker) now go through entityResolution.ts's generic
  * helpers. The `projectTextHint` narrowing step (below) stays here

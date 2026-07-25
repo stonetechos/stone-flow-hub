@@ -72,7 +72,7 @@ export function TaskDialog({
   const [entityType, setEntityType] = useState<string | null>(null);
   const [entityId, setEntityId] = useState<string | null>(null);
 
-  // Sprint 1.7, Part 10 — snapshot of the form as it was when the dialog
+  // Snapshot of the form as it was when the dialog
   // opened, used only to detect unsaved edits before an accidental close.
   const initialSnapshot = useRef("");
 
@@ -155,7 +155,7 @@ export function TaskDialog({
 
   const isPickerType = entityType && PICKER_TYPES.includes(entityType as EntityType);
 
-  // Sprint 1.7, Part 10 — Ctrl/Cmd+Enter submits from anywhere in the form,
+  // Ctrl/Cmd+Enter submits from anywhere in the form,
   // matching the shortcut already used elsewhere in the app (see
   // docs/ux-audit-phase-1.md).
   useEffect(() => {

@@ -21,7 +21,7 @@
  */
 
 /**
- * Sprint 1.7.1, Part 1 — named role constants, so nothing in the codebase
+ * Named role constants, so nothing in the codebase
  * spells the role literal out by hand. Typed as bare `string` (not
  * `AppRole`) deliberately: `AppRole` is defined in `src/lib/admin/users.ts`,
  * which already imports FROM this file — importing the type back here
@@ -97,7 +97,7 @@ export function canManageTargetUser(
   target: ManagedUserRef,
   action: UserManagementAction,
 ): PermissionResult {
-  // Part 3: the Super Admin account is immutable to everyone but itself,
+  // The Super Admin account is immutable to everyone but itself,
   // and even the Super Admin cannot self-delete or self-deactivate (there
   // would be nothing left to administer the platform).
   if (target.isSuperAdmin) {

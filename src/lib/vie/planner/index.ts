@@ -36,7 +36,7 @@ import { resolveProject } from "./resolveProject";
  * "confirm" and "draft" policies are a ceiling, never upgraded by
  * confidence — that's the point of setting them per-intent.
  *
- * Sprint AI-1.5: `blockers` is now `PlannerBlocker[]` (types.ts) instead of
+ * `blockers` is now `PlannerBlocker[]` (types.ts) instead of
  * `string[]` — this function's own logic is completely unchanged, it still
  * only ever asks `blockers.length > 0`. Only the element type changed.
  */
@@ -270,7 +270,7 @@ async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieE
  * to `params`, closing the other two gaps the Midpoint Review found:
  * `category` (a real, already-existing quoteCreateSchema field
  * actions/createQuotation.ts has read via `params.category ?? null` since
- * Milestone 4 — the Planner simply never populated it) and `projectText`
+ * The Planner simply never populated it) and `projectText`
  * (passed to resolveProject() as an optional disambiguation hint, and
  * preserved on `params` so it's never silently lost even when it wasn't
  * needed to resolve an ambiguity). Neither is fabricated: both are passed
@@ -314,7 +314,7 @@ async function planCreateQuotation(understanding: VieUnderstanding): Promise<Vie
         required: true,
       });
     }
-    // Milestone 6: mirrors the missing-quantity check immediately above —
+    // Mirrors the missing-quantity check immediately above —
     // never fabricated, always a real blocker, never silently deferred to
     // execution time (see the function header comment for the full
     // before/after rationale).

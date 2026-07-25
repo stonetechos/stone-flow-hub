@@ -14,7 +14,7 @@
  * its first line specifically to avoid reintroducing the cross-file
  * pollution bug Milestone 3 found and fixed for @/lib/customers/api.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * `blocker` is now a structured `PlannerBlocker` object
  * instead of a plain string. The old "more than 5 matches -> ellipsis" and
  * "exactly 5 matches -> no ellipsis" tests pinned prose-truncation behavior
  * that no longer exists under the new design (candidates are capped

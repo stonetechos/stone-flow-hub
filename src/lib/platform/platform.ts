@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7.1, Part 2 — Platform Identity.
+ * Platform Identity.
  *
  * Single source of truth for everything that identifies Vedora Vision, the
  * Platform Owner (see docs/authentication.md § Platform architecture for the

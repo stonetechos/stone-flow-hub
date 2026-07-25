@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7, Part 12 — unit tests for the Super Admin authorization matrix.
+ * Unit tests for the Super Admin authorization matrix.
  *
  * `canManageTargetUser` / `assertCanManageTargetUser` are pure and I/O-free
  * (see permissions.ts), so these tests exercise the decision matrix directly

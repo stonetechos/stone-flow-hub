@@ -61,14 +61,14 @@ type Row = {
 export function MasterListPage({ config }: { config: MasterConfig }) {
   const qc = useQueryClient();
   const roles = useRoles();
-  // Sprint 1.8, Part 4 — configurable write-affordance roles; identical to
+  // Configurable write-affordance roles; identical to
   // the previous hardcoded ["admin", "sales_manager"] for every existing
   // config (none sets writeRoles). Mutable copy because Can/hasAnyRole take
   // a readonly AppRole[] but the literal here is a narrower tuple type.
   const writeRoles = [...(config.writeRoles ?? DEFAULT_MASTER_WRITE_ROLES)];
   const canWrite = roles.hasAnyRole(writeRoles);
   const [tab, setTab] = useState<"active" | "inactive">("active");
-  // Sprint 1.8, Part 3 — shared list-page state (search debounce 200ms and
+  // Shared list-page state (search debounce 200ms and
   // the `masters:` prefs key are unchanged from the previous inline state).
   const {
     query,
@@ -407,7 +407,7 @@ function MasterFormDialog({
                   payload[f.key] = null;
                 } else payload[f.key] = Number(v);
               } else if (f.type === "boolean") {
-                // Sprint 1.8, Part 4 — booleans always submit true/false;
+                // Booleans always submit true/false;
                 // "required" is meaningless for a two-state switch.
                 payload[f.key] = Boolean(v);
               } else {

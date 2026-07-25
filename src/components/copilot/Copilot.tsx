@@ -204,7 +204,7 @@ export function Copilot() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [bookmarks, setBookmarks] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
-  // Sprint AI-1 — explicit mode toggle rather than an auto-router: "Ask" is
+  // Explicit mode toggle rather than an auto-router: "Ask" is
   // the existing nl-search/askCopilot path, completely unchanged below;
   // "Do" sends the message to understandAndStage() instead. Keeping the
   // choice explicit (rather than guessing intent with a third classifier)
@@ -292,7 +292,7 @@ export function Copilot() {
     },
   });
 
-  // Sprint AI-1 — "Do" mode's only entry point. Calls understandAndStage()
+  // "Do" mode's only entry point. Calls understandAndStage()
   // exactly as vie.functions.ts defines it: a fresh client-generated
   // requestId per submission (its idempotency key), the raw text, and the
   // same page-context passthrough nl-search already sends. The returned row

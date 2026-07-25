@@ -19,7 +19,7 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 // whether to install its fetch patch.
 const isCapacitorBuild = process.env.VITE_CAPACITOR_BUILD === "true";
 
-// Sprint 1.7.1, Part 5 — genuine (non-fabricated) build metadata, computed
+// Genuine (non-fabricated) build metadata, computed
 // once here at build time and injected as global constants consumed by
 // src/lib/platform/application.ts. Each value is best-effort: if it can't
 // be determined in this environment (no git repo, no migrations directory),

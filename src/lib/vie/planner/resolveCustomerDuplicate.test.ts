@@ -14,7 +14,7 @@
  * writeup and the fix (one shared, full-shape mock object per module,
  * reused by every file that needs it).
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * `blocker` is now a structured `PlannerBlocker` object
  * (type "confirmation_required", with the matched customer as its sole
  * `candidates` entry) instead of a plain string.
  */

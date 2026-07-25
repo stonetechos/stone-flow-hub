@@ -67,7 +67,7 @@ function ProductsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
-  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // Search/debounce/pagination/table-prefs via the
   // shared list-page hook (same 250ms debounce and "products" prefs key).
   const list = useListPageState("products");
   const dq = list.debouncedQuery;

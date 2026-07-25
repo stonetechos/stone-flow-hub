@@ -36,7 +36,7 @@ export function SignoffDialog({
   const [remarks, setRemarks] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
 
-  // Sprint 1.7, Part 10 — this dialog has no server-fetched baseline (it
+  // This dialog has no server-fetched baseline (it
   // always starts blank), so "dirty" is simply "has anything been typed".
   const dirty = open && (!!customer || rating != null || !!remarks || !!signature);
 
@@ -57,7 +57,7 @@ export function SignoffDialog({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  // Sprint 1.7, Part 10 — Ctrl/Cmd+Enter submits, matching the shortcut
+  // Ctrl/Cmd+Enter submits, matching the shortcut
   // convention used across the other converted dialogs.
   useEffect(() => {
     if (!open) return;

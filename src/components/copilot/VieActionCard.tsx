@@ -1,5 +1,5 @@
 /**
- * Sprint AI-1 — Copilot ↔ VIE Integration.
+ * Copilot ↔ VIE Integration.
  *
  * Renders one `vie_actions` row as a chat bubble, purely as a function of
  * its `status`: the confirmation card for "awaiting_confirmation", the
@@ -11,7 +11,7 @@
  * to those same functions. No resolution, execution, or policy logic lives
  * here — that stays entirely in `src/lib/vie/**`, untouched by this sprint.
  *
- * Sprint AI-1.5 — Structured Planner & Intelligent Clarification: the
+ * Structured Planner & Intelligent Clarification: the
  * "draft" card below now renders `plan_blockers` as real controls (radio
  * lists, a searchable candidate list, number/date/text inputs) driven
  * purely by each blocker's structured `type`, instead of a flat bullet

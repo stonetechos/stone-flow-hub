@@ -56,12 +56,12 @@ function TemplatesPage() {
     queryKey: qk.messageTemplates.all,
     queryFn: () => listMessageTemplates(),
   });
-  // Sprint 1.8, Part 3 — search/debounce/pagination/table-prefs via the
+  // Search/debounce/pagination/table-prefs via the
   // shared list-page hook (same 200ms debounce and prefs key as before).
   const list = useListPageState("message-templates", { debounceMs: 200 });
   const dq = list.debouncedQuery;
   const { prefs, setDensity, toggleColumn, isHidden } = list;
-  // Sprint 1.8, Part 7 — message_templates RLS allows writes only for the
+  // Message_templates RLS allows writes only for the
   // admin role ("admin manage templates", migration 20260707063953);
   // useRoles().isAdmin is inheritance-aware, so the Platform Super Admin
   // passes too. Previously New/Edit rendered for every staff user and their

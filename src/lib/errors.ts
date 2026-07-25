@@ -79,7 +79,7 @@ export function classifyFailure(err: unknown): FailureCategory {
 }
 
 /**
- * Sprint 1.9, Milestone 1 — detects the specific "server-side Supabase
+ * Detects the specific "server-side Supabase
  * env vars are missing" failure that `auth-middleware.ts`'s
  * `requireSupabaseAuth` and `client.server.ts`'s `supabaseAdmin` both throw
  * (identical message shape by construction — see those files). This is a

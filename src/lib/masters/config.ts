@@ -8,7 +8,7 @@ export type MasterField = {
   label: string;
   /**
    * Field editor rendered by MasterListPage's form dialog.
-   * Sprint 1.8, Part 4: "boolean" was declared here since the original
+   * "boolean" was declared here since the original
    * implementation but the dialog silently rendered it as a text input —
    * it now renders as a proper Switch. No existing config uses "boolean"
    * yet, so making it work is purely additive.
@@ -42,7 +42,7 @@ export type MasterConfig = {
   // Extra columns to render in the table (besides code + name + status)
   extraColumns: { key: string; label: string }[];
   /**
-   * Sprint 1.8, Part 4 — roles whose members may create / edit / delete /
+   * Roles whose members may create / edit / delete /
    * import / toggle records on this master. Optional and non-breaking:
    * when omitted (every existing config omits it) the page behaves exactly
    * as before, using DEFAULT_MASTER_WRITE_ROLES. Set this only for a

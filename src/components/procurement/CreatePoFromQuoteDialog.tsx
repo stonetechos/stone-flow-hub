@@ -54,7 +54,7 @@ export function CreatePoFromQuoteDialog({
   const [override, setOverride] = useState("");
   const [schedule, setSchedule] = useState<PaymentScheduleRow[]>([]);
 
-  // Sprint 1.7, Part 10 — snapshot for the unsaved-changes close guard.
+  // Snapshot for the unsaved-changes close guard.
   const initialSnapshot = useRef("");
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function CreatePoFromQuoteDialog({
 
   const canSubmitNow = canSubmit && !mut.isPending && Math.abs(totalPct - 100) < 0.01;
 
-  // Sprint 1.7, Part 10 — Ctrl/Cmd+Enter submits, matching the shortcut
+  // Ctrl/Cmd+Enter submits, matching the shortcut
   // convention used across the other converted dialogs.
   useEffect(() => {
     if (!open) return;

@@ -1,5 +1,5 @@
 /**
- * Sprint 1.8, Part 3 — shared list-page state for master/CRUD list screens.
+ * Shared list-page state for master/CRUD list screens.
  *
  * Before this sprint, Products, Installation Teams and Message Templates each
  * hand-rolled the identical bundle of state: a search box + debounce, page /

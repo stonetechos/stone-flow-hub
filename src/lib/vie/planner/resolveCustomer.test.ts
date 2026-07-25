@@ -16,7 +16,7 @@
  * dynamically importing the module under test keeps this file's mocked
  * behavior correct regardless of what order bun evaluates test files in.
  *
- * Sprint AI-1.5: `blocker` is now a structured `PlannerBlocker` object
+ * `blocker` is now a structured `PlannerBlocker` object
  * instead of a plain string — these assertions check the object's shape
  * (`type`/`field`/`candidates`) instead of exact prose. The old "more than 5
  * matches -> ellipsis" test is gone: the new design hands the UI every match

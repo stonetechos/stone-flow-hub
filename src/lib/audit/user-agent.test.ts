@@ -1,5 +1,5 @@
 /**
- * Sprint 1.7.1, Part 4 — unit tests for the audit User-Agent/platform
+ * Unit tests for the audit User-Agent/platform
  * parsing helpers. Pure functions, no Supabase/network mocking needed.
  */
 import { describe, test, expect } from "bun:test";
