@@ -30,7 +30,7 @@ export function registerServiceWorker(): void {
               // update (not the first install) — offer a refresh instead
               // of silently swapping the app shell under an active user.
               toast("Update available", {
-                description: "A new version of Stone Tech OS is ready.",
+                description: "A new version of STOS is ready.",
                 action: {
                   label: "Refresh",
                   onClick: () => {
@@ -60,9 +60,7 @@ export function registerServiceWorker(): void {
             // src/lib/pwa/sync-queue.ts). Surface it instead of silently
             // dropping, so a future phase's outbox has something to hook
             // into and nothing is lost in the meantime.
-            window.dispatchEvent(
-              new CustomEvent("stone-tech-os:pending-ops-flush", { detail: ops }),
-            );
+            window.dispatchEvent(new CustomEvent("stos:pending-ops-flush", { detail: ops }));
           }
         });
       }

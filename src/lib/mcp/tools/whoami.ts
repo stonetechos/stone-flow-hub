@@ -5,7 +5,7 @@ export default defineTool({
   name: "whoami",
   title: "Who am I",
   description:
-    "Return the signed-in Stone Tech OS user's id, email, display name and roles. Use this to confirm the MCP connection is bound to the right account.",
+    "Return the signed-in STOS user's id, email, display name and roles. Use this to confirm the MCP connection is bound to the right account.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {

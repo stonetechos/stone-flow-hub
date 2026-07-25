@@ -81,7 +81,7 @@ function VendorLedgerPage() {
           message="Purchase orders, GRNs, payments and debit / credit notes will appear here as they are posted."
         />
       ) : (
-        <div className="rounded-md border border-border bg-card shadow-1">
+        <Card className="shadow-1">
           <Table>
             <TableHeader>
               <TableRow>
@@ -129,7 +129,7 @@ function VendorLedgerPage() {
               })}
             </TableBody>
           </Table>
-        </div>
+        </Card>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Theme switcher.
+ * STOS — Theme switcher.
  *
  * Applies one of the four STDL themes as a class on the <html> element
  * and persists the choice per browser. Presentation only — no business

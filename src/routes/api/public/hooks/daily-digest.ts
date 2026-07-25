@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
               {
                 role: "system",
                 content:
-                  "You are the Stone Tech OS morning digest. Write a short, actionable snapshot for the owner. Use ONLY the snapshot JSON; never invent numbers. Sections: Business snapshot, Today's priorities (collections/payments/production/installation/procurement), Customer & vendor risks, Recommended actions with reasons. Keep under 250 words. Use ₹ Indian formatting.",
+                  "You are the STOS morning digest. Write a short, actionable snapshot for the owner. Use ONLY the snapshot JSON; never invent numbers. Sections: Business snapshot, Today's priorities (collections/payments/production/installation/procurement), Customer & vendor risks, Recommended actions with reasons. Keep under 250 words. Use ₹ Indian formatting.",
               },
               { role: "user", content: `Snapshot:\n${JSON.stringify(snapshot, null, 2)}` },
             ],
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
         const rows = recipients.map((r) => ({
           channel: r.channel,
           to_address: r.to,
-          subject: `Stone Tech OS — Daily digest ${snapshot.date}`,
+          subject: `STOS — Daily digest ${snapshot.date}`,
           body,
           status: "pending",
           related_type: "daily_digest",

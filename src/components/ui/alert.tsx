@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS alert — Phase D.
+ * STOS alert — Phase D.
  *
  * Status-tinted panels driven by the shared `--status-*` token trio, so
  * every theme recolours in step. Icons pick up the fg token automatically.

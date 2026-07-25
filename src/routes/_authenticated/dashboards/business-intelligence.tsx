@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Sparkles, Loader2, Send, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { LoadingBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,11 +98,7 @@ function BusinessIntel() {
               Click "Generate brief" to produce an AI-authored summary from your live data.
             </div>
           )}
-          {brief.isPending && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Analyzing data…
-            </div>
-          )}
+          {brief.isPending && <LoadingBlock label="Analyzing data…" />}
           {brief.data && (
             <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
               {brief.data.brief}

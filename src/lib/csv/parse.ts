@@ -52,9 +52,14 @@ export function parseCsv(text: string): { headers: string[]; rows: CsvRow[] } {
 }
 
 export function toCsv(headers: string[], rows: Array<Record<string, unknown>>): string {
+  // Neutralize CSV formula injection: spreadsheet apps (Excel, Sheets, Numbers)
+  // interpret cells starting with =, +, -, @, tab or CR as formulas. Prefix
+  // such string values with a single quote so they render as literal text.
+  const neutralize = (s: string) => (/^[=+\-@\t\r]/.test(s) ? `'${s}` : s);
   const esc = (v: unknown) => {
     if (v == null) return "";
-    const s = typeof v === "string" ? v : Array.isArray(v) ? v.join("; ") : String(v);
+    const raw = typeof v === "string" ? v : Array.isArray(v) ? v.join("; ") : String(v);
+    const s = neutralize(raw);
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const head = headers.map(esc).join(",");

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
-import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
+import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -403,7 +403,7 @@ function InstallationDetailPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground">No material recorded yet.</p>
+                <EmptyState title="No material recorded yet." />
               )}
             </CardContent>
           </Card>
@@ -445,7 +445,7 @@ function InstallationDetailPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground">No progress reported yet.</p>
+                <EmptyState title="No progress reported yet." />
               )}
             </CardContent>
           </Card>

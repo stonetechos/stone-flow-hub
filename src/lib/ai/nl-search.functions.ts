@@ -30,7 +30,7 @@ const nlSearchInput = z.object({
     .optional(),
 });
 
-const INTENT_SYSTEM_PROMPT = `You are the intent classifier for Stone Tech OS's Natural Language Search.
+const INTENT_SYSTEM_PROMPT = `You are the intent classifier for STOS's Natural Language Search.
 Your ONLY job is to classify a user's free-text query into a structured intent. You have NO access to the database and MUST NOT invent, guess, or state any specific business record, name, number, amount, or date as fact. You never generate SQL and never bypass existing APIs — you only classify.
 
 Return STRICT JSON matching this shape (omit optional keys you don't need):

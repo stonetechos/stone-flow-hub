@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Page transition.
+ * STOS — Page transition.
  *
  * STDL-approved motion: a short opacity fade on route change. No scale,
  * no translate, no bounce. Respects reduced-motion.

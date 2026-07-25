@@ -1,5 +1,5 @@
 /**
- * Shared confirmation foundation for Stone Tech OS.
+ * Shared confirmation foundation for STOS.
  *
  * ConfirmDialog is the single primitive used for every "are you sure" moment
  * in the app. It supports:

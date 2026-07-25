@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS badge — Phase D.
+ * STOS badge — Phase D.
  *
  * Soft, tinted pill by default — never a saturated block. Status variants
  * read from the semantic `--status-*` token trio (fg / bg / border) so

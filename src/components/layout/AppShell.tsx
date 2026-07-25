@@ -2,7 +2,6 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LogOut,
   Search,
-  Gem,
   Menu,
   Star,
   ChevronDown,
@@ -38,6 +37,7 @@ import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
+import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
@@ -612,12 +612,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
-            <span
-              aria-hidden
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/6 shadow-e1 ring-1 ring-white/8"
-            >
-              <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
-            </span>
+            <img
+              src={stosAppIcon.url}
+              alt="STOS"
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 rounded-md shadow-e1 ring-1 ring-white/10"
+            />
             {!collapsed && (
               <div className="flex min-w-0 flex-col justify-center leading-tight">
                 <span className="font-display text-[14px] font-semibold tracking-tight text-text-on-material">
@@ -694,12 +695,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
               >
                 <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
-                  <span
-                    aria-hidden
-                    className="grid h-7 w-7 place-items-center rounded-md bg-white/6 ring-1 ring-white/8"
-                  >
-                    <Gem className="h-3.5 w-3.5 text-mint-300" aria-hidden />
-                  </span>
+                  <img
+                    src={stosAppIcon.url}
+                    alt="STOS"
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10"
+                  />
                   <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
                     STOS
                   </SheetTitle>
@@ -718,7 +720,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
 
             <div className="flex items-center gap-2 md:hidden">
-              <Gem className="h-4 w-4 text-primary" aria-hidden />
+              <img
+                src={stosAppIcon.url}
+                alt="STOS"
+                width={20}
+                height={20}
+                className="h-5 w-5 rounded"
+              />
               <span className="font-display text-sm font-semibold">STOS</span>
             </div>
 

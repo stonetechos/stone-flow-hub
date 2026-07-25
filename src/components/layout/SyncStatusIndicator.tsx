@@ -27,18 +27,18 @@ export function SyncStatusIndicator() {
       });
     };
     refresh();
-    window.addEventListener("stone-tech-os:pending-ops-flush", refresh);
+    window.addEventListener("stos:pending-ops-flush", refresh);
     window.addEventListener("online", refresh);
     return () => {
       cancelled = true;
-      window.removeEventListener("stone-tech-os:pending-ops-flush", refresh);
+      window.removeEventListener("stos:pending-ops-flush", refresh);
       window.removeEventListener("online", refresh);
     };
   }, []);
 
   const handleInstall = async (): Promise<void> => {
     const outcome = await promptInstall();
-    if (outcome === "accepted") toast.success("Stone Tech OS installed");
+    if (outcome === "accepted") toast.success("STOS installed");
   };
 
   const showPill = connectivity !== "online" || pendingCount > 0;
@@ -76,7 +76,7 @@ export function SyncStatusIndicator() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-text-secondary hover:text-intent-primary"
-                aria-label="Install Stone Tech OS"
+                aria-label="Install STOS"
                 onClick={() => void handleInstall()}
               >
                 <Download className="h-4 w-4" aria-hidden />

@@ -1,7 +1,7 @@
 /**
  * Detail-page keyboard shortcut convenience.
  *
- * Binds the standard Stone Tech OS detail-page shortcuts:
+ * Binds the standard STOS detail-page shortcuts:
  *   • `e` — activate the primary Edit action
  *   • `b` — go back (Back button behaviour)
  *

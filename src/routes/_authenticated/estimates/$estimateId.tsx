@@ -36,14 +36,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { invalidateEstimate, invalidateQuote } from "@/lib/query-invalidation";
@@ -429,47 +425,57 @@ function EstimateDetailPage() {
               {sendChan === "whatsapp" ? "WhatsApp message" : "Email"} — edit before sending
             </DialogTitle>
           </DialogHeader>
-          {sendChan === "email" && (
-            <div>
-              <Label>Subject</Label>
-              <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} />
-            </div>
-          )}
-          <div className="mt-2">
-            <Label>{sendChan === "whatsapp" ? "Message" : "HTML body"}</Label>
-            <Textarea
-              rows={16}
-              value={sendChan === "whatsapp" ? draftBody : draftHtml}
-              onChange={(e) =>
-                sendChan === "whatsapp"
-                  ? setDraftBody(e.target.value)
-                  : setDraftHtml(e.target.value)
-              }
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Delivery integration (WhatsApp Business Cloud / Resend) ships in Phase 3. For now, the
-              message is saved to history and ready to send.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSendChan(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                await navigator.clipboard.writeText(
-                  sendChan === "whatsapp" ? draftBody : draftHtml,
-                );
-                toast.success("Copied to clipboard");
-              }}
-            >
-              Copy
-            </Button>
-            <Button onClick={() => saveDocMut.mutate()} disabled={saveDocMut.isPending}>
-              {saveDocMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save to history
-            </Button>
-          </DialogFooter>
+          <QuickForm
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveDocMut.mutate();
+            }}
+            busy={saveDocMut.isPending}
+          >
+            <QuickForm.QuickFill>
+              {sendChan === "email" && (
+                <Field label="Subject" className="md:col-span-2">
+                  <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} />
+                </Field>
+              )}
+              <Field
+                label={sendChan === "whatsapp" ? "Message" : "HTML body"}
+                hint="Delivery integration (WhatsApp Business Cloud / Resend) ships in Phase 3. For now, the message is saved to history and ready to send."
+                className="md:col-span-2"
+              >
+                <Textarea
+                  rows={16}
+                  value={sendChan === "whatsapp" ? draftBody : draftHtml}
+                  onChange={(e) =>
+                    sendChan === "whatsapp"
+                      ? setDraftBody(e.target.value)
+                      : setDraftHtml(e.target.value)
+                  }
+                />
+              </Field>
+            </QuickForm.QuickFill>
+
+            <QuickForm.Actions>
+              <Button type="button" variant="outline" onClick={() => setSendChan(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(
+                    sendChan === "whatsapp" ? draftBody : draftHtml,
+                  );
+                  toast.success("Copied to clipboard");
+                }}
+              >
+                Copy
+              </Button>
+              <Button type="submit" disabled={saveDocMut.isPending}>
+                {saveDocMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save to history
+              </Button>
+            </QuickForm.Actions>
+          </QuickForm>
         </DialogContent>
       </Dialog>
 

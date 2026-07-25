@@ -291,7 +291,7 @@ function RfqDetail() {
           {rfq.notes && (
             <Card className="shadow-1">
               <CardHeader>
-                <CardTitle className="text-sm">Notes from Stone Tech</CardTitle>
+                <CardTitle className="text-sm">Notes from STOS</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm">{rfq.notes}</p>
@@ -446,7 +446,7 @@ function RfqDetail() {
                   </div>
                 </QuickForm.MoreDetails>
 
-                <div className="sticky bottom-0 -mx-4 mt-3 flex items-center justify-between gap-2 border-t border-border bg-card/95 px-4 py-3 backdrop-blur">
+                <div className="sticky bottom-0 -mx-4 mt-3 flex items-center justify-between gap-2 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
                   <div className="text-xs text-muted-foreground">
                     {locked
                       ? submitted

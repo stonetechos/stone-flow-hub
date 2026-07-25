@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { LoadingBlock, ErrorBlock, EmptyState } from "@/components/layout/States";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,13 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import { signedUrl } from "@/lib/attachments/api";
 import {
   approveVendorQuote,
@@ -145,11 +146,7 @@ function CompareRfqPage() {
       </div>
 
       {bundle.rows.length === 0 ? (
-        <Card className="shadow-1">
-          <CardContent className="p-6 text-center text-sm text-muted-foreground">
-            No vendors have been sent this RFQ.
-          </CardContent>
-        </Card>
+        <EmptyState title="No vendors have been sent this RFQ." />
       ) : (
         <Card className="shadow-1">
           <CardContent className="p-0">
@@ -531,27 +528,40 @@ function RevisionDialog({
             {row?.vendor.company_name} will be notified and can update their quote.
           </DialogDescription>
         </DialogHeader>
-        {initial && (
-          <div className="rounded-md border border-border bg-muted/40 p-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Previous request:</span> {initial}
-          </div>
-        )}
-        <Textarea
-          placeholder="What needs to change? e.g. reduce dispatch to 5 days, share revised price..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          rows={4}
-          autoFocus
-        />
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => onSubmit(note)} disabled={loading || !note.trim()}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Send request
-          </Button>
-        </DialogFooter>
+        <QuickForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!note.trim()) return;
+            onSubmit(note);
+          }}
+          busy={loading}
+        >
+          <QuickForm.QuickFill>
+            {initial && (
+              <div className="rounded-md border border-border bg-muted/40 p-2 text-xs text-muted-foreground md:col-span-2">
+                <span className="font-medium text-foreground">Previous request:</span> {initial}
+              </div>
+            )}
+            <Field label="Revision note" required className="md:col-span-2">
+              <Textarea
+                placeholder="What needs to change? e.g. reduce dispatch to 5 days, share revised price..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={4}
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading || !note.trim()}>
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Send request
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
       </DialogContent>
     </Dialog>
   );

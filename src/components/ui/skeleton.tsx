@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS skeleton — Phase D.
+ * STOS skeleton — Phase D.
  *
  * Static tinted bar on `--surface-panel` with a slow, low-contrast
  * shimmer. Motion honours `prefers-reduced-motion` via the keyframe

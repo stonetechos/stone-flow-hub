@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS — Executive Command Centre
+ * STOS — Executive Command Centre
  *
  * The operating cockpit for the owner. Answers five questions above the fold:
  *   1. What needs my attention?

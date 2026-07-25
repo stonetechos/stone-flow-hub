@@ -56,7 +56,7 @@ const DialogContent = React.forwardRef<
         "w-[calc(100vw-1rem)] max-w-lg sm:w-full",
         "max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]",
         "overflow-hidden rounded-lg border border-border-subtle bg-[var(--surface-elevated)] shadow-e3",
-        noAutoScroll ? "" : "p-6",
+        noAutoScroll ? "pb-[env(safe-area-inset-bottom)]" : "p-6",
         "duration-[var(--duration-base)] ease-[var(--ease-out)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className,
       )}

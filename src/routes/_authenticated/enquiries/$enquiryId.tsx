@@ -706,50 +706,63 @@ function SendRfqDialog({
         <DialogHeader>
           <DialogTitle>Send RFQ</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <Field label="Due date" required>
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <QuickForm.QuickFill>
+            <Field label="Due date" required>
+              <Input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                required
+              />
+            </Field>
+            <Field
+              label="Vendors"
               required
-            />
-          </Field>
-          <Field label="Vendors" required hint={`${selected.length} selected`}>
-            <div className="max-h-56 space-y-1 overflow-auto rounded-sm border border-border p-2">
-              {vendors.isLoading ? (
-                <p className="p-2 text-sm text-muted-foreground">Loading…</p>
-              ) : (vendors.data ?? []).length === 0 ? (
-                <p className="p-2 text-sm text-muted-foreground">No vendors — add one first.</p>
-              ) : (
-                (vendors.data ?? []).map((v) => (
-                  <label
-                    key={v.id}
-                    className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm hover:bg-accent"
-                  >
-                    <Checkbox
-                      checked={selected.includes(v.id)}
-                      onCheckedChange={() => toggle(v.id)}
-                    />
-                    <span className="flex-1">{v.company_name}</span>
-                    <span className="font-mono text-xs text-muted-foreground">{v.vendor_code}</span>
-                  </label>
-                ))
-              )}
-            </div>
-          </Field>
-          <Field label="Notes">
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </Field>
-          <div className="flex justify-end gap-2">
+              hint={`${selected.length} selected`}
+              className="md:col-span-2"
+            >
+              <div className="max-h-56 space-y-1 overflow-auto rounded-sm border border-border p-2">
+                {vendors.isLoading ? (
+                  <p className="p-2 text-sm text-muted-foreground">Loading…</p>
+                ) : (vendors.data ?? []).length === 0 ? (
+                  <p className="p-2 text-sm text-muted-foreground">No vendors — add one first.</p>
+                ) : (
+                  (vendors.data ?? []).map((v) => (
+                    <label
+                      key={v.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm hover:bg-accent"
+                    >
+                      <Checkbox
+                        checked={selected.includes(v.id)}
+                        onCheckedChange={() => toggle(v.id)}
+                      />
+                      <span className="flex-1">{v.company_name}</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {v.vendor_code}
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Send
             </Button>
-          </div>
-        </form>
+          </QuickForm.Actions>
+        </QuickForm>
       </DialogContent>
     </Dialog>
   );
