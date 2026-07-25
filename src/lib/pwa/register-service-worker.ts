@@ -8,6 +8,7 @@
  */
 import { toast } from "sonner";
 import { listPendingOperations } from "@/lib/pwa/sync-queue";
+import { isCapacitorAppOrigin } from "@/lib/capacitor/server-origin-allowlist";
 
 let registered = false;
 
@@ -15,6 +16,16 @@ export function registerServiceWorker(): void {
   if (registered) return;
   if (typeof window === "undefined") return; // SSR guard
   if (!("serviceWorker" in navigator)) return;
+  // The packaged Capacitor app serves the same bundle — `public/sw.js`
+  // included — from its own WebView origin, where a service worker has
+  // nothing useful to do: the assets are already local, and the store
+  // handles updates. What it can do is get in the way. The offline
+  // fallback becomes unreachable (the WebView's navigations are file-backed,
+  // not network-backed), and the update prompt and controllerchange reload
+  // below fire against an app that was never fetched over the network. Two
+  // caching layers with different lifetimes over one set of files is a
+  // source of stale-shell bugs and nothing else.
+  if (isCapacitorAppOrigin(window.location.origin)) return;
   registered = true;
 
   window.addEventListener("load", () => {
