@@ -159,7 +159,7 @@ function HeroPanel({ className }: { className?: string }) {
       <div className="relative z-10 mt-16">
         <QuarryLines />
         <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
-          Stone Tech OS · v1.0
+          STOS · v1.0 · By Vedora Vision
         </p>
       </div>
     </aside>
@@ -192,10 +192,10 @@ function StoneTechMark() {
       </div>
       <div className="leading-tight">
         <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
-          Stone Tech <span className="text-mint-300">OS</span>
+          STOS
         </div>
         <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-          Natural Stone Industry
+          By Vedora Vision
         </div>
       </div>
     </div>
@@ -285,7 +285,7 @@ function FormArea({ flow }: { flow: string }) {
           tone="danger"
           icon={ShieldOff}
           title="Access denied"
-          body="You don't have permission to view that area. If you believe this is a mistake, contact your Stone Tech OS administrator."
+          body="You don't have permission to view that area. If you believe this is a mistake, contact your STOS administrator."
           primary={{ label: "Back to sign in", to: "/auth" }}
         />
       );
@@ -335,7 +335,7 @@ function AuthCard({
           </svg>
         </span>
         <span className="font-display text-base font-medium tracking-tight text-text-primary">
-          Stone Tech <span className="text-intent-primary">OS</span>
+          STOS
         </span>
       </div>
 
@@ -368,7 +368,7 @@ function AuthCard({
         Accounts are provisioned by an administrator. Contact your admin for access.
       </p>
       {/* Sprint 1.7, Part 9: subtle platform attribution — does not replace
-          the Stone Tech OS wordmark shown above, just credits the company
+          the STOS wordmark shown above, just credits the company
           that builds and operates it. */}
       <p className="mt-2 text-center text-[11px] text-text-muted">{POWERED_BY_LINE}</p>
     </div>
@@ -426,7 +426,7 @@ function SignInCard() {
   return (
     <AuthCard
       eyebrow="Welcome back"
-      title="Sign in to Stone Tech OS"
+      title="Sign in to STOS"
       description="Sign in using your company credentials."
       footer={
         <span>
@@ -655,7 +655,7 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
         }
       }
 
-      toast.success(invite ? "Welcome to Stone Tech OS" : "Password updated");
+      toast.success(invite ? "Welcome to STOS" : "Password updated");
       await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
@@ -673,12 +673,12 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
         forceChange
           ? "Set your permanent password"
           : invite
-            ? "Welcome to Stone Tech OS"
+            ? "Welcome to STOS"
             : "Choose a new password"
       }
       description={
         forceChange
-          ? "Your administrator created this account with a temporary password. Choose a new password to continue — you can't access Stone Tech OS until this is done."
+          ? "Your administrator created this account with a temporary password. Choose a new password to continue — you can't access STOS until this is done."
           : invite
             ? "Create a password to activate your account. You'll be signed in immediately."
             : "Pick a strong password. Use at least 8 characters — a mix of letters, numbers and symbols is best."

@@ -41,6 +41,7 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useListPageState } from "@/hooks/use-list-page-state";
 import { useRoles, Can } from "@/hooks/use-roles";
 import { toUserMessage } from "@/lib/errors";
+import { sanitizeSearch } from "@/lib/zod";
 import type { MasterConfig, MasterField } from "@/lib/masters/config";
 import {
   COMMON_FIELDS,
@@ -94,7 +95,8 @@ export function MasterListPage({ config }: { config: MasterConfig }) {
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true })
         .limit(500);
-      if (q.trim()) qb = qb.or(`name.ilike.%${q}%,code.ilike.%${q}%`);
+      const s = sanitizeSearch(q);
+      if (s) qb = qb.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
       const { data, error } = await qb;
       if (error) throw error;
       return (data ?? []) as unknown as Row[];
