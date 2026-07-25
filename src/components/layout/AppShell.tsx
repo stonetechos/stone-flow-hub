@@ -37,7 +37,7 @@ import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import { AppMark } from "@/components/brand/AppMark";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
@@ -612,11 +612,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
-            <img
-              src={stosAppIcon.url}
-              alt="STOS"
-              width={28}
-              height={28}
+            <AppMark
+              size={28}
               className="h-7 w-7 shrink-0 rounded-md shadow-e1 ring-1 ring-white/10"
             />
             {!collapsed && (
@@ -695,13 +692,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
               >
                 <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
-                  <img
-                    src={stosAppIcon.url}
-                    alt="STOS"
-                    width={28}
-                    height={28}
-                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10"
-                  />
+                  <AppMark size={28} className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10" />
                   <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
                     STOS
                   </SheetTitle>
@@ -720,13 +711,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
 
             <div className="flex items-center gap-2 md:hidden">
-              <img
-                src={stosAppIcon.url}
-                alt="STOS"
-                width={20}
-                height={20}
-                className="h-5 w-5 rounded"
-              />
+              <AppMark size={20} className="h-5 w-5 rounded" />
               <span className="font-display text-sm font-semibold">STOS</span>
             </div>
 

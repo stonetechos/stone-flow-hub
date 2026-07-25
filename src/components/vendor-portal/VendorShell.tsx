@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import { AppMark } from "@/components/brand/AppMark";
 
 const NAV = [
   { to: "/vendor/dashboard", label: "Today", icon: LayoutDashboard },
@@ -38,13 +38,7 @@ export function VendorShell({
       <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:flex md:flex-col">
         <div className="border-b border-border px-4 py-4">
           <div className="flex items-center gap-2 font-display text-sm font-bold tracking-tight">
-            <img
-              src={stosAppIcon.url}
-              alt="STOS"
-              width={22}
-              height={22}
-              className="h-[22px] w-[22px] rounded"
-            />
+            <AppMark size={22} className="h-[22px] w-[22px] rounded" />
             <span>
               <span className="text-primary">STOS</span> Vendor
             </span>
