@@ -36,8 +36,23 @@ export const Route = createFileRoute("/_authenticated")({
     // reaches its first `await`, which previously surfaced as a generic
     // router error instead of the configuration screen.
     if (!getSupabaseConfigStatus().ok) return { user: null };
+
+    // `/auth` decides whether to bounce you to the dashboard by reading the
+    // session out of local storage; this route validates that session over
+    // the network. When a stored token has been revoked or has expired the
+    // two disagree, and the browser ping-pongs between the two routes until
+    // the router's redirect limit trips — with nothing rendered in between,
+    // because both routes are `ssr: false`. Clearing the dead token locally
+    // before redirecting makes the two agree again, and `flow: "expired"`
+    // both explains what happened and is a flow `/auth` never redirects out
+    // of, so the loop cannot re-form even if the sign-out fails.
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
+    if (error || !data.user) {
+      const { data: stored } = await supabase.auth.getSession();
+      if (!stored.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
+      await supabase.auth.signOut({ scope: "local" });
+      throw redirect({ to: "/auth", search: { flow: "expired" } });
+    }
 
     // A temporary password (Part 5) or an admin-driven
     // reset (Part 6) both set `force_password_change` — checked here so it

@@ -45,9 +45,17 @@ export function registerServiceWorker(): void {
       })
       .catch((err) => console.warn("[pwa] service worker registration failed", err));
 
+    // Reload only when an already-controlled page swaps to a new worker,
+    // which is the case this is for. On a first-ever install the page
+    // starts uncontrolled and `clients.claim()` in the worker's activate
+    // handler fires this same event — reloading there throws away a page
+    // the user is already using, and because the guard flag does not
+    // survive the reload it triggers, a worker that re-activates can do it
+    // again and again.
+    const hadController = Boolean(navigator.serviceWorker.controller);
     let reloading = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloading) return;
+      if (!hadController || reloading) return;
       reloading = true;
       window.location.reload();
     });

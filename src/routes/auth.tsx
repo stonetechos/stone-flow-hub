@@ -66,8 +66,19 @@ export const Route = createFileRoute("/auth")({
     if (!getSupabaseConfigStatus().ok) return;
     // Only bounce authenticated users away from the sign-in surface.
     if (search.flow && search.flow !== "signin") return;
-    const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/dashboard" });
+    // supabase-js serialises every auth call behind a `navigator.locks`
+    // lock and `getSession()` can trigger a token refresh against the
+    // Supabase host. If that host is unreachable — offline, DNS-blocked,
+    // blocked by an extension — the promise never settles, and since this
+    // route is `ssr: false` the result is a permanently blank sign-in page.
+    // Losing the redirect-if-already-signed-in convenience is a far better
+    // outcome than losing the page, so the check gives up after 4 seconds
+    // and falls through to rendering the form.
+    const session = await Promise.race([
+      supabase.auth.getSession().then(({ data }) => data.session),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+    ]);
+    if (session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
 });
