@@ -18,62 +18,47 @@ export type Database = {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id: string | null
-          browser: string | null
           created_at: string
           dedupe_key: string | null
           entity_id: string
           entity_type: string
           field_name: string | null
           id: number
-          ip_address: string | null
           is_demo: boolean
           new_value: Json | null
           old_value: Json | null
-          os: string | null
-          platform: string | null
           project_id: string | null
           summary: string | null
-          user_agent: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
-          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id: string
           entity_type: string
           field_name?: string | null
           id?: number
-          ip_address?: string | null
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
-          os?: string | null
-          platform?: string | null
           project_id?: string | null
           summary?: string | null
-          user_agent?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
-          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id?: string
           entity_type?: string
           field_name?: string | null
           id?: number
-          ip_address?: string | null
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
-          os?: string | null
-          platform?: string | null
           project_id?: string | null
           summary?: string | null
-          user_agent?: string | null
         }
         Relationships: [
           {
@@ -4564,7 +4549,6 @@ export type Database = {
           created_at: string
           department: string | null
           email: string | null
-          force_password_change: boolean
           full_name: string | null
           id: string
           initials: string | null
@@ -4580,7 +4564,6 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
-          force_password_change?: boolean
           full_name?: string | null
           id: string
           initials?: string | null
@@ -4596,7 +4579,6 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
-          force_password_change?: boolean
           full_name?: string | null
           id?: string
           initials?: string | null
@@ -8080,10 +8062,6 @@ export type Database = {
         }
         Returns: string
       }
-      bootstrap_platform_super_admin: {
-        Args: { _email: string }
-        Returns: undefined
-      }
       current_demo_mode: { Args: never; Returns: boolean }
       current_employee_id: { Args: never; Returns: string }
       current_vendor_id: { Args: never; Returns: string }
@@ -8135,7 +8113,6 @@ export type Database = {
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _uid: string }; Returns: boolean }
-      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_vendor_of: {
         Args: { _user_id: string; _vendor_id: string }
         Returns: boolean
@@ -8461,15 +8438,7 @@ export type Database = {
         | "quote_accepted"
         | "invoice_issued"
         | "payment_received"
-        | "user_created"
-        | "password_reset"
-        | "role_changed"
-        | "user_activated"
-        | "user_deactivated"
-        | "user_deleted"
-        | "super_admin_delete_attempted"
-        | "super_admin_role_change_attempted"
-      app_role: "admin" | "sales_manager" | "sales" | "purchase" | "super_admin"
+      app_role: "admin" | "sales_manager" | "sales" | "purchase"
       contact_designation:
         | "owner"
         | "architect"
@@ -8896,16 +8865,8 @@ export const Constants = {
         "quote_accepted",
         "invoice_issued",
         "payment_received",
-        "user_created",
-        "password_reset",
-        "role_changed",
-        "user_activated",
-        "user_deactivated",
-        "user_deleted",
-        "super_admin_delete_attempted",
-        "super_admin_role_change_attempted",
       ],
-      app_role: ["admin", "sales_manager", "sales", "purchase", "super_admin"],
+      app_role: ["admin", "sales_manager", "sales", "purchase"],
       contact_designation: [
         "owner",
         "architect",
