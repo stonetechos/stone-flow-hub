@@ -18,47 +18,62 @@ export type Database = {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id: string | null
+          browser: string | null
           created_at: string
           dedupe_key: string | null
           entity_id: string
           entity_type: string
           field_name: string | null
           id: number
+          ip_address: unknown
           is_demo: boolean
           new_value: Json | null
           old_value: Json | null
+          os: string | null
+          platform: string | null
           project_id: string | null
           summary: string | null
+          user_agent: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id: string
           entity_type: string
           field_name?: string | null
           id?: number
+          ip_address?: unknown
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id?: string
           entity_type?: string
           field_name?: string | null
           id?: number
+          ip_address?: unknown
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {
@@ -269,6 +284,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      company_profiles: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          authorized_signatory: string | null
+          bank_account_number: string | null
+          bank_branch: string | null
+          bank_ifsc: string | null
+          bank_name: string | null
+          cin: string | null
+          city: string | null
+          company_name: string
+          country: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          gstin: string | null
+          id: string
+          is_active: boolean
+          legal_business_name: string | null
+          logo_url: string | null
+          mobile: string | null
+          pan: string | null
+          phone: string | null
+          pincode: string | null
+          signature_url: string | null
+          stamp_url: string | null
+          state: string | null
+          trade_name: string | null
+          updated_at: string
+          updated_by: string | null
+          upi_id: string | null
+          website: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          authorized_signatory?: string | null
+          bank_account_number?: string | null
+          bank_branch?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          cin?: string | null
+          city?: string | null
+          company_name: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          is_active?: boolean
+          legal_business_name?: string | null
+          logo_url?: string | null
+          mobile?: string | null
+          pan?: string | null
+          phone?: string | null
+          pincode?: string | null
+          signature_url?: string | null
+          stamp_url?: string | null
+          state?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          authorized_signatory?: string | null
+          bank_account_number?: string | null
+          bank_branch?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          cin?: string | null
+          city?: string | null
+          company_name?: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          is_active?: boolean
+          legal_business_name?: string | null
+          logo_url?: string | null
+          mobile?: string | null
+          pan?: string | null
+          phone?: string | null
+          pincode?: string | null
+          signature_url?: string | null
+          stamp_url?: string | null
+          state?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
       }
       credit_notes: {
         Row: {
@@ -2190,6 +2307,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      insight_states: {
+        Row: {
+          created_at: string
+          id: string
+          insight_id: string
+          insight_source: string
+          snoozed_until: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insight_id: string
+          insight_source: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insight_id?: string
+          insight_source?: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       installation_materials: {
         Row: {
@@ -7887,6 +8037,25 @@ export type Database = {
           },
         ]
       }
+      payment_register: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          doc_no: string | null
+          id: string | null
+          invoice_id: string | null
+          invoice_no: string | null
+          method: Database["public"]["Enums"]["payment_method"] | null
+          notes: string | null
+          paid_at: string | null
+          reference_no: string | null
+          source: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       procurement_calendar: {
         Row: {
           enquiry_id: string | null
@@ -7980,6 +8149,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      bootstrap_platform_super_admin: {
+        Args: { _email: string }
+        Returns: undefined
       }
       convert_quote_to_invoice: {
         Args: { p_due_date?: string; p_quote_id: string }
@@ -8116,6 +8289,7 @@ export type Database = {
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_vendor_of: {
         Args: { _user_id: string; _vendor_id: string }
         Returns: boolean
@@ -8448,6 +8622,7 @@ export type Database = {
         | "password_reset"
         | "super_admin_delete_attempted"
         | "super_admin_role_change_attempted"
+        | "role_changed"
       app_role: "admin" | "sales_manager" | "sales" | "purchase" | "super_admin"
       contact_designation:
         | "owner"
@@ -8882,6 +9057,7 @@ export const Constants = {
         "password_reset",
         "super_admin_delete_attempted",
         "super_admin_role_change_attempted",
+        "role_changed",
       ],
       app_role: ["admin", "sales_manager", "sales", "purchase", "super_admin"],
       contact_designation: [
