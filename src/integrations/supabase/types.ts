@@ -4549,6 +4549,7 @@ export type Database = {
           created_at: string
           department: string | null
           email: string | null
+          force_password_change: boolean
           full_name: string | null
           id: string
           initials: string | null
@@ -4564,6 +4565,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id: string
           initials?: string | null
@@ -4579,6 +4581,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id?: string
           initials?: string | null
@@ -8438,7 +8441,14 @@ export type Database = {
         | "quote_accepted"
         | "invoice_issued"
         | "payment_received"
-      app_role: "admin" | "sales_manager" | "sales" | "purchase"
+        | "user_created"
+        | "user_deleted"
+        | "user_activated"
+        | "user_deactivated"
+        | "password_reset"
+        | "super_admin_delete_attempted"
+        | "super_admin_role_change_attempted"
+      app_role: "admin" | "sales_manager" | "sales" | "purchase" | "super_admin"
       contact_designation:
         | "owner"
         | "architect"
@@ -8865,8 +8875,15 @@ export const Constants = {
         "quote_accepted",
         "invoice_issued",
         "payment_received",
+        "user_created",
+        "user_deleted",
+        "user_activated",
+        "user_deactivated",
+        "password_reset",
+        "super_admin_delete_attempted",
+        "super_admin_role_change_attempted",
       ],
-      app_role: ["admin", "sales_manager", "sales", "purchase"],
+      app_role: ["admin", "sales_manager", "sales", "purchase", "super_admin"],
       contact_designation: [
         "owner",
         "architect",
