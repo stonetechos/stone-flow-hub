@@ -289,6 +289,7 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          alt_logo_url: string | null
           authorized_signatory: string | null
           bank_account_number: string | null
           bank_branch: string | null
@@ -300,19 +301,27 @@ export type Database = {
           country: string
           created_at: string
           created_by: string | null
+          designation: string | null
+          display_name: string | null
           email: string | null
           gstin: string | null
           id: string
+          invoice_footer: string | null
           is_active: boolean
           legal_business_name: string | null
           logo_url: string | null
           mobile: string | null
+          msme_no: string | null
           pan: string | null
           phone: string | null
           pincode: string | null
+          primary_contact: string | null
+          qr_code_url: string | null
+          secondary_contact: string | null
           signature_url: string | null
           stamp_url: string | null
           state: string | null
+          terms_and_conditions: string | null
           trade_name: string | null
           updated_at: string
           updated_by: string | null
@@ -322,6 +331,7 @@ export type Database = {
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          alt_logo_url?: string | null
           authorized_signatory?: string | null
           bank_account_number?: string | null
           bank_branch?: string | null
@@ -333,19 +343,27 @@ export type Database = {
           country?: string
           created_at?: string
           created_by?: string | null
+          designation?: string | null
+          display_name?: string | null
           email?: string | null
           gstin?: string | null
           id?: string
+          invoice_footer?: string | null
           is_active?: boolean
           legal_business_name?: string | null
           logo_url?: string | null
           mobile?: string | null
+          msme_no?: string | null
           pan?: string | null
           phone?: string | null
           pincode?: string | null
+          primary_contact?: string | null
+          qr_code_url?: string | null
+          secondary_contact?: string | null
           signature_url?: string | null
           stamp_url?: string | null
           state?: string | null
+          terms_and_conditions?: string | null
           trade_name?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -355,6 +373,7 @@ export type Database = {
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          alt_logo_url?: string | null
           authorized_signatory?: string | null
           bank_account_number?: string | null
           bank_branch?: string | null
@@ -366,19 +385,27 @@ export type Database = {
           country?: string
           created_at?: string
           created_by?: string | null
+          designation?: string | null
+          display_name?: string | null
           email?: string | null
           gstin?: string | null
           id?: string
+          invoice_footer?: string | null
           is_active?: boolean
           legal_business_name?: string | null
           logo_url?: string | null
           mobile?: string | null
+          msme_no?: string | null
           pan?: string | null
           phone?: string | null
           pincode?: string | null
+          primary_contact?: string | null
+          qr_code_url?: string | null
+          secondary_contact?: string | null
           signature_url?: string | null
           stamp_url?: string | null
           state?: string | null
+          terms_and_conditions?: string | null
           trade_name?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -2851,6 +2878,7 @@ export type Database = {
           cgst_amount: number | null
           created_at: string
           description: string
+          discount_pct: number
           hsn_sac: string | null
           id: string
           igst_amount: number | null
@@ -2869,6 +2897,7 @@ export type Database = {
           cgst_amount?: number | null
           created_at?: string
           description: string
+          discount_pct?: number
           hsn_sac?: string | null
           id?: string
           igst_amount?: number | null
@@ -2887,6 +2916,7 @@ export type Database = {
           cgst_amount?: number | null
           created_at?: string
           description?: string
+          discount_pct?: number
           hsn_sac?: string | null
           id?: string
           igst_amount?: number | null
@@ -2922,88 +2952,170 @@ export type Database = {
         Row: {
           amount_paid: number
           balance_due: number
+          billing_address: string | null
           company_id: string | null
+          company_profile_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
           customer_id: string
+          customer_po_no: string | null
+          dispatch_date: string | null
+          dispatch_remarks: string | null
+          driver_mobile: string | null
+          driver_name: string | null
           due_date: string | null
+          einvoice_irn: string | null
+          eway_bill_no: string | null
           external_ref: string | null
+          freight: number
           id: string
           invoice_no: string
           is_demo: boolean
           issue_date: string
+          loading: number
+          lr_no: string | null
           notes: string | null
           original_customer_id: string | null
+          other_charges: number
+          packing: number
+          payment_terms: string | null
           place_of_supply: string | null
           project_id: string
           quote_id: string | null
           reverse_charge: boolean
+          round_off: number
+          sales_executive_id: string | null
+          site_address: string | null
+          site_contact_name: string | null
+          site_contact_phone: string | null
+          site_name: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
           terms: string | null
           total: number
+          transporter: string | null
+          truck_no: string | null
+          unloading: number
           updated_at: string
+          vehicle_no: string | null
           workflow_state: Json | null
         }
         Insert: {
           amount_paid?: number
           balance_due?: number
+          billing_address?: string | null
           company_id?: string | null
+          company_profile_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           customer_id: string
+          customer_po_no?: string | null
+          dispatch_date?: string | null
+          dispatch_remarks?: string | null
+          driver_mobile?: string | null
+          driver_name?: string | null
           due_date?: string | null
+          einvoice_irn?: string | null
+          eway_bill_no?: string | null
           external_ref?: string | null
+          freight?: number
           id?: string
           invoice_no: string
           is_demo?: boolean
           issue_date?: string
+          loading?: number
+          lr_no?: string | null
           notes?: string | null
           original_customer_id?: string | null
+          other_charges?: number
+          packing?: number
+          payment_terms?: string | null
           place_of_supply?: string | null
           project_id: string
           quote_id?: string | null
           reverse_charge?: boolean
+          round_off?: number
+          sales_executive_id?: string | null
+          site_address?: string | null
+          site_contact_name?: string | null
+          site_contact_phone?: string | null
+          site_name?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
           terms?: string | null
           total?: number
+          transporter?: string | null
+          truck_no?: string | null
+          unloading?: number
           updated_at?: string
+          vehicle_no?: string | null
           workflow_state?: Json | null
         }
         Update: {
           amount_paid?: number
           balance_due?: number
+          billing_address?: string | null
           company_id?: string | null
+          company_profile_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           customer_id?: string
+          customer_po_no?: string | null
+          dispatch_date?: string | null
+          dispatch_remarks?: string | null
+          driver_mobile?: string | null
+          driver_name?: string | null
           due_date?: string | null
+          einvoice_irn?: string | null
+          eway_bill_no?: string | null
           external_ref?: string | null
+          freight?: number
           id?: string
           invoice_no?: string
           is_demo?: boolean
           issue_date?: string
+          loading?: number
+          lr_no?: string | null
           notes?: string | null
           original_customer_id?: string | null
+          other_charges?: number
+          packing?: number
+          payment_terms?: string | null
           place_of_supply?: string | null
           project_id?: string
           quote_id?: string | null
           reverse_charge?: boolean
+          round_off?: number
+          sales_executive_id?: string | null
+          site_address?: string | null
+          site_contact_name?: string | null
+          site_contact_phone?: string | null
+          site_name?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
           terms?: string | null
           total?: number
+          transporter?: string | null
+          truck_no?: string | null
+          unloading?: number
           updated_at?: string
+          vehicle_no?: string | null
           workflow_state?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_company_profile_id_fkey"
+            columns: ["company_profile_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_customer_id_fkey"
             columns: ["customer_id"]
@@ -8159,29 +8271,54 @@ export type Database = {
         Returns: {
           amount_paid: number
           balance_due: number
+          billing_address: string | null
           company_id: string | null
+          company_profile_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
           customer_id: string
+          customer_po_no: string | null
+          dispatch_date: string | null
+          dispatch_remarks: string | null
+          driver_mobile: string | null
+          driver_name: string | null
           due_date: string | null
+          einvoice_irn: string | null
+          eway_bill_no: string | null
           external_ref: string | null
+          freight: number
           id: string
           invoice_no: string
           is_demo: boolean
           issue_date: string
+          loading: number
+          lr_no: string | null
           notes: string | null
           original_customer_id: string | null
+          other_charges: number
+          packing: number
+          payment_terms: string | null
           place_of_supply: string | null
           project_id: string
           quote_id: string | null
           reverse_charge: boolean
+          round_off: number
+          sales_executive_id: string | null
+          site_address: string | null
+          site_contact_name: string | null
+          site_contact_phone: string | null
+          site_name: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
           terms: string | null
           total: number
+          transporter: string | null
+          truck_no: string | null
+          unloading: number
           updated_at: string
+          vehicle_no: string | null
           workflow_state: Json | null
         }
         SetofOptions: {
@@ -8707,6 +8844,7 @@ export type Database = {
         | "returned"
       invoice_status:
         | "draft"
+        | "issued"
         | "sent"
         | "partially_paid"
         | "paid"
@@ -9153,6 +9291,7 @@ export const Constants = {
       ],
       invoice_status: [
         "draft",
+        "issued",
         "sent",
         "partially_paid",
         "paid",

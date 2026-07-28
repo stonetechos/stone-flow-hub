@@ -200,6 +200,7 @@
               "type": "string",
               "enum": [
                 "draft",
+                "issued",
                 "sent",
                 "partially_paid",
                 "paid",

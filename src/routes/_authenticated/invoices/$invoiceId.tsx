@@ -104,7 +104,7 @@ function InvoiceDetailPage() {
     mutationFn: (s: InvoiceStatus) =>
       setInvoiceStatus({
         invoice_id: invoiceId,
-        status: s as "draft" | "sent" | "cancelled" | "overdue",
+        status: s as "draft" | "issued" | "sent" | "cancelled" | "overdue",
       }),
     onSuccess: () => {
       toast.success("Status updated");
@@ -324,6 +324,7 @@ function InvoiceDetailPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="issued">Issued</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
                   <SelectItem value="overdue">Overdue</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>

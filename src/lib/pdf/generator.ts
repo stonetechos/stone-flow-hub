@@ -267,20 +267,62 @@ export async function renderDocHtmlAsync(doc: PdfDoc): Promise<string> {
 }
 
 function openInNewTab(html: string, autoPrint: boolean) {
-  const w = window.open("", "_blank", "noopener,noreferrer");
-  if (!w) return;
+  // NOTE: `noopener` makes window.open() return null, which historically
+  // caused Download/Preview PDF to appear "blank" — the write never
+  // happened. We deliberately open without noopener so we can populate
+  // the new tab, then null out `opener` inside the tab as a safety net.
+  const w = window.open("about:blank", "_blank");
+  if (!w) {
+    // Popup blocked — fall back to a Blob URL download so the user still
+    // gets the document instead of a silent failure.
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return;
+  }
+  try {
+    w.opener = null;
+  } catch {
+    /* ignore cross-origin */
+  }
   w.document.open();
   w.document.write(html);
   w.document.close();
   if (autoPrint) {
-    setTimeout(() => {
+    // Wait for images (logo/signature/QR) to load before triggering print;
+    // otherwise the preview renders before the logo comes back and prints
+    // a text-only header.
+    const trigger = () => {
       try {
         w.focus();
         w.print();
       } catch {
         /* ignore */
       }
-    }, 350);
+    };
+    const imgs = Array.from(w.document.images);
+    if (imgs.length === 0) {
+      setTimeout(trigger, 250);
+      return;
+    }
+    let remaining = imgs.length;
+    const done = () => {
+      if (--remaining <= 0) setTimeout(trigger, 150);
+    };
+    imgs.forEach((img) => {
+      if (img.complete) done();
+      else {
+        img.addEventListener("load", done, { once: true });
+        img.addEventListener("error", done, { once: true });
+      }
+    });
+    // Hard timeout so a stuck image doesn't block the print dialog forever.
+    setTimeout(trigger, 3500);
   }
 }
 
@@ -295,9 +337,9 @@ export async function printPdf(doc: PdfDoc): Promise<void> {
 }
 
 /**
- * Download as PDF: opens the print dialog which offers "Save as PDF"
- * on every modern OS. Kept as a distinct entry point so a future
- * binary-PDF backend can slot in without touching call sites.
+ * Download as PDF: opens the print dialog (which offers "Save as PDF"
+ * on every modern OS). The historical "blank tab" bug was caused by
+ * `noopener` making `window.open` return null; fixed above.
  */
 export async function downloadPdf(doc: PdfDoc): Promise<void> {
   return printPdf(doc);
