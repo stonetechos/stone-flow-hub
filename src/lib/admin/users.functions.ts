@@ -19,6 +19,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { canManageTargetUser } from "@/lib/admin/permissions";
 import { requireAdminOrSuperAdmin, type HasRoleClient } from "@/lib/admin/server-auth";
 import { parseUserAgent, derivePlatformFromOrigin } from "@/lib/audit/user-agent";
+import { notify } from "@/lib/notifications/notify.server";
 import type { Database } from "@/integrations/supabase/types";
 
 /** Matches the real shape of `supabaseAdmin` (see client.server.ts) without
@@ -496,6 +497,22 @@ export const setUserActive = createServerFn({ method: "POST" })
       summary: data.is_active ? "User reactivated." : "User deactivated.",
     });
 
+    // Goal 3 integration point: a role/access change is exactly the kind
+    // of "important" (not merely informational, not urgent-critical) event
+    // the notification centre exists for — see notify.server.ts's header
+    // for why this never throws even before the migration is applied.
+    void notify({
+      userId: data.user_id,
+      tier: "important",
+      title: data.is_active ? "Your account was reactivated" : "Your account was deactivated",
+      body: data.is_active
+        ? "An administrator restored your access to STOS."
+        : "An administrator deactivated your account. Contact an admin if this is unexpected.",
+      entityType: "profile",
+      entityId: data.user_id,
+      createdBy: context.userId,
+    });
+
     return { ok: true };
   });
 
@@ -545,6 +562,16 @@ export const resetUserPassword = createServerFn({ method: "POST" })
       action: "password_reset",
       actorId: context.userId,
       summary: "Password reset by administrator.",
+    });
+
+    void notify({
+      userId: data.user_id,
+      tier: "important",
+      title: "Your password was reset",
+      body: "An administrator reset your password. You'll be asked to set a new one at next sign-in.",
+      entityType: "profile",
+      entityId: data.user_id,
+      createdBy: context.userId,
     });
 
     return { ok: true };

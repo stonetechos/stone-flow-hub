@@ -1,16 +1,36 @@
 /**
  * STOS — Notification centre.
  *
- * Presentation only. Groups notifications into Unread / Today / Yesterday
- * / Earlier tabs and follows STDL surface and text tokens. Realtime-ready:
- * the same setState surface can be swapped for a Supabase channel later.
+ * Was presentation-only against `MOCK_NOTIFICATIONS` (see git history for
+ * that version). Now backed by `public.notifications` via
+ * `src/lib/notifications/centre.ts`, with realtime INSERT updates and
+ * durable read-state. Groups notifications into Unread / Today / Yesterday
+ * / All tabs, same UX as before. Renders each row with tier styling
+ * (`TIER_TONE`) so Critical is visually distinct from Info/Important,
+ * matching Goal 3's "urgent notifications use different styling"
+ * requirement — the centre is also where a Critical toast's content
+ * survives after it auto-dismisses (see `src/lib/notifications/toast.ts`).
+ *
+ * Degrades to a normal empty state (not an error) if
+ * `supabase/migrations/20260728120000_in_app_notifications_centre.sql`
+ * hasn't been applied yet — see centre.ts's `isMissingTableError` handling.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Check, Inbox } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MOCK_NOTIFICATIONS, type NotificationItem } from "@/lib/notifications/mock";
+import {
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  subscribeToNotifications,
+  type CentreNotification,
+} from "@/lib/notifications/centre";
+import { TIER_TONE } from "@/lib/notifications/tiers";
+import { toneDot } from "@/lib/ui/tones";
+import { qk } from "@/lib/query-keys";
 import { formatRelative } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -23,8 +43,8 @@ function startOfDay(d: Date): number {
   return c.getTime();
 }
 
-function bucketFor(n: NotificationItem, now: Date): "today" | "yesterday" | "earlier" {
-  const t = new Date(n.at).getTime();
+function bucketFor(n: CentreNotification, now: Date): "today" | "yesterday" | "earlier" {
+  const t = new Date(n.createdAt).getTime();
   const today = startOfDay(now);
   const yest = today - 86_400_000;
   if (t >= today) return "today";
@@ -33,16 +53,36 @@ function bucketFor(n: NotificationItem, now: Date): "today" | "yesterday" | "ear
 }
 
 export function NotificationsBell() {
-  const [items, setItems] = useState<NotificationItem[]>([...MOCK_NOTIFICATIONS]);
-  const [tab, setTab] = useState<BucketKey>("all");
-  const unread = items.filter((i) => !i.read).length;
+  const qc = useQueryClient();
+  const { data: items = [] } = useQuery({
+    queryKey: qk.notifications.all,
+    queryFn: () => listNotifications(),
+    // Realtime pushes new rows in via invalidation below; this keeps the
+    // popover reasonably fresh even if a realtime event is missed (e.g.
+    // the tab was backgrounded when it fired).
+    refetchInterval: 60_000,
+  });
 
-  const now = useMemo(() => new Date(), [items]);
+  useEffect(() => {
+    return subscribeToNotifications(() => {
+      void qc.invalidateQueries({ queryKey: qk.notifications.all });
+    });
+  }, [qc]);
+
+  const [tab, setTab] = useState<BucketKey>("all");
+
+  // Cheap enough to compute per render — a memo keyed on `items` just to
+  // "refresh now() when data refreshes" isn't buying anything real here
+  // and was tripping the exhaustive-deps lint (nothing in the callback
+  // actually reads `items`).
+  const now = new Date();
+  const unreadItems = useMemo(() => items.filter((i) => !i.readAt), [items]);
+  const unread = unreadItems.length;
 
   const filtered = useMemo(() => {
     switch (tab) {
       case "unread":
-        return items.filter((i) => !i.read);
+        return unreadItems;
       case "today":
         return items.filter((i) => bucketFor(i, now) === "today");
       case "yesterday":
@@ -50,11 +90,24 @@ export function NotificationsBell() {
       default:
         return items;
     }
-  }, [items, tab, now]);
+  }, [items, now, unreadItems, tab]);
 
-  const markAll = (): void => setItems((xs) => xs.map((x) => ({ ...x, read: true })));
-  const markOne = (id: string): void =>
-    setItems((xs) => xs.map((x) => (x.id === id ? { ...x, read: true } : x)));
+  const markAll = (): void => {
+    const ids = unreadItems.map((i) => i.id);
+    // Optimistic: flip local cache immediately, reconcile on the next
+    // fetch/realtime event rather than waiting on a round trip.
+    qc.setQueryData<CentreNotification[]>(qk.notifications.all, (prev) =>
+      (prev ?? []).map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
+    );
+    void markAllNotificationsRead(ids);
+  };
+
+  const markOne = (id: string): void => {
+    qc.setQueryData<CentreNotification[]>(qk.notifications.all, (prev) =>
+      (prev ?? []).map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
+    );
+    void markNotificationRead(id);
+  };
 
   return (
     <Popover>
@@ -140,7 +193,7 @@ export function NotificationsBell() {
                 filtered.map((n) => (
                   <Link
                     key={n.id}
-                    to={n.href ?? "/dashboard"}
+                    to={n.linkPath ?? "/dashboard"}
                     className="block border-b border-border-subtle px-3.5 py-3 transition-colors hover:bg-surface-card-hover"
                     onClick={() => markOne(n.id)}
                   >
@@ -149,19 +202,35 @@ export function NotificationsBell() {
                         aria-hidden
                         className={cn(
                           "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                          !n.read ? "bg-intent-primary" : "bg-transparent",
+                          !n.readAt ? toneDot(TIER_TONE[n.tier]) : "bg-transparent",
                         )}
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="truncate text-[13px] font-medium text-text-primary">
-                            {n.title}
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            {n.tier === "critical" && (
+                              <span
+                                className={cn(
+                                  "shrink-0 rounded-sm px-1 py-px font-mono text-[9px] font-semibold uppercase tracking-wider",
+                                  "bg-status-danger-bg text-status-danger-fg",
+                                )}
+                              >
+                                Critical
+                              </span>
+                            )}
+                            <div className="truncate text-[13px] font-medium text-text-primary">
+                              {n.title}
+                            </div>
                           </div>
                           <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                            {formatRelative(n.at)}
+                            {formatRelative(n.createdAt)}
                           </span>
                         </div>
-                        <div className="line-clamp-2 text-[12px] text-text-secondary">{n.body}</div>
+                        {n.body && (
+                          <div className="line-clamp-2 text-[12px] text-text-secondary">
+                            {n.body}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -172,7 +241,7 @@ export function NotificationsBell() {
         </Tabs>
 
         <div className="flex items-center justify-between border-t border-border-subtle bg-surface-panel px-3 py-2 text-[11px] text-text-muted">
-          <span className="font-mono uppercase tracking-wider">Realtime · preview</span>
+          <span className="font-mono uppercase tracking-wider">Realtime</span>
           <Link to="/activity" className="text-text-link hover:underline">
             Activity feed
           </Link>
