@@ -30,7 +30,10 @@ registerVieAction("log_enquiry", async (params): Promise<VieActionResult> => {
     budget_inr: (params.budget_inr as number | undefined) ?? null,
     notes: (params.notes as string | undefined) ?? undefined,
     priority: "normal",
-    required_delivery_date: undefined,
+    // Voice-capture foundation (Goal 5) — was hardcoded `undefined` before
+    // planLogEnquiry had anything to put here; now carries the date
+    // planner/index.ts derives from entities.timelineRelativeDays.
+    required_delivery_date: (params.required_delivery_date as string | undefined) ?? undefined,
   });
 
   return { linkedRecordType: "enquiry", linkedRecordId: enquiry.id };

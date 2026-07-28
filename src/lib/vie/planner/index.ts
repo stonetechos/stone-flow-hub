@@ -73,17 +73,37 @@ async function planLogEnquiry(understanding: VieUnderstanding): Promise<VieExecu
   const requirement =
     requirementParts.length > 0 ? requirementParts.join(" ") : understanding.canonicalText;
 
+  // An explicitly stated budget ("budget is around 5 lakhs") always wins
+  // over the derived quantity*rate estimate — the derived figure is a
+  // fallback for when no explicit number was given, not a correction to
+  // apply on top of one that was.
   const budget_inr =
-    entities.quantity !== undefined && entities.rate !== undefined
+    entities.budgetInr ??
+    (entities.quantity !== undefined && entities.rate !== undefined
       ? entities.quantity * entities.rate
+      : undefined);
+
+  // Deterministic date arithmetic from the extracted day count — same rule
+  // planNoteFollowup's `scheduled_at` already follows (the LLM extracts a
+  // relative day count, never a computed date itself).
+  const required_delivery_date =
+    entities.timelineRelativeDays !== undefined
+      ? new Date(Date.now() + entities.timelineRelativeDays * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 10)
       : undefined;
+
+  const notes = entities.requirements
+    ? `${entities.requirements}\n\nAI-logged from: "${understanding.originalText}"`
+    : `AI-logged from: "${understanding.originalText}"`;
 
   const params: Record<string, unknown> = {
     customer_id: customer.customerId,
     product_id: product.productId,
     requirement,
     budget_inr,
-    notes: `AI-logged from: "${understanding.originalText}"`,
+    required_delivery_date,
+    notes,
   };
 
   const policy = await getExecutionPolicy("log_enquiry");
@@ -179,6 +199,8 @@ async function planCreateCustomer(understanding: VieUnderstanding): Promise<VieE
   const params: Record<string, unknown> = {
     name: entities.customerName,
     mobile: entities.mobile,
+    email: entities.email,
+    billing_address: entities.address,
     city: entities.city,
     customer_type: entities.customerType ?? "individual",
     notes: `AI-logged from: "${understanding.originalText}"`,
@@ -337,13 +359,17 @@ async function planCreateQuotation(understanding: VieUnderstanding): Promise<Vie
     };
   });
 
+  const notes = entities.requirements
+    ? `${entities.requirements}\n\nAI-logged from: "${understanding.originalText}"`
+    : `AI-logged from: "${understanding.originalText}"`;
+
   const params: Record<string, unknown> = {
     customer_id: customer.customerId,
     project_id: projectId,
     project_text: entities.projectText,
     category: entities.category,
     items,
-    notes: `AI-logged from: "${understanding.originalText}"`,
+    notes,
   };
 
   const policy = await getExecutionPolicy("create_quotation");

@@ -59,6 +59,20 @@ export const logEnquiryEntitiesSchema = z.object({
   quantity: z.number().positive().optional(),
   unit: z.string().trim().min(1).optional(),
   rate: z.number().positive().optional(),
+  // Voice-capture foundation additions (Goal 5) — an EXPLICITLY stated
+  // budget/timeline/requirement, distinct from what planLogEnquiry already
+  // derives from quantity*rate. All three optional, extracted permissively,
+  // never fabricated — same discipline as every field above. See
+  // planner/index.ts's planLogEnquiry for exactly how each is used:
+  // budgetInr overrides the derived calculation when stated explicitly,
+  // timelineRelativeDays is deterministically converted to a real date
+  // (same "LLM extracts a day count, application code does the arithmetic"
+  // rule note_followup's relativeDays already established — never trust
+  // the model to compute a date itself), requirements is folded into the
+  // enquiry's notes ahead of the boilerplate "AI-logged from" line.
+  budgetInr: z.number().positive().optional(),
+  timelineRelativeDays: z.number().int().min(0).optional(),
+  requirements: z.string().trim().min(1).optional(),
 });
 export type LogEnquiryEntities = z.infer<typeof logEnquiryEntitiesSchema>;
 
@@ -89,6 +103,15 @@ export type NoteFollowupEntities = z.infer<typeof noteFollowupEntitiesSchema>;
 export const createCustomerEntitiesSchema = z.object({
   customerName: z.string().trim().min(1).optional(),
   mobile: z.string().trim().min(1).optional(),
+  // Voice-capture foundation additions (Goal 5) — both are real columns on
+  // `customers` (primary_email, billing_address) via createCustomer()'s
+  // existing `email`/`billing_address` params, so unlike some of this
+  // sprint's other extraction additions these need no notes-folding
+  // workaround; planCreateCustomer passes them straight through. Optional
+  // and non-fabricated, same as every field on this schema — no email/
+  // address mentioned means the field is simply absent, never guessed.
+  email: z.string().trim().min(1).optional(),
+  address: z.string().trim().min(1).optional(),
   city: z.string().trim().min(1).optional(),
   customerType: z
     .enum([
@@ -173,6 +196,13 @@ export const createQuotationEntitiesSchema = z.object({
   category: z
     .enum(["supply_only", "supply_and_installation", "installation_only", "material_and_labour"])
     .optional(),
+  // Voice-capture foundation addition (Goal 5) — free-text requirements
+  // beyond what the structured `items` array captures (e.g. "must match
+  // the existing flooring", "site has limited parking for delivery").
+  // Folded into the quote's notes field by planCreateQuotation, same
+  // "requirements ahead of the boilerplate AI-logged line" pattern
+  // logEnquiryEntitiesSchema's own `requirements` field uses.
+  requirements: z.string().trim().min(1).optional(),
 });
 export type CreateQuotationEntities = z.infer<typeof createQuotationEntitiesSchema>;
 

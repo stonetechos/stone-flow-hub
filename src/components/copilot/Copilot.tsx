@@ -18,6 +18,8 @@ import {
   ChevronDown,
   ArrowRight,
   SearchX,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,6 +39,7 @@ import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieActionCard";
+import { useSpeechCapture } from "@/lib/voice/useSpeechCapture";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
@@ -216,6 +219,18 @@ export function Copilot() {
   // enough to push the chat composer off-screen.
   const [insightsOpen, setInsightsOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Voice-capture foundation (Goal 5) — see useSpeechCapture.ts's header
+  // for exactly what this does and does not handle. Transcript is synced
+  // live into the same `input` state the textarea already uses below, so
+  // it flows through the unmodified understandAndStage()/askCopilot path —
+  // no new parsing added, per the brief's "do not hardcode parsing rules."
+  const speech = useSpeechCapture();
+  useEffect(() => {
+    if (speech.isListening) setInput(speech.transcript);
+  }, [speech.transcript, speech.isListening]);
+  useEffect(() => {
+    if (speech.error) toast.error(speech.error);
+  }, [speech.error]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const ctx = deriveContext(path);
   const { processedInsights } = useExecutiveInsights();
@@ -596,6 +611,27 @@ export function Copilot() {
               rows={2}
               className="min-h-[56px] resize-none"
             />
+            {speech.isSupported && (
+              <Button
+                type="button"
+                variant={speech.isListening ? "destructive" : "outline"}
+                size="icon"
+                onClick={() => (speech.isListening ? speech.stop() : speech.start())}
+                aria-label={speech.isListening ? "Stop voice input" : "Start voice input"}
+                aria-pressed={speech.isListening}
+                title={
+                  speech.isListening
+                    ? "Listening… tap to stop"
+                    : "Speak instead of typing (foundation — see docs for language limits)"
+                }
+              >
+                {speech.isListening ? (
+                  <MicOff className="h-4 w-4 animate-pulse" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
+            )}
             <Button
               size="icon"
               onClick={() => submit()}
