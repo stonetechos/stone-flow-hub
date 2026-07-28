@@ -16,6 +16,7 @@
  */
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { customersApiMock, projectsApiMock, resetAllModuleMocks } from "./testSupport/moduleMocks";
+import type { UniversalEntityType } from "./universalEntityResolver";
 
 import * as rfqsApiActual from "@/lib/rfqs/api";
 import * as vendorsApiActual from "@/lib/vendors/api";
@@ -46,20 +47,22 @@ const { resolveUniversalEntities, resolveUniversalEntitiesByType, UNIVERSAL_ENTI
 describe("UNIVERSAL_ENTITY_TYPES", () => {
   test("covers exactly the 12 types this sprint scoped", () => {
     expect([...UNIVERSAL_ENTITY_TYPES].sort()).toEqual(
-      [
-        "activity",
-        "comment",
-        "customer",
-        "document",
-        "enquiry",
-        "invoice",
-        "project",
-        "quote",
-        "rfq",
-        "sales_order",
-        "task",
-        "vendor",
-      ].sort(),
+      (
+        [
+          "activity",
+          "comment",
+          "customer",
+          "document",
+          "enquiry",
+          "invoice",
+          "project",
+          "quote",
+          "rfq",
+          "sales_order",
+          "task",
+          "vendor",
+        ] satisfies UniversalEntityType[]
+      ).sort(),
     );
   });
 });

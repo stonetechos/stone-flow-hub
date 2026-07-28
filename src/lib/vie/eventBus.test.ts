@@ -11,7 +11,9 @@ afterEach(() => {
 describe("vieEventBus", () => {
   test("a subscriber receives an event published for its exact type", () => {
     const received: VieEvent[] = [];
-    vieEventBus.on(VIE_EVENTS.ACTION_EXECUTED, (e) => received.push(e));
+    vieEventBus.on(VIE_EVENTS.ACTION_EXECUTED, (e) => {
+      received.push(e);
+    });
     vieEventBus.publish({
       type: VIE_EVENTS.ACTION_EXECUTED,
       payload: { actionId: "a1" },
@@ -24,7 +26,9 @@ describe("vieEventBus", () => {
 
   test("a subscriber to a different type never receives it", () => {
     const received: VieEvent[] = [];
-    vieEventBus.on(VIE_EVENTS.ACTION_FAILED, (e) => received.push(e));
+    vieEventBus.on(VIE_EVENTS.ACTION_FAILED, (e) => {
+      received.push(e);
+    });
     vieEventBus.publish({
       type: VIE_EVENTS.ACTION_EXECUTED,
       payload: {},
@@ -36,7 +40,9 @@ describe("vieEventBus", () => {
 
   test("onAny receives every event regardless of type", () => {
     const received: string[] = [];
-    vieEventBus.onAny((e) => received.push(e.type));
+    vieEventBus.onAny((e) => {
+      received.push(e.type);
+    });
     vieEventBus.publish({
       type: "a.b",
       payload: {},
@@ -54,7 +60,9 @@ describe("vieEventBus", () => {
 
   test("unsubscribe stops further delivery", () => {
     const received: VieEvent[] = [];
-    const unsubscribe = vieEventBus.on("x.y", (e) => received.push(e));
+    const unsubscribe = vieEventBus.on("x.y", (e) => {
+      received.push(e);
+    });
     vieEventBus.publish({
       type: "x.y",
       payload: 1,

@@ -65,7 +65,7 @@ describe("source adapters", () => {
     const result = await adapter!.normalize({
       text: "hello world",
       capturedAt: "2026-07-28T00:00:00.000Z",
-    });
+    } as never);
     expect(result.rawText).toBe("hello world");
     expect(result.source).toBe("text");
   });

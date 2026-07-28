@@ -1,6 +1,6 @@
 /** Tasks: universal task system. Polymorphic entity_type/entity_id. */
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { zOptional, zRequired } from "@/lib/zod";
 import type { DbTable, DbEnum } from "@/lib/types";
@@ -49,7 +49,7 @@ export async function listTasks(
     q?: string;
   } = {},
 ): Promise<TaskRow[]> {
-  let q = supabase
+  let q = getDb()
     .from("tasks")
     .select("*")
     .order("due_at", { ascending: true, nullsFirst: false })
@@ -66,9 +66,9 @@ export async function listTasks(
 
 export async function createTask(input: TaskCreateInput): Promise<TaskRow> {
   const parsed = taskCreateSchema.parse(input);
-  const auth = await supabase.auth.getUser();
+  const auth = await getDb().auth.getUser();
   const uid = auth.data.user?.id ?? null;
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("tasks")
     .insert({ ...parsed, created_by: uid })
     .select("*")
@@ -82,7 +82,7 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
   const patch: Partial<TaskRow> = { ...parsed };
   if (parsed.status === "completed") patch.completed_at = new Date().toISOString();
   else if (parsed.status) patch.completed_at = null;
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("tasks")
     .update(patch)
     .eq("id", id)
@@ -95,12 +95,12 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
 export async function updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
   const patch: Partial<TaskRow> = { status };
   if (status === "completed") patch.completed_at = new Date().toISOString();
-  const { error } = await supabase.from("tasks").update(patch).eq("id", id);
+  const { error } = await getDb().from("tasks").update(patch).eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const { error } = await supabase.from("tasks").delete().eq("id", id);
+  const { error } = await getDb().from("tasks").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
 
@@ -111,7 +111,7 @@ export interface AssignableUser {
 }
 
 export async function listAssignableUsers(): Promise<AssignableUser[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getDb()
     .from("profiles")
     .select("id, full_name, email")
     .order("full_name", { ascending: true });
