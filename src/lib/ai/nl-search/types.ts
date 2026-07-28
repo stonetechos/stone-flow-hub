@@ -53,7 +53,17 @@ export type NlEntityType =
   // resolveFollowup for the query logic).
   | "rfq"
   | "task"
-  | "followup";
+  | "followup"
+  // VIE foundation sprint (2026-07-28) additions — comments/documents/
+  // activities were resolvable in the Cmd/Ctrl+K palette (globalSearch's
+  // "notes"/"documents"/"activities" groups) but had no NlEntityType at
+  // all, meaning Copilot's Ask mode could never answer "find the note
+  // about..." or "show documents for...". Resolved via the new Universal
+  // Entity Resolver (vie/universalEntityResolver.ts) — see resolve.ts's
+  // resolveGeneric() cases for "comment"/"document"/"activity".
+  | "comment"
+  | "document"
+  | "activity";
 
 export interface NlFilters {
   /** Loose, LLM-classified status bucket — deliberately a free string

@@ -77,6 +77,84 @@ async function safe<T>(p: PromiseLike<{ data: T[] | null }>): Promise<T[]> {
   }
 }
 
+type PolymorphicRow = Record<string, unknown> & {
+  id: string | number;
+  entity_type?: string;
+  entity_id?: string;
+};
+
+function polymorphicHref(r: PolymorphicRow): string {
+  const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
+  return r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base;
+}
+
+/**
+ * `comments`/`file_objects`/`activity_log` query builders, extracted so
+ * they're declared exactly once — `globalSearch()` below and
+ * `vie/universalEntityResolver.ts` (Universal Entity Resolver, foundation
+ * sprint 2026-07-28) both call these instead of each keeping its own copy
+ * of the same `.ilike()` query. These three tables are polymorphic (one
+ * row can belong to a customer, project, enquiry, quote, sales order,
+ * purchase order, invoice, vendor, or RFQ), which is why each returns a
+ * ready-to-render `SearchHit` (with `href` already resolved via
+ * `ENTITY_TYPE_ROUTE`) rather than a raw row — there's no single detail
+ * page any of these three belongs to on their own.
+ */
+export async function fetchCommentHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb().from("comments").select("id,body,entity_type,entity_id").ilike("body", p).limit(limit),
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    label: typeof r.body === "string" && r.body ? r.body : "Note",
+    sublabel: r.entity_type ?? null,
+    href: polymorphicHref(r),
+    group: "notes",
+    groupLabel: "Notes",
+  }));
+}
+
+export async function fetchDocumentHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb()
+      .from("file_objects")
+      .select("id,file_name,entity_type,entity_id,folder")
+      .ilike("file_name", p)
+      .limit(limit),
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    label: typeof r.file_name === "string" && r.file_name ? r.file_name : "Document",
+    sublabel: typeof r.folder === "string" ? r.folder : null,
+    href: polymorphicHref(r),
+    group: "documents",
+    groupLabel: "Documents",
+  }));
+}
+
+export async function fetchActivityHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb()
+      .from("activity_log")
+      .select("id,summary,entity_type,entity_id")
+      .ilike("summary", p)
+      .limit(limit),
+  );
+  return rows.map((r) => ({
+    // activity_log.id is bigserial (number) — SearchHit.id is string
+    // everywhere else, so coerce rather than widen the shared type for one entity.
+    id: String(r.id),
+    label: typeof r.summary === "string" && r.summary ? r.summary : "Activity",
+    sublabel: r.entity_type ?? null,
+    href: polymorphicHref(r),
+    group: "activities",
+    groupLabel: "Activities",
+  }));
+}
+
 export async function globalSearch(query: string): Promise<SearchHit[]> {
   const raw = query.trim();
   if (raw.length < 2) return [];
@@ -102,9 +180,9 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     rfqs,
     tasks,
     followups,
-    notes,
-    documents,
-    activities,
+    noteHits,
+    documentHits,
+    activityHits,
   ] = await Promise.all([
     safe(
       getDb()
@@ -238,27 +316,9 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .or(`notes.ilike.${p},outcome_notes.ilike.${p}`)
         .limit(LIMIT),
     ),
-    safe(
-      getDb()
-        .from("comments")
-        .select("id,body,entity_type,entity_id")
-        .ilike("body", p)
-        .limit(LIMIT),
-    ),
-    safe(
-      getDb()
-        .from("file_objects")
-        .select("id,file_name,entity_type,entity_id,folder")
-        .ilike("file_name", p)
-        .limit(LIMIT),
-    ),
-    safe(
-      getDb()
-        .from("activity_log")
-        .select("id,summary,entity_type,entity_id")
-        .ilike("summary", p)
-        .limit(LIMIT),
-    ),
+    fetchCommentHits(raw),
+    fetchDocumentHits(raw),
+    fetchActivityHits(raw),
   ]);
 
   type Row = Record<string, unknown> & { id: string };
@@ -358,51 +418,10 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
 
   // Notes/documents/activities are polymorphic (comments/file_objects/
   // activity_log all key off entity_type+entity_id rather than owning a
-  // route of their own) — route to whichever parent record's page the
-  // ENTITY_TYPE_ROUTE map knows, falling back to the Activity feed for an
-  // entity_type this map doesn't recognize rather than a broken link.
-  for (const r of notes as Array<
-    Record<string, unknown> & { id: string; entity_type?: string; entity_id?: string }
-  >) {
-    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
-    hits.push({
-      id: r.id,
-      label: val(r as Row, "body") ?? "Note",
-      sublabel: r.entity_type ?? null,
-      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
-      group: "notes",
-      groupLabel: "Notes",
-    });
-  }
-  for (const r of documents as Array<
-    Record<string, unknown> & { id: string; entity_type?: string; entity_id?: string }
-  >) {
-    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
-    hits.push({
-      id: r.id,
-      label: val(r as Row, "file_name") ?? "Document",
-      sublabel: val(r as Row, "folder"),
-      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
-      group: "documents",
-      groupLabel: "Documents",
-    });
-  }
-  for (const r of activities as Array<
-    Record<string, unknown> & { id: number | string; entity_type?: string; entity_id?: string }
-  >) {
-    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
-    hits.push({
-      // activity_log.id is bigserial (number) — SearchHit.id is string
-      // everywhere else, so coerce rather than widen the shared type for
-      // one entity.
-      id: String(r.id),
-      label: val(r as Row, "summary") ?? "Activity",
-      sublabel: r.entity_type ?? null,
-      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
-      group: "activities",
-      groupLabel: "Activities",
-    });
-  }
+  // route of their own) — fetchCommentHits/fetchDocumentHits/fetchActivityHits
+  // (above) already resolve each hit's href via ENTITY_TYPE_ROUTE and return
+  // ready-to-render SearchHits directly, so these three just concatenate.
+  hits.push(...noteHits, ...documentHits, ...activityHits);
 
   return hits;
 }
