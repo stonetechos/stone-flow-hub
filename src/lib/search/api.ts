@@ -16,7 +16,45 @@ export type SearchGroupKey =
   | "payments"
   | "dispatch"
   | "salespeople"
-  | "architects";
+  | "architects"
+  // Goal 4 additions — closes the gap against the 12-entity target list
+  // (customers/enquiries/projects/quotes/orders/RFQs/vendors/tasks/
+  // follow-ups/notes/documents/activities): everything above already
+  // covered 6 of 12; these five close the remaining gap (orders was
+  // already covered as salesOrders).
+  | "rfqs"
+  | "tasks"
+  | "followups"
+  | "notes"
+  | "documents"
+  | "activities";
+
+/**
+ * `comments`/`file_objects`/`activity_log` are polymorphic — one row can
+ * belong to a customer, project, enquiry, quote, sales order, purchase
+ * order, invoice, vendor, or RFQ. This maps each `entity_type` value this
+ * app actually writes (grep-confirmed against every `entity_type:` /
+ * `entityType:` literal at a `comments`/`file_objects`/`activity_log`
+ * insert call site) to the list route whose detail page can show it.
+ * Unmapped/unknown values fall back to the Activity feed rather than a
+ * broken link.
+ */
+const ENTITY_TYPE_ROUTE: Record<string, string> = {
+  customer: "/customers",
+  project: "/projects",
+  enquiry: "/enquiries",
+  quote: "/quotes",
+  quotation: "/quotes",
+  sales_order: "/sales-orders",
+  purchase_order: "/purchase-orders",
+  invoice: "/invoices",
+  vendor: "/vendors",
+  rfq: "/rfqs",
+  followup: "/followups",
+  task: "/tasks",
+  profile: "/admin/users",
+  user: "/admin/users",
+};
 
 export interface SearchHit {
   id: string;
@@ -61,6 +99,12 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     dispatch,
     salespeople,
     architects,
+    rfqs,
+    tasks,
+    followups,
+    notes,
+    documents,
+    activities,
   ] = await Promise.all([
     safe(
       getDb()
@@ -172,6 +216,49 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .or(`name.ilike.${p},customer_code.ilike.${p},city.ilike.${p}`)
         .limit(LIMIT),
     ),
+    // ---- Goal 4 additions ----
+    safe(
+      getDb()
+        .from("rfqs")
+        .select("id,rfq_no,notes")
+        .or(`rfq_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("tasks")
+        .select("id,title,description")
+        .or(`title.ilike.${p},description.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("followups")
+        .select("id,notes,outcome_notes")
+        .or(`notes.ilike.${p},outcome_notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("comments")
+        .select("id,body,entity_type,entity_id")
+        .ilike("body", p)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("file_objects")
+        .select("id,file_name,entity_type,entity_id,folder")
+        .ilike("file_name", p)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("activity_log")
+        .select("id,summary,entity_type,entity_id")
+        .ilike("summary", p)
+        .limit(LIMIT),
+    ),
   ]);
 
   type Row = Record<string, unknown> & { id: string };
@@ -260,6 +347,62 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     "city",
     "Partner",
   );
+
+  // ---- Goal 4 additions ----
+  push(rfqs, "rfqs", "RFQs", "/rfqs", "rfq_no", "notes", "RFQ");
+  // No /tasks/$id detail route exists — every hit routes to the list page,
+  // same accepted pattern as "salespeople" above (a real destination,
+  // just not a per-record one).
+  push(tasks, "tasks", "Tasks", "/tasks", "title", "description", "Task");
+  push(followups, "followups", "Follow-ups", "/followups", "notes", "outcome_notes", "Follow-up");
+
+  // Notes/documents/activities are polymorphic (comments/file_objects/
+  // activity_log all key off entity_type+entity_id rather than owning a
+  // route of their own) — route to whichever parent record's page the
+  // ENTITY_TYPE_ROUTE map knows, falling back to the Activity feed for an
+  // entity_type this map doesn't recognize rather than a broken link.
+  for (const r of notes as Array<
+    Record<string, unknown> & { id: string; entity_type?: string; entity_id?: string }
+  >) {
+    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
+    hits.push({
+      id: r.id,
+      label: val(r as Row, "body") ?? "Note",
+      sublabel: r.entity_type ?? null,
+      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
+      group: "notes",
+      groupLabel: "Notes",
+    });
+  }
+  for (const r of documents as Array<
+    Record<string, unknown> & { id: string; entity_type?: string; entity_id?: string }
+  >) {
+    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
+    hits.push({
+      id: r.id,
+      label: val(r as Row, "file_name") ?? "Document",
+      sublabel: val(r as Row, "folder"),
+      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
+      group: "documents",
+      groupLabel: "Documents",
+    });
+  }
+  for (const r of activities as Array<
+    Record<string, unknown> & { id: number | string; entity_type?: string; entity_id?: string }
+  >) {
+    const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
+    hits.push({
+      // activity_log.id is bigserial (number) — SearchHit.id is string
+      // everywhere else, so coerce rather than widen the shared type for
+      // one entity.
+      id: String(r.id),
+      label: val(r as Row, "summary") ?? "Activity",
+      sublabel: r.entity_type ?? null,
+      href: r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base,
+      group: "activities",
+      groupLabel: "Activities",
+    });
+  }
 
   return hits;
 }

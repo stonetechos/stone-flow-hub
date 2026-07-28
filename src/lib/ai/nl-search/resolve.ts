@@ -29,6 +29,9 @@ import { listVendors } from "@/lib/vendors/api";
 import { listProducts } from "@/lib/products/api";
 import { listInventory } from "@/lib/inventory/api";
 import { listProjects } from "@/lib/projects/api";
+import { listRfqs } from "@/lib/rfqs/api";
+import { listTasks, TASK_STATUSES, type TaskStatus } from "@/lib/tasks/api";
+import { listFollowups } from "@/lib/followups/api";
 import { CollectionPriorityProvider } from "@/lib/insights/providers/finance/collectionPriority";
 import { PaymentScheduleAdherenceProvider } from "@/lib/insights/providers/finance/paymentScheduleAdherence";
 import { InstallationDelayProvider } from "@/lib/insights/providers/operations/installationDelay";
@@ -116,6 +119,9 @@ const ENTITY_NAV_ID: Record<NlEntityType, string> = {
   product: "products",
   inventory_item: "inventory",
   project: "projects",
+  rfq: "rfqs",
+  task: "tasks",
+  followup: "followups",
 };
 
 /** A specific RECORD's own detail-page URL segment — a different concern
@@ -132,6 +138,12 @@ const ENTITY_NAV_ID: Record<NlEntityType, string> = {
 const ENTITY_DETAIL_PATH: Record<NlEntityType, string> = {
   ...ENTITY_NAV_ID,
   installation: "installations",
+  // "task" has no per-record detail route (see resolveGeneric's "task"
+  // case) — inheriting ENTITY_NAV_ID's "tasks" here would be correct by
+  // coincidence for the list page but wrong the moment pageContext ever
+  // supplies a task entityId, producing "/tasks/<id>", a 404. Made
+  // explicit rather than left to accidentally work.
+  task: "tasks",
 };
 
 async function resolveCustomer(
@@ -525,6 +537,74 @@ async function resolveGeneric(
         isActive: r.is_active,
       }));
     }
+    // Goal 4 additions.
+    case "rfq": {
+      // listRfqs(q, status) searches rfq_no only (no free-text notes
+      // search server-side) — matches the same "search box searches the
+      // number, status narrows separately" shape as every other list page
+      // in this app; "pending RFQs"/"open RFQs" phrasing lands in
+      // filters.status via the classifier, not searchText.
+      const status = filters?.status === "pending" ? "sent" : (filters?.status ?? "");
+      const rows = await listRfqs(q, status);
+      return rows.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.rfq_no,
+        subtitle: r.project?.name ?? r.enquiry?.enquiry_no ?? null,
+        href: `/rfqs/${r.id}`,
+        rank: 0,
+        updatedAt: r.created_at,
+      }));
+    }
+    case "task": {
+      // filters.status is the classifier's loose free-text bucket (could
+      // be "overdue", "pending", "urgent" — anything) — only forward it to
+      // listTasks() when it's actually one of TASK_STATUSES; otherwise
+      // fetch unfiltered and let the label stand as a hint rather than
+      // silently coercing an unrelated word (e.g. "urgent" is a priority,
+      // not a status) into a filter that would wrongly return nothing.
+      const knownStatus = TASK_STATUSES.some((s) => s.value === filters?.status)
+        ? (filters!.status as TaskStatus)
+        : undefined;
+      const rows = await listTasks({ q, status: knownStatus });
+      return rows.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.title,
+        subtitle: r.description,
+        // No /tasks/$id detail route exists yet — same accepted pattern
+        // as globalSearch's "tasks" group (src/lib/search/api.ts).
+        href: "/tasks",
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
+    }
+    case "followup": {
+      // listFollowups has no free-text search param (scope/entity-filtered
+      // only) — filtered client-side over its own already-authoritative
+      // rows, same "filter in memory when the API doesn't support the
+      // dimension server-side" pattern this file's header comment
+      // documents for invoice/dispatch above.
+      const rows = await listFollowups("all");
+      const needle = q.trim().toLowerCase();
+      const filtered = needle
+        ? rows.filter(
+            (r) =>
+              r.notes?.toLowerCase().includes(needle) ||
+              r.outcome_notes?.toLowerCase().includes(needle) ||
+              r.enquiry?.customer?.name?.toLowerCase().includes(needle),
+          )
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.enquiry?.customer?.name ?? r.notes ?? "Follow-up",
+        subtitle: r.enquiry?.enquiry_no ?? null,
+        href: `/followups/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
+    }
     default:
       return [];
   }
@@ -545,6 +625,9 @@ const SEARCH_GROUP_TO_ENTITY: Partial<Record<SearchHit["group"], NlEntityType>> 
   inventory: "inventory_item",
   invoices: "invoice",
   dispatch: "dispatch",
+  rfqs: "rfq",
+  tasks: "task",
+  followups: "followup",
 };
 
 /** globalSearch() -> NlResultItem[], scoped to a known entityType when
@@ -592,9 +675,7 @@ async function resolveByEntityType(
 }
 
 type NameResolution<T> =
-  | { kind: "one"; row: T }
-  | { kind: "ambiguous"; rows: T[] }
-  | { kind: "none" };
+  { kind: "one"; row: T } | { kind: "ambiguous"; rows: T[] } | { kind: "none" };
 
 /** Resolves the single specific record a timeline question is about —
  *  and, per user feedback, never silently guesses across a genuinely

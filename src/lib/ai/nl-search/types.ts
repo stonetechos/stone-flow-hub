@@ -46,7 +46,14 @@ export type NlEntityType =
   | "vendor"
   | "product"
   | "inventory_item"
-  | "project";
+  | "project"
+  // Goal 4 additions — closes NL Search's gap against the 12-entity
+  // target list (rfqs/tasks/follow-ups were previously unresolvable by
+  // Copilot's "Ask" mode; see resolve.ts's resolveRfq/resolveTask/
+  // resolveFollowup for the query logic).
+  | "rfq"
+  | "task"
+  | "followup";
 
 export interface NlFilters {
   /** Loose, LLM-classified status bucket — deliberately a free string
