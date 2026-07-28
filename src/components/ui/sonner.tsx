@@ -2,10 +2,22 @@ import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
-const Toaster = ({ ...props }: ToasterProps) => {
+// Default toast position is top-right (__root.tsx) — on an edge-to-edge
+// Android WebView the un-offset default would render under the status bar.
+// `max(1rem, env(...))` keeps the existing 1rem gap on desktop/iOS (where
+// the inset is 0) and grows only on devices that actually report a cutout.
+const SAFE_AREA_OFFSET = {
+  top: "max(1rem, env(safe-area-inset-top))",
+  right: "max(1rem, env(safe-area-inset-right))",
+  bottom: "max(1rem, env(safe-area-inset-bottom))",
+  left: "max(1rem, env(safe-area-inset-left))",
+};
+
+const Toaster = ({ offset, ...props }: ToasterProps) => {
   return (
     <Sonner
       className="toaster group"
+      offset={offset ?? SAFE_AREA_OFFSET}
       toastOptions={{
         classNames: {
           toast:
