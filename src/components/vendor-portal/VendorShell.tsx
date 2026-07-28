@@ -83,7 +83,10 @@ export function VendorShell({
 
       {/* Mobile top bar + drawer */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-3 py-2 md:hidden">
+        <header
+          className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-3 pb-2 md:hidden"
+          style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        >
           <button
             aria-label="Open menu"
             className="rounded-md p-2 hover:bg-muted"
@@ -120,7 +123,12 @@ export function VendorShell({
             })}
           </nav>
         )}
-        <main className="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-6">{children}</main>
+        <main
+          className="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-6"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

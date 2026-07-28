@@ -1097,7 +1097,20 @@ function QuickActionsDock() {
   ];
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-3"
+      // VIE foundation sprint (2026-07-28), Mobile Safe Area audit: this was
+      // the one confirmed gap — a `fixed`, viewport-bottom-anchored bar with
+      // zero safe-area handling, unlike every other fixed/sticky surface in
+      // the app (Copilot's floating trigger, FormLayout's sticky action bar,
+      // the dialog/sheet/drawer primitives — see styles.css's `safe-pb`
+      // utility and each of those files' own `env(safe-area-inset-bottom)`
+      // rules). On an Android 15 edge-to-edge device (targetSdk 36 forces
+      // this; see android/variables.gradle) this bar would sit flush under
+      // the 3-button/gesture nav bar with no clearance. `bottom-4` (1rem) is
+      // now the FLOOR, not the total offset — `env()` adds on top of it,
+      // same "additive, not replacing" pattern Copilot.tsx's floating
+      // button already uses, so desktop/browser tabs (where the env()
+      // term resolves to 0) render byte-identical to before.
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 flex justify-center px-3"
       aria-label="Quick create actions"
     >
       <div className="pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border-inverse bg-surface-nav/95 px-1.5 py-1 shadow-e3 backdrop-blur">

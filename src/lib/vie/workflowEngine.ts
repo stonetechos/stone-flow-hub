@@ -17,6 +17,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import { getVieAction } from "./actions/registry";
+import { vieEventBus, VIE_EVENTS } from "./eventBus";
 import type { VieActionStatus, VieExecutionPlan, VieIntent } from "./types";
 // Import for registration side effects — ensures both handlers are
 // registered before this module's first call to getVieAction().
@@ -106,6 +107,25 @@ export async function executeAction(
       .eq("id", actionId);
     if (applyError) throw new AppError(mapDbError(applyError));
 
+    // VIE Event Bus (foundation sprint) — announce completion for any
+    // future subscriber (analytics, cross-module notifications, ...).
+    // publish() never throws and is not awaited: a subscriber can never
+    // delay or fail the write path above, which has already succeeded by
+    // this point. No subscriber is registered today — see eventBus.ts's
+    // own header comment for why that's deliberate.
+    vieEventBus.publish({
+      type: VIE_EVENTS.ACTION_EXECUTED,
+      payload: {
+        actionId,
+        intent: row.intent,
+        linkedRecordType: result.linkedRecordType,
+        linkedRecordId: result.linkedRecordId,
+      },
+      occurredAt: new Date().toISOString(),
+      source: "workflowEngine.executeAction",
+      correlationId: actionId,
+    });
+
     return {
       status: "applied",
       linkedRecordType: result.linkedRecordType,
@@ -117,6 +137,15 @@ export async function executeAction(
       .from("vie_actions")
       .update({ status: "failed", error_message: message, updated_at: new Date().toISOString() })
       .eq("id", actionId);
+
+    vieEventBus.publish({
+      type: VIE_EVENTS.ACTION_FAILED,
+      payload: { actionId, intent: row.intent, message },
+      occurredAt: new Date().toISOString(),
+      source: "workflowEngine.executeAction",
+      correlationId: actionId,
+    });
+
     return { status: "failed", linkedRecordType: null, linkedRecordId: null, message };
   }
 }

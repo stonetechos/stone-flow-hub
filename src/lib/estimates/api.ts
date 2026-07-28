@@ -22,12 +22,17 @@ export type EstimatePaymentRow = DbTable<"estimate_payment_schedules">;
 export type EstimateDocumentRow = DbTable<"estimate_documents">;
 
 export type EstimateListItem = EstimateRow & {
-  customer: { id: string; name: string; customer_code: string } | null;
+  customer: {
+    id: string;
+    name: string;
+    customer_code: string;
+    primary_phone: string | null;
+  } | null;
   project: { id: string; name: string; project_code: string } | null;
 };
 
 const SELECT_JOINS =
-  "*, customer:customers!estimates_customer_id_fkey(id,name,customer_code), project:projects!estimates_project_id_fkey(id,name,project_code)";
+  "*, customer:customers!estimates_customer_id_fkey(id,name,customer_code,primary_phone), project:projects!estimates_project_id_fkey(id,name,project_code)";
 
 export async function listEstimates(query = ""): Promise<EstimateListItem[]> {
   let q = supabase

@@ -16,7 +16,45 @@ export type SearchGroupKey =
   | "payments"
   | "dispatch"
   | "salespeople"
-  | "architects";
+  | "architects"
+  // Goal 4 additions — closes the gap against the 12-entity target list
+  // (customers/enquiries/projects/quotes/orders/RFQs/vendors/tasks/
+  // follow-ups/notes/documents/activities): everything above already
+  // covered 6 of 12; these five close the remaining gap (orders was
+  // already covered as salesOrders).
+  | "rfqs"
+  | "tasks"
+  | "followups"
+  | "notes"
+  | "documents"
+  | "activities";
+
+/**
+ * `comments`/`file_objects`/`activity_log` are polymorphic — one row can
+ * belong to a customer, project, enquiry, quote, sales order, purchase
+ * order, invoice, vendor, or RFQ. This maps each `entity_type` value this
+ * app actually writes (grep-confirmed against every `entity_type:` /
+ * `entityType:` literal at a `comments`/`file_objects`/`activity_log`
+ * insert call site) to the list route whose detail page can show it.
+ * Unmapped/unknown values fall back to the Activity feed rather than a
+ * broken link.
+ */
+const ENTITY_TYPE_ROUTE: Record<string, string> = {
+  customer: "/customers",
+  project: "/projects",
+  enquiry: "/enquiries",
+  quote: "/quotes",
+  quotation: "/quotes",
+  sales_order: "/sales-orders",
+  purchase_order: "/purchase-orders",
+  invoice: "/invoices",
+  vendor: "/vendors",
+  rfq: "/rfqs",
+  followup: "/followups",
+  task: "/tasks",
+  profile: "/admin/users",
+  user: "/admin/users",
+};
 
 export interface SearchHit {
   id: string;
@@ -37,6 +75,84 @@ async function safe<T>(p: PromiseLike<{ data: T[] | null }>): Promise<T[]> {
   } catch {
     return [];
   }
+}
+
+type PolymorphicRow = Record<string, unknown> & {
+  id: string | number;
+  entity_type?: string;
+  entity_id?: string;
+};
+
+function polymorphicHref(r: PolymorphicRow): string {
+  const base = (r.entity_type && ENTITY_TYPE_ROUTE[r.entity_type]) || "/activity";
+  return r.entity_id && base !== "/activity" ? `${base}/${r.entity_id}` : base;
+}
+
+/**
+ * `comments`/`file_objects`/`activity_log` query builders, extracted so
+ * they're declared exactly once — `globalSearch()` below and
+ * `vie/universalEntityResolver.ts` (Universal Entity Resolver, foundation
+ * sprint 2026-07-28) both call these instead of each keeping its own copy
+ * of the same `.ilike()` query. These three tables are polymorphic (one
+ * row can belong to a customer, project, enquiry, quote, sales order,
+ * purchase order, invoice, vendor, or RFQ), which is why each returns a
+ * ready-to-render `SearchHit` (with `href` already resolved via
+ * `ENTITY_TYPE_ROUTE`) rather than a raw row — there's no single detail
+ * page any of these three belongs to on their own.
+ */
+export async function fetchCommentHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb().from("comments").select("id,body,entity_type,entity_id").ilike("body", p).limit(limit),
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    label: typeof r.body === "string" && r.body ? r.body : "Note",
+    sublabel: r.entity_type ?? null,
+    href: polymorphicHref(r),
+    group: "notes",
+    groupLabel: "Notes",
+  }));
+}
+
+export async function fetchDocumentHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb()
+      .from("file_objects")
+      .select("id,file_name,entity_type,entity_id,folder")
+      .ilike("file_name", p)
+      .limit(limit),
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    label: typeof r.file_name === "string" && r.file_name ? r.file_name : "Document",
+    sublabel: typeof r.folder === "string" ? r.folder : null,
+    href: polymorphicHref(r),
+    group: "documents",
+    groupLabel: "Documents",
+  }));
+}
+
+export async function fetchActivityHits(query: string, limit = LIMIT): Promise<SearchHit[]> {
+  const p = `%${clean(query.trim())}%`;
+  const rows = await safe<PolymorphicRow>(
+    getDb()
+      .from("activity_log")
+      .select("id,summary,entity_type,entity_id")
+      .ilike("summary", p)
+      .limit(limit),
+  );
+  return rows.map((r) => ({
+    // activity_log.id is bigserial (number) — SearchHit.id is string
+    // everywhere else, so coerce rather than widen the shared type for one entity.
+    id: String(r.id),
+    label: typeof r.summary === "string" && r.summary ? r.summary : "Activity",
+    sublabel: r.entity_type ?? null,
+    href: polymorphicHref(r),
+    group: "activities",
+    groupLabel: "Activities",
+  }));
 }
 
 export async function globalSearch(query: string): Promise<SearchHit[]> {
@@ -61,6 +177,12 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     dispatch,
     salespeople,
     architects,
+    rfqs,
+    tasks,
+    followups,
+    noteHits,
+    documentHits,
+    activityHits,
   ] = await Promise.all([
     safe(
       getDb()
@@ -172,6 +294,31 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .or(`name.ilike.${p},customer_code.ilike.${p},city.ilike.${p}`)
         .limit(LIMIT),
     ),
+    // ---- Goal 4 additions ----
+    safe(
+      getDb()
+        .from("rfqs")
+        .select("id,rfq_no,notes")
+        .or(`rfq_no.ilike.${p},notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("tasks")
+        .select("id,title,description")
+        .or(`title.ilike.${p},description.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("followups")
+        .select("id,notes,outcome_notes")
+        .or(`notes.ilike.${p},outcome_notes.ilike.${p}`)
+        .limit(LIMIT),
+    ),
+    fetchCommentHits(raw),
+    fetchDocumentHits(raw),
+    fetchActivityHits(raw),
   ]);
 
   type Row = Record<string, unknown> & { id: string };
@@ -260,6 +407,21 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     "city",
     "Partner",
   );
+
+  // ---- Goal 4 additions ----
+  push(rfqs, "rfqs", "RFQs", "/rfqs", "rfq_no", "notes", "RFQ");
+  // No /tasks/$id detail route exists — every hit routes to the list page,
+  // same accepted pattern as "salespeople" above (a real destination,
+  // just not a per-record one).
+  push(tasks, "tasks", "Tasks", "/tasks", "title", "description", "Task");
+  push(followups, "followups", "Follow-ups", "/followups", "notes", "outcome_notes", "Follow-up");
+
+  // Notes/documents/activities are polymorphic (comments/file_objects/
+  // activity_log all key off entity_type+entity_id rather than owning a
+  // route of their own) — fetchCommentHits/fetchDocumentHits/fetchActivityHits
+  // (above) already resolve each hit's href via ENTITY_TYPE_ROUTE and return
+  // ready-to-render SearchHits directly, so these three just concatenate.
+  hits.push(...noteHits, ...documentHits, ...activityHits);
 
   return hits;
 }

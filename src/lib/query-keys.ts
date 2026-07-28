@@ -7,6 +7,9 @@ export const qk = {
     all: ["insights"] as const,
     provider: (id: string) => ["insights", "provider", id] as const,
   },
+  notifications: {
+    all: ["notifications"] as const,
+  },
 
   customers: {
     all: ["customers"] as const,

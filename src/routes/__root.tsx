@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { installCapacitorServerFnFetchPatch } from "@/lib/capacitor/install-fetch-patch";
+import { configureStatusBarForEdgeToEdge } from "@/lib/capacitor/status-bar";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -29,6 +30,13 @@ import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 // module scope, before the router (and therefore any route loader's
 // server-fn calls) is created.
 installCapacitorServerFnFetchPatch();
+// Fire-and-forget — unlike the fetch patch this has no ordering
+// requirement against anything else on this page (it's a no-op outside
+// the native shell either way), so it doesn't need to block module
+// evaluation. Kicked off here rather than inside a component effect to
+// start as early as possible and avoid a visible flash of non-edge-to-edge
+// layout on cold start.
+void configureStatusBarForEdgeToEdge();
 
 function NotFoundComponent() {
   return (

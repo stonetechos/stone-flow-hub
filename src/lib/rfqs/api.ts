@@ -1,5 +1,5 @@
 /** RFQ list API for the global RFQ browser. */
-import { supabase } from "@/integrations/supabase/client";
+import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -18,7 +18,7 @@ export interface RfqListItem {
 }
 
 export async function listRfqs(q: string, status: string): Promise<RfqListItem[]> {
-  let query = supabase
+  let query = getDb()
     .from("rfqs")
     .select(
       `id,rfq_no,status,due_date,created_at,

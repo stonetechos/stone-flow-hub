@@ -29,6 +29,10 @@ import { listVendors } from "@/lib/vendors/api";
 import { listProducts } from "@/lib/products/api";
 import { listInventory } from "@/lib/inventory/api";
 import { listProjects } from "@/lib/projects/api";
+import { listRfqs } from "@/lib/rfqs/api";
+import { listTasks, TASK_STATUSES, type TaskStatus } from "@/lib/tasks/api";
+import { listFollowups } from "@/lib/followups/api";
+import { resolveUniversalEntitiesByType } from "@/lib/vie/universalEntityResolver";
 import { CollectionPriorityProvider } from "@/lib/insights/providers/finance/collectionPriority";
 import { PaymentScheduleAdherenceProvider } from "@/lib/insights/providers/finance/paymentScheduleAdherence";
 import { InstallationDelayProvider } from "@/lib/insights/providers/operations/installationDelay";
@@ -99,6 +103,40 @@ function fromInsight(i: Insight, entityType: NlEntityType): NlResultItem {
   };
 }
 
+/**
+ * VIE foundation sprint (2026-07-28) — Universal Entity Resolver -> NlResultItem.
+ * `resolveGeneric()`'s "rfq"/"vendor"/"task" cases (previously each their
+ * own inline list-and-map block, identical in shape to
+ * `universalEntityResolver.ts`'s own per-type resolvers) and its new
+ * "comment"/"document"/"activity" cases both go through this one adapter,
+ * so the Universal Entity Resolver's typed result is the single place that
+ * shape lives — Copilot's Ask mode genuinely calls into it, not just
+ * imports it unused.
+ */
+async function fromUniversalEntities(
+  type: Parameters<typeof resolveUniversalEntitiesByType>[0],
+  query: string,
+  entityType: NlEntityType,
+): Promise<NlResultItem[]> {
+  // Note: the Universal Entity Resolver caps at 8 results per type
+  // (DEFAULT_LIMIT_PER_TYPE) — a deliberate, documented change from the
+  // pre-sprint inline resolvers this replaces for rfq/vendor/task, which
+  // returned everything list*() came back with (up to that function's own
+  // 200-row cap). 8 is a reasonable ceiling for a chat result list; if a
+  // future caller genuinely needs more, resolveUniversalEntitiesByType()
+  // takes an explicit `limit` argument.
+  const results = await resolveUniversalEntitiesByType(type, query);
+  return results.map((r) => ({
+    id: r.id,
+    entityType,
+    title: r.label,
+    subtitle: r.subtitle ?? null,
+    href: r.route,
+    rank: 0,
+    updatedAt: r.updatedAt,
+  }));
+}
+
 /** entityType -> NAV_ITEMS id, for the "navigate" intent and as a
  *  fallback href base. Reuses NAV_ITEMS_BY_ID rather than hardcoding
  *  routes a second time. */
@@ -116,6 +154,18 @@ const ENTITY_NAV_ID: Record<NlEntityType, string> = {
   product: "products",
   inventory_item: "inventory",
   project: "projects",
+  rfq: "rfqs",
+  task: "tasks",
+  followup: "followups",
+  // VIE foundation sprint (2026-07-28) additions. "comment" has no
+  // dedicated top-level nav item (comments are always embedded on a
+  // parent record, never a standalone list page) — falls back to
+  // "dashboard", same spirit as installation's "wf-today" fallback above.
+  // "document"/"activity" do have real top-level pages (/documents,
+  // /activity) so those map directly.
+  comment: "dashboard",
+  document: "documents",
+  activity: "activity",
 };
 
 /** A specific RECORD's own detail-page URL segment — a different concern
@@ -132,6 +182,19 @@ const ENTITY_NAV_ID: Record<NlEntityType, string> = {
 const ENTITY_DETAIL_PATH: Record<NlEntityType, string> = {
   ...ENTITY_NAV_ID,
   installation: "installations",
+  // "task" has no per-record detail route (see resolveGeneric's "task"
+  // case) — inheriting ENTITY_NAV_ID's "tasks" here would be correct by
+  // coincidence for the list page but wrong the moment pageContext ever
+  // supplies a task entityId, producing "/tasks/<id>", a 404. Made
+  // explicit rather than left to accidentally work.
+  task: "tasks",
+  // comment/document/activity results always carry their own real href
+  // from the Universal Entity Resolver (fromUniversalEntities() sets
+  // `href: r.route` directly) — this map is never consulted to build
+  // their detail links. Present only so this remains a total Record.
+  comment: "dashboard",
+  document: "documents",
+  activity: "activity",
 };
 
 async function resolveCustomer(
@@ -500,16 +563,22 @@ async function resolveGeneric(
       }));
     }
     case "vendor": {
-      const rows = await listVendors(q);
-      return rows.map((r) => ({
+      // Delegates to the Universal Entity Resolver (VIE foundation sprint,
+      // 2026-07-28) — this used to be its own inline listVendors()+map,
+      // identical in shape to universalEntityResolver.ts's own "vendor"
+      // resolver. isActive isn't part of UniversalEntityResult's generic
+      // shape, so it's read off `raw` (the actual VendorRow the resolver
+      // already fetched) rather than a second listVendors() call.
+      const results = await resolveUniversalEntitiesByType("vendor", q);
+      return results.map((r) => ({
         id: r.id,
         entityType,
-        title: r.company_name,
-        subtitle: r.vendor_code,
-        href: `/vendors/${r.id}`,
+        title: r.label,
+        subtitle: r.subtitle ?? null,
+        href: r.route,
         rank: 0,
-        updatedAt: r.updated_at,
-        isActive: r.is_active,
+        updatedAt: r.updatedAt,
+        isActive: (r.raw as { is_active?: boolean } | undefined)?.is_active,
       }));
     }
     case "product": {
@@ -525,6 +594,98 @@ async function resolveGeneric(
         isActive: r.is_active,
       }));
     }
+    // Goal 4 additions. Both now delegate to the Universal Entity Resolver
+    // (VIE foundation sprint, 2026-07-28) for the plain, unfiltered
+    // search — status filtering (a real business dimension the generic
+    // resolver deliberately doesn't know about) still happens here,
+    // client-side over the resolver's own already-fetched `raw` rows,
+    // exactly the "filter in memory when the dimension doesn't belong in
+    // the generic layer" pattern this file's header comment already
+    // documents for invoice/dispatch.
+    case "rfq": {
+      // "pending RFQs"/"open RFQs" phrasing lands in filters.status via
+      // the classifier, not searchText; listRfqs(q, status) has always
+      // searched rfq_no only (no free-text notes search server-side).
+      const status = filters?.status === "pending" ? "sent" : (filters?.status ?? "");
+      const results = await resolveUniversalEntitiesByType("rfq", q);
+      const filtered = status
+        ? results.filter((r) => (r.raw as { status?: string } | undefined)?.status === status)
+        : results;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.label,
+        subtitle: r.subtitle ?? null,
+        href: r.route,
+        rank: 0,
+        updatedAt: r.updatedAt,
+      }));
+    }
+    case "task": {
+      // filters.status is the classifier's loose free-text bucket (could
+      // be "overdue", "pending", "urgent" — anything) — only filter by it
+      // when it's actually one of TASK_STATUSES; otherwise fetch
+      // unfiltered and let the label stand as a hint rather than silently
+      // coercing an unrelated word (e.g. "urgent" is a priority, not a
+      // status) into a filter that would wrongly return nothing.
+      const knownStatus = TASK_STATUSES.some((s) => s.value === filters?.status)
+        ? (filters!.status as TaskStatus)
+        : undefined;
+      const results = await resolveUniversalEntitiesByType("task", q);
+      const filtered = knownStatus
+        ? results.filter(
+            (r) => (r.raw as { status?: TaskStatus } | undefined)?.status === knownStatus,
+          )
+        : results;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.label,
+        subtitle: r.subtitle ?? null,
+        // No /tasks/$id detail route exists yet — same accepted pattern
+        // as globalSearch's "tasks" group (src/lib/search/api.ts).
+        href: r.route,
+        rank: 0,
+        updatedAt: r.updatedAt,
+      }));
+    }
+    case "followup": {
+      // listFollowups has no free-text search param (scope/entity-filtered
+      // only) — filtered client-side over its own already-authoritative
+      // rows, same "filter in memory when the API doesn't support the
+      // dimension server-side" pattern this file's header comment
+      // documents for invoice/dispatch above.
+      const rows = await listFollowups("all");
+      const needle = q.trim().toLowerCase();
+      const filtered = needle
+        ? rows.filter(
+            (r) =>
+              r.notes?.toLowerCase().includes(needle) ||
+              r.outcome_notes?.toLowerCase().includes(needle) ||
+              r.enquiry?.customer?.name?.toLowerCase().includes(needle),
+          )
+        : rows;
+      return filtered.map((r) => ({
+        id: r.id,
+        entityType,
+        title: r.enquiry?.customer?.name ?? r.notes ?? "Follow-up",
+        subtitle: r.enquiry?.enquiry_no ?? null,
+        href: `/followups/${r.id}`,
+        rank: 0,
+        updatedAt: r.updated_at,
+      }));
+    }
+    // VIE foundation sprint (2026-07-28) additions — brand-new Copilot
+    // capability, not a refactor of pre-existing inline resolvers. No
+    // business-filter logic applies to any of these three (no status,
+    // date-range, or ambiguity dimension defined for a note/file/log
+    // entry), so each is a direct pass-through of fromUniversalEntities().
+    case "comment":
+      return fromUniversalEntities("comment", q, entityType);
+    case "document":
+      return fromUniversalEntities("document", q, entityType);
+    case "activity":
+      return fromUniversalEntities("activity", q, entityType);
     default:
       return [];
   }
@@ -545,6 +706,16 @@ const SEARCH_GROUP_TO_ENTITY: Partial<Record<SearchHit["group"], NlEntityType>> 
   inventory: "inventory_item",
   invoices: "invoice",
   dispatch: "dispatch",
+  rfqs: "rfq",
+  tasks: "task",
+  followups: "followup",
+  // VIE foundation sprint (2026-07-28) additions — globalSearch()'s
+  // "notes"/"documents"/"activities" groups (see lib/search/api.ts) now
+  // have a real NlEntityType instead of falling through to
+  // fromSearchHits()'s `mapped ?? "customer"` default.
+  notes: "comment",
+  documents: "document",
+  activities: "activity",
 };
 
 /** globalSearch() -> NlResultItem[], scoped to a known entityType when

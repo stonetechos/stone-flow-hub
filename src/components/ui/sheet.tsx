@@ -44,9 +44,9 @@ const sheetVariants = cva(
         // the universally-supported base; supports-[...]:h-dvh layers the
         // dynamic-viewport value on top where it's actually understood
         // (same idiom as AppShell's root shell and its backdrop-filter use).
-        left: "inset-y-0 left-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-r border-border-subtle data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        left: "inset-y-0 left-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-r border-border-subtle pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
         right:
-          "inset-y-0 right-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-l border-border-subtle data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "inset-y-0 right-0 h-screen supports-[height:100dvh]:h-dvh w-[85vw] border-l border-border-subtle pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
       },
     },
     defaultVariants: {
@@ -69,7 +69,14 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
       <SheetPrimitive.Close
         aria-label="Close panel"
-        className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground cursor-pointer transition-colors hover:bg-[var(--intent-ghost-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-elevated)] disabled:pointer-events-none"
+        // Absolutely-positioned children measure from the content edge, not
+        // from the container's own padding-top — so this can't just inherit
+        // sheetVariants' inset padding (e.g. the `side="top"` variant's
+        // `pt-[max(1.5rem,env(safe-area-inset-top))]`). Each offset below
+        // independently adds the safe-area inset on top of its base spacing,
+        // so the close button clears the status bar / cutout / gesture
+        // insets on every side regardless of which `side` variant is active.
+        className="absolute right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground cursor-pointer transition-colors hover:bg-[var(--intent-ghost-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--intent-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-elevated)] disabled:pointer-events-none"
       >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
