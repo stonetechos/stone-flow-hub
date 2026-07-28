@@ -324,6 +324,7 @@ function InvoiceDetailPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="issued">Issued</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
                   <SelectItem value="overdue">Overdue</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
