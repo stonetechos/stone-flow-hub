@@ -40,6 +40,19 @@ export function registerServiceWorker(): void {
               // A previous SW already controlled this page, so this is an
               // update (not the first install) — offer a refresh instead
               // of silently swapping the app shell under an active user.
+              // VIE foundation sprint (2026-07-28), Notification Architecture:
+              // this used to be `duration: Infinity` — the one genuinely
+              // intrusive, permanently-blocking toast in the app (everything
+              // else routes through `notifyToast()`/`TIER_TOAST_DURATION_MS`,
+              // which never uses Infinity — see tiers.ts's header comment).
+              // An update prompt is important, not critical (nothing is
+              // broken; the user just hasn't refreshed yet), and "important"
+              // already gets a longer read window (6s) than "info". Bumped
+              // further to 20s here specifically because acting on it means
+              // finishing whatever the user is mid-typing first — but it now
+              // always goes away on its own, matching "never permanently
+              // block the interface" for every tier, not just notifications
+              // routed through the centre.
               toast("Update available", {
                 description: "A new version of STOS is ready.",
                 action: {
@@ -48,7 +61,7 @@ export function registerServiceWorker(): void {
                     installing.postMessage({ type: "SKIP_WAITING" });
                   },
                 },
-                duration: Infinity,
+                duration: 20_000,
               });
             }
           });

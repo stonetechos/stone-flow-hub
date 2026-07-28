@@ -68,7 +68,11 @@ export async function listNotifications(limit = 100): Promise<CentreNotification
     throw error;
   }
 
-  return ((data ?? []) as NotificationRow[]).map((row): CentreNotification => ({
+  return ((data ?? []) as NotificationRow[]).map(mapRow);
+}
+
+function mapRow(row: NotificationRow): CentreNotification {
+  return {
     id: row.id,
     tier: row.tier,
     title: row.title,
@@ -78,7 +82,7 @@ export async function listNotifications(limit = 100): Promise<CentreNotification
     linkPath: row.link_path,
     readAt: row.read_at,
     createdAt: row.created_at,
-  }));
+  };
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
@@ -105,13 +109,27 @@ export async function markAllNotificationsRead(ids: string[]): Promise<void> {
  * unsubscribe function; safe to call even before the migration is applied
  * (the channel simply never fires if the table doesn't exist — Supabase
  * Realtime subscribing to a nonexistent table is not itself an error).
+ *
+ * VIE foundation sprint (2026-07-28): `onInsert` now receives the mapped
+ * `CentreNotification` itself (previously a bare `() => void`, forcing
+ * every caller into a full refetch to learn what arrived — see
+ * `NotificationsBell.tsx`, which used to only invalidate the query cache
+ * here and had no way to fire a live toast for a newly-created
+ * notification without this). Existing callers that only cared about
+ * "something changed, refetch" still work — the new argument is additive.
  */
-export function subscribeToNotifications(onInsert: () => void): () => void {
+export function subscribeToNotifications(
+  onInsert: (notification: CentreNotification) => void,
+): () => void {
   const channel: RealtimeChannel = supabase
     .channel("notifications_feed")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
-      onInsert();
-    })
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications" },
+      (payload: { new: NotificationRow }) => {
+        onInsert(mapRow(payload.new));
+      },
+    )
     .subscribe();
 
   return () => {

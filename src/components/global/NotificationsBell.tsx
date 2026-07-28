@@ -14,6 +14,16 @@
  * Degrades to a normal empty state (not an error) if
  * `supabase/migrations/20260728120000_in_app_notifications_centre.sql`
  * hasn't been applied yet — see centre.ts's `isMissingTableError` handling.
+ *
+ * VIE foundation sprint (2026-07-28): a new row landing here now also fires
+ * a live toast via the Desktop notification channel
+ * (`lib/notifications/channels/`), not just a silent list refresh — closing
+ * a gap the prior sprint left (a realtime INSERT only ever refreshed the
+ * bell's popover; a user not looking at the bell had no way to notice a
+ * new notification as it happened). Uses `dispatchToChannels()` rather
+ * than calling `notifyToast()` directly so Android/Push automatically join
+ * in the moment those channels go from stub to real — no change needed
+ * here when that happens.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Check, Inbox } from "lucide-react";
@@ -28,6 +38,7 @@ import {
   subscribeToNotifications,
   type CentreNotification,
 } from "@/lib/notifications/centre";
+import { dispatchToChannels } from "@/lib/notifications/channels/dispatch";
 import { TIER_TONE } from "@/lib/notifications/tiers";
 import { toneDot } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
@@ -64,8 +75,16 @@ export function NotificationsBell() {
   });
 
   useEffect(() => {
-    return subscribeToNotifications(() => {
+    return subscribeToNotifications((n) => {
       void qc.invalidateQueries({ queryKey: qk.notifications.all });
+      void dispatchToChannels({
+        tier: n.tier,
+        title: n.title,
+        body: n.body,
+        linkPath: n.linkPath,
+        entityType: n.entityType,
+        entityId: n.entityId,
+      });
     });
   }, [qc]);
 
