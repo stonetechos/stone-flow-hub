@@ -32,6 +32,12 @@ export interface DocumentEntityMeta {
   toName: string;
   /** Best-known recipient email (customer.primary_email / vendor.email). */
   toEmail: string | null;
+  /**
+   * Best-known recipient phone (customer.primary_phone / vendor.mobile_number).
+   * Used to prefill the WhatsApp Foundation (Goal 6) send path — see
+   * `renderDocWhatsAppText` below and `SendDocumentEmailDialog`.
+   */
+  toPhone: string | null;
   /** Document number used in email subject etc. */
   docNumber: string;
   customerId: string | null;
@@ -198,6 +204,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: e.estimate_no,
           customerId: e.customer_id,
           vendorId: null,
@@ -244,6 +251,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: q.quote_no,
           customerId: q.customer_id,
           vendorId: null,
@@ -294,6 +302,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: so.so_no,
           customerId: so.customer_id,
           vendorId: null,
@@ -333,6 +342,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: ven?.company_name ?? "—",
           toEmail: ven?.email ?? null,
+          toPhone: ven?.mobile_number ?? null,
           docNumber: po.po_no,
           customerId: null,
           vendorId: po.vendor_id,
@@ -391,6 +401,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: i.invoice_no,
           customerId: i.customer_id,
           vendorId: null,
@@ -442,6 +453,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: r.receipt_no,
           customerId: r.customer_id,
           vendorId: null,
@@ -483,6 +495,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
+          toPhone: cust?.primary_phone ?? null,
           docNumber: d.dispatch_no,
           customerId: d.customer_id,
           vendorId: null,
@@ -496,6 +509,59 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
 /** Mapping to `message_queue.related_type` for Communication Timeline. */
 export function relatedTypeFor(entity: DocumentEntity): string {
   return entity;
+}
+
+/**
+ * WhatsApp Foundation (Goal 6) — render a plain-text, WhatsApp-markdown
+ * (`*bold*`) message from an already-built `PdfDoc`. Deliberately generic
+ * across every `DocumentEntity` instead of a per-module renderer (mirrors
+ * this file's own "DO NOT add per-module renderers elsewhere" rule and
+ * `customer-payments/request.ts`'s `renderPaymentRequestWhatsApp`, which
+ * this pattern is modeled on) — it reads the SAME normalized `doc.lines` /
+ * `doc.totals` / `doc.meta` every email/PDF/print path already renders, so
+ * there is no second data-shaping path to keep in sync when a document
+ * module's fields change.
+ *
+ * WhatsApp has no attachment-free "rich body" concept like HTML email —
+ * the message text itself has to carry the summary, so this is intentionally
+ * more verbose than the email intro paragraph `SendDocumentEmailDialog`
+ * builds; the caller (that dialog) treats this as the *entire*, user-editable
+ * message rather than a prefix in front of an attached PDF render.
+ */
+export function renderDocWhatsAppText(built: BuiltDocument): string {
+  const { doc } = built;
+  const lines: string[] = [];
+  lines.push(`*${doc.title} — ${doc.number}*`);
+  lines.push(`To: ${doc.to.name}`);
+  for (const m of doc.meta ?? []) {
+    if (m.value === null || m.value === undefined || m.value === "") continue;
+    lines.push(`${m.label}: ${m.value}`);
+  }
+  if (doc.lines?.length) {
+    lines.push("");
+    lines.push("*Items*");
+    for (const it of doc.lines) {
+      const qtyUnit = [it.qty, it.unit].filter((v) => v !== undefined && v !== "").join(" ");
+      const rateAmount =
+        it.rate !== undefined && it.amount !== undefined ? ` × ${it.rate} = ${it.amount}` : "";
+      lines.push(`• ${it.label}${qtyUnit ? ` — ${qtyUnit}` : ""}${rateAmount}`);
+    }
+  }
+  if (doc.totals?.length) {
+    lines.push("");
+    for (const t of doc.totals) {
+      lines.push(`${t.label}: *${t.value}*`);
+    }
+  }
+  if (doc.notes) {
+    lines.push("");
+    lines.push(doc.notes);
+  }
+  if (doc.terms) {
+    lines.push("");
+    lines.push(doc.terms);
+  }
+  return lines.join("\n");
 }
 
 /** Human-readable label per entity. */

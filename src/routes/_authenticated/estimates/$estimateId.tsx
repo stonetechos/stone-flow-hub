@@ -56,6 +56,7 @@ import {
 } from "@/lib/estimates/api";
 import { getQuoteForEstimate } from "@/lib/quotes/api";
 import { renderEmailHtml, renderWhatsappText } from "@/lib/estimates/render";
+import { enqueueMessage } from "@/lib/notifications/queue";
 import { COST_COMPONENT_LABEL, ESTIMATE_TEMPLATES } from "@/lib/estimates/templates";
 import { formatInr } from "@/lib/format";
 import { ApproveEstimateDialog } from "@/components/customer-payments/ApproveEstimateDialog";
@@ -78,6 +79,7 @@ function EstimateDetailPage() {
   const [draftSubject, setDraftSubject] = useState("");
   const [draftBody, setDraftBody] = useState("");
   const [draftHtml, setDraftHtml] = useState("");
+  const [draftTo, setDraftTo] = useState("");
 
   const est = useQuery({
     queryKey: qk.estimates.byId(estimateId),
@@ -142,6 +144,42 @@ function EstimateDetailPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  // WhatsApp Foundation (Goal 6) — this used to be clipboard-copy theater
+  // (save a history row, then `navigator.clipboard.writeText`, never call
+  // the real send API). Now it actually enqueues via the SAME
+  // `enqueueMessage()` every other document channel uses, so it shows up in
+  // the Communication Timeline and the background dispatcher picks it up —
+  // in addition to (not instead of) the existing estimate-local history row.
+  const sendWhatsappMut = useMutation({
+    mutationFn: async () => {
+      if (!draftTo.trim()) throw new Error("Recipient phone number is required");
+      await enqueueMessage({
+        channel: "whatsapp",
+        to: draftTo.trim(),
+        body: draftBody,
+        relatedType: "estimate",
+        relatedId: estimateId,
+        customerId: estimate?.customer_id ?? undefined,
+        templateCode: "estimate_whatsapp",
+      });
+      await saveEstimateDocument({
+        estimate_id: estimateId,
+        kind: "whatsapp_text",
+        subject: null,
+        body_text: draftBody,
+        body_html: null,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Queued — dispatcher will send it shortly");
+      invalidateEstimate(qc, estimateId);
+      qc.invalidateQueries({ queryKey: ["messages"] });
+      qc.invalidateQueries({ queryKey: ["customer-timeline"] });
+      setSendChan(null);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   const delMut = useMutation({
     mutationFn: () => deleteEstimate(estimateId),
     onSuccess: () => {
@@ -172,6 +210,7 @@ function EstimateDetailPage() {
       setDraftBody(renderWhatsappText(ctx));
       setDraftSubject("");
       setDraftHtml("");
+      setDraftTo(estimate.customer?.primary_phone ?? "");
     } else {
       const { subject, html } = renderEmailHtml(ctx);
       setDraftSubject(subject);
@@ -428,11 +467,25 @@ function EstimateDetailPage() {
           <QuickForm
             onSubmit={(e) => {
               e.preventDefault();
-              saveDocMut.mutate();
+              if (sendChan === "whatsapp") {
+                sendWhatsappMut.mutate();
+              } else {
+                saveDocMut.mutate();
+              }
             }}
-            busy={saveDocMut.isPending}
+            busy={sendChan === "whatsapp" ? sendWhatsappMut.isPending : saveDocMut.isPending}
           >
             <QuickForm.QuickFill>
+              {sendChan === "whatsapp" && (
+                <Field label="To (phone)" className="md:col-span-2">
+                  <Input
+                    type="tel"
+                    value={draftTo}
+                    onChange={(e) => setDraftTo(e.target.value)}
+                    placeholder="+91 98765 43210"
+                  />
+                </Field>
+              )}
               {sendChan === "email" && (
                 <Field label="Subject" className="md:col-span-2">
                   <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} />
@@ -440,7 +493,11 @@ function EstimateDetailPage() {
               )}
               <Field
                 label={sendChan === "whatsapp" ? "Message" : "HTML body"}
-                hint="Delivery integration (WhatsApp Business Cloud / Resend) ships in Phase 3. For now, the message is saved to history and ready to send."
+                hint={
+                  sendChan === "whatsapp"
+                    ? "Sent via the WhatsApp queue — the dispatcher picks it up and it also appears in the Communication Timeline."
+                    : "Email delivery for estimates goes through the Send Email button above; this HTML draft is saved to history only."
+                }
                 className="md:col-span-2"
               >
                 <Textarea
@@ -470,9 +527,16 @@ function EstimateDetailPage() {
               >
                 Copy
               </Button>
-              <Button type="submit" disabled={saveDocMut.isPending}>
-                {saveDocMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save to history
+              <Button
+                type="submit"
+                disabled={
+                  sendChan === "whatsapp" ? sendWhatsappMut.isPending : saveDocMut.isPending
+                }
+              >
+                {(sendChan === "whatsapp" ? sendWhatsappMut.isPending : saveDocMut.isPending) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {sendChan === "whatsapp" ? "Send" : "Save to history"}
               </Button>
             </QuickForm.Actions>
           </QuickForm>
