@@ -104,7 +104,7 @@ function InvoiceDetailPage() {
     mutationFn: (s: InvoiceStatus) =>
       setInvoiceStatus({
         invoice_id: invoiceId,
-        status: s as "draft" | "sent" | "cancelled" | "overdue",
+        status: s as "draft" | "issued" | "sent" | "cancelled" | "overdue",
       }),
     onSuccess: () => {
       toast.success("Status updated");
