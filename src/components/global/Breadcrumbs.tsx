@@ -25,6 +25,13 @@ const LABELS: Record<string, string> = {
   documents: "Documents",
   notifications: "Notifications",
   favorites: "Favorites",
+  communication: "Communication",
+  messages: "Notifications Queue",
+  "message-templates": "Message Templates",
+  "notification-settings": "Notification Settings",
+  dashboards: "Role Dashboards",
+  "command-center": "Command Center",
+  "control-centre": "Control Centre",
   new: "New",
   edit: "Edit",
 };
