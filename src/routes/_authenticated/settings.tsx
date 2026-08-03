@@ -324,7 +324,6 @@ function SettingsPage() {
           </Card>
         </TabsContent>
 
-
         <TabsContent value="security" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
@@ -350,7 +349,6 @@ function SettingsPage() {
                 Every sign-in, role change, and record update is recorded in the activity log.
               </p>
             </CardContent>
-
           </Card>
         </TabsContent>
 

@@ -10,7 +10,6 @@ import {
   History,
   User as UserIcon,
   Settings as SettingsIcon,
-  
   Keyboard,
   Shield,
 } from "lucide-react";
@@ -763,8 +762,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               {/* The real AI entry point is the Copilot launcher mounted at
                   the bottom of this shell (<Copilot />); the old placeholder
                   button that only raised a "coming soon" toast was removed. */}
-
-
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <SyncStatusIndicator />
