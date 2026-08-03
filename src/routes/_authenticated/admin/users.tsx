@@ -1274,11 +1274,11 @@ function UserRowView({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Lifecycle</DropdownMenuLabel>
               {pendingInvite ? (
-                <DropdownMenuItem onClick={onResend} disabled={!user.email}>
+                <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
                   <Send className="mr-2 h-4 w-4" /> Resend invitation
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuItem onClick={onReset} disabled={!user.email}>
+              <DropdownMenuItem onClick={onReset} disabled={!user.email || lifecycleBusy}>
                 <KeyRound className="mr-2 h-4 w-4" /> Send password reset
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -1291,21 +1291,33 @@ function UserRowView({
               {user.is_active ? (
                 <DropdownMenuItem
                   onClick={() => onSetActive(false)}
-                  disabled={!canDeactivate}
-                  title={isProtected ? "This account is protected." : undefined}
+                  disabled={!canDeactivate || lifecycleBusy}
+                  title={
+                    isSelf
+                      ? "You cannot deactivate your own account."
+                      : isProtected
+                        ? "This account is protected."
+                        : undefined
+                  }
                 >
                   <UserX className="mr-2 h-4 w-4" /> Deactivate user
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => onSetActive(true)}>
+                <DropdownMenuItem onClick={() => onSetActive(true)} disabled={lifecycleBusy}>
                   <UserCheck className="mr-2 h-4 w-4" /> Reactivate user
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={onDelete}
-                disabled={!canDelete}
-                title={isProtected ? "This account is protected." : undefined}
+                disabled={!canDelete || lifecycleBusy}
+                title={
+                  isSelf
+                    ? "You cannot delete your own account."
+                    : isProtected
+                      ? "This account is protected."
+                      : undefined
+                }
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -1317,4 +1329,5 @@ function UserRowView({
       </td>
     </tr>
   );
+
 }
