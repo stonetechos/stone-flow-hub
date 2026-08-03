@@ -52,7 +52,6 @@ export function QuickForm({
   );
 }
 
-
 QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -130,4 +129,3 @@ QuickForm.Actions = function Actions({ children }: { children: ReactNode }) {
     </div>
   );
 };
-

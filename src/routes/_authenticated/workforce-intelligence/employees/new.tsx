@@ -245,10 +245,16 @@ function EmployeeFormPage() {
         <FormSection title="Contact">
           <FormGrid>
             <Field label="Phone">
-              <PhoneInput value={form.phone ?? ""} onChange={(v) => setForm({ ...form, phone: v })} />
+              <PhoneInput
+                value={form.phone ?? ""}
+                onChange={(v) => setForm({ ...form, phone: v })}
+              />
             </Field>
             <Field label="Email">
-              <EmailInput value={form.email ?? ""} onChange={(v) => setForm({ ...form, email: v })} />
+              <EmailInput
+                value={form.email ?? ""}
+                onChange={(v) => setForm({ ...form, email: v })}
+              />
             </Field>
             <Field label="Emergency contact">
               <PhoneInput
@@ -278,7 +284,11 @@ function EmployeeFormPage() {
             </Field>
             <Field label="Salary (CTC)">
               <NumericInput
-                value={form.salary_ctc === null || form.salary_ctc === undefined ? "" : String(form.salary_ctc)}
+                value={
+                  form.salary_ctc === null || form.salary_ctc === undefined
+                    ? ""
+                    : String(form.salary_ctc)
+                }
                 onChange={(v) => setForm({ ...form, salary_ctc: v === "" ? null : Number(v) })}
                 min={0}
               />

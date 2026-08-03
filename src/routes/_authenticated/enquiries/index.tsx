@@ -581,7 +581,11 @@ function NewEnquiryDialog({
             </Field>
             <Field label="Budget (INR)">
               <NumericInput
-                value={form.budget_inr === null || form.budget_inr === undefined ? "" : String(form.budget_inr)}
+                value={
+                  form.budget_inr === null || form.budget_inr === undefined
+                    ? ""
+                    : String(form.budget_inr)
+                }
                 onChange={(v) => set("budget_inr", v === "" ? null : Number(v))}
                 min={0}
                 inputMode="decimal"
@@ -735,7 +739,11 @@ function EditEnquiryDialog({
             </Field>
             <Field label="Budget (INR)">
               <NumericInput
-                value={form.budget_inr === null || form.budget_inr === undefined ? "" : String(form.budget_inr)}
+                value={
+                  form.budget_inr === null || form.budget_inr === undefined
+                    ? ""
+                    : String(form.budget_inr)
+                }
                 onChange={(v) => set("budget_inr", v === "" ? null : Number(v))}
                 min={0}
                 inputMode="decimal"
