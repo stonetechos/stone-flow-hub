@@ -26,7 +26,27 @@ export const Route = createFileRoute("/_authenticated/dashboards/")({
 });
 
 const ROLES = [
+  // Executive — these three surfaces existed but were linked from nowhere:
+  // not in the sidebar, and missing from this tile grid.
   {
+    to: "/dashboards/executive",
+    title: "Executive Overview",
+    desc: "Company-wide snapshot: revenue, pipeline, cash, delivery and risk.",
+    icon: Crown,
+  },
+  {
+    to: "/dashboards/command-center",
+    title: "Command Center",
+    desc: "Live signals from the Insight Bus — what needs a decision right now.",
+    icon: Radar,
+  },
+  {
+    to: "/dashboards/control-centre",
+    title: "Control Centre",
+    desc: "Cross-module operational control view with drill-down into every stage.",
+    icon: Gauge,
+  },
+
     to: "/dashboards/daily-action",
     title: "Daily Action",
     desc: "Today's priorities, top risks, hot/cold/high-value leads — all in one screen.",
