@@ -94,6 +94,10 @@ import { generatePassword, scorePasswordStrength, MIN_PASSWORD_LENGTH } from "@/
 import { toneText } from "@/lib/ui/tones";
 import { canManageTargetUser, type ActingUserRef } from "@/lib/admin/permissions";
 import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
+import { useAuthReady } from "@/hooks/use-auth-ready";
+import { useRoles } from "@/hooks/use-roles";
+import { TablePagination } from "@/components/data/Pagination";
+
 
 const qk = {
   users: ["admin", "users"] as const,
