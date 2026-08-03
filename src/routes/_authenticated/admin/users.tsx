@@ -1224,14 +1224,23 @@ function UserRowView({
                   <button
                     type="button"
                     onClick={() => onRevoke(r)}
-                    disabled={busy}
-                    className="ml-0.5 rounded hover:bg-muted-foreground/20"
+                    // Self-lockout guard, mirrored from the mutation: an
+                    // admin removing their own admin role would lose access
+                    // to this page immediately.
+                    disabled={busy || (isSelf && r === "admin")}
+                    title={
+                      isSelf && r === "admin"
+                        ? "You cannot remove your own administrator role."
+                        : undefined
+                    }
+                    className="ml-0.5 rounded hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={`Remove ${ROLE_LABEL[r]}`}
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
               ),
+
             )}
           </div>
         )}
