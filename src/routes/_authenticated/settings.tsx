@@ -331,20 +331,26 @@ function SettingsPage() {
               <CardTitle className="text-sm">Security</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const { error } = await supabase.auth.resetPasswordForEmail(email);
-                  if (error) toast.error(error.message);
-                  else toast.success("Password reset email sent");
-                }}
-              >
-                Send password reset email
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const { error } = await supabase.auth.resetPasswordForEmail(email);
+                    if (error) toast.error(error.message);
+                    else toast.success("Password reset email sent");
+                  }}
+                >
+                  Send password reset email
+                </Button>
+                <Link to="/activity">
+                  <Button variant="outline">View activity log</Button>
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Two-factor authentication and audit logs are planned.
+                Every sign-in, role change, and record update is recorded in the activity log.
               </p>
             </CardContent>
+
           </Card>
         </TabsContent>
 
