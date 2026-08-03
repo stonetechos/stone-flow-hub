@@ -168,7 +168,11 @@ function SettingsPage() {
                 </Avatar>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
-                  <p className="text-xs text-muted-foreground">Profile photo upload coming soon.</p>
+                  <p className="text-xs text-muted-foreground">
+                    {jobTitle || department
+                      ? [jobTitle, department].filter(Boolean).join(" · ")
+                      : email}
+                  </p>
                 </div>
               </div>
 
