@@ -41,8 +41,6 @@ const SELECT = "*, invoice:invoices!payments_invoice_id_fkey(id,invoice_no)";
 // page reads `listPaymentRegister` and nothing else called it, so it was a
 // second, silently-diverging source of truth.
 
-
-
 /** The Payments page's real data source (Phase G.9A.2) -- every active
  *  receipt plus every legacy payment, newest first. */
 export async function listPaymentRegister(query = ""): Promise<PaymentRegisterRow[]> {
