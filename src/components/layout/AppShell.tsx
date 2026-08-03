@@ -760,29 +760,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <DemoBadge />
 
-              {/* AI entry point — placeholder for the STOS Copilot */}
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-text-secondary hover:text-intent-primary"
-                      aria-label="Ask STOS AI (coming soon)"
-                      onClick={() =>
-                        toast("STOS AI", {
-                          description: "The intelligence layer arrives in a later phase.",
-                        })
-                      }
-                    >
-                      <Sparkles className="h-4 w-4" aria-hidden />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
-                    Ask AI · soon
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/* The real AI entry point is the Copilot launcher mounted at
+                  the bottom of this shell (<Copilot />); the old placeholder
+                  button that only raised a "coming soon" toast was removed. */}
+
+
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <SyncStatusIndicator />
