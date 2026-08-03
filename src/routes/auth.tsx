@@ -28,7 +28,6 @@ import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { POWERED_BY_LINE } from "@/lib/platform/application";
 import { LoadingBlock } from "@/components/layout/States";
 
-
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
  *
@@ -104,7 +103,6 @@ function AuthPage() {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   if (!hydrated) return <LoadingBlock />;
-
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
