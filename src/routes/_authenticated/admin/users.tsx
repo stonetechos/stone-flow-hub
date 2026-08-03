@@ -179,11 +179,15 @@ function UsersAdminPage() {
   const setActiveFn = useServerFn(setUserActive);
   const resetPasswordFn = useServerFn(resetUserPassword);
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  useState(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
-    return null;
-  });
+  // Identity + roles come from the app's existing auth/permission hooks
+  // rather than a bespoke render-time `supabase.auth.getUser()` call. The
+  // previous implementation kicked that request off inside a `useState`
+  // initializer (a side effect during render), which never re-ran on auth
+  // changes and left `currentUserId` null on a fast re-mount — making every
+  // row look like "someone else" and mis-gating self-only actions.
+  const auth = useAuthReady();
+  const roles = useRoles();
+  const currentUserId = auth.user?.id ?? null;
 
   const profiles = useQuery({ queryKey: qk.users, queryFn: listAppUsers });
   const authUsers = useQuery({ queryKey: qk.auth, queryFn: () => listAuthUsersFn() });
@@ -210,14 +214,17 @@ function UsersAdminPage() {
   // Sprint 1.7, Parts 2-4: the acting user's own role flags, used to decide
   // (client-side, mirroring the server-side checks in users.functions.ts)
   // whether a given row action against the Super Admin should be allowed.
-  const actor = useMemo<ActingUserRef>(() => {
-    const self = combined.find((u) => u.id === currentUserId);
-    return {
+  // Sourced from the shared `useRoles()` hook so this page uses the same
+  // inheritance rules (`roleSatisfies`) as the rest of the ERP.
+  const actor = useMemo<ActingUserRef>(
+    () => ({
       id: currentUserId ?? "",
-      isSuperAdmin: self?.roles.includes("super_admin") ?? false,
-      isAdmin: self?.roles.includes("admin") ?? false,
-    };
-  }, [combined, currentUserId]);
+      isSuperAdmin: roles.isSuperAdmin,
+      isAdmin: roles.isAdmin,
+    }),
+    [currentUserId, roles.isSuperAdmin, roles.isAdmin],
+  );
+
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
