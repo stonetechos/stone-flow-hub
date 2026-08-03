@@ -183,6 +183,47 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "vendors", to: "/vendors", label: "Vendors", icon: Factory, group: "masterData" },
   { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },
 
+  // Communication
+  // These four pages were complete but unreachable from the sidebar — the
+  // only way in was a stray in-page link (or typing the URL). They are the
+  // customer-communication surface, so they get their own group rather than
+  // being buried in "Others" next to Favorites.
+  {
+    id: "communication",
+    to: "/communication",
+    label: "Communication",
+    icon: MessageSquare,
+    group: "communication",
+  },
+  {
+    id: "notifications",
+    to: "/notifications",
+    label: "Notifications",
+    icon: Bell,
+    group: "communication",
+  },
+  {
+    id: "messages",
+    to: "/messages",
+    label: "Notifications Queue",
+    icon: Send,
+    group: "communication",
+  },
+  {
+    id: "message-templates",
+    to: "/message-templates",
+    label: "Message Templates",
+    icon: Mails,
+    group: "communication",
+  },
+  {
+    id: "notification-settings",
+    to: "/notification-settings",
+    label: "Notification Settings",
+    icon: BellRing,
+    group: "communication",
+  },
+
   // Others
   { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "others" },
   {
@@ -195,7 +236,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "documents", to: "/documents", label: "Documents", icon: FolderOpen, group: "others" },
   { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
   { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
-  { id: "messages", to: "/messages", label: "Notifications Queue", icon: Send, group: "others" },
   { id: "reports", to: "/reports", label: "Reports", icon: BarChart3, group: "others" },
   { id: "settings", to: "/settings", label: "Settings", icon: Settings, group: "others" },
 
