@@ -56,6 +56,12 @@ const flowSchema = z.object({
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  // Same hydration race as `_authenticated/route.tsx`: with `ssr: false` the
+  // server emits the pending fallback while the client can resolve this match
+  // before React commits its first pass, which React reports as a hydration
+  // mismatch. Holding the match pending for a minimum window lets hydration
+  // commit before the resolved content swaps in.
+  pendingMinMs: 300,
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;

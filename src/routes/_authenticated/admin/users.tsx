@@ -581,7 +581,7 @@ function CreateUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
-      <DialogContent className="sm:max-w-[460px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add user</DialogTitle>
           <DialogDescription>
@@ -917,7 +917,7 @@ function SetPasswordDialog({
 
   return (
     <Dialog open={!!user} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Set a new password</DialogTitle>
           <DialogDescription>
