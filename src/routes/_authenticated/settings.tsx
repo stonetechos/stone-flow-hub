@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { User, Building2, Palette, Shield, Bell, Compass, Info } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
+import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
@@ -167,7 +168,11 @@ function SettingsPage() {
                 </Avatar>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
-                  <p className="text-xs text-muted-foreground">Profile photo upload coming soon.</p>
+                  <p className="text-xs text-muted-foreground">
+                    {jobTitle || department
+                      ? [jobTitle, department].filter(Boolean).join(" · ")
+                      : email}
+                  </p>
                 </div>
               </div>
 
@@ -286,13 +291,16 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-sm">Appearance</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div>
-                Theme: <Badge>Granite &amp; Teal</Badge>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm">Theme</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Choose a STOS theme. The choice is saved in this browser.
+                  </p>
+                </div>
+                <ThemeSwitcher />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Theme switcher will be added in a later phase.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -300,12 +308,18 @@ function SettingsPage() {
         <TabsContent value="notifications" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                Notifications <Badge variant="outline">Coming soon</Badge>
-              </CardTitle>
+              <CardTitle className="text-sm">Notifications</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Email, WhatsApp, and in-app notifications will be configurable here.
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Channel preferences, digests, and delivery rules are managed on the Notification
+                Settings page.
+              </p>
+              <Link to="/notification-settings">
+                <Button variant="outline" size="sm">
+                  Open notification settings
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </TabsContent>
@@ -316,18 +330,23 @@ function SettingsPage() {
               <CardTitle className="text-sm">Security</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const { error } = await supabase.auth.resetPasswordForEmail(email);
-                  if (error) toast.error(error.message);
-                  else toast.success("Password reset email sent");
-                }}
-              >
-                Send password reset email
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const { error } = await supabase.auth.resetPasswordForEmail(email);
+                    if (error) toast.error(error.message);
+                    else toast.success("Password reset email sent");
+                  }}
+                >
+                  Send password reset email
+                </Button>
+                <Link to="/activity">
+                  <Button variant="outline">View activity log</Button>
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Two-factor authentication and audit logs are planned.
+                Every sign-in, role change, and record update is recorded in the activity log.
               </p>
             </CardContent>
           </Card>
