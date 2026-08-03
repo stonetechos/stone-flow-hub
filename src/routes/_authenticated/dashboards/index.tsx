@@ -46,7 +46,7 @@ const ROLES = [
     desc: "Cross-module operational control view with drill-down into every stage.",
     icon: Gauge,
   },
-
+  {
     to: "/dashboards/daily-action",
     title: "Daily Action",
     desc: "Today's priorities, top risks, hot/cold/high-value leads — all in one screen.",
