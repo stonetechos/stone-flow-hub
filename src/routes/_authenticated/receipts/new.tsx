@@ -104,6 +104,13 @@ function NewReceiptPage() {
   );
   const unallocated = net - alloc;
   const overAllocated = alloc > net + 0.01;
+  // Allocating more than an invoice still owes drives its balance negative
+  // and corrupts the customer ledger — block it before the write.
+  const overPaidInvoice = useMemo(
+    () => allocations.find((a) => Number(a.amount || 0) > a.balance_due + 0.01) ?? null,
+    [allocations],
+  );
+  const negativeAlloc = allocations.some((a) => Number(a.amount) < 0);
 
   const mut = useMutation({
     mutationFn: () =>
@@ -150,16 +157,27 @@ function NewReceiptPage() {
     });
   }
 
-  const canSave = !!customerId && amount > 0 && !overAllocated && !!method && !!receivedAt;
+  const canSave =
+    !!customerId &&
+    amount > 0 &&
+    !overAllocated &&
+    !overPaidInvoice &&
+    !negativeAlloc &&
+    !!method &&
+    !!receivedAt;
   const hint = overAllocated
     ? "Allocations exceed the net receipt amount."
-    : !customerId
-      ? "Select a customer to begin."
-      : amount <= 0
-        ? "Enter a receipt amount greater than zero."
-        : unallocated > 0
-          ? `${formatInr(unallocated)} will be saved as an unallocated advance.`
-          : null;
+    : negativeAlloc
+      ? "Allocation amounts cannot be negative."
+      : overPaidInvoice
+        ? `Allocation to ${overPaidInvoice.invoice_no} exceeds its outstanding balance of ${formatInr(overPaidInvoice.balance_due)}.`
+        : !customerId
+          ? "Select a customer to begin."
+          : amount <= 0
+            ? "Enter a receipt amount greater than zero."
+            : unallocated > 0
+              ? `${formatInr(unallocated)} will be saved as an unallocated advance.`
+              : null;
 
   return (
     <div>
@@ -356,6 +374,7 @@ function NewReceiptPage() {
                                 />
                               ) : (
                                 <Button
+                                  type="button"
                                   variant="outline"
                                   size="sm"
                                   onClick={() => toggleInvoice(inv as never)}
@@ -367,6 +386,7 @@ function NewReceiptPage() {
                             <TableCell>
                               {row && (
                                 <Button
+                                  type="button"
                                   variant="ghost"
                                   size="icon"
                                   aria-label={`Remove allocation for ${inv.invoice_no}`}
