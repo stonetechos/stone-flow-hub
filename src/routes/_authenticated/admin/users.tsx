@@ -1094,7 +1094,9 @@ function UserRowView({
   onDelete,
   onSetNewPassword,
   busy,
+  lifecycleBusy,
   renaming,
+
 }: {
   user: CombinedUser;
   actor: ActingUserRef;
