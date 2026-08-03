@@ -26,6 +26,7 @@
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 /* -------------------------------------------------------------------- */
 /* Root form                                                             */
@@ -34,18 +35,28 @@ import type { FormEvent, ReactNode } from "react";
 export function FormLayout({
   onSubmit,
   busy,
+  dirty,
   children,
   className,
 }: {
   onSubmit?: (e: FormEvent) => void;
   busy?: boolean;
+  /** When true, warns before a browser refresh / tab close discards edits. */
+  dirty?: boolean;
   children: ReactNode;
   className?: string;
 }) {
+  useUnsavedChanges(Boolean(dirty) && !busy);
   return (
     <form
       onSubmit={onSubmit}
       aria-busy={busy || undefined}
+      onKeyDown={(e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy) {
+          e.preventDefault();
+          e.currentTarget.requestSubmit();
+        }
+      }}
       // pb leaves room for the sticky FormActions footer so the last field
       // is never covered; the safe-area term keeps that clearance intact
       // on devices with a bottom gesture bar (the footer itself grows by

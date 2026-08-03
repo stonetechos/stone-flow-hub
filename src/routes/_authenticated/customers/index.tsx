@@ -10,6 +10,13 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  PhoneInput,
+  EmailInput,
+  PincodeInput,
+  GstInput,
+} from "@/components/forms/inputs/SmartInputs";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
@@ -319,9 +326,14 @@ function CustomerFormDialog({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
+  const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyForm()));
+  const dirty = JSON.stringify(form) !== baseline;
 
   useEffect(() => {
-    if (open) setForm(editing ? fromRow(editing) : emptyForm());
+    if (!open) return;
+    const next = editing ? fromRow(editing) : emptyForm();
+    setForm(next);
+    setBaseline(JSON.stringify(next));
   }, [open, editing]);
 
   const mutation = useMutation({
@@ -349,28 +361,30 @@ function CustomerFormDialog({
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && mutation.isPending) return;
+        if (confirmCloseIfDirty(o, dirty)) onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.name}` : "New customer"}</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             <Field label="Customer name" required>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
             <Field label="Mobile" required hint="10 digits, +91 optional">
-              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
+              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
             </Field>
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>
             <Field label="Email">
-              <Input
-                type="email"
-                value={form.email ?? ""}
-                onChange={(e) => set("email", e.target.value)}
-              />
+              <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v)} />
             </Field>
             <Field label="City">
               <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
@@ -395,10 +409,7 @@ function CustomerFormDialog({
               </Select>
             </Field>
             <Field label="WhatsApp">
-              <Input
-                value={form.whatsapp ?? ""}
-                onChange={(e) => set("whatsapp", e.target.value)}
-              />
+              <PhoneInput value={form.whatsapp ?? ""} onChange={(v) => set("whatsapp", v)} />
             </Field>
           </QuickForm.MoreDetails>
 
@@ -414,13 +425,10 @@ function CustomerFormDialog({
               <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
             </Field>
             <Field label="Pincode">
-              <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
+              <PincodeInput value={form.pincode ?? ""} onChange={(v) => set("pincode", v)} />
             </Field>
             <Field label="GST number">
-              <Input
-                value={form.gst_number ?? ""}
-                onChange={(e) => set("gst_number", e.target.value)}
-              />
+              <GstInput value={form.gst_number ?? ""} onChange={(v) => set("gst_number", v)} />
             </Field>
             <Field label="Notes" className="md:col-span-2">
               <Textarea
@@ -432,7 +440,12 @@ function CustomerFormDialog({
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mutation.isPending}
+              onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>

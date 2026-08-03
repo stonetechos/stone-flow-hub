@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput, EmailInput } from "@/components/forms/inputs/SmartInputs";
 import { Textarea } from "@/components/ui/textarea";
 import { QuickForm } from "./QuickForm";
 import { Field } from "./Field";
@@ -111,7 +112,7 @@ function QuickCreateCustomer({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => (!o && mut.isPending ? undefined : onOpenChange(o))}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>New customer</DialogTitle>
@@ -132,18 +133,14 @@ function QuickCreateCustomer({
               />
             </Field>
             <Field label="Mobile" required hint="10 digits, +91 optional">
-              <Input
+              <PhoneInput
                 value={form.mobile}
-                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                onChange={(v) => setForm({ ...form, mobile: v })}
                 required
               />
             </Field>
             <Field label="Email">
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
+              <EmailInput value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
             </Field>
             <Field label="City">
               <Input
@@ -172,7 +169,12 @@ function QuickCreateCustomer({
             </Field>
           </QuickForm.QuickFill>
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mut.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
@@ -214,7 +216,7 @@ function QuickCreateVendor({ open, onOpenChange, initialName, onCreated }: Quick
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => (!o && mut.isPending ? undefined : onOpenChange(o))}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>New vendor</DialogTitle>
@@ -242,18 +244,14 @@ function QuickCreateVendor({ open, onOpenChange, initialName, onCreated }: Quick
               />
             </Field>
             <Field label="Mobile" required>
-              <Input
+              <PhoneInput
                 value={form.mobile}
-                onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                onChange={(v) => setForm({ ...form, mobile: v })}
                 required
               />
             </Field>
             <Field label="Email">
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
+              <EmailInput value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
             </Field>
             <Field label="City" className="md:col-span-2">
               <Input
@@ -263,7 +261,12 @@ function QuickCreateVendor({ open, onOpenChange, initialName, onCreated }: Quick
             </Field>
           </QuickForm.QuickFill>
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mut.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
@@ -322,7 +325,7 @@ function QuickCreateProject({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => (!o && mut.isPending ? undefined : onOpenChange(o))}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
@@ -377,7 +380,12 @@ function QuickCreateProject({
             </Field>
           </QuickForm.QuickFill>
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mut.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending || !form.customer_id}>
@@ -424,7 +432,7 @@ function QuickCreateProduct({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => (!o && mut.isPending ? undefined : onOpenChange(o))}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>New product</DialogTitle>
@@ -463,7 +471,12 @@ function QuickCreateProduct({
             </Field>
           </QuickForm.QuickFill>
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mut.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
