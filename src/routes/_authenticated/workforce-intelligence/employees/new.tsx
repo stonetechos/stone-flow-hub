@@ -8,6 +8,12 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  PhoneInput,
+  EmailInput,
+  PanInput,
+  NumericInput,
+} from "@/components/forms/inputs/SmartInputs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -79,11 +85,13 @@ function EmployeeFormPage() {
   });
 
   const [form, setForm] = useState<EmployeeInput>(empty);
+  const [baseline, setBaseline] = useState<string>(() => JSON.stringify(empty()));
+  const dirty = JSON.stringify(form) !== baseline;
 
   // Load existing into state on first fetch
   if (id && existing.data && form.full_name === "" && !existing.isFetching) {
     const e = existing.data;
-    setForm({
+    const loaded: EmployeeInput = {
       full_name: e.full_name,
       designation_id: e.designation_id,
       department: e.department ?? "",
@@ -103,7 +111,9 @@ function EmployeeFormPage() {
       photo_url: e.photo_url ?? "",
       remarks: e.remarks ?? "",
       user_id: e.user_id,
-    });
+    };
+    setForm(loaded);
+    setBaseline(JSON.stringify(loaded));
   }
 
   const mut = useMutation({
@@ -133,7 +143,7 @@ function EmployeeFormPage() {
   return (
     <>
       <PageHeader title={id ? "Edit employee" : "New employee"} eyebrow="Workforce Intelligence" />
-      <FormLayout onSubmit={submit} busy={mut.isPending}>
+      <FormLayout onSubmit={submit} busy={mut.isPending} dirty={dirty}>
         <FormSection title="Basic information">
           <FormGrid>
             <Field label="Full name" required>
@@ -235,21 +245,15 @@ function EmployeeFormPage() {
         <FormSection title="Contact">
           <FormGrid>
             <Field label="Phone">
-              <Input
-                value={form.phone ?? ""}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
+              <PhoneInput value={form.phone ?? ""} onChange={(v) => setForm({ ...form, phone: v })} />
             </Field>
             <Field label="Email">
-              <Input
-                value={form.email ?? ""}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
+              <EmailInput value={form.email ?? ""} onChange={(v) => setForm({ ...form, email: v })} />
             </Field>
             <Field label="Emergency contact">
-              <Input
+              <PhoneInput
                 value={form.emergency_contact ?? ""}
-                onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })}
+                onChange={(v) => setForm({ ...form, emergency_contact: v })}
               />
             </Field>
             <Field label="Address">
@@ -270,21 +274,13 @@ function EmployeeFormPage() {
               />
             </Field>
             <Field label="PAN">
-              <Input
-                value={form.pan ?? ""}
-                onChange={(e) => setForm({ ...form, pan: e.target.value })}
-              />
+              <PanInput value={form.pan ?? ""} onChange={(v) => setForm({ ...form, pan: v })} />
             </Field>
             <Field label="Salary (CTC)">
-              <Input
-                type="number"
-                value={form.salary_ctc ?? ""}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    salary_ctc: e.target.value === "" ? null : Number(e.target.value),
-                  })
-                }
+              <NumericInput
+                value={form.salary_ctc === null || form.salary_ctc === undefined ? "" : String(form.salary_ctc)}
+                onChange={(v) => setForm({ ...form, salary_ctc: v === "" ? null : Number(v) })}
+                min={0}
               />
             </Field>
             <Field label="Skills (comma-separated)">

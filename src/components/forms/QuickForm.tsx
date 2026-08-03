@@ -9,15 +9,19 @@
 import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function QuickForm({
   onSubmit,
   children,
   busy,
+  dirty,
 }: {
   onSubmit: (e: React.FormEvent) => void;
   children: ReactNode;
   busy?: boolean;
+  /** When true, a browser refresh / close prompts before discarding edits. */
+  dirty?: boolean;
 }) {
   // Split off the Actions slot so it can stick to the dialog footer while the
   // rest of the form scrolls independently. Without this the entire form is a
@@ -26,10 +30,18 @@ export function QuickForm({
   const items = Children.toArray(children);
   const actions = items.find((c) => isValidElement(c) && c.type === QuickForm.Actions);
   const body = items.filter((c) => c !== actions);
+  useUnsavedChanges(Boolean(dirty) && !busy);
   return (
     <form
       onSubmit={onSubmit}
       aria-busy={busy}
+      onKeyDown={(e) => {
+        // Ctrl/⌘+Enter submits from anywhere in the form (including textareas).
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy) {
+          e.preventDefault();
+          e.currentTarget.requestSubmit();
+        }
+      }}
       className="flex h-full min-h-0 flex-1 flex-col gap-4"
     >
       <div className="-mx-6 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]">
@@ -39,6 +51,7 @@ export function QuickForm({
     </form>
   );
 }
+
 
 QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -111,5 +124,10 @@ QuickForm.Advanced = function Advanced({ children }: { children: ReactNode }) {
 };
 
 QuickForm.Actions = function Actions({ children }: { children: ReactNode }) {
-  return <div className="flex items-center justify-end gap-2 pt-2">{children}</div>;
+  return (
+    <div className="-mx-6 -mb-6 flex items-center justify-end gap-2 border-t border-border bg-background px-6 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      {children}
+    </div>
+  );
 };
+

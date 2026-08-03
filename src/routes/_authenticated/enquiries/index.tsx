@@ -8,6 +8,8 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput, EmailInput, NumericInput } from "@/components/forms/inputs/SmartInputs";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -471,9 +473,14 @@ function NewEnquiryDialog({
   const qc = useQueryClient();
   const nav = useNavigate();
   const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
+  const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyNew()));
+  const dirty = JSON.stringify(form) !== baseline;
 
   useEffect(() => {
-    if (open) setForm({ ...emptyNew(), customer_id: presetCustomerId ?? null });
+    if (!open) return;
+    const next = { ...emptyNew(), customer_id: presetCustomerId ?? null };
+    setForm(next);
+    setBaseline(JSON.stringify(next));
   }, [open, presetCustomerId]);
 
   const mutation = useMutation({
@@ -504,12 +511,18 @@ function NewEnquiryDialog({
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && mutation.isPending) return;
+        if (confirmCloseIfDirty(o, dirty)) onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>New enquiry</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             <Field
               label="Customer"
@@ -543,18 +556,10 @@ function NewEnquiryDialog({
                   />
                 </Field>
                 <Field label="Mobile number" required hint="New number → new customer created">
-                  <Input
-                    value={form.mobile}
-                    onChange={(e) => set("mobile", e.target.value)}
-                    required
-                  />
+                  <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
                 </Field>
                 <Field label="Email">
-                  <Input
-                    type="email"
-                    value={form.email ?? ""}
-                    onChange={(e) => set("email", e.target.value || null)}
-                  />
+                  <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v || null)} />
                 </Field>
               </>
             ) : null}
@@ -575,12 +580,11 @@ function NewEnquiryDialog({
               />
             </Field>
             <Field label="Budget (INR)">
-              <Input
-                type="number"
-                value={form.budget_inr ?? ""}
-                onChange={(e) =>
-                  set("budget_inr", e.target.value === "" ? null : Number(e.target.value))
-                }
+              <NumericInput
+                value={form.budget_inr === null || form.budget_inr === undefined ? "" : String(form.budget_inr)}
+                onChange={(v) => set("budget_inr", v === "" ? null : Number(v))}
+                min={0}
+                inputMode="decimal"
               />
             </Field>
           </QuickForm.QuickFill>
@@ -622,7 +626,12 @@ function NewEnquiryDialog({
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mutation.isPending}
+              onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
@@ -667,9 +676,15 @@ function EditEnquiryDialog({
     required_delivery_date: null,
     notes: null,
   });
+  const [baseline, setBaseline] = useState<string>("");
+  const dirty = baseline !== "" && JSON.stringify(form) !== baseline;
 
   useEffect(() => {
-    if (open && editing) setForm(fromRowForEdit(editing));
+    if (open && editing) {
+      const next = fromRowForEdit(editing);
+      setForm(next);
+      setBaseline(JSON.stringify(next));
+    }
   }, [open, editing]);
 
   const mutation = useMutation({
@@ -695,12 +710,18 @@ function EditEnquiryDialog({
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && mutation.isPending) return;
+        if (confirmCloseIfDirty(o, dirty)) onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit {editing?.enquiry_no}</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             <Field label="Requirement" className="md:col-span-2">
               <Textarea
@@ -713,12 +734,11 @@ function EditEnquiryDialog({
               <Input value={form.source ?? ""} onChange={(e) => set("source", e.target.value)} />
             </Field>
             <Field label="Budget (INR)">
-              <Input
-                type="number"
-                value={form.budget_inr ?? ""}
-                onChange={(e) =>
-                  set("budget_inr", e.target.value === "" ? null : Number(e.target.value))
-                }
+              <NumericInput
+                value={form.budget_inr === null || form.budget_inr === undefined ? "" : String(form.budget_inr)}
+                onChange={(v) => set("budget_inr", v === "" ? null : Number(v))}
+                min={0}
+                inputMode="decimal"
               />
             </Field>
           </QuickForm.QuickFill>
@@ -760,7 +780,12 @@ function EditEnquiryDialog({
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mutation.isPending}
+              onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>

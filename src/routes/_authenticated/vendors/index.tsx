@@ -10,6 +10,13 @@ import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/State
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  PhoneInput,
+  EmailInput,
+  PincodeInput,
+  GstInput,
+} from "@/components/forms/inputs/SmartInputs";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -278,6 +285,8 @@ function VendorFormDialog({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<VendorCreateInput>(emptyForm);
+  const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyForm()));
+  const dirty = JSON.stringify(form) !== baseline;
 
   // Load primary contact for edit mode
   const contactQuery = useQuery({
@@ -289,10 +298,12 @@ function VendorFormDialog({
   useEffect(() => {
     if (!open) return;
     if (!editing) {
-      setForm(emptyForm());
+      const blank = emptyForm();
+      setForm(blank);
+      setBaseline(JSON.stringify(blank));
       return;
     }
-    setForm({
+    const next: VendorCreateInput = {
       company_name: editing.company_name,
       contact_name: contactQuery.data?.name ?? "",
       mobile: contactQuery.data?.phone ?? "",
@@ -304,7 +315,9 @@ function VendorFormDialog({
       gst_number: editing.gst_number,
       payment_terms: editing.payment_terms,
       notes: editing.notes,
-    });
+    };
+    setForm(next);
+    setBaseline(JSON.stringify(next));
   }, [open, editing, contactQuery.data]);
 
   const mutation = useMutation({
@@ -329,12 +342,18 @@ function VendorFormDialog({
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && mutation.isPending) return;
+        if (confirmCloseIfDirty(o, dirty)) onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.company_name}` : "New vendor"}</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             <Field label="Vendor company" required>
               <Input
@@ -351,7 +370,7 @@ function VendorFormDialog({
               />
             </Field>
             <Field label="Mobile" required>
-              <Input value={form.mobile} onChange={(e) => set("mobile", e.target.value)} required />
+              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
             </Field>
             <Field label="City">
               <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
@@ -360,17 +379,10 @@ function VendorFormDialog({
 
           <QuickForm.MoreDetails>
             <Field label="Email">
-              <Input
-                type="email"
-                value={form.email ?? ""}
-                onChange={(e) => set("email", e.target.value)}
-              />
+              <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v)} />
             </Field>
             <Field label="GST number">
-              <Input
-                value={form.gst_number ?? ""}
-                onChange={(e) => set("gst_number", e.target.value)}
-              />
+              <GstInput value={form.gst_number ?? ""} onChange={(v) => set("gst_number", v)} />
             </Field>
             <Field label="Payment terms">
               <Input
@@ -392,7 +404,7 @@ function VendorFormDialog({
               />
             </Field>
             <Field label="Pincode">
-              <Input value={form.pincode ?? ""} onChange={(e) => set("pincode", e.target.value)} />
+              <PincodeInput value={form.pincode ?? ""} onChange={(v) => set("pincode", v)} />
             </Field>
             <Field label="Notes" className="md:col-span-2">
               <Textarea
@@ -404,7 +416,12 @@ function VendorFormDialog({
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mutation.isPending}
+              onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
