@@ -10,7 +10,7 @@ import {
   History,
   User as UserIcon,
   Settings as SettingsIcon,
-  Sparkles,
+  
   Keyboard,
   Shield,
 } from "lucide-react";
