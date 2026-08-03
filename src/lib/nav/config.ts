@@ -35,7 +35,7 @@ import {
   MessageSquare,
   Bell,
   Mails,
-  BellCog,
+  BellRing,
   type LucideIcon,
 } from "lucide-react";
 
