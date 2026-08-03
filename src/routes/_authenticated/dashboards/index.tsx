@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/dashboards/")({
