@@ -519,15 +519,36 @@ function UsersAdminPage() {
                       onDelete={() => setConfirmDelete(u)}
                       onSetNewPassword={() => setPasswordResetTarget(u)}
                       busy={busy}
+                      // Per-row lifecycle guard: without it, repeated clicks
+                      // on "Resend invitation" / "Deactivate" fired duplicate
+                      // privileged requests while the first was still in
+                      // flight.
+                      lifecycleBusy={
+                        (setActive.isPending && setActive.variables?.userId === u.id) ||
+                        (resend.isPending && resend.variables === u.email) ||
+                        (reset.isPending && reset.variables === u.email) ||
+                        (del.isPending && del.variables?.userId === u.id)
+                      }
                       renaming={rename.isPending}
                     />
                   ))}
                 </tbody>
               </table>
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={filtered.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => {
+                  setPageSize(s);
+                  setPage(1);
+                }}
+              />
             </div>
           )}
         </CardContent>
       </Card>
+
       <p className="mt-3 text-xs text-muted-foreground">
         Display name is shown throughout the app (greetings, activity log, comments, assignments).
         Deactivating a user preserves all historical records; deletion is blocked for yourself and
