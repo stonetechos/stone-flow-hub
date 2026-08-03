@@ -1110,7 +1110,9 @@ function UserRowView({
   onDelete: () => void;
   onSetNewPassword: () => void;
   busy: boolean;
+  lifecycleBusy: boolean;
   renaming: boolean;
+
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
