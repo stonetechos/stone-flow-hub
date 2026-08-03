@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRoles } from "@/hooks/use-roles";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getAppSetting, upsertAppSetting } from "@/lib/app-settings/api";
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/notification-settings")({
 });
 
 function NotificationSettingsPage() {
+  const { isAdmin } = useRoles();
   return (
     <div>
       <PageHeader
@@ -49,6 +51,12 @@ function NotificationSettingsPage() {
           </Button>
         }
       />
+
+      {!isAdmin && (
+        <div className="mb-4 rounded-md border border-status-warning-border bg-status-warning-bg px-3 py-2 text-sm text-status-warning-fg">
+          You have read-only access to provider settings. Ask an administrator to make changes.
+        </div>
+      )}
 
       <div className="grid gap-4">
         <ModeCard />
@@ -82,6 +90,9 @@ function TemplatesLink() {
 // ---------------- TEST / LIVE mode ----------------
 type ModeCfg = { mode?: "test" | "live"; test_email?: string; test_phone?: string };
 function ModeCard() {
+  // Every write here targets `app_settings`, whose RLS allows admin only;
+  // the provider test/dispatch server functions are admin-gated too.
+  const { isAdmin } = useRoles();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: qk.appSettings.byKey("communication.mode"),
@@ -127,6 +138,7 @@ function ModeCard() {
             </div>
           </div>
           <Switch
+            disabled={!isAdmin}
             checked={!isTest}
             onCheckedChange={(v) => setCfg({ ...cfg, mode: v ? "live" : "test" })}
           />
@@ -150,7 +162,7 @@ function ModeCard() {
           </div>
         </div>
         <div>
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !isAdmin}>
             <Save className="mr-2 h-4 w-4" /> Save mode
           </Button>
         </div>
@@ -168,6 +180,9 @@ type EmailCfg = {
   api_key_secret_name?: string;
 };
 function EmailProviderCard() {
+  // Every write here targets `app_settings`, whose RLS allows admin only;
+  // the provider test/dispatch server functions are admin-gated too.
+  const { isAdmin } = useRoles();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: qk.appSettings.byKey("notifications.email"),
@@ -264,10 +279,14 @@ function EmailProviderCard() {
           />
         </div>
         <div className="md:col-span-2 flex flex-wrap gap-2">
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !isAdmin}>
             <Save className="mr-2 h-4 w-4" /> Save
           </Button>
-          <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => test.mutate()}
+            disabled={test.isPending || !isAdmin}
+          >
             {test.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -297,6 +316,9 @@ type WaCfg = {
   access_token_secret_name?: string;
 };
 function WhatsAppProviderCard() {
+  // Every write here targets `app_settings`, whose RLS allows admin only;
+  // the provider test/dispatch server functions are admin-gated too.
+  const { isAdmin } = useRoles();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: qk.appSettings.byKey("notifications.whatsapp"),
@@ -458,13 +480,13 @@ function WhatsAppProviderCard() {
         </div>
 
         <div className="md:col-span-2 flex flex-wrap gap-2">
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !isAdmin}>
             <Save className="mr-2 h-4 w-4" /> Save
           </Button>
           <Button
             variant="outline"
             onClick={() => templateTest.mutate()}
-            disabled={templateTest.isPending}
+            disabled={templateTest.isPending || !isAdmin}
           >
             {templateTest.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -473,7 +495,11 @@ function WhatsAppProviderCard() {
             )}
             Send WhatsApp Test
           </Button>
-          <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => test.mutate()}
+            disabled={test.isPending || !isAdmin}
+          >
             {test.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -481,7 +507,11 @@ function WhatsAppProviderCard() {
             )}
             Send text test
           </Button>
-          <Button variant="outline" onClick={() => conn.mutate()} disabled={conn.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => conn.mutate()}
+            disabled={conn.isPending || !isAdmin}
+          >
             {conn.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -551,6 +581,9 @@ function WhatsappStatusBadge({
 // ---------------- SMS provider (unchanged) ----------------
 type SmsCfg = { provider?: string; api_key_secret_name?: string; from?: string };
 function SmsProviderCard() {
+  // Every write here targets `app_settings`, whose RLS allows admin only;
+  // the provider test/dispatch server functions are admin-gated too.
+  const { isAdmin } = useRoles();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: qk.appSettings.byKey("notifications.sms"),
@@ -604,7 +637,7 @@ function SmsProviderCard() {
           />
         </div>
         <div className="md:col-span-2">
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !isAdmin}>
             <Save className="mr-2 h-4 w-4" /> Save
           </Button>
         </div>

@@ -16,6 +16,8 @@ import { toneSurface } from "@/lib/ui/tones";
 import { qk } from "@/lib/query-keys";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ErrorBlock } from "@/components/layout/States";
+import { toUserMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   ssr: false,
@@ -24,7 +26,12 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const qc = useQueryClient();
-  const { data: items = [], isLoading } = useQuery({
+  const {
+    data: items = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: qk.notifications.all,
     queryFn: () => listNotifications(200),
     refetchInterval: 60_000,
@@ -54,6 +61,10 @@ function NotificationsPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="px-4 py-12 text-center text-sm text-muted-foreground">Loading…</div>
+          ) : error ? (
+            <div className="p-4">
+              <ErrorBlock message={toUserMessage(error)} onRetry={() => void refetch()} />
+            </div>
           ) : items.length === 0 ? (
             <div className="px-4 py-12 text-center text-sm text-muted-foreground">
               You&rsquo;re all caught up.
