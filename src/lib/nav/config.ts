@@ -32,10 +32,21 @@ import {
   ShieldCheck,
   Layers,
   Briefcase,
+  MessageSquare,
+  Bell,
+  Mails,
+  BellCog,
   type LucideIcon,
 } from "lucide-react";
 
-export type NavGroupId = "sales" | "operations" | "workforce" | "masterData" | "others" | "admin";
+export type NavGroupId =
+  | "sales"
+  | "operations"
+  | "workforce"
+  | "masterData"
+  | "communication"
+  | "others"
+  | "admin";
 
 export interface NavGroupDef {
   id: NavGroupId;
@@ -48,6 +59,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "operations", label: "Operations" },
   { id: "workforce", label: "Workforce Intelligence" },
   { id: "masterData", label: "Master Data" },
+  { id: "communication", label: "Communication" },
   { id: "others", label: "Others" },
   { id: "admin", label: "Administration", adminOnly: true },
 ];
