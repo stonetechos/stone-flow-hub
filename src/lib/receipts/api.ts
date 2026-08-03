@@ -72,6 +72,53 @@ export async function listOpenInvoicesForCustomer(customerId: string) {
   return data ?? [];
 }
 
+/**
+ * Guard against allocating more to an invoice than it still owes. The DB
+ * happily accepts it and `recalc_invoice_with_receipts` then writes a
+ * negative `balance_due`, which silently corrupts the customer ledger and
+ * every collections KPI derived from it.
+ */
+async function assertAllocationsFitInvoices(
+  allocations: Array<{ invoice_id: string; amount: number }>,
+  /** Allocations already stored for this receipt are not "new" money. */
+  excludeReceiptId?: string,
+): Promise<void> {
+  if (!allocations.length) return;
+  const ids = [...new Set(allocations.map((a) => a.invoice_id))];
+  const { data, error } = await getDb()
+    .from("invoices")
+    .select("id, invoice_no, balance_due")
+    .in("id", ids);
+  if (error) throw new AppError(mapDbError(error));
+
+  let existing: Record<string, number> = {};
+  if (excludeReceiptId) {
+    const { data: prev, error: pErr } = await getDb()
+      .from("receipt_allocations")
+      .select("invoice_id, amount")
+      .eq("receipt_id", excludeReceiptId);
+    if (pErr) throw new AppError(mapDbError(pErr));
+    existing = (prev ?? []).reduce<Record<string, number>>((acc, r) => {
+      acc[r.invoice_id] = (acc[r.invoice_id] ?? 0) + Number(r.amount);
+      return acc;
+    }, {});
+  }
+
+  for (const inv of data ?? []) {
+    const requested = allocations
+      .filter((a) => a.invoice_id === inv.id)
+      .reduce((s, a) => s + a.amount, 0);
+    const available = Number(inv.balance_due ?? 0) + (existing[inv.id] ?? 0);
+    if (requested > available + 0.01) {
+      throw new AppError(
+        `Cannot allocate ${requested.toFixed(2)} to invoice ${inv.invoice_no} — only ${available.toFixed(2)} is outstanding.`,
+        "BAD_REQUEST",
+        400,
+      );
+    }
+  }
+}
+
 export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptRow> {
   const parsed = receiptCreateSchema.parse(input);
   const totalAlloc = parsed.allocations.reduce((s, a) => s + a.amount, 0);
@@ -83,6 +130,10 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
       400,
     );
   }
+  // Validate before inserting the receipt so a rejected allocation never
+  // leaves a phantom advance behind.
+  await assertAllocationsFitInvoices(parsed.allocations);
+
   const { data: rcpt, error } = await getDb()
     .from("receipts")
     .insert({
@@ -117,13 +168,40 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
           amount: a.amount,
         })),
       );
-    if (aErr) throw new AppError(mapDbError(aErr));
+    if (aErr) {
+      // Two round-trips, no transaction: undo the receipt rather than leave
+      // an unintended unallocated advance on the customer ledger.
+      await getDb().from("receipts").delete().eq("id", rcpt.id);
+      throw new AppError(mapDbError(aErr));
+    }
   }
   return rcpt;
 }
 
 export async function updateReceipt(id: string, input: ReceiptUpdateInput): Promise<ReceiptRow> {
   const parsed = receiptUpdateSchema.parse(input);
+  // Editing amount/TDS/charges downwards must not strand allocations above
+  // the new net amount — that would over-credit the allocated invoices.
+  if (parsed.status !== "void") {
+    const { data: allocs, error: aErr } = await getDb()
+      .from("receipt_allocations")
+      .select("amount")
+      .eq("receipt_id", id);
+    if (aErr) throw new AppError(mapDbError(aErr));
+    const allocated = (allocs ?? []).reduce((s, a) => s + Number(a.amount), 0);
+    const net =
+      Number(parsed.amount ?? 0) -
+      Number(parsed.tds_amount ?? 0) -
+      Number(parsed.bank_charges ?? 0);
+
+    if (allocated > net + 0.01) {
+      throw new AppError(
+        `This receipt already has ${allocated.toFixed(2)} allocated to invoices — the net amount cannot be reduced to ${net.toFixed(2)}. Adjust the allocations first.`,
+        "BAD_REQUEST",
+        400,
+      );
+    }
+  }
   const { data, error } = await getDb()
     .from("receipts")
     .update({
@@ -156,7 +234,14 @@ export async function replaceAllocations(
   receiptId: string,
   allocations: Array<{ invoice_id: string; amount: number }>,
 ) {
-  await getDb().from("receipt_allocations").delete().eq("receipt_id", receiptId);
+  // Same over-allocation guard as createReceipt; the receipt's own existing
+  // allocations are freed by the delete below, so they count as available.
+  await assertAllocationsFitInvoices(allocations, receiptId);
+  const { error: dErr } = await getDb()
+    .from("receipt_allocations")
+    .delete()
+    .eq("receipt_id", receiptId);
+  if (dErr) throw new AppError(mapDbError(dErr));
   if (!allocations.length) return;
   const { error } = await getDb()
     .from("receipt_allocations")
