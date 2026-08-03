@@ -94,6 +94,9 @@ import { generatePassword, scorePasswordStrength, MIN_PASSWORD_LENGTH } from "@/
 import { toneText } from "@/lib/ui/tones";
 import { canManageTargetUser, type ActingUserRef } from "@/lib/admin/permissions";
 import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
+import { useAuthReady } from "@/hooks/use-auth-ready";
+import { useRoles } from "@/hooks/use-roles";
+import { TablePagination } from "@/components/data/Pagination";
 
 const qk = {
   users: ["admin", "users"] as const,
@@ -179,11 +182,15 @@ function UsersAdminPage() {
   const setActiveFn = useServerFn(setUserActive);
   const resetPasswordFn = useServerFn(resetUserPassword);
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  useState(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
-    return null;
-  });
+  // Identity + roles come from the app's existing auth/permission hooks
+  // rather than a bespoke render-time `supabase.auth.getUser()` call. The
+  // previous implementation kicked that request off inside a `useState`
+  // initializer (a side effect during render), which never re-ran on auth
+  // changes and left `currentUserId` null on a fast re-mount — making every
+  // row look like "someone else" and mis-gating self-only actions.
+  const auth = useAuthReady();
+  const roles = useRoles();
+  const currentUserId = auth.user?.id ?? null;
 
   const profiles = useQuery({ queryKey: qk.users, queryFn: listAppUsers });
   const authUsers = useQuery({ queryKey: qk.auth, queryFn: () => listAuthUsersFn() });
@@ -210,14 +217,16 @@ function UsersAdminPage() {
   // Sprint 1.7, Parts 2-4: the acting user's own role flags, used to decide
   // (client-side, mirroring the server-side checks in users.functions.ts)
   // whether a given row action against the Super Admin should be allowed.
-  const actor = useMemo<ActingUserRef>(() => {
-    const self = combined.find((u) => u.id === currentUserId);
-    return {
+  // Sourced from the shared `useRoles()` hook so this page uses the same
+  // inheritance rules (`roleSatisfies`) as the rest of the ERP.
+  const actor = useMemo<ActingUserRef>(
+    () => ({
       id: currentUserId ?? "",
-      isSuperAdmin: self?.roles.includes("super_admin") ?? false,
-      isAdmin: self?.roles.includes("admin") ?? false,
-    };
-  }, [combined, currentUserId]);
+      isSuperAdmin: roles.isSuperAdmin,
+      isAdmin: roles.isAdmin,
+    }),
+    [currentUserId, roles.isSuperAdmin, roles.isAdmin],
+  );
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
@@ -250,7 +259,21 @@ function UsersAdminPage() {
       userId: string;
       role: AppRole;
       targetRoles: AppRole[];
-    }) => revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role),
+    }) => {
+      // Self-lockout guard: revoking your own admin-capable role would
+      // immediately fail this route's `beforeLoad` gate and leave nobody
+      // able to restore it from the UI. Deliberately client-side only —
+      // it mirrors the same permission model, adds no new architecture,
+      // and the DB/server checks remain authoritative for everything else.
+      if (userId === actor.id && (role === "admin" || role === "super_admin")) {
+        return Promise.reject(
+          new Error(
+            "You cannot remove your own administrator role. Ask another administrator to do it.",
+          ),
+        );
+      }
+      return revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role);
+    },
     onSuccess: (_d, v) => {
       toast.success(`Removed ${ROLE_LABEL[v.role]}`);
       invalidate();
@@ -344,9 +367,10 @@ function UsersAdminPage() {
   });
 
   const del = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { user_id: userId } }),
-    onSuccess: () => {
-      toast.success("User deleted");
+    mutationFn: ({ userId }: { userId: string; pendingInvite: boolean }) =>
+      deleteFn({ data: { user_id: userId } }),
+    onSuccess: (_d, v) => {
+      toast.success(v.pendingInvite ? "Invitation cancelled" : "User deleted");
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -367,6 +391,8 @@ function UsersAdminPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CombinedUser | null>(null);
   const [passwordResetTarget, setPasswordResetTarget] = useState<CombinedUser | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -378,6 +404,19 @@ function UsersAdminPage() {
       );
     });
   }, [combined, search, statusFilter]);
+
+  // Keep the current page in range when filters shrink the result set (or a
+  // deletion empties the last page) — otherwise the table renders blank with
+  // no rows and no empty state.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize],
+  );
 
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
@@ -456,7 +495,7 @@ function UsersAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filtered.map((u) => (
+                  {paged.map((u) => (
                     <UserRowView
                       key={u.id}
                       user={u}
@@ -475,15 +514,36 @@ function UsersAdminPage() {
                       onDelete={() => setConfirmDelete(u)}
                       onSetNewPassword={() => setPasswordResetTarget(u)}
                       busy={busy}
+                      // Per-row lifecycle guard: without it, repeated clicks
+                      // on "Resend invitation" / "Deactivate" fired duplicate
+                      // privileged requests while the first was still in
+                      // flight.
+                      lifecycleBusy={
+                        (setActive.isPending && setActive.variables?.userId === u.id) ||
+                        (resend.isPending && resend.variables === u.email) ||
+                        (reset.isPending && reset.variables === u.email) ||
+                        (del.isPending && del.variables?.userId === u.id)
+                      }
                       renaming={rename.isPending}
                     />
                   ))}
                 </tbody>
               </table>
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={filtered.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => {
+                  setPageSize(s);
+                  setPage(1);
+                }}
+              />
             </div>
           )}
         </CardContent>
       </Card>
+
       <p className="mt-3 text-xs text-muted-foreground">
         Display name is shown throughout the app (greetings, activity log, comments, assignments).
         Deactivating a user preserves all historical records; deletion is blocked for yourself and
@@ -516,16 +576,30 @@ function UsersAdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (confirmDelete) {
-                  del.mutate(confirmDelete.id, { onSuccess: () => setConfirmDelete(null) });
-                }
+              disabled={del.isPending}
+              onClick={(e) => {
+                // Keep the dialog open until the request settles, so a
+                // failure is visible and a second click can't fire a
+                // duplicate delete.
+                e.preventDefault();
+                if (!confirmDelete || del.isPending) return;
+                del.mutate(
+                  {
+                    userId: confirmDelete.id,
+                    pendingInvite:
+                      confirmDelete.status === "invited" || confirmDelete.status === "expired",
+                  },
+                  { onSuccess: () => setConfirmDelete(null) },
+                );
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete user
+              {del.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+              {confirmDelete?.status === "invited" || confirmDelete?.status === "expired"
+                ? "Cancel invitation"
+                : "Delete user"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1014,6 +1088,7 @@ function UserRowView({
   onDelete,
   onSetNewPassword,
   busy,
+  lifecycleBusy,
   renaming,
 }: {
   user: CombinedUser;
@@ -1028,6 +1103,7 @@ function UserRowView({
   onDelete: () => void;
   onSetNewPassword: () => void;
   busy: boolean;
+  lifecycleBusy: boolean;
   renaming: boolean;
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
@@ -1140,8 +1216,16 @@ function UserRowView({
                   <button
                     type="button"
                     onClick={() => onRevoke(r)}
-                    disabled={busy}
-                    className="ml-0.5 rounded hover:bg-muted-foreground/20"
+                    // Self-lockout guard, mirrored from the mutation: an
+                    // admin removing their own admin role would lose access
+                    // to this page immediately.
+                    disabled={busy || (isSelf && r === "admin")}
+                    title={
+                      isSelf && r === "admin"
+                        ? "You cannot remove your own administrator role."
+                        : undefined
+                    }
+                    className="ml-0.5 rounded hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={`Remove ${ROLE_LABEL[r]}`}
                   >
                     <X className="h-3 w-3" />
@@ -1181,11 +1265,11 @@ function UserRowView({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Lifecycle</DropdownMenuLabel>
               {pendingInvite ? (
-                <DropdownMenuItem onClick={onResend} disabled={!user.email}>
+                <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
                   <Send className="mr-2 h-4 w-4" /> Resend invitation
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuItem onClick={onReset} disabled={!user.email}>
+              <DropdownMenuItem onClick={onReset} disabled={!user.email || lifecycleBusy}>
                 <KeyRound className="mr-2 h-4 w-4" /> Send password reset
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -1198,21 +1282,33 @@ function UserRowView({
               {user.is_active ? (
                 <DropdownMenuItem
                   onClick={() => onSetActive(false)}
-                  disabled={!canDeactivate}
-                  title={isProtected ? "This account is protected." : undefined}
+                  disabled={!canDeactivate || lifecycleBusy}
+                  title={
+                    isSelf
+                      ? "You cannot deactivate your own account."
+                      : isProtected
+                        ? "This account is protected."
+                        : undefined
+                  }
                 >
                   <UserX className="mr-2 h-4 w-4" /> Deactivate user
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => onSetActive(true)}>
+                <DropdownMenuItem onClick={() => onSetActive(true)} disabled={lifecycleBusy}>
                   <UserCheck className="mr-2 h-4 w-4" /> Reactivate user
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={onDelete}
-                disabled={!canDelete}
-                title={isProtected ? "This account is protected." : undefined}
+                disabled={!canDelete || lifecycleBusy}
+                title={
+                  isSelf
+                    ? "You cannot delete your own account."
+                    : isProtected
+                      ? "This account is protected."
+                      : undefined
+                }
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
