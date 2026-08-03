@@ -370,9 +370,10 @@ function UsersAdminPage() {
   });
 
   const del = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { user_id: userId } }),
-    onSuccess: () => {
-      toast.success("User deleted");
+    mutationFn: ({ userId }: { userId: string; pendingInvite: boolean }) =>
+      deleteFn({ data: { user_id: userId } }),
+    onSuccess: (_d, v) => {
+      toast.success(v.pendingInvite ? "Invitation cancelled" : "User deleted");
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -393,6 +394,8 @@ function UsersAdminPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CombinedUser | null>(null);
   const [passwordResetTarget, setPasswordResetTarget] = useState<CombinedUser | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -404,6 +407,20 @@ function UsersAdminPage() {
       );
     });
   }, [combined, search, statusFilter]);
+
+  // Keep the current page in range when filters shrink the result set (or a
+  // deletion empties the last page) — otherwise the table renders blank with
+  // no rows and no empty state.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize],
+  );
+
 
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
