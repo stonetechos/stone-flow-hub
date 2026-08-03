@@ -26,6 +26,7 @@ import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { POWERED_BY_LINE } from "@/lib/platform/application";
+import { LoadingBlock } from "@/components/layout/States";
 
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
@@ -56,12 +57,11 @@ const flowSchema = z.object({
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  // Same hydration race as `_authenticated/route.tsx`: with `ssr: false` the
-  // server emits the pending fallback while the client can resolve this match
-  // before React commits its first pass, which React reports as a hydration
-  // mismatch. Holding the match pending for a minimum window lets hydration
-  // commit before the resolved content swaps in.
-  pendingMinMs: 300,
+  // With `ssr: false` the server emits the router's pending fallback
+  // (`<LoadingBlock />`) for this match. Timing alone can't guarantee the
+  // client commits the same markup on its first pass, so `AuthPage` renders
+  // that exact fallback until it has hydrated — see the note there.
+
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
@@ -95,6 +95,14 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const search = Route.useSearch();
   const flow = search.flow ?? "signin";
+
+  // The server HTML for this `ssr: false` route is the router's pending
+  // fallback. Rendering the identical fallback on the first client pass makes
+  // the two trees structurally identical, so hydration commits cleanly and the
+  // real page mounts on the following render.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  if (!hydrated) return <LoadingBlock />;
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
