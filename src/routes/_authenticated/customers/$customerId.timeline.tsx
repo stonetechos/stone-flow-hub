@@ -24,7 +24,7 @@ function TimelinePage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-6">
+    <div className="mx-auto max-w-4xl space-y-4">
       <Link
         to="/customers/$customerId"
         params={{ customerId }}

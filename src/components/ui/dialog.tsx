@@ -107,10 +107,20 @@ const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement
 );
 DialogBody.displayName = "DialogBody";
 
+/**
+ * DialogFooter — sticks to the bottom of the dialog's scroll region so the
+ * primary action stays reachable while a long body scrolls underneath it.
+ * The negative margins bleed it back over the scroll wrapper's padding so
+ * the surface fill spans edge-to-edge and nothing peeks out beside it.
+ */
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "mt-auto flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
+      "sticky bottom-[calc(-1*max(1.5rem,env(safe-area-inset-bottom)))] z-10",
+      "-mx-6 mt-auto -mb-[max(1.5rem,env(safe-area-inset-bottom))]",
+      "border-t border-border-subtle bg-[var(--surface-elevated)]",
+      "px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+      "flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2 sm:space-x-0",
       className,
     )}
     {...props}
