@@ -15,6 +15,7 @@ import {
   Users,
   AlertTriangle,
   Gauge,
+  Radar,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
