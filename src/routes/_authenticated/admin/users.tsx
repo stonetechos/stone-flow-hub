@@ -261,13 +261,28 @@ function UsersAdminPage() {
       userId: string;
       role: AppRole;
       targetRoles: AppRole[];
-    }) => revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role),
+    }) => {
+      // Self-lockout guard: revoking your own admin-capable role would
+      // immediately fail this route's `beforeLoad` gate and leave nobody
+      // able to restore it from the UI. Deliberately client-side only —
+      // it mirrors the same permission model, adds no new architecture,
+      // and the DB/server checks remain authoritative for everything else.
+      if (userId === actor.id && (role === "admin" || role === "super_admin")) {
+        return Promise.reject(
+          new Error(
+            "You cannot remove your own administrator role. Ask another administrator to do it.",
+          ),
+        );
+      }
+      return revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role);
+    },
     onSuccess: (_d, v) => {
       toast.success(`Removed ${ROLE_LABEL[v.role]}`);
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
+
 
   const reset = useMutation({
     mutationFn: (email: string) => sendPasswordReset(email),
