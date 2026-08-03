@@ -1,110 +1,95 @@
+# Stone Tech OS v1 — Release-Readiness Audit (read-only)
 
-# STOS — Production Gap Audit & Remediation Roadmap
+Verified against the live project this turn: production diagnostics on both hostnames, Supabase security scan + database linter, project monitoring error logs, function grants, the `profiles` schema, and the current preview runtime errors. Nothing below is speculative — every item is backed by one of those reads. No code was changed.
 
-Read-only scan of routes, components, server functions, styling tokens, docs and live runtime errors. No code was changed.
+## Verdict
 
-Headline: the codebase is in far better shape than a typical pre-1.0 ERP — 0 TODO/FIXME markers, lint debt formally resolved, design-token migration ~99% complete (13 raw-colour hits total). The real gaps are **reachability** (finished features nobody can navigate to), **one platform-level deployment defect**, and **an entire UX phase whose primitives were built but never adopted**.
-
----
-
-## 1. Critical Production Bugs
-
-| # | Finding | Evidence |
-|---|---|---|
-| C1 | **Custom domain `erp.stonetech.in` has no runtime env bindings.** All five diagnostics flags false; `*.lovable.app` returns true. Every server function (Users & Roles, AI, VIE, notifications, payments) is dead on the customer-facing domain. | Prior verification; unchanged |
-| C2 | **Hydration mismatch on `/auth`.** SSR emits the `States.tsx` loading shell, client renders `auth.tsx:94` `<main>`. React discards and re-renders the whole sign-in tree — visible flash, and it is the first screen every user sees. | Live runtime error |
-| C3 | **`CRON_SECRET` does not exist.** Five cron/webhook endpoints under `src/routes/api/public/hooks/*` (daily digest, payment reminders, dispatch queue, workforce daily, WhatsApp) reject or run unauthenticated. Scheduled automation is effectively off. | Secret store |
-| C4 | **Dual payment read paths.** `listPayments()` (`src/lib/payments/crud.ts:44`) is `@deprecated` — reads only the legacy `payments` table, excludes receipts — but still backs the payment detail/edit routes. Detail view can disagree with the register. | Code |
-
-C1 is platform-side and cannot be fixed from the project. C2–C4 are ours.
-
-## 2. Missing Implementations
-
-**Finished features with no way to reach them:**
-
-| Route | Status |
-|---|---|
-| `/communication` | 1 inbound link only, not in nav |
-| `/notifications` | **zero** inbound links, not in nav |
-| `/message-templates` | 1 inbound link, not in nav |
-| `/notification-settings` | 3 inbound links, not in nav |
-| `/dashboards/executive` | **orphaned** — not in nav, not in the `/dashboards` index tile grid |
-| `/dashboards/command-center` | **orphaned** |
-| `/dashboards/control-centre` | **orphaned** |
-
-The `/dashboards` index lists 25 of its 28 sibling pages; three built dashboards — including the Executive and Command Center surfaces from Phase G — were never added to the tile array (`dashboards/index.tsx:28-179`).
-
-**Components built but never imported anywhere:**
-`SmartInputs.tsx` (the entire Phase 1 UX primitive set), `use-unsaved-changes.ts`, `KpiTile`, `LeadPipelineWidget`, `WorkforceSummaryWidget`, `FiltersPanel`, `CommentsPanel`, `EntityTags`, `ActionChip`, `AddressBlock`, `AllocationTable`, `MiniTable`.
-
-`docs/ux-audit-phase-1.md:92` states this outright: *"The new primitives are additive; nothing in the app imports them yet."* Phases 2–4 of that audit were never executed.
-
-**Server functions:** none orphaned. All `*.functions.ts` exports trace to a caller. This layer is clean.
-
-**Backlog:** `docs/IMPLEMENTATION_STATUS.md` audits `v1.1-backlog.md` across 15 categories — the large majority are Not Started, with partials at UX-01 (command palette lacks pg_trgm scaling), PI-07 (hover prefetch), MO-02/03 (PWA scaffolding not module-specific), FE-03/FE-05 (reminders/cheques). That doc also flags a naming trap: `src/lib/quotes/comparison.ts` is vendor-RFQ comparison, not customer-quote comparison.
-
-## 3. UI/UX Polish
-
-- 13 remaining hardcoded colour utilities, concentrated in `dispatch/$id.print.tsx`, `AppShell.tsx`, `InsightCard.tsx`, `BusinessInsightsCard.tsx` (2 each), then singles in `auth.tsx`, `dashboard.tsx`, `procurement-health.tsx`, `NotificationsBell.tsx`, `RfqVendorRecommendations.tsx`, and two shadcn primitives.
-- From the Phase 1 UX audit, still unaddressed across ~40 create/edit forms: validation surfaces only on submit; phone/GST/PAN/pincode accept unsanitised input; **save buttons do not disable during mutation — duplicate submissions were observed**; dialogs discard input on backdrop click; no ⌘/Ctrl+Enter submit.
-- `/dashboards` is a flat 28-tile grid with no grouping — hard to scan.
-
-## 4. Performance
-
-- 28 dashboard routes each own their query set with no shared prefetch or cross-route cache reuse.
-- Hover/intent prefetch (PI-07) only partly enabled.
-- Global search has no pg_trgm index backing (UX-01), so it degrades as tables grow.
-- SSR is disabled per-route (`ssr: false`) on dashboards and `/auth`; correct for auth-gated data, but it means no server-rendered first paint anywhere in the app.
-
-## 5. Mobile
-
-- The viewport-overflow debug panel (`ViewportDebugPanel.tsx`) is still mounted in `__root.tsx` — diagnostic scaffolding shipped to production.
-- MO-02/MO-03: PWA + Capacitor shells exist, but no module has a mobile-specific layout; wide data tables on the 28 dashboards and all list pages are horizontal-scroll only.
-- Sign-in hero is correctly hidden below `md`; the hydration bug (C2) hits mobile hardest on slow connections.
-
-## 6. Accessibility
-
-Never formally swept — the Phase 1 audit lists it as deferred work. Known exposures: toast-only validation feedback with no `aria-live` association to fields, dialogs relying on shadcn defaults without audited focus-return, icon-only buttons across toolbars and `RowActions` needing label verification, and colour-carried status meaning in pills/badges with no text or icon redundancy.
-
-## 7. Deferred Architecture
-
-- Phase G Executive Intelligence: the engine exists (`src/lib/insights/executive/*`, `src/lib/intelligence/predict/*`) but its two flagship surfaces are unreachable (see §2).
-- Predictive framework covers Sales only; `ops.ts`, `finance.ts`, `procurement.ts`, `customer.ts` predictors are designed but unwritten.
-- Nav preferences are localStorage-only — no cross-device sync.
-- `docs/CI_LINT_DEBT.md` is resolved but its 315-file prettier appendix is stale and misleading; should be trimmed.
+The `*.lovable.app` production deployment is healthy: all five server environment bindings report `true`, the schema drift that broke forced password change is gone (`profiles.force_password_change` now exists), and no dependency or connector findings remain. Four issues genuinely block or shadow a confident v1 release; the rest is polish.
 
 ---
 
-# Prioritized Roadmap
+## P0 — Must fix before public production
 
-Credits are estimates for this project's file sizes and review overhead.
+### 1. Custom domain `erp.stonetech.in` serves an unconfigured build
+- Severity: critical | Module: Deployment / infrastructure
+- Evidence: `https://stone-flow-hub.lovable.app/api/public/diagnostics/env-status` returns all `true`; `https://erp.stonetech.in/api/public/diagnostics/env-status` returns `supabase_url`, `supabase_publishable_key`, `supabase_service_role_key`, `cron_secret`, `lovable_api_key` all `false`.
+- Why it matters: on the branded domain every server function, cron hook, AI feature and admin screen fails. If customers are pointed at `erp.stonetech.in`, the product is effectively down.
+- Work: this is platform-side routing, not code. Re-attach the domain (remove and re-add in Project settings > Domains, confirm DNS points at Lovable rather than a generic Cloudflare proxy), republish, then re-check the diagnostics endpoint.
+- Credits: ~5-15 (verification only) | Effort: 1-2 h, mostly waiting on DNS/propagation
+- Order: 1
 
-### WP1 — Stop the bleeding · ~6–9 credits
-1. Fix `/auth` hydration mismatch (C2) — align the SSR fallback with the client shell.
-2. Remove `ViewportDebugPanel` from `__root.tsx`.
-3. Reconcile the payment read path (C4) — point detail/edit at the register source or document the divergence in-code.
-4. Generate and bind `CRON_SECRET` (C3), then confirm each of the five hook endpoints authenticates.
+### 2. Users can re-activate their own deactivated account
+- Severity: high | Module: Admin / Users & Roles (RLS)
+- Evidence: security scan finding `profiles_self_update_sensitive_fields` — the "Users update own profile" UPDATE policy has no column restriction, so `is_active`, `department` and `job_title` are self-writable.
+- Why it matters: privilege/lifecycle bypass. An admin deactivating a leaver does not actually revoke access; the user can flip `is_active` back with one API call. This directly undermines the user-lifecycle work already shipped.
+- Work: migration adding a trigger (or a `WITH CHECK` comparing against the existing row) that blocks non-admins from changing `is_active`, `department`, `job_title`.
+- Credits: ~20-30 | Effort: 2-3 h including a regression test
+- Order: 2
 
-C1 remains blocked on Lovable backend engineering; keep production traffic on `stone-flow-hub.lovable.app`.
+---
 
-### WP2 — Make finished work reachable · ~5–8 credits
-Add the three orphaned dashboards to the `/dashboards` tile grid; add `communication`, `notifications`, `message-templates`, `notification-settings` to `NAV_ITEMS` under a **Communication** group (or fold them into Settings as explicit sub-links). Group the 28 dashboard tiles by domain.
+## P1 — Should fix before production
 
-This is the highest value-per-credit item in the audit — it ships already-paid-for features.
+### 3. `permission denied for function current_vendor_id` / `has_staff_access`
+- Severity: medium-high | Module: Vendor portal, RFQs, quotes, purchase orders, staff-gated screens
+- Evidence: monitoring finding `error_log_finding_7dfbfe...` (19x + 3x ERROR in Postgres logs). Confirmed by `pg_proc.proacl`: EXECUTE is granted only to `postgres`, `authenticated`, `service_role` — `anon` is excluded, and RLS policies on those tables call the functions unconditionally.
+- Why it matters: any request arriving before the session hydrates (or on a partially-authenticated session) gets a raw Postgres permission error instead of an empty list or a sign-in prompt, so vendors/staff see broken pages rather than a clear state.
+- Work: either grant EXECUTE to `anon` (the functions already return null/false safely for anonymous callers) or make the calling paths short-circuit before querying when there is no session. Prefer the grant — it is one migration and removes the whole error class.
+- Credits: ~15-25 | Effort: 1-2 h
+- Order: 3
 
-### WP3 — UX Audit Phases 2–3 · ~25–40 credits
-Migrate forms to `SmartInputs` + `use-unsaved-changes`: inline validation, input masking for phone/GST/PAN/pincode, **disable-on-submit everywhere**, backdrop-click guard, ⌘/Ctrl+Enter. Largest package by far; recommend slicing by module (Sales forms → Procurement → Masters) so each slice ships independently.
+### 4. Hydration mismatch on `/auth`
+- Severity: medium | Module: Authentication
+- Evidence: current preview runtime errors show React regenerating the tree — server emitted the `States.tsx` pending fallback while the client committed `<main>` from `auth.tsx:100`. The `pendingMinMs: 300` mitigation already in the route has not eliminated it.
+- Why it matters: the sign-in page is the first screen every user sees; a full client re-render causes a visible flash and logs a console error on every load. Cosmetic in outcome, but it is the one place where a bad first impression is guaranteed.
+- Work: make the route's pending and resolved shells structurally identical (render the `<main>` shell in the pending component too) rather than relying on a timing window.
+- Credits: ~15-25 | Effort: 1-2 h including preview verification
+- Order: 4
 
-### WP4 — Token & polish sweep · ~3–5 credits
-Clear the 13 remaining raw colour hits; decide per-case whether each is an intentional print/brand exception and annotate it.
+### 5. Public storage bucket allows listing
+- Severity: medium | Module: Storage / documents
+- Evidence: Supabase scan finding `SUPA_public_bucket_allows_listing` — a public bucket has a broad SELECT policy on `storage.objects`.
+- Why it matters: anyone can enumerate every file in that bucket. Generated invoices/POs carry customer names and GST numbers; enumeration turns "unguessable URL" into "downloadable index".
+- Work: narrow the SELECT policy to the specific prefixes that must be public (e.g. branding assets) and keep document objects behind signed URLs.
+- Credits: ~15-25 | Effort: 1-2 h
+- Order: 5
 
-### WP5 — Accessibility sweep · ~12–18 credits
-Keyboard traversal of primary flows, focus-return in dialogs, `aria-live` on validation, labels on icon-only controls, text/icon redundancy for status colour.
+### 6. Staff can write audit entries for entities they never touched
+- Severity: medium | Module: Activity log
+- Evidence: scan finding `activity_log_fabricated_entries` — the `al insert staff self` policy only checks `actor_id = auth.uid()`, not that the actor can access `entity_id`.
+- Why it matters: the activity log is the audit trail behind financial documents. If it can be fabricated, it is not evidence.
+- Work: restrict INSERT to the security-definer trigger path (`log_activity`) and revoke direct client INSERT.
+- Credits: ~15-25 | Effort: 1-2 h; needs a check that no client code inserts directly
+- Order: 6
 
-### WP6 — Performance & architecture · ~15–25 credits
-pg_trgm index for global search, full hover-prefetch rollout, shared dashboard query layer, then the remaining domain predictors (ops/finance/procurement/customer).
+---
 
-**Total ~66–105 credits.** WP1 + WP2 (~11–17) deliver the disproportionate share of user-visible improvement and are the recommended first commit.
+## P2 — Can safely ship
 
-### Explicitly out of scope
-Dead shadcn primitives (15 unused files) — normal library boilerplate, deleting them buys nothing. And the `v1.1-backlog.md` Not-Started items, which are new feature work rather than remediation of completed work.
+### 7. `SECURITY DEFINER` functions broadly executable
+- Severity: low | Module: Database
+- Evidence: database linter, ~14 warnings across lint rules 0028/0029.
+- Why it matters: defence in depth only — the flagged functions already validate their caller. Tightening EXECUTE is hygiene, and overlaps with item 3, so it should be done as one deliberate grants pass, not piecemeal.
+- Credits: ~25-40 | Effort: 3-4 h | Order: after v1
+
+### 8. Extension installed in `public` schema
+- Severity: low | Module: Database | Evidence: linter warning 0014.
+- Why it matters: namespace hygiene; no exploit path in this app. Moving it risks breaking dependent functions, so it is not worth doing before a release.
+- Credits: ~10 | Effort: 1 h | Order: after v1
+
+### 9. Residual ESLint warnings and deferred SmartForms adoption
+- Severity: low | Module: Cross-cutting
+- Evidence: last sprint closed with 0 errors and 15 pre-existing warnings; the SmartForms sprint explicitly deferred line-item editors and `dirty` tracking on quote/estimate/receipt full-page forms.
+- Why it matters: technical debt with no user-visible impact. CI is green.
+- Credits: ~40-60 for the deferred forms | Effort: 1-2 days | Order: v1.1
+
+---
+
+## Minimum path to v1
+
+Items 1 and 2 are the true gate. Items 3-6 are one combined RLS/grants migration plus one small auth-route fix and are worth folding into the same release — together roughly 80-130 credits and about a day of engineering. Everything in P2 can ship after.
+
+## Technical notes
+
+- Verified this turn: env-status on both hostnames; `information_schema.columns` confirms `profiles.force_password_change` and `is_active` exist (the older schema-drift monitoring finding is now stale); `pg_proc.proacl` confirms the missing `anon` EXECUTE grant; Supabase scan returned 2 `supabase` + 2 `supabase_lov` findings and 0 supply-chain findings.
+- Items 2, 3, 5 and 6 are all database-policy changes and should land as a single reviewed migration rather than four separate ones.
