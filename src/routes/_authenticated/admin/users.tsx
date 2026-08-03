@@ -98,7 +98,6 @@ import { useAuthReady } from "@/hooks/use-auth-ready";
 import { useRoles } from "@/hooks/use-roles";
 import { TablePagination } from "@/components/data/Pagination";
 
-
 const qk = {
   users: ["admin", "users"] as const,
   auth: ["admin", "auth-users"] as const,
@@ -229,7 +228,6 @@ function UsersAdminPage() {
     [currentUserId, roles.isSuperAdmin, roles.isAdmin],
   );
 
-
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
     qc.invalidateQueries({ queryKey: qk.auth });
@@ -282,7 +280,6 @@ function UsersAdminPage() {
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
-
 
   const reset = useMutation({
     mutationFn: (email: string) => sendPasswordReset(email),
@@ -421,7 +418,6 @@ function UsersAdminPage() {
     [filtered, page, pageSize],
   );
 
-
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
   // `listAuthUsers` is gated by `requireSupabaseAuth`,
@@ -500,7 +496,6 @@ function UsersAdminPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {paged.map((u) => (
-
                     <UserRowView
                       key={u.id}
                       user={u}
@@ -607,7 +602,6 @@ function UsersAdminPage() {
                 : "Delete user"}
             </AlertDialogAction>
           </AlertDialogFooter>
-
         </AlertDialogContent>
       </AlertDialog>
 
@@ -1096,7 +1090,6 @@ function UserRowView({
   busy,
   lifecycleBusy,
   renaming,
-
 }: {
   user: CombinedUser;
   actor: ActingUserRef;
@@ -1112,7 +1105,6 @@ function UserRowView({
   busy: boolean;
   lifecycleBusy: boolean;
   renaming: boolean;
-
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
@@ -1240,7 +1232,6 @@ function UserRowView({
                   </button>
                 </Badge>
               ),
-
             )}
           </div>
         )}
@@ -1329,5 +1320,4 @@ function UserRowView({
       </td>
     </tr>
   );
-
 }
