@@ -44,19 +44,18 @@ function CalendarPage() {
     return cells;
   }, [cursor]);
 
+  const followups = useMemo(() => query.data ?? [], [query.data]);
+
   const byDay = useMemo(() => {
-    const map = new Map<
-      string,
-      typeof query.data extends undefined ? never : NonNullable<typeof query.data>
-    >();
-    for (const f of query.data ?? []) {
+    const map = new Map<string, typeof followups>();
+    for (const f of followups) {
       const key = new Date(f.scheduled_at).toDateString();
-      const arr = (map.get(key) ?? []) as NonNullable<typeof query.data>;
+      const arr = map.get(key) ?? [];
       arr.push(f);
       map.set(key, arr);
     }
     return map;
-  }, [query.data]);
+  }, [followups]);
 
   const today = new Date().toDateString();
 

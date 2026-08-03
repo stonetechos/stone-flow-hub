@@ -138,7 +138,7 @@ function CommunicationCentre() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => query.data ?? [], [query.data]);
   const counts = useMemo(() => {
     const m: Record<string, number> = {};
     for (const r of rows) m[r.status] = (m[r.status] ?? 0) + 1;
