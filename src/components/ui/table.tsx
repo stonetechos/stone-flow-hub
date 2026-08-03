@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
  */
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
+    {/* `min-w-0` keeps this scroll container from being sized by its own
+        content when it sits inside a flex or grid parent — without it a wide
+        table pushes the whole page past the viewport on mobile instead of
+        scrolling inside its own region. */}
+    <div className="relative w-full min-w-0 overflow-auto">
       <table
         ref={ref}
         className={cn("w-full caption-bottom text-sm text-foreground", className)}
