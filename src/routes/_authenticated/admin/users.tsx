@@ -499,7 +499,8 @@ function UsersAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filtered.map((u) => (
+                  {paged.map((u) => (
+
                     <UserRowView
                       key={u.id}
                       user={u}
