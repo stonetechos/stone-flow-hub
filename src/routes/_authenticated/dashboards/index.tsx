@@ -199,6 +199,99 @@ const ROLES = [
   },
 ] as const;
 
+/**
+ * The index used to render all ~28 dashboards as one flat grid, which made it
+ * impossible to scan. Sections group them by the question they answer; the
+ * card design itself is unchanged.
+ */
+const SECTIONS: ReadonlyArray<{ label: string; desc: string; tos: readonly string[] }> = [
+  {
+    label: "Executive & Command",
+    desc: "Whole-company views and the surfaces that tell you what needs a decision today.",
+    tos: [
+      "/dashboards/executive",
+      "/dashboards/command-center",
+      "/dashboards/control-centre",
+      "/dashboards/daily-action",
+      "/dashboards/business-health",
+      "/dashboards/smart-notifications",
+    ],
+  },
+  {
+    label: "Sales & CRM",
+    desc: "Pipeline, conversion, follow-ups and salesperson performance.",
+    tos: [
+      "/dashboards/lead-executive",
+      "/dashboards/sales-funnel",
+      "/dashboards/revenue-crm",
+      "/dashboards/followups",
+      "/dashboards/lead-health",
+      "/dashboards/team-performance",
+      "/dashboards/lead-analytics",
+      "/dashboards/sales",
+    ],
+  },
+  {
+    label: "Finance",
+    desc: "Cash position, collections, profitability and management reporting.",
+    tos: [
+      "/dashboards/forecast",
+      "/dashboards/collections",
+      "/dashboards/profitability",
+      "/dashboards/management",
+    ],
+  },
+  {
+    label: "Procurement & Vendors",
+    desc: "RFQs, purchase orders, deliveries and vendor reliability.",
+    tos: [
+      "/dashboards/purchase",
+      "/dashboards/procurement",
+      "/dashboards/procurement-calendar",
+      "/dashboards/procurement-health",
+      "/dashboards/vendor-intelligence",
+    ],
+  },
+  {
+    label: "Operations",
+    desc: "Production floor, QC and on-site installation.",
+    tos: ["/dashboards/production", "/dashboards/installation"],
+  },
+  {
+    label: "Analytics & Intelligence",
+    desc: "Trends, breakdowns and generated briefs across the business.",
+    tos: [
+      "/dashboards/analytics",
+      "/dashboards/business-intelligence",
+      "/dashboards/customer-intelligence",
+    ],
+  },
+];
+
+type RoleTile = (typeof ROLES)[number];
+
+const ROLE_BY_TO = new Map<string, RoleTile>(ROLES.map((r) => [r.to, r]));
+
+/** Anything added to ROLES but not listed in a section still renders. */
+const SECTIONED = new Set(SECTIONS.flatMap((s) => s.tos));
+const UNSECTIONED = ROLES.filter((r) => !SECTIONED.has(r.to));
+
+function DashboardTile({ role }: { role: RoleTile }) {
+  const Icon = role.icon;
+  return (
+    <Link to={role.to} className="block">
+      <Card className="h-full transition-shadow hover:shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Icon className="h-4 w-4 text-primary" /> {role.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs text-muted-foreground">{role.desc}</CardContent>
+      </Card>
+    </Link>
+  );
+}
+
 function DashboardsIndex() {
   return (
     <div>
@@ -206,19 +299,34 @@ function DashboardsIndex() {
         title="Role Dashboards"
         subtitle="Focused KPI views per role — pick a workspace."
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {ROLES.map((r) => (
-          <Link key={r.to} to={r.to} className="block">
-            <Card className="h-full transition-shadow hover:shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <r.icon className="h-4 w-4 text-primary" /> {r.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">{r.desc}</CardContent>
-            </Card>
-          </Link>
-        ))}
+      <div className="space-y-8">
+        {SECTIONS.map((section) => {
+          const tiles = section.tos
+            .map((to) => ROLE_BY_TO.get(to))
+            .filter((r): r is RoleTile => Boolean(r));
+          if (tiles.length === 0) return null;
+          return (
+            <section key={section.label}>
+              <SectionHeader title={section.label} description={section.desc} />
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {tiles.map((r) => (
+                  <DashboardTile key={r.to} role={r} />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+
+        {UNSECTIONED.length > 0 && (
+          <section>
+            <SectionHeader title="More dashboards" />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {UNSECTIONED.map((r) => (
+                <DashboardTile key={r.to} role={r} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
