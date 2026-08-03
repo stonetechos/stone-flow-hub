@@ -581,18 +581,33 @@ function UsersAdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (confirmDelete) {
-                  del.mutate(confirmDelete.id, { onSuccess: () => setConfirmDelete(null) });
-                }
+              disabled={del.isPending}
+              onClick={(e) => {
+                // Keep the dialog open until the request settles, so a
+                // failure is visible and a second click can't fire a
+                // duplicate delete.
+                e.preventDefault();
+                if (!confirmDelete || del.isPending) return;
+                del.mutate(
+                  {
+                    userId: confirmDelete.id,
+                    pendingInvite:
+                      confirmDelete.status === "invited" || confirmDelete.status === "expired",
+                  },
+                  { onSuccess: () => setConfirmDelete(null) },
+                );
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete user
+              {del.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+              {confirmDelete?.status === "invited" || confirmDelete?.status === "expired"
+                ? "Cancel invitation"
+                : "Delete user"}
             </AlertDialogAction>
           </AlertDialogFooter>
+
         </AlertDialogContent>
       </AlertDialog>
 
