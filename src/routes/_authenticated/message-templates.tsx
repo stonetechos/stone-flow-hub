@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Save } from "lucide-react";
@@ -114,6 +114,7 @@ function TemplatesPage() {
         action={
           canManage ? (
             <EditTemplateDialog
+              existingCodes={(query.data ?? []).map((t) => t.code)}
               trigger={
                 <Button size="sm" className="h-8">
                   <Plus className="mr-1.5 h-3.5 w-3.5" /> New template
@@ -200,6 +201,7 @@ function TemplatesPage() {
 function EditTemplateDialog({
   template,
   trigger,
+  existingCodes = [],
 }: {
   template?: {
     code: string;
@@ -211,6 +213,8 @@ function EditTemplateDialog({
     is_active: boolean;
   };
   trigger: React.ReactNode;
+  /** Codes already in use — guards the create path against a silent upsert overwrite. */
+  existingCodes?: string[];
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -224,10 +228,26 @@ function EditTemplateDialog({
   const [body, setBody] = useState(template?.body ?? "");
   const [active, setActive] = useState<boolean>(template?.is_active ?? true);
 
+  // The dialog stays mounted between openings, so without this the "New
+  // template" form kept whatever was typed (or saved) last time, and an
+  // edited row that was refetched still showed the stale values.
+  useEffect(() => {
+    if (!open) return;
+    setCode(template?.code ?? "");
+    setName(template?.name ?? "");
+    setChannel(template?.channel ?? "email");
+    setCategory(template?.category ?? "general");
+    setSubject(template?.subject ?? "");
+    setBody(template?.body ?? "");
+    setActive(template?.is_active ?? true);
+  }, [open, template]);
+
+  const duplicateCode = !template && existingCodes.includes(code.trim());
+
   const save = useMutation({
     mutationFn: () =>
       upsertMessageTemplate({
-        code,
+        code: code.trim(),
         name,
         channel,
         category,
@@ -238,11 +258,12 @@ function EditTemplateDialog({
       }),
     onSuccess: () => {
       toast.success("Template saved");
-      invalidateMessageTemplate(qc, code);
+      invalidateMessageTemplate(qc, code.trim());
       setOpen(false);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -254,13 +275,17 @@ function EditTemplateDialog({
         <QuickForm
           onSubmit={(e) => {
             e.preventDefault();
-            if (!code || !name || !body) return;
+            if (!code || !name || !body || duplicateCode) return;
             save.mutate();
           }}
           busy={save.isPending}
         >
           <QuickForm.QuickFill>
-            <Field label="Code" required>
+            <Field
+              label="Code"
+              required
+              error={duplicateCode ? "A template with this code already exists." : undefined}
+            >
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -316,7 +341,7 @@ function EditTemplateDialog({
             <Button type="button" variant="outline" onClick={() => setActive(!active)}>
               {active ? "Deactivate" : "Activate"}
             </Button>
-            <Button type="submit" disabled={!code || !name || !body || save.isPending}>
+            <Button type="submit" disabled={!code || !name || !body || duplicateCode || save.isPending}>
               <Save className="mr-2 h-4 w-4" /> Save
             </Button>
           </QuickForm.Actions>

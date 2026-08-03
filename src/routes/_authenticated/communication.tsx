@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { RefreshCw, Play, Filter } from "lucide-react";
+import { RefreshCw, Play, Filter, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,10 +26,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { toUserMessage } from "@/lib/errors";
 import { dispatchQueueNow } from "@/lib/notifications/dispatch.functions";
 import { retryMessage, cancelMessage } from "@/lib/notifications/queue";
+
 
 export const Route = createFileRoute("/_authenticated/communication")({
   ssr: false,
@@ -73,6 +77,7 @@ function statusVariant(s: string): "default" | "outline" | "destructive" | "seco
 
 function CommunicationCentre() {
   const qc = useQueryClient();
+  const { isAdmin } = useRoles();
   const [channel, setChannel] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [related, setRelated] = useState<string>("all");
@@ -80,9 +85,29 @@ function CommunicationCentre() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
+  // Search is part of the query key, so an un-debounced value fired one
+  // network round trip per keystroke.
+  const debouncedSearch = useDebouncedValue(search, 250);
+
+  const filtersActive =
+    channel !== "all" || status !== "all" || related !== "all" || !!search || !!from || !!to;
+  const clearFilters = (): void => {
+    setChannel("all");
+    setStatus("all");
+    setRelated("all");
+    setSearch("");
+    setFrom("");
+    setTo("");
+  };
+
   const key = useMemo(
-    () => ["messages", "centre", { channel, status, related, search, from, to }] as const,
-    [channel, status, related, search, from, to],
+    () =>
+      [
+        "messages",
+        "centre",
+        { channel, status, related, search: debouncedSearch, from, to },
+      ] as const,
+    [channel, status, related, debouncedSearch, from, to],
   );
 
   const query = useQuery({
@@ -100,8 +125,8 @@ function CommunicationCentre() {
       if (related !== "all") q = q.eq("related_type", related);
       if (from) q = q.gte("created_at", new Date(from).toISOString());
       if (to) q = q.lte("created_at", new Date(to + "T23:59:59").toISOString());
-      if (search) {
-        const s = search.replace(/[%_]/g, "");
+      if (debouncedSearch) {
+        const s = debouncedSearch.replace(/[%_]/g, "");
         q = q.or(`message_no.ilike.%${s}%,to_address.ilike.%${s}%,subject.ilike.%${s}%`);
       }
       const { data, error } = await q;
@@ -137,6 +162,11 @@ function CommunicationCentre() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+  // Per-row busy id so a second click can't fire the same mutation twice.
+  const busyId =
+    (retry.isPending ? retry.variables : undefined) ??
+    (cancel.isPending ? cancel.variables : undefined);
+
 
   const rows = useMemo(() => query.data ?? [], [query.data]);
   const counts = useMemo(() => {
@@ -155,9 +185,15 @@ function CommunicationCentre() {
             <Button variant="outline" size="sm" asChild>
               <Link to="/notification-settings">Provider settings</Link>
             </Button>
-            <Button size="sm" onClick={() => dispatch.mutate()} disabled={dispatch.isPending}>
-              <Play className="mr-2 h-4 w-4" /> Run dispatcher now
-            </Button>
+            {/* `dispatchQueueNow` is admin-gated server-side; without this
+                the button was offered to every staff user and failed with a
+                permission error. */}
+            {isAdmin && (
+              <Button size="sm" onClick={() => dispatch.mutate()} disabled={dispatch.isPending}>
+                <Play className="mr-2 h-4 w-4" /> Run dispatcher now
+              </Button>
+            )}
+
           </div>
         }
       />
@@ -241,17 +277,40 @@ function CommunicationCentre() {
               placeholder="No, address, subject"
             />
           </div>
+          {filtersActive && (
+            <div className="md:col-span-6">
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1.5 h-3.5 w-3.5" /> Clear filters
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       <Card className="shadow-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm">{rows.length} messages</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => query.refetch()}>
-            <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => query.refetch()}
+            disabled={query.isFetching}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
+            Refresh
           </Button>
         </CardHeader>
         <CardContent className="p-0">
+          {query.isLoading ? (
+            <div className="p-4">
+              <SkeletonTable rows={6} columns={8} />
+            </div>
+          ) : query.error ? (
+            <div className="p-4">
+              <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+            </div>
+          ) : (
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -300,14 +359,25 @@ function CommunicationCentre() {
                   </TableCell>
                   <TableCell className="text-right">
                     {(r.status === "failed" || r.status === "cancelled") && (
-                      <Button size="sm" variant="ghost" onClick={() => retry.mutate(r.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={busyId === r.id}
+                        onClick={() => retry.mutate(r.id)}
+                      >
                         Retry
                       </Button>
                     )}
-                    {(r.status === "queued" ||
-                      r.status === "retrying" ||
-                      r.status === "failed") && (
-                      <Button size="sm" variant="ghost" onClick={() => cancel.mutate(r.id)}>
+                    {/* `cancelMessage()` only transitions queued/failed rows,
+                        so offering Cancel on a `retrying` row showed a
+                        "Cancelled" toast for a no-op update. */}
+                    {(r.status === "queued" || r.status === "failed") && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={busyId === r.id}
+                        onClick={() => cancel.mutate(r.id)}
+                      >
                         Cancel
                       </Button>
                     )}
@@ -320,13 +390,17 @@ function CommunicationCentre() {
                     colSpan={8}
                     className="py-10 text-center text-sm text-muted-foreground"
                   >
-                    No messages match the filters.
+                    {filtersActive
+                      ? "No messages match the filters."
+                      : "No messages have been sent yet."}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+          )}
         </CardContent>
+
       </Card>
     </div>
   );
