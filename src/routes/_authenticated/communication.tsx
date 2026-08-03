@@ -34,7 +34,6 @@ import { toUserMessage } from "@/lib/errors";
 import { dispatchQueueNow } from "@/lib/notifications/dispatch.functions";
 import { retryMessage, cancelMessage } from "@/lib/notifications/queue";
 
-
 export const Route = createFileRoute("/_authenticated/communication")({
   ssr: false,
   component: CommunicationCentre,
@@ -167,7 +166,6 @@ function CommunicationCentre() {
     (retry.isPending ? retry.variables : undefined) ??
     (cancel.isPending ? cancel.variables : undefined);
 
-
   const rows = useMemo(() => query.data ?? [], [query.data]);
   const counts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -193,7 +191,6 @@ function CommunicationCentre() {
                 <Play className="mr-2 h-4 w-4" /> Run dispatcher now
               </Button>
             )}
-
           </div>
         }
       />
@@ -310,97 +307,97 @@ function CommunicationCentre() {
               <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
             </div>
           ) : (
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>No</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>To</TableHead>
-                <TableHead>Subject / Entity</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Attempts</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">
-                    {r.message_no ?? r.id.slice(0, 8)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{r.channel}</Badge>
-                  </TableCell>
-                  <TableCell className="max-w-[220px] truncate" title={r.to_address}>
-                    {r.to_address}
-                  </TableCell>
-                  <TableCell className="max-w-[280px] truncate" title={r.subject ?? ""}>
-                    {r.subject ?? <span className="text-muted-foreground">—</span>}
-                    {r.related_type && (
-                      <span className="ml-2 text-xs text-muted-foreground">({r.related_type})</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
-                    {r.last_error && (
-                      <div
-                        className="mt-1 text-xs text-destructive truncate max-w-[220px]"
-                        title={r.last_error}
-                      >
-                        {r.last_error}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>{r.attempts}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {(r.status === "failed" || r.status === "cancelled") && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={busyId === r.id}
-                        onClick={() => retry.mutate(r.id)}
-                      >
-                        Retry
-                      </Button>
-                    )}
-                    {/* `cancelMessage()` only transitions queued/failed rows,
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>No</TableHead>
+                  <TableHead>Channel</TableHead>
+                  <TableHead>To</TableHead>
+                  <TableHead>Subject / Entity</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Attempts</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-xs">
+                      {r.message_no ?? r.id.slice(0, 8)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{r.channel}</Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[220px] truncate" title={r.to_address}>
+                      {r.to_address}
+                    </TableCell>
+                    <TableCell className="max-w-[280px] truncate" title={r.subject ?? ""}>
+                      {r.subject ?? <span className="text-muted-foreground">—</span>}
+                      {r.related_type && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({r.related_type})
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
+                      {r.last_error && (
+                        <div
+                          className="mt-1 text-xs text-destructive truncate max-w-[220px]"
+                          title={r.last_error}
+                        >
+                          {r.last_error}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{r.attempts}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(r.status === "failed" || r.status === "cancelled") && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={busyId === r.id}
+                          onClick={() => retry.mutate(r.id)}
+                        >
+                          Retry
+                        </Button>
+                      )}
+                      {/* `cancelMessage()` only transitions queued/failed rows,
                         so offering Cancel on a `retrying` row showed a
                         "Cancelled" toast for a no-op update. */}
-                    {(r.status === "queued" || r.status === "failed") && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={busyId === r.id}
-                        onClick={() => cancel.mutate(r.id)}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {rows.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    {filtersActive
-                      ? "No messages match the filters."
-                      : "No messages have been sent yet."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                      {(r.status === "queued" || r.status === "failed") && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={busyId === r.id}
+                          onClick={() => cancel.mutate(r.id)}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      {filtersActive
+                        ? "No messages match the filters."
+                        : "No messages have been sent yet."}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
-
       </Card>
     </div>
   );

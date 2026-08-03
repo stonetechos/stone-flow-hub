@@ -264,7 +264,6 @@ function EditTemplateDialog({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -341,7 +340,10 @@ function EditTemplateDialog({
             <Button type="button" variant="outline" onClick={() => setActive(!active)}>
               {active ? "Deactivate" : "Activate"}
             </Button>
-            <Button type="submit" disabled={!code || !name || !body || duplicateCode || save.isPending}>
+            <Button
+              type="submit"
+              disabled={!code || !name || !body || duplicateCode || save.isPending}
+            >
               <Save className="mr-2 h-4 w-4" /> Save
             </Button>
           </QuickForm.Actions>

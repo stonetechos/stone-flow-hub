@@ -32,7 +32,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { invalidateMessage } from "@/lib/query-invalidation";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
-
 export const Route = createFileRoute("/_authenticated/messages/")({
   ssr: false,
   component: MessagesQueuePage,
@@ -81,7 +80,6 @@ function MessagesQueuePage() {
   const busyId =
     (retry.isPending ? retry.variables : undefined) ??
     (cancel.isPending ? cancel.variables : undefined);
-
 
   return (
     <div>
@@ -204,7 +202,6 @@ function MessagesQueuePage() {
                       </Button>
                     )}
                   </TableCell>
-
                 </TableRow>
               ))}
             </TableBody>

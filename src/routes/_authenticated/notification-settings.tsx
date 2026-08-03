@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/notification-settings")({
 });
 
 function NotificationSettingsPage() {
+  const { isAdmin } = useRoles();
   return (
     <div>
       <PageHeader
@@ -50,6 +51,12 @@ function NotificationSettingsPage() {
           </Button>
         }
       />
+
+      {!isAdmin && (
+        <div className="mb-4 rounded-md border border-status-warning-border bg-status-warning-bg px-3 py-2 text-sm text-status-warning-fg">
+          You have read-only access to provider settings. Ask an administrator to make changes.
+        </div>
+      )}
 
       <div className="grid gap-4">
         <ModeCard />
@@ -275,7 +282,11 @@ function EmailProviderCard() {
           <Button onClick={() => save.mutate()} disabled={save.isPending || !isAdmin}>
             <Save className="mr-2 h-4 w-4" /> Save
           </Button>
-          <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending || !isAdmin}>
+          <Button
+            variant="outline"
+            onClick={() => test.mutate()}
+            disabled={test.isPending || !isAdmin}
+          >
             {test.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -484,7 +495,11 @@ function WhatsAppProviderCard() {
             )}
             Send WhatsApp Test
           </Button>
-          <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending || !isAdmin}>
+          <Button
+            variant="outline"
+            onClick={() => test.mutate()}
+            disabled={test.isPending || !isAdmin}
+          >
             {test.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -492,7 +507,11 @@ function WhatsAppProviderCard() {
             )}
             Send text test
           </Button>
-          <Button variant="outline" onClick={() => conn.mutate()} disabled={conn.isPending || !isAdmin}>
+          <Button
+            variant="outline"
+            onClick={() => conn.mutate()}
+            disabled={conn.isPending || !isAdmin}
+          >
             {conn.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
