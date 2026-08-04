@@ -217,7 +217,9 @@ function LeavePage() {
                     {typeName.get(b.leave_type_id) ?? "Leave"}
                   </span>
                   <span className="tabular-nums">
-                    {Number(b.balance_days)} of {Number(b.entitled_days)} left
+                    {Number(b.opening) + Number(b.accrued) + Number(b.carried_forward) -
+                      Number(b.used)}{" "}
+                    of {Number(b.opening) + Number(b.accrued) + Number(b.carried_forward)} left
                   </span>
                 </div>
               ))
