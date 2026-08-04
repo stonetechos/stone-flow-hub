@@ -36,6 +36,11 @@ import {
   Bell,
   Mails,
   BellRing,
+  Fingerprint,
+  CalendarDays,
+  Clock,
+  MapPin,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +48,7 @@ export type NavGroupId =
   | "sales"
   | "operations"
   | "workforce"
+  | "humanResources"
   | "masterData"
   | "communication"
   | "others"
@@ -58,6 +64,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "operations", label: "Operations" },
   { id: "workforce", label: "Workforce Intelligence" },
+  { id: "humanResources", label: "Human Resources" },
   { id: "masterData", label: "Master Data" },
   { id: "communication", label: "Communication" },
   { id: "others", label: "Others" },
@@ -179,6 +186,45 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Master Data
+  // Human Resources
+  { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "humanResources" },
+  {
+    id: "hr-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "humanResources",
+  },
+  {
+    id: "hr-attendance",
+    to: "/hr/attendance",
+    label: "Attendance",
+    icon: Fingerprint,
+    group: "humanResources",
+  },
+  { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "humanResources" },
+  {
+    id: "hr-leave",
+    to: "/hr/leave",
+    label: "Leave Management",
+    icon: CalendarDays,
+    group: "humanResources",
+  },
+  {
+    id: "hr-holidays",
+    to: "/hr/holidays",
+    label: "Holidays",
+    icon: Calendar,
+    group: "humanResources",
+  },
+  {
+    id: "hr-branches",
+    to: "/hr/branches",
+    label: "Offices & Geofences",
+    icon: MapPin,
+    group: "humanResources",
+  },
+
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
   { id: "vendors", to: "/vendors", label: "Vendors", icon: Factory, group: "masterData" },
   { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },

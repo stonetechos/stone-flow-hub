@@ -9,6 +9,7 @@ export type AppRole = Database["public"]["Enums"]["app_role"];
 export const APP_ROLES: readonly AppRole[] = [
   "admin",
   "sales_manager",
+  "hr",
   "sales",
   "purchase",
 ] as const;

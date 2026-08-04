@@ -32,6 +32,13 @@ const LABELS: Record<string, string> = {
   dashboards: "Role Dashboards",
   "command-center": "Command Center",
   "control-centre": "Control Centre",
+  hr: "Human Resources",
+  attendance: "Attendance",
+  shifts: "Shifts",
+  leave: "Leave Management",
+  holidays: "Holidays",
+  branches: "Offices & Geofences",
+
   new: "New",
   edit: "Edit",
 };
