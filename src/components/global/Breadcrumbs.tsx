@@ -42,7 +42,6 @@ const LABELS: Record<string, string> = {
   payroll: "Payroll",
   loans: "Loans & Claims",
 
-
   new: "New",
   edit: "Edit",
 };

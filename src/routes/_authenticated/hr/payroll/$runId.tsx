@@ -58,8 +58,14 @@ function PayrollRunDetail() {
   const [openPayslip, setOpenPayslip] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<"approved" | "paid" | null>(null);
 
-  const run = useQuery({ queryKey: ["hr", "payroll-run", runId], queryFn: () => getPayrollRun(runId) });
-  const slips = useQuery({ queryKey: ["hr", "payslips", runId], queryFn: () => listPayslips(runId) });
+  const run = useQuery({
+    queryKey: ["hr", "payroll-run", runId],
+    queryFn: () => getPayrollRun(runId),
+  });
+  const slips = useQuery({
+    queryKey: ["hr", "payslips", runId],
+    queryFn: () => listPayslips(runId),
+  });
   const lines = useQuery({
     queryKey: ["hr", "payslip-lines", openPayslip],
     queryFn: () => listPayslipLines(openPayslip!),
@@ -187,7 +193,9 @@ function PayrollRunDetail() {
                   </TableCell>
                   <TableCell className="text-right">{Number(p.payable_days)}</TableCell>
                   <TableCell className="text-right">{Number(p.lop_days)}</TableCell>
-                  <TableCell className="text-right">{formatInr(Number(p.gross_earnings))}</TableCell>
+                  <TableCell className="text-right">
+                    {formatInr(Number(p.gross_earnings))}
+                  </TableCell>
                   <TableCell className="text-right">
                     {formatInr(Number(p.total_deductions))}
                   </TableCell>

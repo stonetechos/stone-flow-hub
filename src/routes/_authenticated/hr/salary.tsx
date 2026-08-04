@@ -102,8 +102,14 @@ function SalaryPage() {
   const [ctc, setCtc] = useState("");
   const [effectiveFrom, setEffectiveFrom] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const components = useQuery({ queryKey: ["hr", "salary-components"], queryFn: listSalaryComponents });
-  const structures = useQuery({ queryKey: ["hr", "salary-structures"], queryFn: () => listSalaryStructures() });
+  const components = useQuery({
+    queryKey: ["hr", "salary-components"],
+    queryFn: listSalaryComponents,
+  });
+  const structures = useQuery({
+    queryKey: ["hr", "salary-structures"],
+    queryFn: () => listSalaryStructures(),
+  });
   const employees = useQuery({
     queryKey: ["wf", "employees", "list", ""],
     queryFn: () => listEmployees(""),
@@ -219,7 +225,9 @@ function SalaryPage() {
                   <Label>Type</Label>
                   <Select
                     value={draft.kind}
-                    onValueChange={(v) => setDraft((d) => ({ ...d, kind: v as "earning" | "deduction" }))}
+                    onValueChange={(v) =>
+                      setDraft((d) => ({ ...d, kind: v as "earning" | "deduction" }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
