@@ -21,6 +21,9 @@ import {
   Warehouse,
   ClipboardCheck,
   Wallet,
+  Banknote,
+  HandCoins,
+
   Calendar,
   BarChart3,
   Settings,
