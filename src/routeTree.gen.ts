@@ -148,6 +148,7 @@ import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
 import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
+import { Route as AuthenticatedHrPayrollIndexRouteImport } from './routes/_authenticated/hr/payroll/index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -972,6 +973,12 @@ const AuthenticatedQuotesQuoteIdIndexRoute =
     path: '/quotes/$quoteId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPayrollIndexRoute =
+  AuthenticatedHrPayrollIndexRouteImport.update({
+    id: '/hr/payroll/',
+    path: '/hr/payroll/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -1271,6 +1278,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1435,6 +1443,7 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/hr/payroll': typeof AuthenticatedHrPayrollIndexRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1601,6 +1610,7 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/_authenticated/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1767,6 +1777,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/hr/payroll/'
     | '/quotes/$quoteId/'
     | '/workforce-intelligence/capacities/'
     | '/workforce-intelligence/employees/'
@@ -1931,6 +1942,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/hr/payroll'
     | '/quotes/$quoteId'
     | '/workforce-intelligence/capacities'
     | '/workforce-intelligence/employees'
@@ -2096,6 +2108,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/_authenticated/hr/payroll/'
     | '/_authenticated/quotes/$quoteId/'
     | '/_authenticated/workforce-intelligence/capacities/'
     | '/_authenticated/workforce-intelligence/employees/'
@@ -3102,6 +3115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/payroll/': {
+      id: '/_authenticated/hr/payroll/'
+      path: '/hr/payroll'
+      fullPath: '/hr/payroll/'
+      preLoaderRoute: typeof AuthenticatedHrPayrollIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -3517,6 +3537,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   AuthenticatedWorkforceIntelligenceEmployeesNewRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   AuthenticatedWorkforceIntelligenceRolesIdRoute: typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
+  AuthenticatedHrPayrollIndexRoute: typeof AuthenticatedHrPayrollIndexRoute
   AuthenticatedQuotesQuoteIdIndexRoute: typeof AuthenticatedQuotesQuoteIdIndexRoute
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute: typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   AuthenticatedWorkforceIntelligenceEmployeesIndexRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -3685,6 +3706,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedWorkforceIntelligenceEmployeesNewRoute,
   AuthenticatedWorkforceIntelligenceRolesIdRoute:
     AuthenticatedWorkforceIntelligenceRolesIdRoute,
+  AuthenticatedHrPayrollIndexRoute: AuthenticatedHrPayrollIndexRoute,
   AuthenticatedQuotesQuoteIdIndexRoute: AuthenticatedQuotesQuoteIdIndexRoute,
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute:
     AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute,
@@ -3748,13 +3770,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
