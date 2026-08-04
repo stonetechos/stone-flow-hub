@@ -170,6 +170,7 @@ import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/
 import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authenticated/payments/$id.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices/$invoiceId.edit'
 import { Route as AuthenticatedInventoryIdEditRouteImport } from './routes/_authenticated/inventory/$id.edit'
+import { Route as AuthenticatedHrPayrollRunIdRouteImport } from './routes/_authenticated/hr/payroll/$runId'
 import { Route as AuthenticatedDispatchIdPrintRouteImport } from './routes/_authenticated/dispatch/$id.print'
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
 import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
@@ -1102,6 +1103,12 @@ const AuthenticatedInventoryIdEditRoute =
     path: '/edit',
     getParentRoute: () => AuthenticatedInventoryIdRoute,
   } as any)
+const AuthenticatedHrPayrollRunIdRoute =
+  AuthenticatedHrPayrollRunIdRouteImport.update({
+    id: '/hr/payroll/$runId',
+    path: '/hr/payroll/$runId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDispatchIdPrintRoute =
   AuthenticatedDispatchIdPrintRouteImport.update({
     id: '/print',
@@ -1257,6 +1264,7 @@ export interface FileRoutesByFullPath {
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1422,6 +1430,7 @@ export interface FileRoutesByTo {
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1589,6 +1598,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/_authenticated/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/_authenticated/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/_authenticated/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/_authenticated/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1756,6 +1766,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/dispatch/$id/print'
+    | '/hr/payroll/$runId'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -1921,6 +1932,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/dispatch/$id/print'
+    | '/hr/payroll/$runId'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -2087,6 +2099,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId/timeline'
     | '/_authenticated/dispatch/$id/edit'
     | '/_authenticated/dispatch/$id/print'
+    | '/_authenticated/hr/payroll/$runId'
     | '/_authenticated/inventory/$id/edit'
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/payments/$id/edit'
@@ -3269,6 +3282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryIdEditRouteImport
       parentRoute: typeof AuthenticatedInventoryIdRoute
     }
+    '/_authenticated/hr/payroll/$runId': {
+      id: '/_authenticated/hr/payroll/$runId'
+      path: '/hr/payroll/$runId'
+      fullPath: '/hr/payroll/$runId'
+      preLoaderRoute: typeof AuthenticatedHrPayrollRunIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dispatch/$id/print': {
       id: '/_authenticated/dispatch/$id/print'
       path: '/print'
@@ -3533,6 +3553,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVendorPaymentsIndexRoute: typeof AuthenticatedVendorPaymentsIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
   AuthenticatedWorkforceIntelligenceIndexRoute: typeof AuthenticatedWorkforceIntelligenceIndexRoute
+  AuthenticatedHrPayrollRunIdRoute: typeof AuthenticatedHrPayrollRunIdRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   AuthenticatedWorkforceIntelligenceEmployeesNewRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
@@ -3699,6 +3720,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
   AuthenticatedWorkforceIntelligenceIndexRoute:
     AuthenticatedWorkforceIntelligenceIndexRoute,
+  AuthenticatedHrPayrollRunIdRoute: AuthenticatedHrPayrollRunIdRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute:
     AuthenticatedWorkforceIntelligenceEmployeesIdRoute,
