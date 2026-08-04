@@ -346,17 +346,32 @@ export function computePayslip(input: PayslipInput): PayslipResult {
   const loan = rupees(Math.max(0, input.loanInstallment ?? 0));
   const reimb = rupees(Math.max(0, input.reimbursements ?? 0));
 
-  if (pf.employee) lines.push({ label: "PF (employee)", kind: "deduction", amount: pf.employee, sort_order: 910 });
-  if (esi.employee) lines.push({ label: "ESI (employee)", kind: "deduction", amount: esi.employee, sort_order: 911 });
+  if (pf.employee)
+    lines.push({ label: "PF (employee)", kind: "deduction", amount: pf.employee, sort_order: 910 });
+  if (esi.employee)
+    lines.push({
+      label: "ESI (employee)",
+      kind: "deduction",
+      amount: esi.employee,
+      sort_order: 911,
+    });
   if (pt) lines.push({ label: "Professional tax", kind: "deduction", amount: pt, sort_order: 912 });
   if (tds) lines.push({ label: "TDS", kind: "deduction", amount: tds, sort_order: 913 });
-  if (loan) lines.push({ label: "Loan / advance", kind: "deduction", amount: loan, sort_order: 914 });
-  if (reimb) lines.push({ label: "Reimbursements", kind: "earning", amount: reimb, sort_order: 920 });
-  if (pf.employer) lines.push({ label: "PF (employer)", kind: "employer", amount: pf.employer, sort_order: 930 });
-  if (esi.employer) lines.push({ label: "ESI (employer)", kind: "employer", amount: esi.employer, sort_order: 931 });
+  if (loan)
+    lines.push({ label: "Loan / advance", kind: "deduction", amount: loan, sort_order: 914 });
+  if (reimb)
+    lines.push({ label: "Reimbursements", kind: "earning", amount: reimb, sort_order: 920 });
+  if (pf.employer)
+    lines.push({ label: "PF (employer)", kind: "employer", amount: pf.employer, sort_order: 930 });
+  if (esi.employer)
+    lines.push({
+      label: "ESI (employer)",
+      kind: "employer",
+      amount: esi.employer,
+      sort_order: 931,
+    });
 
-  const totalDeductions =
-    structuredDeductions + pf.employee + esi.employee + pt + tds + loan;
+  const totalDeductions = structuredDeductions + pf.employee + esi.employee + pt + tds + loan;
   const netPay = rupees(gross + reimb - totalDeductions);
 
   return {

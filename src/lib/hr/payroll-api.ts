@@ -50,7 +50,9 @@ export async function getPayrollSettings(): Promise<PayrollSettings> {
     esi_employee_pct: Number(data.esi_employee_pct),
     esi_employer_pct: Number(data.esi_employer_pct),
     esi_wage_ceiling: Number(data.esi_wage_ceiling),
-    pt_slabs: (Array.isArray(data.pt_slabs) ? data.pt_slabs : DEFAULT_PAYROLL_SETTINGS.pt_slabs) as PtSlab[],
+    pt_slabs: (Array.isArray(data.pt_slabs)
+      ? data.pt_slabs
+      : DEFAULT_PAYROLL_SETTINGS.pt_slabs) as PtSlab[],
     tds_enabled: data.tds_enabled,
     standard_deduction: Number(data.standard_deduction),
     overtime_multiplier: Number(data.overtime_multiplier),
@@ -291,7 +293,11 @@ export async function listPayrollRuns(): Promise<PayrollRun[]> {
 }
 
 export async function getPayrollRun(id: string): Promise<PayrollRun | null> {
-  const { data, error } = await supabase.from("hr_payroll_runs").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("hr_payroll_runs")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
   return data as PayrollRun | null;
 }
@@ -373,7 +379,9 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
 
   const [{ data: employees, error: empError }, { data: structures, error: structError }] =
     await Promise.all([
-      supabase.from("employees").select("id, full_name, employee_code, employment_status, branch_id"),
+      supabase
+        .from("employees")
+        .select("id, full_name, employee_code, employment_status, branch_id"),
       supabase.from("hr_salary_structures").select("*").eq("status", "active"),
     ]);
   if (empError) throw new AppError(mapDbError(empError));
@@ -387,7 +395,8 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
   const structureByEmployee = new Map<string, SalaryStructure>();
   for (const s of (structures ?? []) as SalaryStructure[]) {
     const existing = structureByEmployee.get(s.employee_id);
-    if (!existing || s.effective_from > existing.effective_from) structureByEmployee.set(s.employee_id, s);
+    if (!existing || s.effective_from > existing.effective_from)
+      structureByEmployee.set(s.employee_id, s);
   }
 
   const structureIds = [...structureByEmployee.values()].map((s) => s.id);
@@ -419,9 +428,12 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
   const presentByEmployee = new Map<string, number>();
   const otMinutesByEmployee = new Map<string, number>();
   for (const d of attendanceRes.data ?? []) {
-    if (d.status === "absent") lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 1);
-    if (d.status === "half_day") lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 0.5);
-    if (d.status !== "absent") presentByEmployee.set(d.employee_id, (presentByEmployee.get(d.employee_id) ?? 0) + 1);
+    if (d.status === "absent")
+      lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 1);
+    if (d.status === "half_day")
+      lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 0.5);
+    if (d.status !== "absent")
+      presentByEmployee.set(d.employee_id, (presentByEmployee.get(d.employee_id) ?? 0) + 1);
     if (d.overtime_minutes)
       otMinutesByEmployee.set(
         d.employee_id,
@@ -430,11 +442,15 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
   }
 
   const loanByEmployee = new Map<string, HrLoan>();
-  for (const l of (loansRes.data ?? []) as HrLoan[]) if (!loanByEmployee.has(l.employee_id)) loanByEmployee.set(l.employee_id, l);
+  for (const l of (loansRes.data ?? []) as HrLoan[])
+    if (!loanByEmployee.has(l.employee_id)) loanByEmployee.set(l.employee_id, l);
 
   const reimbByEmployee = new Map<string, number>();
   for (const r of (reimbRes.data ?? []) as HrReimbursement[])
-    reimbByEmployee.set(r.employee_id, (reimbByEmployee.get(r.employee_id) ?? 0) + Number(r.amount));
+    reimbByEmployee.set(
+      r.employee_id,
+      (reimbByEmployee.get(r.employee_id) ?? 0) + Number(r.amount),
+    );
 
   const results: PayslipResult[] = [];
   const skipped: string[] = [];

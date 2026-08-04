@@ -70,7 +70,9 @@ describe("salary structure", () => {
   it("never produces a negative balance component", () => {
     const lines = buildStructureFromCtc(
       120_000,
-      COMPONENTS.map((c) => (c.name === "HRA" ? { ...c, calc_type: "fixed" as const, value: 90_000 } : c)),
+      COMPONENTS.map((c) =>
+        c.name === "HRA" ? { ...c, calc_type: "fixed" as const, value: 90_000 } : c,
+      ),
     );
     expect(lines[2]!.monthly_amount).toBe(0);
   });
