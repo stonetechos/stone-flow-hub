@@ -38,6 +38,10 @@ const LABELS: Record<string, string> = {
   leave: "Leave Management",
   holidays: "Holidays",
   branches: "Offices & Geofences",
+  salary: "Salary Structures",
+  payroll: "Payroll",
+  loans: "Loans & Claims",
+
 
   new: "New",
   edit: "Edit",
