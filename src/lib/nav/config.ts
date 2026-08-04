@@ -21,6 +21,8 @@ import {
   Warehouse,
   ClipboardCheck,
   Wallet,
+  Banknote,
+  HandCoins,
   Calendar,
   BarChart3,
   Settings,
@@ -211,12 +213,34 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "humanResources",
   },
   {
+    id: "hr-salary",
+    to: "/hr/salary",
+    label: "Salary Structures",
+    icon: Wallet,
+    group: "humanResources",
+  },
+  {
+    id: "hr-payroll",
+    to: "/hr/payroll",
+    label: "Payroll",
+    icon: Banknote,
+    group: "humanResources",
+  },
+  {
+    id: "hr-loans",
+    to: "/hr/loans",
+    label: "Loans & Claims",
+    icon: HandCoins,
+    group: "humanResources",
+  },
+  {
     id: "hr-holidays",
     to: "/hr/holidays",
     label: "Holidays",
     icon: Calendar,
     group: "humanResources",
   },
+
   {
     id: "hr-branches",
     to: "/hr/branches",

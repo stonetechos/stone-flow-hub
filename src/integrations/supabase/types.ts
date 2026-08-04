@@ -2935,6 +2935,599 @@ export type Database = {
         }
         Relationships: []
       }
+      hr_loan_repayments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          loan_id: string
+          paid_on: string
+          payslip_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id: string
+          paid_on?: string
+          payslip_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id?: string
+          paid_on?: string
+          payslip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_loan_repayments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "hr_loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_loan_repayments_payslip_id_fkey"
+            columns: ["payslip_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payslips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_loans: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          installment_amount: number
+          installments_paid: number
+          installments_total: number
+          loan_type: string
+          outstanding: number
+          principal: number
+          reason: string | null
+          start_month: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          installment_amount?: number
+          installments_paid?: number
+          installments_total?: number
+          loan_type?: string
+          outstanding?: number
+          principal?: number
+          reason?: string | null
+          start_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          installment_amount?: number
+          installments_paid?: number
+          installments_total?: number
+          loan_type?: string
+          outstanding?: number
+          principal?: number
+          reason?: string | null
+          start_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_loans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_loans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payroll_runs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_count: number
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_month: number
+          period_year: number
+          processed_at: string | null
+          run_code: string | null
+          status: string
+          total_deductions: number
+          total_employer_cost: number
+          total_gross: number
+          total_net: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_count?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_month: number
+          period_year: number
+          processed_at?: string | null
+          run_code?: string | null
+          status?: string
+          total_deductions?: number
+          total_employer_cost?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_count?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_month?: number
+          period_year?: number
+          processed_at?: string | null
+          run_code?: string | null
+          status?: string
+          total_deductions?: number
+          total_employer_cost?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payroll_runs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payroll_settings: {
+        Row: {
+          created_at: string
+          esi_employee_pct: number
+          esi_employer_pct: number
+          esi_wage_ceiling: number
+          id: boolean
+          overtime_multiplier: number
+          payroll_cutoff_day: number
+          pf_employee_pct: number
+          pf_employer_pct: number
+          pf_limit_to_ceiling: boolean
+          pf_wage_ceiling: number
+          pt_slabs: Json
+          standard_deduction: number
+          tds_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          esi_employee_pct?: number
+          esi_employer_pct?: number
+          esi_wage_ceiling?: number
+          id?: boolean
+          overtime_multiplier?: number
+          payroll_cutoff_day?: number
+          pf_employee_pct?: number
+          pf_employer_pct?: number
+          pf_limit_to_ceiling?: boolean
+          pf_wage_ceiling?: number
+          pt_slabs?: Json
+          standard_deduction?: number
+          tds_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          esi_employee_pct?: number
+          esi_employer_pct?: number
+          esi_wage_ceiling?: number
+          id?: boolean
+          overtime_multiplier?: number
+          payroll_cutoff_day?: number
+          pf_employee_pct?: number
+          pf_employer_pct?: number
+          pf_limit_to_ceiling?: boolean
+          pf_wage_ceiling?: number
+          pt_slabs?: Json
+          standard_deduction?: number
+          tds_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_payslip_lines: {
+        Row: {
+          amount: number
+          id: string
+          kind: string
+          label: string
+          payslip_id: string
+          sort_order: number
+        }
+        Insert: {
+          amount?: number
+          id?: string
+          kind?: string
+          label: string
+          payslip_id: string
+          sort_order?: number
+        }
+        Update: {
+          amount?: number
+          id?: string
+          kind?: string
+          label?: string
+          payslip_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payslip_lines_payslip_id_fkey"
+            columns: ["payslip_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payslips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payslips: {
+        Row: {
+          created_at: string
+          employee_code: string | null
+          employee_id: string
+          employee_name: string | null
+          employer_cost: number
+          esi_employee: number
+          esi_employer: number
+          gross_earnings: number
+          id: string
+          loan_deduction: number
+          lop_days: number
+          net_pay: number
+          overtime_amount: number
+          overtime_hours: number
+          paid_leave_days: number
+          payable_days: number
+          pf_employee: number
+          pf_employer: number
+          present_days: number
+          professional_tax: number
+          reimbursements: number
+          run_id: string
+          snapshot: Json
+          tds: number
+          total_deductions: number
+        }
+        Insert: {
+          created_at?: string
+          employee_code?: string | null
+          employee_id: string
+          employee_name?: string | null
+          employer_cost?: number
+          esi_employee?: number
+          esi_employer?: number
+          gross_earnings?: number
+          id?: string
+          loan_deduction?: number
+          lop_days?: number
+          net_pay?: number
+          overtime_amount?: number
+          overtime_hours?: number
+          paid_leave_days?: number
+          payable_days?: number
+          pf_employee?: number
+          pf_employer?: number
+          present_days?: number
+          professional_tax?: number
+          reimbursements?: number
+          run_id: string
+          snapshot?: Json
+          tds?: number
+          total_deductions?: number
+        }
+        Update: {
+          created_at?: string
+          employee_code?: string | null
+          employee_id?: string
+          employee_name?: string | null
+          employer_cost?: number
+          esi_employee?: number
+          esi_employer?: number
+          gross_earnings?: number
+          id?: string
+          loan_deduction?: number
+          lop_days?: number
+          net_pay?: number
+          overtime_amount?: number
+          overtime_hours?: number
+          paid_leave_days?: number
+          payable_days?: number
+          pf_employee?: number
+          pf_employer?: number
+          present_days?: number
+          professional_tax?: number
+          reimbursements?: number
+          run_id?: string
+          snapshot?: Json
+          tds?: number
+          total_deductions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_payslips_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_reimbursements: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          claim_date: string
+          created_at: string
+          description: string | null
+          employee_id: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          claim_date?: string
+          created_at?: string
+          description?: string | null
+          employee_id: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          claim_date?: string
+          created_at?: string
+          description?: string | null
+          employee_id?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_salary_components: {
+        Row: {
+          calc_type: string
+          code: string | null
+          created_at: string
+          esi_applicable: boolean
+          id: string
+          is_active: boolean
+          is_taxable: boolean
+          kind: string
+          name: string
+          notes: string | null
+          pf_applicable: boolean
+          sort_order: number
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          calc_type?: string
+          code?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_active?: boolean
+          is_taxable?: boolean
+          kind?: string
+          name: string
+          notes?: string | null
+          pf_applicable?: boolean
+          sort_order?: number
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          calc_type?: string
+          code?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_active?: boolean
+          is_taxable?: boolean
+          kind?: string
+          name?: string
+          notes?: string | null
+          pf_applicable?: boolean
+          sort_order?: number
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      hr_salary_structure_lines: {
+        Row: {
+          component_id: string | null
+          created_at: string
+          esi_applicable: boolean
+          id: string
+          is_taxable: boolean
+          kind: string
+          label: string
+          monthly_amount: number
+          pf_applicable: boolean
+          sort_order: number
+          structure_id: string
+        }
+        Insert: {
+          component_id?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_taxable?: boolean
+          kind?: string
+          label: string
+          monthly_amount?: number
+          pf_applicable?: boolean
+          sort_order?: number
+          structure_id: string
+        }
+        Update: {
+          component_id?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_taxable?: boolean
+          kind?: string
+          label?: string
+          monthly_amount?: number
+          pf_applicable?: boolean
+          sort_order?: number
+          structure_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_salary_structure_lines_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "hr_salary_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_salary_structure_lines_structure_id_fkey"
+            columns: ["structure_id"]
+            isOneToOne: false
+            referencedRelation: "hr_salary_structures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_salary_structures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ctc_annual: number
+          effective_from: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ctc_annual?: number
+          effective_from?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ctc_annual?: number
+          effective_from?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hr_shift_assignments: {
         Row: {
           created_at: string

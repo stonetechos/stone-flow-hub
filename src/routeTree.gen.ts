@@ -98,6 +98,8 @@ import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_a
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_authenticated/installations/$id'
 import { Route as AuthenticatedHrShiftsRouteImport } from './routes/_authenticated/hr/shifts'
+import { Route as AuthenticatedHrSalaryRouteImport } from './routes/_authenticated/hr/salary'
+import { Route as AuthenticatedHrLoansRouteImport } from './routes/_authenticated/hr/loans'
 import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr/leave'
 import { Route as AuthenticatedHrHolidaysRouteImport } from './routes/_authenticated/hr/holidays'
 import { Route as AuthenticatedHrBranchesRouteImport } from './routes/_authenticated/hr/branches'
@@ -148,6 +150,7 @@ import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
 import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
+import { Route as AuthenticatedHrPayrollIndexRouteImport } from './routes/_authenticated/hr/payroll/index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -169,6 +172,7 @@ import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/
 import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authenticated/payments/$id.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices/$invoiceId.edit'
 import { Route as AuthenticatedInventoryIdEditRouteImport } from './routes/_authenticated/inventory/$id.edit'
+import { Route as AuthenticatedHrPayrollRunIdRouteImport } from './routes/_authenticated/hr/payroll/$runId'
 import { Route as AuthenticatedDispatchIdPrintRouteImport } from './routes/_authenticated/dispatch/$id.print'
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
 import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
@@ -680,6 +684,16 @@ const AuthenticatedHrShiftsRoute = AuthenticatedHrShiftsRouteImport.update({
   path: '/hr/shifts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHrSalaryRoute = AuthenticatedHrSalaryRouteImport.update({
+  id: '/hr/salary',
+  path: '/hr/salary',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrLoansRoute = AuthenticatedHrLoansRouteImport.update({
+  id: '/hr/loans',
+  path: '/hr/loans',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHrLeaveRoute = AuthenticatedHrLeaveRouteImport.update({
   id: '/hr/leave',
   path: '/hr/leave',
@@ -972,6 +986,12 @@ const AuthenticatedQuotesQuoteIdIndexRoute =
     path: '/quotes/$quoteId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrPayrollIndexRoute =
+  AuthenticatedHrPayrollIndexRouteImport.update({
+    id: '/hr/payroll/',
+    path: '/hr/payroll/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -1095,6 +1115,12 @@ const AuthenticatedInventoryIdEditRoute =
     path: '/edit',
     getParentRoute: () => AuthenticatedInventoryIdRoute,
   } as any)
+const AuthenticatedHrPayrollRunIdRoute =
+  AuthenticatedHrPayrollRunIdRouteImport.update({
+    id: '/hr/payroll/$runId',
+    path: '/hr/payroll/$runId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDispatchIdPrintRoute =
   AuthenticatedDispatchIdPrintRouteImport.update({
     id: '/print',
@@ -1180,6 +1206,8 @@ export interface FileRoutesByFullPath {
   '/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
@@ -1250,6 +1278,7 @@ export interface FileRoutesByFullPath {
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1271,6 +1300,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1344,6 +1374,8 @@ export interface FileRoutesByTo {
   '/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
@@ -1414,6 +1446,7 @@ export interface FileRoutesByTo {
   '/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1435,6 +1468,7 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/hr/payroll': typeof AuthenticatedHrPayrollIndexRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1510,6 +1544,8 @@ export interface FileRoutesById {
   '/_authenticated/hr/branches': typeof AuthenticatedHrBranchesRoute
   '/_authenticated/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/_authenticated/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/_authenticated/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/_authenticated/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/_authenticated/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
@@ -1580,6 +1616,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/$customerId/timeline': typeof AuthenticatedCustomersCustomerIdTimelineRoute
   '/_authenticated/dispatch/$id/edit': typeof AuthenticatedDispatchIdEditRoute
   '/_authenticated/dispatch/$id/print': typeof AuthenticatedDispatchIdPrintRoute
+  '/_authenticated/hr/payroll/$runId': typeof AuthenticatedHrPayrollRunIdRoute
   '/_authenticated/inventory/$id/edit': typeof AuthenticatedInventoryIdEditRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
@@ -1601,6 +1638,7 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/_authenticated/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1676,6 +1714,8 @@ export interface FileRouteTypes {
     | '/hr/branches'
     | '/hr/holidays'
     | '/hr/leave'
+    | '/hr/loans'
+    | '/hr/salary'
     | '/hr/shifts'
     | '/installations/$id'
     | '/inventory/$id'
@@ -1746,6 +1786,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/dispatch/$id/print'
+    | '/hr/payroll/$runId'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -1767,6 +1808,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/hr/payroll/'
     | '/quotes/$quoteId/'
     | '/workforce-intelligence/capacities/'
     | '/workforce-intelligence/employees/'
@@ -1840,6 +1882,8 @@ export interface FileRouteTypes {
     | '/hr/branches'
     | '/hr/holidays'
     | '/hr/leave'
+    | '/hr/loans'
+    | '/hr/salary'
     | '/hr/shifts'
     | '/installations/$id'
     | '/inventory/$id'
@@ -1910,6 +1954,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/timeline'
     | '/dispatch/$id/edit'
     | '/dispatch/$id/print'
+    | '/hr/payroll/$runId'
     | '/inventory/$id/edit'
     | '/invoices/$invoiceId/edit'
     | '/payments/$id/edit'
@@ -1931,6 +1976,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/hr/payroll'
     | '/quotes/$quoteId'
     | '/workforce-intelligence/capacities'
     | '/workforce-intelligence/employees'
@@ -2005,6 +2051,8 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/branches'
     | '/_authenticated/hr/holidays'
     | '/_authenticated/hr/leave'
+    | '/_authenticated/hr/loans'
+    | '/_authenticated/hr/salary'
     | '/_authenticated/hr/shifts'
     | '/_authenticated/installations/$id'
     | '/_authenticated/inventory/$id'
@@ -2075,6 +2123,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId/timeline'
     | '/_authenticated/dispatch/$id/edit'
     | '/_authenticated/dispatch/$id/print'
+    | '/_authenticated/hr/payroll/$runId'
     | '/_authenticated/inventory/$id/edit'
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/payments/$id/edit'
@@ -2096,6 +2145,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/_authenticated/hr/payroll/'
     | '/_authenticated/quotes/$quoteId/'
     | '/_authenticated/workforce-intelligence/capacities/'
     | '/_authenticated/workforce-intelligence/employees/'
@@ -2752,6 +2802,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrShiftsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/salary': {
+      id: '/_authenticated/hr/salary'
+      path: '/hr/salary'
+      fullPath: '/hr/salary'
+      preLoaderRoute: typeof AuthenticatedHrSalaryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/loans': {
+      id: '/_authenticated/hr/loans'
+      path: '/hr/loans'
+      fullPath: '/hr/loans'
+      preLoaderRoute: typeof AuthenticatedHrLoansRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/leave': {
       id: '/_authenticated/hr/leave'
       path: '/hr/leave'
@@ -3102,6 +3166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/payroll/': {
+      id: '/_authenticated/hr/payroll/'
+      path: '/hr/payroll'
+      fullPath: '/hr/payroll/'
+      preLoaderRoute: typeof AuthenticatedHrPayrollIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -3248,6 +3319,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/inventory/$id/edit'
       preLoaderRoute: typeof AuthenticatedInventoryIdEditRouteImport
       parentRoute: typeof AuthenticatedInventoryIdRoute
+    }
+    '/_authenticated/hr/payroll/$runId': {
+      id: '/_authenticated/hr/payroll/$runId'
+      path: '/hr/payroll/$runId'
+      fullPath: '/hr/payroll/$runId'
+      preLoaderRoute: typeof AuthenticatedHrPayrollRunIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dispatch/$id/print': {
       id: '/_authenticated/dispatch/$id/print'
@@ -3449,6 +3527,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrBranchesRoute: typeof AuthenticatedHrBranchesRoute
   AuthenticatedHrHolidaysRoute: typeof AuthenticatedHrHolidaysRoute
   AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
+  AuthenticatedHrLoansRoute: typeof AuthenticatedHrLoansRoute
+  AuthenticatedHrSalaryRoute: typeof AuthenticatedHrSalaryRoute
   AuthenticatedHrShiftsRoute: typeof AuthenticatedHrShiftsRoute
   AuthenticatedInstallationsIdRoute: typeof AuthenticatedInstallationsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
@@ -3513,10 +3593,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVendorPaymentsIndexRoute: typeof AuthenticatedVendorPaymentsIndexRoute
   AuthenticatedVendorsIndexRoute: typeof AuthenticatedVendorsIndexRoute
   AuthenticatedWorkforceIntelligenceIndexRoute: typeof AuthenticatedWorkforceIntelligenceIndexRoute
+  AuthenticatedHrPayrollRunIdRoute: typeof AuthenticatedHrPayrollRunIdRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   AuthenticatedWorkforceIntelligenceEmployeesNewRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   AuthenticatedWorkforceIntelligenceRolesIdRoute: typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
+  AuthenticatedHrPayrollIndexRoute: typeof AuthenticatedHrPayrollIndexRoute
   AuthenticatedQuotesQuoteIdIndexRoute: typeof AuthenticatedQuotesQuoteIdIndexRoute
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute: typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   AuthenticatedWorkforceIntelligenceEmployeesIndexRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -3604,6 +3686,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrBranchesRoute: AuthenticatedHrBranchesRoute,
   AuthenticatedHrHolidaysRoute: AuthenticatedHrHolidaysRoute,
   AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
+  AuthenticatedHrLoansRoute: AuthenticatedHrLoansRoute,
+  AuthenticatedHrSalaryRoute: AuthenticatedHrSalaryRoute,
   AuthenticatedHrShiftsRoute: AuthenticatedHrShiftsRoute,
   AuthenticatedInstallationsIdRoute: AuthenticatedInstallationsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
@@ -3678,6 +3762,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVendorsIndexRoute: AuthenticatedVendorsIndexRoute,
   AuthenticatedWorkforceIntelligenceIndexRoute:
     AuthenticatedWorkforceIntelligenceIndexRoute,
+  AuthenticatedHrPayrollRunIdRoute: AuthenticatedHrPayrollRunIdRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute:
     AuthenticatedWorkforceIntelligenceEmployeesIdRoute,
@@ -3685,6 +3770,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedWorkforceIntelligenceEmployeesNewRoute,
   AuthenticatedWorkforceIntelligenceRolesIdRoute:
     AuthenticatedWorkforceIntelligenceRolesIdRoute,
+  AuthenticatedHrPayrollIndexRoute: AuthenticatedHrPayrollIndexRoute,
   AuthenticatedQuotesQuoteIdIndexRoute: AuthenticatedQuotesQuoteIdIndexRoute,
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute:
     AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute,
