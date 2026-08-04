@@ -161,7 +161,9 @@ function ShiftsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
-                    {s.start_time ? `${s.start_time.slice(0, 5)} – ${s.end_time?.slice(0, 5)}` : "Flexible"}
+                    {s.start_time
+                      ? `${s.start_time.slice(0, 5)} – ${s.end_time?.slice(0, 5)}`
+                      : "Flexible"}
                   </TableCell>
                   <TableCell>{s.grace_minutes} min</TableCell>
                   <TableCell className="whitespace-nowrap">

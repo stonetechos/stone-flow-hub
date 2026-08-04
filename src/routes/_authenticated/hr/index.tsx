@@ -86,7 +86,12 @@ function HrDashboard() {
               value={active}
               to="/workforce-intelligence/employees"
             />
-            <StatCard icon={Clock} label="Marked present today" value={present} to="/hr/attendance" />
+            <StatCard
+              icon={Clock}
+              label="Marked present today"
+              value={present}
+              to="/hr/attendance"
+            />
             <StatCard icon={Plane} label="On leave today" value={onLeave} to="/hr/leave" />
             <StatCard
               icon={Fingerprint}

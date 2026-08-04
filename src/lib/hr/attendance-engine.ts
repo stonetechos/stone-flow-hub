@@ -23,8 +23,7 @@ export function distanceMeters(a: LatLng, b: LatLng): number {
   const dLng = toRad(b.longitude - a.longitude);
   const lat1 = toRad(a.latitude);
   const lat2 = toRad(b.latitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -123,7 +122,10 @@ export interface DayContext {
   shift: ShiftRules | null;
   isHoliday?: boolean;
   /** Set when an approved leave covers the date. */
-  leaveStatus?: Extract<AttendanceStatus, "on_leave" | "wfh" | "field_duty" | "tour" | "training" | "comp_off">;
+  leaveStatus?: Extract<
+    AttendanceStatus,
+    "on_leave" | "wfh" | "field_duty" | "tour" | "training" | "comp_off"
+  >;
 }
 
 function shiftInstant(workDate: string, time: string | null): number | null {

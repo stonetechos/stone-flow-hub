@@ -31,7 +31,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { listBranches, listPunches, recordPunch, setPunchApproval, getMyEmployee } from "@/lib/hr/api";
+import {
+  listBranches,
+  listPunches,
+  recordPunch,
+  setPunchApproval,
+  getMyEmployee,
+} from "@/lib/hr/api";
 import { listEmployees } from "@/lib/workforce/api";
 import {
   evaluateGeofence,
@@ -65,8 +71,7 @@ interface Capture {
 }
 
 async function captureContext(): Promise<Capture> {
-  const network =
-    typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "online";
+  const network = typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "online";
   let battery: number | null = null;
   try {
     const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number }> };
@@ -213,13 +218,18 @@ function AttendancePage() {
             <>
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <span>
-                  Worked: <strong className="text-foreground">{formatMinutes(summary.workingMinutes)}</strong>
+                  Worked:{" "}
+                  <strong className="text-foreground">
+                    {formatMinutes(summary.workingMinutes)}
+                  </strong>
                 </span>
                 <span>
-                  Break: <strong className="text-foreground">{formatMinutes(summary.breakMinutes)}</strong>
+                  Break:{" "}
+                  <strong className="text-foreground">{formatMinutes(summary.breakMinutes)}</strong>
                 </span>
                 <span>
-                  Next: <strong className="text-foreground">{PUNCH_DIRECTION_LABEL[expected]}</strong>
+                  Next:{" "}
+                  <strong className="text-foreground">{PUNCH_DIRECTION_LABEL[expected]}</strong>
                 </span>
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

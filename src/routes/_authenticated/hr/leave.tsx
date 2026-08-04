@@ -81,8 +81,7 @@ function LeavePage() {
   const types = useQuery({ queryKey: ["hr", "leave-types"], queryFn: listLeaveTypes });
   const requests = useQuery({
     queryKey: ["hr", "leave-requests", statusFilter],
-    queryFn: () =>
-      listLeaveRequests(statusFilter === "all" ? undefined : { status: statusFilter }),
+    queryFn: () => listLeaveRequests(statusFilter === "all" ? undefined : { status: statusFilter }),
   });
   const balances = useQuery({
     queryKey: ["hr", "leave-balances", year],
@@ -153,8 +152,8 @@ function LeavePage() {
           <CardContent className="space-y-3">
             {!me.data && !me.isLoading ? (
               <p className="text-sm text-muted-foreground">
-                Your login isn&apos;t linked to an employee record yet, so you can&apos;t apply.
-                Ask HR to link your account.
+                Your login isn&apos;t linked to an employee record yet, so you can&apos;t apply. Ask
+                HR to link your account.
               </p>
             ) : (
               <>
@@ -217,7 +216,9 @@ function LeavePage() {
                     {typeName.get(b.leave_type_id) ?? "Leave"}
                   </span>
                   <span className="tabular-nums">
-                    {Number(b.opening) + Number(b.accrued) + Number(b.carried_forward) -
+                    {Number(b.opening) +
+                      Number(b.accrued) +
+                      Number(b.carried_forward) -
                       Number(b.used)}{" "}
                     of {Number(b.opening) + Number(b.accrued) + Number(b.carried_forward)} left
                   </span>

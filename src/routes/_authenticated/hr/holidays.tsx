@@ -135,7 +135,9 @@ function HolidaysPage() {
                     {h.holiday_date}
                   </TableCell>
                   <TableCell className="font-medium">{h.name}</TableCell>
-                  <TableCell>{h.branch_id ? (branchName.get(h.branch_id) ?? "—") : "All"}</TableCell>
+                  <TableCell>
+                    {h.branch_id ? (branchName.get(h.branch_id) ?? "—") : "All"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={h.is_optional ? "outline" : "default"}>
                       {h.is_optional ? "Optional" : "Company"}

@@ -97,6 +97,8 @@ export const punchSchema = z.object({
   within_geofence: z.boolean().nullable().optional(),
   distance_m: z.number().nullable().optional(),
   reason: optionalText,
-  approval_status: z.enum(["not_required", "pending", "approved", "rejected"]).default("not_required"),
+  approval_status: z
+    .enum(["not_required", "pending", "approved", "rejected"])
+    .default("not_required"),
 });
 export type PunchInput = z.input<typeof punchSchema>;
