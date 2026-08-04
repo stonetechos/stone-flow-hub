@@ -106,6 +106,7 @@ const qk = {
 const ROLE_LABEL: Record<AppRole, string> = {
   admin: "Admin",
   sales_manager: "Sales Manager",
+  hr: "HR",
   sales: "Sales",
   purchase: "Purchase",
   // Rendered read-only (see UserRowView) — there is no

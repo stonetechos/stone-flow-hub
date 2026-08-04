@@ -1247,24 +1247,37 @@ export type Database = {
           aadhaar: string | null
           address: string | null
           bank_details: Json
+          branch_id: string | null
+          confirmation_date: string | null
           created_at: string
           department: string | null
           designation_id: string | null
+          driving_license_no: string | null
+          education: Json
           email: string | null
           emergency_contact: string | null
           employee_code: string
           employment_status: Database["public"]["Enums"]["employment_status"]
           employment_type: Database["public"]["Enums"]["employment_type"]
+          esic_no: string | null
+          exit_date: string | null
+          experience: Json
           full_name: string
           id: string
           joining_date: string | null
+          nominee: Json
           pan: string | null
+          passport_no: string | null
+          pf_no: string | null
           phone: string | null
           photo_url: string | null
+          probation_end_date: string | null
           remarks: string | null
           reporting_manager_id: string | null
+          resignation_date: string | null
           salary_ctc: number | null
           skills: string[]
+          uan_no: string | null
           updated_at: string
           user_id: string | null
         }
@@ -1272,24 +1285,37 @@ export type Database = {
           aadhaar?: string | null
           address?: string | null
           bank_details?: Json
+          branch_id?: string | null
+          confirmation_date?: string | null
           created_at?: string
           department?: string | null
           designation_id?: string | null
+          driving_license_no?: string | null
+          education?: Json
           email?: string | null
           emergency_contact?: string | null
           employee_code: string
           employment_status?: Database["public"]["Enums"]["employment_status"]
           employment_type?: Database["public"]["Enums"]["employment_type"]
+          esic_no?: string | null
+          exit_date?: string | null
+          experience?: Json
           full_name: string
           id?: string
           joining_date?: string | null
+          nominee?: Json
           pan?: string | null
+          passport_no?: string | null
+          pf_no?: string | null
           phone?: string | null
           photo_url?: string | null
+          probation_end_date?: string | null
           remarks?: string | null
           reporting_manager_id?: string | null
+          resignation_date?: string | null
           salary_ctc?: number | null
           skills?: string[]
+          uan_no?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -1297,28 +1323,48 @@ export type Database = {
           aadhaar?: string | null
           address?: string | null
           bank_details?: Json
+          branch_id?: string | null
+          confirmation_date?: string | null
           created_at?: string
           department?: string | null
           designation_id?: string | null
+          driving_license_no?: string | null
+          education?: Json
           email?: string | null
           emergency_contact?: string | null
           employee_code?: string
           employment_status?: Database["public"]["Enums"]["employment_status"]
           employment_type?: Database["public"]["Enums"]["employment_type"]
+          esic_no?: string | null
+          exit_date?: string | null
+          experience?: Json
           full_name?: string
           id?: string
           joining_date?: string | null
+          nominee?: Json
           pan?: string | null
+          passport_no?: string | null
+          pf_no?: string | null
           phone?: string | null
           photo_url?: string | null
+          probation_end_date?: string | null
           remarks?: string | null
           reporting_manager_id?: string | null
+          resignation_date?: string | null
           salary_ctc?: number | null
           skills?: string[]
+          uan_no?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_designation_id_fkey"
             columns: ["designation_id"]
@@ -2334,6 +2380,675 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hr_attendance_days: {
+        Row: {
+          break_minutes: number
+          created_at: string
+          early_leaving_minutes: number
+          employee_id: string
+          first_in: string | null
+          id: string
+          is_manual_override: boolean
+          last_out: string | null
+          late_minutes: number
+          overtime_minutes: number
+          remarks: string | null
+          shift_id: string | null
+          status: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at: string
+          work_date: string
+          working_minutes: number
+        }
+        Insert: {
+          break_minutes?: number
+          created_at?: string
+          early_leaving_minutes?: number
+          employee_id: string
+          first_in?: string | null
+          id?: string
+          is_manual_override?: boolean
+          last_out?: string | null
+          late_minutes?: number
+          overtime_minutes?: number
+          remarks?: string | null
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at?: string
+          work_date: string
+          working_minutes?: number
+        }
+        Update: {
+          break_minutes?: number
+          created_at?: string
+          early_leaving_minutes?: number
+          employee_id?: string
+          first_in?: string | null
+          id?: string
+          is_manual_override?: boolean
+          last_out?: string | null
+          late_minutes?: number
+          overtime_minutes?: number
+          remarks?: string | null
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at?: string
+          work_date?: string
+          working_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_days_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_days_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_days_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "hr_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_attendance_devices: {
+        Row: {
+          branch_id: string | null
+          config: Json
+          created_at: string
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_sync_at: string | null
+          last_sync_status: string | null
+          name: string
+          serial_no: string | null
+          updated_at: string
+          vendor: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Insert: {
+          branch_id?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name: string
+          serial_no?: string | null
+          updated_at?: string
+          vendor?: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Update: {
+          branch_id?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name?: string
+          serial_no?: string | null
+          updated_at?: string
+          vendor?: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_devices_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_attendance_punches: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at: string | null
+          approved_by: string | null
+          battery_pct: number | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          device_id: string | null
+          device_info: string | null
+          direction: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m: number | null
+          employee_id: string
+          external_ref: string | null
+          gps_accuracy_m: number | null
+          id: string
+          is_duplicate: boolean
+          latitude: number | null
+          longitude: number | null
+          network_status: string | null
+          photo_url: string | null
+          punch_at: string
+          reason: string | null
+          source: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at: string | null
+          updated_at: string
+          within_geofence: boolean | null
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
+          battery_pct?: number | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_info?: string | null
+          direction: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m?: number | null
+          employee_id: string
+          external_ref?: string | null
+          gps_accuracy_m?: number | null
+          id?: string
+          is_duplicate?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          network_status?: string | null
+          photo_url?: string | null
+          punch_at?: string
+          reason?: string | null
+          source?: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at?: string | null
+          updated_at?: string
+          within_geofence?: boolean | null
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
+          battery_pct?: number | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_info?: string | null
+          direction?: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m?: number | null
+          employee_id?: string
+          external_ref?: string | null
+          gps_accuracy_m?: number | null
+          id?: string
+          is_duplicate?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          network_status?: string | null
+          photo_url?: string | null
+          punch_at?: string
+          reason?: string | null
+          source?: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at?: string | null
+          updated_at?: string
+          within_geofence?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_punches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "hr_attendance_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_branches: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string | null
+          created_at: string
+          geofence_radius_m: number
+          id: string
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          state: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          geofence_radius_m?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          state?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          geofence_radius_m?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          state?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_holidays: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          holiday_date: string
+          id: string
+          is_optional: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          holiday_date: string
+          id?: string
+          is_optional?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          holiday_date?: string
+          id?: string
+          is_optional?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_holidays_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_balances: {
+        Row: {
+          accrued: number
+          carried_forward: number
+          created_at: string
+          employee_id: string
+          expires_on: string | null
+          id: string
+          leave_type_id: string
+          opening: number
+          updated_at: string
+          used: number
+          year: number
+        }
+        Insert: {
+          accrued?: number
+          carried_forward?: number
+          created_at?: string
+          employee_id: string
+          expires_on?: string | null
+          id?: string
+          leave_type_id: string
+          opening?: number
+          updated_at?: string
+          used?: number
+          year: number
+        }
+        Update: {
+          accrued?: number
+          carried_forward?: number
+          created_at?: string
+          employee_id?: string
+          expires_on?: string | null
+          id?: string
+          leave_type_id?: string
+          opening?: number
+          updated_at?: string
+          used?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_balances_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "hr_leave_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_requests: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          created_by: string | null
+          days: number
+          employee_id: string
+          from_date: string
+          hr_action_at: string | null
+          hr_action_by: string | null
+          id: string
+          is_half_day: boolean
+          leave_type_id: string
+          manager_action_at: string | null
+          manager_action_by: string | null
+          manager_id: string | null
+          reason: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["hr_leave_status"]
+          to_date: string
+          updated_at: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          employee_id: string
+          from_date: string
+          hr_action_at?: string | null
+          hr_action_by?: string | null
+          id?: string
+          is_half_day?: boolean
+          leave_type_id: string
+          manager_action_at?: string | null
+          manager_action_by?: string | null
+          manager_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hr_leave_status"]
+          to_date: string
+          updated_at?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          employee_id?: string
+          from_date?: string
+          hr_action_at?: string | null
+          hr_action_by?: string | null
+          id?: string
+          is_half_day?: boolean
+          leave_type_id?: string
+          manager_action_at?: string | null
+          manager_action_by?: string | null
+          manager_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hr_leave_status"]
+          to_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "hr_leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_types: {
+        Row: {
+          accrual_per_year: number
+          carry_forward: boolean
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          is_paid: boolean
+          max_carry_forward: number
+          max_consecutive_days: number | null
+          name: string
+          notes: string | null
+          requires_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          accrual_per_year?: number
+          carry_forward?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_carry_forward?: number
+          max_consecutive_days?: number | null
+          name: string
+          notes?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          accrual_per_year?: number
+          carry_forward?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_carry_forward?: number
+          max_consecutive_days?: number | null
+          name?: string
+          notes?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_shift_assignments: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          shift_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          shift_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          shift_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_shift_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "hr_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_shifts: {
+        Row: {
+          break_minutes: number
+          code: string | null
+          created_at: string
+          early_leaving_grace_minutes: number
+          end_time: string | null
+          full_day_hours: number
+          grace_minutes: number
+          half_day_hours: number
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          overtime_after_minutes: number
+          overtime_enabled: boolean
+          shift_type: Database["public"]["Enums"]["hr_shift_type"]
+          start_time: string | null
+          updated_at: string
+          weekly_offs: number[]
+        }
+        Insert: {
+          break_minutes?: number
+          code?: string | null
+          created_at?: string
+          early_leaving_grace_minutes?: number
+          end_time?: string | null
+          full_day_hours?: number
+          grace_minutes?: number
+          half_day_hours?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          overtime_after_minutes?: number
+          overtime_enabled?: boolean
+          shift_type?: Database["public"]["Enums"]["hr_shift_type"]
+          start_time?: string | null
+          updated_at?: string
+          weekly_offs?: number[]
+        }
+        Update: {
+          break_minutes?: number
+          code?: string | null
+          created_at?: string
+          early_leaving_grace_minutes?: number
+          end_time?: string | null
+          full_day_hours?: number
+          grace_minutes?: number
+          half_day_hours?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          overtime_after_minutes?: number
+          overtime_enabled?: boolean
+          shift_type?: Database["public"]["Enums"]["hr_shift_type"]
+          start_time?: string | null
+          updated_at?: string
+          weekly_offs?: number[]
+        }
+        Relationships: []
       }
       insight_states: {
         Row: {
@@ -8425,6 +9140,8 @@ export type Database = {
         Returns: boolean
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
+      is_hr_admin: { Args: { _uid: string }; Returns: boolean }
+      is_hr_manager: { Args: { _uid: string }; Returns: boolean }
       is_staff: { Args: { _uid: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_vendor_of: {
@@ -8760,7 +9477,13 @@ export type Database = {
         | "super_admin_delete_attempted"
         | "super_admin_role_change_attempted"
         | "role_changed"
-      app_role: "admin" | "sales_manager" | "sales" | "purchase" | "super_admin"
+      app_role:
+        | "admin"
+        | "sales_manager"
+        | "sales"
+        | "purchase"
+        | "super_admin"
+        | "hr"
       contact_designation:
         | "owner"
         | "architect"
@@ -8831,6 +9554,31 @@ export type Database = {
         | "other"
       followup_channel: "call" | "whatsapp" | "email" | "meeting" | "site_visit"
       followup_status: "pending" | "done" | "snoozed" | "missed" | "cancelled"
+      hr_approval_status: "not_required" | "pending" | "approved" | "rejected"
+      hr_attendance_status:
+        | "present"
+        | "absent"
+        | "late"
+        | "half_day"
+        | "holiday"
+        | "weekend"
+        | "on_leave"
+        | "wfh"
+        | "field_duty"
+        | "tour"
+        | "training"
+        | "comp_off"
+      hr_device_vendor: "zkteco" | "essl" | "matrix" | "other"
+      hr_leave_status:
+        | "draft"
+        | "pending"
+        | "manager_approved"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+      hr_punch_direction: "in" | "out" | "break_in" | "break_out"
+      hr_punch_source: "biometric" | "mobile" | "web" | "manual" | "import"
+      hr_shift_type: "general" | "night" | "flexible" | "rotational"
       installation_status:
         | "ready"
         | "packed"
@@ -9197,7 +9945,14 @@ export const Constants = {
         "super_admin_role_change_attempted",
         "role_changed",
       ],
-      app_role: ["admin", "sales_manager", "sales", "purchase", "super_admin"],
+      app_role: [
+        "admin",
+        "sales_manager",
+        "sales",
+        "purchase",
+        "super_admin",
+        "hr",
+      ],
       contact_designation: [
         "owner",
         "architect",
@@ -9277,6 +10032,33 @@ export const Constants = {
       ],
       followup_channel: ["call", "whatsapp", "email", "meeting", "site_visit"],
       followup_status: ["pending", "done", "snoozed", "missed", "cancelled"],
+      hr_approval_status: ["not_required", "pending", "approved", "rejected"],
+      hr_attendance_status: [
+        "present",
+        "absent",
+        "late",
+        "half_day",
+        "holiday",
+        "weekend",
+        "on_leave",
+        "wfh",
+        "field_duty",
+        "tour",
+        "training",
+        "comp_off",
+      ],
+      hr_device_vendor: ["zkteco", "essl", "matrix", "other"],
+      hr_leave_status: [
+        "draft",
+        "pending",
+        "manager_approved",
+        "approved",
+        "rejected",
+        "cancelled",
+      ],
+      hr_punch_direction: ["in", "out", "break_in", "break_out"],
+      hr_punch_source: ["biometric", "mobile", "web", "manual", "import"],
+      hr_shift_type: ["general", "night", "flexible", "rotational"],
       installation_status: [
         "ready",
         "packed",

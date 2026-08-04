@@ -51,6 +51,7 @@ import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedInstallationsIndexRouteImport } from './routes/_authenticated/installations/index'
 import { Route as AuthenticatedInstallationTeamsIndexRouteImport } from './routes/_authenticated/installation-teams/index'
+import { Route as AuthenticatedHrIndexRouteImport } from './routes/_authenticated/hr/index'
 import { Route as AuthenticatedGrnsIndexRouteImport } from './routes/_authenticated/grns/index'
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
 import { Route as AuthenticatedEstimatesIndexRouteImport } from './routes/_authenticated/estimates/index'
@@ -96,6 +97,11 @@ import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedInventoryMovementsRouteImport } from './routes/_authenticated/inventory/movements'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_authenticated/installations/$id'
+import { Route as AuthenticatedHrShiftsRouteImport } from './routes/_authenticated/hr/shifts'
+import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr/leave'
+import { Route as AuthenticatedHrHolidaysRouteImport } from './routes/_authenticated/hr/holidays'
+import { Route as AuthenticatedHrBranchesRouteImport } from './routes/_authenticated/hr/branches'
+import { Route as AuthenticatedHrAttendanceRouteImport } from './routes/_authenticated/hr/attendance'
 import { Route as AuthenticatedGrnsNewRouteImport } from './routes/_authenticated/grns/new'
 import { Route as AuthenticatedGrnsIdRouteImport } from './routes/_authenticated/grns/$id'
 import { Route as AuthenticatedFollowupsIdRouteImport } from './routes/_authenticated/followups/$id'
@@ -399,6 +405,11 @@ const AuthenticatedInstallationTeamsIndexRoute =
     path: '/installation-teams/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHrIndexRoute = AuthenticatedHrIndexRouteImport.update({
+  id: '/hr/',
+  path: '/hr/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGrnsIndexRoute = AuthenticatedGrnsIndexRouteImport.update({
   id: '/grns/',
   path: '/grns/',
@@ -662,6 +673,32 @@ const AuthenticatedInstallationsIdRoute =
   AuthenticatedInstallationsIdRouteImport.update({
     id: '/installations/$id',
     path: '/installations/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHrShiftsRoute = AuthenticatedHrShiftsRouteImport.update({
+  id: '/hr/shifts',
+  path: '/hr/shifts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrLeaveRoute = AuthenticatedHrLeaveRouteImport.update({
+  id: '/hr/leave',
+  path: '/hr/leave',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrHolidaysRoute = AuthenticatedHrHolidaysRouteImport.update({
+  id: '/hr/holidays',
+  path: '/hr/holidays',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrBranchesRoute = AuthenticatedHrBranchesRouteImport.update({
+  id: '/hr/branches',
+  path: '/hr/branches',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrAttendanceRoute =
+  AuthenticatedHrAttendanceRouteImport.update({
+    id: '/hr/attendance',
+    path: '/hr/attendance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedGrnsNewRoute = AuthenticatedGrnsNewRouteImport.update({
@@ -1139,6 +1176,11 @@ export interface FileRoutesByFullPath {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/branches': typeof AuthenticatedHrBranchesRoute
+  '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
+  '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -1184,6 +1226,7 @@ export interface FileRoutesByFullPath {
   '/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/grns/': typeof AuthenticatedGrnsIndexRoute
+  '/hr/': typeof AuthenticatedHrIndexRoute
   '/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
   '/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -1297,6 +1340,11 @@ export interface FileRoutesByTo {
   '/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/hr/branches': typeof AuthenticatedHrBranchesRoute
+  '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
+  '/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -1342,6 +1390,7 @@ export interface FileRoutesByTo {
   '/estimates': typeof AuthenticatedEstimatesIndexRoute
   '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/grns': typeof AuthenticatedGrnsIndexRoute
+  '/hr': typeof AuthenticatedHrIndexRoute
   '/installation-teams': typeof AuthenticatedInstallationTeamsIndexRoute
   '/installations': typeof AuthenticatedInstallationsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -1457,6 +1506,11 @@ export interface FileRoutesById {
   '/_authenticated/followups/$id': typeof AuthenticatedFollowupsIdRoute
   '/_authenticated/grns/$id': typeof AuthenticatedGrnsIdRoute
   '/_authenticated/grns/new': typeof AuthenticatedGrnsNewRoute
+  '/_authenticated/hr/attendance': typeof AuthenticatedHrAttendanceRoute
+  '/_authenticated/hr/branches': typeof AuthenticatedHrBranchesRoute
+  '/_authenticated/hr/holidays': typeof AuthenticatedHrHolidaysRoute
+  '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
+  '/_authenticated/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/_authenticated/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/movements': typeof AuthenticatedInventoryMovementsRoute
@@ -1502,6 +1556,7 @@ export interface FileRoutesById {
   '/_authenticated/estimates/': typeof AuthenticatedEstimatesIndexRoute
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/grns/': typeof AuthenticatedGrnsIndexRoute
+  '/_authenticated/hr/': typeof AuthenticatedHrIndexRoute
   '/_authenticated/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
   '/_authenticated/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -1617,6 +1672,11 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/hr/attendance'
+    | '/hr/branches'
+    | '/hr/holidays'
+    | '/hr/leave'
+    | '/hr/shifts'
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/movements'
@@ -1662,6 +1722,7 @@ export interface FileRouteTypes {
     | '/estimates/'
     | '/followups/'
     | '/grns/'
+    | '/hr/'
     | '/installation-teams/'
     | '/installations/'
     | '/inventory/'
@@ -1775,6 +1836,11 @@ export interface FileRouteTypes {
     | '/followups/$id'
     | '/grns/$id'
     | '/grns/new'
+    | '/hr/attendance'
+    | '/hr/branches'
+    | '/hr/holidays'
+    | '/hr/leave'
+    | '/hr/shifts'
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/movements'
@@ -1820,6 +1886,7 @@ export interface FileRouteTypes {
     | '/estimates'
     | '/followups'
     | '/grns'
+    | '/hr'
     | '/installation-teams'
     | '/installations'
     | '/inventory'
@@ -1934,6 +2001,11 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/$id'
     | '/_authenticated/grns/$id'
     | '/_authenticated/grns/new'
+    | '/_authenticated/hr/attendance'
+    | '/_authenticated/hr/branches'
+    | '/_authenticated/hr/holidays'
+    | '/_authenticated/hr/leave'
+    | '/_authenticated/hr/shifts'
     | '/_authenticated/installations/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/movements'
@@ -1979,6 +2051,7 @@ export interface FileRouteTypes {
     | '/_authenticated/estimates/'
     | '/_authenticated/followups/'
     | '/_authenticated/grns/'
+    | '/_authenticated/hr/'
     | '/_authenticated/installation-teams/'
     | '/_authenticated/installations/'
     | '/_authenticated/inventory/'
@@ -2350,6 +2423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInstallationTeamsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/': {
+      id: '/_authenticated/hr/'
+      path: '/hr'
+      fullPath: '/hr/'
+      preLoaderRoute: typeof AuthenticatedHrIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/grns/': {
       id: '/_authenticated/grns/'
       path: '/grns'
@@ -2663,6 +2743,41 @@ declare module '@tanstack/react-router' {
       path: '/installations/$id'
       fullPath: '/installations/$id'
       preLoaderRoute: typeof AuthenticatedInstallationsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/shifts': {
+      id: '/_authenticated/hr/shifts'
+      path: '/hr/shifts'
+      fullPath: '/hr/shifts'
+      preLoaderRoute: typeof AuthenticatedHrShiftsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/leave': {
+      id: '/_authenticated/hr/leave'
+      path: '/hr/leave'
+      fullPath: '/hr/leave'
+      preLoaderRoute: typeof AuthenticatedHrLeaveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/holidays': {
+      id: '/_authenticated/hr/holidays'
+      path: '/hr/holidays'
+      fullPath: '/hr/holidays'
+      preLoaderRoute: typeof AuthenticatedHrHolidaysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/branches': {
+      id: '/_authenticated/hr/branches'
+      path: '/hr/branches'
+      fullPath: '/hr/branches'
+      preLoaderRoute: typeof AuthenticatedHrBranchesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr/attendance': {
+      id: '/_authenticated/hr/attendance'
+      path: '/hr/attendance'
+      fullPath: '/hr/attendance'
+      preLoaderRoute: typeof AuthenticatedHrAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/grns/new': {
@@ -3330,6 +3445,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIdRoute: typeof AuthenticatedFollowupsIdRoute
   AuthenticatedGrnsIdRoute: typeof AuthenticatedGrnsIdRoute
   AuthenticatedGrnsNewRoute: typeof AuthenticatedGrnsNewRoute
+  AuthenticatedHrAttendanceRoute: typeof AuthenticatedHrAttendanceRoute
+  AuthenticatedHrBranchesRoute: typeof AuthenticatedHrBranchesRoute
+  AuthenticatedHrHolidaysRoute: typeof AuthenticatedHrHolidaysRoute
+  AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
+  AuthenticatedHrShiftsRoute: typeof AuthenticatedHrShiftsRoute
   AuthenticatedInstallationsIdRoute: typeof AuthenticatedInstallationsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryMovementsRoute: typeof AuthenticatedInventoryMovementsRoute
@@ -3374,6 +3494,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEstimatesIndexRoute: typeof AuthenticatedEstimatesIndexRoute
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedGrnsIndexRoute: typeof AuthenticatedGrnsIndexRoute
+  AuthenticatedHrIndexRoute: typeof AuthenticatedHrIndexRoute
   AuthenticatedInstallationTeamsIndexRoute: typeof AuthenticatedInstallationTeamsIndexRoute
   AuthenticatedInstallationsIndexRoute: typeof AuthenticatedInstallationsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -3479,6 +3600,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIdRoute: AuthenticatedFollowupsIdRoute,
   AuthenticatedGrnsIdRoute: AuthenticatedGrnsIdRoute,
   AuthenticatedGrnsNewRoute: AuthenticatedGrnsNewRoute,
+  AuthenticatedHrAttendanceRoute: AuthenticatedHrAttendanceRoute,
+  AuthenticatedHrBranchesRoute: AuthenticatedHrBranchesRoute,
+  AuthenticatedHrHolidaysRoute: AuthenticatedHrHolidaysRoute,
+  AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
+  AuthenticatedHrShiftsRoute: AuthenticatedHrShiftsRoute,
   AuthenticatedInstallationsIdRoute: AuthenticatedInstallationsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryMovementsRoute: AuthenticatedInventoryMovementsRoute,
@@ -3531,6 +3657,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEstimatesIndexRoute: AuthenticatedEstimatesIndexRoute,
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedGrnsIndexRoute: AuthenticatedGrnsIndexRoute,
+  AuthenticatedHrIndexRoute: AuthenticatedHrIndexRoute,
   AuthenticatedInstallationTeamsIndexRoute:
     AuthenticatedInstallationTeamsIndexRoute,
   AuthenticatedInstallationsIndexRoute: AuthenticatedInstallationsIndexRoute,
@@ -3621,13 +3748,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
