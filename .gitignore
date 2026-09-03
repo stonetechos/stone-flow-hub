@@ -31,3 +31,7 @@ dist-capacitor
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets — never commit (contains live Supabase service-role key)
+.env
+.env.local
