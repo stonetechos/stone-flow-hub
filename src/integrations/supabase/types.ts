@@ -18,47 +18,62 @@ export type Database = {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id: string | null
+          browser: string | null
           created_at: string
           dedupe_key: string | null
           entity_id: string
           entity_type: string
           field_name: string | null
           id: number
+          ip_address: unknown
           is_demo: boolean
           new_value: Json | null
           old_value: Json | null
+          os: string | null
+          platform: string | null
           project_id: string | null
           summary: string | null
+          user_agent: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id: string
           entity_type: string
           field_name?: string | null
           id?: number
+          ip_address?: unknown
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["activity_action"]
           actor_id?: string | null
+          browser?: string | null
           created_at?: string
           dedupe_key?: string | null
           entity_id?: string
           entity_type?: string
           field_name?: string | null
           id?: number
+          ip_address?: unknown
           is_demo?: boolean
           new_value?: Json | null
           old_value?: Json | null
+          os?: string | null
+          platform?: string | null
           project_id?: string | null
           summary?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {
@@ -269,6 +284,135 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      company_profiles: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          alt_logo_url: string | null
+          authorized_signatory: string | null
+          bank_account_number: string | null
+          bank_branch: string | null
+          bank_ifsc: string | null
+          bank_name: string | null
+          cin: string | null
+          city: string | null
+          company_name: string
+          country: string
+          created_at: string
+          created_by: string | null
+          designation: string | null
+          display_name: string | null
+          email: string | null
+          gstin: string | null
+          id: string
+          invoice_footer: string | null
+          is_active: boolean
+          legal_business_name: string | null
+          logo_url: string | null
+          mobile: string | null
+          msme_no: string | null
+          pan: string | null
+          phone: string | null
+          pincode: string | null
+          primary_contact: string | null
+          qr_code_url: string | null
+          secondary_contact: string | null
+          signature_url: string | null
+          stamp_url: string | null
+          state: string | null
+          terms_and_conditions: string | null
+          trade_name: string | null
+          updated_at: string
+          updated_by: string | null
+          upi_id: string | null
+          website: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          alt_logo_url?: string | null
+          authorized_signatory?: string | null
+          bank_account_number?: string | null
+          bank_branch?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          cin?: string | null
+          city?: string | null
+          company_name: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          designation?: string | null
+          display_name?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          invoice_footer?: string | null
+          is_active?: boolean
+          legal_business_name?: string | null
+          logo_url?: string | null
+          mobile?: string | null
+          msme_no?: string | null
+          pan?: string | null
+          phone?: string | null
+          pincode?: string | null
+          primary_contact?: string | null
+          qr_code_url?: string | null
+          secondary_contact?: string | null
+          signature_url?: string | null
+          stamp_url?: string | null
+          state?: string | null
+          terms_and_conditions?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          alt_logo_url?: string | null
+          authorized_signatory?: string | null
+          bank_account_number?: string | null
+          bank_branch?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          cin?: string | null
+          city?: string | null
+          company_name?: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          designation?: string | null
+          display_name?: string | null
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          invoice_footer?: string | null
+          is_active?: boolean
+          legal_business_name?: string | null
+          logo_url?: string | null
+          mobile?: string | null
+          msme_no?: string | null
+          pan?: string | null
+          phone?: string | null
+          pincode?: string | null
+          primary_contact?: string | null
+          qr_code_url?: string | null
+          secondary_contact?: string | null
+          signature_url?: string | null
+          stamp_url?: string | null
+          state?: string | null
+          terms_and_conditions?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
       }
       credit_notes: {
         Row: {
@@ -1103,24 +1247,37 @@ export type Database = {
           aadhaar: string | null
           address: string | null
           bank_details: Json
+          branch_id: string | null
+          confirmation_date: string | null
           created_at: string
           department: string | null
           designation_id: string | null
+          driving_license_no: string | null
+          education: Json
           email: string | null
           emergency_contact: string | null
           employee_code: string
           employment_status: Database["public"]["Enums"]["employment_status"]
           employment_type: Database["public"]["Enums"]["employment_type"]
+          esic_no: string | null
+          exit_date: string | null
+          experience: Json
           full_name: string
           id: string
           joining_date: string | null
+          nominee: Json
           pan: string | null
+          passport_no: string | null
+          pf_no: string | null
           phone: string | null
           photo_url: string | null
+          probation_end_date: string | null
           remarks: string | null
           reporting_manager_id: string | null
+          resignation_date: string | null
           salary_ctc: number | null
           skills: string[]
+          uan_no: string | null
           updated_at: string
           user_id: string | null
         }
@@ -1128,24 +1285,37 @@ export type Database = {
           aadhaar?: string | null
           address?: string | null
           bank_details?: Json
+          branch_id?: string | null
+          confirmation_date?: string | null
           created_at?: string
           department?: string | null
           designation_id?: string | null
+          driving_license_no?: string | null
+          education?: Json
           email?: string | null
           emergency_contact?: string | null
           employee_code: string
           employment_status?: Database["public"]["Enums"]["employment_status"]
           employment_type?: Database["public"]["Enums"]["employment_type"]
+          esic_no?: string | null
+          exit_date?: string | null
+          experience?: Json
           full_name: string
           id?: string
           joining_date?: string | null
+          nominee?: Json
           pan?: string | null
+          passport_no?: string | null
+          pf_no?: string | null
           phone?: string | null
           photo_url?: string | null
+          probation_end_date?: string | null
           remarks?: string | null
           reporting_manager_id?: string | null
+          resignation_date?: string | null
           salary_ctc?: number | null
           skills?: string[]
+          uan_no?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -1153,28 +1323,48 @@ export type Database = {
           aadhaar?: string | null
           address?: string | null
           bank_details?: Json
+          branch_id?: string | null
+          confirmation_date?: string | null
           created_at?: string
           department?: string | null
           designation_id?: string | null
+          driving_license_no?: string | null
+          education?: Json
           email?: string | null
           emergency_contact?: string | null
           employee_code?: string
           employment_status?: Database["public"]["Enums"]["employment_status"]
           employment_type?: Database["public"]["Enums"]["employment_type"]
+          esic_no?: string | null
+          exit_date?: string | null
+          experience?: Json
           full_name?: string
           id?: string
           joining_date?: string | null
+          nominee?: Json
           pan?: string | null
+          passport_no?: string | null
+          pf_no?: string | null
           phone?: string | null
           photo_url?: string | null
+          probation_end_date?: string | null
           remarks?: string | null
           reporting_manager_id?: string | null
+          resignation_date?: string | null
           salary_ctc?: number | null
           skills?: string[]
+          uan_no?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_designation_id_fkey"
             columns: ["designation_id"]
@@ -2191,6 +2381,1301 @@ export type Database = {
           },
         ]
       }
+      hr_attendance_days: {
+        Row: {
+          break_minutes: number
+          created_at: string
+          early_leaving_minutes: number
+          employee_id: string
+          first_in: string | null
+          id: string
+          is_manual_override: boolean
+          last_out: string | null
+          late_minutes: number
+          overtime_minutes: number
+          remarks: string | null
+          shift_id: string | null
+          status: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at: string
+          work_date: string
+          working_minutes: number
+        }
+        Insert: {
+          break_minutes?: number
+          created_at?: string
+          early_leaving_minutes?: number
+          employee_id: string
+          first_in?: string | null
+          id?: string
+          is_manual_override?: boolean
+          last_out?: string | null
+          late_minutes?: number
+          overtime_minutes?: number
+          remarks?: string | null
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at?: string
+          work_date: string
+          working_minutes?: number
+        }
+        Update: {
+          break_minutes?: number
+          created_at?: string
+          early_leaving_minutes?: number
+          employee_id?: string
+          first_in?: string | null
+          id?: string
+          is_manual_override?: boolean
+          last_out?: string | null
+          late_minutes?: number
+          overtime_minutes?: number
+          remarks?: string | null
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["hr_attendance_status"]
+          updated_at?: string
+          work_date?: string
+          working_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_days_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_days_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_days_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "hr_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_attendance_devices: {
+        Row: {
+          branch_id: string | null
+          config: Json
+          created_at: string
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_sync_at: string | null
+          last_sync_status: string | null
+          name: string
+          serial_no: string | null
+          updated_at: string
+          vendor: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Insert: {
+          branch_id?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name: string
+          serial_no?: string | null
+          updated_at?: string
+          vendor?: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Update: {
+          branch_id?: string | null
+          config?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name?: string
+          serial_no?: string | null
+          updated_at?: string
+          vendor?: Database["public"]["Enums"]["hr_device_vendor"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_devices_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_attendance_punches: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at: string | null
+          approved_by: string | null
+          battery_pct: number | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          device_id: string | null
+          device_info: string | null
+          direction: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m: number | null
+          employee_id: string
+          external_ref: string | null
+          gps_accuracy_m: number | null
+          id: string
+          is_duplicate: boolean
+          latitude: number | null
+          longitude: number | null
+          network_status: string | null
+          photo_url: string | null
+          punch_at: string
+          reason: string | null
+          source: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at: string | null
+          updated_at: string
+          within_geofence: boolean | null
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
+          battery_pct?: number | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_info?: string | null
+          direction: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m?: number | null
+          employee_id: string
+          external_ref?: string | null
+          gps_accuracy_m?: number | null
+          id?: string
+          is_duplicate?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          network_status?: string | null
+          photo_url?: string | null
+          punch_at?: string
+          reason?: string | null
+          source?: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at?: string | null
+          updated_at?: string
+          within_geofence?: boolean | null
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["hr_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
+          battery_pct?: number | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_info?: string | null
+          direction?: Database["public"]["Enums"]["hr_punch_direction"]
+          distance_m?: number | null
+          employee_id?: string
+          external_ref?: string | null
+          gps_accuracy_m?: number | null
+          id?: string
+          is_duplicate?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          network_status?: string | null
+          photo_url?: string | null
+          punch_at?: string
+          reason?: string | null
+          source?: Database["public"]["Enums"]["hr_punch_source"]
+          synced_at?: string | null
+          updated_at?: string
+          within_geofence?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_attendance_punches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "hr_attendance_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_attendance_punches_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_branches: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string | null
+          created_at: string
+          geofence_radius_m: number
+          id: string
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          state: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          geofence_radius_m?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          state?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          geofence_radius_m?: number
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          state?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_holidays: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          holiday_date: string
+          id: string
+          is_optional: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          holiday_date: string
+          id?: string
+          is_optional?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          holiday_date?: string
+          id?: string
+          is_optional?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_holidays_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_balances: {
+        Row: {
+          accrued: number
+          carried_forward: number
+          created_at: string
+          employee_id: string
+          expires_on: string | null
+          id: string
+          leave_type_id: string
+          opening: number
+          updated_at: string
+          used: number
+          year: number
+        }
+        Insert: {
+          accrued?: number
+          carried_forward?: number
+          created_at?: string
+          employee_id: string
+          expires_on?: string | null
+          id?: string
+          leave_type_id: string
+          opening?: number
+          updated_at?: string
+          used?: number
+          year: number
+        }
+        Update: {
+          accrued?: number
+          carried_forward?: number
+          created_at?: string
+          employee_id?: string
+          expires_on?: string | null
+          id?: string
+          leave_type_id?: string
+          opening?: number
+          updated_at?: string
+          used?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_balances_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "hr_leave_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_requests: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          created_by: string | null
+          days: number
+          employee_id: string
+          from_date: string
+          hr_action_at: string | null
+          hr_action_by: string | null
+          id: string
+          is_half_day: boolean
+          leave_type_id: string
+          manager_action_at: string | null
+          manager_action_by: string | null
+          manager_id: string | null
+          reason: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["hr_leave_status"]
+          to_date: string
+          updated_at: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          employee_id: string
+          from_date: string
+          hr_action_at?: string | null
+          hr_action_by?: string | null
+          id?: string
+          is_half_day?: boolean
+          leave_type_id: string
+          manager_action_at?: string | null
+          manager_action_by?: string | null
+          manager_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hr_leave_status"]
+          to_date: string
+          updated_at?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          employee_id?: string
+          from_date?: string
+          hr_action_at?: string | null
+          hr_action_by?: string | null
+          id?: string
+          is_half_day?: boolean
+          leave_type_id?: string
+          manager_action_at?: string | null
+          manager_action_by?: string | null
+          manager_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hr_leave_status"]
+          to_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "hr_leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_leave_requests_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_leave_types: {
+        Row: {
+          accrual_per_year: number
+          carry_forward: boolean
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          is_paid: boolean
+          max_carry_forward: number
+          max_consecutive_days: number | null
+          name: string
+          notes: string | null
+          requires_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          accrual_per_year?: number
+          carry_forward?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_carry_forward?: number
+          max_consecutive_days?: number | null
+          name: string
+          notes?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          accrual_per_year?: number
+          carry_forward?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          max_carry_forward?: number
+          max_consecutive_days?: number | null
+          name?: string
+          notes?: string | null
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_loan_repayments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          loan_id: string
+          paid_on: string
+          payslip_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id: string
+          paid_on?: string
+          payslip_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id?: string
+          paid_on?: string
+          payslip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_loan_repayments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "hr_loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_loan_repayments_payslip_id_fkey"
+            columns: ["payslip_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payslips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_loans: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          installment_amount: number
+          installments_paid: number
+          installments_total: number
+          loan_type: string
+          outstanding: number
+          principal: number
+          reason: string | null
+          start_month: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          installment_amount?: number
+          installments_paid?: number
+          installments_total?: number
+          loan_type?: string
+          outstanding?: number
+          principal?: number
+          reason?: string | null
+          start_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          installment_amount?: number
+          installments_paid?: number
+          installments_total?: number
+          loan_type?: string
+          outstanding?: number
+          principal?: number
+          reason?: string | null
+          start_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_loans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_loans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payroll_runs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_count: number
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_month: number
+          period_year: number
+          processed_at: string | null
+          run_code: string | null
+          status: string
+          total_deductions: number
+          total_employer_cost: number
+          total_gross: number
+          total_net: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_count?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_month: number
+          period_year: number
+          processed_at?: string | null
+          run_code?: string | null
+          status?: string
+          total_deductions?: number
+          total_employer_cost?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_count?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_month?: number
+          period_year?: number
+          processed_at?: string | null
+          run_code?: string | null
+          status?: string
+          total_deductions?: number
+          total_employer_cost?: number
+          total_gross?: number
+          total_net?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payroll_runs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "hr_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payroll_settings: {
+        Row: {
+          created_at: string
+          esi_employee_pct: number
+          esi_employer_pct: number
+          esi_wage_ceiling: number
+          id: boolean
+          overtime_multiplier: number
+          payroll_cutoff_day: number
+          pf_employee_pct: number
+          pf_employer_pct: number
+          pf_limit_to_ceiling: boolean
+          pf_wage_ceiling: number
+          pt_slabs: Json
+          standard_deduction: number
+          tds_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          esi_employee_pct?: number
+          esi_employer_pct?: number
+          esi_wage_ceiling?: number
+          id?: boolean
+          overtime_multiplier?: number
+          payroll_cutoff_day?: number
+          pf_employee_pct?: number
+          pf_employer_pct?: number
+          pf_limit_to_ceiling?: boolean
+          pf_wage_ceiling?: number
+          pt_slabs?: Json
+          standard_deduction?: number
+          tds_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          esi_employee_pct?: number
+          esi_employer_pct?: number
+          esi_wage_ceiling?: number
+          id?: boolean
+          overtime_multiplier?: number
+          payroll_cutoff_day?: number
+          pf_employee_pct?: number
+          pf_employer_pct?: number
+          pf_limit_to_ceiling?: boolean
+          pf_wage_ceiling?: number
+          pt_slabs?: Json
+          standard_deduction?: number
+          tds_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_payslip_lines: {
+        Row: {
+          amount: number
+          id: string
+          kind: string
+          label: string
+          payslip_id: string
+          sort_order: number
+        }
+        Insert: {
+          amount?: number
+          id?: string
+          kind?: string
+          label: string
+          payslip_id: string
+          sort_order?: number
+        }
+        Update: {
+          amount?: number
+          id?: string
+          kind?: string
+          label?: string
+          payslip_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payslip_lines_payslip_id_fkey"
+            columns: ["payslip_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payslips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_payslips: {
+        Row: {
+          created_at: string
+          employee_code: string | null
+          employee_id: string
+          employee_name: string | null
+          employer_cost: number
+          esi_employee: number
+          esi_employer: number
+          gross_earnings: number
+          id: string
+          loan_deduction: number
+          lop_days: number
+          net_pay: number
+          overtime_amount: number
+          overtime_hours: number
+          paid_leave_days: number
+          payable_days: number
+          pf_employee: number
+          pf_employer: number
+          present_days: number
+          professional_tax: number
+          reimbursements: number
+          run_id: string
+          snapshot: Json
+          tds: number
+          total_deductions: number
+        }
+        Insert: {
+          created_at?: string
+          employee_code?: string | null
+          employee_id: string
+          employee_name?: string | null
+          employer_cost?: number
+          esi_employee?: number
+          esi_employer?: number
+          gross_earnings?: number
+          id?: string
+          loan_deduction?: number
+          lop_days?: number
+          net_pay?: number
+          overtime_amount?: number
+          overtime_hours?: number
+          paid_leave_days?: number
+          payable_days?: number
+          pf_employee?: number
+          pf_employer?: number
+          present_days?: number
+          professional_tax?: number
+          reimbursements?: number
+          run_id: string
+          snapshot?: Json
+          tds?: number
+          total_deductions?: number
+        }
+        Update: {
+          created_at?: string
+          employee_code?: string | null
+          employee_id?: string
+          employee_name?: string | null
+          employer_cost?: number
+          esi_employee?: number
+          esi_employer?: number
+          gross_earnings?: number
+          id?: string
+          loan_deduction?: number
+          lop_days?: number
+          net_pay?: number
+          overtime_amount?: number
+          overtime_hours?: number
+          paid_leave_days?: number
+          payable_days?: number
+          pf_employee?: number
+          pf_employer?: number
+          present_days?: number
+          professional_tax?: number
+          reimbursements?: number
+          run_id?: string
+          snapshot?: Json
+          tds?: number
+          total_deductions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_payslips_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "hr_payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_reimbursements: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          claim_date: string
+          created_at: string
+          description: string | null
+          employee_id: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          claim_date?: string
+          created_at?: string
+          description?: string | null
+          employee_id: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          claim_date?: string
+          created_at?: string
+          description?: string | null
+          employee_id?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_salary_components: {
+        Row: {
+          calc_type: string
+          code: string | null
+          created_at: string
+          esi_applicable: boolean
+          id: string
+          is_active: boolean
+          is_taxable: boolean
+          kind: string
+          name: string
+          notes: string | null
+          pf_applicable: boolean
+          sort_order: number
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          calc_type?: string
+          code?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_active?: boolean
+          is_taxable?: boolean
+          kind?: string
+          name: string
+          notes?: string | null
+          pf_applicable?: boolean
+          sort_order?: number
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          calc_type?: string
+          code?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_active?: boolean
+          is_taxable?: boolean
+          kind?: string
+          name?: string
+          notes?: string | null
+          pf_applicable?: boolean
+          sort_order?: number
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      hr_salary_structure_lines: {
+        Row: {
+          component_id: string | null
+          created_at: string
+          esi_applicable: boolean
+          id: string
+          is_taxable: boolean
+          kind: string
+          label: string
+          monthly_amount: number
+          pf_applicable: boolean
+          sort_order: number
+          structure_id: string
+        }
+        Insert: {
+          component_id?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_taxable?: boolean
+          kind?: string
+          label: string
+          monthly_amount?: number
+          pf_applicable?: boolean
+          sort_order?: number
+          structure_id: string
+        }
+        Update: {
+          component_id?: string | null
+          created_at?: string
+          esi_applicable?: boolean
+          id?: string
+          is_taxable?: boolean
+          kind?: string
+          label?: string
+          monthly_amount?: number
+          pf_applicable?: boolean
+          sort_order?: number
+          structure_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_salary_structure_lines_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "hr_salary_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_salary_structure_lines_structure_id_fkey"
+            columns: ["structure_id"]
+            isOneToOne: false
+            referencedRelation: "hr_salary_structures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_salary_structures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ctc_annual: number
+          effective_from: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ctc_annual?: number
+          effective_from?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ctc_annual?: number
+          effective_from?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_shift_assignments: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          shift_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          shift_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          shift_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees_sensitive"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hr_shift_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "hr_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_shifts: {
+        Row: {
+          break_minutes: number
+          code: string | null
+          created_at: string
+          early_leaving_grace_minutes: number
+          end_time: string | null
+          full_day_hours: number
+          grace_minutes: number
+          half_day_hours: number
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          overtime_after_minutes: number
+          overtime_enabled: boolean
+          shift_type: Database["public"]["Enums"]["hr_shift_type"]
+          start_time: string | null
+          updated_at: string
+          weekly_offs: number[]
+        }
+        Insert: {
+          break_minutes?: number
+          code?: string | null
+          created_at?: string
+          early_leaving_grace_minutes?: number
+          end_time?: string | null
+          full_day_hours?: number
+          grace_minutes?: number
+          half_day_hours?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          overtime_after_minutes?: number
+          overtime_enabled?: boolean
+          shift_type?: Database["public"]["Enums"]["hr_shift_type"]
+          start_time?: string | null
+          updated_at?: string
+          weekly_offs?: number[]
+        }
+        Update: {
+          break_minutes?: number
+          code?: string | null
+          created_at?: string
+          early_leaving_grace_minutes?: number
+          end_time?: string | null
+          full_day_hours?: number
+          grace_minutes?: number
+          half_day_hours?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          overtime_after_minutes?: number
+          overtime_enabled?: boolean
+          shift_type?: Database["public"]["Enums"]["hr_shift_type"]
+          start_time?: string | null
+          updated_at?: string
+          weekly_offs?: number[]
+        }
+        Relationships: []
+      }
+      insight_states: {
+        Row: {
+          created_at: string
+          id: string
+          insight_id: string
+          insight_source: string
+          snoozed_until: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insight_id: string
+          insight_source: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insight_id?: string
+          insight_source?: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       installation_materials: {
         Row: {
           created_at: string
@@ -2701,6 +4186,7 @@ export type Database = {
           cgst_amount: number | null
           created_at: string
           description: string
+          discount_pct: number
           hsn_sac: string | null
           id: string
           igst_amount: number | null
@@ -2719,6 +4205,7 @@ export type Database = {
           cgst_amount?: number | null
           created_at?: string
           description: string
+          discount_pct?: number
           hsn_sac?: string | null
           id?: string
           igst_amount?: number | null
@@ -2737,6 +4224,7 @@ export type Database = {
           cgst_amount?: number | null
           created_at?: string
           description?: string
+          discount_pct?: number
           hsn_sac?: string | null
           id?: string
           igst_amount?: number | null
@@ -2772,88 +4260,170 @@ export type Database = {
         Row: {
           amount_paid: number
           balance_due: number
+          billing_address: string | null
           company_id: string | null
+          company_profile_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
           customer_id: string
+          customer_po_no: string | null
+          dispatch_date: string | null
+          dispatch_remarks: string | null
+          driver_mobile: string | null
+          driver_name: string | null
           due_date: string | null
+          einvoice_irn: string | null
+          eway_bill_no: string | null
           external_ref: string | null
+          freight: number
           id: string
           invoice_no: string
           is_demo: boolean
           issue_date: string
+          loading: number
+          lr_no: string | null
           notes: string | null
           original_customer_id: string | null
+          other_charges: number
+          packing: number
+          payment_terms: string | null
           place_of_supply: string | null
           project_id: string
           quote_id: string | null
           reverse_charge: boolean
+          round_off: number
+          sales_executive_id: string | null
+          site_address: string | null
+          site_contact_name: string | null
+          site_contact_phone: string | null
+          site_name: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
           terms: string | null
           total: number
+          transporter: string | null
+          truck_no: string | null
+          unloading: number
           updated_at: string
+          vehicle_no: string | null
           workflow_state: Json | null
         }
         Insert: {
           amount_paid?: number
           balance_due?: number
+          billing_address?: string | null
           company_id?: string | null
+          company_profile_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           customer_id: string
+          customer_po_no?: string | null
+          dispatch_date?: string | null
+          dispatch_remarks?: string | null
+          driver_mobile?: string | null
+          driver_name?: string | null
           due_date?: string | null
+          einvoice_irn?: string | null
+          eway_bill_no?: string | null
           external_ref?: string | null
+          freight?: number
           id?: string
           invoice_no: string
           is_demo?: boolean
           issue_date?: string
+          loading?: number
+          lr_no?: string | null
           notes?: string | null
           original_customer_id?: string | null
+          other_charges?: number
+          packing?: number
+          payment_terms?: string | null
           place_of_supply?: string | null
           project_id: string
           quote_id?: string | null
           reverse_charge?: boolean
+          round_off?: number
+          sales_executive_id?: string | null
+          site_address?: string | null
+          site_contact_name?: string | null
+          site_contact_phone?: string | null
+          site_name?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
           terms?: string | null
           total?: number
+          transporter?: string | null
+          truck_no?: string | null
+          unloading?: number
           updated_at?: string
+          vehicle_no?: string | null
           workflow_state?: Json | null
         }
         Update: {
           amount_paid?: number
           balance_due?: number
+          billing_address?: string | null
           company_id?: string | null
+          company_profile_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
           customer_id?: string
+          customer_po_no?: string | null
+          dispatch_date?: string | null
+          dispatch_remarks?: string | null
+          driver_mobile?: string | null
+          driver_name?: string | null
           due_date?: string | null
+          einvoice_irn?: string | null
+          eway_bill_no?: string | null
           external_ref?: string | null
+          freight?: number
           id?: string
           invoice_no?: string
           is_demo?: boolean
           issue_date?: string
+          loading?: number
+          lr_no?: string | null
           notes?: string | null
           original_customer_id?: string | null
+          other_charges?: number
+          packing?: number
+          payment_terms?: string | null
           place_of_supply?: string | null
           project_id?: string
           quote_id?: string | null
           reverse_charge?: boolean
+          round_off?: number
+          sales_executive_id?: string | null
+          site_address?: string | null
+          site_contact_name?: string | null
+          site_contact_phone?: string | null
+          site_name?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
           terms?: string | null
           total?: number
+          transporter?: string | null
+          truck_no?: string | null
+          unloading?: number
           updated_at?: string
+          vehicle_no?: string | null
           workflow_state?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_company_profile_id_fkey"
+            columns: ["company_profile_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_customer_id_fkey"
             columns: ["customer_id"]
@@ -4549,6 +6119,7 @@ export type Database = {
           created_at: string
           department: string | null
           email: string | null
+          force_password_change: boolean
           full_name: string | null
           id: string
           initials: string | null
@@ -4564,6 +6135,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id: string
           initials?: string | null
@@ -4579,6 +6151,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          force_password_change?: boolean
           full_name?: string | null
           id?: string
           initials?: string | null
@@ -7884,6 +9457,25 @@ export type Database = {
           },
         ]
       }
+      payment_register: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          doc_no: string | null
+          id: string | null
+          invoice_id: string | null
+          invoice_no: string | null
+          method: Database["public"]["Enums"]["payment_method"] | null
+          notes: string | null
+          paid_at: string | null
+          reference_no: string | null
+          source: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       procurement_calendar: {
         Row: {
           enquiry_id: string | null
@@ -7978,34 +9570,63 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      bootstrap_platform_super_admin: {
+        Args: { _email: string }
+        Returns: undefined
+      }
       convert_quote_to_invoice: {
         Args: { p_due_date?: string; p_quote_id: string }
         Returns: {
           amount_paid: number
           balance_due: number
+          billing_address: string | null
           company_id: string | null
+          company_profile_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
           customer_id: string
+          customer_po_no: string | null
+          dispatch_date: string | null
+          dispatch_remarks: string | null
+          driver_mobile: string | null
+          driver_name: string | null
           due_date: string | null
+          einvoice_irn: string | null
+          eway_bill_no: string | null
           external_ref: string | null
+          freight: number
           id: string
           invoice_no: string
           is_demo: boolean
           issue_date: string
+          loading: number
+          lr_no: string | null
           notes: string | null
           original_customer_id: string | null
+          other_charges: number
+          packing: number
+          payment_terms: string | null
           place_of_supply: string | null
           project_id: string
           quote_id: string | null
           reverse_charge: boolean
+          round_off: number
+          sales_executive_id: string | null
+          site_address: string | null
+          site_contact_name: string | null
+          site_contact_phone: string | null
+          site_name: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
           terms: string | null
           total: number
+          transporter: string | null
+          truck_no: string | null
+          unloading: number
           updated_at: string
+          vehicle_no: string | null
           workflow_state: Json | null
         }
         SetofOptions: {
@@ -8112,7 +9733,10 @@ export type Database = {
         Returns: boolean
       }
       has_staff_access: { Args: { _user_id: string }; Returns: boolean }
+      is_hr_admin: { Args: { _uid: string }; Returns: boolean }
+      is_hr_manager: { Args: { _uid: string }; Returns: boolean }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_vendor_of: {
         Args: { _user_id: string; _vendor_id: string }
         Returns: boolean
@@ -8438,7 +10062,21 @@ export type Database = {
         | "quote_accepted"
         | "invoice_issued"
         | "payment_received"
-      app_role: "admin" | "sales_manager" | "sales" | "purchase"
+        | "user_created"
+        | "user_deleted"
+        | "user_activated"
+        | "user_deactivated"
+        | "password_reset"
+        | "super_admin_delete_attempted"
+        | "super_admin_role_change_attempted"
+        | "role_changed"
+      app_role:
+        | "admin"
+        | "sales_manager"
+        | "sales"
+        | "purchase"
+        | "super_admin"
+        | "hr"
       contact_designation:
         | "owner"
         | "architect"
@@ -8509,6 +10147,31 @@ export type Database = {
         | "other"
       followup_channel: "call" | "whatsapp" | "email" | "meeting" | "site_visit"
       followup_status: "pending" | "done" | "snoozed" | "missed" | "cancelled"
+      hr_approval_status: "not_required" | "pending" | "approved" | "rejected"
+      hr_attendance_status:
+        | "present"
+        | "absent"
+        | "late"
+        | "half_day"
+        | "holiday"
+        | "weekend"
+        | "on_leave"
+        | "wfh"
+        | "field_duty"
+        | "tour"
+        | "training"
+        | "comp_off"
+      hr_device_vendor: "zkteco" | "essl" | "matrix" | "other"
+      hr_leave_status:
+        | "draft"
+        | "pending"
+        | "manager_approved"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+      hr_punch_direction: "in" | "out" | "break_in" | "break_out"
+      hr_punch_source: "biometric" | "mobile" | "web" | "manual" | "import"
+      hr_shift_type: "general" | "night" | "flexible" | "rotational"
       installation_status:
         | "ready"
         | "packed"
@@ -8522,6 +10185,7 @@ export type Database = {
         | "returned"
       invoice_status:
         | "draft"
+        | "issued"
         | "sent"
         | "partially_paid"
         | "paid"
@@ -8865,8 +10529,23 @@ export const Constants = {
         "quote_accepted",
         "invoice_issued",
         "payment_received",
+        "user_created",
+        "user_deleted",
+        "user_activated",
+        "user_deactivated",
+        "password_reset",
+        "super_admin_delete_attempted",
+        "super_admin_role_change_attempted",
+        "role_changed",
       ],
-      app_role: ["admin", "sales_manager", "sales", "purchase"],
+      app_role: [
+        "admin",
+        "sales_manager",
+        "sales",
+        "purchase",
+        "super_admin",
+        "hr",
+      ],
       contact_designation: [
         "owner",
         "architect",
@@ -8946,6 +10625,33 @@ export const Constants = {
       ],
       followup_channel: ["call", "whatsapp", "email", "meeting", "site_visit"],
       followup_status: ["pending", "done", "snoozed", "missed", "cancelled"],
+      hr_approval_status: ["not_required", "pending", "approved", "rejected"],
+      hr_attendance_status: [
+        "present",
+        "absent",
+        "late",
+        "half_day",
+        "holiday",
+        "weekend",
+        "on_leave",
+        "wfh",
+        "field_duty",
+        "tour",
+        "training",
+        "comp_off",
+      ],
+      hr_device_vendor: ["zkteco", "essl", "matrix", "other"],
+      hr_leave_status: [
+        "draft",
+        "pending",
+        "manager_approved",
+        "approved",
+        "rejected",
+        "cancelled",
+      ],
+      hr_punch_direction: ["in", "out", "break_in", "break_out"],
+      hr_punch_source: ["biometric", "mobile", "web", "manual", "import"],
+      hr_shift_type: ["general", "night", "flexible", "rotational"],
       installation_status: [
         "ready",
         "packed",
@@ -8960,6 +10666,7 @@ export const Constants = {
       ],
       invoice_status: [
         "draft",
+        "issued",
         "sent",
         "partially_paid",
         "paid",

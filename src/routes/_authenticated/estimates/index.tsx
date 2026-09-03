@@ -57,7 +57,7 @@ function EstimatesListPage() {
   );
 
   const query = useQuery({ queryKey: qk.estimates.list(dq), queryFn: () => listEstimates(dq) });
-  const rows = query.data ?? [];
+  const rows = useMemo(() => query.data ?? [], [query.data]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
   useEffect(() => setPage(1), [dq]);
   const totals = useMemo(() => rows.reduce((sum, r) => sum + Number(r.total ?? 0), 0), [rows]);

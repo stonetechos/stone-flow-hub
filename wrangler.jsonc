@@ -1,7 +1,14 @@
+// The Lovable publish pipeline generates its own .output/server/wrangler.json
+// at build time and overrides "main" and "assets" here; only "name" and
+// "compatibility_date" carry through. This file is kept complete so
+// `wrangler dev` / `wrangler deploy` also work when run directly against a
+// build output, which is why nodejs_compat is declared explicitly even
+// though nitro's cloudflare-module preset injects it.
 {
   "name": "stone-flow-hub",
   "main": ".output/server/index.mjs",
   "compatibility_date": "2026-07-16",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".output/public",
   },

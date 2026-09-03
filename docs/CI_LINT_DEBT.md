@@ -1,5 +1,21 @@
 # CI Lint Debt (pre-existing, not caused by recent changes)
 
+> **RESOLVED — 2026-07-23, Sprint 2.2 (Developer Experience / CI audit).**
+> The 7,409-problem figure below was almost entirely one file:
+> `src/integrations/supabase/types.ts`, an auto-generated Supabase types
+> file (7,385 of 7,391 errors) that had simply never been excluded from
+> ESLint the way `src/routeTree.gen.ts` already was. Excluding it, plus
+> fixing the handful of files with genuine formatting drift, brought
+> `eslint .` to a clean 0 errors, and `.github/workflows/ci.yml`'s Lint
+> step is a real blocking gate again (the `continue-on-error` added in
+> Milestone 4 below has been removed). The "315 files fail `prettier
+> --check`" figure was also stale by the time of this audit — most of
+> that drift had already been cleaned up by intervening commits; only 5
+> source files still needed a real reformat. See
+> `docs/sprint-2.2-developer-experience-ci-audit.md` for the full
+> analysis. The rest of this document is kept as-is for historical
+> record of the investigation that led here.
+
 **Date found:** 2026-07-18
 **Found while:** fixing the CI `tsc --noEmit` failure (commit `36e04cd7`).
 

@@ -30,6 +30,7 @@ import { formatRelative } from "@/lib/format";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { invalidateMessage } from "@/lib/query-invalidation";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 export const Route = createFileRoute("/_authenticated/messages/")({
   ssr: false,
@@ -48,10 +49,13 @@ function MessagesQueuePage() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [channel, setChannel] = useState<string>("");
+  // Search feeds the query key, so an un-debounced value refetched the
+  // whole queue on every keystroke.
+  const dq = useDebouncedValue(q, 250);
   const query = useQuery({
-    queryKey: qk.messages.list(q, channel),
+    queryKey: qk.messages.list(dq, channel),
     queryFn: () =>
-      listMessages(q, (channel || undefined) as "email" | "whatsapp" | "sms" | undefined),
+      listMessages(dq, (channel || undefined) as "email" | "whatsapp" | "sms" | undefined),
   });
   const rows = query.data ?? [];
 
@@ -73,6 +77,9 @@ function MessagesQueuePage() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+  const busyId =
+    (retry.isPending ? retry.variables : undefined) ??
+    (cancel.isPending ? cancel.variables : undefined);
 
   return (
     <div>
@@ -80,9 +87,23 @@ function MessagesQueuePage() {
         title="Notification Queue"
         subtitle="Every outbound email, WhatsApp and SMS message with delivery status and retry controls."
         actions={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/notification-settings">Configure providers</Link>
-          </Button>
+          <div className="flex gap-2">
+            {/* `/communication` is the Communication Centre: this same queue
+                plus date-range and related-record filters, per-status counts,
+                and "Run dispatcher now" — the only manual trigger for the
+                outbound dispatcher anywhere in the app. It is a complete,
+                working page that no link and no nav entry pointed at, so all
+                of that was reachable only by typing the URL. Surfacing it
+                from here, rather than as a second sidebar entry beside this
+                page, keeps one "Notifications Queue" in the nav and treats
+                the Centre as the deeper view of it. */}
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/communication">Communication Centre</Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/notification-settings">Configure providers</Link>
+            </Button>
+          </div>
         }
       />
 
@@ -160,7 +181,12 @@ function MessagesQueuePage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {m.status === "failed" && (
-                      <Button variant="outline" size="sm" onClick={() => retry.mutate(m.id)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={busyId === m.id}
+                        onClick={() => retry.mutate(m.id)}
+                      >
                         Retry
                       </Button>
                     )}
@@ -169,6 +195,7 @@ function MessagesQueuePage() {
                         variant="ghost"
                         size="sm"
                         className="ml-1"
+                        disabled={busyId === m.id}
                         onClick={() => cancel.mutate(m.id)}
                       >
                         Cancel

@@ -14,11 +14,26 @@
  * log_enquiry/note_followup to LOOK UP a record), this resolver never
  * returns an id to link against — create_customer always prepares a new
  * record; a match here is purely a safety check, not a lookup result.
+ *
+ * A match is reported as a `confirmation_required` blocker
+ * (not a `*_selection` — there's nothing to pick between, just one existing
+ * record the employee needs to see before deciding whether to proceed) with
+ * that record as its sole candidate, for reference/linking, not a picker.
+ *
+ * Blocker assembly now goes through entityResolution.ts's
+ * confirmationBlocker() — the same helper any future "does this already
+ * exist" check (e.g. a duplicate-vendor guard) would reuse. The lookup
+ * itself (findCustomerByPhone) and the decision to check at all are
+ * unchanged. Behavior (including the exact byte-for-byte PlannerBlocker
+ * shape) is unchanged — resolveCustomerDuplicate.test.ts is unmodified by
+ * this sprint and still passes against this file.
  */
 import { findCustomerByPhone } from "@/lib/customers/api";
+import type { PlannerBlocker } from "../types";
+import { confirmationBlocker } from "./entityResolution";
 
 export interface CustomerDuplicateResolution {
-  blocker: string | null;
+  blocker: PlannerBlocker | null;
 }
 
 export async function resolveCustomerDuplicate(
@@ -35,6 +50,12 @@ export async function resolveCustomerDuplicate(
   if (!existing) return { blocker: null };
 
   return {
-    blocker: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
+    blocker: confirmationBlocker(existing, {
+      id: "mobile",
+      field: "mobile",
+      message: `A customer with this phone number already exists: ${existing.name} (${existing.customer_code}).`,
+      toCandidate: (c) => ({ id: c.id, label: `${c.name} (${c.customer_code})` }),
+      currentValue: mobile,
+    }),
   };
 }

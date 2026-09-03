@@ -1,5 +1,5 @@
 /** TaskDialog — shared create/edit form for tasks. */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -33,6 +33,7 @@ import {
 } from "@/lib/tasks/api";
 import { toUserMessage } from "@/lib/errors";
 import { toast } from "sonner";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 
 const PICKER_TYPES: ReadonlyArray<EntityType> = ["customer", "project", "vendor", "product"];
 
@@ -71,6 +72,10 @@ export function TaskDialog({
   const [entityType, setEntityType] = useState<string | null>(null);
   const [entityId, setEntityId] = useState<string | null>(null);
 
+  // Snapshot of the form as it was when the dialog
+  // opened, used only to detect unsaved edits before an accidental close.
+  const initialSnapshot = useRef("");
+
   useEffect(() => {
     if (!open) return;
     if (task) {
@@ -82,6 +87,16 @@ export function TaskDialog({
       setAssignedTo(task.assigned_to ?? null);
       setEntityType(task.entity_type ?? null);
       setEntityId(task.entity_id ?? null);
+      initialSnapshot.current = JSON.stringify([
+        task.title,
+        task.description ?? "",
+        task.status,
+        task.priority,
+        toLocalInput(task.due_at),
+        task.assigned_to ?? null,
+        task.entity_type ?? null,
+        task.entity_id ?? null,
+      ]);
     } else {
       setTitle("");
       setDescription("");
@@ -91,8 +106,23 @@ export function TaskDialog({
       setAssignedTo(null);
       setEntityType(defaultEntityType ?? null);
       setEntityId(defaultEntityId ?? null);
+      initialSnapshot.current = JSON.stringify([
+        "",
+        "",
+        "pending",
+        "medium",
+        "",
+        null,
+        defaultEntityType ?? null,
+        defaultEntityId ?? null,
+      ]);
     }
   }, [open, task, defaultEntityType, defaultEntityId]);
+
+  const dirty =
+    open &&
+    initialSnapshot.current !==
+      JSON.stringify([title, description, status, priority, due, assignedTo, entityType, entityId]);
 
   const { data: users = [] } = useQuery({
     queryKey: ["assignable_users"],
@@ -125,8 +155,24 @@ export function TaskDialog({
 
   const isPickerType = entityType && PICKER_TYPES.includes(entityType as EntityType);
 
+  // Ctrl/Cmd+Enter submits from anywhere in the form,
+  // matching the shortcut already used elsewhere in the app (see
+  // docs/ux-audit-phase-1.md).
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (!title.trim() || save.isPending) return;
+        e.preventDefault();
+        save.mutate();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, title, save]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editing ? "Edit Task" : "New Task"}</DialogTitle>
@@ -260,7 +306,10 @@ export function TaskDialog({
           </form>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button type="submit" form="task-dialog-form" disabled={!title.trim() || save.isPending}>

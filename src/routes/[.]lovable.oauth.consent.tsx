@@ -121,8 +121,8 @@ function Consent() {
 
           <p className="mb-4 text-sm leading-relaxed text-text-secondary">
             <strong className="font-medium text-text-primary">{clientName}</strong> will be able to
-            use STOS as you. It can read customers, enquiries, quotes, invoices and other
-            business data that you can already see in the app, and act on tools you invoke — always
+            use STOS as you. It can read customers, enquiries, quotes, invoices and other business
+            data that you can already see in the app, and act on tools you invoke — always
             respecting your permissions.
           </p>
 
@@ -146,8 +146,8 @@ function Consent() {
           </ul>
 
           <p className="mb-6 text-[12.5px] leading-relaxed text-text-muted">
-            This does not bypass STOS permissions or row-level security. You can revoke
-            access at any time from your account.
+            This does not bypass STOS permissions or row-level security. You can revoke access at
+            any time from your account.
           </p>
 
           {error && (

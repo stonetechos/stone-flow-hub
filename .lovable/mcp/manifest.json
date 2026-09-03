@@ -188,7 +188,15 @@
             },
             "status": {
               "type": "string",
-              "enum": ["draft", "sent", "partially_paid", "paid", "overdue", "cancelled"]
+              "enum": [
+                "draft",
+                "issued",
+                "sent",
+                "partially_paid",
+                "paid",
+                "overdue",
+                "cancelled"
+              ]
             },
             "customer_id": {
               "type": "string",

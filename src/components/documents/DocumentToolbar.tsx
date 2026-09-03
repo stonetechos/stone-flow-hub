@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, Mail, Printer } from "lucide-react";
+import { Download, Eye, Mail, MessageCircle, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildDocument, type DocumentEntity } from "@/lib/documents/engine";
 import { downloadPdf, previewPdf, printPdf } from "@/lib/pdf/generator";
@@ -18,12 +18,14 @@ interface Props {
   entityId: string;
   /** Hide Email action if the underlying doc is internal-only. */
   hideEmail?: boolean;
+  /** Hide WhatsApp action if the underlying doc is internal-only. */
+  hideWhatsapp?: boolean;
   /** Compact icon-only rendering. */
   compact?: boolean;
 }
 
-export function DocumentToolbar({ entity, entityId, hideEmail, compact }: Props) {
-  const [emailOpen, setEmailOpen] = useState(false);
+export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, compact }: Props) {
+  const [sendOpen, setSendOpen] = useState<"email" | "whatsapp" | null>(null);
   const [busy, setBusy] = useState<"preview" | "print" | "download" | null>(null);
 
   const run = async (
@@ -78,18 +80,30 @@ export function DocumentToolbar({ entity, entityId, hideEmail, compact }: Props)
           {label("Download PDF")}
         </Button>
         {!hideEmail && (
-          <Button size={size} onClick={() => setEmailOpen(true)} title="Send Email">
+          <Button size={size} onClick={() => setSendOpen("email")} title="Send Email">
             <Mail className="h-4 w-4" />
             {label("Email")}
           </Button>
         )}
+        {!hideWhatsapp && (
+          <Button
+            size={size}
+            variant="outline"
+            onClick={() => setSendOpen("whatsapp")}
+            title="Send WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4" />
+            {label("WhatsApp")}
+          </Button>
+        )}
       </div>
-      {!hideEmail && (
+      {sendOpen && (
         <SendDocumentEmailDialog
-          open={emailOpen}
-          onOpenChange={setEmailOpen}
+          open={sendOpen !== null}
+          onOpenChange={(v) => setSendOpen(v ? sendOpen : null)}
           entity={entity}
           entityId={entityId}
+          initialChannel={sendOpen}
         />
       )}
     </>

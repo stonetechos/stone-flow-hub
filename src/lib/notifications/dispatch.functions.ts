@@ -5,34 +5,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdminOrSuperAdmin, type HasRoleClient } from "@/lib/admin/server-auth";
 
-async function assertAdmin(ctx: { supabase: unknown; userId: string }) {
-  const { data, error } = await (
-    ctx.supabase as {
-      from: (t: string) => {
-        select: (c: string) => {
-          eq: (
-            a: string,
-            b: string,
-          ) => {
-            eq: (
-              a: string,
-              b: string,
-            ) => {
-              maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
-            };
-          };
-        };
-      };
-    }
-  )
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", ctx.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error("Role check failed");
-  if (!data) throw new Error("Admin role required");
+/**
+ * Sprint 1.7.1, Part 6/7 — was previously its own ad hoc `user_roles`
+ * query filtered to literal `role = 'admin'`, which locked the Platform
+ * Super Admin (who holds only `super_admin`) out of every communication
+ * admin action below. Now a thin wrapper around the shared
+ * `requireAdminOrSuperAdmin` in `src/lib/admin/server-auth.ts`.
+ */
+async function assertAdmin(ctx: { supabase: unknown; userId: string }): Promise<void> {
+  await requireAdminOrSuperAdmin(ctx.supabase as HasRoleClient, ctx.userId);
 }
 
 export const checkProviderStatus = createServerFn({ method: "POST" })

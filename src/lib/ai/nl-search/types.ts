@@ -46,7 +46,24 @@ export type NlEntityType =
   | "vendor"
   | "product"
   | "inventory_item"
-  | "project";
+  | "project"
+  // Goal 4 additions — closes NL Search's gap against the 12-entity
+  // target list (rfqs/tasks/follow-ups were previously unresolvable by
+  // Copilot's "Ask" mode; see resolve.ts's resolveRfq/resolveTask/
+  // resolveFollowup for the query logic).
+  | "rfq"
+  | "task"
+  | "followup"
+  // VIE foundation sprint (2026-07-28) additions — comments/documents/
+  // activities were resolvable in the Cmd/Ctrl+K palette (globalSearch's
+  // "notes"/"documents"/"activities" groups) but had no NlEntityType at
+  // all, meaning Copilot's Ask mode could never answer "find the note
+  // about..." or "show documents for...". Resolved via the new Universal
+  // Entity Resolver (vie/universalEntityResolver.ts) — see resolve.ts's
+  // resolveGeneric() cases for "comment"/"document"/"activity".
+  | "comment"
+  | "document"
+  | "activity";
 
 export interface NlFilters {
   /** Loose, LLM-classified status bucket — deliberately a free string

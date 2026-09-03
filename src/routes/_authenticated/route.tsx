@@ -10,10 +10,12 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBlock } from "@/components/layout/States";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import { classifyFailure } from "@/lib/errors";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  // Phase RC-3: `ssr: false` means the server renders nothing for this
+  // `ssr: false` means the server renders nothing for this
   // route (and everything nested under it) and TanStack Start defers to a
   // client-only render — by design, and not itself the bug. The actual
   // defect was a timing race: `beforeLoad`'s auth check (and its redirect
@@ -27,8 +29,57 @@ export const Route = createFileRoute("/_authenticated")({
   // behavior changes — this only closes the race window.
   pendingMinMs: 300,
   beforeLoad: async () => {
+    // When Supabase isn't configured, the root route
+    // (`__root.tsx`) renders the global configuration screen instead of
+    // this route's `<Outlet/>` regardless of what beforeLoad returns here —
+    // so the only requirement in this branch is "don't throw". Touching
+    // `supabase` while misconfigured would throw before this function even
+    // reaches its first `await`, which previously surfaced as a generic
+    // router error instead of the configuration screen.
+    if (!getSupabaseConfigStatus().ok) return { user: null };
+
+    // `/auth` decides whether to bounce you to the dashboard by reading the
+    // session out of local storage; this route validates that session over
+    // the network. When a stored token has been revoked or has expired the
+    // two disagree, and the browser ping-pongs between the two routes until
+    // the router's redirect limit trips — with nothing rendered in between,
+    // because both routes are `ssr: false`. Clearing the dead token locally
+    // before redirecting makes the two agree again, and `flow: "expired"`
+    // both explains what happened and is a flow `/auth` never redirects out
+    // of, so the loop cannot re-form even if the sign-out fails.
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
+    if (error || !data.user) {
+      const { data: stored } = await supabase.auth.getSession();
+      if (!stored.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
+      // `beginManagedSignOut` tells the root shell's `SIGNED_OUT` listener
+      // to leave this one alone; otherwise its `window.location.replace`
+      // fires first and the redirect below — the part that explains what
+      // happened and breaks the loop — never runs. The sign-out itself is
+      // best-effort: it clears local storage, and if it fails the redirect
+      // still has to happen, because leaving the user on a route that just
+      // rejected them is the one outcome with no way out.
+      beginManagedSignOut();
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch (signOutError) {
+        console.warn("[auth] local sign-out failed while clearing a dead session", signOutError);
+      }
+      throw redirect({ to: "/auth", search: { flow: "expired" } });
+    }
+
+    // A temporary password (Part 5) or an admin-driven
+    // reset (Part 6) both set `force_password_change` — checked here so it
+    // applies no matter which authenticated route the user lands on first,
+    // and the dashboard is unreachable until they set their own password.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("force_password_change")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (profile?.force_password_change) {
+      throw redirect({ to: "/auth", search: { flow: "force-change" } });
+    }
+
     return { user: data.user };
   },
   component: AuthenticatedLayout,

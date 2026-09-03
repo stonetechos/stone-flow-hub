@@ -10,9 +10,13 @@ import { cn } from "@/lib/utils";
  * `--intent-selection`. Sticky headers apply a translucent card
  * background with backdrop blur so scroll never breaks the material.
  */
+// `min-w-0` on the scroll container keeps it from being sized by its own
+// content when it sits inside a flex or grid parent — without it a wide table
+// pushes the whole page past the viewport on mobile instead of scrolling
+// inside its own region.
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
+    <div className="relative w-full min-w-0 overflow-auto">
       <table
         ref={ref}
         className={cn("w-full caption-bottom text-sm text-foreground", className)}

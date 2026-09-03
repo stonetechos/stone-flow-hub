@@ -10,7 +10,6 @@ import {
   History,
   User as UserIcon,
   Settings as SettingsIcon,
-  Sparkles,
   Keyboard,
   Shield,
 } from "lucide-react";
@@ -37,7 +36,7 @@ import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import { AppMark } from "@/components/brand/AppMark";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { DemoProvider } from "@/lib/demo/context";
@@ -50,6 +49,7 @@ import {
   useRecentNav,
 } from "@/lib/nav/preferences";
 import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
+import { useRoles } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -486,27 +486,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
+  // truth for role checks (see docs/authentication.md § Permission
+  // hierarchy). This previously ran its own ad hoc `user_roles` query that
+  // checked literal `role = 'admin'`, which meant the Platform Super Admin
+  // (who holds only `super_admin`) saw the sidebar and nav as a non-admin.
+  const isAdmin = useRoles().isAdmin;
   const [collapsed, setCollapsed] = useSidebarCollapsed(uid);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const { data: sess } = await supabase.auth.getUser();
-      const uid = sess.user?.id;
-      if (!uid) return;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", uid)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!cancelled) setIsAdmin(!!data);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     trackNavVisit(path);
@@ -625,11 +611,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
-            <img
-              src={stosAppIcon.url}
-              alt="STOS"
-              width={28}
-              height={28}
+            <AppMark
+              size={28}
               className="h-7 w-7 shrink-0 rounded-md shadow-e1 ring-1 ring-white/10"
             />
             {!collapsed && (
@@ -708,13 +691,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
               >
                 <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
-                  <img
-                    src={stosAppIcon.url}
-                    alt="STOS"
-                    width={28}
-                    height={28}
-                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10"
-                  />
+                  <AppMark size={28} className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10" />
                   <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
                     STOS
                   </SheetTitle>
@@ -733,10 +710,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
 
             <div className="flex items-center gap-2 md:hidden">
-              <img src={stosAppIcon.url} alt="STOS" width={20} height={20} className="h-5 w-5 rounded" />
+              <AppMark size={20} className="h-5 w-5 rounded" />
               <span className="font-display text-sm font-semibold">STOS</span>
             </div>
-
 
             {/* Search — the visual focus of the topbar. min-w-0 lets this
                 flex-1 region shrink to make room for the icon cluster below
@@ -783,29 +759,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <DemoBadge />
 
-              {/* AI entry point — placeholder for the STOS Copilot */}
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-text-secondary hover:text-intent-primary"
-                      aria-label="Ask STOS AI (coming soon)"
-                      onClick={() =>
-                        toast("STOS AI", {
-                          description: "The intelligence layer arrives in a later phase.",
-                        })
-                      }
-                    >
-                      <Sparkles className="h-4 w-4" aria-hidden />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
-                    Ask AI · soon
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/* The real AI entry point is the Copilot launcher mounted at
+                  the bottom of this shell (<Copilot />); the old placeholder
+                  button that only raised a "coming soon" toast was removed. */}
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <SyncStatusIndicator />

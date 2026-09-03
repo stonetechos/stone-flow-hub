@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { AppError } from "@/lib/errors";
+import { LoadingBlock } from "@/components/layout/States";
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
@@ -40,6 +41,21 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Every route that matters here is `ssr: false`, so the server sends an
+    // empty body and the browser renders the first frame. Without a default
+    // pending component, a `beforeLoad` that never settles — a hung auth
+    // call, an offline Supabase host — leaves the match in `pending` and the
+    // user looking at a blank white page with no error and no spinner.
+    // These two defaults cover the pending half of that: something is
+    // always rendered while a match resolves. The thrown half is already
+    // covered elsewhere and deliberately not duplicated here — no
+    // `defaultErrorComponent` is set, so a match without its own boundary
+    // re-throws to the root route's `errorComponent`, which is what should
+    // handle a failure that reaches this far. Adding a default here would
+    // catch those errors per-match instead and quietly replace that
+    // full-page report with a fragment nested inside a half-built screen.
+    defaultPendingMs: 300,
+    defaultPendingComponent: () => <LoadingBlock />,
   });
 
   return router;

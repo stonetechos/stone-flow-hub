@@ -21,20 +21,40 @@ import {
   Warehouse,
   ClipboardCheck,
   Wallet,
+  Banknote,
+  HandCoins,
   Calendar,
   BarChart3,
   Settings,
   Activity,
+  ArrowLeftRight,
   CheckSquare,
   FolderOpen,
   Star,
   ShieldCheck,
   Layers,
   Briefcase,
+  MessageSquare,
+  Bell,
+  Mails,
+  BellRing,
+  Fingerprint,
+  CalendarDays,
+  Clock,
+  MapPin,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 
-export type NavGroupId = "sales" | "operations" | "workforce" | "masterData" | "others" | "admin";
+export type NavGroupId =
+  | "sales"
+  | "operations"
+  | "workforce"
+  | "humanResources"
+  | "masterData"
+  | "communication"
+  | "others"
+  | "admin";
 
 export interface NavGroupDef {
   id: NavGroupId;
@@ -46,7 +66,9 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "operations", label: "Operations" },
   { id: "workforce", label: "Workforce Intelligence" },
+  { id: "humanResources", label: "Human Resources" },
   { id: "masterData", label: "Master Data" },
+  { id: "communication", label: "Communication" },
   { id: "others", label: "Others" },
   { id: "admin", label: "Administration", adminOnly: true },
 ];
@@ -105,6 +127,19 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Layers,
     group: "operations",
   },
+  // `/inventory/movements` is a complete page — the stock movement ledger
+  // plus the only form in the app that records a manual adjustment — but
+  // nothing linked to it, from here or from the Inventory index, so the
+  // only way to reach it was to type the URL. It sits alongside the Slab
+  // Register for the same reason that one does: both are inventory views
+  // that the Inventory list page does not itself contain.
+  {
+    id: "inventory-movements",
+    to: "/inventory/movements",
+    label: "Stock Movements",
+    icon: ArrowLeftRight,
+    group: "operations",
+  },
   { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "operations" },
 
   // Workforce Intelligence
@@ -153,9 +188,111 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Master Data
+  // Human Resources
+  { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "humanResources" },
+  {
+    id: "hr-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "humanResources",
+  },
+  {
+    id: "hr-attendance",
+    to: "/hr/attendance",
+    label: "Attendance",
+    icon: Fingerprint,
+    group: "humanResources",
+  },
+  { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "humanResources" },
+  {
+    id: "hr-leave",
+    to: "/hr/leave",
+    label: "Leave Management",
+    icon: CalendarDays,
+    group: "humanResources",
+  },
+  {
+    id: "hr-salary",
+    to: "/hr/salary",
+    label: "Salary Structures",
+    icon: Wallet,
+    group: "humanResources",
+  },
+  {
+    id: "hr-payroll",
+    to: "/hr/payroll",
+    label: "Payroll",
+    icon: Banknote,
+    group: "humanResources",
+  },
+  {
+    id: "hr-loans",
+    to: "/hr/loans",
+    label: "Loans & Claims",
+    icon: HandCoins,
+    group: "humanResources",
+  },
+  {
+    id: "hr-holidays",
+    to: "/hr/holidays",
+    label: "Holidays",
+    icon: Calendar,
+    group: "humanResources",
+  },
+
+  {
+    id: "hr-branches",
+    to: "/hr/branches",
+    label: "Offices & Geofences",
+    icon: MapPin,
+    group: "humanResources",
+  },
+
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
   { id: "vendors", to: "/vendors", label: "Vendors", icon: Factory, group: "masterData" },
   { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },
+
+  // Communication
+  // These four pages were complete but unreachable from the sidebar — the
+  // only way in was a stray in-page link (or typing the URL). They are the
+  // customer-communication surface, so they get their own group rather than
+  // being buried in "Others" next to Favorites.
+  {
+    id: "communication",
+    to: "/communication",
+    label: "Communication",
+    icon: MessageSquare,
+    group: "communication",
+  },
+  {
+    id: "notifications",
+    to: "/notifications",
+    label: "Notifications",
+    icon: Bell,
+    group: "communication",
+  },
+  {
+    id: "messages",
+    to: "/messages",
+    label: "Notifications Queue",
+    icon: Send,
+    group: "communication",
+  },
+  {
+    id: "message-templates",
+    to: "/message-templates",
+    label: "Message Templates",
+    icon: Mails,
+    group: "communication",
+  },
+  {
+    id: "notification-settings",
+    to: "/notification-settings",
+    label: "Notification Settings",
+    icon: BellRing,
+    group: "communication",
+  },
 
   // Others
   { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "others" },
@@ -169,7 +306,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "documents", to: "/documents", label: "Documents", icon: FolderOpen, group: "others" },
   { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
   { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
-  { id: "messages", to: "/messages", label: "Notifications Queue", icon: Send, group: "others" },
   { id: "reports", to: "/reports", label: "Reports", icon: BarChart3, group: "others" },
   { id: "settings", to: "/settings", label: "Settings", icon: Settings, group: "others" },
 

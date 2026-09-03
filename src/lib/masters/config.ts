@@ -6,6 +6,13 @@
 export type MasterField = {
   key: string;
   label: string;
+  /**
+   * Field editor rendered by MasterListPage's form dialog.
+   * "boolean" was declared here since the original
+   * implementation but the dialog silently rendered it as a text input —
+   * it now renders as a proper Switch. No existing config uses "boolean"
+   * yet, so making it work is purely additive.
+   */
   type: "text" | "number" | "boolean" | "textarea";
   required?: boolean;
   placeholder?: string;
@@ -34,7 +41,25 @@ export type MasterConfig = {
   extraFields: MasterField[];
   // Extra columns to render in the table (besides code + name + status)
   extraColumns: { key: string; label: string }[];
+  /**
+   * Roles whose members may create / edit / delete /
+   * import / toggle records on this master. Optional and non-breaking:
+   * when omitted (every existing config omits it) the page behaves exactly
+   * as before, using DEFAULT_MASTER_WRITE_ROLES. Set this only for a
+   * master whose RLS policy is stricter than admin + sales_manager (e.g. a
+   * future admin-only master), so the UI affordances match the database's
+   * actual policy instead of showing buttons that would fail on save.
+   * Note: `super_admin` never needs listing — role checks route through
+   * `useRoles()`, where a Platform Super Admin satisfies any `admin`
+   * check (see docs/authentication.md § Permission hierarchy).
+   */
+  writeRoles?: readonly ("admin" | "sales_manager" | "sales" | "purchase")[];
 };
+
+/** UI write-affordance gate used by every master unless its config overrides
+ * `writeRoles`. Mirrors the masters' RLS staff-write policies as they've
+ * always been gated in the UI. */
+export const DEFAULT_MASTER_WRITE_ROLES = ["admin", "sales_manager"] as const;
 
 const COMMON = {
   code: {

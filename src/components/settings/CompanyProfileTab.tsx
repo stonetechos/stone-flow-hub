@@ -27,6 +27,14 @@ import {
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  PhoneInput,
+  EmailInput,
+  PincodeInput,
+  GstInput,
+  PanInput,
+} from "@/components/forms/inputs/SmartInputs";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -102,10 +110,13 @@ export function CompanyProfileTab() {
   const [form, setForm] = useState<CompanyProfileFormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof CompanyProfileFormValues, string>>>({});
   const [uploading, setUploading] = useState<CompanyAssetKind | null>(null);
+  const [baseline, setBaseline] = useState<string>("");
+  const dirty = baseline !== "" && JSON.stringify(form) !== baseline;
+  useUnsavedChanges(dirty && !update.isPending);
 
   useEffect(() => {
     if (!q.data) return;
-    setForm({
+    const next: CompanyProfileFormValues = {
       company_name: q.data.company_name ?? "",
       gstin: q.data.gstin ?? "",
       legal_business_name: q.data.legal_business_name ?? "",
@@ -131,7 +142,9 @@ export function CompanyProfileTab() {
       authorized_signatory: q.data.authorized_signatory ?? "",
       signature_url: q.data.signature_url ?? "",
       stamp_url: q.data.stamp_url ?? "",
-    });
+    };
+    setForm(next);
+    setBaseline(JSON.stringify(next));
   }, [q.data]);
 
   function set<K extends keyof CompanyProfileFormValues>(
@@ -191,14 +204,36 @@ export function CompanyProfileTab() {
         {FIELD_LABELS[key]}
         {opts?.required && <span className="text-destructive"> *</span>}
       </Label>
-      <Input
-        value={form[key] ?? ""}
-        onChange={(e) => set(key, e.target.value)}
-        placeholder={opts?.placeholder}
-        disabled={!isAdmin || update.isPending}
-        readOnly={!isAdmin}
-        className={errors[key] ? "border-destructive" : undefined}
-      />
+      {(() => {
+        // Smart inputs sanitise at the keystroke instead of at submit time —
+        // same values, same schema, no new validation rules.
+        const shared = {
+          value: form[key] ?? "",
+          onChange: (v: string) => set(key, v),
+          ...(opts?.placeholder ? { placeholder: opts.placeholder } : {}),
+          disabled: !isAdmin || update.isPending,
+          readOnly: !isAdmin,
+          "aria-invalid": errors[key] ? true : undefined,
+          className: errors[key] ? "border-destructive" : undefined,
+        } as const;
+        if (key === "gstin") return <GstInput {...shared} />;
+        if (key === "pan") return <PanInput {...shared} />;
+        if (key === "pincode") return <PincodeInput {...shared} />;
+        if (key === "email") return <EmailInput {...shared} />;
+        // `phone` stays free-text: it may hold a landline with STD code.
+        if (key === "mobile") return <PhoneInput {...shared} />;
+        return (
+          <Input
+            value={form[key] ?? ""}
+            onChange={(e) => set(key, e.target.value)}
+            placeholder={opts?.placeholder}
+            disabled={!isAdmin || update.isPending}
+            readOnly={!isAdmin}
+            aria-invalid={errors[key] ? true : undefined}
+            className={errors[key] ? "border-destructive" : undefined}
+          />
+        );
+      })()}
       {errors[key] && <p className="text-xs text-destructive">{errors[key]}</p>}
     </div>
   );

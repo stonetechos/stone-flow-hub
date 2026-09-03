@@ -6,6 +6,7 @@ import { errorResult, jsonResult, requireStaffClient, sanitize } from "../util";
 type InvoiceStatus = Database["public"]["Enums"]["invoice_status"];
 const STATUSES: InvoiceStatus[] = [
   "draft",
+  "issued",
   "sent",
   "partially_paid",
   "paid",

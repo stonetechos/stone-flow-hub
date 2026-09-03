@@ -20,6 +20,13 @@
  * Uses the shared, full-shape module mock from testSupport/moduleMocks.ts —
  * see that file's header comment for why a private partial mock.module()
  * call is unsafe when the whole suite runs together.
+ *
+ * `blockers` is now `PlannerBlocker[]` instead of `string[]`.
+ * Assertions that pinned an exact single-blocker array now assert the full
+ * structured object; assertions that merely checked a blocker's presence
+ * among possibly-others (the old `.toContain(str)` pattern) now check
+ * `.map(b => b.message)` instead, preserving the original intent without
+ * needing to restate every candidate/field detail at each call site.
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
@@ -144,7 +151,15 @@ describe("planLogEnquiry (via planAction)", () => {
 
   test("no customer name -> customer blocker forces draft regardless of confidence", async () => {
     const result = await plan({ productText: "Mint" }, { confidence: 0.99 });
-    expect(result?.blockers).toEqual(["No customer name was extracted from the utterance."]);
+    expect(result?.blockers).toEqual([
+      {
+        id: "customer_id",
+        type: "text_required",
+        message: "No customer name was extracted from the utterance.",
+        field: "customer_name",
+        required: true,
+      },
+    ]);
     expect(result?.effectiveMode).toBe("draft");
   });
 
@@ -276,7 +291,10 @@ describe("planNoteFollowup (via planAction)", () => {
   test("no context, unresolvable target name -> target blocker present", async () => {
     customersApiMock.listCustomers.mockImplementation(async () => []);
     const result = await plan({ note: "General follow-up", targetName: "Ramesh", relativeDays: 1 });
-    expect(result?.blockers).toContain('No existing customer matches "Ramesh".');
+    expect(result?.blockers.map((b) => b.message)).toContain(
+      'No existing customer matches "Ramesh".',
+    );
+    expect(result?.blockers.map((b) => b.type)).toContain("customer_selection");
     expect(result?.effectiveMode).toBe("draft");
   });
 
@@ -285,7 +303,10 @@ describe("planNoteFollowup (via planAction)", () => {
       { note: "General follow-up" },
       { entityType: "enquiry", entityId: "enq-123" },
     );
-    expect(result?.blockers).toContain("No follow-up date could be determined from the utterance.");
+    expect(result?.blockers.map((b) => b.message)).toContain(
+      "No follow-up date could be determined from the utterance.",
+    );
+    expect(result?.blockers.map((b) => b.type)).toContain("date_required");
     expect(result?.effectiveMode).toBe("draft");
   });
 
@@ -356,18 +377,24 @@ describe("planCreateCustomer (via planAction)", () => {
   test("no customer name -> blocker", async () => {
     customersApiMock.findCustomerByPhone.mockImplementation(async () => null);
     const result = await plan({ mobile: "9724455663" });
-    expect(result?.blockers).toContain("No customer name was extracted from the utterance.");
+    expect(result?.blockers.map((b) => b.message)).toContain(
+      "No customer name was extracted from the utterance.",
+    );
   });
 
   test("no mobile extracted -> blocker, and the duplicate-check resolver is never called", async () => {
     const result = await plan({ customerName: "Meera" });
-    expect(result?.blockers).toContain("No valid mobile number was extracted from the utterance.");
+    expect(result?.blockers.map((b) => b.message)).toContain(
+      "No valid mobile number was extracted from the utterance.",
+    );
     expect(customersApiMock.findCustomerByPhone).not.toHaveBeenCalled();
   });
 
   test("mobile with fewer than 10 digits after stripping non-digits -> blocker, duplicate-check skipped", async () => {
     const result = await plan({ customerName: "Meera", mobile: "98765" });
-    expect(result?.blockers).toContain("No valid mobile number was extracted from the utterance.");
+    expect(result?.blockers.map((b) => b.message)).toContain(
+      "No valid mobile number was extracted from the utterance.",
+    );
     expect(customersApiMock.findCustomerByPhone).not.toHaveBeenCalled();
   });
 
@@ -378,9 +405,10 @@ describe("planCreateCustomer (via planAction)", () => {
       customer_code: "CUST-0042",
     }));
     const result = await plan({ customerName: "Meera", mobile: "9724455663" });
-    expect(result?.blockers).toContain(
+    expect(result?.blockers.map((b) => b.message)).toContain(
       "A customer with this phone number already exists: Ramesh Patel (CUST-0042).",
     );
+    expect(result?.blockers.map((b) => b.type)).toContain("confirmation_required");
   });
 
   test(
@@ -427,7 +455,15 @@ describe("planCreateQuotation (via planAction)", () => {
 
   test("no customer name -> customer blocker, and resolveProject/listProjectsByCustomer is never called", async () => {
     const result = await plan({});
-    expect(result?.blockers).toEqual(["No customer name was extracted from the utterance."]);
+    expect(result?.blockers).toEqual([
+      {
+        id: "customer_id",
+        type: "text_required",
+        message: "No customer name was extracted from the utterance.",
+        field: "customer_name",
+        required: true,
+      },
+    ]);
     expect(result?.effectiveMode).toBe("draft");
     expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
   });
@@ -435,7 +471,17 @@ describe("planCreateQuotation (via planAction)", () => {
   test("customer name matches no existing customer -> customer blocker, project resolution skipped", async () => {
     customersApiMock.listCustomers.mockImplementation(async () => []);
     const result = await plan({ customerName: "Nobody" });
-    expect(result?.blockers).toEqual(['No existing customer matches "Nobody".']);
+    expect(result?.blockers).toEqual([
+      {
+        id: "customer_id",
+        type: "customer_selection",
+        message: 'No existing customer matches "Nobody".',
+        field: "customer_id",
+        required: true,
+        currentValue: "Nobody",
+        candidates: [],
+      },
+    ]);
     expect(projectsApiMock.listProjectsByCustomer).not.toHaveBeenCalled();
     expect(result?.params.customer_id).toBeNull();
     expect(result?.params.project_id).toBeNull();
@@ -447,7 +493,16 @@ describe("planCreateQuotation (via planAction)", () => {
     ]);
     projectsApiMock.listProjectsByCustomer.mockImplementation(async () => []);
     const result = await plan({ customerName: "Ramesh" }, { confidence: 0.99 });
-    expect(result?.blockers).toEqual(['"Ramesh Patel" has no existing project to quote against.']);
+    expect(result?.blockers).toEqual([
+      {
+        id: "project_id",
+        type: "project_selection",
+        message: '"Ramesh Patel" has no existing project to quote against.',
+        field: "project_id",
+        required: true,
+        candidates: [],
+      },
+    ]);
     expect(result?.effectiveMode).toBe("draft");
     expect(result?.params.customer_id).toBe("cust-1");
     expect(result?.params.project_id).toBeNull();
@@ -463,7 +518,17 @@ describe("planCreateQuotation (via planAction)", () => {
     ]);
     const result = await plan({ customerName: "Ramesh" });
     expect(result?.blockers).toEqual([
-      '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
+      {
+        id: "project_id",
+        type: "project_selection",
+        message: '"Ramesh Patel" has 2 projects — choose one.',
+        field: "project_id",
+        required: true,
+        candidates: [
+          { id: "proj-1", label: "Shah Residence", subtitle: "PRJ-0001" },
+          { id: "proj-2", label: "Shah Villa", subtitle: "PRJ-0002" },
+        ],
+      },
     ]);
     expect(result?.params.project_id).toBeNull();
   });
@@ -764,7 +829,13 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
     });
 
     expect(result?.blockers).toEqual([
-      "Line item 1: no quantity was extracted from the utterance.",
+      {
+        id: "items.0.quantity",
+        type: "quantity_required",
+        message: "Line item 1: no quantity was extracted from the utterance.",
+        field: "items.0.quantity",
+        required: true,
+      },
     ]);
     expect(result?.effectiveMode).toBe("draft");
   });
@@ -782,7 +853,13 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
     });
 
     expect(result?.blockers).toEqual([
-      "Line item 2: no quantity was extracted from the utterance.",
+      {
+        id: "items.1.quantity",
+        type: "quantity_required",
+        message: "Line item 2: no quantity was extracted from the utterance.",
+        field: "items.1.quantity",
+        required: true,
+      },
     ]);
     expect(result?.effectiveMode).toBe("draft");
   });
@@ -811,7 +888,13 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
     });
 
     expect(result?.blockers).toEqual([
-      "Line item 1: no unit price was extracted from the utterance.",
+      {
+        id: "items.0.unit_price",
+        type: "unit_price_required",
+        message: "Line item 1: no unit price was extracted from the utterance.",
+        field: "items.0.unit_price",
+        required: true,
+      },
     ]);
     expect(result?.effectiveMode).toBe("draft");
     expect((result?.params.items as Array<{ unit_price: unknown }>)[0].unit_price).toBeUndefined();
@@ -838,7 +921,17 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
       items: [{ productText: "Mint", quantity: 300, rate: 145 }],
     });
 
-    expect(result?.blockers).toEqual(['No existing customer matches "Nobody".']);
+    expect(result?.blockers).toEqual([
+      {
+        id: "customer_id",
+        type: "customer_selection",
+        message: 'No existing customer matches "Nobody".',
+        field: "customer_id",
+        required: true,
+        currentValue: "Nobody",
+        candidates: [],
+      },
+    ]);
     expect(result?.params.items).toEqual([
       {
         product_id: "prod-1",
@@ -880,7 +973,13 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
     });
 
     expect(result?.blockers).toEqual([
-      "Line item 2: no unit price was extracted from the utterance.",
+      {
+        id: "items.1.unit_price",
+        type: "unit_price_required",
+        message: "Line item 2: no unit price was extracted from the utterance.",
+        field: "items.1.unit_price",
+        required: true,
+      },
     ]);
     expect(result?.effectiveMode).toBe("draft");
   });
@@ -895,8 +994,20 @@ describe("planCreateQuotation line-item extraction (via planAction, Milestone 5)
     });
 
     expect(result?.blockers).toEqual([
-      "Line item 1: no quantity was extracted from the utterance.",
-      "Line item 1: no unit price was extracted from the utterance.",
+      {
+        id: "items.0.quantity",
+        type: "quantity_required",
+        message: "Line item 1: no quantity was extracted from the utterance.",
+        field: "items.0.quantity",
+        required: true,
+      },
+      {
+        id: "items.0.unit_price",
+        type: "unit_price_required",
+        message: "Line item 1: no unit price was extracted from the utterance.",
+        field: "items.0.unit_price",
+        required: true,
+      },
     ]);
     expect(result?.effectiveMode).toBe("draft");
   });
@@ -997,7 +1108,17 @@ describe("planCreateQuotation — Milestone 6: unit_price/category/projectText a
       const result = await plan({ customerName: "Ramesh", projectText: "Nonexistent Project" });
 
       expect(result?.blockers).toEqual([
-        '"Ramesh Patel" has 2 projects: Shah Residence (PRJ-0001), Shah Villa (PRJ-0002).',
+        {
+          id: "project_id",
+          type: "project_selection",
+          message: '"Ramesh Patel" has 2 projects — choose one.',
+          field: "project_id",
+          required: true,
+          candidates: [
+            { id: "proj-1", label: "Shah Residence", subtitle: "PRJ-0001" },
+            { id: "proj-2", label: "Shah Villa", subtitle: "PRJ-0002" },
+          ],
+        },
       ]);
       expect(result?.effectiveMode).toBe("draft");
     });

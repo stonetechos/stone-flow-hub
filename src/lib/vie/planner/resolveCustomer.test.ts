@@ -15,6 +15,14 @@
  * comment for the full reproduction. Importing the shared mock BEFORE
  * dynamically importing the module under test keeps this file's mocked
  * behavior correct regardless of what order bun evaluates test files in.
+ *
+ * `blocker` is now a structured `PlannerBlocker` object
+ * instead of a plain string — these assertions check the object's shape
+ * (`type`/`field`/`candidates`) instead of exact prose. The old "more than 5
+ * matches -> ellipsis" test is gone: the new design hands the UI every match
+ * (capped generously at 20, see resolveCustomer.ts's MAX_CANDIDATES) since a
+ * rendered list has no prose-readability limit the way a formatted sentence
+ * did — replaced below with a test of that 20-item cap instead.
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { customersApiMock, resetAllModuleMocks } from "../testSupport/moduleMocks";
@@ -33,13 +41,20 @@ describe("resolveCustomer", () => {
   test("no name extracted -> blocker, and no lookup is even attempted", async () => {
     const result = await resolveCustomer(undefined);
     expect(result.customerId).toBeNull();
-    expect(result.blocker).toBe("No customer name was extracted from the utterance.");
+    expect(result.blocker).toEqual({
+      id: "customer_id",
+      type: "text_required",
+      message: "No customer name was extracted from the utterance.",
+      field: "customer_name",
+      required: true,
+    });
     expect(customersApiMock.listCustomers).not.toHaveBeenCalled();
   });
 
   test("whitespace-only name -> treated the same as no name", async () => {
     const result = await resolveCustomer("   ");
-    expect(result.blocker).toBe("No customer name was extracted from the utterance.");
+    expect(result.blocker?.type).toBe("text_required");
+    expect(result.blocker?.message).toBe("No customer name was extracted from the utterance.");
     expect(customersApiMock.listCustomers).not.toHaveBeenCalled();
   });
 
@@ -47,7 +62,15 @@ describe("resolveCustomer", () => {
     customersApiMock.listCustomers.mockImplementation(async () => []);
     const result = await resolveCustomer("Ramesh");
     expect(result.customerId).toBeNull();
-    expect(result.blocker).toBe('No existing customer matches "Ramesh".');
+    expect(result.blocker).toEqual({
+      id: "customer_id",
+      type: "customer_selection",
+      message: 'No existing customer matches "Ramesh".',
+      field: "customer_id",
+      required: true,
+      currentValue: "Ramesh",
+      candidates: [],
+    });
   });
 
   test("name given, exactly one match -> resolved, no blocker", async () => {
@@ -60,32 +83,40 @@ describe("resolveCustomer", () => {
     expect(result.customerLabel).toBe("Ramesh Patel");
   });
 
-  test("name given, multiple matches -> blocker listing each candidate", async () => {
+  test("name given, multiple matches -> blocker with a candidate per match", async () => {
     customersApiMock.listCustomers.mockImplementation(async () => [
       { id: "cust-1", name: "Ramesh Patel", customer_code: "CUST-0001" },
       { id: "cust-2", name: "Ramesh Shah", customer_code: "CUST-0002" },
     ]);
     const result = await resolveCustomer("Ramesh");
     expect(result.customerId).toBeNull();
-    expect(result.blocker).toBe(
-      '"Ramesh" matches 2 customers: Ramesh Patel (CUST-0001), Ramesh Shah (CUST-0002).',
-    );
+    expect(result.blocker).toEqual({
+      id: "customer_id",
+      type: "customer_selection",
+      message: '"Ramesh" matches 2 customers — choose one.',
+      field: "customer_id",
+      required: true,
+      currentValue: "Ramesh",
+      candidates: [
+        { id: "cust-1", label: "Ramesh Patel", subtitle: "CUST-0001" },
+        { id: "cust-2", label: "Ramesh Shah", subtitle: "CUST-0002" },
+      ],
+    });
   });
 
-  test("more than 5 matches -> lists only the first 5, with a trailing ellipsis", async () => {
+  test("more than 20 matches -> candidates capped at 20, message still reports the true count", async () => {
     customersApiMock.listCustomers.mockImplementation(async () =>
-      Array.from({ length: 7 }, (_, i) => ({
+      Array.from({ length: 25 }, (_, i) => ({
         id: `cust-${i}`,
         name: `Ramesh ${i}`,
-        customer_code: `CUST-000${i}`,
+        customer_code: `CUST-0${i}`,
       })),
     );
 
     const result = await resolveCustomer("Ramesh");
 
-    expect(result.blocker).toContain("matches 7 customers:");
-    expect(result.blocker?.endsWith(", ...")).toBe(true);
-    expect((result.blocker?.match(/CUST-000/g) ?? []).length).toBe(5);
+    expect(result.blocker?.message).toBe('"Ramesh" matches 25 customers — choose one.');
+    expect(result.blocker?.candidates).toHaveLength(20);
   });
 
   test("passes the trimmed name through to listCustomers", async () => {

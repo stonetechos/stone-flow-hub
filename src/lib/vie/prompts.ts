@@ -56,7 +56,10 @@ For "log_enquiry", entities may include:
   "productText": string,     // the material/product mentioned, verbatim (e.g. "Mint")
   "quantity": number,         // a bare number
   "unit": string,              // e.g. "sqft"
-  "rate": number                // price per unit in rupees, as a bare number
+  "rate": number,                // price per unit in rupees, as a bare number
+  "budgetInr": number,           // an EXPLICITLY stated overall budget figure in rupees (e.g. "budget is around 5 lakhs" -> 500000) — only when a total budget is stated directly, never computed from quantity*rate yourself
+  "timelineRelativeDays": number, // a delivery/completion timeframe stated relative to now, in days (e.g. "within 2 weeks" -> 14, "by next month" -> ~30, "urgently"/"ASAP" -> 3) — omit if no timeframe is mentioned at all
+  "requirements": string          // any other stated requirement not captured by product/quantity/rate (e.g. "must match the existing flooring", "delivery to the second floor")
 
 For "note_followup", entities may include:
   "targetName": string,      // a customer/enquiry name mentioned, if any
@@ -67,6 +70,8 @@ For "note_followup", entities may include:
 For "create_customer", entities may include:
   "customerName": string,   // the person/business name to register, exactly as stated
   "mobile": string,           // phone number digits as stated, in whatever format spoken
+  "email": string,              // if an email address is stated
+  "address": string,            // a full/partial postal address if stated (city alone should still go in "city" below, not duplicated here — use "address" for a fuller address string, e.g. a building/street/area)
   "city": string,               // if mentioned
   "customerType": "individual" | "company" | "builder" | "architect" | "interior_designer" | "contractor" | "government" | "other"
 
@@ -81,7 +86,8 @@ For "create_quotation", entities may include:
       "rate": number              // price per unit in rupees, if stated
     }
   ],
-  "category": "supply_only" | "supply_and_installation" | "installation_only" | "material_and_labour"  // ONLY when explicitly stated (e.g. "with installation" -> supply_and_installation, "supply only" -> supply_only); omit entirely otherwise, never guess
+  "category": "supply_only" | "supply_and_installation" | "installation_only" | "material_and_labour",  // ONLY when explicitly stated (e.g. "with installation" -> supply_and_installation, "supply only" -> supply_only); omit entirely otherwise, never guess
+  "requirements": string          // any stated requirement beyond the line items themselves (e.g. "must match the existing flooring", "site has limited parking for delivery")
   // If two or more customer/project names appear, extract only the first-mentioned one (mirrors create_customer's own rule) and lower confidence accordingly.
   // If the customer/project isn't named at all, omit customerName/projectText entirely rather than guessing — the Planner treats an unresolved customer as a blocker, never a guess.
 
@@ -110,5 +116,8 @@ Examples:
 "Quote for Ramesh and Suresh." -> {"intent":"create_quotation","language":"en","confidence":0.5,"canonicalText":"Prepare a quotation for Ramesh.","entities":{"customerName":"Ramesh"}}
 "What should I charge for Mint Stone?" -> {"intent":"unsupported","language":"en","confidence":0.85,"canonicalText":"Asking what price to charge for Mint Stone — not something VIE can determine.","entities":{}}
 "Update the quote for Ramesh — change quantity to 400." -> {"intent":"unsupported","language":"en","confidence":0.8,"canonicalText":"An instruction to edit an existing quotation, not create a new one.","entities":{}}
+"Customer Priya, budget is around 5 lakhs, needs it within 2 weeks, and it must match her existing kitchen flooring." -> {"intent":"log_enquiry","language":"en","confidence":0.75,"canonicalText":"Customer Priya has a budget of about Rs. 5,00,000, needs the work done within 2 weeks, and requires it to match her existing kitchen flooring.","entities":{"customerName":"Priya","budgetInr":500000,"timelineRelativeDays":14,"requirements":"Must match existing kitchen flooring"}}
+"Naya customer, Rakesh bhai, email rakesh@example.com, address Shop 4, Ring Road, Surat." -> {"intent":"create_customer","language":"mixed","confidence":0.85,"canonicalText":"Register a new customer named Rakesh, email rakesh@example.com, address Shop 4, Ring Road, Surat.","entities":{"customerName":"Rakesh","email":"rakesh@example.com","address":"Shop 4, Ring Road","city":"Surat"}}
+"Quote 300 sqft Mint for the Shah project, but the site has limited parking so delivery needs a small truck." -> {"intent":"create_quotation","language":"en","confidence":0.8,"canonicalText":"Prepare a quotation for the Shah project for 300 sqft of Mint; the site has limited parking, so delivery needs a small truck.","entities":{"projectText":"Shah project","items":[{"productText":"Mint","quantity":300,"unit":"sqft"}],"requirements":"Site has limited parking - delivery needs a small truck"}}
 
 Return JSON only.`;

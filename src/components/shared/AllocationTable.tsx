@@ -86,7 +86,7 @@ export function AllocationTable({
                       onChange={(e) => onChangeAmount(d.id, Number(e.target.value))}
                     />
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => onToggle(d)}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => onToggle(d)}>
                       Allocate
                     </Button>
                   )}
@@ -94,6 +94,7 @@ export function AllocationTable({
                 <td className="px-1 py-2">
                   {row && (
                     <Button
+                      type="button"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"

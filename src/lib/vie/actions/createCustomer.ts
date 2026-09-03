@@ -45,13 +45,16 @@ registerVieAction("create_customer", async (params): Promise<VieActionResult> =>
   const customer = await createCustomer({
     name,
     mobile,
-    email: undefined,
+    // Voice-capture foundation (Goal 5) — email/billing_address were
+    // hardcoded `undefined` before createCustomerEntitiesSchema had fields
+    // for either; now carry whatever planCreateCustomer resolved.
+    email: (params.email as string | undefined) ?? undefined,
     city: (params.city as string | undefined) ?? undefined,
     customer_type: customerType,
     whatsapp: undefined,
     state: undefined,
     pincode: undefined,
-    billing_address: undefined,
+    billing_address: (params.billing_address as string | undefined) ?? undefined,
     gst_number: undefined,
     notes: (params.notes as string | undefined) ?? undefined,
   });

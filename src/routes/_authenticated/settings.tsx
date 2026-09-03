@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { User, Building2, Palette, Shield, Bell, Compass } from "lucide-react";
+import { User, Building2, Palette, Shield, Bell, Compass, Info } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,10 +13,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
+import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRoles } from "@/hooks/use-roles";
+import {
+  APPLICATION_NAME,
+  APPLICATION_CATEGORY,
+  APPLICATION_VERSION,
+  BUILD_VERSION,
+  GIT_COMMIT_HASH,
+  DB_SCHEMA_VERSION,
+  BUILT_BY_LINE,
+  copyrightLine,
+} from "@/lib/platform/application";
+import { PLATFORM_NAME, PLATFORM_VERSION, PLATFORM_SUPPORT_EMAIL } from "@/lib/platform/platform";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   ssr: false,
@@ -34,7 +47,14 @@ function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
+  // truth for role checks (see docs/authentication.md § Permission
+  // hierarchy). This previously ran its own ad hoc `user_roles` query that
+  // checked literal `role = 'admin'`, which would have left the Platform
+  // Super Admin (who holds only `super_admin`) seeing the non-admin
+  // Preferences tab.
+  const roles = useRoles();
+  const isAdmin = roles.isAdmin;
   const [guidedEnabled, setGuidedEnabled] = useGuidedEnabled();
 
   useEffect(() => {
@@ -59,13 +79,6 @@ function SettingsPage() {
         setDepartment(prof?.department ?? "");
         setPhone(prof?.phone ?? "");
         setAvatarUrl(prof?.avatar_url ?? null);
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        setIsAdmin(!!role);
       }
     })();
   }, []);
@@ -134,6 +147,10 @@ function SettingsPage() {
             <Shield className="mr-2 h-4 w-4" />
             Security
           </TabsTrigger>
+          <TabsTrigger value="about">
+            <Info className="mr-2 h-4 w-4" />
+            About
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
@@ -151,7 +168,11 @@ function SettingsPage() {
                 </Avatar>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
-                  <p className="text-xs text-muted-foreground">Profile photo upload coming soon.</p>
+                  <p className="text-xs text-muted-foreground">
+                    {jobTitle || department
+                      ? [jobTitle, department].filter(Boolean).join(" · ")
+                      : email}
+                  </p>
                 </div>
               </div>
 
@@ -270,13 +291,16 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-sm">Appearance</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div>
-                Theme: <Badge>Granite &amp; Teal</Badge>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm">Theme</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Choose a STOS theme. The choice is saved in this browser.
+                  </p>
+                </div>
+                <ThemeSwitcher />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Theme switcher will be added in a later phase.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -284,12 +308,18 @@ function SettingsPage() {
         <TabsContent value="notifications" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                Notifications <Badge variant="outline">Coming soon</Badge>
-              </CardTitle>
+              <CardTitle className="text-sm">Notifications</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Email, WhatsApp, and in-app notifications will be configurable here.
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Channel preferences, digests, and delivery rules are managed on the Notification
+                Settings page.
+              </p>
+              <Link to="/notification-settings">
+                <Button variant="outline" size="sm">
+                  Open notification settings
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </TabsContent>
@@ -300,23 +330,100 @@ function SettingsPage() {
               <CardTitle className="text-sm">Security</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const { error } = await supabase.auth.resetPasswordForEmail(email);
-                  if (error) toast.error(error.message);
-                  else toast.success("Password reset email sent");
-                }}
-              >
-                Send password reset email
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const { error } = await supabase.auth.resetPasswordForEmail(email);
+                    if (error) toast.error(error.message);
+                    else toast.success("Password reset email sent");
+                  }}
+                >
+                  Send password reset email
+                </Button>
+                <Link to="/activity">
+                  <Button variant="outline">View activity log</Button>
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Two-factor authentication and audit logs are planned.
+                Every sign-in, role change, and record update is recorded in the activity log.
               </p>
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="about" className="mt-4">
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">About</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <p className="text-base font-medium">{APPLICATION_NAME}</p>
+              <p className="text-sm text-muted-foreground">{APPLICATION_CATEGORY}</p>
+              <p className="text-sm text-muted-foreground">{BUILT_BY_LINE}</p>
+              <p className="mt-4 text-xs text-muted-foreground">
+                {copyrightLine(new Date().getFullYear())}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Sprint 1.7.1, Part 5 — Platform Information. Every value here is
+              read from src/lib/platform/{platform,application}.ts; any field
+              this deployment genuinely doesn't have (e.g. no git repo at
+              build time) renders "Not available" rather than a fabricated
+              value — see those modules for exactly how each is sourced. */}
+          <Card className="mt-4 shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Platform Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+                <AboutRow label="Application Name" value={APPLICATION_NAME} />
+                <AboutRow label="Application Version" value={APPLICATION_VERSION} />
+                <AboutRow label="Build Version" value={BUILD_VERSION} />
+                <AboutRow label="Git Commit Hash" value={GIT_COMMIT_HASH} mono />
+                <AboutRow label="Platform Version" value={PLATFORM_VERSION} />
+                <AboutRow label="Database Schema Version" value={DB_SCHEMA_VERSION} mono />
+                <AboutRow label="Platform Owner" value={PLATFORM_NAME} />
+                <AboutRow label="Support Email" value={PLATFORM_SUPPORT_EMAIL} />
+                <AboutRow
+                  label="Copyright"
+                  value={copyrightLine(new Date().getFullYear())}
+                  className="sm:col-span-2"
+                />
+              </dl>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/**
+ * One label/value row in the Platform Information
+ * grid. `value` may be `null` for any field this deployment genuinely
+ * couldn't determine (see src/lib/platform/application.ts) — rendered as
+ * "Not available" rather than omitted, so it's visibly a known gap rather
+ * than looking like the row was forgotten.
+ */
+function AboutRow({
+  label,
+  value,
+  mono,
+  className,
+}: {
+  label: string;
+  value: string | null;
+  mono?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className={`mt-0.5 ${mono ? "font-mono text-xs" : "text-sm"}`}>
+        {value ? value : <span className="text-muted-foreground">Not available</span>}
+      </dd>
     </div>
   );
 }

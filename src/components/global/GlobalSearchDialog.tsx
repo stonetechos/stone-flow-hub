@@ -21,16 +21,22 @@ import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 const GROUP_ORDER: ReadonlyArray<SearchGroupKey> = [
   "customers",
   "projects",
-  "vendors",
-  "products",
   "enquiries",
   "quotes",
   "salesOrders",
+  "rfqs",
   "purchaseOrders",
+  "vendors",
+  "tasks",
+  "followups",
+  "products",
   "inventory",
   "invoices",
   "payments",
   "dispatch",
+  "notes",
+  "documents",
+  "activities",
 ];
 
 export function GlobalSearchDialog({

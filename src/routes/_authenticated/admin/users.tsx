@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,13 +64,15 @@ import {
   Eye,
   EyeOff,
   Copy,
+  ShieldAlert,
   RefreshCw,
 } from "lucide-react";
-import { toUserMessage } from "@/lib/errors";
+import { toUserMessage, parseMissingSupabaseEnvError } from "@/lib/errors";
+import { ServerConfigurationErrorState } from "@/components/global/ServerConfigurationErrorState";
 import {
   listAppUsers,
-  assignRole,
-  revokeRole,
+  assignRoleGuarded,
+  revokeRoleGuarded,
   sendPasswordReset,
   updateDisplayName,
   fallbackName,
@@ -84,11 +86,17 @@ import {
   resendInvite,
   deleteAuthUser,
   setUserActive,
+  resetUserPassword,
   type AdminUserRow,
   type AdminUserStatus,
 } from "@/lib/admin/users.functions";
 import { generatePassword, scorePasswordStrength, MIN_PASSWORD_LENGTH } from "@/lib/admin/password";
 import { toneText } from "@/lib/ui/tones";
+import { canManageTargetUser, type ActingUserRef } from "@/lib/admin/permissions";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
+import { useAuthReady } from "@/hooks/use-auth-ready";
+import { useRoles } from "@/hooks/use-roles";
+import { TablePagination } from "@/components/data/Pagination";
 
 const qk = {
   users: ["admin", "users"] as const,
@@ -98,8 +106,13 @@ const qk = {
 const ROLE_LABEL: Record<AppRole, string> = {
   admin: "Admin",
   sales_manager: "Sales Manager",
+  hr: "HR",
   sales: "Sales",
   purchase: "Purchase",
+  // Rendered read-only (see UserRowView) — there is no
+  // "Grant Super Admin" action anywhere in this UI (APP_ROLES deliberately
+  // excludes it), and the badge's remove control is disabled for it.
+  super_admin: "Super Admin",
 };
 
 const STATUS_LABEL: Record<AdminUserStatus, string> = {
@@ -114,13 +127,15 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
     const { data: sess, error } = await supabase.auth.getUser();
     if (error || !sess.user) throw redirect({ to: "/auth", search: { flow: "signin" } });
+    // The Super Admin is granted only the `super_admin`
+    // role (never also `admin`), so this must accept either — checking
+    // `admin` alone would lock the Platform Owner out of Users & Roles.
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", sess.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!data) throw redirect({ to: "/dashboard" });
+      .in("role", ["admin", "super_admin"]);
+    if (!data || data.length === 0) throw redirect({ to: "/dashboard" });
   },
   component: UsersAdminPage,
 });
@@ -166,12 +181,17 @@ function UsersAdminPage() {
   const resendFn = useServerFn(resendInvite);
   const deleteFn = useServerFn(deleteAuthUser);
   const setActiveFn = useServerFn(setUserActive);
+  const resetPasswordFn = useServerFn(resetUserPassword);
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  useState(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
-    return null;
-  });
+  // Identity + roles come from the app's existing auth/permission hooks
+  // rather than a bespoke render-time `supabase.auth.getUser()` call. The
+  // previous implementation kicked that request off inside a `useState`
+  // initializer (a side effect during render), which never re-ran on auth
+  // changes and left `currentUserId` null on a fast re-mount — making every
+  // row look like "someone else" and mis-gating self-only actions.
+  const auth = useAuthReady();
+  const roles = useRoles();
+  const currentUserId = auth.user?.id ?? null;
 
   const profiles = useQuery({ queryKey: qk.users, queryFn: listAppUsers });
   const authUsers = useQuery({ queryKey: qk.auth, queryFn: () => listAuthUsersFn() });
@@ -195,13 +215,35 @@ function UsersAdminPage() {
       .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
   }, [authUsers.data, profiles.data]);
 
+  // Sprint 1.7, Parts 2-4: the acting user's own role flags, used to decide
+  // (client-side, mirroring the server-side checks in users.functions.ts)
+  // whether a given row action against the Super Admin should be allowed.
+  // Sourced from the shared `useRoles()` hook so this page uses the same
+  // inheritance rules (`roleSatisfies`) as the rest of the ERP.
+  const actor = useMemo<ActingUserRef>(
+    () => ({
+      id: currentUserId ?? "",
+      isSuperAdmin: roles.isSuperAdmin,
+      isAdmin: roles.isAdmin,
+    }),
+    [currentUserId, roles.isSuperAdmin, roles.isAdmin],
+  );
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: qk.users });
     qc.invalidateQueries({ queryKey: qk.auth });
   };
 
   const assign = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => assignRole(userId, role),
+    mutationFn: ({
+      userId,
+      role,
+      targetRoles,
+    }: {
+      userId: string;
+      role: AppRole;
+      targetRoles: AppRole[];
+    }) => assignRoleGuarded(actor, { id: userId, roles: targetRoles }, role),
     onSuccess: (_d, v) => {
       toast.success(`Granted ${ROLE_LABEL[v.role]}`);
       invalidate();
@@ -210,7 +252,29 @@ function UsersAdminPage() {
   });
 
   const revoke = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => revokeRole(userId, role),
+    mutationFn: ({
+      userId,
+      role,
+      targetRoles,
+    }: {
+      userId: string;
+      role: AppRole;
+      targetRoles: AppRole[];
+    }) => {
+      // Self-lockout guard: revoking your own admin-capable role would
+      // immediately fail this route's `beforeLoad` gate and leave nobody
+      // able to restore it from the UI. Deliberately client-side only —
+      // it mirrors the same permission model, adds no new architecture,
+      // and the DB/server checks remain authoritative for everything else.
+      if (userId === actor.id && (role === "admin" || role === "super_admin")) {
+        return Promise.reject(
+          new Error(
+            "You cannot remove your own administrator role. Ask another administrator to do it.",
+          ),
+        );
+      }
+      return revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role);
+    },
     onSuccess: (_d, v) => {
       toast.success(`Removed ${ROLE_LABEL[v.role]}`);
       invalidate();
@@ -221,6 +285,13 @@ function UsersAdminPage() {
   const reset = useMutation({
     mutationFn: (email: string) => sendPasswordReset(email),
     onSuccess: () => toast.success("Password reset email sent"),
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: ({ userId, password }: { userId: string; password: string }) =>
+      resetPasswordFn({ data: { user_id: userId, password } }),
+    onSuccess: () => toast.success("Password reset"),
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
@@ -244,7 +315,10 @@ function UsersAdminPage() {
         },
       }).then(async (res) => {
         if (res.id && data.role) {
-          await assignRole(res.id, data.role);
+          // A newly invited user never already holds any role, so this is
+          // never a protected-target mutation — kept on the guarded path
+          // for consistency with every other role write in this file.
+          await assignRoleGuarded(actor, { id: res.id, roles: [] }, data.role);
         }
         return res;
       }),
@@ -270,7 +344,7 @@ function UsersAdminPage() {
         },
       }).then(async (res) => {
         if (res.id && data.role) {
-          await assignRole(res.id, data.role);
+          await assignRoleGuarded(actor, { id: res.id, roles: [] }, data.role);
         }
         return res;
       }),
@@ -294,9 +368,10 @@ function UsersAdminPage() {
   });
 
   const del = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { user_id: userId } }),
-    onSuccess: () => {
-      toast.success("User deleted");
+    mutationFn: ({ userId }: { userId: string; pendingInvite: boolean }) =>
+      deleteFn({ data: { user_id: userId } }),
+    onSuccess: (_d, v) => {
+      toast.success(v.pendingInvite ? "Invitation cancelled" : "User deleted");
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -316,6 +391,9 @@ function UsersAdminPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | AdminUserStatus>("all");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CombinedUser | null>(null);
+  const [passwordResetTarget, setPasswordResetTarget] = useState<CombinedUser | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -328,8 +406,28 @@ function UsersAdminPage() {
     });
   }, [combined, search, statusFilter]);
 
+  // Keep the current page in range when filters shrink the result set (or a
+  // deletion empties the last page) — otherwise the table renders blank with
+  // no rows and no empty state.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize],
+  );
+
   const isLoading = profiles.isLoading || authUsers.isLoading;
   const error = profiles.error || authUsers.error;
+  // `listAuthUsers` is gated by `requireSupabaseAuth`,
+  // which throws this exact message when the deployment's server-side
+  // Supabase env vars aren't set — independently of the client-side vars the
+  // root route already gates on, so this page (the one place that surfaced
+  // the production bug) is where that gap is first visible. See
+  // parseMissingSupabaseEnvError's doc comment for the full picture.
+  const missingServerEnv = error ? parseMissingSupabaseEnvError(error) : null;
   const busy = assign.isPending || revoke.isPending;
 
   return (
@@ -373,6 +471,8 @@ function UsersAdminPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <LoadingBlock />
+          ) : missingServerEnv ? (
+            <ServerConfigurationErrorState missing={missingServerEnv} />
           ) : error ? (
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
           ) : filtered.length === 0 ? (
@@ -396,28 +496,55 @@ function UsersAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filtered.map((u) => (
+                  {paged.map((u) => (
                     <UserRowView
                       key={u.id}
                       user={u}
+                      actor={actor}
                       isSelf={u.id === currentUserId}
-                      onAssign={(role) => assign.mutate({ userId: u.id, role })}
-                      onRevoke={(role) => revoke.mutate({ userId: u.id, role })}
+                      onAssign={(role) =>
+                        assign.mutate({ userId: u.id, role, targetRoles: u.roles })
+                      }
+                      onRevoke={(role) =>
+                        revoke.mutate({ userId: u.id, role, targetRoles: u.roles })
+                      }
                       onReset={() => u.email && reset.mutate(u.email)}
                       onRename={(fullName) => rename.mutate({ userId: u.id, fullName })}
                       onResend={() => u.email && resend.mutate(u.email)}
                       onSetActive={(isActive) => setActive.mutate({ userId: u.id, isActive })}
                       onDelete={() => setConfirmDelete(u)}
+                      onSetNewPassword={() => setPasswordResetTarget(u)}
                       busy={busy}
+                      // Per-row lifecycle guard: without it, repeated clicks
+                      // on "Resend invitation" / "Deactivate" fired duplicate
+                      // privileged requests while the first was still in
+                      // flight.
+                      lifecycleBusy={
+                        (setActive.isPending && setActive.variables?.userId === u.id) ||
+                        (resend.isPending && resend.variables === u.email) ||
+                        (reset.isPending && reset.variables === u.email) ||
+                        (del.isPending && del.variables?.userId === u.id)
+                      }
                       renaming={rename.isPending}
                     />
                   ))}
                 </tbody>
               </table>
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={filtered.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => {
+                  setPageSize(s);
+                  setPage(1);
+                }}
+              />
             </div>
           )}
         </CardContent>
       </Card>
+
       <p className="mt-3 text-xs text-muted-foreground">
         Display name is shown throughout the app (greetings, activity log, comments, assignments).
         Deactivating a user preserves all historical records; deletion is blocked for yourself and
@@ -450,20 +577,47 @@ function UsersAdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (confirmDelete) {
-                  del.mutate(confirmDelete.id, { onSuccess: () => setConfirmDelete(null) });
-                }
+              disabled={del.isPending}
+              onClick={(e) => {
+                // Keep the dialog open until the request settles, so a
+                // failure is visible and a second click can't fire a
+                // duplicate delete.
+                e.preventDefault();
+                if (!confirmDelete || del.isPending) return;
+                del.mutate(
+                  {
+                    userId: confirmDelete.id,
+                    pendingInvite:
+                      confirmDelete.status === "invited" || confirmDelete.status === "expired",
+                  },
+                  { onSuccess: () => setConfirmDelete(null) },
+                );
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete user
+              {del.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+              {confirmDelete?.status === "invited" || confirmDelete?.status === "expired"
+                ? "Cancel invitation"
+                : "Delete user"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <SetPasswordDialog
+        user={passwordResetTarget}
+        busy={resetPassword.isPending}
+        onOpenChange={(o) => !o && setPasswordResetTarget(null)}
+        onSubmit={(password) => {
+          if (!passwordResetTarget) return;
+          resetPassword.mutate(
+            { userId: passwordResetTarget.id, password },
+            { onSuccess: () => setPasswordResetTarget(null) },
+          );
+        }}
+      />
     </div>
   );
 }
@@ -493,10 +647,16 @@ function CreateUserDialog({
   }) => Promise<unknown>;
 }) {
   const [mode, setMode] = useState<"invite" | "password">("invite");
+  // Dirty-tracking (and the close-confirmation guard
+  // below) only covers the "Set password now" tab: it's the one tab that
+  // collects a real credential worth protecting against an accidental
+  // close. The invite tab has no local secret, so it's left unguarded.
+  const [passwordDirty, setPasswordDirty] = useState(false);
+  const dirty = mode === "password" && passwordDirty;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[460px]">
+    <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add user</DialogTitle>
           <DialogDescription>
@@ -518,8 +678,9 @@ function CreateUserDialog({
           <TabsContent value="password">
             <PasswordCreateForm
               busy={busyPassword}
-              onCancel={() => onOpenChange(false)}
+              onCancel={() => confirmCloseIfDirty(false, passwordDirty) && onOpenChange(false)}
               onSubmit={(v) => onSubmitPassword(v)}
+              onDirtyChange={setPasswordDirty}
             />
           </TabsContent>
         </Tabs>
@@ -614,6 +775,7 @@ function PasswordCreateForm({
   busy,
   onCancel,
   onSubmit,
+  onDirtyChange,
 }: {
   busy: boolean;
   onCancel: () => void;
@@ -623,6 +785,7 @@ function PasswordCreateForm({
     password: string;
     role?: AppRole | null;
   }) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -631,6 +794,27 @@ function PasswordCreateForm({
   const [showPassword, setShowPassword] = useState(false);
   const strength = scorePasswordStrength(password);
   const tooShort = password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Reports unsaved-edit state up to CreateUserDialog,
+  // which uses it to guard against an accidental close.
+  useEffect(() => {
+    onDirtyChange?.(!!email || !!fullName || !!password || role !== "none");
+  }, [email, fullName, password, role, onDirtyChange]);
+
+  // Ctrl/Cmd+Enter submits, matching the shortcut convention used across
+  // the other converted dialogs.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (!email.trim() || password.length < MIN_PASSWORD_LENGTH || busy) return;
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [email, password, busy]);
 
   async function copyPassword() {
     if (!password) return;
@@ -640,6 +824,7 @@ function PasswordCreateForm({
 
   return (
     <form
+      ref={formRef}
       className="space-y-3 pt-1"
       onSubmit={(e) => {
         e.preventDefault();
@@ -655,6 +840,7 @@ function PasswordCreateForm({
       <p className="text-xs text-muted-foreground">
         Creates the account with this password immediately — no invitation email is sent, and the
         email address is not independently verified. Share the password with the user yourself.
+        They'll be required to set their own password the first time they sign in.
       </p>
       <div className="space-y-1.5">
         <Label htmlFor="pw-email">Email</Label>
@@ -775,8 +961,124 @@ function PasswordCreateForm({
   );
 }
 
+/**
+ * Admin/Super Admin-driven direct password reset.
+ * Distinct from "Send password reset" (an email link the user completes
+ * themselves): here the caller enters the new password directly and it
+ * takes effect immediately. Permission (including the Super Admin
+ * self-only rule) is enforced server-side in `resetUserPassword`; this
+ * dialog itself has no special-casing because `UserRowView` never renders
+ * the menu item that opens it unless the action is already allowed.
+ */
+function SetPasswordDialog({
+  user,
+  busy,
+  onOpenChange,
+  onSubmit,
+}: {
+  user: { email: string | null; full_name: string | null } | null;
+  busy: boolean;
+  onOpenChange: (o: boolean) => void;
+  onSubmit: (password: string) => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const strength = scorePasswordStrength(password);
+  const tooShort = password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
+
+  useEffect(() => {
+    if (!user) setPassword("");
+  }, [user]);
+
+  return (
+    <Dialog open={!!user} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Set a new password</DialogTitle>
+          <DialogDescription>
+            {user?.full_name?.trim() || fallbackName(user?.email)} — {user?.email ?? ""}. Takes
+            effect immediately; they'll be required to set their own password on next sign-in.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          className="space-y-3 pt-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (password.length < MIN_PASSWORD_LENGTH) return;
+            onSubmit(password);
+          }}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="reset-pw-password">New password</Label>
+            <div className="relative">
+              <Input
+                id="reset-pw-password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoFocus
+                minLength={MIN_PASSWORD_LENGTH}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Type a temporary password"
+                className="pr-10 font-mono"
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-3.5 w-3.5" />
+                ) : (
+                  <Eye className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </div>
+            <div className="space-y-1">
+              <Progress value={strength.percent} className="h-1" />
+              <div className="flex items-center justify-between text-xs">
+                <span className={password ? toneText(strength.tone) : "text-muted-foreground"}>
+                  {password ? strength.label : "Minimum 8 characters"}
+                </span>
+                {tooShort && (
+                  <span className="text-status-danger-fg">
+                    {MIN_PASSWORD_LENGTH - password.length} more character
+                    {MIN_PASSWORD_LENGTH - password.length === 1 ? "" : "s"} needed
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              disabled={busy}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy || password.length < MIN_PASSWORD_LENGTH}>
+              {busy ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <KeyRound className="mr-1.5 h-4 w-4" />
+              )}
+              Set password
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function UserRowView({
   user,
+  actor,
   isSelf,
   onAssign,
   onRevoke,
@@ -785,10 +1087,13 @@ function UserRowView({
   onResend,
   onSetActive,
   onDelete,
+  onSetNewPassword,
   busy,
+  lifecycleBusy,
   renaming,
 }: {
   user: CombinedUser;
+  actor: ActingUserRef;
   isSelf: boolean;
   onAssign: (role: AppRole) => void;
   onRevoke: (role: AppRole) => void;
@@ -797,13 +1102,25 @@ function UserRowView({
   onResend: () => void;
   onSetActive: (isActive: boolean) => void;
   onDelete: () => void;
+  onSetNewPassword: () => void;
   busy: boolean;
+  lifecycleBusy: boolean;
   renaming: boolean;
 }) {
   const available = APP_ROLES.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(user.full_name ?? "");
   const pendingInvite = user.status === "invited" || user.status === "expired";
+
+  // The same decision matrix `users.functions.ts`
+  // enforces server-side, evaluated here purely to disable/hide row
+  // actions the request would be denied anyway — the server (and, for
+  // user_roles, the DB trigger) remains the authoritative check.
+  const targetRef = { id: user.id, isSuperAdmin: user.roles.includes("super_admin") };
+  const isProtected = targetRef.isSuperAdmin;
+  const canDelete = !isSelf && canManageTargetUser(actor, targetRef, "delete").allowed;
+  const canDeactivate = !isSelf && canManageTargetUser(actor, targetRef, "deactivate").allowed;
+  const canSetPassword = canManageTargetUser(actor, targetRef, "reset_password").allowed;
 
   function startEdit() {
     setDraft(user.full_name ?? "");
@@ -879,21 +1196,44 @@ function UserRowView({
         {user.roles.length === 0 ? (
           <span className="text-xs text-muted-foreground">No application roles assigned.</span>
         ) : (
-          <div className="flex flex-wrap gap-1.5">
-            {user.roles.map((r) => (
-              <Badge key={r} variant="secondary" className="gap-1">
-                {ROLE_LABEL[r]}
-                <button
-                  type="button"
-                  onClick={() => onRevoke(r)}
-                  disabled={busy}
-                  className="ml-0.5 rounded hover:bg-muted-foreground/20"
-                  aria-label={`Remove ${ROLE_LABEL[r]}`}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {user.roles.map((r) =>
+              r === "super_admin" ? (
+                // Never revocable, by anyone — no
+                // remove control at all, not even a disabled one, so
+                // there's nothing here that looks actionable.
+                <Badge
+                  key={r}
+                  variant="secondary"
+                  className="gap-1"
+                  title="This account is protected."
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
+                  <ShieldAlert className="h-3 w-3" />
+                  {ROLE_LABEL[r]}
+                </Badge>
+              ) : (
+                <Badge key={r} variant="secondary" className="gap-1">
+                  {ROLE_LABEL[r]}
+                  <button
+                    type="button"
+                    onClick={() => onRevoke(r)}
+                    // Self-lockout guard, mirrored from the mutation: an
+                    // admin removing their own admin role would lose access
+                    // to this page immediately.
+                    disabled={busy || (isSelf && r === "admin")}
+                    title={
+                      isSelf && r === "admin"
+                        ? "You cannot remove your own administrator role."
+                        : undefined
+                    }
+                    className="ml-0.5 rounded hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={`Remove ${ROLE_LABEL[r]}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ),
+            )}
           </div>
         )}
       </td>
@@ -903,11 +1243,20 @@ function UserRowView({
       <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-end gap-1.5">
-          {available.map((r) => (
-            <Button key={r} size="sm" variant="outline" disabled={busy} onClick={() => onAssign(r)}>
-              Grant {ROLE_LABEL[r]}
-            </Button>
-          ))}
+          {/* Sprint 1.7, Part 3: the protected account's role set is fixed —
+              no additional roles can be granted to it either. */}
+          {!isProtected &&
+            available.map((r) => (
+              <Button
+                key={r}
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => onAssign(r)}
+              >
+                Grant {ROLE_LABEL[r]}
+              </Button>
+            ))}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="More actions">
@@ -917,26 +1266,50 @@ function UserRowView({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Lifecycle</DropdownMenuLabel>
               {pendingInvite ? (
-                <DropdownMenuItem onClick={onResend} disabled={!user.email}>
+                <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
                   <Send className="mr-2 h-4 w-4" /> Resend invitation
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuItem onClick={onReset} disabled={!user.email}>
+              <DropdownMenuItem onClick={onReset} disabled={!user.email || lifecycleBusy}>
                 <KeyRound className="mr-2 h-4 w-4" /> Send password reset
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onSetNewPassword}
+                disabled={!canSetPassword}
+                title={!canSetPassword ? "This account is protected." : undefined}
+              >
+                <KeyRound className="mr-2 h-4 w-4" /> Set new password
+              </DropdownMenuItem>
               {user.is_active ? (
-                <DropdownMenuItem onClick={() => onSetActive(false)} disabled={isSelf}>
+                <DropdownMenuItem
+                  onClick={() => onSetActive(false)}
+                  disabled={!canDeactivate || lifecycleBusy}
+                  title={
+                    isSelf
+                      ? "You cannot deactivate your own account."
+                      : isProtected
+                        ? "This account is protected."
+                        : undefined
+                  }
+                >
                   <UserX className="mr-2 h-4 w-4" /> Deactivate user
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => onSetActive(true)}>
+                <DropdownMenuItem onClick={() => onSetActive(true)} disabled={lifecycleBusy}>
                   <UserCheck className="mr-2 h-4 w-4" /> Reactivate user
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={onDelete}
-                disabled={isSelf}
+                disabled={!canDelete || lifecycleBusy}
+                title={
+                  isSelf
+                    ? "You cannot delete your own account."
+                    : isProtected
+                      ? "This account is protected."
+                      : undefined
+                }
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />

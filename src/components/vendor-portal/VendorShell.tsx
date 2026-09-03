@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
+import { AppMark } from "@/components/brand/AppMark";
 
 const NAV = [
   { to: "/vendor/dashboard", label: "Today", icon: LayoutDashboard },
@@ -38,11 +38,15 @@ export function VendorShell({
       <aside className="hidden w-56 shrink-0 border-r border-border bg-card md:flex md:flex-col">
         <div className="border-b border-border px-4 py-4">
           <div className="flex items-center gap-2 font-display text-sm font-bold tracking-tight">
-            <img src={stosAppIcon.url} alt="STOS" width={22} height={22} className="h-[22px] w-[22px] rounded" />
-            <span><span className="text-primary">STOS</span> Vendor</span>
+            <AppMark size={22} className="h-[22px] w-[22px] rounded" />
+            <span>
+              <span className="text-primary">STOS</span> Vendor
+            </span>
           </div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">{companyName}</div>
-          <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">By Vedora Vision</div>
+          <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+            By Vedora Vision
+          </div>
         </div>
         <nav className="flex-1 space-y-1 p-2">
           {NAV.map((n) => {
@@ -79,7 +83,10 @@ export function VendorShell({
 
       {/* Mobile top bar + drawer */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-3 py-2 md:hidden">
+        <header
+          className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-3 pb-2 md:hidden"
+          style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        >
           <button
             aria-label="Open menu"
             className="rounded-md p-2 hover:bg-muted"
@@ -116,7 +123,12 @@ export function VendorShell({
             })}
           </nav>
         )}
-        <main className="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-6">{children}</main>
+        <main
+          className="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-6"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

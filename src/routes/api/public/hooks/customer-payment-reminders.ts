@@ -3,15 +3,22 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 /**
  * Cron endpoint — pg_cron / external scheduler POSTs here daily to run the
- * reminder generator. Auth is enforced via a shared CRON_SECRET bearer token;
- * the underlying SECURITY DEFINER RPC is only granted to `service_role`, so
+ * reminder generator. Auth is enforced via a shared bearer token; the
+ * underlying SECURITY DEFINER RPC is only granted to `service_role`, so
  * the handler uses the service-role admin client after the bearer is verified.
+ *
+ * Reads `CRON_SECRET` (this endpoint's original,
+ * still-primary name) with a fallback to `CRON_SHARED_SECRET` (the name
+ * docs/DEPLOYMENT.md documents, and what workforce-daily.ts's identical
+ * cron endpoint also now accepts) — this sandbox has no way to confirm
+ * which name is actually configured live, so both are honored rather than
+ * risking silently disabling this endpoint by guessing wrong.
  */
 export const Route = createFileRoute("/api/public/hooks/customer-payment-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const cronSecret = process.env.CRON_SECRET;
+        const cronSecret = process.env.CRON_SECRET || process.env.CRON_SHARED_SECRET;
         if (!cronSecret) {
           return new Response("Cron secret not configured", { status: 500 });
         }

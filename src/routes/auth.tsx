@@ -24,8 +24,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toUserMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
-const stosAppIcon = "/branding/stos-app-icon.png";
-const stosBanner = "/branding/stos-banner.png";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { POWERED_BY_LINE } from "@/lib/platform/application";
+import { LoadingBlock } from "@/components/layout/States";
+
 /* ---------------------------------------------------------------
  * Auth route — Phase B redesign.
  *
@@ -38,6 +40,9 @@ const stosBanner = "/branding/stos-banner.png";
  *   /auth?flow=reset              → reset password
  *   /auth?flow=update             → set a new password (after email link)
  *   /auth?flow=invite             → accept invite (uses update password)
+ *   /auth?flow=force-change       → mandatory first-login password change
+ *                                    (Sprint 1.7, Part 7 — reuses the same
+ *                                    update-password UI as `update`/`invite`)
  *   /auth?flow=expired            → session expired notice
  *   /auth?flow=denied             → access denied notice
  *   /auth?flow=loading            → transitional loading state
@@ -45,20 +50,41 @@ const stosBanner = "/branding/stos-banner.png";
 
 const flowSchema = z.object({
   flow: z
-    .enum(["signin", "reset", "update", "invite", "expired", "denied", "loading"])
+    .enum(["signin", "reset", "update", "invite", "force-change", "expired", "denied", "loading"])
     .catch("signin"),
   redirect: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  // With `ssr: false` the server emits the router's pending fallback
+  // (`<LoadingBlock />`) for this match. Timing alone can't guarantee the
+  // client commits the same markup on its first pass, so `AuthPage` renders
+  // that exact fallback until it has hydrated — see the note there.
+
   validateSearch: (search) => flowSchema.parse(search),
   beforeLoad: async ({ search }) => {
     if (typeof window === "undefined") return;
+    // See the matching comment in
+    // `_authenticated/route.tsx` — the root route already replaces the
+    // entire app with the configuration screen when misconfigured, so this
+    // only needs to avoid throwing.
+    if (!getSupabaseConfigStatus().ok) return;
     // Only bounce authenticated users away from the sign-in surface.
     if (search.flow && search.flow !== "signin") return;
-    const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/dashboard" });
+    // supabase-js serialises every auth call behind a `navigator.locks`
+    // lock and `getSession()` can trigger a token refresh against the
+    // Supabase host. If that host is unreachable — offline, DNS-blocked,
+    // blocked by an extension — the promise never settles, and since this
+    // route is `ssr: false` the result is a permanently blank sign-in page.
+    // Losing the redirect-if-already-signed-in convenience is a far better
+    // outcome than losing the page, so the check gives up after 4 seconds
+    // and falls through to rendering the form.
+    const session = await Promise.race([
+      supabase.auth.getSession().then(({ data }) => data.session),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+    ]);
+    if (session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
 });
@@ -69,6 +95,14 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const search = Route.useSearch();
   const flow = search.flow ?? "signin";
+
+  // The server HTML for this `ssr: false` route is the router's pending
+  // fallback. Rendering the identical fallback on the first client pass makes
+  // the two trees structurally identical, so hydration commits cleanly and the
+  // real page mounts on the following render.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  if (!hydrated) return <LoadingBlock />;
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
@@ -88,17 +122,19 @@ function AuthPage() {
 }
 
 /* ============================================================
- * Hero panel — STOS banner + capabilities
+ * Hero panel — Basalt material, logo, copy, capabilities, quarry illustration
  * ============================================================ */
 function HeroPanel({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
         "material-basalt relative flex-col justify-between overflow-hidden px-10 py-12 lg:px-14 lg:py-16",
+        // Border only where it butts up to the form panel on desktop.
         "lg:border-r lg:border-border-inverse",
         className,
       )}
     >
+      {/* Layered specular / grain accent, purely decorative. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0"
@@ -108,32 +144,22 @@ function HeroPanel({ className }: { className?: string }) {
         }}
       />
 
-      {/* Top: STOS mark */}
-      <div className="relative z-10 flex items-center gap-3">
-        <img
-          src={stosAppIcon}
-          alt="STOS"
-          width={44}
-          height={44}
-          className="h-11 w-11 rounded-md shadow-e2 ring-1 ring-white/10"
-        />
-        <div className="leading-tight">
-          <div className="font-display text-lg font-semibold tracking-tight text-text-on-material">
-            STOS
-          </div>
-          <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-            By Vedora Vision
-          </div>
-        </div>
+      {/* Top: logo */}
+      <div className="relative z-10">
+        <StoneTechMark />
       </div>
 
-      {/* Middle: STOS banner (official product hero) + copy */}
-      <div className="relative z-10 mt-10 max-w-[560px] space-y-10 lg:mt-14">
-        <img
-          src={stosBanner}
-          alt="STOS — Professional ERP for the Natural Stone Industry"
-          className="w-full max-w-[520px] rounded-lg shadow-e2 ring-1 ring-white/10"
-        />
+      {/* Middle: headline + copy + capabilities */}
+      <div className="relative z-10 mt-16 max-w-[520px] space-y-10 lg:mt-24">
+        <div className="space-y-5">
+          <h2 className="font-display text-3xl leading-[1.15] tracking-tight text-text-on-material sm:text-[38px] lg:text-[44px]">
+            Enterprise OS for the Natural Stone Industry
+          </h2>
+          <p className="max-w-[46ch] text-[15px] leading-relaxed text-text-on-material-muted">
+            Manage enquiries, quotations, production, inventory, procurement, dispatch, finance and
+            customer relationships from one operating system.
+          </p>
+        </div>
 
         <ul className="space-y-4">
           <Capability
@@ -154,9 +180,10 @@ function HeroPanel({ className }: { className?: string }) {
         </ul>
       </div>
 
-      {/* Bottom: attribution */}
-      <div className="relative z-10 mt-12">
-        <p className="text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
+      {/* Bottom: quarry line illustration + wordmark */}
+      <div className="relative z-10 mt-16">
+        <QuarryLines />
+        <p className="mt-6 text-xs uppercase tracking-[0.14em] text-text-on-material-muted">
           STOS · v1.0 · By Vedora Vision
         </p>
       </div>
@@ -164,6 +191,41 @@ function HeroPanel({ className }: { className?: string }) {
   );
 }
 
+function StoneTechMark() {
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        aria-hidden="true"
+        className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-md"
+        style={{
+          background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
+        }}
+      >
+        {/* Faceted stone mark — abstract slab silhouette */}
+        <svg
+          viewBox="0 0 32 32"
+          className="h-6 w-6 text-text-on-intent"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        >
+          <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
+          <path d="M4 10 L16 16 L28 10" />
+          <path d="M16 16 L16 28" />
+        </svg>
+      </div>
+      <div className="leading-tight">
+        <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
+          STOS
+        </div>
+        <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
+          By Vedora Vision
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Capability({
   icon: Icon,
@@ -230,6 +292,8 @@ function FormArea({ flow }: { flow: string }) {
     case "update":
     case "invite":
       return <UpdatePasswordCard invite={flow === "invite"} />;
+    case "force-change":
+      return <UpdatePasswordCard forceChange />;
     case "expired":
       return (
         <NoticeCard
@@ -328,6 +392,10 @@ function AuthCard({
       <p className="mt-6 text-center text-[11.5px] leading-relaxed text-text-muted">
         Accounts are provisioned by an administrator. Contact your admin for access.
       </p>
+      {/* Sprint 1.7, Part 9: subtle platform attribution — does not replace
+          the STOS wordmark shown above, just credits the company
+          that builds and operates it. */}
+      <p className="mt-2 text-center text-[11px] text-text-muted">{POWERED_BY_LINE}</p>
     </div>
   );
 }
@@ -567,7 +635,7 @@ function ResetPasswordCard() {
 /* ============================================================
  * Update password (after email link) — also handles invite accept
  * ============================================================ */
-function UpdatePasswordCard({ invite }: { invite?: boolean }) {
+function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceChange?: boolean }) {
   const navigate = useNavigate();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -593,8 +661,39 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw error;
+
+      let isVendor = false;
+      if (forceChange) {
+        // Clears the flag that forced this screen so
+        // the very next `beforeLoad` check on `_authenticated` lets the
+        // user through normally.
+        const { data: sess } = await supabase.auth.getUser();
+        const uid = sess.user?.id;
+        if (uid) {
+          // This write is what releases the user from the force-change
+          // screen — `_authenticated`'s `beforeLoad` sends them straight
+          // back here while the flag is set. Discarding its error meant a
+          // failed update (an RLS denial, a row that does not exist yet)
+          // presented as success and then bounced the user back to this
+          // same screen with their new password already saved, forever.
+          // Surfacing it keeps them on the screen with a reason, and the
+          // "Sign out" link below is the way out.
+          const { error: clearError } = await supabase
+            .from("profiles")
+            .update({ force_password_change: false })
+            .eq("id", uid);
+          if (clearError) throw clearError;
+          const { data: vu } = await supabase
+            .from("vendor_users")
+            .select("vendor_id")
+            .eq("user_id", uid)
+            .maybeSingle();
+          isVendor = !!vu;
+        }
+      }
+
       toast.success(invite ? "Welcome to STOS" : "Password updated");
-      await navigate({ to: "/dashboard" });
+      await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
       setFormError(msg);
@@ -606,12 +705,20 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
 
   return (
     <AuthCard
-      eyebrow={invite ? "Accept your invite" : "Set a new password"}
-      title={invite ? "Welcome to STOS" : "Choose a new password"}
+      eyebrow={forceChange ? "Required" : invite ? "Accept your invite" : "Set a new password"}
+      title={
+        forceChange
+          ? "Set your permanent password"
+          : invite
+            ? "Welcome to STOS"
+            : "Choose a new password"
+      }
       description={
-        invite
-          ? "Create a password to activate your account. You'll be signed in immediately."
-          : "Pick a strong password. Use at least 8 characters — a mix of letters, numbers and symbols is best."
+        forceChange
+          ? "Your administrator created this account with a temporary password. Choose a new password to continue — you can't access STOS until this is done."
+          : invite
+            ? "Create a password to activate your account. You'll be signed in immediately."
+            : "Pick a strong password. Use at least 8 characters — a mix of letters, numbers and symbols is best."
       }
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
@@ -669,8 +776,38 @@ function UpdatePasswordCard({ invite }: { invite?: boolean }) {
           className="w-full h-11 gap-2"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {busy ? "Saving…" : invite ? "Activate account" : "Update password"}
+          {busy
+            ? "Saving…"
+            : forceChange
+              ? "Set password and continue"
+              : invite
+                ? "Activate account"
+                : "Update password"}
         </Button>
+
+        {/* The force-change screen is the one place in the app a user can
+            be held with no navigation and no way back: the shell is not
+            rendered, and every authenticated route redirects here. If the
+            password update itself keeps failing, this is the only exit. */}
+        {forceChange ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await supabase.auth.signOut();
+                } catch (err) {
+                  console.warn("[auth] sign-out from the force-change screen failed", err);
+                }
+                await navigate({ to: "/auth", search: { flow: "signin" } });
+              })();
+            }}
+            className="w-full text-center text-[13px] text-text-muted underline-offset-4 transition-colors hover:text-text-primary hover:underline disabled:opacity-50"
+          >
+            Sign out and use a different account
+          </button>
+        ) : null}
       </form>
     </AuthCard>
   );

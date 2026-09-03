@@ -90,6 +90,9 @@ const MIGRATED_FILES = [
   "src/lib/customer-payments/schedule.ts",
   "src/lib/installation/progress.ts",
   "src/lib/manufacturing/api.ts",
+  "src/lib/followups/api.ts",
+  "src/lib/rfqs/api.ts",
+  "src/lib/tasks/api.ts",
 ];
 
 let failures = 0;

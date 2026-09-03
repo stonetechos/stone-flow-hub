@@ -36,7 +36,7 @@ Your ONLY job is to classify a user's free-text query into a structured intent. 
 Return STRICT JSON matching this shape (omit optional keys you don't need):
 {
   "intent": "search" | "navigate" | "filter" | "open_record" | "summarize_record" | "explain_status" | "show_related" | "recent_activity" | "timeline_summary" | "chat",
-  "entityType": "customer" | "enquiry" | "quote" | "sales_order" | "invoice" | "receipt" | "dispatch" | "installation" | "purchase_order" | "vendor" | "product" | "inventory_item" | "project",
+  "entityType": "customer" | "enquiry" | "quote" | "sales_order" | "invoice" | "receipt" | "dispatch" | "installation" | "purchase_order" | "vendor" | "product" | "inventory_item" | "project" | "rfq" | "task" | "followup",
   "searchText": "free text terms for name/code/product matching",
   "identifier": "a specific document number the user named directly, e.g. QUO-000021",
   "filters": {
@@ -71,6 +71,10 @@ Examples:
 "Show every interaction before I call this customer" -> {"intent":"show_related","entityType":"customer"}
 "When was the last payment received from Ashish Patel?" -> {"intent":"recent_activity","entityType":"customer","filters":{"customerName":"Ashish Patel"}}
 "Summarize this project's history" -> {"intent":"summarize_record","entityType":"project"}
+"Pending quotations" -> {"intent":"filter","entityType":"quote","filters":{"status":"pending"}}
+"Open RFQs" -> {"intent":"filter","entityType":"rfq","filters":{"status":"pending"}}
+"My tasks due this week" -> {"intent":"filter","entityType":"task","filters":{"dateRange":"this_week"}}
+"Follow ups scheduled today for Mint Stone" -> {"intent":"filter","entityType":"followup","searchText":"Mint Stone","filters":{"dateRange":"today"}}
 "How does the manufacturing workflow work" -> {"intent":"chat"}
 
 Return JSON only, no prose.`;

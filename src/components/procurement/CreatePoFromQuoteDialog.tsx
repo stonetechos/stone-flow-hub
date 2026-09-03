@@ -3,7 +3,7 @@
  *  (2 days before customer delivery by default), and blocks unless procurement
  *  lock is satisfied — with an administrator override that records a reason.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ import {
   riskFor,
   type PaymentScheduleRow,
 } from "@/lib/procurement/commitment";
+import { confirmCloseIfDirty } from "@/hooks/use-unsaved-changes";
 
 export function CreatePoFromQuoteDialog({
   quoteId,
@@ -53,13 +54,22 @@ export function CreatePoFromQuoteDialog({
   const [override, setOverride] = useState("");
   const [schedule, setSchedule] = useState<PaymentScheduleRow[]>([]);
 
+  // Snapshot for the unsaved-changes close guard.
+  const initialSnapshot = useRef("");
+
   useEffect(() => {
     if (lock.data) {
-      setVendorDelivery(lock.data.vendor_delivery_default ?? "");
-      setSchedule(lock.data.payment_schedule ?? []);
+      const delivery = lock.data.vendor_delivery_default ?? "";
+      const sched = lock.data.payment_schedule ?? [];
+      setVendorDelivery(delivery);
+      setSchedule(sched);
       setOverride("");
+      initialSnapshot.current = JSON.stringify([delivery, "", sched]);
     }
   }, [lock.data]);
+
+  const dirty =
+    open && initialSnapshot.current !== JSON.stringify([vendorDelivery, override, schedule]);
 
   const risk = useMemo(
     () => riskFor(vendorDelivery || null, lock.data?.customer_delivery_date ?? null),
@@ -89,8 +99,25 @@ export function CreatePoFromQuoteDialog({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const canSubmitNow = canSubmit && !mut.isPending && Math.abs(totalPct - 100) < 0.01;
+
+  // Ctrl/Cmd+Enter submits, matching the shortcut
+  // convention used across the other converted dialogs.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (!canSubmitNow) return;
+        e.preventDefault();
+        mut.mutate();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, canSubmitNow, mut]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -245,13 +272,13 @@ export function CreatePoFromQuoteDialog({
         ) : null}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button
-            onClick={() => mut.mutate()}
-            disabled={!canSubmit || mut.isPending || Math.abs(totalPct - 100) > 0.01}
-          >
+          <Button onClick={() => mut.mutate()} disabled={!canSubmitNow}>
             {mut.isPending ? (
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
             ) : (

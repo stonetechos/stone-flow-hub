@@ -37,6 +37,8 @@ jobs:
       - name: Typecheck tests
         run: npm run typecheck:tests
 
+      # Blocking. Do not add continue-on-error here — if a generated file
+      # is the cause, exclude it in eslint.config.js instead.
       - name: Lint
         run: npm run lint
 

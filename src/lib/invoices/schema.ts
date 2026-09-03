@@ -13,7 +13,7 @@ export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 
 export const setInvoiceStatusSchema = z.object({
   invoice_id: zUuid,
-  status: z.enum(["draft", "sent", "cancelled", "overdue"]),
+  status: z.enum(["draft", "issued", "sent", "cancelled", "overdue"]),
 });
 export type SetInvoiceStatusInput = z.infer<typeof setInvoiceStatusSchema>;
 

@@ -58,6 +58,15 @@ export function CustomerPaymentCentre(props: {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  /** Guard the inline editor: no zero, negative or over-payment amounts. */
+  function payError(row: PaymentScheduleDashboardRow): string | null {
+    const n = Number(payAmount);
+    if (payAmount === "" || Number.isNaN(n)) return "Enter an amount";
+    if (n <= 0) return "Amount must be greater than zero";
+    if (n > row.balance_due + 0.01) return `Maximum ${formatInr(row.balance_due)}`;
+    return null;
+  }
+
   if (query.isLoading) return <LoadingBlock />;
   const rows = query.data ?? [];
 
@@ -142,23 +151,41 @@ export function CustomerPaymentCentre(props: {
                         <div className="flex justify-end gap-2">
                           {payingId === r.id ? (
                             <>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                className="w-28 h-8 text-right"
-                                value={payAmount}
-                                onChange={(e) => setPayAmount(e.target.value)}
-                                autoFocus
-                                placeholder={String(r.balance_due)}
-                              />
+                              <div className="text-right">
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min={0}
+                                  max={r.balance_due}
+                                  inputMode="decimal"
+                                  className="w-28 h-8 text-right"
+                                  value={payAmount}
+                                  onChange={(e) => setPayAmount(e.target.value)}
+                                  autoFocus
+                                  aria-invalid={!!payError(r)}
+                                  placeholder={String(r.balance_due)}
+                                />
+                                {payError(r) && (
+                                  <div className="mt-1 text-[11px] text-destructive">
+                                    {payError(r)}
+                                  </div>
+                                )}
+                              </div>
                               <Button
+                                type="button"
                                 size="sm"
                                 onClick={() => payMut.mutate(r)}
-                                disabled={payMut.isPending || !payAmount}
+                                disabled={payMut.isPending || !!payError(r)}
                               >
-                                Save
+                                {payMut.isPending && payingId === r.id ? "Saving…" : "Save"}
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setPayingId(null)}>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                disabled={payMut.isPending}
+                                onClick={() => setPayingId(null)}
+                              >
                                 ×
                               </Button>
                             </>

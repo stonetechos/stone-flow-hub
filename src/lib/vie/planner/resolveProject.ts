@@ -31,17 +31,32 @@
  * projects only. That is inherited behavior from reusing the existing
  * module API, not a new decision made by this resolver: an
  * archived/inactive project is treated the same as "no project" here.
+ *
+ * `blocker` is now a structured `PlannerBlocker` (types.ts),
+ * same discipline as resolveCustomer.ts/resolveFollowupTarget.ts.
+ *
+ * The zero/one/many classification and both blocker shapes
+ * (the "no customer_id at all" precondition blocker, and the ambiguous/
+ * empty selection blocker) now go through entityResolution.ts's generic
+ * helpers. The `projectTextHint` narrowing step (below) stays here
+ * unchanged — it's business-specific to how a quotation's extracted
+ * projectText disambiguates a candidate set, exactly the kind of
+ * resolver-owned logic the framework is designed to sit underneath rather
+ * than absorb. Behavior (including the exact byte-for-byte PlannerBlocker
+ * shape) is unchanged — resolveProject.test.ts is unmodified by this
+ * sprint and still passes against this file.
  */
 import { listProjectsByCustomer } from "@/lib/projects/api";
+import type { PlannerBlocker } from "../types";
+import { classifyMatches, missingPrerequisiteBlocker, selectionBlocker } from "./entityResolution";
 
 export interface ProjectResolution {
   projectId: string | null;
   projectLabel: string | null;
-  blocker: string | null;
+  blocker: PlannerBlocker | null;
 }
 
-/**
- * @param customerId The already-resolved customer_id to find a project
+/** @param customerId The already-resolved customer_id to find a project
  *   for (typically resolveCustomer()'s own `customerId` output — see the
  *   file header for why this resolver never takes raw utterance text).
  * @param customerLabel Optional, purely for a friendlier blocker message
@@ -73,7 +88,12 @@ export async function resolveProject(
     return {
       projectId: null,
       projectLabel: null,
-      blocker: "No resolved customer to look up a project for.",
+      blocker: missingPrerequisiteBlocker({
+        id: "project_id",
+        type: "project_selection",
+        field: "project_id",
+        message: "No resolved customer to look up a project for.",
+      }),
     };
   }
 
@@ -95,33 +115,21 @@ export async function resolveProject(
     }
   }
 
-  if (candidates.length === 0) {
-    return {
-      projectId: null,
-      projectLabel: null,
-      blocker: `${who} has no existing project to quote against.`,
-    };
-  }
-
-  if (candidates.length > 1) {
-    const labels = candidates
-      .slice(0, 5)
-      .map((m) => `${m.name} (${m.project_code})`)
-      .join(", ");
-
-    return {
-      projectId: null,
-      projectLabel: null,
-      blocker:
-        candidates.length > 5
-          ? `${who} has ${candidates.length} projects: ${labels}, ...`
-          : `${who} has ${candidates.length} projects: ${labels}.`,
-    };
+  const outcome = classifyMatches(candidates);
+  if (outcome.kind === "one") {
+    return { projectId: outcome.record.id, projectLabel: outcome.record.name, blocker: null };
   }
 
   return {
-    projectId: candidates[0].id,
-    projectLabel: candidates[0].name,
-    blocker: null,
+    projectId: null,
+    projectLabel: null,
+    blocker: selectionBlocker(outcome, {
+      id: "project_id",
+      type: "project_selection",
+      field: "project_id",
+      toCandidate: (m) => ({ id: m.id, label: m.name, subtitle: m.project_code }),
+      noMatchMessage: `${who} has no existing project to quote against.`,
+      multipleMatchesMessage: (count) => `${who} has ${count} projects — choose one.`,
+    }),
   };
 }

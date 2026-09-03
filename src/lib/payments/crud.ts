@@ -37,22 +37,9 @@ export interface PaymentRegisterRow {
 
 const SELECT = "*, invoice:invoices!payments_invoice_id_fkey(id,invoice_no)";
 
-/** @deprecated Reads only the legacy `payments` table -- use
- *  `listPaymentRegister` for the Payments page so receipts are included.
- *  Kept for the payment detail/edit routes, which still operate on a real
- *  `payments` row. */
-export async function listPayments(query = ""): Promise<PaymentListItem[]> {
-  let q = supabase
-    .from("payments")
-    .select(SELECT)
-    .order("paid_at", { ascending: false })
-    .limit(200);
-  const s = sanitizeSearch(query);
-  if (s) q = q.or(`payment_no.ilike.%${s}%,reference_no.ilike.%${s}%,notes.ilike.%${s}%`);
-  const { data, error } = await q;
-  if (error) throw new AppError(mapDbError(error));
-  return (data ?? []) as PaymentListItem[];
-}
+// `listPayments` (legacy `payments`-only reader) was removed: the Payments
+// page reads `listPaymentRegister` and nothing else called it, so it was a
+// second, silently-diverging source of truth.
 
 /** The Payments page's real data source (Phase G.9A.2) -- every active
  *  receipt plus every legacy payment, newest first. */

@@ -1,11 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Ban } from "lucide-react";
+
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { Button } from "@/components/ui/button";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
@@ -42,10 +46,12 @@ function ReceiptDetailPage() {
     queryFn: () => getReceiptAllocations(receiptId),
   });
 
+  const [confirmVoid, setConfirmVoid] = useState(false);
   const voidMut = useMutation({
     mutationFn: () => voidReceipt(receiptId),
     onSuccess: () => {
-      toast.success("Receipt voided");
+      toast.success("Receipt voided — allocated invoices have been recalculated");
+      setConfirmVoid(false);
       invalidateReceipt(qc, receiptId, query.data?.customer_id);
       query.refetch();
     },
@@ -72,7 +78,7 @@ function ReceiptDetailPage() {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => voidMut.mutate()}
+                onClick={() => setConfirmVoid(true)}
                 disabled={voidMut.isPending}
               >
                 <Ban className="mr-2 h-4 w-4" /> Void
@@ -80,6 +86,17 @@ function ReceiptDetailPage() {
             )}
           </div>
         }
+      />
+
+      <ConfirmDialog
+        open={confirmVoid}
+        onOpenChange={setConfirmVoid}
+        tone="danger"
+        title={`Void receipt ${r.receipt_no}?`}
+        description="Voiding removes this receipt from the customer ledger. Every invoice it was allocated to will be recalculated and may go back to unpaid or partially paid. This cannot be undone from here."
+        confirmLabel="Void receipt"
+        busy={voidMut.isPending}
+        onConfirm={() => voidMut.mutate()}
       />
 
       <GuidedNextStep entity="receipt" entityId={receiptId} ctx={{ customer_id: r.customer_id }} />

@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { installCapacitorServerFnFetchPatch } from "@/lib/capacitor/install-fetch-patch";
+import { configureStatusBarForEdgeToEdge } from "@/lib/capacitor/status-bar";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -20,12 +21,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
+import { getSupabaseConfigStatus } from "@/lib/env/config-status";
+import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
+import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
 // module scope, before the router (and therefore any route loader's
 // server-fn calls) is created.
 installCapacitorServerFnFetchPatch();
+// Fire-and-forget — unlike the fetch patch this has no ordering
+// requirement against anything else on this page (it's a no-op outside
+// the native shell either way), so it doesn't need to block module
+// evaluation. Kicked off here rather than inside a component effect to
+// start as early as possible and avoid a visible flash of non-edge-to-edge
+// layout on cold start.
+void configureStatusBarForEdgeToEdge();
 
 function NotFoundComponent() {
   return (
@@ -126,7 +137,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: "Professional ERP for the Natural Stone Industry. By Vedora Vision.",
       },
-
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -165,6 +175,13 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  // Computed once (module-level memoized in
+  // config-status.ts), checked here before any child route mounts. When
+  // misconfigured, the effects below skip touching `supabase` entirely and
+  // the component renders the global configuration screen instead of
+  // `<Outlet/>` — no page ever gets a chance to render its own "Missing
+  // Supabase environment variable(s)" error.
+  const configStatus = getSupabaseConfigStatus();
 
   useEffect(() => {
     void installToastDiagnostics();
@@ -172,6 +189,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    if (!configStatus.ok) return;
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         // Phase G.8.9 root-cause fix: clearing the query cache in place
@@ -185,6 +203,16 @@ function RootComponent() {
         // navigation first and skip the doomed re-render entirely. Only
         // mutate the cache in place when we're NOT navigating (i.e.
         // already on /auth, so nothing will unmount the tree for us).
+        // One exception to all of the above: when a route signed the user
+        // out itself in order to redirect somewhere specific (see
+        // `lib/auth/managed-sign-out.ts`), a full-page replace here would
+        // win the race and throw that destination away. Cancel the queries
+        // so nothing refetches against a dead token, and let the route's
+        // own redirect unmount the tree.
+        if (consumeManagedSignOut()) {
+          void queryClient.cancelQueries();
+          return;
+        }
         const onAuthPage =
           typeof window !== "undefined" && window.location.pathname.startsWith("/auth");
         if (!onAuthPage && typeof window !== "undefined") {
@@ -202,7 +230,11 @@ function RootComponent() {
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [router, queryClient]);
+  }, [router, queryClient, configStatus.ok]);
+
+  if (!configStatus.ok) {
+    return <ConfigurationRequiredScreen missing={configStatus.missing} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
