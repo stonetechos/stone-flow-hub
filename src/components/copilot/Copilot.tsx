@@ -176,7 +176,7 @@ function deriveContext(path: string) {
     entity: "app",
     entityId: undefined,
     suggestions: [
-      "How do I navigate Stone Tech OS?",
+      "How do I navigate STOS?",
       "Where do I find real-time business priorities?",
     ],
   };
@@ -310,7 +310,7 @@ export function Copilot() {
           type="button"
           aria-label="Open AI Copilot (⌘J)"
           className={cn(
-            "fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
+            "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full",
             "bg-primary text-primary-foreground shadow-3 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
@@ -321,7 +321,7 @@ export function Copilot() {
         <SheetHeader className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <SheetTitle className="text-base">Stone Tech Copilot</SheetTitle>
+            <SheetTitle className="text-base">STOS Copilot</SheetTitle>
             <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
               {ctx.entity}
             </Badge>

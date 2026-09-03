@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { LoadingBlock, EmptyState } from "@/components/layout/States";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import {
   Loader2,
   KeyRound,
@@ -369,15 +372,13 @@ function UsersAdminPage() {
       <Card className="shadow-1">
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingBlock />
           ) : error ? (
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
           ) : filtered.length === 0 ? (
-            <div className="p-6 text-sm text-muted-foreground">
-              {combined.length === 0 ? "No users yet." : "No users match your filters."}
-            </div>
+            <EmptyState
+              title={combined.length === 0 ? "No users yet." : "No users match your filters."}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -541,8 +542,7 @@ function InviteForm({
   const [role, setRole] = useState<AppRole | "none">("none");
 
   return (
-    <form
-      className="space-y-3 pt-1"
+    <QuickForm
       onSubmit={(e) => {
         e.preventDefault();
         if (!email.trim()) return;
@@ -552,48 +552,48 @@ function InviteForm({
           role: role === "none" ? null : role,
         });
       }}
+      busy={busy}
     >
       <p className="text-xs text-muted-foreground">
         Sends a sign-in invitation. The recipient sets their own password on first visit.
       </p>
-      <div className="space-y-1.5">
-        <Label htmlFor="invite-email">Email</Label>
-        <Input
-          id="invite-email"
-          type="email"
-          autoFocus
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="user@company.com"
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="invite-name">Display name (optional)</Label>
-        <Input
-          id="invite-name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="e.g. Harsh Pupneja"
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label>Initial role (optional)</Label>
-        <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No role (assign later)</SelectItem>
-            {APP_ROLES.map((r) => (
-              <SelectItem key={r} value={r}>
-                {ROLE_LABEL[r]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <DialogFooter>
+      <QuickForm.QuickFill>
+        <Field label="Email" required htmlFor="invite-email" className="md:col-span-2">
+          <Input
+            id="invite-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="user@company.com"
+          />
+        </Field>
+        <Field label="Display name (optional)" htmlFor="invite-name" className="md:col-span-2">
+          <Input
+            id="invite-name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="e.g. Harsh Pupneja"
+          />
+        </Field>
+        <Field label="Initial role (optional)" className="md:col-span-2">
+          <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No role (assign later)</SelectItem>
+              {APP_ROLES.map((r) => (
+                <SelectItem key={r} value={r}>
+                  {ROLE_LABEL[r]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      </QuickForm.QuickFill>
+
+      <QuickForm.Actions>
         <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
           Cancel
         </Button>
@@ -605,8 +605,8 @@ function InviteForm({
           )}
           Send invitation
         </Button>
-      </DialogFooter>
-    </form>
+      </QuickForm.Actions>
+    </QuickForm>
   );
 }
 

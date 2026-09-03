@@ -1,6 +1,6 @@
 /**
  * CollapsibleSection — shared collapsible group used across dashboards,
- * settings and forms. Wraps shadcn Collapsible with the Stone Tech OS
+ * settings and forms. Wraps shadcn Collapsible with the STOS
  * section header treatment: typographic title, muted description, optional
  * right-aligned aside, hairline underline when open.
  */

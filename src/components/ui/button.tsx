@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Stone Tech OS button — Phase D refinement.
+ * STOS button — Phase D refinement.
  *
  * Rules
  *  - `default` (mint) is the ONE primary action per screen.

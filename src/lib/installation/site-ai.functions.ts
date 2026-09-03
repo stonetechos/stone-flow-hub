@@ -112,7 +112,7 @@ export const analyzeInstallationSite = createServerFn({ method: "POST" })
     };
 
     const system = [
-      "You are the Stone Tech OS Installation Site Assistant.",
+      "You are the STOS Installation Site Assistant.",
       "Analyse the installation site health across FIVE dimensions and return a JSON object.",
       "Dimensions: delay_risk, labour_productivity, material_consumption, installation_progress, customer_satisfaction.",
       "For each: score 0-100, one-line reasoning grounded in the numbers you were given.",

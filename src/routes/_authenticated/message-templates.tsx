@@ -6,7 +6,6 @@ import { ArrowLeft, Plus, Save } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -28,11 +27,12 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
@@ -248,69 +248,76 @@ function EditTemplateDialog({
         <DialogHeader>
           <DialogTitle>{template ? "Edit template" : "New template"}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label>Code *</Label>
-            <Input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              disabled={!!template}
-              placeholder="e.g. estimate.email.v2"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Name *</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Channel *</Label>
-            <Select value={channel} onValueChange={(v) => setChannel(v as typeof channel)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                <SelectItem value="sms">SMS</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Category</Label>
-            <Input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. estimate / receipt / invoice"
-            />
-          </div>
-          {channel === "email" && (
-            <div className="space-y-1.5 md:col-span-2">
-              <Label>Subject</Label>
-              <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
-            </div>
-          )}
-          <div className="space-y-1.5 md:col-span-2">
-            <Label>Body *</Label>
-            <Textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
-            <p className="text-xs text-muted-foreground">
-              Placeholders:{" "}
-              {extractPlaceholders(body + " " + subject)
-                .map((v) => `{{${v}}}`)
-                .join(", ") || "—"}
-            </p>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setActive(!active)}>
-            {active ? "Deactivate" : "Activate"}
-          </Button>
-          <Button
-            onClick={() => save.mutate()}
-            disabled={!code || !name || !body || save.isPending}
-          >
-            <Save className="mr-2 h-4 w-4" /> Save
-          </Button>
-        </DialogFooter>
+        <QuickForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!code || !name || !body) return;
+            save.mutate();
+          }}
+          busy={save.isPending}
+        >
+          <QuickForm.QuickFill>
+            <Field label="Code" required>
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={!!template}
+                placeholder="e.g. estimate.email.v2"
+              />
+            </Field>
+            <Field label="Name" required>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </Field>
+            <Field label="Channel" required>
+              <Select value={channel} onValueChange={(v) => setChannel(v as typeof channel)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                  <SelectItem value="sms">SMS</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Category">
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g. estimate / receipt / invoice"
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            {channel === "email" && (
+              <Field label="Subject" className="md:col-span-2">
+                <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
+              </Field>
+            )}
+            <Field
+              label="Body"
+              required
+              className="md:col-span-2"
+              hint={`Placeholders: ${
+                extractPlaceholders(body + " " + subject)
+                  .map((v) => `{{${v}}}`)
+                  .join(", ") || "—"
+              }`}
+            >
+              <Textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
+            </Field>
+          </QuickForm.MoreDetails>
+
+          <QuickForm.Actions>
+            <Button type="button" variant="outline" onClick={() => setActive(!active)}>
+              {active ? "Deactivate" : "Activate"}
+            </Button>
+            <Button type="submit" disabled={!code || !name || !body || save.isPending}>
+              <Save className="mr-2 h-4 w-4" /> Save
+            </Button>
+          </QuickForm.Actions>
+        </QuickForm>
       </DialogContent>
     </Dialog>
   );

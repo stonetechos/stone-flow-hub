@@ -216,7 +216,7 @@ export function CompanyProfileTab() {
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           These details appear on every quotation, estimate, invoice, purchase order, delivery
-          challan, report, PDF, and email sent from Stone Tech OS.
+          challan, report, PDF, and email sent from STOS.
           {!isAdmin && " Only admins can make changes here."}
         </p>
       </CardHeader>

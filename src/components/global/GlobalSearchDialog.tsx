@@ -205,7 +205,7 @@ export function GlobalSearchDialog({
             close
           </span>
         </div>
-        <span className="hidden sm:inline">Stone Tech OS · Command</span>
+        <span className="hidden sm:inline">STOS · Command</span>
       </div>
     </CommandDialog>
   );

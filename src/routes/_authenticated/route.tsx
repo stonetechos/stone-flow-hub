@@ -71,7 +71,7 @@ function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void 
   return (
     <div className="p-4">
       <ErrorBlock
-        message="This page ran into a problem loading its data. The rest of Stone Tech OS is still available — use the sidebar to navigate, or retry this page."
+        message="This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page."
         onRetry={() => {
           router.invalidate();
           reset();

@@ -1,5 +1,5 @@
 /**
- * Stone Tech OS MCP server.
+ * STOS MCP server.
  *
  * External AI clients (ChatGPT, Claude, Codex, etc.) connect over OAuth 2.1
  * against this app's Supabase issuer. Every tool runs as the authenticated
@@ -26,11 +26,11 @@ import dashboard from "./tools/dashboard";
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
-  name: "stone-tech-os-mcp",
-  title: "Stone Tech OS",
+  name: "stos-mcp",
+  title: "STOS",
   version: "1.0.0",
   instructions:
-    "Read-mostly access to Stone Tech OS — the operating system for natural-stone businesses. " +
+    "Read-mostly access to STOS — the operating system for natural-stone businesses. " +
     "Use `whoami` to confirm the signed-in staff account, then `list_customers`, `get_customer`, " +
     "`list_enquiries`, `list_quotes`, `list_invoices`, `list_my_tasks` or `get_dashboard_snapshot` " +
     "to answer questions about the business. Every tool respects the signed-in user's row-level " +
