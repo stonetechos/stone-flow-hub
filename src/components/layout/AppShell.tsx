@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
-  History,
   User as UserIcon,
   Settings as SettingsIcon,
   Keyboard,
@@ -46,9 +45,7 @@ import {
   trackNavVisit,
   useCurrentUserId,
   useNavPreferences,
-  useRecentNav,
 } from "@/lib/nav/preferences";
-import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 import { useRoles } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
@@ -198,7 +195,6 @@ function NavList({
   scrollable?: boolean;
 }) {
   const { prefs, update } = useNavPreferences();
-  const recent = useRecentNav();
   const resolved = useMemo(() => resolveNav(prefs, isAdmin), [prefs, isAdmin]);
 
   const isActive = (to: string): boolean => path === to || path.startsWith(`${to}/`);
@@ -220,12 +216,6 @@ function NavList({
         : [...p.collapsedGroups, gid],
     }));
 
-  const recentItems = recent
-    .map((id) => NAV_ITEMS_BY_ID[id])
-    .filter((i) => i && (i.adminOnly ? isAdmin : true))
-    .filter((i) => !prefs.hidden.includes(i.id))
-    .slice(0, 5);
-
   return (
     <nav
       className={cn(
@@ -235,31 +225,6 @@ function NavList({
       )}
       aria-label="Primary"
     >
-      {!collapsed && recentItems.length > 0 && (
-        <section aria-labelledby="nav-recent">
-          <h4
-            id="nav-recent"
-            className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40"
-          >
-            <History className="h-3 w-3" aria-hidden />
-            Recent
-          </h4>
-          <div className="space-y-px">
-            {recentItems.map((item) => (
-              <Link
-                key={`recent-${item.id}`}
-                to={item.to}
-                onClick={onNavigate}
-                className="flex items-center gap-3 rounded-md px-3 py-1.5 text-[13px] text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
-              >
-                <item.icon className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
-                <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {resolved.starred.length > 0 && (
         <section aria-labelledby="nav-pinned">
           {!collapsed && (

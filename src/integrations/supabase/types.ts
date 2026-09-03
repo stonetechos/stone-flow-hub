@@ -657,12 +657,18 @@ export type Database = {
           is_demo: boolean
           lifecycle_status: Database["public"]["Enums"]["mdm_lifecycle_status"]
           name: string
+          material_interests:
+            | Database["public"]["Enums"]["material_interest"][]
+            | null
           notes: string | null
           pan: string | null
           pincode: string | null
           primary_email: string | null
           primary_phone: string | null
+          referred_by: string | null
+          site_address: string | null
           source: string | null
+          space_type: Database["public"]["Enums"]["space_type"] | null
           state: string | null
           updated_at: string
           website: string | null
@@ -688,13 +694,19 @@ export type Database = {
           is_active?: boolean
           is_demo?: boolean
           lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          material_interests?:
+            | Database["public"]["Enums"]["material_interest"][]
+            | null
           name: string
           notes?: string | null
           pan?: string | null
           pincode?: string | null
           primary_email?: string | null
           primary_phone?: string | null
+          referred_by?: string | null
+          site_address?: string | null
           source?: string | null
+          space_type?: Database["public"]["Enums"]["space_type"] | null
           state?: string | null
           updated_at?: string
           website?: string | null
@@ -720,13 +732,19 @@ export type Database = {
           is_active?: boolean
           is_demo?: boolean
           lifecycle_status?: Database["public"]["Enums"]["mdm_lifecycle_status"]
+          material_interests?:
+            | Database["public"]["Enums"]["material_interest"][]
+            | null
           name?: string
           notes?: string | null
           pan?: string | null
           pincode?: string | null
           primary_email?: string | null
           primary_phone?: string | null
+          referred_by?: string | null
+          site_address?: string | null
           source?: string | null
+          space_type?: Database["public"]["Enums"]["space_type"] | null
           state?: string | null
           updated_at?: string
           website?: string | null
@@ -10094,7 +10112,45 @@ export type Database = {
         | "company"
         | "government"
         | "other"
+        | "walk_in"
+        | "b2b"
+        | "google_search"
+        | "reference"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
+      material_interest:
+        | "natural_stone_interlocking_panels"
+        | "natural_stone_mosaics"
+        | "stone_murals"
+        | "inlay_work"
+        | "table_top"
+        | "custom_stone_cladding"
+        | "crazy_pattern_in_stone"
+        | "general_flooring"
+        | "custom_flooring"
+        | "stepping_stone"
+        | "stone_veneer"
+        | "pu_panels"
+        | "stone_veneer_artwork"
+        | "agate_slabs"
+      space_type:
+        | "bungalow"
+        | "apartment"
+        | "farmhouse"
+        | "commercial_space"
+        | "resort"
+        | "residential_building"
+        | "educational_institution"
+        | "holy_place"
+        | "garden"
+        | "exhibition"
+        | "showroom"
+        | "spa"
+        | "restaurant"
+        | "hotel"
+        | "govt_institution"
+        | "college"
+        | "hostel"
+        | "mall"
       employment_status:
         | "active"
         | "on_leave"
@@ -10564,8 +10620,48 @@ export const Constants = {
         "company",
         "government",
         "other",
+        "walk_in",
+        "b2b",
+        "google_search",
+        "reference",
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
+      material_interest: [
+        "natural_stone_interlocking_panels",
+        "natural_stone_mosaics",
+        "stone_murals",
+        "inlay_work",
+        "table_top",
+        "custom_stone_cladding",
+        "crazy_pattern_in_stone",
+        "general_flooring",
+        "custom_flooring",
+        "stepping_stone",
+        "stone_veneer",
+        "pu_panels",
+        "stone_veneer_artwork",
+        "agate_slabs",
+      ],
+      space_type: [
+        "bungalow",
+        "apartment",
+        "farmhouse",
+        "commercial_space",
+        "resort",
+        "residential_building",
+        "educational_institution",
+        "holy_place",
+        "garden",
+        "exhibition",
+        "showroom",
+        "spa",
+        "restaurant",
+        "hotel",
+        "govt_institution",
+        "college",
+        "hostel",
+        "mall",
+      ],
       employment_status: [
         "active",
         "on_leave",

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Users, ExternalLink } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -27,7 +27,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -35,17 +34,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { RowActions } from "@/components/data/RowActions";
 import { SafeDeleteDialog } from "@/components/mdm/SafeDeleteDialog";
 import { LifecycleMenuItems } from "@/components/mdm/LifecycleMenu";
-import { LifecycleBadge } from "@/components/mdm/LifecycleBadge";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
-import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
@@ -62,9 +60,12 @@ import {
 } from "@/lib/customers/api";
 import {
   CUSTOMER_TYPES,
+  SPACE_TYPES,
+  MATERIAL_OPTIONS,
   customerCreateSchema,
   type CustomerCreateInput,
 } from "@/lib/customers/schema";
+import type { DbEnum } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   ssr: false,
@@ -85,17 +86,7 @@ function CustomersPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("customers");
-  const columnDefs: ColumnDef[] = useMemo(
-    () => [
-      { key: "code", label: "Code", required: true },
-      { key: "name", label: "Name", required: true },
-      { key: "type", label: "Type" },
-      { key: "mobile", label: "Mobile" },
-      { key: "city", label: "City" },
-    ],
-    [],
-  );
+  const { prefs, setDensity } = useTablePrefs("customers");
 
   const query = useQuery({ queryKey: qk.customers.list(dq), queryFn: () => listCustomers(dq) });
 
@@ -139,8 +130,7 @@ function CustomersPage() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search by name, code, phone, city…"
-        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
+        searchPlaceholder="Search by name, phone, city…"
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
@@ -150,7 +140,7 @@ function CustomersPage() {
       />
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
+        <SkeletonTable rows={6} columns={2} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -183,56 +173,32 @@ function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("name") && <TableHead>Name</TableHead>}
-                {!isHidden("type") && <TableHead>Type</TableHead>}
-                {!isHidden("mobile") && <TableHead>Mobile</TableHead>}
-                {!isHidden("city") && <TableHead>City</TableHead>}
+                <TableHead className="w-16">Sr. No.</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pageRows.map((c) => (
+              {pageRows.map((c, i) => (
                 <TableRow key={c.id}>
-                  {!isHidden("code") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/customers/$customerId"
-                        params={{ customerId: c.id }}
-                        className="hover:underline"
-                      >
-                        {c.customer_code}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("name") && (
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to="/customers/$customerId"
-                          params={{ customerId: c.id }}
-                          className="hover:underline"
-                        >
-                          {c.name}
-                        </Link>
-                        <LifecycleBadge
-                          status={
-                            (c as unknown as { lifecycle_status?: LifecycleStatus })
-                              .lifecycle_status
-                          }
-                        />
-                      </div>
-                    </TableCell>
-                  )}
-                  {!isHidden("type") && (
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {c.customer_type.replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                  )}
-                  {!isHidden("mobile") && <TableCell>{c.primary_phone ?? "—"}</TableCell>}
-                  {!isHidden("city") && <TableCell>{c.city ?? "—"}</TableCell>}
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    <Link
+                      to="/customers/$customerId"
+                      params={{ customerId: c.id }}
+                      className="hover:underline"
+                    >
+                      {(page - 1) * pageSize + i + 1}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      to="/customers/$customerId"
+                      params={{ customerId: c.id }}
+                      className="hover:underline"
+                    >
+                      {c.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <RowActions
                       extra={
@@ -275,7 +241,7 @@ function CustomersPage() {
         onOpenChange={(o) => !o && setToDelete(null)}
         entityType="customer"
         entityId={toDelete?.id ?? null}
-        entityLabel={toDelete ? `${toDelete.name} (${toDelete.customer_code})` : ""}
+        entityLabel={toDelete ? toDelete.name : ""}
         busy={delMut.isPending}
         onConfirmDelete={() => toDelete && delMut.mutate(toDelete.id)}
       />
@@ -289,7 +255,11 @@ function emptyForm(): CustomerCreateInput {
     mobile: "",
     email: null,
     city: null,
-    customer_type: "individual",
+    customer_type: "walk_in",
+    referred_by: null,
+    site_address: null,
+    space_type: null,
+    material_interests: [],
     whatsapp: null,
     billing_address: null,
     state: null,
@@ -305,7 +275,11 @@ function fromRow(c: CustomerRow): CustomerCreateInput {
     mobile: c.primary_phone ?? "",
     email: c.primary_email,
     city: c.city,
-    customer_type: c.customer_type,
+    customer_type: c.customer_type as CustomerCreateInput["customer_type"],
+    referred_by: c.referred_by,
+    site_address: c.site_address,
+    space_type: c.space_type as CustomerCreateInput["space_type"],
+    material_interests: (c.material_interests ?? []) as CustomerCreateInput["material_interests"],
     whatsapp: c.whatsapp,
     billing_address: c.billing_address,
     state: c.state,
@@ -360,6 +334,13 @@ function CustomerFormDialog({
   const set = <K extends keyof CustomerCreateInput>(k: K, v: CustomerCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const toggleMaterial = (value: DbEnum<"material_interest">, checked: boolean) =>
+    setForm((f) => {
+      const current = f.material_interests ?? [];
+      const next = checked ? [...current, value] : current.filter((v) => v !== value);
+      return { ...f, material_interests: next };
+    });
+
   return (
     <Dialog
       open={open}
@@ -374,22 +355,10 @@ function CustomerFormDialog({
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
-            <Field label="Customer name" required>
+            <Field label="Name" required>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
-            <Field label="Mobile" required hint="10 digits, +91 optional">
-              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
-            </Field>
-          </QuickForm.QuickFill>
-
-          <QuickForm.MoreDetails>
-            <Field label="Email">
-              <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v)} />
-            </Field>
-            <Field label="City">
-              <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
-            </Field>
-            <Field label="Type">
+            <Field label="Type of Customer" required>
               <Select
                 value={form.customer_type}
                 onValueChange={(v) =>
@@ -407,6 +376,81 @@ function CustomerFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+            </Field>
+
+            {form.customer_type === "reference" && (
+              <Field label="Referred by" required className="md:col-span-2">
+                <Input
+                  value={form.referred_by ?? ""}
+                  onChange={(e) => set("referred_by", e.target.value)}
+                  placeholder="Name of the person who referred them"
+                />
+              </Field>
+            )}
+
+            <Field label="Phone Number" required hint="10 digits, +91 optional">
+              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
+            </Field>
+            <Field label="Site's Area/Address">
+              <Input
+                value={form.site_address ?? ""}
+                onChange={(e) => set("site_address", e.target.value)}
+              />
+            </Field>
+
+            <Field label="Type of space" className="md:col-span-2">
+              <Select
+                value={form.space_type ?? undefined}
+                onValueChange={(v) => set("space_type", v as CustomerCreateInput["space_type"])}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPACE_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field label="Material In" hint="Select all that apply" className="md:col-span-2">
+              <div className="grid max-h-48 grid-cols-1 gap-x-4 gap-y-2 overflow-y-auto rounded-md border border-border p-3 sm:grid-cols-2">
+                {MATERIAL_OPTIONS.map((m) => {
+                  const checked = (form.material_interests ?? []).includes(m.value);
+                  return (
+                    <label
+                      key={m.value}
+                      className="flex items-center gap-2 text-sm text-foreground"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(v) => toggleMaterial(m.value, v === true)}
+                      />
+                      {m.label}
+                    </label>
+                  );
+                })}
+              </div>
+            </Field>
+
+            <Field label="Notes" className="md:col-span-2">
+              <Textarea
+                rows={2}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+              />
+            </Field>
+          </QuickForm.QuickFill>
+
+          <QuickForm.MoreDetails>
+            <Field label="Email">
+              <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v)} />
+            </Field>
+            <Field label="City">
+              <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
             </Field>
             <Field label="WhatsApp">
               <PhoneInput value={form.whatsapp ?? ""} onChange={(v) => set("whatsapp", v)} />
@@ -430,13 +474,6 @@ function CustomerFormDialog({
             <Field label="GST number">
               <GstInput value={form.gst_number ?? ""} onChange={(v) => set("gst_number", v)} />
             </Field>
-            <Field label="Notes" className="md:col-span-2">
-              <Textarea
-                rows={2}
-                value={form.notes ?? ""}
-                onChange={(e) => set("notes", e.target.value)}
-              />
-            </Field>
           </QuickForm.Advanced>
 
           <QuickForm.Actions>
@@ -450,7 +487,7 @@ function CustomerFormDialog({
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editing ? "Save" : "Create"}
+              Save
             </Button>
           </QuickForm.Actions>
         </QuickForm>

@@ -55,6 +55,7 @@ describe("create_customer action handler", () => {
       email: undefined,
       city: "Surat",
       customer_type: "contractor",
+      material_interests: [],
       whatsapp: undefined,
       state: undefined,
       pincode: undefined,

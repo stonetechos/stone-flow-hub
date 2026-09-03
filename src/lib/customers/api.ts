@@ -80,6 +80,10 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
       gst_number: parsed.gst_number ?? null,
       notes: parsed.notes ?? null,
       customer_type: parsed.customer_type,
+      referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
+      site_address: parsed.site_address ?? null,
+      space_type: parsed.space_type ?? null,
+      material_interests: parsed.material_interests ?? [],
     })
     .select("*")
     .single();
@@ -104,6 +108,10 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
       gst_number: parsed.gst_number ?? null,
       notes: parsed.notes ?? null,
       customer_type: parsed.customer_type,
+      referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
+      site_address: parsed.site_address ?? null,
+      space_type: parsed.space_type ?? null,
+      material_interests: parsed.material_interests ?? [],
     })
     .eq("id", id)
     .select("*")

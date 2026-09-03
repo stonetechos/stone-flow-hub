@@ -79,6 +79,7 @@ export async function createEnquiry(input: EnquiryCreateInput): Promise<EnquiryR
         mobile: parsed.mobile,
         email: parsed.email ?? null,
         customer_type: "individual",
+        material_interests: [],
         whatsapp: null,
         city: null,
         state: null,

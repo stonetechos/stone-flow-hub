@@ -90,7 +90,7 @@ function QuickCreateCustomer({
     mobile: "",
     email: "",
     city: "",
-    customer_type: "individual",
+    customer_type: "walk_in",
   });
   useEffect(() => {
     if (open) setForm((f) => ({ ...f, name: initialName ?? f.name }));

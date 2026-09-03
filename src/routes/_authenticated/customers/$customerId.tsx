@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
+import { SPACE_TYPES, MATERIAL_OPTIONS } from "@/lib/customers/schema";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
@@ -257,8 +258,26 @@ function CustomerHub() {
                 items={[
                   { label: "Name", value: c.name },
                   { label: "Code", value: <span className="font-mono">{c.customer_code}</span> },
-                  { label: "Type", value: c.customer_type },
+                  { label: "Type of Customer", value: c.customer_type.replace(/_/g, " ") },
+                  ...(c.customer_type === "reference" && c.referred_by
+                    ? [{ label: "Referred by", value: c.referred_by }]
+                    : []),
                   { label: "Mobile", value: c.primary_phone },
+                  { label: "Site's Area/Address", value: c.site_address },
+                  {
+                    label: "Type of space",
+                    value:
+                      SPACE_TYPES.find((s) => s.value === c.space_type)?.label ?? c.space_type,
+                  },
+                  {
+                    label: "Material In",
+                    value:
+                      (c.material_interests ?? []).length > 0
+                        ? (c.material_interests ?? [])
+                            .map((m) => MATERIAL_OPTIONS.find((o) => o.value === m)?.label ?? m)
+                            .join(", ")
+                        : "—",
+                  },
                   { label: "Email", value: c.primary_email },
                   { label: "WhatsApp", value: c.whatsapp },
                   { label: "City", value: c.city },

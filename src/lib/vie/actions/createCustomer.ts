@@ -51,6 +51,7 @@ registerVieAction("create_customer", async (params): Promise<VieActionResult> =>
     email: (params.email as string | undefined) ?? undefined,
     city: (params.city as string | undefined) ?? undefined,
     customer_type: customerType,
+    material_interests: [],
     whatsapp: undefined,
     state: undefined,
     pincode: undefined,
