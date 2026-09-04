@@ -81,6 +81,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
       valid_until: parsed.valid_until ?? null,
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
+      wall_estimate: parsed.wall_estimate ?? null,
       ...(parsed.category ? { category: parsed.category } : {}),
     } as never)
     .select("*")

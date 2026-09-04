@@ -52,6 +52,10 @@ import {
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { invalidateQuote } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
+import {
+  EstimateStudioCalculator,
+  type EstimateStudioResult,
+} from "@/components/quotes/EstimateStudioCalculator";
 
 const search = z.object({
   new: z.string().optional(),
@@ -350,6 +354,8 @@ function CreateQuoteDialog({
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [items, setItems] = useState<FormItem[]>([emptyItem("")]);
+  const [mode, setMode] = useState<"manual" | "calculator">("manual");
+  const [calcResult, setCalcResult] = useState<EstimateStudioResult | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -359,6 +365,8 @@ function CreateQuoteDialog({
       setNotes("");
       setTerms("");
       setItems([emptyItem("")]);
+      setMode("manual");
+      setCalcResult(null);
     }
   }, [open, initialProjectId]);
 
@@ -394,6 +402,29 @@ function CreateQuoteDialog({
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!projectId) return toast.error("Pick a project");
+
+    if (mode === "calculator") {
+      if (!calcResult || calcResult.items.length === 0) {
+        return toast.error("Add at least one wall and product in the calculator first");
+      }
+      const discount = calcResult.worksheet.discount;
+      const discountNote =
+        discount.applied && discount.eligible
+          ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discount.amount)} off) — final estimate total ${formatInr(calcResult.total)}. This quote's own stored total below is the pre-discount subtotal, since quotations have no discount field yet.`
+          : null;
+      mutation.mutate({
+        project_id: projectId,
+        enquiry_id: initialEnquiryId,
+        category: category || null,
+        valid_until: validUntil || null,
+        notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
+        terms: terms || null,
+        items: calcResult.items,
+        wall_estimate: calcResult.worksheet,
+      });
+      return;
+    }
+
     const parsedItems: QuoteItemInput[] = [];
     for (const it of items) {
       const r = quoteItemInputSchema.safeParse({
@@ -421,12 +452,39 @@ function CreateQuoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent
+        className={mode === "calculator" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-3xl"}
+      >
         <DialogHeader>
           <DialogTitle>New quote</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
+            <div className="md:col-span-2 flex gap-1.5 rounded-sm border border-border bg-muted/30 p-1">
+              <button
+                type="button"
+                onClick={() => setMode("manual")}
+                className={`flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                  mode === "manual"
+                    ? "bg-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Manual line items
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("calculator")}
+                className={`flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                  mode === "calculator"
+                    ? "bg-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Wall Cladding Calculator
+              </button>
+            </div>
+
             <Field label="Project" required className="md:col-span-2">
               <EntityPicker
                 type="project"
@@ -455,118 +513,126 @@ function CreateQuoteDialog({
               </Select>
             </Field>
 
-            <div className="md:col-span-2">
-              <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm font-medium">Line items</label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setItems((p) => [...p, emptyItem(category)])}
-                >
-                  <Plus className="mr-1 h-3 w-3" /> Add line
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {items.map((it) => (
-                  <div
-                    key={it.key}
-                    className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
+            {mode === "manual" && (
+              <div className="md:col-span-2">
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-sm font-medium">Line items</label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setItems((p) => [...p, emptyItem(category)])}
                   >
-                    <LineField label="Description" className="col-span-12 md:col-span-4">
-                      <Input
-                        placeholder="e.g. Monsoon Black Crazy"
-                        value={it.description}
-                        onChange={(e) => updateItem(it.key, { description: e.target.value })}
-                      />
-                    </LineField>
-                    <LineField label="Quantity" className="col-span-6 md:col-span-1">
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        min="0"
-                        placeholder="0"
-                        value={it.quantity}
-                        onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
-                      />
-                    </LineField>
-                    <LineField label="Unit" className="col-span-6 md:col-span-1">
-                      <Input
-                        placeholder="sqft"
-                        value={it.unit ?? ""}
-                        onChange={(e) => updateItem(it.key, { unit: e.target.value })}
-                      />
-                    </LineField>
-                    <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        min="0"
-                        placeholder="0"
-                        value={it.unit_price}
-                        onChange={(e) => updateItem(it.key, { unit_price: e.target.value })}
-                      />
-                    </LineField>
-                    <LineField label="GST %" className="col-span-6 md:col-span-1">
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        min="0"
-                        placeholder="0"
-                        value={it.tax_pct}
-                        onChange={(e) => updateItem(it.key, { tax_pct: e.target.value })}
-                      />
-                    </LineField>
-                    <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
-                      <Select
-                        value={it.fulfilment || "inherit"}
-                        onValueChange={(v) =>
-                          updateItem(it.key, {
-                            fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="inherit">— Inherit quote —</SelectItem>
-                          {QUOTE_CATEGORIES.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {QUOTE_CATEGORY_LABELS[c]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </LineField>
-                    <div className="col-span-2 md:col-span-1 flex items-end justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Remove line item"
-                        onClick={() => removeItem(it.key)}
-                        disabled={items.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <Plus className="mr-1 h-3 w-3" /> Add line
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {items.map((it) => (
+                    <div
+                      key={it.key}
+                      className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
+                    >
+                      <LineField label="Description" className="col-span-12 md:col-span-4">
+                        <Input
+                          placeholder="e.g. Monsoon Black Crazy"
+                          value={it.description}
+                          onChange={(e) => updateItem(it.key, { description: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField label="Quantity" className="col-span-6 md:col-span-1">
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          min="0"
+                          placeholder="0"
+                          value={it.quantity}
+                          onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField label="Unit" className="col-span-6 md:col-span-1">
+                        <Input
+                          placeholder="sqft"
+                          value={it.unit ?? ""}
+                          onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          min="0"
+                          placeholder="0"
+                          value={it.unit_price}
+                          onChange={(e) => updateItem(it.key, { unit_price: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField label="GST %" className="col-span-6 md:col-span-1">
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          min="0"
+                          placeholder="0"
+                          value={it.tax_pct}
+                          onChange={(e) => updateItem(it.key, { tax_pct: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
+                        <Select
+                          value={it.fulfilment || "inherit"}
+                          onValueChange={(v) =>
+                            updateItem(it.key, {
+                              fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="inherit">— Inherit quote —</SelectItem>
+                            {QUOTE_CATEGORIES.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {QUOTE_CATEGORY_LABELS[c]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </LineField>
+                      <div className="col-span-2 md:col-span-1 flex items-end justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Remove line item"
+                          onClick={() => removeItem(it.key)}
+                          disabled={items.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+                  ))}
+                </div>
+                <div className="mt-2 flex justify-end gap-6 text-sm">
+                  <div>
+                    Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
                   </div>
-                ))}
-              </div>
-              <div className="mt-2 flex justify-end gap-6 text-sm">
-                <div>
-                  Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
+                  <div>
+                    Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
+                  </div>
+                  <div className="font-semibold">Total: {formatInr(totals.total)}</div>
                 </div>
-                <div>
-                  Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
-                </div>
-                <div className="font-semibold">Total: {formatInr(totals.total)}</div>
               </div>
-            </div>
+            )}
+
+            {mode === "calculator" && (
+              <div className="md:col-span-2">
+                <EstimateStudioCalculator projectId={projectId || null} onResult={setCalcResult} />
+              </div>
+            )}
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>
@@ -592,7 +658,10 @@ function CreateQuoteDialog({
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              disabled={mutation.isPending || (mode === "calculator" && !calcResult)}
+            >
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create quote
             </Button>
           </QuickForm.Actions>

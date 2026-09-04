@@ -41,6 +41,12 @@ export const quoteCreateSchema = z.object({
   notes: zOptional(),
   terms: zOptional(),
   items: z.array(quoteItemInputSchema).min(1, "Add at least one line item"),
+  /** Estimate Studio calculator worksheet (walls, products, installation,
+   *  discount) that produced these items, when the quote was created via
+   *  the wall-cladding calculator. Stored as-is for later reload/PDF
+   *  regeneration; loosely typed here since `EstimateWorksheet` (in
+   *  quotes/estimateSchema.ts) is the source of truth for its shape. */
+  wall_estimate: z.record(z.unknown()).nullable().optional(),
 });
 export type QuoteCreateInput = z.infer<typeof quoteCreateSchema>;
 

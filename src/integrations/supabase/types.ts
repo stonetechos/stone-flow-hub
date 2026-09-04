@@ -6883,6 +6883,7 @@ export type Database = {
           total: number
           updated_at: string
           valid_until: string | null
+          wall_estimate: Json | null
           workflow_state: Json | null
         }
         Insert: {
@@ -6909,6 +6910,7 @@ export type Database = {
           total?: number
           updated_at?: string
           valid_until?: string | null
+          wall_estimate?: Json | null
           workflow_state?: Json | null
         }
         Update: {
@@ -6935,6 +6937,7 @@ export type Database = {
           total?: number
           updated_at?: string
           valid_until?: string | null
+          wall_estimate?: Json | null
           workflow_state?: Json | null
         }
         Relationships: [
