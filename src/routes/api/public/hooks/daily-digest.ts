@@ -60,16 +60,12 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           vendor_payments_today: (vp.data ?? []).reduce((s, r) => s + Number(r.amount ?? 0), 0),
         };
 
-        // Call AI gateway
-        const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("LOVABLE_API_KEY missing", { status: 500 });
-        const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            temperature: 0.3,
-            messages: [
+        // Call AI gateway (shared helper — see src/lib/ai/gateway.server.ts)
+        const { chat } = await import("@/lib/ai/gateway.server");
+        let body: string;
+        try {
+          body = await chat(
+            [
               {
                 role: "system",
                 content:
@@ -77,13 +73,12 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
               },
               { role: "user", content: `Snapshot:\n${JSON.stringify(snapshot, null, 2)}` },
             ],
-          }),
-        });
-        if (!aiRes.ok) return new Response(`AI ${aiRes.status}`, { status: 502 });
-        const aiJson = (await aiRes.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
-        };
-        const body = aiJson.choices?.[0]?.message?.content ?? "";
+            { temperature: 0.3 },
+          );
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "AI gateway error";
+          return new Response(message, { status: 502 });
+        }
 
         const rows = recipients.map((r) => ({
           channel: r.channel,
