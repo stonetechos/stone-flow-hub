@@ -201,6 +201,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: ReceiptText,
     group: "finance",
   },
+  // Task #48 — manual charge/payment entries only (Rishi's explicit
+  // decision); no auto-posting from Approved Quotations (Task #49).
+  {
+    id: "installation-ledger",
+    to: "/installation-ledger",
+    label: "Installation Agency Ledger",
+    icon: HandCoins,
+    group: "finance",
+  },
 
   // Payroll (was "Human Resources" — same items, renamed group only)
   { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "payroll" },

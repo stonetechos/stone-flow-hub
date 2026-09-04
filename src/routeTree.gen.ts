@@ -54,6 +54,7 @@ import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedInstallationsIndexRouteImport } from './routes/_authenticated/installations/index'
 import { Route as AuthenticatedInstallationTeamsIndexRouteImport } from './routes/_authenticated/installation-teams/index'
+import { Route as AuthenticatedInstallationLedgerIndexRouteImport } from './routes/_authenticated/installation-ledger/index'
 import { Route as AuthenticatedHrIndexRouteImport } from './routes/_authenticated/hr/index'
 import { Route as AuthenticatedGrnsIndexRouteImport } from './routes/_authenticated/grns/index'
 import { Route as AuthenticatedFollowupsIndexRouteImport } from './routes/_authenticated/followups/index'
@@ -104,6 +105,7 @@ import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_au
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_authenticated/installations/$id'
+import { Route as AuthenticatedInstallationLedgerAgencyIdRouteImport } from './routes/_authenticated/installation-ledger/$agencyId'
 import { Route as AuthenticatedHrShiftsRouteImport } from './routes/_authenticated/hr/shifts'
 import { Route as AuthenticatedHrSalaryRouteImport } from './routes/_authenticated/hr/salary'
 import { Route as AuthenticatedHrLoansRouteImport } from './routes/_authenticated/hr/loans'
@@ -435,6 +437,12 @@ const AuthenticatedInstallationTeamsIndexRoute =
     path: '/installation-teams/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInstallationLedgerIndexRoute =
+  AuthenticatedInstallationLedgerIndexRouteImport.update({
+    id: '/installation-ledger/',
+    path: '/installation-ledger/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHrIndexRoute = AuthenticatedHrIndexRouteImport.update({
   id: '/hr/',
   path: '/hr/',
@@ -727,6 +735,12 @@ const AuthenticatedInstallationsIdRoute =
   AuthenticatedInstallationsIdRouteImport.update({
     id: '/installations/$id',
     path: '/installations/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInstallationLedgerAgencyIdRoute =
+  AuthenticatedInstallationLedgerAgencyIdRouteImport.update({
+    id: '/installation-ledger/$agencyId',
+    path: '/installation-ledger/$agencyId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHrShiftsRoute = AuthenticatedHrShiftsRouteImport.update({
@@ -1264,6 +1278,7 @@ export interface FileRoutesByFullPath {
   '/hr/loans': typeof AuthenticatedHrLoansRoute
   '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
+  '/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -1314,6 +1329,7 @@ export interface FileRoutesByFullPath {
   '/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/grns/': typeof AuthenticatedGrnsIndexRoute
   '/hr/': typeof AuthenticatedHrIndexRoute
+  '/installation-ledger/': typeof AuthenticatedInstallationLedgerIndexRoute
   '/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
   '/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -1440,6 +1456,7 @@ export interface FileRoutesByTo {
   '/hr/loans': typeof AuthenticatedHrLoansRoute
   '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
+  '/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -1490,6 +1507,7 @@ export interface FileRoutesByTo {
   '/followups': typeof AuthenticatedFollowupsIndexRoute
   '/grns': typeof AuthenticatedGrnsIndexRoute
   '/hr': typeof AuthenticatedHrIndexRoute
+  '/installation-ledger': typeof AuthenticatedInstallationLedgerIndexRoute
   '/installation-teams': typeof AuthenticatedInstallationTeamsIndexRoute
   '/installations': typeof AuthenticatedInstallationsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -1618,6 +1636,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/loans': typeof AuthenticatedHrLoansRoute
   '/_authenticated/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/_authenticated/hr/shifts': typeof AuthenticatedHrShiftsRoute
+  '/_authenticated/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
   '/_authenticated/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
@@ -1668,6 +1687,7 @@ export interface FileRoutesById {
   '/_authenticated/followups/': typeof AuthenticatedFollowupsIndexRoute
   '/_authenticated/grns/': typeof AuthenticatedGrnsIndexRoute
   '/_authenticated/hr/': typeof AuthenticatedHrIndexRoute
+  '/_authenticated/installation-ledger/': typeof AuthenticatedInstallationLedgerIndexRoute
   '/_authenticated/installation-teams/': typeof AuthenticatedInstallationTeamsIndexRoute
   '/_authenticated/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -1796,6 +1816,7 @@ export interface FileRouteTypes {
     | '/hr/loans'
     | '/hr/salary'
     | '/hr/shifts'
+    | '/installation-ledger/$agencyId'
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/new'
@@ -1846,6 +1867,7 @@ export interface FileRouteTypes {
     | '/followups/'
     | '/grns/'
     | '/hr/'
+    | '/installation-ledger/'
     | '/installation-teams/'
     | '/installations/'
     | '/inventory/'
@@ -1972,6 +1994,7 @@ export interface FileRouteTypes {
     | '/hr/loans'
     | '/hr/salary'
     | '/hr/shifts'
+    | '/installation-ledger/$agencyId'
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/new'
@@ -2022,6 +2045,7 @@ export interface FileRouteTypes {
     | '/followups'
     | '/grns'
     | '/hr'
+    | '/installation-ledger'
     | '/installation-teams'
     | '/installations'
     | '/inventory'
@@ -2149,6 +2173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/loans'
     | '/_authenticated/hr/salary'
     | '/_authenticated/hr/shifts'
+    | '/_authenticated/installation-ledger/$agencyId'
     | '/_authenticated/installations/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/new'
@@ -2199,6 +2224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/followups/'
     | '/_authenticated/grns/'
     | '/_authenticated/hr/'
+    | '/_authenticated/installation-ledger/'
     | '/_authenticated/installation-teams/'
     | '/_authenticated/installations/'
     | '/_authenticated/inventory/'
@@ -2598,6 +2624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInstallationTeamsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/installation-ledger/': {
+      id: '/_authenticated/installation-ledger/'
+      path: '/installation-ledger'
+      fullPath: '/installation-ledger/'
+      preLoaderRoute: typeof AuthenticatedInstallationLedgerIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/': {
       id: '/_authenticated/hr/'
       path: '/hr'
@@ -2946,6 +2979,13 @@ declare module '@tanstack/react-router' {
       path: '/installations/$id'
       fullPath: '/installations/$id'
       preLoaderRoute: typeof AuthenticatedInstallationsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/installation-ledger/$agencyId': {
+      id: '/_authenticated/installation-ledger/$agencyId'
+      path: '/installation-ledger/$agencyId'
+      fullPath: '/installation-ledger/$agencyId'
+      preLoaderRoute: typeof AuthenticatedInstallationLedgerAgencyIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hr/shifts': {
@@ -3719,6 +3759,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrLoansRoute: typeof AuthenticatedHrLoansRoute
   AuthenticatedHrSalaryRoute: typeof AuthenticatedHrSalaryRoute
   AuthenticatedHrShiftsRoute: typeof AuthenticatedHrShiftsRoute
+  AuthenticatedInstallationLedgerAgencyIdRoute: typeof AuthenticatedInstallationLedgerAgencyIdRoute
   AuthenticatedInstallationsIdRoute: typeof AuthenticatedInstallationsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
@@ -3768,6 +3809,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFollowupsIndexRoute: typeof AuthenticatedFollowupsIndexRoute
   AuthenticatedGrnsIndexRoute: typeof AuthenticatedGrnsIndexRoute
   AuthenticatedHrIndexRoute: typeof AuthenticatedHrIndexRoute
+  AuthenticatedInstallationLedgerIndexRoute: typeof AuthenticatedInstallationLedgerIndexRoute
   AuthenticatedInstallationTeamsIndexRoute: typeof AuthenticatedInstallationTeamsIndexRoute
   AuthenticatedInstallationsIndexRoute: typeof AuthenticatedInstallationsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -3883,6 +3925,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrLoansRoute: AuthenticatedHrLoansRoute,
   AuthenticatedHrSalaryRoute: AuthenticatedHrSalaryRoute,
   AuthenticatedHrShiftsRoute: AuthenticatedHrShiftsRoute,
+  AuthenticatedInstallationLedgerAgencyIdRoute:
+    AuthenticatedInstallationLedgerAgencyIdRoute,
   AuthenticatedInstallationsIdRoute: AuthenticatedInstallationsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
@@ -3945,6 +3989,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFollowupsIndexRoute: AuthenticatedFollowupsIndexRoute,
   AuthenticatedGrnsIndexRoute: AuthenticatedGrnsIndexRoute,
   AuthenticatedHrIndexRoute: AuthenticatedHrIndexRoute,
+  AuthenticatedInstallationLedgerIndexRoute:
+    AuthenticatedInstallationLedgerIndexRoute,
   AuthenticatedInstallationTeamsIndexRoute:
     AuthenticatedInstallationTeamsIndexRoute,
   AuthenticatedInstallationsIndexRoute: AuthenticatedInstallationsIndexRoute,
