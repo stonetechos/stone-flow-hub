@@ -63,6 +63,7 @@ import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authe
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
 import { Route as AuthenticatedVendorPaymentsNewRouteImport } from './routes/_authenticated/vendor-payments/new'
+import { Route as AuthenticatedVendorPaymentsIdRouteImport } from './routes/_authenticated/vendor-payments/$id'
 import { Route as AuthenticatedSalesOrdersNewRouteImport } from './routes/_authenticated/sales-orders/new'
 import { Route as AuthenticatedSalesOrdersIdRouteImport } from './routes/_authenticated/sales-orders/$id'
 import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authenticated/rfqs/$rfqId'
@@ -475,6 +476,12 @@ const AuthenticatedVendorPaymentsNewRoute =
   AuthenticatedVendorPaymentsNewRouteImport.update({
     id: '/vendor-payments/new',
     path: '/vendor-payments/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedVendorPaymentsIdRoute =
+  AuthenticatedVendorPaymentsIdRouteImport.update({
+    id: '/vendor-payments/$id',
+    path: '/vendor-payments/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSalesOrdersNewRoute =
@@ -1234,6 +1241,7 @@ export interface FileRoutesByFullPath {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
@@ -1401,6 +1409,7 @@ export interface FileRoutesByTo {
   '/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
@@ -1570,6 +1579,7 @@ export interface FileRoutesById {
   '/_authenticated/rfqs/$rfqId': typeof AuthenticatedRfqsRfqIdRoute
   '/_authenticated/sales-orders/$id': typeof AuthenticatedSalesOrdersIdRouteWithChildren
   '/_authenticated/sales-orders/new': typeof AuthenticatedSalesOrdersNewRoute
+  '/_authenticated/vendor-payments/$id': typeof AuthenticatedVendorPaymentsIdRoute
   '/_authenticated/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
@@ -1739,6 +1749,7 @@ export interface FileRouteTypes {
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
+    | '/vendor-payments/$id'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
@@ -1906,6 +1917,7 @@ export interface FileRouteTypes {
     | '/rfqs/$rfqId'
     | '/sales-orders/$id'
     | '/sales-orders/new'
+    | '/vendor-payments/$id'
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
@@ -2074,6 +2086,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rfqs/$rfqId'
     | '/_authenticated/sales-orders/$id'
     | '/_authenticated/sales-orders/new'
+    | '/_authenticated/vendor-payments/$id'
     | '/_authenticated/vendor-payments/new'
     | '/_authenticated/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
@@ -2542,6 +2555,13 @@ declare module '@tanstack/react-router' {
       path: '/vendor-payments/new'
       fullPath: '/vendor-payments/new'
       preLoaderRoute: typeof AuthenticatedVendorPaymentsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vendor-payments/$id': {
+      id: '/_authenticated/vendor-payments/$id'
+      path: '/vendor-payments/$id'
+      fullPath: '/vendor-payments/$id'
+      preLoaderRoute: typeof AuthenticatedVendorPaymentsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sales-orders/new': {
@@ -3557,6 +3577,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRfqsRfqIdRoute: typeof AuthenticatedRfqsRfqIdRoute
   AuthenticatedSalesOrdersIdRoute: typeof AuthenticatedSalesOrdersIdRouteWithChildren
   AuthenticatedSalesOrdersNewRoute: typeof AuthenticatedSalesOrdersNewRoute
+  AuthenticatedVendorPaymentsIdRoute: typeof AuthenticatedVendorPaymentsIdRoute
   AuthenticatedVendorPaymentsNewRoute: typeof AuthenticatedVendorPaymentsNewRoute
   AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRouteWithChildren
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
@@ -3720,6 +3741,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRfqsRfqIdRoute: AuthenticatedRfqsRfqIdRoute,
   AuthenticatedSalesOrdersIdRoute: AuthenticatedSalesOrdersIdRouteWithChildren,
   AuthenticatedSalesOrdersNewRoute: AuthenticatedSalesOrdersNewRoute,
+  AuthenticatedVendorPaymentsIdRoute: AuthenticatedVendorPaymentsIdRoute,
   AuthenticatedVendorPaymentsNewRoute: AuthenticatedVendorPaymentsNewRoute,
   AuthenticatedVendorsVendorIdRoute:
     AuthenticatedVendorsVendorIdRouteWithChildren,

@@ -70,9 +70,9 @@ function VendorPaymentsPage() {
 
   const del = useMutation({
     mutationFn: (id: string) => deleteVendorPayment(id),
-    onSuccess: () => {
+    onSuccess: (_void, id) => {
       toast.success("Payment removed");
-      invalidateVendorPayment(qc);
+      invalidateVendorPayment(qc, toDelete?.vendor_id, id);
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -153,7 +153,15 @@ function VendorPaymentsPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">{r.payment_no}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      <Link
+                        to="/vendor-payments/$id"
+                        params={{ id: r.id }}
+                        className="text-primary hover:underline"
+                      >
+                        {r.payment_no}
+                      </Link>
+                    </TableCell>
                   )}
                   {!isHidden("vendor") && (
                     <TableCell>

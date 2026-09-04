@@ -150,10 +150,21 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Receipt,
     group: "purchase",
   },
-  // New — placeholder route/page not yet built (task #39/#40 in this
-  // session's tracker). Left commented until the page exists so the sidebar
-  // never links to a 404.
-  // { id: "purchase-payments", to: "/purchase-payments", label: "Purchase Payments", icon: Wallet, group: "purchase" },
+  {
+    // Route stays "/vendor-payments" — that module already existed
+    // (src/lib/vendor-payments/) before this Purchase-module build, and
+    // renaming its URL would break every existing deep link into it (the
+    // "Pay vendor" buttons on Purchase Orders and Purchase Invoices).
+    // Same pattern as "Sales Ledger" keeping the /receipts URL.
+    id: "purchase-payments",
+    to: "/vendor-payments",
+    label: "Purchase Payments",
+    icon: Banknote,
+    group: "purchase",
+  },
+  // New — placeholder route/page not yet built (task #40 in this session's
+  // tracker). Left commented until the page exists so the sidebar never
+  // links to a 404.
   // { id: "purchase-transport", to: "/purchase-transport", label: "Purchase Transportation", icon: Truck, group: "purchase" },
   // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
   // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },

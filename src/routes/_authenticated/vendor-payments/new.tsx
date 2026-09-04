@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -65,8 +67,8 @@ function NewVendorPaymentPage() {
     mutationFn: createVendorPayment,
     onSuccess: (row) => {
       toast.success(`Payment ${row.payment_no} recorded`);
-      invalidateVendorPayment(qc, row.vendor_id);
-      nav({ to: "/vendor-payments" });
+      invalidateVendorPayment(qc, row.vendor_id, row.id);
+      nav({ to: "/vendor-payments/$id", params: { id: row.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -154,6 +156,15 @@ function NewVendorPaymentPage() {
               onChange={(e) => set("reference_no", e.target.value || null)}
             />
           </Field>
+          <Field label="Purchase order">
+            <EntityPicker
+              type="purchase_order"
+              value={form.purchase_order_id ?? null}
+              onChange={(v) => set("purchase_order_id", v)}
+              filter={{ vendorId: form.vendor_id || null }}
+              allowCreate={false}
+            />
+          </Field>
           <Field label="Project">
             <EntityPicker
               type="project"
@@ -169,6 +180,15 @@ function NewVendorPaymentPage() {
             />
           </Field>
         </QuickForm.MoreDetails>
+
+        <QuickForm.Actions>
+          <Button type="button" variant="ghost" onClick={() => nav({ to: "/vendor-payments" })}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={mut.isPending}>
+            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Record payment
+          </Button>
+        </QuickForm.Actions>
       </QuickForm>
     </div>
   );

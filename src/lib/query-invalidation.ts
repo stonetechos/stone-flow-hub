@@ -287,9 +287,10 @@ export function invalidateGrn(qc: QueryClient, id?: string): void {
   bump(qc, qk.dashboard);
 }
 
-export function invalidateVendorPayment(qc: QueryClient, vendorId?: string): void {
+export function invalidateVendorPayment(qc: QueryClient, vendorId?: string, id?: string): void {
   bump(qc, qk.vendorPayments.all);
   if (vendorId) bump(qc, qk.vendorPayments.byVendor(vendorId));
+  if (id) bump(qc, qk.vendorPayments.byId(id));
   bump(qc, ["vendor_ledger"]);
   bump(qc, qk.activity.recent);
   bump(qc, qk.dashboard);
