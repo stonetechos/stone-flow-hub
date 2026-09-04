@@ -171,6 +171,18 @@ export function invalidatePurchaseOrder(qc: QueryClient, id?: string): void {
   bump(qc, qk.activity.recent);
 }
 
+export function invalidatePurchaseInvoice(
+  qc: QueryClient,
+  id?: string,
+  vendorId?: string | null,
+): void {
+  bump(qc, qk.purchaseInvoices.all);
+  if (id) bump(qc, qk.purchaseInvoices.byId(id));
+  if (vendorId) bump(qc, qk.purchaseInvoices.byVendor(vendorId));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
 export function invalidateSalesOrder(qc: QueryClient, id?: string): void {
   bump(qc, qk.salesOrders.all);
   if (id) bump(qc, qk.salesOrders.byId(id));

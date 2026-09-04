@@ -36,6 +36,7 @@ import { qk } from "@/lib/query-keys";
 import { listCustomers, getCustomer } from "@/lib/customers/api";
 import { listVendorsForPicker, getVendor } from "@/lib/vendors/api";
 import { listProjectsForPicker, getProject } from "@/lib/projects/api";
+import { listPurchaseOrders, getPurchaseOrder } from "@/lib/purchase-orders/api";
 import { listProducts, getProduct } from "@/lib/products/api";
 import {
   listStoneTypes,
@@ -53,6 +54,7 @@ export type EntityType =
   | "customer"
   | "project"
   | "vendor"
+  | "purchase_order"
   | "product"
   | "stone_type"
   | "surface_finish"
@@ -62,6 +64,8 @@ export type EntityType =
 export interface EntityPickerFilter {
   /** Project-only: constrain projects to a given customer. */
   customerId?: string | null;
+  /** Purchase-order-only: constrain purchase orders to a given vendor. */
+  vendorId?: string | null;
 }
 
 export interface EntityRow {
@@ -113,6 +117,9 @@ export interface EntitySourceRow {
   anti_slip?: boolean | null;
   machine_required?: boolean | null;
   default_uom?: string | null;
+  po_no?: string | null;
+  status?: string | null;
+  vendor?: { company_name?: string | null } | null;
 }
 
 function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
@@ -134,6 +141,14 @@ function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
         id: r.id,
         label: r.name ?? "",
         sublabel: [r.project_code, r.customer?.name, r.city].filter(Boolean).join(" · "),
+      };
+    case "purchase_order":
+      return {
+        id: r.id,
+        label: r.po_no ?? "",
+        sublabel: [r.vendor?.company_name, r.status?.replace(/_/g, " ")]
+          .filter(Boolean)
+          .join(" · "),
       };
     case "product":
       return {
@@ -174,6 +189,7 @@ const LABEL: Record<EntityType, { singular: string; placeholder: string }> = {
   customer: { singular: "customer", placeholder: "Select customer" },
   vendor: { singular: "vendor", placeholder: "Select vendor" },
   project: { singular: "project", placeholder: "Select project" },
+  purchase_order: { singular: "purchase order", placeholder: "Select purchase order" },
   product: { singular: "product", placeholder: "Select product" },
   stone_type: { singular: "stone type", placeholder: "Select stone" },
   surface_finish: { singular: "surface finish", placeholder: "Select finish" },
@@ -357,6 +373,8 @@ function pickerKey(type: EntityType, q: string, filter?: EntityPickerFilter) {
       return qk.vendors.picker(q);
     case "project":
       return qk.projects.picker(q, filter?.customerId ?? null);
+    case "purchase_order":
+      return qk.purchaseOrders.picker(q, filter?.vendorId ?? null);
     case "product":
       return qk.products.picker(q);
     case "stone_type":
@@ -378,6 +396,8 @@ function byIdKey(type: EntityType, id: string) {
       return qk.vendors.byId(id);
     case "project":
       return qk.projects.byId(id);
+    case "purchase_order":
+      return qk.purchaseOrders.byId(id);
     case "product":
       return ["products", "byId", id] as const;
     case "stone_type":
@@ -399,6 +419,8 @@ async function fetchList(type: EntityType, q: string, filter?: EntityPickerFilte
       return listVendorsForPicker(q);
     case "project":
       return listProjectsForPicker({ query: q, customerId: filter?.customerId ?? undefined });
+    case "purchase_order":
+      return listPurchaseOrders(q, "", filter?.vendorId ?? undefined);
     case "product":
       return listProducts(q);
     case "stone_type":
@@ -420,6 +442,8 @@ async function fetchById(type: EntityType, id: string) {
       return getVendor(id);
     case "project":
       return getProject(id);
+    case "purchase_order":
+      return getPurchaseOrder(id);
     case "product":
       return getProduct(id);
     case "stone_type":

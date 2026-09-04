@@ -95,6 +95,15 @@ export const qk = {
     list: (q?: string, status?: string) =>
       ["purchaseOrders", "list", q ?? "", status ?? ""] as const,
     byId: (id: string) => ["purchaseOrders", "byId", id] as const,
+    picker: (q?: string, vendorId?: string | null) =>
+      ["purchaseOrders", "picker", q ?? "", vendorId ?? ""] as const,
+  },
+  purchaseInvoices: {
+    all: ["purchaseInvoices"] as const,
+    list: (q?: string, status?: string) =>
+      ["purchaseInvoices", "list", q ?? "", status ?? ""] as const,
+    byId: (id: string) => ["purchaseInvoices", "byId", id] as const,
+    byVendor: (vendorId: string) => ["purchaseInvoices", "byVendor", vendorId] as const,
   },
   inventory: {
     all: ["inventory"] as const,

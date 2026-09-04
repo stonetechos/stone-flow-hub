@@ -143,10 +143,16 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Wallet,
     group: "purchase",
   },
-  // New — placeholder route/page not yet built (task #38/#39/#40 in this
+  {
+    id: "purchase-invoices",
+    to: "/purchase-invoices",
+    label: "Purchase Invoices",
+    icon: Receipt,
+    group: "purchase",
+  },
+  // New — placeholder route/page not yet built (task #39/#40 in this
   // session's tracker). Left commented until the page exists so the sidebar
   // never links to a 404.
-  // { id: "purchase-invoices", to: "/purchase-invoices", label: "Purchase Invoices", icon: Receipt, group: "purchase" },
   // { id: "purchase-payments", to: "/purchase-payments", label: "Purchase Payments", icon: Wallet, group: "purchase" },
   // { id: "purchase-transport", to: "/purchase-transport", label: "Purchase Transportation", icon: Truck, group: "purchase" },
   // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },

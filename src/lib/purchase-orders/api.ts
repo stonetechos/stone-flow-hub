@@ -20,6 +20,7 @@ const SELECT =
 export async function listPurchaseOrders(
   query = "",
   status = "",
+  vendorId?: string | null,
 ): Promise<PurchaseOrderListItem[]> {
   let q = getDb()
     .from("purchase_orders")
@@ -29,6 +30,7 @@ export async function listPurchaseOrders(
   const s = sanitizeSearch(query);
   if (s) q = q.or(`po_no.ilike.%${s}%,notes.ilike.%${s}%`);
   if (status) q = q.eq("status", status as PurchaseOrderStatus);
+  if (vendorId) q = q.eq("vendor_id", vendorId);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return (data ?? []) as PurchaseOrderListItem[];
