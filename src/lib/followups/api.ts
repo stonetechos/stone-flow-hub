@@ -154,6 +154,14 @@ async function deriveDerivedContext(
         .maybeSingle();
       return { enquiry_id: null, project_id: data?.project_id ?? null };
     }
+    case "quote": {
+      const { data } = await getDb()
+        .from("quotes")
+        .select("project_id,enquiry_id")
+        .eq("id", entityId)
+        .maybeSingle();
+      return { enquiry_id: data?.enquiry_id ?? null, project_id: data?.project_id ?? null };
+    }
     // customer, vendor, dispatch: no direct project/enquiry linkage — keep null.
     default:
       return { enquiry_id: null, project_id: null };

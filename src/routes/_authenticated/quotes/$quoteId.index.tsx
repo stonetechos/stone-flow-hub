@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
+import { ScheduleFollowupPanel } from "@/components/followups/ScheduleFollowupPanel";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -360,6 +361,16 @@ function QuoteDetailPage() {
                 </p>
               )}
             </div>
+            {quote.status === "sent" && (
+              <div className="border-t border-border pt-3">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Approval pending — follow up
+                </label>
+                <div className="mt-1.5">
+                  <ScheduleFollowupPanel entityType="quote" entityId={quoteId} />
+                </div>
+              </div>
+            )}
             {(sourceEstimate.data || linkedSo.data) && (
               <div className="space-y-1 border-t border-border pt-3 text-xs">
                 {sourceEstimate.data && (

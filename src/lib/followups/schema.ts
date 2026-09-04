@@ -19,6 +19,7 @@ export const FOLLOWUP_ENTITY_TYPES = [
   { value: "sales_order", label: "Sales order" },
   { value: "dispatch", label: "Dispatch" },
   { value: "invoice", label: "Invoice" },
+  { value: "quote", label: "Quotation" },
 ] as const;
 
 export type FollowupEntityType = (typeof FOLLOWUP_ENTITY_TYPES)[number]["value"];
@@ -33,6 +34,7 @@ const ENTITY_TYPE_ENUM = z.enum([
   "sales_order",
   "dispatch",
   "invoice",
+  "quote",
 ]);
 
 /**
