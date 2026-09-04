@@ -69,7 +69,9 @@ const AUTH_IMPORT = '@/integrations/supabase/server-context"';
 // (+ the vendor timeline it dynamically imports), and the three
 // further data sources the Executive Insight providers those
 // resolvers fan out to actually read from (payment dashboard,
-// installation progress, manufacturing/production orders).
+// installation progress). manufacturing/api.ts was removed along with
+// the Manufacturing feature (2026-09-04 Purchase module restructure) —
+// see engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md.
 const MIGRATED_FILES = [
   "src/lib/customers/api.ts",
   "src/lib/enquiries/api.ts",
@@ -89,7 +91,6 @@ const MIGRATED_FILES = [
   "src/lib/vendors/timeline.ts",
   "src/lib/customer-payments/schedule.ts",
   "src/lib/installation/progress.ts",
-  "src/lib/manufacturing/api.ts",
   "src/lib/followups/api.ts",
   "src/lib/rfqs/api.ts",
   "src/lib/tasks/api.ts",

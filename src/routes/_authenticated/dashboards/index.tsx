@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BarChart3,
   ShoppingCart,
-  Factory,
   Briefcase,
   Truck,
   CalendarClock,
@@ -157,12 +156,6 @@ const ROLES = [
     icon: ShoppingCart,
   },
   {
-    to: "/dashboards/production",
-    title: "Production",
-    desc: "Live status, QC, delays, installation.",
-    icon: Factory,
-  },
-  {
     to: "/dashboards/management",
     title: "Management",
     desc: "Revenue, outstanding, project profit.",
@@ -255,8 +248,8 @@ const SECTIONS: ReadonlyArray<{ label: string; desc: string; tos: readonly strin
   },
   {
     label: "Operations",
-    desc: "Production floor, QC and on-site installation.",
-    tos: ["/dashboards/production", "/dashboards/installation"],
+    desc: "On-site installation, QC and delivery.",
+    tos: ["/dashboards/installation"],
   },
   {
     label: "Analytics & Intelligence",

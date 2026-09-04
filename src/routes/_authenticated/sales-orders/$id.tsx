@@ -26,7 +26,6 @@ import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
-import { ProductionOrdersPanel } from "@/components/manufacturing/ProductionOrdersPanel";
 import { SalesOrderInstallationPanel } from "@/components/installation/SalesOrderInstallationPanel";
 import { SalesOrderDeliveryPanel } from "@/components/dispatch/SalesOrderDeliveryPanel";
 
@@ -324,7 +323,6 @@ function SalesOrderDetailPage() {
           </Card>
 
           <SalesOrderDeliveryPanel salesOrderId={r.id} />
-          <ProductionOrdersPanel salesOrderId={r.id} />
           <SalesOrderInstallationPanel salesOrderId={r.id} />
 
           <NotesPanel

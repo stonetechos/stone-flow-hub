@@ -27,7 +27,6 @@ import {
   BarChart3,
   Settings,
   Activity,
-  ArrowLeftRight,
   CheckSquare,
   FolderOpen,
   Star,
@@ -48,9 +47,9 @@ import {
 
 export type NavGroupId =
   | "sales"
-  | "operations"
+  | "purchase"
+  | "payroll"
   | "workforce"
-  | "humanResources"
   | "masterData"
   | "communication"
   | "others"
@@ -62,11 +61,16 @@ export interface NavGroupDef {
   adminOnly?: boolean;
 }
 
+// Order here is the sidebar's group order. Sales / Purchase / Payroll /
+// Workforce Intelligence are pinned at the top per the 2026-09-04 Purchase
+// module restructure (see project doc
+// engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md) —
+// everything else keeps its previous relative order below them.
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
-  { id: "operations", label: "Operations" },
+  { id: "purchase", label: "Purchase" },
+  { id: "payroll", label: "Payroll" },
   { id: "workforce", label: "Workforce Intelligence" },
-  { id: "humanResources", label: "Human Resources" },
   { id: "masterData", label: "Master Data" },
   { id: "communication", label: "Communication" },
   { id: "others", label: "Others" },
@@ -98,49 +102,109 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
   { id: "payments", to: "/payments", label: "Payments", icon: Wallet, group: "sales" },
   { id: "invoices", to: "/invoices", label: "Invoices", icon: Receipt, group: "sales" },
-  { id: "receipts", to: "/receipts", label: "Receipts & Ledger", icon: Wallet, group: "sales" },
-  { id: "rfqs", to: "/rfqs", label: "RFQs", icon: Send, group: "sales" },
+  // Was "Receipts & Ledger" — relabelled to pair with the new "Purchase
+  // Ledger" below. Same page/route, label only.
+  { id: "receipts", to: "/receipts", label: "Sales Ledger", icon: Wallet, group: "sales" },
+  // Moved here from "operations": this is the outbound-to-customer delivery
+  // tracking (carting agency/driver, partial dispatch, pending-delivery
+  // balance) — sales-facing, not purchase-facing. See the restructure plan
+  // doc for the reasoning; flagged for confirmation, not a literal instruction.
+  { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "sales" },
   { id: "followups", to: "/followups", label: "Follow-ups", icon: CalendarClock, group: "sales" },
   { id: "tasks", to: "/tasks", label: "Tasks", icon: CheckSquare, group: "sales" },
   { id: "calendar", to: "/calendar", label: "Calendar", icon: Calendar, group: "sales" },
 
-  // Operations
+  // Purchase (was "Operations" — Manufacturing / Slab Register / Stock
+  // Movements removed entirely per the 2026-09-04 restructure, not just
+  // unlinked; see the plan doc's "Purchase scope" decision)
+  {
+    id: "vendors",
+    to: "/vendors",
+    label: "Vendors",
+    icon: Factory,
+    group: "purchase",
+  },
   {
     id: "purchase-orders",
     to: "/purchase-orders",
     label: "Purchase Orders",
     icon: ClipboardCheck,
-    group: "operations",
+    group: "purchase",
+  },
+  // Moved here from "sales": the whole vendor-negotiation/approval workflow
+  // this drives is procurement, not sales. Flagged for confirmation in the
+  // plan doc, not a literal instruction.
+  { id: "rfqs", to: "/rfqs", label: "RFQs", icon: Send, group: "purchase" },
+  { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "purchase" },
+  // New — placeholder route/page not yet built (task #38/#39/#40/#41 in
+  // this session's tracker). Left commented until the page exists so the
+  // sidebar never links to a 404.
+  // { id: "purchase-invoices", to: "/purchase-invoices", label: "Purchase Invoices", icon: Receipt, group: "purchase" },
+  // { id: "purchase-payments", to: "/purchase-payments", label: "Purchase Payments", icon: Wallet, group: "purchase" },
+  // { id: "purchase-ledger", to: "/purchase-ledger", label: "Purchase Ledger", icon: Wallet, group: "purchase" },
+  // { id: "purchase-transport", to: "/purchase-transport", label: "Purchase Transportation", icon: Truck, group: "purchase" },
+  // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
+  // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },
+
+  // Payroll (was "Human Resources" — same items, renamed group only)
+  { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "payroll" },
+  {
+    id: "hr-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "payroll",
   },
   {
-    id: "manufacturing",
-    to: "/manufacturing",
-    label: "Manufacturing",
-    icon: Factory,
-    group: "operations",
+    id: "hr-attendance",
+    to: "/hr/attendance",
+    label: "Attendance",
+    icon: Fingerprint,
+    group: "payroll",
   },
-  { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "operations" },
+  { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "payroll" },
   {
-    id: "slabs",
-    to: "/inventory/slabs",
-    label: "Slab Register",
-    icon: Layers,
-    group: "operations",
+    id: "hr-leave",
+    to: "/hr/leave",
+    label: "Leave Management",
+    icon: CalendarDays,
+    group: "payroll",
   },
-  // `/inventory/movements` is a complete page — the stock movement ledger
-  // plus the only form in the app that records a manual adjustment — but
-  // nothing linked to it, from here or from the Inventory index, so the
-  // only way to reach it was to type the URL. It sits alongside the Slab
-  // Register for the same reason that one does: both are inventory views
-  // that the Inventory list page does not itself contain.
   {
-    id: "inventory-movements",
-    to: "/inventory/movements",
-    label: "Stock Movements",
-    icon: ArrowLeftRight,
-    group: "operations",
+    id: "hr-salary",
+    to: "/hr/salary",
+    label: "Salary Structures",
+    icon: Wallet,
+    group: "payroll",
   },
-  { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "operations" },
+  {
+    id: "hr-payroll",
+    to: "/hr/payroll",
+    label: "Payroll",
+    icon: Banknote,
+    group: "payroll",
+  },
+  {
+    id: "hr-loans",
+    to: "/hr/loans",
+    label: "Loans & Claims",
+    icon: HandCoins,
+    group: "payroll",
+  },
+  {
+    id: "hr-holidays",
+    to: "/hr/holidays",
+    label: "Holidays",
+    icon: Calendar,
+    group: "payroll",
+  },
+  {
+    id: "hr-branches",
+    to: "/hr/branches",
+    label: "Offices & Geofences",
+    icon: MapPin,
+    group: "payroll",
+  },
 
   // Workforce Intelligence
   {
@@ -188,69 +252,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Master Data
-  // Human Resources
-  { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "humanResources" },
-  {
-    id: "hr-employees",
-    to: "/workforce-intelligence/employees",
-    label: "Employees",
-    icon: Users,
-    group: "humanResources",
-  },
-  {
-    id: "hr-attendance",
-    to: "/hr/attendance",
-    label: "Attendance",
-    icon: Fingerprint,
-    group: "humanResources",
-  },
-  { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "humanResources" },
-  {
-    id: "hr-leave",
-    to: "/hr/leave",
-    label: "Leave Management",
-    icon: CalendarDays,
-    group: "humanResources",
-  },
-  {
-    id: "hr-salary",
-    to: "/hr/salary",
-    label: "Salary Structures",
-    icon: Wallet,
-    group: "humanResources",
-  },
-  {
-    id: "hr-payroll",
-    to: "/hr/payroll",
-    label: "Payroll",
-    icon: Banknote,
-    group: "humanResources",
-  },
-  {
-    id: "hr-loans",
-    to: "/hr/loans",
-    label: "Loans & Claims",
-    icon: HandCoins,
-    group: "humanResources",
-  },
-  {
-    id: "hr-holidays",
-    to: "/hr/holidays",
-    label: "Holidays",
-    icon: Calendar,
-    group: "humanResources",
-  },
-
-  {
-    id: "hr-branches",
-    to: "/hr/branches",
-    label: "Offices & Geofences",
-    icon: MapPin,
-    group: "humanResources",
-  },
-
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
-  { id: "vendors", to: "/vendors", label: "Vendors", icon: Factory, group: "masterData" },
   { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },
 
   // Communication

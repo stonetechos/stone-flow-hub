@@ -28,7 +28,6 @@ export type GuidedEntity =
   | "quote"
   | "sales_order"
   | "purchase_order"
-  | "production_order"
   | "dispatch"
   | "installation"
   | "invoice"
@@ -137,23 +136,13 @@ export function nextGuidedStep(
       };
     case "purchase_order":
       return {
-        title: "Kick off production",
-        description:
-          "Purchase order is in place. Open (or create) the matching production order to schedule stages, QC and material prep.",
-        ctaLabel: "Continue — Production",
-        href: "/manufacturing",
-        search: clean({ project: ctx.project_id }),
-        skipKey: `gwa:purchase_order:${entityId}:production_order`,
-      };
-    case "production_order":
-      return {
         title: "Create a dispatch",
         description:
-          "Production is progressing. When pieces are ready, creating a dispatch coordinates packing, vehicle and delivery paperwork.",
+          "Purchase order is in place. When pieces are ready, creating a dispatch coordinates packing, vehicle and delivery paperwork.",
         ctaLabel: "Continue — New dispatch",
         href: "/dispatch/new",
-        search: clean({ so: ctx.sales_order_id }),
-        skipKey: `gwa:production_order:${entityId}:dispatch`,
+        search: clean({ so: ctx.sales_order_id, project: ctx.project_id }),
+        skipKey: `gwa:purchase_order:${entityId}:dispatch`,
       };
     case "dispatch":
       return {

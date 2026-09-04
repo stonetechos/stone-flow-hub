@@ -164,7 +164,7 @@ function DashboardPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <CashFlowSnapshot kpis={kpis} />
-            <ProductionAndDispatch kpis={kpis} />
+            <DispatchAndInstallation kpis={kpis} />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -657,22 +657,19 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Section 5 — Production & Dispatch                                           */
+/* Section 5 — Dispatch & Installation                                         */
 /* -------------------------------------------------------------------------- */
 
-function ProductionAndDispatch({ kpis }: { kpis: DashboardKpis }) {
+// Was "Production & Dispatch" — the Production row/link was removed along
+// with the Manufacturing feature (2026-09-04 Purchase module restructure);
+// see engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md.
+function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
   const rows = [
     {
       icon: <Factory className="h-3.5 w-3.5" />,
       label: "Sales orders to start",
       value: kpis.ordersToStart,
       to: "/sales-orders",
-    },
-    {
-      icon: <Timer className="h-3.5 w-3.5" />,
-      label: "Production queue",
-      value: "—",
-      to: "/manufacturing",
     },
     {
       icon: <Truck className="h-3.5 w-3.5" />,
@@ -689,10 +686,10 @@ function ProductionAndDispatch({ kpis }: { kpis: DashboardKpis }) {
   ];
   return (
     <SurfaceCard
-      icon={<Factory className="h-3.5 w-3.5" />}
-      kicker="Production & dispatch"
+      icon={<Truck className="h-3.5 w-3.5" />}
+      kicker="Dispatch & installation"
       title="Floor status"
-      to="/dashboards/production"
+      to="/dispatch"
     >
       <ul className="divide-y divide-border-subtle">
         {rows.map((r) => (
@@ -712,9 +709,6 @@ function ProductionAndDispatch({ kpis }: { kpis: DashboardKpis }) {
           </li>
         ))}
       </ul>
-      <div className="mt-3 rounded-sm bg-surface-panel px-2.5 py-1.5 text-[11px] text-text-muted">
-        Capacity signals arrive with the manufacturing telemetry release.
-      </div>
     </SurfaceCard>
   );
 }

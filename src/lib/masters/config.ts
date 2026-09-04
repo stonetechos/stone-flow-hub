@@ -29,7 +29,6 @@ export type MasterConfig = {
     | "applications"
     | "thicknesses"
     | "product_families"
-    | "manufacturing_stages"
     | "quality_grades"
     | "packaging_types"
     | "uoms"
@@ -167,17 +166,6 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     description: "Mosaic, Interlocking Panel, Veneer, Mural, CNC Artwork, Inlay…",
     extraFields: [],
     extraColumns: [],
-  },
-  {
-    table: "manufacturing_stages",
-    route: "manufacturing-stages",
-    title: "Manufacturing Stages",
-    singular: "Manufacturing Stage",
-    description: "Workflow steps auto-seeded onto each production order.",
-    extraFields: [
-      { key: "default_duration_hours", label: "Default duration (hrs)", type: "number" },
-    ],
-    extraColumns: [{ key: "default_duration_hours", label: "Hrs" }],
   },
   {
     table: "quality_grades",
