@@ -53,7 +53,12 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
           // The two cron endpoints accept either
           // name; reported together since either being present is enough.
           cron_secret: present("CRON_SECRET") || present("CRON_SHARED_SECRET"),
-          lovable_api_key: present("LOVABLE_API_KEY"),
+          // AI gateway (OpenRouter, replacing Lovable's AI Gateway).
+          openrouter_api_key: present("OPENROUTER_API_KEY"),
+          // Auth-email pipeline (Supabase's native Send Email Hook, direct
+          // to this Worker, replacing Lovable's relay) and its sender.
+          resend_api_key: present("RESEND_API_KEY"),
+          supabase_auth_hook_secret: present("SUPABASE_AUTH_HOOK_SECRET"),
           checked_at: new Date().toISOString(),
         };
 

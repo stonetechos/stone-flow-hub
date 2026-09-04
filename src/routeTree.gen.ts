@@ -165,9 +165,12 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
 import { Route as ApiPublicHooksWorkforceDailyRouteImport } from './routes/api/public/hooks/workforce-daily'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
+import { Route as ApiPublicHooksEmailQueueProcessRouteImport } from './routes/api/public/hooks/email-queue-process'
+import { Route as ApiPublicHooksEmailPreviewRouteImport } from './routes/api/public/hooks/email-preview'
 import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/public/hooks/dispatch-queue'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
+import { Route as ApiPublicHooksAuthEmailRouteImport } from './routes/api/public/hooks/auth-email'
 import { Route as ApiPublicDiagnosticsEnvStatusRouteImport } from './routes/api/public/diagnostics/env-status'
 import { Route as AuthenticatedWorkforceIntelligenceRolesIdRouteImport } from './routes/_authenticated/workforce-intelligence/roles/$id'
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport } from './routes/_authenticated/workforce-intelligence/employees/new'
@@ -1083,6 +1086,18 @@ const ApiPublicHooksWhatsappRoute = ApiPublicHooksWhatsappRouteImport.update({
   path: '/api/public/hooks/whatsapp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksEmailQueueProcessRoute =
+  ApiPublicHooksEmailQueueProcessRouteImport.update({
+    id: '/api/public/hooks/email-queue-process',
+    path: '/api/public/hooks/email-queue-process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksEmailPreviewRoute =
+  ApiPublicHooksEmailPreviewRouteImport.update({
+    id: '/api/public/hooks/email-preview',
+    path: '/api/public/hooks/email-preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksDispatchQueueRoute =
   ApiPublicHooksDispatchQueueRouteImport.update({
     id: '/api/public/hooks/dispatch-queue',
@@ -1101,6 +1116,11 @@ const ApiPublicHooksCustomerPaymentRemindersRoute =
     path: '/api/public/hooks/customer-payment-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAuthEmailRoute = ApiPublicHooksAuthEmailRouteImport.update({
+  id: '/api/public/hooks/auth-email',
+  path: '/api/public/hooks/auth-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiagnosticsEnvStatusRoute =
   ApiPublicDiagnosticsEnvStatusRouteImport.update({
     id: '/api/public/diagnostics/env-status',
@@ -1371,9 +1391,12 @@ export interface FileRoutesByFullPath {
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
+  '/api/public/hooks/email-preview': typeof ApiPublicHooksEmailPreviewRoute
+  '/api/public/hooks/email-queue-process': typeof ApiPublicHooksEmailQueueProcessRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
@@ -1549,9 +1572,12 @@ export interface FileRoutesByTo {
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
+  '/api/public/hooks/email-preview': typeof ApiPublicHooksEmailPreviewRoute
+  '/api/public/hooks/email-queue-process': typeof ApiPublicHooksEmailQueueProcessRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
@@ -1729,9 +1755,12 @@ export interface FileRoutesById {
   '/_authenticated/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/_authenticated/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/dispatch-queue': typeof ApiPublicHooksDispatchQueueRoute
+  '/api/public/hooks/email-preview': typeof ApiPublicHooksEmailPreviewRoute
+  '/api/public/hooks/email-queue-process': typeof ApiPublicHooksEmailQueueProcessRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/hooks/workforce-daily': typeof ApiPublicHooksWorkforceDailyRoute
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
@@ -1909,9 +1938,12 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
+    | '/api/public/hooks/email-preview'
+    | '/api/public/hooks/email-queue-process'
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
@@ -2087,9 +2119,12 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
+    | '/api/public/hooks/email-preview'
+    | '/api/public/hooks/email-queue-process'
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
@@ -2266,9 +2301,12 @@ export interface FileRouteTypes {
     | '/_authenticated/workforce-intelligence/employees/new'
     | '/_authenticated/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/dispatch-queue'
+    | '/api/public/hooks/email-preview'
+    | '/api/public/hooks/email-queue-process'
     | '/api/public/hooks/whatsapp'
     | '/api/public/hooks/workforce-daily'
     | '/api/public/webhooks/razorpay'
@@ -2296,9 +2334,12 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
+  ApiPublicHooksAuthEmailRoute: typeof ApiPublicHooksAuthEmailRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksDispatchQueueRoute: typeof ApiPublicHooksDispatchQueueRoute
+  ApiPublicHooksEmailPreviewRoute: typeof ApiPublicHooksEmailPreviewRoute
+  ApiPublicHooksEmailQueueProcessRoute: typeof ApiPublicHooksEmailQueueProcessRoute
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
   ApiPublicHooksWorkforceDailyRoute: typeof ApiPublicHooksWorkforceDailyRoute
   ApiPublicWebhooksRazorpayRoute: typeof ApiPublicWebhooksRazorpayRoute
@@ -3401,6 +3442,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/email-queue-process': {
+      id: '/api/public/hooks/email-queue-process'
+      path: '/api/public/hooks/email-queue-process'
+      fullPath: '/api/public/hooks/email-queue-process'
+      preLoaderRoute: typeof ApiPublicHooksEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/email-preview': {
+      id: '/api/public/hooks/email-preview'
+      path: '/api/public/hooks/email-preview'
+      fullPath: '/api/public/hooks/email-preview'
+      preLoaderRoute: typeof ApiPublicHooksEmailPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/dispatch-queue': {
       id: '/api/public/hooks/dispatch-queue'
       path: '/api/public/hooks/dispatch-queue'
@@ -3420,6 +3475,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/customer-payment-reminders'
       fullPath: '/api/public/hooks/customer-payment-reminders'
       preLoaderRoute: typeof ApiPublicHooksCustomerPaymentRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/auth-email': {
+      id: '/api/public/hooks/auth-email'
+      path: '/api/public/hooks/auth-email'
+      fullPath: '/api/public/hooks/auth-email'
+      preLoaderRoute: typeof ApiPublicHooksAuthEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/diagnostics/env-status': {
@@ -4074,10 +4136,13 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
+  ApiPublicHooksAuthEmailRoute: ApiPublicHooksAuthEmailRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksDispatchQueueRoute: ApiPublicHooksDispatchQueueRoute,
+  ApiPublicHooksEmailPreviewRoute: ApiPublicHooksEmailPreviewRoute,
+  ApiPublicHooksEmailQueueProcessRoute: ApiPublicHooksEmailQueueProcessRoute,
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
   ApiPublicHooksWorkforceDailyRoute: ApiPublicHooksWorkforceDailyRoute,
   ApiPublicWebhooksRazorpayRoute: ApiPublicWebhooksRazorpayRoute,
