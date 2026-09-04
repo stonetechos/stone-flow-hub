@@ -384,7 +384,7 @@ function CustomerHub() {
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="challans">Challans</TabsTrigger>
           <TabsTrigger value="installations">Installation</TabsTrigger>
-          <TabsTrigger value="statements">Statements</TabsTrigger>
+          <TabsTrigger value="statements">Sales Ledger</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>

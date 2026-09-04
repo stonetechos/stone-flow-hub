@@ -23,6 +23,7 @@ import {
   summariseLedger,
 } from "@/lib/vendors/ledger";
 import { formatInr } from "@/lib/format";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId/ledger")({
   ssr: false,
@@ -33,11 +34,11 @@ function VendorLedgerPage() {
   const { vendorId } = Route.useParams();
 
   const vendorQ = useQuery({
-    queryKey: ["vendor", vendorId, "row"],
+    queryKey: qk.vendors.byId(vendorId),
     queryFn: () => getVendor(vendorId),
   });
   const ledgerQ = useQuery({
-    queryKey: ["vendor", vendorId, "ledger"],
+    queryKey: qk.vendorLedger.byVendor(vendorId),
     queryFn: () => listVendorLedger(vendorId),
     staleTime: 30_000,
   });

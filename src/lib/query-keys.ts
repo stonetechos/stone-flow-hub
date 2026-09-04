@@ -138,6 +138,13 @@ export const qk = {
     byCustomer: (id: string) => ["customer_ledger", id] as const,
     summary: (id: string) => ["customer_ledger", "summary", id] as const,
   },
+  vendorLedger: {
+    byVendor: (id: string) => ["vendor_ledger", id] as const,
+    /** Every vendor_ledger row across all vendors, grouped client-side into
+     *  a per-vendor outstanding-balance summary for the Purchase Ledger
+     *  index page (mirrors receipts/index.tsx's client-side aggregation). */
+    allSummaries: ["vendor_ledger", "allSummaries"] as const,
+  },
   messages: {
     all: ["messages"] as const,
     list: (q?: string, channel?: string) => ["messages", "list", q ?? "", channel ?? ""] as const,

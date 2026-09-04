@@ -136,12 +136,18 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   // plan doc, not a literal instruction.
   { id: "rfqs", to: "/rfqs", label: "RFQs", icon: Send, group: "purchase" },
   { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "purchase" },
-  // New — placeholder route/page not yet built (task #38/#39/#40/#41 in
-  // this session's tracker). Left commented until the page exists so the
-  // sidebar never links to a 404.
+  {
+    id: "purchase-ledger",
+    to: "/purchase-ledger",
+    label: "Purchase Ledger",
+    icon: Wallet,
+    group: "purchase",
+  },
+  // New — placeholder route/page not yet built (task #38/#39/#40 in this
+  // session's tracker). Left commented until the page exists so the sidebar
+  // never links to a 404.
   // { id: "purchase-invoices", to: "/purchase-invoices", label: "Purchase Invoices", icon: Receipt, group: "purchase" },
   // { id: "purchase-payments", to: "/purchase-payments", label: "Purchase Payments", icon: Wallet, group: "purchase" },
-  // { id: "purchase-ledger", to: "/purchase-ledger", label: "Purchase Ledger", icon: Wallet, group: "purchase" },
   // { id: "purchase-transport", to: "/purchase-transport", label: "Purchase Transportation", icon: Truck, group: "purchase" },
   // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
   // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },

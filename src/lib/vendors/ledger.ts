@@ -44,6 +44,24 @@ export async function listVendorLedger(vendorId: string): Promise<VendorLedgerRo
     .order("entry_date", { ascending: true })
     .order("created_at", { ascending: true });
   if (error) throw new AppError(mapDbError(error));
+  return normaliseRows(data);
+}
+
+/** Every vendor_ledger row across every vendor, chronological. Used only to
+ *  build the per-vendor summaries below — the Purchase Ledger index page has
+ *  no need for row-level detail, that's what each vendor's own
+ *  `/vendors/$vendorId/ledger` page is for. */
+async function listAllVendorLedgerRows(): Promise<VendorLedgerRow[]> {
+  const { data, error } = await supabase
+    .from("vendor_ledger" as never)
+    .select("*")
+    .order("entry_date", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return normaliseRows(data);
+}
+
+function normaliseRows(data: unknown): VendorLedgerRow[] {
   return ((data ?? []) as unknown as VendorLedgerRow[]).map((r) => ({
     ...r,
     debit: Number(r.debit),
@@ -51,6 +69,31 @@ export async function listVendorLedger(vendorId: string): Promise<VendorLedgerRo
     running_balance: Number(r.running_balance),
     metadata: r.metadata ?? {},
   }));
+}
+
+export interface VendorLedgerVendorSummary extends VendorLedgerSummary {
+  vendorId: string;
+}
+
+/** One summary per vendor that has at least one ledger entry, keyed by
+ *  vendor_id — feeds the Purchase Ledger index page (§3 of the Purchase
+ *  module plan, engineering/purchase-module-and-sidebar-restructure-
+ *  plan-2026-09-04.md). A vendor with zero entries simply won't have a key
+ *  here; the index page treats that the same as a zero balance. */
+export async function listVendorLedgerSummaries(): Promise<Map<string, VendorLedgerVendorSummary>> {
+  const rows = await listAllVendorLedgerRows();
+  const byVendor = new Map<string, VendorLedgerRow[]>();
+  for (const r of rows) {
+    if (!r.vendor_id) continue;
+    const list = byVendor.get(r.vendor_id);
+    if (list) list.push(r);
+    else byVendor.set(r.vendor_id, [r]);
+  }
+  const summaries = new Map<string, VendorLedgerVendorSummary>();
+  for (const [vendorId, vendorRows] of byVendor) {
+    summaries.set(vendorId, { vendorId, ...summariseLedger(vendorRows) });
+  }
+  return summaries;
 }
 
 export function summariseLedger(rows: VendorLedgerRow[]): VendorLedgerSummary {

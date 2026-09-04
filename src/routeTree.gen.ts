@@ -41,6 +41,7 @@ import { Route as AuthenticatedRfqsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedReceiptsIndexRouteImport } from './routes/_authenticated/receipts/index'
 import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes/index'
 import { Route as AuthenticatedPurchaseOrdersIndexRouteImport } from './routes/_authenticated/purchase-orders/index'
+import { Route as AuthenticatedPurchaseLedgerIndexRouteImport } from './routes/_authenticated/purchase-ledger/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
@@ -341,6 +342,12 @@ const AuthenticatedPurchaseOrdersIndexRoute =
   AuthenticatedPurchaseOrdersIndexRouteImport.update({
     id: '/purchase-orders/',
     path: '/purchase-orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPurchaseLedgerIndexRoute =
+  AuthenticatedPurchaseLedgerIndexRouteImport.update({
+    id: '/purchase-ledger/',
+    path: '/purchase-ledger/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProjectsIndexRoute =
@@ -1217,6 +1224,7 @@ export interface FileRoutesByFullPath {
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/purchase-ledger/': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/receipts/': typeof AuthenticatedReceiptsIndexRoute
@@ -1379,6 +1387,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/purchase-ledger': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/purchase-orders': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/receipts': typeof AuthenticatedReceiptsIndexRoute
@@ -1543,6 +1552,7 @@ export interface FileRoutesById {
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/purchase-ledger/': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/_authenticated/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/_authenticated/receipts/': typeof AuthenticatedReceiptsIndexRoute
@@ -1707,6 +1717,7 @@ export interface FileRouteTypes {
     | '/payments/'
     | '/products/'
     | '/projects/'
+    | '/purchase-ledger/'
     | '/purchase-orders/'
     | '/quotes/'
     | '/receipts/'
@@ -1869,6 +1880,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/products'
     | '/projects'
+    | '/purchase-ledger'
     | '/purchase-orders'
     | '/quotes'
     | '/receipts'
@@ -2032,6 +2044,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments/'
     | '/_authenticated/products/'
     | '/_authenticated/projects/'
+    | '/_authenticated/purchase-ledger/'
     | '/_authenticated/purchase-orders/'
     | '/_authenticated/quotes/'
     | '/_authenticated/receipts/'
@@ -2323,6 +2336,13 @@ declare module '@tanstack/react-router' {
       path: '/purchase-orders'
       fullPath: '/purchase-orders/'
       preLoaderRoute: typeof AuthenticatedPurchaseOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/purchase-ledger/': {
+      id: '/_authenticated/purchase-ledger/'
+      path: '/purchase-ledger'
+      fullPath: '/purchase-ledger/'
+      preLoaderRoute: typeof AuthenticatedPurchaseLedgerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/projects/': {
@@ -3459,6 +3479,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedPurchaseLedgerIndexRoute: typeof AuthenticatedPurchaseLedgerIndexRoute
   AuthenticatedPurchaseOrdersIndexRoute: typeof AuthenticatedPurchaseOrdersIndexRoute
   AuthenticatedQuotesIndexRoute: typeof AuthenticatedQuotesIndexRoute
   AuthenticatedReceiptsIndexRoute: typeof AuthenticatedReceiptsIndexRoute
@@ -3619,6 +3640,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedPurchaseLedgerIndexRoute: AuthenticatedPurchaseLedgerIndexRoute,
   AuthenticatedPurchaseOrdersIndexRoute: AuthenticatedPurchaseOrdersIndexRoute,
   AuthenticatedQuotesIndexRoute: AuthenticatedQuotesIndexRoute,
   AuthenticatedReceiptsIndexRoute: AuthenticatedReceiptsIndexRoute,
