@@ -25,6 +25,14 @@ import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
@@ -35,11 +43,170 @@ import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
 import { BusinessTimeline } from "@/components/timeline/BusinessTimeline";
 import { useCustomerTimeline } from "@/lib/timeline/hooks";
 import { DeliveryChallanListPanel } from "@/components/dispatch/DeliveryChallanListPanel";
+import { CustomerLedgerPanel } from "@/components/customer-ledger/CustomerLedgerPanel";
+import { StatusPill } from "@/components/entity/StatusPill";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
-import { formatInr } from "@/lib/format";
+import { formatInr, formatDate } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
 import { listFollowups } from "@/lib/followups/api";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+
+/** Payment and dispatch due dates for this customer, glanceable right on
+ *  Overview (Sales dashboard, 2026-09) — renders nothing when there's
+ *  nothing due, so it never adds empty-state clutter to a clean account. */
+function CustomerDuesCard({ customerId }: { customerId: string }) {
+  const duesQ = useQuery({
+    queryKey: ["hub", "customer", customerId, "dues"],
+    queryFn: () => hub.customerDues(customerId),
+  });
+  const today = new Date().toISOString().slice(0, 10);
+  const paymentDues = duesQ.data?.paymentDues ?? [];
+  const dispatchDues = duesQ.data?.dispatchDues ?? [];
+
+  if (duesQ.isLoading || (paymentDues.length === 0 && dispatchDues.length === 0)) return null;
+
+  return (
+    <Card className="shadow-1 border-amber-500/40">
+      <CardHeader>
+        <CardTitle className="text-sm">Dues</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {paymentDues.length > 0 && (
+          <div>
+            <div className="mb-1 text-xs font-medium text-muted-foreground">
+              Payment due ({paymentDues.length})
+            </div>
+            <div className="space-y-1">
+              {paymentDues.map((r) => (
+                <div key={r.id} className="flex items-center justify-between text-sm">
+                  <Link
+                    to="/invoices/$invoiceId"
+                    params={{ invoiceId: r.id }}
+                    className="font-mono text-xs hover:underline"
+                  >
+                    {r.invoice_no}
+                  </Link>
+                  <span
+                    className={
+                      r.due_date && r.due_date < today ? "text-destructive font-medium" : ""
+                    }
+                  >
+                    {formatInr(r.balance_due)} · due {formatDate(r.due_date)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {dispatchDues.length > 0 && (
+          <div>
+            <div className="mb-1 text-xs font-medium text-muted-foreground">
+              Dispatch due ({dispatchDues.length})
+            </div>
+            <div className="space-y-1">
+              {dispatchDues.map((r) => (
+                <div key={r.id} className="flex items-center justify-between text-sm">
+                  <Link
+                    to="/sales-orders/$id"
+                    params={{ id: r.id }}
+                    className="font-mono text-xs hover:underline"
+                  >
+                    {r.so_no}
+                  </Link>
+                  <span
+                    className={
+                      r.delivery_date && r.delivery_date < today
+                        ? "text-destructive font-medium"
+                        : ""
+                    }
+                  >
+                    due {formatDate(r.delivery_date)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Installation orders for this customer — who's assigned, planned dates,
+ *  progress (Sales dashboard, 2026-09). Team assignment itself happens on
+ *  the existing /installations/$id page this links out to, rather than
+ *  duplicating that flow here. */
+function CustomerInstallationsTab({ customerId }: { customerId: string }) {
+  const q = useQuery({
+    queryKey: ["hub", "customer", customerId, "installations"],
+    queryFn: () => hub.customerInstallations(customerId),
+  });
+  const rows = q.data ?? [];
+
+  if (q.isLoading) return <LoadingBlock />;
+  if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
+  if (rows.length === 0) {
+    return (
+      <PlaceholderTab message="No installations yet — these are created automatically from Supply + Installation sales orders." />
+    );
+  }
+
+  return (
+    <Card className="shadow-1">
+      <CardHeader>
+        <CardTitle className="text-sm">Installations</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>No.</TableHead>
+              <TableHead>Project</TableHead>
+              <TableHead>Sales Order</TableHead>
+              <TableHead>Team</TableHead>
+              <TableHead>Planned</TableHead>
+              <TableHead>Progress</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-mono text-xs">
+                  <Link
+                    to="/installations/$id"
+                    params={{ id: r.id }}
+                    className="text-primary hover:underline"
+                  >
+                    {r.installation_no ?? "—"}
+                  </Link>
+                </TableCell>
+                <TableCell>{r.project?.name ?? "—"}</TableCell>
+                <TableCell className="font-mono text-xs">{r.sales_order?.so_no ?? "—"}</TableCell>
+                <TableCell>
+                  {r.team?.name ?? (
+                    <Link
+                      to="/installations/$id"
+                      params={{ id: r.id }}
+                      className="text-primary hover:underline"
+                    >
+                      Assign team
+                    </Link>
+                  )}
+                </TableCell>
+                <TableCell>{formatDate(r.planned_start_date)}</TableCell>
+                <TableCell>{r.progress_pct}%</TableCell>
+                <TableCell>
+                  <StatusPill status={r.status} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
 
 /** Phase G.10 — full Business Timeline for this customer: enquiries,
  *  quotations, sales orders, invoices, payments, dispatches, installations,
@@ -216,6 +383,8 @@ function CustomerHub() {
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="challans">Challans</TabsTrigger>
+          <TabsTrigger value="installations">Installation</TabsTrigger>
+          <TabsTrigger value="statements">Statements</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -248,6 +417,8 @@ function CustomerHub() {
               />
             </CardContent>
           </Card>
+
+          <CustomerDuesCard customerId={customerId} />
 
           <Card className="shadow-1">
             <CardHeader>
@@ -417,6 +588,14 @@ function CustomerHub() {
             customerId={customerId}
             title="Delivery challans for this customer"
           />
+        </TabsContent>
+
+        <TabsContent value="installations" className="mt-4">
+          <CustomerInstallationsTab customerId={customerId} />
+        </TabsContent>
+
+        <TabsContent value="statements" className="mt-4">
+          <CustomerLedgerPanel customerId={customerId} />
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-4">

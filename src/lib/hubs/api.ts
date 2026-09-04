@@ -89,6 +89,78 @@ export const hub = {
         .eq("customer_id", customerId)
         .order("is_primary", { ascending: false }),
     ),
+  /** Installation orders for this customer (Sales dashboard, 2026-09) — the
+   *  Customer Hub's "Installation" tab surfaces who's assigned and links out
+   *  to the existing /installations/$id page, where assignment itself
+   *  already happens; this just needs to list them. */
+  customerInstallations: async (customerId: string) => {
+    const { data, error } = await supabase
+      .from("installations" as never)
+      .select(
+        `id, installation_no, status, planned_start_date, planned_end_date, progress_pct,
+         project:projects!installations_project_id_fkey(id,name),
+         sales_order:sales_orders!installations_sales_order_id_fkey(id,so_no),
+         team:installation_teams!installations_team_id_fkey(id,name)`,
+      )
+      .eq("customer_id", customerId)
+      .order("created_at", { ascending: false });
+    if (error) throw new AppError(mapDbError(error));
+    return (data ?? []) as unknown as Array<{
+      id: string;
+      installation_no: string | null;
+      status: string;
+      planned_start_date: string | null;
+      planned_end_date: string | null;
+      progress_pct: number;
+      project: { id: string; name: string } | null;
+      sales_order: { id: string; so_no: string } | null;
+      team: { id: string; name: string } | null;
+    }>;
+  },
+  /** Payment and dispatch due dates for this customer (Sales dashboard,
+   *  2026-09) — the Customer Hub's "Dues" card. Payment dues are open
+   *  invoices with a balance and a due_date; dispatch dues are sales orders
+   *  with a delivery_date that aren't yet delivered/cancelled. Both are
+   *  intentionally a flat "what's outstanding, ordered by date" list rather
+   *  than a full per-order pending-quantity computation — that detail
+   *  already lives on each sales order's own page (getSalesOrderDeliveryStatus
+   *  in lib/dispatch/api.ts), which this list links out to. */
+  customerDues: async (customerId: string) => {
+    const [invRes, soRes] = await Promise.all([
+      supabase
+        .from("invoices")
+        .select("id, invoice_no, due_date, balance_due, status")
+        .eq("customer_id", customerId)
+        .not("status", "in", "(cancelled,draft,paid)")
+        .not("due_date", "is", null)
+        .order("due_date", { ascending: true }),
+      supabase
+        .from("sales_orders")
+        .select("id, so_no, delivery_date, status")
+        .eq("customer_id", customerId)
+        .not("status", "in", "(cancelled,delivered)")
+        .not("delivery_date", "is", null)
+        .order("delivery_date", { ascending: true }),
+    ]);
+    if (invRes.error) throw new AppError(mapDbError(invRes.error));
+    if (soRes.error) throw new AppError(mapDbError(soRes.error));
+    const paymentDues = (
+      invRes.data as Array<{
+        id: string;
+        invoice_no: string;
+        due_date: string | null;
+        balance_due: number | null;
+        status: string;
+      }>
+    ).filter((r) => Number(r.balance_due ?? 0) > 0);
+    const dispatchDues = soRes.data as Array<{
+      id: string;
+      so_no: string;
+      delivery_date: string | null;
+      status: string;
+    }>;
+    return { paymentDues, dispatchDues };
+  },
   customerStats: async (customerId: string) => {
     const counts = await Promise.all([
       supabase
