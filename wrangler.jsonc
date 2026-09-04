@@ -1,9 +1,12 @@
-// The Lovable publish pipeline generates its own .output/server/wrangler.json
-// at build time and overrides "main" and "assets" here; only "name" and
-// "compatibility_date" carry through. This file is kept complete so
-// `wrangler dev` / `wrangler deploy` also work when run directly against a
-// build output, which is why nodejs_compat is declared explicitly even
-// though nitro's cloudflare-module preset injects it.
+// Not the config that's actually deployed. Nitro's cloudflare-module preset
+// generates its own .output/server/wrangler.json at build time — different
+// "main"/"assets" paths (relative to .output/server/), plus no_bundle and
+// ESM rules this file doesn't carry — and .github/workflows/deploy.yml
+// deploys THAT generated file (patched by scripts/prepare-wrangler-deploy.mjs
+// to attach the production custom domain), not this one. This file exists
+// so `wrangler dev` works directly against a build output without a build
+// step of its own, which is why nodejs_compat is declared explicitly even
+// though nitro's cloudflare-module preset injects it into the generated one.
 {
   "name": "stone-flow-hub",
   "main": ".output/server/index.mjs",
