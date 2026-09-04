@@ -223,6 +223,15 @@ export const MASTER_CONFIGS: MasterConfig[] = [
     ],
     extraColumns: [{ key: "category", label: "Category" }],
   },
+  // NOTE: Carting Agencies (Task #40) is NOT registered here. This
+  // component's `table` union — and MasterListPage's typed `.from()` call
+  // — only cover tables already in the generated Supabase Database type.
+  // carting_agencies is a brand-new table (same situation purchase_invoices
+  // and other Task #38+ tables are in — see their api.ts files' `as never`
+  // cast pattern), so it gets its own small bespoke page instead:
+  // src/routes/_authenticated/masters/carting-agencies.tsx, backed by
+  // src/lib/purchase-transportation/api.ts's listCartingAgencies/
+  // create/update/deleteCartingAgency functions.
 ];
 
 export const COMMON_FIELDS = [COMMON.code, COMMON.name];

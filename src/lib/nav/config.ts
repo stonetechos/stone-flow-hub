@@ -162,10 +162,18 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Banknote,
     group: "purchase",
   },
-  // New — placeholder route/page not yet built (task #40 in this session's
-  // tracker). Left commented until the page exists so the sidebar never
-  // links to a 404.
-  // { id: "purchase-transport", to: "/purchase-transport", label: "Purchase Transportation", icon: Truck, group: "purchase" },
+  // Task #40 — inbound-from-vendor shipment tracking (carting agency/
+  // driver, freight, amount paid), keyed to Purchase Order. Purchase-side
+  // mirror of Dispatch above, which stays in Sales for outbound delivery.
+  {
+    id: "purchase-transport",
+    to: "/purchase-transport",
+    label: "Purchase Transportation",
+    icon: Truck,
+    group: "purchase",
+  },
+  // Still not started (tasks #41/#42) — left commented until the pages
+  // exist so the sidebar never links to a 404.
   // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
   // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },
 

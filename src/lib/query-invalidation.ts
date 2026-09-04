@@ -183,6 +183,21 @@ export function invalidatePurchaseInvoice(
   bump(qc, qk.activity.recent);
 }
 
+export function invalidatePurchaseTransport(
+  qc: QueryClient,
+  id?: string,
+  vendorId?: string | null,
+): void {
+  bump(qc, qk.purchaseTransport.all);
+  if (id) {
+    bump(qc, qk.purchaseTransport.byId(id));
+    bump(qc, qk.purchaseTransport.items(id));
+  }
+  if (vendorId) bump(qc, qk.purchaseTransport.byVendor(vendorId));
+  bump(qc, qk.dashboard);
+  bump(qc, qk.activity.recent);
+}
+
 export function invalidateSalesOrder(qc: QueryClient, id?: string): void {
   bump(qc, qk.salesOrders.all);
   if (id) bump(qc, qk.salesOrders.byId(id));

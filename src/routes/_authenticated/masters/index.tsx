@@ -2,7 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
 import { MASTER_CONFIGS } from "@/lib/masters/config";
-import { Layers } from "lucide-react";
+import { Layers, Truck } from "lucide-react";
+
+// Carting Agencies (Task #40) is a bespoke page, not driven by
+// MASTER_CONFIGS — see the note in src/lib/masters/config.ts for why
+// (a brand-new table, not yet in the generated Database type). Listed
+// here by hand so it's still discoverable from the Masters index.
+const EXTRA_MASTERS = [
+  {
+    route: "carting-agencies",
+    title: "Carting Agencies",
+    description: "Transporters used for inbound vendor shipments.",
+    icon: Truck,
+  },
+];
 
 export const Route = createFileRoute("/_authenticated/masters/")({
   component: MastersIndex,
@@ -21,6 +34,21 @@ function MastersIndex() {
             <Card className="flex items-start gap-3 p-4 transition-colors hover:border-primary/60 hover:bg-accent/40">
               <div className="rounded-md bg-primary/10 p-2 text-primary">
                 <Layers className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary">
+                  {m.title}
+                </h3>
+                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{m.description}</p>
+              </div>
+            </Card>
+          </Link>
+        ))}
+        {EXTRA_MASTERS.map((m) => (
+          <Link key={m.route} to={`/masters/${m.route}` as string} className="group">
+            <Card className="flex items-start gap-3 p-4 transition-colors hover:border-primary/60 hover:bg-accent/40">
+              <div className="rounded-md bg-primary/10 p-2 text-primary">
+                <m.icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary">

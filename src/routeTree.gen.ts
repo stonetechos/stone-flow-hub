@@ -40,6 +40,7 @@ import { Route as AuthenticatedSalesOrdersIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedRfqsIndexRouteImport } from './routes/_authenticated/rfqs/index'
 import { Route as AuthenticatedReceiptsIndexRouteImport } from './routes/_authenticated/receipts/index'
 import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes/index'
+import { Route as AuthenticatedPurchaseTransportIndexRouteImport } from './routes/_authenticated/purchase-transport/index'
 import { Route as AuthenticatedPurchaseOrdersIndexRouteImport } from './routes/_authenticated/purchase-orders/index'
 import { Route as AuthenticatedPurchaseLedgerIndexRouteImport } from './routes/_authenticated/purchase-ledger/index'
 import { Route as AuthenticatedPurchaseInvoicesIndexRouteImport } from './routes/_authenticated/purchase-invoices/index'
@@ -70,6 +71,8 @@ import { Route as AuthenticatedRfqsRfqIdRouteImport } from './routes/_authentica
 import { Route as AuthenticatedReceiptsNewRouteImport } from './routes/_authenticated/receipts/new'
 import { Route as AuthenticatedReceiptsReceiptIdRouteImport } from './routes/_authenticated/receipts/$receiptId'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes/new'
+import { Route as AuthenticatedPurchaseTransportNewRouteImport } from './routes/_authenticated/purchase-transport/new'
+import { Route as AuthenticatedPurchaseTransportIdRouteImport } from './routes/_authenticated/purchase-transport/$id'
 import { Route as AuthenticatedPurchaseOrdersNewRouteImport } from './routes/_authenticated/purchase-orders/new'
 import { Route as AuthenticatedPurchaseOrdersIdRouteImport } from './routes/_authenticated/purchase-orders/$id'
 import { Route as AuthenticatedPurchaseInvoicesNewRouteImport } from './routes/_authenticated/purchase-invoices/new'
@@ -90,6 +93,7 @@ import { Route as AuthenticatedMastersQcTemplatesRouteImport } from './routes/_a
 import { Route as AuthenticatedMastersProductFamiliesRouteImport } from './routes/_authenticated/masters/product-families'
 import { Route as AuthenticatedMastersPackagingTypesRouteImport } from './routes/_authenticated/masters/packaging-types'
 import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
+import { Route as AuthenticatedMastersCartingAgenciesRouteImport } from './routes/_authenticated/masters/carting-agencies'
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
 import { Route as AuthenticatedLedgerCustomerIdRouteImport } from './routes/_authenticated/ledger/$customerId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
@@ -167,6 +171,7 @@ import { Route as AuthenticatedVendorsVendorIdTimelineRouteImport } from './rout
 import { Route as AuthenticatedVendorsVendorIdLedgerRouteImport } from './routes/_authenticated/vendors/$vendorId.ledger'
 import { Route as AuthenticatedSalesOrdersIdEditRouteImport } from './routes/_authenticated/sales-orders/$id.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes/$quoteId.edit'
+import { Route as AuthenticatedPurchaseTransportIdEditRouteImport } from './routes/_authenticated/purchase-transport/$id.edit'
 import { Route as AuthenticatedPurchaseOrdersIdEditRouteImport } from './routes/_authenticated/purchase-orders/$id.edit'
 import { Route as AuthenticatedPurchaseInvoicesIdEditRouteImport } from './routes/_authenticated/purchase-invoices/$id.edit'
 import { Route as AuthenticatedPaymentsIdEditRouteImport } from './routes/_authenticated/payments/$id.edit'
@@ -341,6 +346,12 @@ const AuthenticatedQuotesIndexRoute =
   AuthenticatedQuotesIndexRouteImport.update({
     id: '/quotes/',
     path: '/quotes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPurchaseTransportIndexRoute =
+  AuthenticatedPurchaseTransportIndexRouteImport.update({
+    id: '/purchase-transport/',
+    path: '/purchase-transport/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPurchaseOrdersIndexRoute =
@@ -518,6 +529,18 @@ const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   path: '/quotes/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPurchaseTransportNewRoute =
+  AuthenticatedPurchaseTransportNewRouteImport.update({
+    id: '/purchase-transport/new',
+    path: '/purchase-transport/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPurchaseTransportIdRoute =
+  AuthenticatedPurchaseTransportIdRouteImport.update({
+    id: '/purchase-transport/$id',
+    path: '/purchase-transport/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPurchaseOrdersNewRoute =
   AuthenticatedPurchaseOrdersNewRouteImport.update({
     id: '/purchase-orders/new',
@@ -635,6 +658,12 @@ const AuthenticatedMastersEdgeFinishesRoute =
   AuthenticatedMastersEdgeFinishesRouteImport.update({
     id: '/masters/edge-finishes',
     path: '/masters/edge-finishes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersCartingAgenciesRoute =
+  AuthenticatedMastersCartingAgenciesRouteImport.update({
+    id: '/masters/carting-agencies',
+    path: '/masters/carting-agencies',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMastersApplicationsRoute =
@@ -1085,6 +1114,12 @@ const AuthenticatedQuotesQuoteIdEditRoute =
     path: '/quotes/$quoteId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPurchaseTransportIdEditRoute =
+  AuthenticatedPurchaseTransportIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedPurchaseTransportIdRoute,
+  } as any)
 const AuthenticatedPurchaseOrdersIdEditRoute =
   AuthenticatedPurchaseOrdersIdEditRouteImport.update({
     id: '/edit',
@@ -1215,6 +1250,7 @@ export interface FileRoutesByFullPath {
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
@@ -1235,6 +1271,8 @@ export interface FileRoutesByFullPath {
   '/purchase-invoices/new': typeof AuthenticatedPurchaseInvoicesNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
+  '/purchase-transport/$id': typeof AuthenticatedPurchaseTransportIdRouteWithChildren
+  '/purchase-transport/new': typeof AuthenticatedPurchaseTransportNewRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/receipts/new': typeof AuthenticatedReceiptsNewRoute
@@ -1265,6 +1303,7 @@ export interface FileRoutesByFullPath {
   '/purchase-invoices/': typeof AuthenticatedPurchaseInvoicesIndexRoute
   '/purchase-ledger/': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
+  '/purchase-transport/': typeof AuthenticatedPurchaseTransportIndexRoute
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/receipts/': typeof AuthenticatedReceiptsIndexRoute
   '/rfqs/': typeof AuthenticatedRfqsIndexRoute
@@ -1283,6 +1322,7 @@ export interface FileRoutesByFullPath {
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/purchase-invoices/$id/edit': typeof AuthenticatedPurchaseInvoicesIdEditRoute
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/purchase-transport/$id/edit': typeof AuthenticatedPurchaseTransportIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
@@ -1383,6 +1423,7 @@ export interface FileRoutesByTo {
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
@@ -1403,6 +1444,8 @@ export interface FileRoutesByTo {
   '/purchase-invoices/new': typeof AuthenticatedPurchaseInvoicesNewRoute
   '/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
+  '/purchase-transport/$id': typeof AuthenticatedPurchaseTransportIdRouteWithChildren
+  '/purchase-transport/new': typeof AuthenticatedPurchaseTransportNewRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/receipts/new': typeof AuthenticatedReceiptsNewRoute
@@ -1433,6 +1476,7 @@ export interface FileRoutesByTo {
   '/purchase-invoices': typeof AuthenticatedPurchaseInvoicesIndexRoute
   '/purchase-ledger': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/purchase-orders': typeof AuthenticatedPurchaseOrdersIndexRoute
+  '/purchase-transport': typeof AuthenticatedPurchaseTransportIndexRoute
   '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/receipts': typeof AuthenticatedReceiptsIndexRoute
   '/rfqs': typeof AuthenticatedRfqsIndexRoute
@@ -1451,6 +1495,7 @@ export interface FileRoutesByTo {
   '/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/purchase-invoices/$id/edit': typeof AuthenticatedPurchaseInvoicesIdEditRoute
   '/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/purchase-transport/$id/edit': typeof AuthenticatedPurchaseTransportIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
@@ -1553,6 +1598,7 @@ export interface FileRoutesById {
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
+  '/_authenticated/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
   '/_authenticated/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/_authenticated/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
@@ -1573,6 +1619,8 @@ export interface FileRoutesById {
   '/_authenticated/purchase-invoices/new': typeof AuthenticatedPurchaseInvoicesNewRoute
   '/_authenticated/purchase-orders/$id': typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   '/_authenticated/purchase-orders/new': typeof AuthenticatedPurchaseOrdersNewRoute
+  '/_authenticated/purchase-transport/$id': typeof AuthenticatedPurchaseTransportIdRouteWithChildren
+  '/_authenticated/purchase-transport/new': typeof AuthenticatedPurchaseTransportNewRoute
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/receipts/$receiptId': typeof AuthenticatedReceiptsReceiptIdRoute
   '/_authenticated/receipts/new': typeof AuthenticatedReceiptsNewRoute
@@ -1603,6 +1651,7 @@ export interface FileRoutesById {
   '/_authenticated/purchase-invoices/': typeof AuthenticatedPurchaseInvoicesIndexRoute
   '/_authenticated/purchase-ledger/': typeof AuthenticatedPurchaseLedgerIndexRoute
   '/_authenticated/purchase-orders/': typeof AuthenticatedPurchaseOrdersIndexRoute
+  '/_authenticated/purchase-transport/': typeof AuthenticatedPurchaseTransportIndexRoute
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/_authenticated/receipts/': typeof AuthenticatedReceiptsIndexRoute
   '/_authenticated/rfqs/': typeof AuthenticatedRfqsIndexRoute
@@ -1621,6 +1670,7 @@ export interface FileRoutesById {
   '/_authenticated/payments/$id/edit': typeof AuthenticatedPaymentsIdEditRoute
   '/_authenticated/purchase-invoices/$id/edit': typeof AuthenticatedPurchaseInvoicesIdEditRoute
   '/_authenticated/purchase-orders/$id/edit': typeof AuthenticatedPurchaseOrdersIdEditRoute
+  '/_authenticated/purchase-transport/$id/edit': typeof AuthenticatedPurchaseTransportIdEditRoute
   '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/_authenticated/sales-orders/$id/edit': typeof AuthenticatedSalesOrdersIdEditRoute
   '/_authenticated/vendors/$vendorId/ledger': typeof AuthenticatedVendorsVendorIdLedgerRoute
@@ -1723,6 +1773,7 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/ledger/$customerId'
     | '/masters/applications'
+    | '/masters/carting-agencies'
     | '/masters/edge-finishes'
     | '/masters/packaging-types'
     | '/masters/product-families'
@@ -1743,6 +1794,8 @@ export interface FileRouteTypes {
     | '/purchase-invoices/new'
     | '/purchase-orders/$id'
     | '/purchase-orders/new'
+    | '/purchase-transport/$id'
+    | '/purchase-transport/new'
     | '/quotes/new'
     | '/receipts/$receiptId'
     | '/receipts/new'
@@ -1773,6 +1826,7 @@ export interface FileRouteTypes {
     | '/purchase-invoices/'
     | '/purchase-ledger/'
     | '/purchase-orders/'
+    | '/purchase-transport/'
     | '/quotes/'
     | '/receipts/'
     | '/rfqs/'
@@ -1791,6 +1845,7 @@ export interface FileRouteTypes {
     | '/payments/$id/edit'
     | '/purchase-invoices/$id/edit'
     | '/purchase-orders/$id/edit'
+    | '/purchase-transport/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
@@ -1891,6 +1946,7 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/ledger/$customerId'
     | '/masters/applications'
+    | '/masters/carting-agencies'
     | '/masters/edge-finishes'
     | '/masters/packaging-types'
     | '/masters/product-families'
@@ -1911,6 +1967,8 @@ export interface FileRouteTypes {
     | '/purchase-invoices/new'
     | '/purchase-orders/$id'
     | '/purchase-orders/new'
+    | '/purchase-transport/$id'
+    | '/purchase-transport/new'
     | '/quotes/new'
     | '/receipts/$receiptId'
     | '/receipts/new'
@@ -1941,6 +1999,7 @@ export interface FileRouteTypes {
     | '/purchase-invoices'
     | '/purchase-ledger'
     | '/purchase-orders'
+    | '/purchase-transport'
     | '/quotes'
     | '/receipts'
     | '/rfqs'
@@ -1959,6 +2018,7 @@ export interface FileRouteTypes {
     | '/payments/$id/edit'
     | '/purchase-invoices/$id/edit'
     | '/purchase-orders/$id/edit'
+    | '/purchase-transport/$id/edit'
     | '/quotes/$quoteId/edit'
     | '/sales-orders/$id/edit'
     | '/vendors/$vendorId/ledger'
@@ -2060,6 +2120,7 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices/new'
     | '/_authenticated/ledger/$customerId'
     | '/_authenticated/masters/applications'
+    | '/_authenticated/masters/carting-agencies'
     | '/_authenticated/masters/edge-finishes'
     | '/_authenticated/masters/packaging-types'
     | '/_authenticated/masters/product-families'
@@ -2080,6 +2141,8 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-invoices/new'
     | '/_authenticated/purchase-orders/$id'
     | '/_authenticated/purchase-orders/new'
+    | '/_authenticated/purchase-transport/$id'
+    | '/_authenticated/purchase-transport/new'
     | '/_authenticated/quotes/new'
     | '/_authenticated/receipts/$receiptId'
     | '/_authenticated/receipts/new'
@@ -2110,6 +2173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/purchase-invoices/'
     | '/_authenticated/purchase-ledger/'
     | '/_authenticated/purchase-orders/'
+    | '/_authenticated/purchase-transport/'
     | '/_authenticated/quotes/'
     | '/_authenticated/receipts/'
     | '/_authenticated/rfqs/'
@@ -2128,6 +2192,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments/$id/edit'
     | '/_authenticated/purchase-invoices/$id/edit'
     | '/_authenticated/purchase-orders/$id/edit'
+    | '/_authenticated/purchase-transport/$id/edit'
     | '/_authenticated/quotes/$quoteId/edit'
     | '/_authenticated/sales-orders/$id/edit'
     | '/_authenticated/vendors/$vendorId/ledger'
@@ -2396,6 +2461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/purchase-transport/': {
+      id: '/_authenticated/purchase-transport/'
+      path: '/purchase-transport'
+      fullPath: '/purchase-transport/'
+      preLoaderRoute: typeof AuthenticatedPurchaseTransportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/purchase-orders/': {
       id: '/_authenticated/purchase-orders/'
       path: '/purchase-orders'
@@ -2606,6 +2678,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/purchase-transport/new': {
+      id: '/_authenticated/purchase-transport/new'
+      path: '/purchase-transport/new'
+      fullPath: '/purchase-transport/new'
+      preLoaderRoute: typeof AuthenticatedPurchaseTransportNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/purchase-transport/$id': {
+      id: '/_authenticated/purchase-transport/$id'
+      path: '/purchase-transport/$id'
+      fullPath: '/purchase-transport/$id'
+      preLoaderRoute: typeof AuthenticatedPurchaseTransportIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/purchase-orders/new': {
       id: '/_authenticated/purchase-orders/new'
       path: '/purchase-orders/new'
@@ -2744,6 +2830,13 @@ declare module '@tanstack/react-router' {
       path: '/masters/edge-finishes'
       fullPath: '/masters/edge-finishes'
       preLoaderRoute: typeof AuthenticatedMastersEdgeFinishesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/carting-agencies': {
+      id: '/_authenticated/masters/carting-agencies'
+      path: '/masters/carting-agencies'
+      fullPath: '/masters/carting-agencies'
+      preLoaderRoute: typeof AuthenticatedMastersCartingAgenciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/masters/applications': {
@@ -3285,6 +3378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/purchase-transport/$id/edit': {
+      id: '/_authenticated/purchase-transport/$id/edit'
+      path: '/edit'
+      fullPath: '/purchase-transport/$id/edit'
+      preLoaderRoute: typeof AuthenticatedPurchaseTransportIdEditRouteImport
+      parentRoute: typeof AuthenticatedPurchaseTransportIdRoute
+    }
     '/_authenticated/purchase-orders/$id/edit': {
       id: '/_authenticated/purchase-orders/$id/edit'
       path: '/edit'
@@ -3455,6 +3555,21 @@ const AuthenticatedPurchaseOrdersIdRouteWithChildren =
     AuthenticatedPurchaseOrdersIdRouteChildren,
   )
 
+interface AuthenticatedPurchaseTransportIdRouteChildren {
+  AuthenticatedPurchaseTransportIdEditRoute: typeof AuthenticatedPurchaseTransportIdEditRoute
+}
+
+const AuthenticatedPurchaseTransportIdRouteChildren: AuthenticatedPurchaseTransportIdRouteChildren =
+  {
+    AuthenticatedPurchaseTransportIdEditRoute:
+      AuthenticatedPurchaseTransportIdEditRoute,
+  }
+
+const AuthenticatedPurchaseTransportIdRouteWithChildren =
+  AuthenticatedPurchaseTransportIdRoute._addFileChildren(
+    AuthenticatedPurchaseTransportIdRouteChildren,
+  )
+
 interface AuthenticatedSalesOrdersIdRouteChildren {
   AuthenticatedSalesOrdersIdEditRoute: typeof AuthenticatedSalesOrdersIdEditRoute
 }
@@ -3551,6 +3666,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedLedgerCustomerIdRoute: typeof AuthenticatedLedgerCustomerIdRoute
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
+  AuthenticatedMastersCartingAgenciesRoute: typeof AuthenticatedMastersCartingAgenciesRoute
   AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
   AuthenticatedMastersPackagingTypesRoute: typeof AuthenticatedMastersPackagingTypesRoute
   AuthenticatedMastersProductFamiliesRoute: typeof AuthenticatedMastersProductFamiliesRoute
@@ -3571,6 +3687,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseInvoicesNewRoute: typeof AuthenticatedPurchaseInvoicesNewRoute
   AuthenticatedPurchaseOrdersIdRoute: typeof AuthenticatedPurchaseOrdersIdRouteWithChildren
   AuthenticatedPurchaseOrdersNewRoute: typeof AuthenticatedPurchaseOrdersNewRoute
+  AuthenticatedPurchaseTransportIdRoute: typeof AuthenticatedPurchaseTransportIdRouteWithChildren
+  AuthenticatedPurchaseTransportNewRoute: typeof AuthenticatedPurchaseTransportNewRoute
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
   AuthenticatedReceiptsReceiptIdRoute: typeof AuthenticatedReceiptsReceiptIdRoute
   AuthenticatedReceiptsNewRoute: typeof AuthenticatedReceiptsNewRoute
@@ -3600,6 +3718,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPurchaseInvoicesIndexRoute: typeof AuthenticatedPurchaseInvoicesIndexRoute
   AuthenticatedPurchaseLedgerIndexRoute: typeof AuthenticatedPurchaseLedgerIndexRoute
   AuthenticatedPurchaseOrdersIndexRoute: typeof AuthenticatedPurchaseOrdersIndexRoute
+  AuthenticatedPurchaseTransportIndexRoute: typeof AuthenticatedPurchaseTransportIndexRoute
   AuthenticatedQuotesIndexRoute: typeof AuthenticatedQuotesIndexRoute
   AuthenticatedReceiptsIndexRoute: typeof AuthenticatedReceiptsIndexRoute
   AuthenticatedRfqsIndexRoute: typeof AuthenticatedRfqsIndexRoute
@@ -3709,6 +3828,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedLedgerCustomerIdRoute: AuthenticatedLedgerCustomerIdRoute,
   AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
+  AuthenticatedMastersCartingAgenciesRoute:
+    AuthenticatedMastersCartingAgenciesRoute,
   AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
   AuthenticatedMastersPackagingTypesRoute:
     AuthenticatedMastersPackagingTypesRoute,
@@ -3735,6 +3856,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPurchaseOrdersIdRoute:
     AuthenticatedPurchaseOrdersIdRouteWithChildren,
   AuthenticatedPurchaseOrdersNewRoute: AuthenticatedPurchaseOrdersNewRoute,
+  AuthenticatedPurchaseTransportIdRoute:
+    AuthenticatedPurchaseTransportIdRouteWithChildren,
+  AuthenticatedPurchaseTransportNewRoute:
+    AuthenticatedPurchaseTransportNewRoute,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
   AuthenticatedReceiptsReceiptIdRoute: AuthenticatedReceiptsReceiptIdRoute,
   AuthenticatedReceiptsNewRoute: AuthenticatedReceiptsNewRoute,
@@ -3767,6 +3892,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPurchaseInvoicesIndexRoute,
   AuthenticatedPurchaseLedgerIndexRoute: AuthenticatedPurchaseLedgerIndexRoute,
   AuthenticatedPurchaseOrdersIndexRoute: AuthenticatedPurchaseOrdersIndexRoute,
+  AuthenticatedPurchaseTransportIndexRoute:
+    AuthenticatedPurchaseTransportIndexRoute,
   AuthenticatedQuotesIndexRoute: AuthenticatedQuotesIndexRoute,
   AuthenticatedReceiptsIndexRoute: AuthenticatedReceiptsIndexRoute,
   AuthenticatedRfqsIndexRoute: AuthenticatedRfqsIndexRoute,
