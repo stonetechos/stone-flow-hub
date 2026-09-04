@@ -10,7 +10,13 @@ export type AppSettingKey =
   | "communication.mode"
   // VIE Phase 1 (ADR-0001 §6) — per-intent execution policy config:
   // Partial<Record<VieIntent, { mode: "auto"|"confirm"|"draft"; autoThreshold: number }>>
-  | "vie.execution_policies";
+  | "vie.execution_policies"
+  // Task #44 — Rishi's ₹50L annual net-margin goal ("I want the financial
+  // goal as Rs. 50 lakh of net margin for this year"). Value shape:
+  // { amount: number; label?: string }. Edited from the Liabilities page
+  // (admin-only — this table's RLS only allows admin writes). Read by
+  // growthAdvisory.ts (Task #46) to size the required revenue/price move.
+  | "finance.annual_net_margin_goal";
 
 export async function getAppSetting<T = Record<string, unknown>>(
   key: AppSettingKey,

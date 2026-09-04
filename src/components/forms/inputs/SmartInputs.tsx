@@ -13,6 +13,7 @@
  */
 import * as React from "react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 type BaseProps = Omit<React.ComponentProps<typeof Input>, "onChange" | "value" | "type"> & {
   value: string | null | undefined;
@@ -187,3 +188,45 @@ export const PercentInput = React.forwardRef<HTMLInputElement, Omit<BaseProps, "
     return <NumericInput ref={ref} min={0} max={100} {...props} />;
   },
 );
+
+/**
+ * Currency amount input — ₹-prefixed money field (Rishi: "use Rupee Symbol
+ * prefixed wherever we need to enter currency amount"). Built on
+ * NumericInput (decimal, non-negative by default) with a fixed "₹" glyph
+ * rendered inside the field's left edge, so the amount box always reads
+ * like "₹ 12,000" is being typed even though the raw value is a plain
+ * unformatted numeric string (no thousands separators while editing — those
+ * would fight cursor position; use `formatInr()` from `@/lib/format` for
+ * read-only display elsewhere).
+ *
+ * Scope note: this is for NEW forms only (Liabilities, Business Expenses,
+ * and anything built after 2026-09-04). The many existing money inputs
+ * across the app (Purchase Invoices, Quotes, GRNs, etc.) keep their current
+ * plain `<Input type="number">` — retrofitting every existing amount field
+ * to this component is a separate, larger follow-up not attempted here.
+ */
+export const CurrencyInput = React.forwardRef<
+  HTMLInputElement,
+  Omit<BaseProps, "min" | "max"> & { allowNegative?: boolean; min?: number; max?: number }
+>(function CurrencyInput({ className, allowNegative = false, min = 0, max, ...rest }, ref) {
+  return (
+    <div className="relative">
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-muted-foreground"
+      >
+        ₹
+      </span>
+      <NumericInput
+        ref={ref}
+        allowDecimal
+        allowNegative={allowNegative}
+        min={min}
+        max={max}
+        inputMode="decimal"
+        className={cn("pl-7", className)}
+        {...rest}
+      />
+    </div>
+  );
+});

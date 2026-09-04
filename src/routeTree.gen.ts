@@ -49,6 +49,7 @@ import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
 import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages/index'
 import { Route as AuthenticatedMastersIndexRouteImport } from './routes/_authenticated/masters/index'
+import { Route as AuthenticatedLiabilitiesIndexRouteImport } from './routes/_authenticated/liabilities/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedInstallationsIndexRouteImport } from './routes/_authenticated/installations/index'
@@ -61,6 +62,7 @@ import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedDispatchIndexRouteImport } from './routes/_authenticated/dispatch/index'
 import { Route as AuthenticatedDashboardsIndexRouteImport } from './routes/_authenticated/dashboards/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedBusinessExpensesIndexRouteImport } from './routes/_authenticated/business-expenses/index'
 import { Route as VendorRfqsRfqIdRouteImport } from './routes/vendor/rfqs/$rfqId'
 import { Route as AuthenticatedVendorsVendorIdRouteImport } from './routes/_authenticated/vendors/$vendorId'
 import { Route as AuthenticatedVendorPaymentsNewRouteImport } from './routes/_authenticated/vendor-payments/new'
@@ -402,6 +404,12 @@ const AuthenticatedMastersIndexRoute =
     path: '/masters/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLiabilitiesIndexRoute =
+  AuthenticatedLiabilitiesIndexRouteImport.update({
+    id: '/liabilities/',
+    path: '/liabilities/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInvoicesIndexRoute =
   AuthenticatedInvoicesIndexRouteImport.update({
     id: '/invoices/',
@@ -470,6 +478,12 @@ const AuthenticatedCustomersIndexRoute =
   AuthenticatedCustomersIndexRouteImport.update({
     id: '/customers/',
     path: '/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBusinessExpensesIndexRoute =
+  AuthenticatedBusinessExpensesIndexRouteImport.update({
+    id: '/business-expenses/',
+    path: '/business-expenses/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const VendorRfqsRfqIdRoute = VendorRfqsRfqIdRouteImport.update({
@@ -1283,6 +1297,7 @@ export interface FileRoutesByFullPath {
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
+  '/business-expenses/': typeof AuthenticatedBusinessExpensesIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
@@ -1295,6 +1310,7 @@ export interface FileRoutesByFullPath {
   '/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/liabilities/': typeof AuthenticatedLiabilitiesIndexRoute
   '/masters/': typeof AuthenticatedMastersIndexRoute
   '/messages/': typeof AuthenticatedMessagesIndexRoute
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
@@ -1456,6 +1472,7 @@ export interface FileRoutesByTo {
   '/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
+  '/business-expenses': typeof AuthenticatedBusinessExpensesIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/dashboards': typeof AuthenticatedDashboardsIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
@@ -1468,6 +1485,7 @@ export interface FileRoutesByTo {
   '/installations': typeof AuthenticatedInstallationsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
+  '/liabilities': typeof AuthenticatedLiabilitiesIndexRoute
   '/masters': typeof AuthenticatedMastersIndexRoute
   '/messages': typeof AuthenticatedMessagesIndexRoute
   '/payments': typeof AuthenticatedPaymentsIndexRoute
@@ -1631,6 +1649,7 @@ export interface FileRoutesById {
   '/_authenticated/vendor-payments/new': typeof AuthenticatedVendorPaymentsNewRoute
   '/_authenticated/vendors/$vendorId': typeof AuthenticatedVendorsVendorIdRouteWithChildren
   '/vendor/rfqs/$rfqId': typeof VendorRfqsRfqIdRoute
+  '/_authenticated/business-expenses/': typeof AuthenticatedBusinessExpensesIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/dashboards/': typeof AuthenticatedDashboardsIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
@@ -1643,6 +1662,7 @@ export interface FileRoutesById {
   '/_authenticated/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/_authenticated/liabilities/': typeof AuthenticatedLiabilitiesIndexRoute
   '/_authenticated/masters/': typeof AuthenticatedMastersIndexRoute
   '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
@@ -1806,6 +1826,7 @@ export interface FileRouteTypes {
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
+    | '/business-expenses/'
     | '/customers/'
     | '/dashboards/'
     | '/dispatch/'
@@ -1818,6 +1839,7 @@ export interface FileRouteTypes {
     | '/installations/'
     | '/inventory/'
     | '/invoices/'
+    | '/liabilities/'
     | '/masters/'
     | '/messages/'
     | '/payments/'
@@ -1979,6 +2001,7 @@ export interface FileRouteTypes {
     | '/vendor-payments/new'
     | '/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
+    | '/business-expenses'
     | '/customers'
     | '/dashboards'
     | '/dispatch'
@@ -1991,6 +2014,7 @@ export interface FileRouteTypes {
     | '/installations'
     | '/inventory'
     | '/invoices'
+    | '/liabilities'
     | '/masters'
     | '/messages'
     | '/payments'
@@ -2153,6 +2177,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendor-payments/new'
     | '/_authenticated/vendors/$vendorId'
     | '/vendor/rfqs/$rfqId'
+    | '/_authenticated/business-expenses/'
     | '/_authenticated/customers/'
     | '/_authenticated/dashboards/'
     | '/_authenticated/dispatch/'
@@ -2165,6 +2190,7 @@ export interface FileRouteTypes {
     | '/_authenticated/installations/'
     | '/_authenticated/inventory/'
     | '/_authenticated/invoices/'
+    | '/_authenticated/liabilities/'
     | '/_authenticated/masters/'
     | '/_authenticated/messages/'
     | '/_authenticated/payments/'
@@ -2524,6 +2550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMastersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/liabilities/': {
+      id: '/_authenticated/liabilities/'
+      path: '/liabilities'
+      fullPath: '/liabilities/'
+      preLoaderRoute: typeof AuthenticatedLiabilitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/invoices/': {
       id: '/_authenticated/invoices/'
       path: '/invoices'
@@ -2606,6 +2639,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/customers/'
       preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/business-expenses/': {
+      id: '/_authenticated/business-expenses/'
+      path: '/business-expenses'
+      fullPath: '/business-expenses/'
+      preLoaderRoute: typeof AuthenticatedBusinessExpensesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/vendor/rfqs/$rfqId': {
@@ -3698,6 +3738,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVendorPaymentsIdRoute: typeof AuthenticatedVendorPaymentsIdRoute
   AuthenticatedVendorPaymentsNewRoute: typeof AuthenticatedVendorPaymentsNewRoute
   AuthenticatedVendorsVendorIdRoute: typeof AuthenticatedVendorsVendorIdRouteWithChildren
+  AuthenticatedBusinessExpensesIndexRoute: typeof AuthenticatedBusinessExpensesIndexRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedDashboardsIndexRoute: typeof AuthenticatedDashboardsIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
@@ -3710,6 +3751,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInstallationsIndexRoute: typeof AuthenticatedInstallationsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
+  AuthenticatedLiabilitiesIndexRoute: typeof AuthenticatedLiabilitiesIndexRoute
   AuthenticatedMastersIndexRoute: typeof AuthenticatedMastersIndexRoute
   AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
   AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
@@ -3870,6 +3912,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVendorPaymentsNewRoute: AuthenticatedVendorPaymentsNewRoute,
   AuthenticatedVendorsVendorIdRoute:
     AuthenticatedVendorsVendorIdRouteWithChildren,
+  AuthenticatedBusinessExpensesIndexRoute:
+    AuthenticatedBusinessExpensesIndexRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedDashboardsIndexRoute: AuthenticatedDashboardsIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,
@@ -3883,6 +3927,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInstallationsIndexRoute: AuthenticatedInstallationsIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
+  AuthenticatedLiabilitiesIndexRoute: AuthenticatedLiabilitiesIndexRoute,
   AuthenticatedMastersIndexRoute: AuthenticatedMastersIndexRoute,
   AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,
   AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,

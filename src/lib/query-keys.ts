@@ -122,6 +122,16 @@ export const qk = {
   cartingAgencies: {
     list: () => ["cartingAgencies", "list"] as const,
   },
+  liabilities: {
+    list: () => ["liabilities", "list"] as const,
+  },
+  businessExpenses: {
+    list: (from?: string, to?: string) =>
+      ["businessExpenses", "list", from ?? "", to ?? ""] as const,
+  },
+  annualGoal: {
+    current: () => ["appSettings", "finance.annual_net_margin_goal"] as const,
+  },
   dispatch: {
     all: ["dispatch"] as const,
     list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,

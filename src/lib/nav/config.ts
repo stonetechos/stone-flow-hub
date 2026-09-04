@@ -23,6 +23,8 @@ import {
   Wallet,
   Banknote,
   HandCoins,
+  Landmark,
+  ReceiptText,
   Calendar,
   BarChart3,
   Settings,
@@ -48,6 +50,7 @@ import {
 export type NavGroupId =
   | "sales"
   | "purchase"
+  | "finance"
   | "payroll"
   | "workforce"
   | "masterData"
@@ -69,6 +72,11 @@ export interface NavGroupDef {
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "purchase", label: "Purchase" },
+  // New 2026-09-04 — Rishi's ₹50L goal/Liabilities/Business Expenses
+  // request explicitly asked for "a section in the sidebar". Its own group
+  // (rather than folding into "Others") also gives Installation Agency
+  // Ledger (Task #48) a natural home later.
+  { id: "finance", label: "Finance" },
   { id: "payroll", label: "Payroll" },
   { id: "workforce", label: "Workforce Intelligence" },
   { id: "masterData", label: "Master Data" },
@@ -176,6 +184,23 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   // exist so the sidebar never links to a 404.
   // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
   // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },
+
+  // Finance (Task #44/#45 — ₹50L annual goal lives on the Liabilities page
+  // itself, not a separate nav item)
+  {
+    id: "liabilities",
+    to: "/liabilities",
+    label: "Liabilities",
+    icon: Landmark,
+    group: "finance",
+  },
+  {
+    id: "business-expenses",
+    to: "/business-expenses",
+    label: "Business Expenses",
+    icon: ReceiptText,
+    group: "finance",
+  },
 
   // Payroll (was "Human Resources" — same items, renamed group only)
   { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "payroll" },
