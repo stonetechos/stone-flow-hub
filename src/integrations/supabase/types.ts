@@ -10116,6 +10116,9 @@ export type Database = {
         | "b2b"
         | "google_search"
         | "reference"
+        | "instagram"
+        | "indiamart"
+        | "pinterest"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
       material_interest:
         | "natural_stone_interlocking_panels"
@@ -10624,6 +10627,9 @@ export const Constants = {
         "b2b",
         "google_search",
         "reference",
+        "instagram",
+        "indiamart",
+        "pinterest",
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
       material_interest: [

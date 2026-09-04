@@ -15,6 +15,9 @@ export const CUSTOMER_TYPES: ReadonlyArray<{ value: DbEnum<"customer_type">; lab
   { value: "contractor", label: "Contractor" },
   { value: "google_search", label: "Google Search" },
   { value: "reference", label: "Reference" },
+  { value: "instagram", label: "Instagram" },
+  { value: "indiamart", label: "IndiaMART" },
+  { value: "pinterest", label: "Pinterest" },
 ];
 
 /** "Type of space" at the customer's site. */
@@ -39,7 +42,7 @@ export const SPACE_TYPES: ReadonlyArray<{ value: DbEnum<"space_type">; label: st
   { value: "mall", label: "Mall" },
 ];
 
-/** "Material In" — multi-select product interest list. */
+/** "Product of interest" — multi-select product interest list. */
 export const MATERIAL_OPTIONS: ReadonlyArray<{
   value: DbEnum<"material_interest">;
   label: string;
@@ -79,6 +82,9 @@ export const customerCreateSchema = z
         "contractor",
         "google_search",
         "reference",
+        "instagram",
+        "indiamart",
+        "pinterest",
         "builder",
         "individual",
         "company",

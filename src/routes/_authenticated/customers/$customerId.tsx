@@ -270,7 +270,7 @@ function CustomerHub() {
                       SPACE_TYPES.find((s) => s.value === c.space_type)?.label ?? c.space_type,
                   },
                   {
-                    label: "Material In",
+                    label: "Product of Interest",
                     value:
                       (c.material_interests ?? []).length > 0
                         ? (c.material_interests ?? [])
