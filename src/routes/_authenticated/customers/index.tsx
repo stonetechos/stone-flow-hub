@@ -416,7 +416,11 @@ function CustomerFormDialog({
               </Select>
             </Field>
 
-            <Field label="Product of Interest" hint="Select all that apply" className="md:col-span-2">
+            <Field
+              label="Product of Interest"
+              hint="Select all that apply"
+              className="md:col-span-2"
+            >
               <div className="grid max-h-48 grid-cols-1 gap-x-4 gap-y-2 overflow-y-auto rounded-md border border-border p-3 sm:grid-cols-2">
                 {MATERIAL_OPTIONS.map((m) => {
                   const checked = (form.material_interests ?? []).includes(m.value);

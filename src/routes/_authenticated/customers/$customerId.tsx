@@ -266,8 +266,7 @@ function CustomerHub() {
                   { label: "Site's Area/Address", value: c.site_address },
                   {
                     label: "Type of space",
-                    value:
-                      SPACE_TYPES.find((s) => s.value === c.space_type)?.label ?? c.space_type,
+                    value: SPACE_TYPES.find((s) => s.value === c.space_type)?.label ?? c.space_type,
                   },
                   {
                     label: "Product of Interest",

@@ -164,9 +164,7 @@ export function EstimateStudioCalculator({
         return getCustomer(project.customer_id).then((customer) => {
           if (cancelled || !customer) return;
           setGreetingName(customer.name ?? "");
-          setCustomerMobile(
-            customer.primary_phone ?? "",
-          );
+          setCustomerMobile(customer.primary_phone ?? "");
         });
       })
       .catch(() => {
