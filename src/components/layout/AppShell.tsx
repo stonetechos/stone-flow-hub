@@ -38,6 +38,7 @@ import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
 import { AppMark } from "@/components/brand/AppMark";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
+import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryBroadcaster";
 import { DemoProvider } from "@/lib/demo/context";
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
@@ -767,6 +768,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
         <Copilot />
         <DangerNotifications />
+        <GrowthAdvisoryBroadcaster />
       </div>
     </DemoProvider>
   );

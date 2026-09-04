@@ -14,17 +14,22 @@ import { CollectionPriorityProvider } from "./collectionPriority";
 import { PaymentScheduleAdherenceProvider } from "./paymentScheduleAdherence";
 import { VendorPaymentQueueProvider } from "./vendorPaymentQueue";
 import { MarginWatchProvider } from "./marginWatch";
+import { GrowthAdvisoryProvider } from "./growthAdvisory";
 
 export { CollectionPriorityProvider } from "./collectionPriority";
 export { PaymentScheduleAdherenceProvider } from "./paymentScheduleAdherence";
 export { VendorPaymentQueueProvider } from "./vendorPaymentQueue";
 export { MarginWatchProvider } from "./marginWatch";
+// 2026-09-04 — org-wide margin/pricing/sales-target advisory (Rishi's
+// request). See growthAdvisory.ts's header for the full reasoning.
+export { GrowthAdvisoryProvider } from "./growthAdvisory";
 
 const FINANCE_INSIGHT_PROVIDERS = [
   CollectionPriorityProvider,
   PaymentScheduleAdherenceProvider,
   VendorPaymentQueueProvider,
   MarginWatchProvider,
+  GrowthAdvisoryProvider,
 ];
 
 /**

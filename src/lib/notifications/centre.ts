@@ -118,6 +118,33 @@ export async function markAllNotificationsRead(ids: string[]): Promise<void> {
  * notification without this). Existing callers that only cared about
  * "something changed, refetch" still work — the new argument is additive.
  */
+/**
+ * True if a broadcast (user_id IS NULL) notification with this
+ * `entity_type` was already posted today. Used by
+ * GrowthAdvisoryBroadcaster.tsx to avoid re-posting the same daily
+ * advisory every time a dashboard mounts — this is a plain SELECT under
+ * the existing "Users can view... broadcast notifications" RLS policy, no
+ * service role needed. Degrades to `false` on a missing table, same as
+ * every other read here — the caller then just tries the (also
+ * gracefully-degrading) server-side post, which itself no-ops if the
+ * migration isn't applied yet.
+ */
+export async function hasTodaysBroadcast(entityType: string): Promise<boolean> {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const { data, error } = await notificationsTable()
+    .select("id")
+    .is("user_id", null)
+    .eq("entity_type", entityType)
+    .gte("created_at", startOfDay.toISOString())
+    .limit(1);
+  if (error) {
+    if (isMissingTableError(error)) return false;
+    throw error;
+  }
+  return (data ?? []).length > 0;
+}
+
 export function subscribeToNotifications(
   onInsert: (notification: CentreNotification) => void,
 ): () => void {
