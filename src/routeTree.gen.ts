@@ -94,6 +94,7 @@ import { Route as AuthenticatedMastersQualityGradesRouteImport } from './routes/
 import { Route as AuthenticatedMastersQcTemplatesRouteImport } from './routes/_authenticated/masters/qc-templates'
 import { Route as AuthenticatedMastersProductFamiliesRouteImport } from './routes/_authenticated/masters/product-families'
 import { Route as AuthenticatedMastersPackagingTypesRouteImport } from './routes/_authenticated/masters/packaging-types'
+import { Route as AuthenticatedMastersInstallationAgenciesRouteImport } from './routes/_authenticated/masters/installation-agencies'
 import { Route as AuthenticatedMastersEdgeFinishesRouteImport } from './routes/_authenticated/masters/edge-finishes'
 import { Route as AuthenticatedMastersCartingAgenciesRouteImport } from './routes/_authenticated/masters/carting-agencies'
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
@@ -666,6 +667,12 @@ const AuthenticatedMastersPackagingTypesRoute =
   AuthenticatedMastersPackagingTypesRouteImport.update({
     id: '/masters/packaging-types',
     path: '/masters/packaging-types',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMastersInstallationAgenciesRoute =
+  AuthenticatedMastersInstallationAgenciesRouteImport.update({
+    id: '/masters/installation-agencies',
+    path: '/masters/installation-agencies',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMastersEdgeFinishesRoute =
@@ -1266,6 +1273,7 @@ export interface FileRoutesByFullPath {
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/masters/installation-agencies': typeof AuthenticatedMastersInstallationAgenciesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
   '/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
@@ -1441,6 +1449,7 @@ export interface FileRoutesByTo {
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/masters/installation-agencies': typeof AuthenticatedMastersInstallationAgenciesRoute
   '/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
   '/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
@@ -1618,6 +1627,7 @@ export interface FileRoutesById {
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
   '/_authenticated/masters/carting-agencies': typeof AuthenticatedMastersCartingAgenciesRoute
   '/_authenticated/masters/edge-finishes': typeof AuthenticatedMastersEdgeFinishesRoute
+  '/_authenticated/masters/installation-agencies': typeof AuthenticatedMastersInstallationAgenciesRoute
   '/_authenticated/masters/packaging-types': typeof AuthenticatedMastersPackagingTypesRoute
   '/_authenticated/masters/product-families': typeof AuthenticatedMastersProductFamiliesRoute
   '/_authenticated/masters/qc-templates': typeof AuthenticatedMastersQcTemplatesRoute
@@ -1795,6 +1805,7 @@ export interface FileRouteTypes {
     | '/masters/applications'
     | '/masters/carting-agencies'
     | '/masters/edge-finishes'
+    | '/masters/installation-agencies'
     | '/masters/packaging-types'
     | '/masters/product-families'
     | '/masters/qc-templates'
@@ -1970,6 +1981,7 @@ export interface FileRouteTypes {
     | '/masters/applications'
     | '/masters/carting-agencies'
     | '/masters/edge-finishes'
+    | '/masters/installation-agencies'
     | '/masters/packaging-types'
     | '/masters/product-families'
     | '/masters/qc-templates'
@@ -2146,6 +2158,7 @@ export interface FileRouteTypes {
     | '/_authenticated/masters/applications'
     | '/_authenticated/masters/carting-agencies'
     | '/_authenticated/masters/edge-finishes'
+    | '/_authenticated/masters/installation-agencies'
     | '/_authenticated/masters/packaging-types'
     | '/_authenticated/masters/product-families'
     | '/_authenticated/masters/qc-templates'
@@ -2863,6 +2876,13 @@ declare module '@tanstack/react-router' {
       path: '/masters/packaging-types'
       fullPath: '/masters/packaging-types'
       preLoaderRoute: typeof AuthenticatedMastersPackagingTypesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/masters/installation-agencies': {
+      id: '/_authenticated/masters/installation-agencies'
+      path: '/masters/installation-agencies'
+      fullPath: '/masters/installation-agencies'
+      preLoaderRoute: typeof AuthenticatedMastersInstallationAgenciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/masters/edge-finishes': {
@@ -3708,6 +3728,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
   AuthenticatedMastersCartingAgenciesRoute: typeof AuthenticatedMastersCartingAgenciesRoute
   AuthenticatedMastersEdgeFinishesRoute: typeof AuthenticatedMastersEdgeFinishesRoute
+  AuthenticatedMastersInstallationAgenciesRoute: typeof AuthenticatedMastersInstallationAgenciesRoute
   AuthenticatedMastersPackagingTypesRoute: typeof AuthenticatedMastersPackagingTypesRoute
   AuthenticatedMastersProductFamiliesRoute: typeof AuthenticatedMastersProductFamiliesRoute
   AuthenticatedMastersQcTemplatesRoute: typeof AuthenticatedMastersQcTemplatesRoute
@@ -3873,6 +3894,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMastersCartingAgenciesRoute:
     AuthenticatedMastersCartingAgenciesRoute,
   AuthenticatedMastersEdgeFinishesRoute: AuthenticatedMastersEdgeFinishesRoute,
+  AuthenticatedMastersInstallationAgenciesRoute:
+    AuthenticatedMastersInstallationAgenciesRoute,
   AuthenticatedMastersPackagingTypesRoute:
     AuthenticatedMastersPackagingTypesRoute,
   AuthenticatedMastersProductFamiliesRoute:

@@ -2,18 +2,25 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
 import { MASTER_CONFIGS } from "@/lib/masters/config";
-import { Layers, Truck } from "lucide-react";
+import { Layers, Truck, HardHat } from "lucide-react";
 
-// Carting Agencies (Task #40) is a bespoke page, not driven by
-// MASTER_CONFIGS — see the note in src/lib/masters/config.ts for why
-// (a brand-new table, not yet in the generated Database type). Listed
-// here by hand so it's still discoverable from the Masters index.
+// Carting Agencies (Task #40) and Installation Agencies (Task #47) are
+// bespoke pages, not driven by MASTER_CONFIGS — see the note in
+// src/lib/masters/config.ts for why (brand-new tables, not yet in the
+// generated Database type). Listed here by hand so they're still
+// discoverable from the Masters index.
 const EXTRA_MASTERS = [
   {
     route: "carting-agencies",
     title: "Carting Agencies",
     description: "Transporters used for inbound vendor shipments.",
     icon: Truck,
+  },
+  {
+    route: "installation-agencies",
+    title: "Installation Agencies",
+    description: "Third-party crews who handle installation on approved quotations.",
+    icon: HardHat,
   },
 ];
 

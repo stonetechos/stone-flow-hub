@@ -132,6 +132,9 @@ export const qk = {
   annualGoal: {
     current: () => ["appSettings", "finance.annual_net_margin_goal"] as const,
   },
+  installationAgencies: {
+    list: () => ["installationAgencies", "list"] as const,
+  },
   dispatch: {
     all: ["dispatch"] as const,
     list: (q?: string, status?: string) => ["dispatch", "list", q ?? "", status ?? ""] as const,
