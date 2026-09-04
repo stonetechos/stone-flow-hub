@@ -349,6 +349,7 @@ function CreateQuoteDialog({
   const nav = useNavigate();
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
+  const [customerId, setCustomerId] = useState("");
   const [category, setCategory] = useState<QuoteCategory | "">("");
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
@@ -360,6 +361,7 @@ function CreateQuoteDialog({
   useEffect(() => {
     if (open) {
       setProjectId(initialProjectId ?? "");
+      setCustomerId("");
       setCategory("");
       setValidUntil("");
       setNotes("");
@@ -401,7 +403,11 @@ function CreateQuoteDialog({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!projectId) return toast.error("Pick a project");
+    if (initialProjectId) {
+      if (!projectId) return toast.error("Pick a project");
+    } else if (!customerId) {
+      return toast.error("Pick a customer");
+    }
 
     if (mode === "calculator") {
       if (!calcResult || calcResult.items.length === 0) {
@@ -413,7 +419,8 @@ function CreateQuoteDialog({
           ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discount.amount)} off) — final estimate total ${formatInr(calcResult.total)}. This quote's own stored total below is the pre-discount subtotal, since quotations have no discount field yet.`
           : null;
       mutation.mutate({
-        project_id: projectId,
+        project_id: initialProjectId ? projectId : undefined,
+        customer_id: initialProjectId ? undefined : customerId,
         enquiry_id: initialEnquiryId,
         category: category || null,
         valid_until: validUntil || null,
@@ -440,7 +447,8 @@ function CreateQuoteDialog({
       parsedItems.push(r.data);
     }
     mutation.mutate({
-      project_id: projectId,
+      project_id: initialProjectId ? projectId : undefined,
+      customer_id: initialProjectId ? undefined : customerId,
       enquiry_id: initialEnquiryId,
       category: category || null,
       valid_until: validUntil || null,
@@ -485,14 +493,25 @@ function CreateQuoteDialog({
               </button>
             </div>
 
-            <Field label="Project" required className="md:col-span-2">
-              <EntityPicker
-                type="project"
-                value={projectId || null}
-                onChange={(id) => setProjectId(id ?? "")}
-                disabled={!!initialProjectId}
-              />
-            </Field>
+            {initialProjectId ? (
+              <Field label="Project" required className="md:col-span-2">
+                <EntityPicker
+                  type="project"
+                  value={projectId || null}
+                  onChange={(id) => setProjectId(id ?? "")}
+                  disabled
+                />
+              </Field>
+            ) : (
+              <Field label="Customer" required className="md:col-span-2">
+                <EntityPicker
+                  type="customer"
+                  value={customerId || null}
+                  onChange={(id) => setCustomerId(id ?? "")}
+                  placeholder="Search registered customers…"
+                />
+              </Field>
+            )}
 
             <Field label="Category" className="md:col-span-2">
               <Select

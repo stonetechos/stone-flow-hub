@@ -3,7 +3,8 @@ import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { DbTable } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/zod";
-import { getProject } from "@/lib/projects/api";
+import { getProject, createProject } from "@/lib/projects/api";
+import { getCustomer } from "@/lib/customers/api";
 import {
   convertQuoteSchema,
   quoteCreateSchema,
@@ -68,15 +69,37 @@ export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
 
 export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
   const parsed = quoteCreateSchema.parse(input);
-  const project = await getProject(parsed.project_id);
-  if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+
+  let projectId: string;
+  let customerId: string;
+  if (parsed.project_id) {
+    const project = await getProject(parsed.project_id);
+    if (!project) throw new AppError("Selected project not found", "NOT_FOUND", 404);
+    projectId = project.id;
+    customerId = project.customer_id;
+  } else {
+    // Customer-first flow: no project was shown/picked in the UI. Auto-create
+    // a lightweight project behind the scenes so quotes.project_id (still
+    // NOT NULL) and the downstream Sales Order / Invoice chain keep working
+    // unchanged, without surfacing "Project" as a concept to the user.
+    const customer = await getCustomer(parsed.customer_id!);
+    if (!customer) throw new AppError("Selected customer not found", "NOT_FOUND", 404);
+    const project = await createProject({
+      customer_id: customer.id,
+      name: customer.name,
+      city: customer.city?.trim() || "Not specified",
+      project_type: "other",
+    });
+    projectId = project.id;
+    customerId = customer.id;
+  }
 
   const { data: quote, error } = await getDb()
     .from("quotes")
     .insert({
       quote_no: "",
-      project_id: project.id,
-      customer_id: project.customer_id,
+      project_id: projectId,
+      customer_id: customerId,
       enquiry_id: parsed.enquiry_id ?? null,
       valid_until: parsed.valid_until ?? null,
       notes: parsed.notes ?? null,
