@@ -171,6 +171,7 @@ function TemplateItemsEditor({ templateId }: { templateId: string }) {
                     variant="ghost"
                     onClick={() => remove.mutate(i.id)}
                     title="Remove"
+                    aria-label="Remove"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>

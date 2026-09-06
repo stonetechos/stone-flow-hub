@@ -65,6 +65,7 @@ function AttachmentTile({ file }: { file: FileRow }) {
       <Button
         size="icon"
         variant="ghost"
+        aria-label="Open file"
         onClick={async () => {
           const url = await signedUrl(file);
           window.open(url, "_blank", "noopener,noreferrer");

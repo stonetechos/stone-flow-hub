@@ -332,6 +332,7 @@ function NewEstimatePage() {
                     size="icon"
                     variant="ghost"
                     className="col-span-1"
+                    aria-label="Remove item"
                     onClick={() => setItems((rs) => rs.filter((_, i) => i !== idx))}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -431,6 +432,7 @@ function NewEstimatePage() {
                       size="icon"
                       variant="ghost"
                       className="col-span-1"
+                      aria-label="Remove component"
                       onClick={() => setComponents((cs) => cs.filter((_, i) => i !== idx))}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -507,6 +509,7 @@ function NewEstimatePage() {
                     size="icon"
                     variant="ghost"
                     className="col-span-1"
+                    aria-label="Remove schedule row"
                     onClick={() => setSchedule((s) => s.filter((_, i) => i !== idx))}
                   >
                     <Trash2 className="h-4 w-4" />

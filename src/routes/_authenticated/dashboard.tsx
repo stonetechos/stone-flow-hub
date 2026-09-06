@@ -35,7 +35,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowRight,
-  Boxes,
   Building2,
   CalendarClock,
   CheckCircle2,
@@ -49,12 +48,10 @@ import {
   Plus,
   Receipt,
   Sparkles,
-  Timer,
   TrendingUp,
   Truck,
   Users,
   Wallet,
-  Zap,
 } from "lucide-react";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { HealthCard, type HealthCardTone } from "@/components/dashboard/HealthCard";
@@ -167,10 +164,7 @@ function DashboardPage() {
             <DispatchAndInstallation kpis={kpis} />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-            <SalesCommandCentre kpis={kpis} />
-            <InventoryIntelligence />
-          </div>
+          <SalesCommandCentre kpis={kpis} />
 
           <TodayTimeline
             followups={followups}
@@ -680,7 +674,7 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
     {
       icon: <Building2 className="h-3.5 w-3.5" />,
       label: "Active installations",
-      value: "—",
+      value: kpis.activeInstallations,
       to: "/installations",
     },
   ];
@@ -763,58 +757,14 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Section 7 — Inventory Intelligence (placeholder)                            */
-/* -------------------------------------------------------------------------- */
-
-function InventoryIntelligence() {
-  const groups = [
-    {
-      icon: <Zap className="h-3.5 w-3.5" />,
-      label: "Fast movers",
-      hint: "Top 5 by 30-day movement",
-    },
-    { icon: <Timer className="h-3.5 w-3.5" />, label: "Slow movers", hint: "Aged over 90 days" },
-    {
-      icon: <AlertTriangle className="h-3.5 w-3.5" />,
-      label: "Critical stock",
-      hint: "Below reorder point",
-    },
-    {
-      icon: <ClipboardCheck className="h-3.5 w-3.5" />,
-      label: "Purchase recommendations",
-      hint: "Suggested RFQs",
-    },
-  ];
-  return (
-    <SurfaceCard
-      icon={<Boxes className="h-3.5 w-3.5" />}
-      kicker="Inventory intelligence"
-      title="Yard signals"
-      to="/inventory"
-    >
-      <ul className="space-y-1.5">
-        {groups.map((g) => (
-          <li
-            key={g.label}
-            className="flex items-center justify-between gap-3 rounded-sm border border-border-subtle bg-surface-panel px-2.5 py-2 text-text-secondary"
-          >
-            <span className="flex items-center gap-2 text-[13px]">
-              <span className="text-text-muted">{g.icon}</span>
-              {g.label}
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
-              {g.hint}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-3 rounded-sm bg-surface-panel px-2.5 py-1.5 text-[11px] text-text-muted">
-        Movement analytics land with the Inventory intelligence release.
-      </div>
-    </SurfaceCard>
-  );
-}
+// Section 7 (Inventory Intelligence) was removed 2026-09-06 per the
+// stabilization-sprint audit (Part 4: no placeholder/empty cards) — it
+// rendered four static, hardcoded rows with no query behind any of them
+// ("Movement analytics land with the Inventory intelligence release").
+// Building real queries for it would be adding a new KPI, which that same
+// sprint's brief explicitly ruled out — so removal, not fabrication, is
+// the in-scope fix. Re-add for real once fast/slow-mover and reorder-point
+// queries actually exist.
 
 /* -------------------------------------------------------------------------- */
 /* Section 8 — AI Copilot Dock (persistent right rail)                         */

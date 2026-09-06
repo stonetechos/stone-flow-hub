@@ -326,7 +326,12 @@ function GrnItemsCard({
                         {it.location && <Badge variant="outline">@ {it.location}</Badge>}
                       </div>
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => onDelete(it.id)}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Remove item"
+                      onClick={() => onDelete(it.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

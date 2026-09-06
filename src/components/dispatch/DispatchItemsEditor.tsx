@@ -167,7 +167,13 @@ export function DispatchItemsEditor({
                       />
                     </TableCell>
                     <TableCell className="align-top">
-                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(idx)}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove item"
+                        onClick={() => remove(idx)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

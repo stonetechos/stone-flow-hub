@@ -610,6 +610,7 @@ export function EstimateStudioCalculator({
                     type="button"
                     variant="ghost"
                     size="icon"
+                    aria-label="Remove wall"
                     disabled={walls.length === 1}
                     onClick={() => removeWall(w.id)}
                   >
@@ -705,6 +706,7 @@ export function EstimateStudioCalculator({
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label="Remove product"
                       onClick={() => removeProduct(p.id)}
                     >
                       <Trash2 className="h-4 w-4" />

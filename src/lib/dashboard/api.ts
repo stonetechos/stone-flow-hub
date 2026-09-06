@@ -18,6 +18,7 @@ export type DashboardKpis = {
   collectionsTodayInr: number;
   pendingQuotes: number;
   deliveriesToday: number;
+  activeInstallations: number;
 };
 
 export async function getDashboardKpis(): Promise<DashboardKpis> {
@@ -45,6 +46,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     salesToday,
     collectionsToday,
     deliveriesToday,
+    activeInstallations,
   ] = await Promise.all([
     supabase
       .from("enquiries")
@@ -87,6 +89,14 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
       .from("dispatches")
       .select("id", { count: "exact", head: true })
       .eq("dispatch_date", todayIso),
+    // "Active" = currently underway, excludes not-yet-started ("planned"),
+    // paused, and finished/cancelled states. See
+    // src/lib/installation/orders.ts INSTALLATION_ORDER_STATUSES.
+    supabase
+      .from("installations")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["scheduled", "in_progress"])
+      .eq("lifecycle_status", "active"),
   ]);
 
   for (const r of [
@@ -103,6 +113,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     salesToday,
     collectionsToday,
     deliveriesToday,
+    activeInstallations,
   ]) {
     if (r.error) throw new AppError(mapDbError(r.error));
   }
@@ -127,5 +138,6 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     collectionsTodayInr: sumField(collectionsToday.data as Array<{ amount: number }>, "amount"),
     pendingQuotes: quotesAwaiting.count ?? 0,
     deliveriesToday: deliveriesToday.count ?? 0,
+    activeInstallations: activeInstallations.count ?? 0,
   };
 }

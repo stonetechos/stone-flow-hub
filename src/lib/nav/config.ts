@@ -25,24 +25,16 @@ import {
   HandCoins,
   Landmark,
   ReceiptText,
-  Calendar,
   BarChart3,
   Settings,
-  Activity,
   CheckSquare,
   FolderOpen,
-  Star,
   ShieldCheck,
-  Layers,
-  Briefcase,
   MessageSquare,
   Bell,
   Mails,
-  BellRing,
   Fingerprint,
   CalendarDays,
-  Clock,
-  MapPin,
   UserCog,
   type LucideIcon,
 } from "lucide-react";
@@ -99,7 +91,12 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   { id: "enquiries", to: "/enquiries", label: "Enquiries", icon: ClipboardList, group: "sales" },
   { id: "projects", to: "/projects", label: "Projects", icon: Building2, group: "sales" },
-  { id: "estimates", to: "/estimates", label: "Estimation Studio", icon: FileText, group: "sales" },
+  // "Estimation Studio" removed from the sidebar 2026-09-06 (Rishi: sidebar
+  // felt densely populated / "estimation studios and all" was confusing next
+  // to Quotations). Page and route are untouched — build a quote from
+  // Enquiries/Projects or the Quotations page itself. Restore by
+  // uncommenting if a direct link is ever wanted again.
+  // { id: "estimates", to: "/estimates", label: "Estimation Studio", icon: FileText, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
   {
     id: "sales-orders",
@@ -119,8 +116,12 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   // doc for the reasoning; flagged for confirmation, not a literal instruction.
   { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "sales" },
   { id: "followups", to: "/followups", label: "Follow-ups", icon: CalendarClock, group: "sales" },
-  { id: "tasks", to: "/tasks", label: "Tasks", icon: CheckSquare, group: "sales" },
-  { id: "calendar", to: "/calendar", label: "Calendar", icon: Calendar, group: "sales" },
+  // "Tasks" and "Calendar" removed from the sidebar 2026-09-06 (2026-09-06
+  // decluttering — generic to-do/calendar utilities, not sales-pipeline
+  // steps; Follow-ups already covers sales-side scheduling). Pages/routes
+  // untouched; uncomment to bring back.
+  // { id: "tasks", to: "/tasks", label: "Tasks", icon: CheckSquare, group: "sales" },
+  // { id: "calendar", to: "/calendar", label: "Calendar", icon: Calendar, group: "sales" },
 
   // Purchase (was "Operations" — Manufacturing / Slab Register / Stock
   // Movements removed entirely per the 2026-09-04 restructure, not just
@@ -212,14 +213,12 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Payroll (was "Human Resources" — same items, renamed group only)
+  // "Employees" intentionally lives only under Workforce Intelligence
+  // (`wf-employees` below) — it was duplicated here too (same /workforce-
+  // intelligence/employees route) during the 2026-08-04 HRM build; removed
+  // 2026-09-06 per the stabilization-sprint nav audit (Part 3: duplicate
+  // entries).
   { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "payroll" },
-  {
-    id: "hr-employees",
-    to: "/workforce-intelligence/employees",
-    label: "Employees",
-    icon: Users,
-    group: "payroll",
-  },
   {
     id: "hr-attendance",
     to: "/hr/attendance",
@@ -227,7 +226,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Fingerprint,
     group: "payroll",
   },
-  { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "payroll" },
   {
     id: "hr-leave",
     to: "/hr/leave",
@@ -256,20 +254,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: HandCoins,
     group: "payroll",
   },
-  {
-    id: "hr-holidays",
-    to: "/hr/holidays",
-    label: "Holidays",
-    icon: Calendar,
-    group: "payroll",
-  },
-  {
-    id: "hr-branches",
-    to: "/hr/branches",
-    label: "Offices & Geofences",
-    icon: MapPin,
-    group: "payroll",
-  },
+  // "Shifts", "Holidays" and "Offices & Geofences" removed from the sidebar
+  // 2026-09-06 decluttering — set-once configuration screens rather than
+  // day-to-day operational ones; Payroll had the most sub-items of any
+  // group. Pages/routes untouched; uncomment to bring back.
+  // { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "payroll" },
+  // { id: "hr-holidays", to: "/hr/holidays", label: "Holidays", icon: Calendar, group: "payroll" },
+  // { id: "hr-branches", to: "/hr/branches", label: "Offices & Geofences", icon: MapPin, group: "payroll" },
 
   // Workforce Intelligence
   {
@@ -286,20 +277,12 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Users,
     group: "workforce",
   },
-  {
-    id: "wf-roles",
-    to: "/workforce-intelligence/roles",
-    label: "Roles & KRAs",
-    icon: Briefcase,
-    group: "workforce",
-  },
-  {
-    id: "wf-capacities",
-    to: "/workforce-intelligence/capacities",
-    label: "Workload Capacity",
-    icon: Layers,
-    group: "workforce",
-  },
+  // "Roles & KRAs" and "Workload Capacity" removed from the sidebar
+  // 2026-09-06 decluttering — setup/planning screens, not daily-use;
+  // Employees + Performance cover day-to-day Workforce Intelligence use.
+  // Page/routes untouched; uncomment to bring back.
+  // { id: "wf-roles", to: "/workforce-intelligence/roles", label: "Roles & KRAs", icon: Briefcase, group: "workforce" },
+  // { id: "wf-capacities", to: "/workforce-intelligence/capacities", label: "Workload Capacity", icon: Layers, group: "workforce" },
   {
     id: "wf-performance",
     to: "/workforce-intelligence/performance",
@@ -340,26 +323,18 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "communication",
   },
   {
-    id: "messages",
-    to: "/messages",
-    label: "Notifications Queue",
-    icon: Send,
-    group: "communication",
-  },
-  {
     id: "message-templates",
     to: "/message-templates",
     label: "Message Templates",
     icon: Mails,
     group: "communication",
   },
-  {
-    id: "notification-settings",
-    to: "/notification-settings",
-    label: "Notification Settings",
-    icon: BellRing,
-    group: "communication",
-  },
+  // "Notifications Queue" (outbound send-log) and "Notification Settings"
+  // (config) removed from the sidebar 2026-09-06 decluttering — technical/
+  // admin screens, not something checked day-to-day. Pages/routes
+  // untouched; uncomment to bring back.
+  // { id: "messages", to: "/messages", label: "Notifications Queue", icon: Send, group: "communication" },
+  // { id: "notification-settings", to: "/notification-settings", label: "Notification Settings", icon: BellRing, group: "communication" },
 
   // Others
   { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "others" },
@@ -371,8 +346,11 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "others",
   },
   { id: "documents", to: "/documents", label: "Documents", icon: FolderOpen, group: "others" },
-  { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
-  { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
+  // "Activity" (audit log) and "Favorites" (bookmarks) removed from the
+  // sidebar 2026-09-06 decluttering — low-traffic utility screens. Pages/
+  // routes untouched; uncomment to bring back.
+  // { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
+  // { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
   { id: "reports", to: "/reports", label: "Reports", icon: BarChart3, group: "others" },
   { id: "settings", to: "/settings", label: "Settings", icon: Settings, group: "others" },
 

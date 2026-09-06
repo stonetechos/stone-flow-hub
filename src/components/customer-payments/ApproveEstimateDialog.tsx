@@ -195,6 +195,7 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Remove row"
                     onClick={() => setRows((v) => v.filter((_, idx) => idx !== i))}
                   >
                     <Trash2 className="h-4 w-4" />
