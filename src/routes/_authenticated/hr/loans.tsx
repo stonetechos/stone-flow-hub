@@ -53,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/hr/loans")({
       },
     ],
   }),
-  component: LoansPage,
+  component: LoansView,
 });
 
 const STATUS_TONE: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -65,7 +65,7 @@ const STATUS_TONE: Record<string, "default" | "secondary" | "outline" | "destruc
   rejected: "destructive",
 };
 
-function LoansPage() {
+export function LoansView() {
   const qc = useQueryClient();
   const roles = useRoles();
   const canWrite = roles.hasAnyRole(["admin", "hr"]);

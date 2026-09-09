@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LeaveView } from "./leave";
 import {
   Table,
   TableBody,
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/_authenticated/hr/attendance")({
       { name: "description", content: "Clock in, clock out and review the attendance register." },
     ],
   }),
-  component: AttendancePage,
+  component: AttendanceAndLeavePage,
 });
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -96,7 +98,7 @@ async function captureContext(): Promise<Capture> {
   };
 }
 
-function AttendancePage() {
+export function AttendanceView() {
   const qc = useQueryClient();
   const auth = useAuthReady();
   const roles = useRoles();
@@ -405,5 +407,28 @@ function AttendancePage() {
         )}
       </div>
     </>
+  );
+}
+
+export function AttendanceAndLeavePage() {
+  const [activeTab, setActiveTab] = useState("attendance");
+
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
+          <TabsTrigger value="leave">Leave Management</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="attendance" className="mt-4 space-y-6">
+          <AttendanceView />
+        </TabsContent>
+
+        <TabsContent value="leave" className="mt-4 space-y-6">
+          <LeaveView />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

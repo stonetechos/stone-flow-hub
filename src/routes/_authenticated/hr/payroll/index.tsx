@@ -19,6 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SalaryView } from "../salary";
+import { LoansView } from "../loans";
 import {
   Table,
   TableBody,
@@ -44,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/hr/payroll/")({
       },
     ],
   }),
-  component: PayrollRunsPage,
+  component: PayrollHubPage,
 });
 
 const STATUS_TONE: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -63,7 +66,7 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-function PayrollRunsPage() {
+export function PayrollRunsView() {
   const qc = useQueryClient();
   const roles = useRoles();
   const canRun = roles.hasAnyRole(["admin", "hr"]);
@@ -236,5 +239,33 @@ function PayrollRunsPage() {
         )}
       </div>
     </>
+  );
+}
+
+export function PayrollHubPage() {
+  const [activeTab, setActiveTab] = useState("runs");
+
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
+          <TabsTrigger value="runs">Payroll Runs</TabsTrigger>
+          <TabsTrigger value="structures">Salary Structures</TabsTrigger>
+          <TabsTrigger value="loans">Loans & Claims</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="runs" className="mt-4 space-y-6">
+          <PayrollRunsView />
+        </TabsContent>
+
+        <TabsContent value="structures" className="mt-4 space-y-6">
+          <SalaryView />
+        </TabsContent>
+
+        <TabsContent value="loans" className="mt-4 space-y-6">
+          <LoansView />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

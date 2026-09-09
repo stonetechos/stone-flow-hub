@@ -26,10 +26,10 @@ import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/owner/")({
   head: () => ({ meta: [{ title: "Owner Intelligence" }] }),
-  component: OwnerIntelPage,
+  component: OwnerIntelView,
 });
 
-function OwnerIntelPage() {
+export function OwnerIntelView() {
   const roles = useRoles();
   const canView = roles.isAdmin || roles.isSalesManager;
 

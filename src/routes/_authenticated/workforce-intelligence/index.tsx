@@ -5,7 +5,11 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PerformanceView } from "./performance";
+import { OwnerIntelView } from "./owner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +37,7 @@ import { CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/")({
   head: () => ({ meta: [{ title: "Workforce Intelligence — Today" }] }),
-  component: TodayPage,
+  component: WorkforceHubPage,
 });
 
 function priorityColor(p: string) {
@@ -46,7 +50,7 @@ function priorityColor(p: string) {
         : "outline";
 }
 
-function TodayPage() {
+export function TodayView() {
   const qc = useQueryClient();
   const me = useQuery({ queryKey: ["wf", "me"], queryFn: getCurrentEmployee });
   const employeeId = me.data?.id;
@@ -163,5 +167,33 @@ function TodayPage() {
         </Table>
       )}
     </>
+  );
+}
+
+export function WorkforceHubPage() {
+  const [activeTab, setActiveTab] = useState("today");
+
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
+          <TabsTrigger value="today">Today's Work</TabsTrigger>
+          <TabsTrigger value="performance">Performance Board</TabsTrigger>
+          <TabsTrigger value="owner">Owner Intelligence</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="today" className="mt-4 space-y-6">
+          <TodayView />
+        </TabsContent>
+
+        <TabsContent value="performance" className="mt-4 space-y-6">
+          <PerformanceView />
+        </TabsContent>
+
+        <TabsContent value="owner" className="mt-4 space-y-6">
+          <OwnerIntelView />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

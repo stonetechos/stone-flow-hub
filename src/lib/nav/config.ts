@@ -64,8 +64,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "purchase", label: "Purchase" },
   { id: "inventory", label: "Inventory" },
   { id: "finance", label: "Finance" },
-  { id: "payroll", label: "Payroll" },
-  { id: "workforce", label: "Workforce Intelligence" },
+  { id: "payroll", label: "HR Operations" },
   { id: "masterData", label: "Master Data" },
   { id: "communication", label: "Communication" },
   { id: "others", label: "Others" },
@@ -144,32 +143,23 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "finance",
   },
 
-  // Payroll (was "Human Resources" — same items, renamed group only)
-  // "Employees" intentionally lives only under Workforce Intelligence
-  // (`wf-employees` below) — it was duplicated here too (same /workforce-
-  // intelligence/employees route) during the 2026-08-04 HRM build; removed
-  // 2026-09-06 per the stabilization-sprint nav audit (Part 3: duplicate
-  // entries).
-  { id: "hr", to: "/hr", label: "HR Dashboard", icon: UserCog, group: "payroll" },
+  // HR Operations (Merged HR Operations & Workforce Intelligence)
+  // 1. Employees: Workforce master directory
+  // 2. Attendance & Leave: Daily punches + Leave requests & balances (embedded tab)
+  // 3. Payroll: Monthly payroll runs + Salary structures + Loans & claims (embedded tabs)
+  // 4. Workforce Intelligence: Personal work queue + Performance scorecards + Owner intelligence (embedded tabs)
+  {
+    id: "wf-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "payroll",
+  },
   {
     id: "hr-attendance",
     to: "/hr/attendance",
-    label: "Attendance",
+    label: "Attendance & Leave",
     icon: Fingerprint,
-    group: "payroll",
-  },
-  {
-    id: "hr-leave",
-    to: "/hr/leave",
-    label: "Leave Management",
-    icon: CalendarDays,
-    group: "payroll",
-  },
-  {
-    id: "hr-salary",
-    to: "/hr/salary",
-    label: "Salary Structures",
-    icon: Wallet,
     group: "payroll",
   },
   {
@@ -180,55 +170,11 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "payroll",
   },
   {
-    id: "hr-loans",
-    to: "/hr/loans",
-    label: "Loans & Claims",
-    icon: HandCoins,
-    group: "payroll",
-  },
-  // "Shifts", "Holidays" and "Offices & Geofences" removed from the sidebar
-  // 2026-09-06 decluttering — set-once configuration screens rather than
-  // day-to-day operational ones; Payroll had the most sub-items of any
-  // group. Pages/routes untouched; uncomment to bring back.
-  // { id: "hr-shifts", to: "/hr/shifts", label: "Shifts", icon: Clock, group: "payroll" },
-  // { id: "hr-holidays", to: "/hr/holidays", label: "Holidays", icon: Calendar, group: "payroll" },
-  // { id: "hr-branches", to: "/hr/branches", label: "Offices & Geofences", icon: MapPin, group: "payroll" },
-
-  // Workforce Intelligence
-  {
     id: "wf-today",
     to: "/workforce-intelligence",
-    label: "Today",
-    icon: CheckSquare,
-    group: "workforce",
-  },
-  {
-    id: "wf-employees",
-    to: "/workforce-intelligence/employees",
-    label: "Employees",
-    icon: Users,
-    group: "workforce",
-  },
-  // "Roles & KRAs" and "Workload Capacity" removed from the sidebar
-  // 2026-09-06 decluttering — setup/planning screens, not daily-use;
-  // Employees + Performance cover day-to-day Workforce Intelligence use.
-  // Page/routes untouched; uncomment to bring back.
-  // { id: "wf-roles", to: "/workforce-intelligence/roles", label: "Roles & KRAs", icon: Briefcase, group: "workforce" },
-  // { id: "wf-capacities", to: "/workforce-intelligence/capacities", label: "Workload Capacity", icon: Layers, group: "workforce" },
-  {
-    id: "wf-performance",
-    to: "/workforce-intelligence/performance",
-    label: "Performance",
+    label: "Workforce Intelligence",
     icon: BarChart3,
-    group: "workforce",
-  },
-  {
-    id: "wf-owner",
-    to: "/workforce-intelligence/owner",
-    label: "Owner Intelligence",
-    icon: ShieldCheck,
-    group: "workforce",
-    adminOnly: true,
+    group: "payroll",
   },
 
   // Master Data

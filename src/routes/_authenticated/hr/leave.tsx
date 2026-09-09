@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/hr/leave")({
       { name: "description", content: "Leave requests, approvals and balances." },
     ],
   }),
-  component: LeavePage,
+  component: LeaveView,
 });
 
 function daysBetween(from: string, to: string): number {
@@ -60,7 +60,7 @@ function daysBetween(from: string, to: string): number {
   return Math.round(ms / 86_400_000) + 1;
 }
 
-function LeavePage() {
+export function LeaveView() {
   const qc = useQueryClient();
   const auth = useAuthReady();
   const roles = useRoles();

@@ -61,7 +61,7 @@ export const Route = createFileRoute("/_authenticated/hr/salary")({
       },
     ],
   }),
-  component: SalaryPage,
+  component: SalaryView,
 });
 
 const CALC_LABEL: Record<string, string> = {
@@ -91,7 +91,7 @@ const EMPTY_COMPONENT: ComponentDraft = {
   esi_applicable: true,
 };
 
-function SalaryPage() {
+export function SalaryView() {
   const qc = useQueryClient();
   const roles = useRoles();
   const canWrite = roles.hasAnyRole(["admin", "hr"]);

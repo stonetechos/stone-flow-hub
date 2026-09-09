@@ -21,10 +21,10 @@ import { toUserMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/performance/")({
   head: () => ({ meta: [{ title: "Performance — Workforce Intelligence" }] }),
-  component: PerformancePage,
+  component: PerformanceView,
 });
 
-function PerformancePage() {
+export function PerformanceView() {
   const employees = useQuery({
     queryKey: ["wf", "employees", "list", ""],
     queryFn: () => listEmployees(""),
