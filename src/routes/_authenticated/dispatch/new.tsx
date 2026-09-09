@@ -29,8 +29,11 @@ import { getSalesOrder, listSalesOrdersForPicker } from "@/lib/sales-orders/api"
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
 
+import { EntityPicker } from "@/components/forms/EntityPicker";
+
 const search = z.object({
   so: z.string().uuid().optional(),
+  customer: z.string().uuid().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/dispatch/new")({
@@ -54,7 +57,7 @@ function NewDispatchPage() {
 
   const [form, setForm] = useState<DispatchCreateInput>({
     sales_order_id: params.so ?? null,
-    customer_id: null,
+    customer_id: params.customer ?? null,
     project_id: null,
     status: "planned",
     dispatch_date: today(),
@@ -99,6 +102,9 @@ function NewDispatchPage() {
 
   const mut = useMutation({
     mutationFn: async (payload: { form: DispatchCreateInput; items: DispatchItemInput[] }) => {
+      if (!payload.form.customer_id && !payload.form.sales_order_id) {
+        throw new Error("Please select a customer or sales order");
+      }
       const row = await createDispatch(payload.form);
       if (payload.items.length > 0) {
         await replaceDispatchItems(row.id, payload.items);
@@ -117,7 +123,7 @@ function NewDispatchPage() {
     <div>
       <PageHeader
         title="New delivery challan"
-        subtitle="Record what is leaving the yard against a sales order."
+        subtitle="Record what is leaving the yard for delivery to the customer."
       />
       <QuickForm
         onSubmit={(e) => {
@@ -127,22 +133,13 @@ function NewDispatchPage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
-          <Field label="Sales order">
-            <Select
-              value={form.sales_order_id ?? ""}
-              onValueChange={(v) => set("sales_order_id", v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select SO" />
-              </SelectTrigger>
-              <SelectContent>
-                {(orders.data ?? []).map((o) => (
-                  <SelectItem key={o.id} value={o.id}>
-                    {o.so_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Field label="Customer" required>
+            <EntityPicker
+              type="customer"
+              value={form.customer_id ?? null}
+              onChange={(id) => set("customer_id", id)}
+              placeholder="Search customers…"
+            />
           </Field>
           <Field label="Challan date" required>
             <Input
@@ -168,6 +165,24 @@ function NewDispatchPage() {
         </QuickForm.QuickFill>
 
         <QuickForm.MoreDetails>
+          <Field label="Sales order (optional)">
+            <Select
+              value={form.sales_order_id ?? "none"}
+              onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select SO (if applicable)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
+                {(orders.data ?? []).map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.so_no}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Driver name">
             <Input
               value={form.driver_name ?? ""}

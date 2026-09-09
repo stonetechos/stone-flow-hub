@@ -110,8 +110,8 @@ sets `ssr: false`. This is not unique to Users & Roles or in any way
 unusual: `ssr: false` is set on effectively every route under
 `_authenticated/` (117 of the routes checked carry this exact flag —
 grep confirms it's the standard pattern for authenticated pages, not an
-admin-specific one). `ssr: false` controls whether the *route's React
-component* renders on the server — it has no effect on where a
+admin-specific one). `ssr: false` controls whether the _route's React
+component_ renders on the server — it has no effect on where a
 `createServerFn` executes. TanStack Start server functions are independent
 RPC endpoints: calling one from client-side code (via `useServerFn`, as
 `admin/users.tsx` does at line 169) issues a request to a server-side
@@ -131,7 +131,7 @@ this hypothesis could be true, both worth checking:
 - **Preview/Production skew.** `docs/DEPLOYMENT.md` documents that Lovable
   auto-builds Preview on every save but Production only updates on an
   explicit **Publish** click. If the Supabase secrets were added or
-  corrected in Lovable Cloud's config *after* the last Production Publish,
+  corrected in Lovable Cloud's config _after_ the last Production Publish,
   Preview would already reflect them (constantly rebuilt) while Production
   would still be running the older, unconfigured build until someone
   clicks Publish again. This is indistinguishable from Hypothesis 1 by
@@ -183,7 +183,7 @@ Supabase client under RLS (`src/integrations/supabase/client.ts`, using
 client bundle at build time, and confirmed present since the app shell
 itself renders). That path never touches `process.env` at all, so it's
 completely unaffected by a server-side secrets gap. Users & Roles is
-unusual only in how *much* of its functionality specifically depends on
+unusual only in how _much_ of its functionality specifically depends on
 `createServerFn` + `requireSupabaseAuth` (listing `auth.users` via the
 service-role Admin API isn't something the RLS-scoped anon/authenticated
 client can do at all) — making it the most visible symptom of a gap that,
@@ -209,7 +209,7 @@ dashboard access needed at all.
   actually happens; confirmed correct (functioning as designed).
 - `src/integrations/supabase/client.server.ts` — never reached in this
   failure; confirmed correct.
-- `src/lib/env/config-status.ts` — the *client*-side equivalent gate;
+- `src/lib/env/config-status.ts` — the _client_-side equivalent gate;
   unrelated to this specific failure (checked in Sprint 1.9 Milestone 1)
   but included for completeness since it's the nearest analogous
   mechanism.
@@ -222,7 +222,7 @@ dashboard access needed at all.
 external.**
 
 - **Code:** nothing to fix (every file in the execution path is already
-  correct — confirmed, not assumed, in this sprint). What *was*
+  correct — confirmed, not assumed, in this sprint). What _was_
   implemented in code is a diagnostic, not a fix for the root cause
   itself (see below).
 - **Deployment / Lovable:** the actual fix. Set the missing secrets in
@@ -235,7 +235,7 @@ external.**
   doesn't actually propagate the secret (in which case direct Cloudflare
   dashboard access to the Worker's Settings → Variables would be the
   fallback — flagged in the steps below).
-- **Supabase:** the *source* of the correct values — `SUPABASE_URL` and
+- **Supabase:** the _source_ of the correct values — `SUPABASE_URL` and
   `SUPABASE_PUBLISHABLE_KEY` need to come from this project's actual
   Supabase project settings, not be invented.
 

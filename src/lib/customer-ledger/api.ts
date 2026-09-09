@@ -53,3 +53,36 @@ export async function getCustomerLedgerSummary(customerId: string): Promise<Ledg
     unallocatedAdvance: unallocated,
   };
 }
+
+export interface CustomerLedgerOverviewItem {
+  totalDebit: number;
+  totalCredit: number;
+  balance: number;
+  entryCount: number;
+  lastEntryAt: string | null;
+}
+
+export async function listCustomerLedgerSummaries(): Promise<
+  Map<string, CustomerLedgerOverviewItem>
+> {
+  const { data, error } = await supabase
+    .from("customer_ledger")
+    .select("*")
+    .order("entry_date", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  const map = new Map<string, CustomerLedgerOverviewItem>();
+  for (const r of data ?? []) {
+    if (!r.customer_id) continue;
+    let s = map.get(r.customer_id);
+    if (!s) {
+      s = { totalDebit: 0, totalCredit: 0, balance: 0, entryCount: 0, lastEntryAt: null };
+      map.set(r.customer_id, s);
+    }
+    s.totalDebit += Number(r.debit ?? 0);
+    s.totalCredit += Number(r.credit ?? 0);
+    s.balance = s.totalDebit - s.totalCredit;
+    s.entryCount += 1;
+    s.lastEntryAt = r.entry_date;
+  }
+  return map;
+}

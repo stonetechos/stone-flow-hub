@@ -17,8 +17,8 @@ pipeline.** It is called the Vedora Intelligence Engine (VIE — `src/lib/vie/`)
 `docs/VIE-Phase2-Architecture-Review.md`, and its architecture — **Understand → Plan → Execute**,
 with the LLM confined to the Understand layer and every write going through the exact same
 `api.ts` function the manual UI already calls — is sound and explicitly should not be redesigned
-(the Phase 2 review's own words: *"Do not redesign or rewrite... the three-layer separation, the
-Action Registry pattern, the policy-as-data execution model, or the single-table audit trail"*).
+(the Phase 2 review's own words: _"Do not redesign or rewrite... the three-layer separation, the
+Action Registry pattern, the policy-as-data execution model, or the single-table audit trail"_).
 
 What VIE does **not** have today, confirmed by direct code inspection rather than assumption:
 
@@ -52,21 +52,21 @@ that make that front door useful in the way this business actually talks.
 
 ### Coverage map
 
-| Sprint part | Where it's addressed |
-|---|---|
-| Part 1 — Vision | § 1 |
-| Part 2 — Multilingual strategy | § 3.1, § 5.1 |
-| Part 3 — Mixed-language understanding | § 5.2 |
-| Part 4 — Voice ERP | § 3.2, § 4.2 |
-| Part 5 — Entity extraction | § 5.3, § 6 |
-| Part 6 — Business intelligence | § 3.3 |
-| Part 7 — Universal business capture | § 3.4 |
-| Part 8 — User experience | § 4 |
-| Part 9 — Database impact | § 7 |
-| Part 10 — Security | § 9 |
-| Part 11 — Performance | § 10 |
-| Part 12 — Roadmap | § 11 |
-| Deliverables 1–13 | §§ 1–13, one section each |
+| Sprint part                           | Where it's addressed      |
+| ------------------------------------- | ------------------------- |
+| Part 1 — Vision                       | § 1                       |
+| Part 2 — Multilingual strategy        | § 3.1, § 5.1              |
+| Part 3 — Mixed-language understanding | § 5.2                     |
+| Part 4 — Voice ERP                    | § 3.2, § 4.2              |
+| Part 5 — Entity extraction            | § 5.3, § 6                |
+| Part 6 — Business intelligence        | § 3.3                     |
+| Part 7 — Universal business capture   | § 3.4                     |
+| Part 8 — User experience              | § 4                       |
+| Part 9 — Database impact              | § 7                       |
+| Part 10 — Security                    | § 9                       |
+| Part 11 — Performance                 | § 10                      |
+| Part 12 — Roadmap                     | § 11                      |
+| Deliverables 1–13                     | §§ 1–13, one section each |
 
 ---
 
@@ -117,8 +117,8 @@ Per the brief's closing instruction — design like the CTO of Vedora Vision, no
 Tech. The architectural move that makes this possible without a second build later: **separate
 "VIE Core" (understanding, planning, execution, audit) from "Stone Tech OS domain package" (the
 stone-industry vocabulary, the ERP module handlers, the master-data grounding)**. ADR-0001 already
-states this intent in one sentence — *"VIE generalizes that pattern from one read-only use case
-into a reusable core any module can use"* — this blueprint extends the same idea one level up:
+states this intent in one sentence — _"VIE generalizes that pattern from one read-only use case
+into a reusable core any module can use"_ — this blueprint extends the same idea one level up:
 any **product**, not just any module within one product. § 2.3 makes this split concrete.
 
 ---
@@ -203,20 +203,20 @@ to stay linked to the source image for audit and correction). Detailed per-modal
 
 ### 2.3 The platform split — Vedora Intelligence Platform vs. Stone Tech OS
 
-| Layer | Lives in | Product-agnostic? |
-|---|---|---|
-| Gateway (LLM provider abstraction) | `gateway.server.ts` | Yes — already is |
-| Understand (NLU: intent, entities, confidence, language) | `vie/understand.ts` + prompts | Mostly — the classifier prompt structure is generic; the *intent vocabulary* and *domain vocabulary injected into the prompt* (§ 3.3) are product-specific |
-| Planner | `vie/planner/` | Yes — resolution *pattern* is generic; individual resolvers (resolve a customer, resolve a stone type) are product-specific |
-| Action Registry / Workflow Engine | `vie/actions/`, `vie/workflowEngine.ts` | Yes — the registry and executor are generic; each handler is product-specific by definition (it calls a specific product's `api.ts`) |
-| Capture Layer normalizers (voice, OCR, WhatsApp, email) | new, § 3.4 | Yes — a speech-to-text call or an inbound-WhatsApp webhook doesn't know or care what product it feeds |
-| Copilot UI shell (chat panel, confirmation cards, voice button) | `components/copilot/` | Mostly — the shell is generic; the domain-specific card renderers (a quotation line-item preview looks different from a CRM contact preview) are per-product |
-| Domain knowledge (stone-industry vocabulary, synonyms) | new, § 3.3 | No — this is Stone Tech OS's own domain package |
-| Master-data grounding (which tables the AI treats as ground truth) | existing master tables (`stone_types`, `stone_colours`, ...) | No — but the *mechanism* (ground the AI in whatever master-config tables the product declares) is generic |
+| Layer                                                              | Lives in                                                     | Product-agnostic?                                                                                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gateway (LLM provider abstraction)                                 | `gateway.server.ts`                                          | Yes — already is                                                                                                                                             |
+| Understand (NLU: intent, entities, confidence, language)           | `vie/understand.ts` + prompts                                | Mostly — the classifier prompt structure is generic; the _intent vocabulary_ and _domain vocabulary injected into the prompt_ (§ 3.3) are product-specific   |
+| Planner                                                            | `vie/planner/`                                               | Yes — resolution _pattern_ is generic; individual resolvers (resolve a customer, resolve a stone type) are product-specific                                  |
+| Action Registry / Workflow Engine                                  | `vie/actions/`, `vie/workflowEngine.ts`                      | Yes — the registry and executor are generic; each handler is product-specific by definition (it calls a specific product's `api.ts`)                         |
+| Capture Layer normalizers (voice, OCR, WhatsApp, email)            | new, § 3.4                                                   | Yes — a speech-to-text call or an inbound-WhatsApp webhook doesn't know or care what product it feeds                                                        |
+| Copilot UI shell (chat panel, confirmation cards, voice button)    | `components/copilot/`                                        | Mostly — the shell is generic; the domain-specific card renderers (a quotation line-item preview looks different from a CRM contact preview) are per-product |
+| Domain knowledge (stone-industry vocabulary, synonyms)             | new, § 3.3                                                   | No — this is Stone Tech OS's own domain package                                                                                                              |
+| Master-data grounding (which tables the AI treats as ground truth) | existing master tables (`stone_types`, `stone_colours`, ...) | No — but the _mechanism_ (ground the AI in whatever master-config tables the product declares) is generic                                                    |
 
 The practical implication: nothing in this blueprint asks Stone Tech OS to wait for a "platform"
-to be built first. Every piece is built *for* Stone Tech OS, in Stone Tech OS's repo, using Stone
-Tech OS's real data. The platform-reuse property falls out of *where the line is drawn* — provider
+to be built first. Every piece is built _for_ Stone Tech OS, in Stone Tech OS's repo, using Stone
+Tech OS's real data. The platform-reuse property falls out of _where the line is drawn_ — provider
 calls, NLU mechanics, planning/execution mechanics, and the capture normalizers live in
 product-agnostic modules from day one, so that the second Vedora Vision product reuses code
 instead of re-deriving this architecture. This is the same discipline Sprint 1.7.1 already applied
@@ -236,7 +236,7 @@ part: VIE's `understand.ts` already returns a `language` field (`en`/`hi`/`gu`/`
 as NLU output. § 5.1/5.2 extend this from "detect and label" to "extract entities correctly
 regardless of which language or mix they arrived in."
 
-**Problem B — the *application UI itself* renders in Hindi/Gujarati.** This does not exist at all
+**Problem B — the _application UI itself_ renders in Hindi/Gujarati.** This does not exist at all
 today — confirmed by code search: no i18n library in `package.json`, no locale files, no message
 catalog. Every button, label, toast, and page title is a hardcoded English string. This is a
 separate, large, mostly-mechanical project independent of the AI work, and conflating "the AI
@@ -251,7 +251,7 @@ involved in each.
   existing route structure — `common`, `crm`, `sales`, `masters`, ...) rather than one giant file,
   so a translator can be handed one namespace without touching the rest.
   - **Script note**: Gujarati and Hindi should be stored and rendered in their native scripts
-    (ગુજરાતી, हिन्दी), not romanized — romanization is a *speech/typed-input* tolerance (§ 5.2), not
+    (ગુજરાતી, हिन्दी), not romanized — romanization is a _speech/typed-input_ tolerance (§ 5.2), not
     a UI rendering choice. Conflating the two would make the UI look unprofessional and would not
     match how staff actually read.
 - **Validation messages**: Zod's `.refine()`/`.superRefine()` custom messages already exist
@@ -312,7 +312,7 @@ is to produce the text that VIE's existing `understand.ts` already knows how to 
   history table) — the modality is metadata on a turn, not a parallel history system.
 - **Confirmation & error recovery**: identical to text (§ 4) — VIE's existing `auto`/`confirm`/
   `draft` policy model doesn't care what modality produced the text. If transcription confidence
-  from the STT provider itself is low, that's a *second* confidence signal (separate from VIE's own
+  from the STT provider itself is low, that's a _second_ confidence signal (separate from VIE's own
   NLU confidence) that should independently be able to force a downgrade to `confirm` — a
   low-confidence transcription of a high-confidence intent is still something a human should glance
   at before it writes anything.
@@ -334,7 +334,7 @@ Tech OS already has one, and Sprint 1.8 just finished auditing and standardizing
 `MasterListPage`-driven master tables (`stone_types`, `stone_colours`, `surface_finishes`,
 `edge_finishes`, `stone_origins`, `applications`, `thicknesses`, `product_families`,
 `manufacturing_stages`, `quality_grades`, `packaging_types`, `uoms`, `qc_templates` — see
-`docs/master-list-standardization.md`) *are* the domain knowledge: "Mint" and "Kandla Grey" are
+`docs/master-list-standardization.md`) _are_ the domain knowledge: "Mint" and "Kandla Grey" are
 rows in `stone_colours`; "Cladding" is a row in `applications`; "Rockface" and "Sawn" are rows in
 `surface_finishes`; standard thicknesses are rows in `thicknesses`. This data is already
 admin-editable, already has `code`/`name`/`is_active`, and is already exactly the shape the
@@ -367,8 +367,8 @@ service**, not a knowledge base:
    already behaves today: "falls back to raw text, never a blocker") and surfaced to the user as
    "I didn't recognize this material — here's what you said" rather than mapped to a wrong nearby
    entry.
-5. **Ownership boundary**: the *mechanism* (vocabulary index + fuzzy match + prompt injection) is
-   product-agnostic platform code (§ 2.3); the *data* (which tables count as domain vocabulary,
+5. **Ownership boundary**: the _mechanism_ (vocabulary index + fuzzy match + prompt injection) is
+   product-agnostic platform code (§ 2.3); the _data_ (which tables count as domain vocabulary,
    what "Mint" means) is 100% Stone Tech OS's own master data, edited through the same admin UI
    Sprint 1.8 just standardized — no separate "AI knowledge admin" screen needed.
 
@@ -376,25 +376,25 @@ service**, not a knowledge base:
 
 One engine, five normalizers, as introduced in § 2.2. Per-modality design:
 
-| Modality | Normalizer's job | Feeds Understand as | Status |
-|---|---|---|---|
-| **Text** (typed) | None needed — already text | Raw text | Exists today |
-| **Voice** | STT → editable transcript (§ 3.2) | Raw text (post-correction) | Greenfield |
-| **WhatsApp** | Inbound webhook → message body as text; media attachments (image/PDF) routed to the OCR/Image normalizer, referenced by `file_objects` id | Raw text + optional attachment ref | Outbound infra exists (`message_queue`/`dispatch.server.ts`); **inbound does not exist** — needs a new webhook receiver, and critically needs VIE's Milestone 6 non-interactive execution context (§ 9.5) since an inbound WhatsApp message has no live staff session behind it |
-| **Email** | Inbound parsing (subject + body as text, attachments to the OCR normalizer) | Raw text + optional attachment ref | Same gap as WhatsApp — needs inbound receiving infra (doesn't exist) and the same non-interactive execution context |
-| **PDF / OCR** | Extract text from a scanned document (delivery challan, a competitor's quote, a vendor invoice) via an OCR pass, kept linked to the source file (`file_objects`, which already exists) for audit | Raw text + `source_file_id` | Greenfield (extraction); storage infra exists |
-| **Images** (future, e.g. `recognizeStoneImage` already exists as a helper) | Vision-model description → text description of what's in the image, or direct classification against the master-data vocabulary (§ 3.3) | Raw text (description) + `source_file_id` | Partially exists as an isolated helper (`copilot.functions.ts`'s `recognizeStoneImage`) — not yet wired into the capture pipeline |
+| Modality                                                                   | Normalizer's job                                                                                                                                                                                 | Feeds Understand as                       | Status                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Text** (typed)                                                           | None needed — already text                                                                                                                                                                       | Raw text                                  | Exists today                                                                                                                                                                                                                                                                    |
+| **Voice**                                                                  | STT → editable transcript (§ 3.2)                                                                                                                                                                | Raw text (post-correction)                | Greenfield                                                                                                                                                                                                                                                                      |
+| **WhatsApp**                                                               | Inbound webhook → message body as text; media attachments (image/PDF) routed to the OCR/Image normalizer, referenced by `file_objects` id                                                        | Raw text + optional attachment ref        | Outbound infra exists (`message_queue`/`dispatch.server.ts`); **inbound does not exist** — needs a new webhook receiver, and critically needs VIE's Milestone 6 non-interactive execution context (§ 9.5) since an inbound WhatsApp message has no live staff session behind it |
+| **Email**                                                                  | Inbound parsing (subject + body as text, attachments to the OCR normalizer)                                                                                                                      | Raw text + optional attachment ref        | Same gap as WhatsApp — needs inbound receiving infra (doesn't exist) and the same non-interactive execution context                                                                                                                                                             |
+| **PDF / OCR**                                                              | Extract text from a scanned document (delivery challan, a competitor's quote, a vendor invoice) via an OCR pass, kept linked to the source file (`file_objects`, which already exists) for audit | Raw text + `source_file_id`               | Greenfield (extraction); storage infra exists                                                                                                                                                                                                                                   |
+| **Images** (future, e.g. `recognizeStoneImage` already exists as a helper) | Vision-model description → text description of what's in the image, or direct classification against the master-data vocabulary (§ 3.3)                                                          | Raw text (description) + `source_file_id` | Partially exists as an isolated helper (`copilot.functions.ts`'s `recognizeStoneImage`) — not yet wired into the capture pipeline                                                                                                                                               |
 
 The unifying contract every normalizer must produce is intentionally small:
 
 ```ts
 // Illustrative shape only — not an implementation.
 interface CaptureEvent {
-  text: string;                    // what VIE's understand() actually consumes
+  text: string; // what VIE's understand() actually consumes
   sourceModality: "text" | "voice" | "whatsapp" | "email" | "document" | "image";
   sourceRef?: { fileId: string } | { conversationId: string; messageId: string };
   actor: { type: "interactive"; userId: string } | { type: "system"; serviceActor: string };
-  languageHint?: string;           // e.g. STT provider's own language guess, if available
+  languageHint?: string; // e.g. STT provider's own language guess, if available
 }
 ```
 
@@ -473,7 +473,7 @@ already expects — no separate "edited plan" data model.
 Two distinct mechanisms, not one: **pre-write correction** (editing a transcript or a confirmation
 card before Confirm — free, no data was written yet) and **post-write undo** (for `auto`-mode
 actions that already executed). The latter does not exist in VIE today and needs real design
-attention: because the Workflow Engine writes through the *same* `api.ts` functions the manual UI
+attention: because the Workflow Engine writes through the _same_ `api.ts` functions the manual UI
 uses, "undo" cannot be a generic reverse-the-last-action button — it has to be handler-specific
 (deleting a just-created enquiry is safe; "undoing" a quotation that's already been viewed by a
 customer is a business decision, not a technical one). Recommendation: `auto`-mode undo is scoped,
@@ -517,7 +517,7 @@ Jadi strips nathi chalti
 
 — is Hinglish/Gujarati-in-Roman-script, multi-line, telegraphic (no full sentences), and mixes a
 clear entity list with a domain-specific negative preference ("thick strips won't work" — a
-*requirement*, not noise). This is harder than VIE Phase 1's single-sentence classification and
+_requirement_, not noise). This is harder than VIE Phase 1's single-sentence classification and
 needs three specific extensions, not a rewrite of the Understand layer:
 
 1. **Multi-turn/multi-line entity accumulation.** Today's `understand()` is single-shot: one
@@ -531,7 +531,7 @@ needs three specific extensions, not a rewrite of the Understand layer:
    written in Roman characters, not English words. A transliteration-aware pre-pass (or simply
    leaning on the LLM's own multilingual capability with explicit few-shot examples covering
    Romanized Gujarati/Hindi, which `prompts.ts` already does for full sentences per the Phase 2
-   review) needs deliberate few-shot coverage of exactly this *fragment-and-negation* style, not
+   review) needs deliberate few-shot coverage of exactly this _fragment-and-negation_ style, not
    just full grammatical sentences.
 3. **Domain-vocabulary grounding at extraction time** (§ 3.3) — "Mint," "teakwood" need to resolve
    against real master data during extraction, not as a separate post-pass, so the confidence score
@@ -563,12 +563,12 @@ said.
 The entity list in the brief is best read as three tiers, because they have genuinely different
 extraction strategies:
 
-| Tier | Entities | Extraction approach |
-|---|---|---|
-| **Structured, master-data-backed** | Stone, Finish, Thickness | Fuzzy-match against real master tables (§ 3.3) — extraction *is* resolution here |
-| **Structured, other-table-backed** | Customer, Vendor, Site/Project, Sales Executive | Resolved by the Planner against real records (customer/vendor/project tables, `user_roles` for sales executives) — same pattern as today's `resolveCustomer` |
-| **Free-form / derived** | Phone, Email, Address, Location, Quantity, Budget, Requirement, Delivery Date, Follow-up, Reminder, Task, Special Instructions | Extracted by the LLM as typed values (regex-validated where it makes sense — phone/email formats — but not database-resolved; these are values, not references) |
-| **Cross-module / meta** | Project, Estimate, Quotation, Purchase, Installation | These are the *outputs* of specific intents (a quotation is what `create_quotation` produces), not standalone entities to extract in isolation — listed here to be explicit that they're intent-level concerns, covered in § 11's roadmap, not part of the base entity extractor |
+| Tier                               | Entities                                                                                                                       | Extraction approach                                                                                                                                                                                                                                                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Structured, master-data-backed** | Stone, Finish, Thickness                                                                                                       | Fuzzy-match against real master tables (§ 3.3) — extraction _is_ resolution here                                                                                                                                                                                                 |
+| **Structured, other-table-backed** | Customer, Vendor, Site/Project, Sales Executive                                                                                | Resolved by the Planner against real records (customer/vendor/project tables, `user_roles` for sales executives) — same pattern as today's `resolveCustomer`                                                                                                                     |
+| **Free-form / derived**            | Phone, Email, Address, Location, Quantity, Budget, Requirement, Delivery Date, Follow-up, Reminder, Task, Special Instructions | Extracted by the LLM as typed values (regex-validated where it makes sense — phone/email formats — but not database-resolved; these are values, not references)                                                                                                                  |
+| **Cross-module / meta**            | Project, Estimate, Quotation, Purchase, Installation                                                                           | These are the _outputs_ of specific intents (a quotation is what `create_quotation` produces), not standalone entities to extract in isolation — listed here to be explicit that they're intent-level concerns, covered in § 11's roadmap, not part of the base entity extractor |
 
 **Extensibility**: new entity types should be addable the same way VIE's own intents are — as
 data/schema additions (a new Zod entity schema, a new resolver if it's master-data-backed), never
@@ -584,13 +584,13 @@ A concrete (illustrative, not final) shape for how the tiers in § 5.3 map onto 
 ```ts
 // Illustrative — the actual Zod schemas belong in vie/entities/*.ts at implementation time.
 interface ExtractedEntity {
-  type: EntityType;               // "customer" | "stone" | "quantity" | "budget" | ...
-  rawText: string;                // exactly what the user said/wrote/wrote-in-roman-script
-  resolvedId?: string;            // set only for master-data/record-backed types, once resolved
-  resolvedTable?: string;         // e.g. "stone_colours" — which table it resolved against
-  confidence: number;             // 0–1, per-entity (§5.2)
+  type: EntityType; // "customer" | "stone" | "quantity" | "budget" | ...
+  rawText: string; // exactly what the user said/wrote/wrote-in-roman-script
+  resolvedId?: string; // set only for master-data/record-backed types, once resolved
+  resolvedTable?: string; // e.g. "stone_colours" — which table it resolved against
+  confidence: number; // 0–1, per-entity (§5.2)
   candidates?: { id: string; label: string }[]; // populated only when ambiguous — feeds §4.2
-  sourceSpan?: { start: number; end: number };  // for highlighting in the confirmation card
+  sourceSpan?: { start: number; end: number }; // for highlighting in the confirmation card
 }
 ```
 
@@ -609,17 +609,17 @@ future implementation sprint will need to design and migrate, organized by the s
 VIE Phase 1 already used (one new table when genuinely needed, reuse `app_settings` for
 config-as-data, extend existing tables when additive).
 
-| Future need | Likely shape | Notes |
-|---|---|---|
-| **Conversation history** | New `copilot_conversations` / `copilot_messages` tables, or an extension of `vie_actions` with a `conversation_id` grouping column | Today, Copilot chat history is client-side React state only (confirmed by code search — nothing persisted). Needed for cross-device continuity and for § 4.5's "activity feed" view. |
-| **Domain vocabulary / synonyms** | `synonyms text[]` column on existing master tables (§ 3.3), not a new table | Additive, nullable, defaults to `{}` — no breaking change to Sprint 1.8's just-standardized `MasterConfig` shape. |
-| **Embeddings** | Postgres `pgvector` extension (not currently installed — confirmed via `package.json`/migration search, no vector extension in use anywhere today) + an `embedding vector(n)` column on whichever table needs semantic search (e.g. a future "search past enquiries by meaning" feature) | Not needed for the core VIE pipeline (which is intent-classification, not semantic search) — only needed if/when a future feature genuinely requires nearest-neighbor search rather than exact/fuzzy match. Don't add `pgvector` speculatively. |
-| **Knowledge base** | Not a new table — per § 3.3, "knowledge" is the existing master-data tables plus the new `synonyms` column. If a genuinely unstructured knowledge need emerges later (policy documents, SOPs the AI should reference), that's a document-store problem (`file_objects` + OCR/embeddings), not an ERP-entity problem — worth deferring until a real use case exists. |
-| **Prompt storage** | `app_settings` (existing generic KV store, already used for `vie.execution_policies`) for versioned prompt *configuration* (thresholds, feature flags); the prompt *text* itself stays in versioned source (`prompts.ts`), matching how `VIE_SYSTEM_PROMPT` already works — prompts are code, not data, so they get code review and rollback via git, not a database row. |
-| **AI memory** (user-level preferences the Copilot recalls, e.g. "this user always means the Ahmedabad warehouse when they say 'the site'") | A `copilot_user_context` table, keyed by `user_id`, small structured key/value shape | Genuinely new capability, not in VIE today. Should be scoped carefully (§ 9's PII discussion) — "memory" that silently changes AI behavior needs to be visible and editable by the user, not a black box. |
-| **Versioning** | `vie_actions.plan` already stores a point-in-time snapshot; extending `VieExecutionPlan` to a versioned/multi-step shape is VIE Phase 2's own Milestone 7 (already scoped in `docs/VIE-Phase2-Architecture-Review.md`) | This blueprint doesn't re-scope M7 — it inherits it. |
-| **Non-interactive actor attribution** | `vie_actions.created_by` needs to become nullable, paired with a new `actor_type` (`interactive` \| `system`) column, or a dedicated system-user row | This is VIE Phase 2's Milestone 6, called out repeatedly above (§ 3.4, § 9.5) as the load-bearing prerequisite for WhatsApp/email capture. Flagged again here because it is, structurally, a database-impact item as much as an auth one. |
-| **Capture source tracking** | `sourceModality`/`sourceRef` (§ 3.4's `CaptureEvent`) needs to land somewhere durable — likely new columns on `vie_actions` (`source_modality`, `source_file_id`, `source_conversation_ref`) rather than a separate table, keeping one row per action as the single audit unit | Additive columns, nullable, defaulting to `'text'`/`null` for all existing rows. |
+| Future need                                                                                                                                | Likely shape                                                                                                                                                                                                                                                                                                                                                              | Notes                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Conversation history**                                                                                                                   | New `copilot_conversations` / `copilot_messages` tables, or an extension of `vie_actions` with a `conversation_id` grouping column                                                                                                                                                                                                                                        | Today, Copilot chat history is client-side React state only (confirmed by code search — nothing persisted). Needed for cross-device continuity and for § 4.5's "activity feed" view.                                                            |
+| **Domain vocabulary / synonyms**                                                                                                           | `synonyms text[]` column on existing master tables (§ 3.3), not a new table                                                                                                                                                                                                                                                                                               | Additive, nullable, defaults to `{}` — no breaking change to Sprint 1.8's just-standardized `MasterConfig` shape.                                                                                                                               |
+| **Embeddings**                                                                                                                             | Postgres `pgvector` extension (not currently installed — confirmed via `package.json`/migration search, no vector extension in use anywhere today) + an `embedding vector(n)` column on whichever table needs semantic search (e.g. a future "search past enquiries by meaning" feature)                                                                                  | Not needed for the core VIE pipeline (which is intent-classification, not semantic search) — only needed if/when a future feature genuinely requires nearest-neighbor search rather than exact/fuzzy match. Don't add `pgvector` speculatively. |
+| **Knowledge base**                                                                                                                         | Not a new table — per § 3.3, "knowledge" is the existing master-data tables plus the new `synonyms` column. If a genuinely unstructured knowledge need emerges later (policy documents, SOPs the AI should reference), that's a document-store problem (`file_objects` + OCR/embeddings), not an ERP-entity problem — worth deferring until a real use case exists.       |
+| **Prompt storage**                                                                                                                         | `app_settings` (existing generic KV store, already used for `vie.execution_policies`) for versioned prompt _configuration_ (thresholds, feature flags); the prompt _text_ itself stays in versioned source (`prompts.ts`), matching how `VIE_SYSTEM_PROMPT` already works — prompts are code, not data, so they get code review and rollback via git, not a database row. |
+| **AI memory** (user-level preferences the Copilot recalls, e.g. "this user always means the Ahmedabad warehouse when they say 'the site'") | A `copilot_user_context` table, keyed by `user_id`, small structured key/value shape                                                                                                                                                                                                                                                                                      | Genuinely new capability, not in VIE today. Should be scoped carefully (§ 9's PII discussion) — "memory" that silently changes AI behavior needs to be visible and editable by the user, not a black box.                                       |
+| **Versioning**                                                                                                                             | `vie_actions.plan` already stores a point-in-time snapshot; extending `VieExecutionPlan` to a versioned/multi-step shape is VIE Phase 2's own Milestone 7 (already scoped in `docs/VIE-Phase2-Architecture-Review.md`)                                                                                                                                                    | This blueprint doesn't re-scope M7 — it inherits it.                                                                                                                                                                                            |
+| **Non-interactive actor attribution**                                                                                                      | `vie_actions.created_by` needs to become nullable, paired with a new `actor_type` (`interactive` \| `system`) column, or a dedicated system-user row                                                                                                                                                                                                                      | This is VIE Phase 2's Milestone 6, called out repeatedly above (§ 3.4, § 9.5) as the load-bearing prerequisite for WhatsApp/email capture. Flagged again here because it is, structurally, a database-impact item as much as an auth one.       |
+| **Capture source tracking**                                                                                                                | `sourceModality`/`sourceRef` (§ 3.4's `CaptureEvent`) needs to land somewhere durable — likely new columns on `vie_actions` (`source_modality`, `source_file_id`, `source_conversation_ref`) rather than a separate table, keeping one row per action as the single audit unit                                                                                            | Additive columns, nullable, defaulting to `'text'`/`null` for all existing rows.                                                                                                                                                                |
 
 ---
 
@@ -630,14 +630,14 @@ config-as-data, extend existing tables when additive).
 Keep the existing discipline: **one server-side chokepoint per capability class**, matching
 `gateway.server.ts`'s existing role for chat/completion calls.
 
-| Capability | Chokepoint (existing or proposed) | Provider strategy |
-|---|---|---|
-| LLM chat/completion (intent, entities, chat) | `gateway.server.ts` (exists) | Already abstracted — no change needed |
-| Speech-to-text | proposed `speech-gateway.server.ts` | One provider behind one interface; swappable |
-| OCR / document extraction | proposed `ocr-gateway.server.ts`, or reuse the vision-capable LLM already behind `gateway.server.ts` if quality suffices — decide at implementation time, not here | Avoid a third dependency if the existing gateway's model can do it well enough |
-| Vision / image classification | `recognizeStoneImage` already exists as an isolated helper in `copilot.functions.ts` — fold into the Capture Layer rather than leaving it a one-off | Reuses existing gateway |
-| Inbound WhatsApp | New webhook endpoint (`routes/api/public/hooks/whatsapp-inbound.ts`, matching the existing `dispatch-queue.ts` webhook convention) | Requires the non-interactive execution context (§ 9.5) before it can safely call into VIE |
-| Inbound Email | New inbound-email receiver (provider-dependent — e.g. a forwarding/parsing webhook) | Same prerequisite as WhatsApp |
+| Capability                                   | Chokepoint (existing or proposed)                                                                                                                                  | Provider strategy                                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| LLM chat/completion (intent, entities, chat) | `gateway.server.ts` (exists)                                                                                                                                       | Already abstracted — no change needed                                                     |
+| Speech-to-text                               | proposed `speech-gateway.server.ts`                                                                                                                                | One provider behind one interface; swappable                                              |
+| OCR / document extraction                    | proposed `ocr-gateway.server.ts`, or reuse the vision-capable LLM already behind `gateway.server.ts` if quality suffices — decide at implementation time, not here | Avoid a third dependency if the existing gateway's model can do it well enough            |
+| Vision / image classification                | `recognizeStoneImage` already exists as an isolated helper in `copilot.functions.ts` — fold into the Capture Layer rather than leaving it a one-off                | Reuses existing gateway                                                                   |
+| Inbound WhatsApp                             | New webhook endpoint (`routes/api/public/hooks/whatsapp-inbound.ts`, matching the existing `dispatch-queue.ts` webhook convention)                                 | Requires the non-interactive execution context (§ 9.5) before it can safely call into VIE |
+| Inbound Email                                | New inbound-email receiver (provider-dependent — e.g. a forwarding/parsing webhook)                                                                                | Same prerequisite as WhatsApp                                                             |
 
 ### 8.2 Internal API surface
 
@@ -651,7 +651,7 @@ not new understand/plan/execute endpoints per channel.
 ### 8.3 Future external API strategy
 
 If Stone Tech OS (or a future Vedora product) ever needs to expose Copilot capability to an
-external system (e.g. a customer-facing WhatsApp bot that's a *different* surface from the
+external system (e.g. a customer-facing WhatsApp bot that's a _different_ surface from the
 internal staff Copilot), that's a distinct, lower-trust API surface — separate rate limiting,
 separate auth model (not staff credentials), and almost certainly a much more constrained intent
 set (read-only status lookups, not "create a quotation"). Flagged in § 13 as a future opportunity,
@@ -665,7 +665,7 @@ explicitly not designed in this document since no such requirement exists yet.
 
 VIE already has one, and it's sound: `requireSupabaseAuth` + `requireStaff` gate every entry
 point; `vie_actions` RLS is staff-read/write (matching every other business table's staff-access
-model, deliberately *not* scoped to `created_by = auth.uid()` since a manager reviewing a
+model, deliberately _not_ scoped to `created_by = auth.uid()` since a manager reviewing a
 teammate's pending AI action is a legitimate use case — this was a deliberate ADR-0001 decision,
 not an oversight). **Extend, don't replace**: per-intent write-role gating should mirror what
 Sprint 1.8 just built for master pages (`writeRoles`, § "Master Config Review" in
@@ -696,7 +696,7 @@ capability increases) and **content arriving from outside the user's own typed i
 WhatsApp message, an OCR'd document, an email body — which is a materially higher-risk surface
 because it's attacker-reachable without needing the attacker to be a logged-in staff member at
 all. Recommendation: content from inbound channels should never be treated as instructions to the
-system prompt, only as *data to be classified* — the existing architecture already enforces this
+system prompt, only as _data to be classified_ — the existing architecture already enforces this
 distinction structurally (the LLM call in `understand()` only ever produces a classification, never
 executes anything itself), which is a real, non-trivial defense already built in; it should be
 explicitly preserved as a design invariant as more input sources are added, not weakened for
@@ -741,7 +741,7 @@ actual call, never a placeholder.
 The existing pipeline's latency floor is one `chatJson` round-trip (already true today for
 `log_enquiry`/`note_followup`). Each new modality adds its own latency stage in front of that
 floor, not on top of it multiplicatively: STT (voice), OCR (documents), a vision call (images) —
-each is a separate, sequential stage the Capture Layer runs *before* handing text to `understand()`,
+each is a separate, sequential stage the Capture Layer runs _before_ handing text to `understand()`,
 so total latency is additive per stage, and each stage should be able to show its own progress
 (the streaming-transcription UX in § 3.2 exists specifically to make the STT stage not feel like
 dead air).
@@ -796,18 +796,18 @@ This roadmap **starts from and extends** VIE Phase 2's own roadmap
 roadmap's M1 (hardening/CI), M6 (non-interactive execution context), and M7 (multi-step plans) are
 hard prerequisites for several releases below and are referenced by name, not re-specified.
 
-| Release | Scope | Dependencies | Complexity | Est. effort | Business value | Risk |
-|---|---|---|---|---|---|---|
-| **R1 — AI Foundation: wire the UI to VIE** | Connect the existing Copilot panel to `understandAndStage`/`confirmVieAction`/`completeDraftAction`; build the confirmation-card UI (§4.3), the missing-info follow-up UI (§4.2), and undo for the two existing `AUTO`-eligible intents (§4.4). No new intents, no new modalities. | VIE Phase 2 M1 (hardening) should land first — building a UI on top of an unhardened critical safety function (`resolveEffectiveMode`) is exactly the wrong order. | Medium — mostly UI work against an already-solid backend | 2–3 weeks | High — this alone makes the entire existing VIE investment usable for the first time | Low — additive UI, no core pipeline changes |
-| **R2 — Entity Extraction & Domain Grounding** | Build the vocabulary index + fuzzy-match service (§3.3), the `synonyms` schema addition, per-entity confidence (§5.2), structured blockers-with-candidates (this is VIE Phase 2's own M5, adopted here) | R1 (needs the confirmation-card UI to actually show the richer entities) | Medium-High | 3–4 weeks | High — this is what makes extraction accurate enough for the brief's mixed-language example to actually work well | Medium — fuzzy-matching quality needs real iteration against real historical enquiry text, not just design |
-| **R3 — create_quotation, done properly** | Finish line-item/price extraction for `create_quotation` (currently partial per VIE's own code comments) — the VIE Phase 2 review's own recommended next production action | R2 (line items need entity/domain grounding to resolve products/rates) | Medium-High | 3 weeks | High — quotations are a core, frequent workflow | Medium — richer entity shape than any existing intent; needs the multi-item Zod schema work the Phase 2 review already scoped |
-| **R4 — Multilingual UI** | `i18next` integration, English/Hindi/Gujarati catalogs for UI/validation/PDFs/notifications/settings (§3.1) | None on the AI work — can run in parallel with R1–R3 | Medium (mechanical but large surface area — every screen) | 4–6 weeks (largely translation-content-bound, not engineering-bound) | High — genuinely opens the product to non-English-first staff, independent of AI progress | Low technically; translation quality/completeness is the real risk, not the architecture |
-| **R5 — Voice ERP** | STT gateway (§3.2), streaming transcription UI, correction flow reusing the R1 confirmation UX | R1 (needs the composer/confirmation UI to attach to); benefits from R4 (voice + non-English UI together is the strongest version of the vision) | Medium-High | 4 weeks | High — the most differentiating modality in the brief | Medium — provider selection, real-world noise conditions need field testing beyond design |
-| **R6 — Non-Interactive Execution Context** | VIE Phase 2's M6, adopted verbatim as its own release given how many later releases depend on it | VIE Phase 2 M1, M2, M3 | High — real RLS/security-model change, deserves dedicated review per the Phase 2 audit's own words | 2–3 weeks, but should not be rushed | Foundational — unlocks R7 and R8; zero standalone user-facing value on its own | High if rushed, low if given the dedicated review the Phase 2 audit recommends |
-| **R7 — Document & Image Capture** | OCR normalizer, image/vision capture wired into the Capture Layer (folding in the existing standalone `recognizeStoneImage` helper), `source_file_id` audit linkage (§7) | R2 (extracted text still needs domain grounding), R6 only if documents can arrive without a live session (e.g. a shared inbox) — if capture stays "staff uploads a file while logged in," R6 is not required for this release specifically | Medium | 3–4 weeks | Medium-High — real operational pain point (vendor invoices, delivery challans) | Medium — OCR quality on real-world scanned documents needs field validation |
-| **R8 — WhatsApp/Email Inbound Capture** | Inbound webhook receivers (§8.1), conservative default policy for non-interactive capture (§9.5), wired into R6's execution context | R6 (hard prerequisite — this is precisely the capability R6 exists to unlock), R2, R7 | High | 4–5 weeks | High — closes the loop on genuinely how this business already communicates (WhatsApp-first) | High — first genuinely unattended capability; needs the conservative-default-policy discipline (§9.5) enforced, not assumed |
-| **R9 — Knowledge Engine** | Multi-step execution plans (VIE Phase 2's M7, adopted here), richer domain knowledge (synonym coverage expansion, usage-driven vocabulary tuning) | R2, R3, R6 | High | Multi-sprint, sequenced after the above | Medium-High — enables cross-module orchestration the long-term vision calls for | Medium — M7's own partial-failure/sequencing design work needs to happen deliberately, per the Phase 2 review |
-| **R10 — Predictive ERP** | Proactive suggestions (e.g. "these 3 follow-ups look overdue, draft notes for all?" — VIE Phase 2's M8 "first autonomous trigger" is the seed of this), analytics-driven prompts | R6, R9, and real usage data from R1–R8 to know what's actually worth predicting | High | Not estimated — genuinely depends on what R1–R8 reveal about real usage patterns | Speculative until R1–R8 data exists | Medium — the main risk here is designing predictions nobody wants; sequence this last on purpose |
+| Release                                       | Scope                                                                                                                                                                                                                                                                              | Dependencies                                                                                                                                                                                                                               | Complexity                                                                                         | Est. effort                                                                      | Business value                                                                                                    | Risk                                                                                                                          |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **R1 — AI Foundation: wire the UI to VIE**    | Connect the existing Copilot panel to `understandAndStage`/`confirmVieAction`/`completeDraftAction`; build the confirmation-card UI (§4.3), the missing-info follow-up UI (§4.2), and undo for the two existing `AUTO`-eligible intents (§4.4). No new intents, no new modalities. | VIE Phase 2 M1 (hardening) should land first — building a UI on top of an unhardened critical safety function (`resolveEffectiveMode`) is exactly the wrong order.                                                                         | Medium — mostly UI work against an already-solid backend                                           | 2–3 weeks                                                                        | High — this alone makes the entire existing VIE investment usable for the first time                              | Low — additive UI, no core pipeline changes                                                                                   |
+| **R2 — Entity Extraction & Domain Grounding** | Build the vocabulary index + fuzzy-match service (§3.3), the `synonyms` schema addition, per-entity confidence (§5.2), structured blockers-with-candidates (this is VIE Phase 2's own M5, adopted here)                                                                            | R1 (needs the confirmation-card UI to actually show the richer entities)                                                                                                                                                                   | Medium-High                                                                                        | 3–4 weeks                                                                        | High — this is what makes extraction accurate enough for the brief's mixed-language example to actually work well | Medium — fuzzy-matching quality needs real iteration against real historical enquiry text, not just design                    |
+| **R3 — create_quotation, done properly**      | Finish line-item/price extraction for `create_quotation` (currently partial per VIE's own code comments) — the VIE Phase 2 review's own recommended next production action                                                                                                         | R2 (line items need entity/domain grounding to resolve products/rates)                                                                                                                                                                     | Medium-High                                                                                        | 3 weeks                                                                          | High — quotations are a core, frequent workflow                                                                   | Medium — richer entity shape than any existing intent; needs the multi-item Zod schema work the Phase 2 review already scoped |
+| **R4 — Multilingual UI**                      | `i18next` integration, English/Hindi/Gujarati catalogs for UI/validation/PDFs/notifications/settings (§3.1)                                                                                                                                                                        | None on the AI work — can run in parallel with R1–R3                                                                                                                                                                                       | Medium (mechanical but large surface area — every screen)                                          | 4–6 weeks (largely translation-content-bound, not engineering-bound)             | High — genuinely opens the product to non-English-first staff, independent of AI progress                         | Low technically; translation quality/completeness is the real risk, not the architecture                                      |
+| **R5 — Voice ERP**                            | STT gateway (§3.2), streaming transcription UI, correction flow reusing the R1 confirmation UX                                                                                                                                                                                     | R1 (needs the composer/confirmation UI to attach to); benefits from R4 (voice + non-English UI together is the strongest version of the vision)                                                                                            | Medium-High                                                                                        | 4 weeks                                                                          | High — the most differentiating modality in the brief                                                             | Medium — provider selection, real-world noise conditions need field testing beyond design                                     |
+| **R6 — Non-Interactive Execution Context**    | VIE Phase 2's M6, adopted verbatim as its own release given how many later releases depend on it                                                                                                                                                                                   | VIE Phase 2 M1, M2, M3                                                                                                                                                                                                                     | High — real RLS/security-model change, deserves dedicated review per the Phase 2 audit's own words | 2–3 weeks, but should not be rushed                                              | Foundational — unlocks R7 and R8; zero standalone user-facing value on its own                                    | High if rushed, low if given the dedicated review the Phase 2 audit recommends                                                |
+| **R7 — Document & Image Capture**             | OCR normalizer, image/vision capture wired into the Capture Layer (folding in the existing standalone `recognizeStoneImage` helper), `source_file_id` audit linkage (§7)                                                                                                           | R2 (extracted text still needs domain grounding), R6 only if documents can arrive without a live session (e.g. a shared inbox) — if capture stays "staff uploads a file while logged in," R6 is not required for this release specifically | Medium                                                                                             | 3–4 weeks                                                                        | Medium-High — real operational pain point (vendor invoices, delivery challans)                                    | Medium — OCR quality on real-world scanned documents needs field validation                                                   |
+| **R8 — WhatsApp/Email Inbound Capture**       | Inbound webhook receivers (§8.1), conservative default policy for non-interactive capture (§9.5), wired into R6's execution context                                                                                                                                                | R6 (hard prerequisite — this is precisely the capability R6 exists to unlock), R2, R7                                                                                                                                                      | High                                                                                               | 4–5 weeks                                                                        | High — closes the loop on genuinely how this business already communicates (WhatsApp-first)                       | High — first genuinely unattended capability; needs the conservative-default-policy discipline (§9.5) enforced, not assumed   |
+| **R9 — Knowledge Engine**                     | Multi-step execution plans (VIE Phase 2's M7, adopted here), richer domain knowledge (synonym coverage expansion, usage-driven vocabulary tuning)                                                                                                                                  | R2, R3, R6                                                                                                                                                                                                                                 | High                                                                                               | Multi-sprint, sequenced after the above                                          | Medium-High — enables cross-module orchestration the long-term vision calls for                                   | Medium — M7's own partial-failure/sequencing design work needs to happen deliberately, per the Phase 2 review                 |
+| **R10 — Predictive ERP**                      | Proactive suggestions (e.g. "these 3 follow-ups look overdue, draft notes for all?" — VIE Phase 2's M8 "first autonomous trigger" is the seed of this), analytics-driven prompts                                                                                                   | R6, R9, and real usage data from R1–R8 to know what's actually worth predicting                                                                                                                                                            | High                                                                                               | Not estimated — genuinely depends on what R1–R8 reveal about real usage patterns | Speculative until R1–R8 data exists                                                                               | Medium — the main risk here is designing predictions nobody wants; sequence this last on purpose                              |
 
 **Sequencing note**: R1 and R4 (multilingual UI) have no dependency on each other and can run in
 parallel tracks. R2/R3 should not start before R1 ships, since there'd be no UI to validate richer
@@ -819,17 +819,17 @@ warning, it should not be built "as a side effect of the first feature that need
 
 ## 12. Risks (cross-cutting register)
 
-| Risk | Where it's detailed | Severity |
-|---|---|---|
-| Building inbound (WhatsApp/email) capture before the non-interactive execution context exists | §3.4, §9.5, R8 | High if attempted out of sequence |
-| Rushing R6's RLS/security-model change under feature-delivery pressure | §11 (R6), quoting VIE Phase 2's own warning | High if rushed |
-| Conflating "AI understands multiple languages" with "the UI is translated" and under-scoping either | §3.1 | Medium — mostly a planning/estimation risk, not a technical one |
-| Fuzzy-matching/domain-grounding quality not validated against real historical data before shipping | §11 (R2) | Medium |
-| OCR/STT quality assumptions not validated against real field conditions (noisy stone yards, handwritten/low-quality scanned documents) | §3.2, §11 (R5, R7) | Medium |
-| "AI memory" (§7) becoming an opaque, unreviewable accumulation of inferred user preferences | §9.2 | Medium — mitigated by making it visible/editable by design, not an afterthought |
-| Undo semantics promised more broadly than they're actually safe to implement | §4.4 | Medium |
-| Cost creep from defaulting new, more complex intents to a stronger/more expensive model without an explicit per-intent decision | §10.5 | Low-Medium, easy to prevent by policy |
-| Cloudflare Workers' request-CPU-time ceiling hit by a slow modality (long OCR/transcription) run inline in a `createServerFn` | §3.2, §10.4, inherited from the VIE Phase 2 review | Medium — needs background-processing discipline (§10.4) applied consistently as new modalities land |
+| Risk                                                                                                                                                                                                           | Where it's detailed                                                      | Severity                                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Building inbound (WhatsApp/email) capture before the non-interactive execution context exists                                                                                                                  | §3.4, §9.5, R8                                                           | High if attempted out of sequence                                                                    |
+| Rushing R6's RLS/security-model change under feature-delivery pressure                                                                                                                                         | §11 (R6), quoting VIE Phase 2's own warning                              | High if rushed                                                                                       |
+| Conflating "AI understands multiple languages" with "the UI is translated" and under-scoping either                                                                                                            | §3.1                                                                     | Medium — mostly a planning/estimation risk, not a technical one                                      |
+| Fuzzy-matching/domain-grounding quality not validated against real historical data before shipping                                                                                                             | §11 (R2)                                                                 | Medium                                                                                               |
+| OCR/STT quality assumptions not validated against real field conditions (noisy stone yards, handwritten/low-quality scanned documents)                                                                         | §3.2, §11 (R5, R7)                                                       | Medium                                                                                               |
+| "AI memory" (§7) becoming an opaque, unreviewable accumulation of inferred user preferences                                                                                                                    | §9.2                                                                     | Medium — mitigated by making it visible/editable by design, not an afterthought                      |
+| Undo semantics promised more broadly than they're actually safe to implement                                                                                                                                   | §4.4                                                                     | Medium                                                                                               |
+| Cost creep from defaulting new, more complex intents to a stronger/more expensive model without an explicit per-intent decision                                                                                | §10.5                                                                    | Low-Medium, easy to prevent by policy                                                                |
+| Cloudflare Workers' request-CPU-time ceiling hit by a slow modality (long OCR/transcription) run inline in a `createServerFn`                                                                                  | §3.2, §10.4, inherited from the VIE Phase 2 review                       | Medium — needs background-processing discipline (§10.4) applied consistently as new modalities land  |
 | VIE Phase 1's own still-open Critical/High debt items (no CI-enforced tests, no automated single-write-path guard for new Action Registry handlers) not being closed before Copilot v2 adds many more handlers | Inherited directly from `docs/VIE-Phase2-Architecture-Review.md` §7, §11 | High — the more handlers this blueprint's roadmap adds, the more this un-enforced discipline matters |
 
 ---

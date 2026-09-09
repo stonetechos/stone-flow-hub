@@ -11,7 +11,7 @@
 The four platforms are **not synchronized**, and the split is structural, not cosmetic:
 
 - **GitHub has two independent lineages.** `origin/main` and `origin/feature/vie-quotation` share a common ancestor (`24174f0`, "Added form primitives") but have not been merged in either direction since. `origin/main` has received 31 commits from other actors (Lovable's auto-sync bot, at least one other Claude/Cowork session, evidence of a Cursor IDE session) that never touched `feature/vie-quotation`. This sandbox's branch has 8 commits `main` doesn't have.
-- **This sandbox's branch was previously pushed successfully.** `origin/feature/vie-quotation` exists on GitHub at `e50995d` ("Apply ESLint auto-fixes", 2026-07-21) and is a clean ancestor of local HEAD (`f8665e1`) — local is a fast-forward 14 commits ahead, no divergence on that branch specifically. The earlier working assumption in this engagement — "no push access, ever" — is only true *for this current sandbox session*; a prior session/sandbox did push. (This session still cannot push: no GitHub credentials are configured here.)
+- **This sandbox's branch was previously pushed successfully.** `origin/feature/vie-quotation` exists on GitHub at `e50995d` ("Apply ESLint auto-fixes", 2026-07-21) and is a clean ancestor of local HEAD (`f8665e1`) — local is a fast-forward 14 commits ahead, no divergence on that branch specifically. The earlier working assumption in this engagement — "no push access, ever" — is only true _for this current sandbox session_; a prior session/sandbox did push. (This session still cannot push: no GitHub credentials are configured here.)
 - **Lovable is the actual deploy trigger**, and it syncs to `origin/main`, not to `feature/vie-quotation`. That means everything built in this multi-sprint engagement (Sprint 1.7 through AI-1.6) is **not live** on `erp.stonetech.in` unless someone merges `feature/vie-quotation` into `main` and republishes.
 - **The Supabase "missing environment variable" production bug is a Lovable Cloud secrets-configuration issue**, not a code defect — confirmed again in this audit (see §2).
 - **Database migrations diverge in both directions** between the two branches, against a single shared Supabase project. Which migrations are actually applied to the live database cannot be determined from this sandbox.
@@ -24,12 +24,12 @@ The four platforms are **not synchronized**, and the split is structural, not co
 
 ### 1.1 Current state (this sandbox)
 
-| | |
-|---|---|
-| Current branch | `feature/vie-quotation` |
-| HEAD | `f8665e1` — "Sprint AI-1.6: generic Entity Resolution Framework" (2026-07-22 19:56 UTC) |
-| Working tree | clean |
-| Remote | `origin` → `https://github.com/stonetechos/stone-flow-hub.git` (single remote, fetch = push URL) |
+|                |                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| Current branch | `feature/vie-quotation`                                                                          |
+| HEAD           | `f8665e1` — "Sprint AI-1.6: generic Entity Resolution Framework" (2026-07-22 19:56 UTC)          |
+| Working tree   | clean                                                                                            |
+| Remote         | `origin` → `https://github.com/stonetechos/stone-flow-hub.git` (single remote, fetch = push URL) |
 
 ### 1.2 Branches
 
@@ -78,10 +78,10 @@ The 8 branch-only commits are exactly the last 8 of the 14 listed in §1.3 (`784
 
 **Two concrete merge-conflict risks**, files edited on both lineages since the fork point:
 
-| File | Touched on `origin/main` by | Touched on `feature/vie-quotation` by |
-|---|---|---|
-| `src/components/layout/AppShell.tsx` | `c0b82d6` (STOS rebrand) | Sprint 1.8 branding work |
-| `src/components/copilot/Copilot.tsx` | `44c7587` (AI foundation integration) | Sprint AI-1 (Copilot↔VIE wiring) |
+| File                                 | Touched on `origin/main` by           | Touched on `feature/vie-quotation` by |
+| ------------------------------------ | ------------------------------------- | ------------------------------------- |
+| `src/components/layout/AppShell.tsx` | `c0b82d6` (STOS rebrand)              | Sprint 1.8 branding work              |
+| `src/components/copilot/Copilot.tsx` | `44c7587` (AI foundation integration) | Sprint AI-1 (Copilot↔VIE wiring)      |
 
 `44c7587` on `origin/main` also touches `src/routes/_authenticated/admin/users.tsx` — the same admin page the user reported the Supabase env-var error on. Whether that commit is related to the root cause is not established here; it's flagged as worth a diff review before any merge, not concluded.
 
@@ -115,11 +115,11 @@ No evidence of multi-project confusion. Both git lineages point at the same live
 
 Confirmed by reading all three Supabase integration files (all marked "This file is automatically generated. Do not edit it directly." — Lovable-owned):
 
-| Var | Read by | Where | Baked in at |
-|---|---|---|---|
-| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | `client.ts` (browser client) | `import.meta.env` | Vite build time |
-| `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` | `client.ts` (SSR fallback), `auth-middleware.ts` (`requireSupabaseAuth`) | `process.env` | Request time, in the deployed Worker |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | `client.server.ts` (`supabaseAdmin`) | `process.env` | Request time, in the deployed Worker |
+| Var                                                   | Read by                                                                  | Where             | Baked in at                          |
+| ----------------------------------------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------ |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | `client.ts` (browser client)                                             | `import.meta.env` | Vite build time                      |
+| `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`           | `client.ts` (SSR fallback), `auth-middleware.ts` (`requireSupabaseAuth`) | `process.env`     | Request time, in the deployed Worker |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`          | `client.server.ts` (`supabaseAdmin`)                                     | `process.env`     | Request time, in the deployed Worker |
 
 `src/lib/env/config-status.ts` is the single source of truth for "is Supabase configured" (Sprint 1.7, Part 1) — computed once, cached, consumed by the root route's configuration gate and by `client.ts`'s defense-in-depth throw. It checks the same var pair the browser client does, **not** the server-only pair `auth-middleware.ts` checks.
 

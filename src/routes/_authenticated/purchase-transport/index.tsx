@@ -53,12 +53,15 @@ export const Route = createFileRoute("/_authenticated/purchase-transport/")({
 });
 
 function PurchaseTransportPage() {
+  return <PurchaseTransportView showHeader={true} />;
+}
+
+export function PurchaseTransportView({ showHeader = false }: { showHeader?: boolean } = {}) {
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
-  const search = Route.useSearch();
-  const status = search.status ?? "";
-  const [q, setQ] = useState(search.q ?? "");
+  const [status, setStatus] = useState("");
+  const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<PurchaseTransportListItem | null>(null);
   const [page, setPage] = useState(1);
@@ -95,13 +98,6 @@ function PurchaseTransportPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const setStatus = (v: string) =>
-    nav({ to: "/purchase-transport", search: { status: v || undefined, q: dq || undefined } });
-  const commitSearch = (v: string) => {
-    setQ(v);
-    nav({ to: "/purchase-transport", search: { status: status || undefined, q: v || undefined } });
-  };
-
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
   const totalBalanceDue = rows
@@ -109,16 +105,18 @@ function PurchaseTransportPage() {
     .reduce((s, r) => s + Number(r.balance_due ?? 0), 0);
 
   return (
-    <div>
-      <PageHeader
-        title="Purchase Transportation"
-        subtitle="Inbound shipments from vendors — carting agency, driver, freight and amount paid, keyed to a purchase order."
-      />
+    <div className="space-y-4">
+      {showHeader && (
+        <PageHeader
+          title="Purchase Transportation"
+          subtitle="Inbound shipments from vendors — carting agency, driver, freight and amount paid, keyed to a purchase order."
+        />
+      )}
 
       <DataToolbar
         count={rows.length}
         search={q}
-        onSearchChange={commitSearch}
+        onSearchChange={setQ}
         searchPlaceholder="Search transport #, vehicle, LR #…"
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>

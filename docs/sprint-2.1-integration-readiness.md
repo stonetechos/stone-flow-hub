@@ -14,24 +14,24 @@ Branch head: `f3756c0`. 16 commits, 99 files changed, +12,140/-492 lines.
 
 Oldest to newest (the order they'd replay in a merge):
 
-| Commit | Date | Subject |
-|---|---|---|
-| `7845a4b` | 2026-07-21 | Bring create_quotation Milestones 2-6 into version control |
-| `547dc02` | 2026-07-22 | Sprint 1.7: Authentication Foundation, Super Admin architecture, platform branding |
-| `db54d28` | 2026-07-22 | Sprint 1.7.1: Platform Hardening & Architecture Corrections |
-| `169a159` | 2026-07-22 | Sprint 1.8: MasterListPage standardization |
-| `dfc45b1` | 2026-07-22 | Add AI Copilot v2 (Vedora Intelligence Platform) architecture blueprint |
-| `b45ecc7` | 2026-07-22 | Sprint AI-1: wire Copilot chat panel to VIE |
-| `6843dab` | 2026-07-22 | Sprint AI-1.5: structured Planner blockers & UI rendering |
-| `f8665e1` | 2026-07-22 | Sprint AI-1.6: generic Entity Resolution Framework |
-| `e267c03` | 2026-07-23 | Sprint 1.8: platform stabilization audit (Git/Supabase/Cloudflare/Lovable) |
-| `fbf5058` | 2026-07-23 | Sprint 1.9 Milestone 1: give the Users & Roles server-config error a real UI |
-| `c1911e4` | 2026-07-23 | Sprint 1.9 Milestone 2: verify Supabase server integration (no defects found) |
-| `15a620f` | 2026-07-23 | Sprint 1.9 Milestone 3: fix workforce-daily cron auth, align Cloudflare config |
-| `6d91071` | 2026-07-23 | Sprint 1.9 Milestone 4: stop CI's known lint debt from masking real regressions |
+| Commit    | Date       | Subject                                                                                      |
+| --------- | ---------- | -------------------------------------------------------------------------------------------- |
+| `7845a4b` | 2026-07-21 | Bring create_quotation Milestones 2-6 into version control                                   |
+| `547dc02` | 2026-07-22 | Sprint 1.7: Authentication Foundation, Super Admin architecture, platform branding           |
+| `db54d28` | 2026-07-22 | Sprint 1.7.1: Platform Hardening & Architecture Corrections                                  |
+| `169a159` | 2026-07-22 | Sprint 1.8: MasterListPage standardization                                                   |
+| `dfc45b1` | 2026-07-22 | Add AI Copilot v2 (Vedora Intelligence Platform) architecture blueprint                      |
+| `b45ecc7` | 2026-07-22 | Sprint AI-1: wire Copilot chat panel to VIE                                                  |
+| `6843dab` | 2026-07-22 | Sprint AI-1.5: structured Planner blockers & UI rendering                                    |
+| `f8665e1` | 2026-07-22 | Sprint AI-1.6: generic Entity Resolution Framework                                           |
+| `e267c03` | 2026-07-23 | Sprint 1.8: platform stabilization audit (Git/Supabase/Cloudflare/Lovable)                   |
+| `fbf5058` | 2026-07-23 | Sprint 1.9 Milestone 1: give the Users & Roles server-config error a real UI                 |
+| `c1911e4` | 2026-07-23 | Sprint 1.9 Milestone 2: verify Supabase server integration (no defects found)                |
+| `15a620f` | 2026-07-23 | Sprint 1.9 Milestone 3: fix workforce-daily cron auth, align Cloudflare config               |
+| `6d91071` | 2026-07-23 | Sprint 1.9 Milestone 4: stop CI's known lint debt from masking real regressions              |
 | `8c0349c` | 2026-07-23 | Sprint 1.9 Milestone 5: corrected branch-conflict analysis, merge deliberately not attempted |
-| `868c37d` | 2026-07-23 | Sprint 1.9 Milestone 6: source-of-truth checklist + final sprint report |
-| `f3756c0` | 2026-07-23 | Sprint 2.0: trace Users & Roles production failure, add env-status diagnostic |
+| `868c37d` | 2026-07-23 | Sprint 1.9 Milestone 6: source-of-truth checklist + final sprint report                      |
+| `f3756c0` | 2026-07-23 | Sprint 2.0: trace Users & Roles production failure, add env-status diagnostic                |
 
 None of these 16 are pushed to `origin/feature/vie-quotation` (which sits
 at `e50995d`, 22 commits behind — see Sprint 1.8 audit) or present on
@@ -132,19 +132,19 @@ production failure without dashboard access.
 
 99 files total (+12,140/-492).
 
-| Category | Count | Notable paths |
-|---|---:|---|
-| VIE / AI planner & actions (`src/lib/vie/**`) | 33 | `planner/entityResolution.ts` (new framework), `planner/index.ts`, `types.ts`, `prompts.ts`, `understand.ts`, `vie.functions.ts`, `actions/createQuotation.ts`, plus matching `*.test.ts` for each |
-| Docs (`docs/**`) | 15 | All new — completion reports and architecture docs for every sprint in this list |
-| Routes (`src/routes/**`) | 12 | `admin/users.tsx`, `__root.tsx`, `route.tsx`, `settings.tsx`, `auth.tsx`, `installation-teams/index.tsx`, `message-templates.tsx`, `products/index.tsx`, 4 `api/public/**` hook/diagnostic routes, `routeTree.gen.ts` (generated) |
-| Components (`src/components/**`) | 10 | `AppShell.tsx`, `Copilot.tsx`, `MasterListPage.tsx`, `VieActionCard.tsx` (new), `ConfigurationRequiredScreen.tsx` (new), `ServerConfigurationErrorState.tsx` (new), 4 dialog components with minor edits |
-| Migrations (`supabase/migrations/**`) | 6 | All new — Sprint 1.7/1.7.1's Super Admin role, bootstrap, protection trigger, `has_role` inheritance, audit columns |
-| Admin/permissions (`src/lib/admin/**`) | 6 | `permissions.ts` (new), `server-auth.ts` (new), `users.functions.ts`, `users.ts`, plus tests |
-| Platform/env (`src/lib/platform/**`, `src/lib/env/**`) | 4 | `application.ts`, `platform.ts` (new — branding constants), `config-status.ts` (new), plus test |
-| Other `src/lib/**` (masters, notifications, lists, audit, errors) | 9 | `masters/config.ts`, `notifications/dispatch.functions.ts`, `lists/paginate.ts` (new), `audit/user-agent.ts` (new), `errors.ts` |
-| Integrations (`src/integrations/supabase/**`) | 2 | `client.ts`, `types.ts` |
-| Hooks (`src/hooks/**`) | 2 | `use-list-page-state.ts` (new), `use-roles.tsx` |
-| Config/tooling | 4 | `.github/workflows/ci.yml`, `wrangler.jsonc`, `vite.config.ts`, `routeTree.gen.ts` |
+| Category                                                          | Count | Notable paths                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| VIE / AI planner & actions (`src/lib/vie/**`)                     |    33 | `planner/entityResolution.ts` (new framework), `planner/index.ts`, `types.ts`, `prompts.ts`, `understand.ts`, `vie.functions.ts`, `actions/createQuotation.ts`, plus matching `*.test.ts` for each                                |
+| Docs (`docs/**`)                                                  |    15 | All new — completion reports and architecture docs for every sprint in this list                                                                                                                                                  |
+| Routes (`src/routes/**`)                                          |    12 | `admin/users.tsx`, `__root.tsx`, `route.tsx`, `settings.tsx`, `auth.tsx`, `installation-teams/index.tsx`, `message-templates.tsx`, `products/index.tsx`, 4 `api/public/**` hook/diagnostic routes, `routeTree.gen.ts` (generated) |
+| Components (`src/components/**`)                                  |    10 | `AppShell.tsx`, `Copilot.tsx`, `MasterListPage.tsx`, `VieActionCard.tsx` (new), `ConfigurationRequiredScreen.tsx` (new), `ServerConfigurationErrorState.tsx` (new), 4 dialog components with minor edits                          |
+| Migrations (`supabase/migrations/**`)                             |     6 | All new — Sprint 1.7/1.7.1's Super Admin role, bootstrap, protection trigger, `has_role` inheritance, audit columns                                                                                                               |
+| Admin/permissions (`src/lib/admin/**`)                            |     6 | `permissions.ts` (new), `server-auth.ts` (new), `users.functions.ts`, `users.ts`, plus tests                                                                                                                                      |
+| Platform/env (`src/lib/platform/**`, `src/lib/env/**`)            |     4 | `application.ts`, `platform.ts` (new — branding constants), `config-status.ts` (new), plus test                                                                                                                                   |
+| Other `src/lib/**` (masters, notifications, lists, audit, errors) |     9 | `masters/config.ts`, `notifications/dispatch.functions.ts`, `lists/paginate.ts` (new), `audit/user-agent.ts` (new), `errors.ts`                                                                                                   |
+| Integrations (`src/integrations/supabase/**`)                     |     2 | `client.ts`, `types.ts`                                                                                                                                                                                                           |
+| Hooks (`src/hooks/**`)                                            |     2 | `use-list-page-state.ts` (new), `use-roles.tsx`                                                                                                                                                                                   |
+| Config/tooling                                                    |     4 | `.github/workflows/ci.yml`, `wrangler.jsonc`, `vite.config.ts`, `routeTree.gen.ts`                                                                                                                                                |
 
 ---
 
@@ -170,7 +170,7 @@ the 6 directly (`AppShell.tsx`, `Copilot.tsx`, `__root.tsx`, `auth.tsx`)
 and confirmed: in every one, the branding-text lines and this branch's own
 functional changes sit on **different, non-overlapping lines** — a real
 3-way merge is very likely to apply both cleanly at the text level. What
-isn't trivial is the *content* decision: is the product now called "STOS"
+isn't trivial is the _content_ decision: is the product now called "STOS"
 (as already shipped in 4+ places on `main`), or does the
 `APPLICATION_NAME` constant need updating to match? That has to be decided
 once, explicitly, and applied consistently — not resolved file-by-file
@@ -217,7 +217,7 @@ this branch inserts a new branch right at the `error ?` line). Adjacent-line
 edits in the same conditional chain are exactly the shape of conflict a
 line-based 3-way merge handles worst — expect a real, textual merge
 conflict here, not a clean auto-resolve, and the reconciliation needs to
-keep both: `origin/main`'s `QuickForm`/`LoadingBlock` refactor *and* this
+keep both: `origin/main`'s `QuickForm`/`LoadingBlock` refactor _and_ this
 branch's `ServerConfigurationErrorState` branch. `installation-teams/index.tsx`
 and `message-templates.tsx` were not sampled in this pass (both show
 substantial changes on both sides per Sprint 1.9 M5's diff-size check —
@@ -269,7 +269,7 @@ level, the deployment level, or the database level:
 squash) so the entire integration is one revertible unit:
 `git revert -m 1 <merge-commit-sha>` cleanly undoes it if a regression
 surfaces post-merge, without needing to reconstruct which of the 16
-original commits caused it. Do this *before* attempting any conflict
+original commits caused it. Do this _before_ attempting any conflict
 resolution by rebase — a rebase rewrites the 16 commits' hashes, which
 would invalidate every commit reference in this document and in the three
 prior sprint reports that cite them by hash.
@@ -288,10 +288,10 @@ code-level rollback does not strand the database in a broken state; the
 new `super_admin` role and its supporting columns/trigger simply go
 unused if the code that exercises them is rolled back. No down-migration
 is needed or provided, consistent with existing project policy. The one
-thing to verify *before* merging (not after) is whether `origin/main`'s
+thing to verify _before_ merging (not after) is whether `origin/main`'s
 one migration (found in the Sprint 1.8 audit, an RLS policy fix this
 branch doesn't have) needs to run before or after this branch's 6 —
-migration *order* matters even when none of them are individually
+migration _order_ matters even when none of them are individually
 destructive.
 
 ---
@@ -356,7 +356,7 @@ typecheck/typecheck:tests/eslint/build all green on every commit in this
 branch (each Sprint 1.9/2.0 milestone commit includes its own
 verification run). Post-merge, re-run the full suite against the merged
 tree — neither lineage's tests were written with the other's changes in
-mind, so a clean merge does not guarantee the *combination* is correct;
+mind, so a clean merge does not guarantee the _combination_ is correct;
 see the verification checklist below.
 
 ## Rollback
@@ -375,7 +375,7 @@ new migrations are additive-only (no down-migration needed).
 - [ ] `npm run typecheck` — clean
 - [ ] `npm run typecheck:tests` — clean
 - [ ] `npm run lint` — compare against the pre-merge 7,409-issue baseline
-      (`docs/CI_LINT_DEBT.md`); confirm no *new* issues beyond whatever
+      (`docs/CI_LINT_DEBT.md`); confirm no _new_ issues beyond whatever
       `origin/main`'s own pre-existing debt contributes
 - [ ] `bun test` — full suite passes; specifically re-check every test
       file in Group B (§4) since those are the files most likely to have

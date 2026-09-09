@@ -11,7 +11,7 @@ This sprint follows the approved VIE Foundation sprint (Event Bus, Business Inte
 **File:** `src/lib/vie/planner/fromBusinessIntent.ts` (+ `fromBusinessIntent.test.ts`, 29 tests)
 **Also modified:** `src/lib/vie/types.ts` — additively, new types only, nothing existing changed.
 
-`planFromBusinessIntent(intent: BusinessIntent, context?): Promise<BusinessIntentExecutionPlan>` is a second, parallel entry point alongside the existing `planAction()` (`planner/index.ts`), which turns a single, LLM-classified `VieUnderstanding` into one `VieExecutionPlan`. This new Planner is different in the way the brief asked for: it accepts the newer, source-independent `BusinessIntent` (foundation sprint) — a multi-section bag of whatever a capture actually contained, with no upstream classification telling it which single action to plan. Deciding *which* of VIE's four known actions (`create_customer`, `log_enquiry`, `create_quotation`, `note_followup`) a `BusinessIntent` implies — and how many, since it can genuinely imply more than one at once — is this Planner's own new responsibility, on top of everything `planAction()` already does (validate, resolve, detect missing information).
+`planFromBusinessIntent(intent: BusinessIntent, context?): Promise<BusinessIntentExecutionPlan>` is a second, parallel entry point alongside the existing `planAction()` (`planner/index.ts`), which turns a single, LLM-classified `VieUnderstanding` into one `VieExecutionPlan`. This new Planner is different in the way the brief asked for: it accepts the newer, source-independent `BusinessIntent` (foundation sprint) — a multi-section bag of whatever a capture actually contained, with no upstream classification telling it which single action to plan. Deciding _which_ of VIE's four known actions (`create_customer`, `log_enquiry`, `create_quotation`, `note_followup`) a `BusinessIntent` implies — and how many, since it can genuinely imply more than one at once — is this Planner's own new responsibility, on top of everything `planAction()` already does (validate, resolve, detect missing information).
 
 ### The five brief requirements, and where each lives
 
@@ -42,11 +42,11 @@ interface BusinessIntentExecutionPlan {
 }
 
 interface PlannedAction {
-  id: string;                    // "action-1", "action-2", ... — deterministic build order
+  id: string; // "action-1", "action-2", ... — deterministic build order
   operation: VieIntent;
-  params: Record<string, unknown>;  // SAME key names as VieExecutionPlan.params for this operation
+  params: Record<string, unknown>; // SAME key names as VieExecutionPlan.params for this operation
   blockers: PlannerBlocker[];
-  dependsOn: string[];           // derived from `dependencies`, never independently set
+  dependsOn: string[]; // derived from `dependencies`, never independently set
   confidence: number;
 }
 ```

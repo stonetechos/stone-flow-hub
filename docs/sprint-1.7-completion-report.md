@@ -9,6 +9,7 @@ the way.
 ## 1. Files changed
 
 **New:**
+
 - `supabase/migrations/20260722150001_add_super_admin_role.sql`
 - `supabase/migrations/20260722150002_add_auth_audit_actions.sql`
 - `supabase/migrations/20260722150003_super_admin_protection.sql`
@@ -20,6 +21,7 @@ the way.
 - `docs/sprint-1.7-completion-report.md` (this file)
 
 **Modified:**
+
 - `src/integrations/supabase/client.ts` — routes the missing-env-var check
   through `config-status.ts` instead of recomputing it.
 - `src/routes/__root.tsx` — renders `ConfigurationRequiredScreen` in place
@@ -58,7 +60,7 @@ rather than silently bundling it in.
 ## 2. Architecture summary
 
 - **Role hierarchy**: the sprint's six-tier `SUPER_ADMIN → ADMIN → MANAGER
-  → EMPLOYEE → VENDOR → CUSTOMER` is treated as a *conceptual* mapping onto
+→ EMPLOYEE → VENDOR → CUSTOMER` is treated as a _conceptual_ mapping onto
   the existing `admin | sales_manager | sales | purchase` roles, per "no
   redesign." Exactly one new enum value, `super_admin`, was added — nothing
   else was renamed or restructured. See `docs/authentication.md` for the
@@ -66,7 +68,7 @@ rather than silently bundling it in.
 - **Enforcement is two-layered.** A pure, I/O-free TypeScript module
   (`src/lib/admin/permissions.ts`) is the single source of truth for the
   decision matrix, called from both server functions and client UI. The
-  *authoritative* enforcement is a set of Postgres `BEFORE` triggers
+  _authoritative_ enforcement is a set of Postgres `BEFORE` triggers
   (migration `20260722150003`) that fire regardless of which client issued
   the write — including the service-role client, which bypasses RLS but not
   triggers.

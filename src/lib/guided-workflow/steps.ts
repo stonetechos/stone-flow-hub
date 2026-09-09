@@ -82,23 +82,58 @@ export function nextGuidedStep(
   switch (entity) {
     case "customer":
       return {
-        title: "Create an enquiry for this customer",
+        title: "Draft a quotation for this customer",
         description:
-          "You've captured the customer. The next step is to log their requirement as an enquiry so the sales pipeline can begin.",
-        ctaLabel: "Continue — New enquiry",
-        href: "/enquiries",
-        search: clean({ new: "1", customer: entityId }),
-        skipKey: `gwa:customer:${entityId}:enquiry`,
+          "You've captured the customer. The next step is to draft a quotation with pricing and stone specs.",
+        ctaLabel: "Continue — New quotation",
+        href: "/quotes/new",
+        search: clean({ customer: entityId }),
+        skipKey: `gwa:customer:${entityId}:quote`,
+      };
+    case "quote":
+      return {
+        title: "Raise an invoice",
+        description:
+          "When the customer accepts the quotation, convert it directly into an invoice to confirm the sale and billing.",
+        ctaLabel: "Continue — New invoice",
+        href: "/invoices/new",
+        search: clean({
+          quote: entityId,
+          customer: ctx.customer_id,
+        }),
+        skipKey: `gwa:quote:${entityId}:invoice`,
+      };
+    case "invoice":
+      return {
+        title: "Create a dispatch",
+        description:
+          "Invoice is issued. Create a dispatch to coordinate packing, vehicle allocation, and delivery paperwork.",
+        ctaLabel: "Continue — New dispatch",
+        href: "/dispatch/new",
+        search: clean({
+          customer: ctx.customer_id,
+        }),
+        skipKey: `gwa:invoice:${entityId}:dispatch`,
+      };
+    case "dispatch":
+      return {
+        title: "Record customer payment",
+        description:
+          "Material is dispatched. Record the customer payment or receipt to update the sales ledger.",
+        ctaLabel: "Continue — New payment",
+        href: "/receipts/new",
+        search: clean({ customer: ctx.customer_id, invoice: ctx.invoice_id }),
+        skipKey: `gwa:dispatch:${entityId}:receipt`,
       };
     case "enquiry":
       return {
-        title: "Create a project for this enquiry",
+        title: "Create a quotation for this enquiry",
         description:
-          "Once an enquiry is qualified, opening a project groups all downstream quotations, orders and installations under one roof.",
-        ctaLabel: "Continue — New project",
-        href: "/projects",
-        search: clean({ new: "1", customer: ctx.customer_id, enquiry: entityId }),
-        skipKey: `gwa:enquiry:${entityId}:project`,
+          "Enquiry requirement is captured. Preparing a quotation is the next step to share pricing.",
+        ctaLabel: "Continue — New quotation",
+        href: "/quotes/new",
+        search: clean({ customer: ctx.customer_id, enquiry: entityId }),
+        skipKey: `gwa:enquiry:${entityId}:quote`,
       };
     case "project":
       return {
@@ -110,84 +145,43 @@ export function nextGuidedStep(
         search: clean({ project: entityId, customer: ctx.customer_id }),
         skipKey: `gwa:project:${entityId}:quote`,
       };
-    case "quote":
-      return {
-        title: "Convert to a sales order",
-        description:
-          "When the customer accepts the quotation, converting it to a sales order locks scope and unlocks procurement + production.",
-        ctaLabel: "Continue — New sales order",
-        href: "/sales-orders/new",
-        search: clean({
-          quote: entityId,
-          project: ctx.project_id,
-          customer: ctx.customer_id,
-        }),
-        skipKey: `gwa:quote:${entityId}:sales_order`,
-      };
     case "sales_order":
       return {
-        title: "Begin procurement",
+        title: "Raise an invoice",
         description:
-          "Sales order is confirmed. Raise a purchase order or float an RFQ so material and services are lined up on time.",
-        ctaLabel: "Continue — New purchase order",
-        href: "/purchase-orders/new",
-        search: clean({ project: ctx.project_id, vendor: ctx.vendor_id }),
-        skipKey: `gwa:sales_order:${entityId}:purchase_order`,
+          "Sales order is confirmed. Raise an invoice to initiate billing and payment collection.",
+        ctaLabel: "Continue — New invoice",
+        href: "/invoices/new",
+        search: clean({
+          customer: ctx.customer_id,
+        }),
+        skipKey: `gwa:sales_order:${entityId}:invoice`,
       };
     case "purchase_order":
       return {
-        title: "Create a dispatch",
+        title: "Raise purchase invoice",
         description:
-          "Purchase order is in place. When pieces are ready, creating a dispatch coordinates packing, vehicle and delivery paperwork.",
-        ctaLabel: "Continue — New dispatch",
-        href: "/dispatch/new",
-        search: clean({ so: ctx.sales_order_id, project: ctx.project_id }),
-        skipKey: `gwa:purchase_order:${entityId}:dispatch`,
-      };
-    case "dispatch":
-      return {
-        title: "Schedule the installation",
-        description:
-          "Dispatch is on its way. If this order needs on-site fitting, plan the site visit, team and materials next.",
-        ctaLabel: "Continue — Installations",
-        href: "/installations",
-        search: clean({ so: ctx.sales_order_id, project: ctx.project_id }),
-        skipKey: `gwa:dispatch:${entityId}:installation`,
+          "Purchase order is placed. Record the incoming vendor invoice against this order.",
+        ctaLabel: "Continue — Purchase invoice",
+        href: "/purchase-invoices/new",
+        search: clean({ vendor: ctx.vendor_id }),
+        skipKey: `gwa:purchase_order:${entityId}:purchase_invoice`,
       };
     case "installation":
       return {
         title: "Raise an invoice",
         description:
-          "Installation is under way. Raising the invoice — advance, proforma or final — starts the receivables workflow.",
+          "Installation is under way. Raising the invoice starts the receivables workflow.",
         ctaLabel: "Continue — New invoice",
         href: "/invoices/new",
         search: clean({
           quote: ctx.quote_id,
-          so: ctx.sales_order_id,
           customer: ctx.customer_id,
         }),
         skipKey: `gwa:installation:${entityId}:invoice`,
       };
-    case "invoice":
-      return {
-        title: "Record a receipt",
-        description:
-          "Once payment arrives, recording a receipt updates the customer ledger and closes the outstanding automatically.",
-        ctaLabel: "Continue — New receipt",
-        href: "/receipts/new",
-        search: clean({ invoice: entityId, customer: ctx.customer_id }),
-        skipKey: `gwa:invoice:${entityId}:receipt`,
-      };
     case "receipt":
-      return {
-        title: "Follow up with the customer",
-        description:
-          "Payment received. Schedule a follow-up, request a Google review or capture a referral to keep the relationship warm.",
-        ctaLabel: "Continue — Follow-ups",
-        href: "/followups",
-        search: clean({ customer: ctx.customer_id }),
-        skipKey: `gwa:receipt:${entityId}:followup`,
-      };
+      return null;
     default:
       return null;
   }

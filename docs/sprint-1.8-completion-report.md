@@ -38,6 +38,7 @@ Full detail in `docs/master-list-standardization.md` § 2. Short version:
 ## 2. Files changed
 
 **New:**
+
 - `src/lib/lists/paginate.ts` + `paginate.test.ts` — extracted, tested
   pagination math (Part 3).
 - `src/hooks/use-list-page-state.ts` — extracted shared search/debounce/
@@ -46,6 +47,7 @@ Full detail in `docs/master-list-standardization.md` § 2. Short version:
 - `docs/sprint-1.8-completion-report.md` (this file, Part 9).
 
 **Modified:**
+
 - `src/components/masters/MasterListPage.tsx` — adopted
   `useListPageState` (Part 3); added `writeRoles`/`canWrite` derived from
   the new `MasterConfig.writeRoles` extension point (Part 4); added
@@ -104,7 +106,7 @@ sprint. Full detail and rationale in
   uses it yet — purely additive.
 - **`MasterConfig.writeRoles?`** — optional array of roles allowed to
   write on a given master; defaults to `DEFAULT_MASTER_WRITE_ROLES =
-  ["admin", "sales_manager"]` when omitted, which every one of the 13
+["admin", "sales_manager"]` when omitted, which every one of the 13
   existing configs does, so no existing master's behavior changed. Lets a
   future stricter-RLS master (e.g. admin-only) express that in its config
   instead of `MasterListPage` needing a per-master branch.

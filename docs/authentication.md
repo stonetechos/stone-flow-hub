@@ -7,8 +7,8 @@ reset flows, Super Admin protection, and audit events introduced in Sprint
 Branding") and Sprint 1.7.1 ("Platform Hardening & Architecture
 Corrections"). It supersedes nothing in `docs/role-permission-matrix.md`,
 which still documents the day-to-day per-module (leads, projects, vendors,
-etc.) permission model; this document is specifically about *user account
-management* — who can create, edit, lock, or delete another user's account
+etc.) permission model; this document is specifically about _user account
+management_ — who can create, edit, lock, or delete another user's account
 — plus, as of Sprint 1.7.1, the platform-vs-tenant architecture that
 account management sits inside.
 
@@ -30,8 +30,8 @@ kept separate everywhere in the codebase:
   `APPLICATION_CATEGORY`, `APPLICATION_VERSION`, plus Part 5's build
   metadata — see below). Stone Tech's own business data (customers,
   quotations, projects, etc.) is everything else in this codebase and is
-  unaffected by this split — this is specifically about *which module owns
-  which branding/identity string*, not a data-model change.
+  unaffected by this split — this is specifically about _which module owns
+  which branding/identity string_, not a data-model change.
 
 These two modules replace `src/lib/branding/platform.ts` (Sprint 1.7),
 which mixed both concepts into one file. `src/lib/branding/index.ts`
@@ -40,7 +40,7 @@ quotations and POs) is unrelated to either and is untouched.
 
 **Future SaaS architecture note**: nothing in `public.app_role`,
 `user_roles`, or the platform/application modules currently encodes
-*which* tenant company a given deployment serves, because Stone Tech OS is
+_which_ tenant company a given deployment serves, because Stone Tech OS is
 presently a single-tenant deployment (one Postgres schema, one company).
 The Platform Owner vs Tenant Company naming split done in this sprint is
 intentionally the groundwork for a future multi-tenant version — where a
@@ -78,7 +78,7 @@ two distinctions actually change behavior. See
 
 ### Permission hierarchy — admin inheritance (Sprint 1.7.1, Part 6)
 
-Sprint 1.7 added the `super_admin` role but granted it *only* that role —
+Sprint 1.7 added the `super_admin` role but granted it _only_ that role —
 never also `admin` — which meant every place in the codebase that checked
 specifically for `admin` (roughly twenty RLS policies, plus several
 application call sites that had grown their own ad hoc `user_roles`
@@ -133,13 +133,13 @@ an exact match.
 
 ## Permission matrix
 
-| Action                          | Target: Super Admin                          | Target: anyone else       |
-|----------------------------------|-----------------------------------------------|----------------------------|
-| Delete account                   | Denied for everyone, including itself         | Allowed for Admin/Super Admin (blocked for self, and for the last active Admin) |
-| Deactivate account                | Denied for everyone, including itself         | Allowed for Admin/Super Admin (blocked for self, and for the last active Admin) |
-| Change / revoke role              | Denied for everyone, including itself         | Allowed for Admin/Super Admin |
-| Reset password                    | Allowed only for itself                       | Allowed for Admin/Super Admin |
-| Edit own profile fields (name, avatar, etc.) | Allowed for itself only          | Normal profile rules apply |
+| Action                                       | Target: Super Admin                   | Target: anyone else                                                             |
+| -------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------- |
+| Delete account                               | Denied for everyone, including itself | Allowed for Admin/Super Admin (blocked for self, and for the last active Admin) |
+| Deactivate account                           | Denied for everyone, including itself | Allowed for Admin/Super Admin (blocked for self, and for the last active Admin) |
+| Change / revoke role                         | Denied for everyone, including itself | Allowed for Admin/Super Admin                                                   |
+| Reset password                               | Allowed only for itself               | Allowed for Admin/Super Admin                                                   |
+| Edit own profile fields (name, avatar, etc.) | Allowed for itself only               | Normal profile rules apply                                                      |
 
 Every denied case in this table surfaces the exact copy **"This account is
 protected."**, per the sprint's Part 3 requirement. The matrix is
@@ -228,7 +228,7 @@ server function, `resetUserPassword`
 1. Confirms the caller is an Admin or Super Admin.
 2. Runs the target through `canManageTargetUser(..., "reset_password")` —
    denied (with "This account is protected.") unless the target isn't the
-   Super Admin, or the caller *is* the Super Admin acting on themselves.
+   Super Admin, or the caller _is_ the Super Admin acting on themselves.
 3. Calls `supabaseAdmin.auth.admin.updateUserById(userId, { password })`.
 4. Sets `force_password_change = true` on the target's profile.
 5. Records a `password_reset` audit event.
@@ -309,15 +309,15 @@ table (`entity_type = 'user'`, `entity_id` = the affected user's id).
   `role_changed`, `user_activated`, `user_deactivated`, `user_deleted`,
   `super_admin_delete_attempted`, `super_admin_role_change_attempted`.
 
-| Event | Where it's recorded |
-|---|---|
-| `user_created` | `inviteUser` and `createUserWithPassword` server functions |
-| `password_reset` | `resetUserPassword` server function |
-| `role_changed` | Automatic — DB trigger `log_role_change` on every `user_roles` insert/delete (covers every grant/revoke path, not just the admin UI) |
-| `user_activated` / `user_deactivated` | `setUserActive` server function |
-| `user_deleted` | `deleteAuthUser` server function |
-| `super_admin_delete_attempted` | `deleteAuthUser`, when the permission check denies a delete against the Super Admin |
-| `super_admin_role_change_attempted` | `assignRoleGuarded` / `revokeRoleGuarded` (`src/lib/admin/users.ts`), when the permission check denies a role grant/revoke against the Super Admin |
+| Event                                 | Where it's recorded                                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user_created`                        | `inviteUser` and `createUserWithPassword` server functions                                                                                         |
+| `password_reset`                      | `resetUserPassword` server function                                                                                                                |
+| `role_changed`                        | Automatic — DB trigger `log_role_change` on every `user_roles` insert/delete (covers every grant/revoke path, not just the admin UI)               |
+| `user_activated` / `user_deactivated` | `setUserActive` server function                                                                                                                    |
+| `user_deleted`                        | `deleteAuthUser` server function                                                                                                                   |
+| `super_admin_delete_attempted`        | `deleteAuthUser`, when the permission check denies a delete against the Super Admin                                                                |
+| `super_admin_role_change_attempted`   | `assignRoleGuarded` / `revokeRoleGuarded` (`src/lib/admin/users.ts`), when the permission check denies a role grant/revoke against the Super Admin |
 
 Denied attempts to reset the Super Admin's password or deactivate the
 Super Admin are blocked (with "This account is protected.") but do **not**

@@ -37,6 +37,9 @@ import { deleteDispatch, listDispatches, type DispatchListItem } from "@/lib/dis
 import { DISPATCH_STATUSES } from "@/lib/dispatch/schema";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Navigation } from "lucide-react";
+import { LocalCartingView } from "../local-carting";
 
 export const Route = createFileRoute("/_authenticated/dispatch/")({
   ssr: false,
@@ -99,136 +102,161 @@ function DispatchPage() {
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
-        title="Delivery challans"
-        subtitle="Outbound deliveries against sales orders. Each challan is an independent record of what left the yard."
+        title="Dispatches & Carting"
+        subtitle="Outbound deliveries, vehicle tracking, delivery paperwork, and local carting agencies."
       />
 
-      <DataToolbar
-        count={rows.length}
-        search={q}
-        onSearchChange={commitSearch}
-        searchPlaceholder="Search dispatch, carrier, tracking…"
-        primaryFilter={
-          <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-44 text-sm">
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              {DISPATCH_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">
-                  {s.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        }
-        columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
-        density={<DensityMenu density={prefs.density} onChange={setDensity} />}
-        action={
-          roles.canWrite ? (
-            <Button size="sm" className="h-8" onClick={() => nav({ to: "/dispatch/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New delivery challan
-            </Button>
-          ) : null
-        }
-      />
+      <Tabs defaultValue="dispatches" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 md:w-auto md:inline-flex">
+          <TabsTrigger value="dispatches" className="gap-2">
+            <Truck className="h-4 w-4" />
+            <span>Dispatches</span>
+          </TabsTrigger>
+          <TabsTrigger value="carting" className="gap-2">
+            <Navigation className="h-4 w-4" />
+            <span>Local Carting</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {query.isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
-      ) : query.error ? (
-        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={<Truck className="h-6 w-6" />}
-          title="No dispatches yet"
-          message="Create a dispatch to plan an outbound shipment."
-          action={
-            roles.canWrite ? (
-              <Button onClick={() => nav({ to: "/dispatch/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> New dispatch
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <DataTableShell
-          density={prefs.density}
-          footer={
-            <TablePagination
-              page={page}
-              pageSize={pageSize}
-              total={rows.length}
-              onPageChange={setPage}
-              onPageSizeChange={(s) => {
-                setPageSize(s);
-                setPage(1);
-              }}
+        <TabsContent value="dispatches" className="space-y-4">
+          <DataToolbar
+            count={rows.length}
+            search={q}
+            onSearchChange={commitSearch}
+            searchPlaceholder="Search dispatch, carrier, tracking…"
+            primaryFilter={
+              <Select
+                value={status || "all"}
+                onValueChange={(v) => setStatus(v === "all" ? "" : v)}
+              >
+                <SelectTrigger className="h-8 w-44 text-sm">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  {DISPATCH_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s} className="capitalize">
+                      {s.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            }
+            columns={
+              <ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />
+            }
+            density={<DensityMenu density={prefs.density} onChange={setDensity} />}
+            action={
+              roles.canWrite ? (
+                <Button size="sm" className="h-8" onClick={() => nav({ to: "/dispatch/new" })}>
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New delivery challan
+                </Button>
+              ) : null
+            }
+          />
+
+          {query.isLoading ? (
+            <SkeletonTable rows={6} columns={6} />
+          ) : query.error ? (
+            <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={<Truck className="h-6 w-6" />}
+              title="No dispatches yet"
+              message="Create a dispatch to plan an outbound shipment."
+              action={
+                roles.canWrite ? (
+                  <Button onClick={() => nav({ to: "/dispatch/new" })}>
+                    <Plus className="mr-2 h-4 w-4" /> New dispatch
+                  </Button>
+                ) : undefined
+              }
             />
-          }
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
-                {!isHidden("so") && <TableHead>Sales Order</TableHead>}
-                {!isHidden("carrier") && <TableHead>Carrier</TableHead>}
-                {!isHidden("tracking") && <TableHead>Tracking</TableHead>}
-                {!isHidden("date") && <TableHead>Date</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
-                  {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/dispatch/$id"
-                        params={{ id: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.dispatch_no}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("so") && (
-                    <TableCell className="font-mono text-xs">
-                      {r.sales_order?.so_no ?? "—"}
-                    </TableCell>
-                  )}
-                  {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
-                  {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
-                  {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
-                  {!isHidden("status") && (
-                    <TableCell>
-                      <StatusPill status={r.status} />
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
-                      onDelete={() => setToDelete(r)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </DataTableShell>
-      )}
+          ) : (
+            <DataTableShell
+              density={prefs.density}
+              footer={
+                <TablePagination
+                  page={page}
+                  pageSize={pageSize}
+                  total={rows.length}
+                  onPageChange={setPage}
+                  onPageSizeChange={(s) => {
+                    setPageSize(s);
+                    setPage(1);
+                  }}
+                />
+              }
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {!isHidden("no") && <TableHead>No.</TableHead>}
+                    {!isHidden("so") && <TableHead>Sales Order</TableHead>}
+                    {!isHidden("carrier") && <TableHead>Carrier</TableHead>}
+                    {!isHidden("tracking") && <TableHead>Tracking</TableHead>}
+                    {!isHidden("date") && <TableHead>Date</TableHead>}
+                    {!isHidden("status") && <TableHead>Status</TableHead>}
+                    <TableHead className="w-12" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map((r) => (
+                    <TableRow key={r.id}>
+                      {!isHidden("no") && (
+                        <TableCell className="font-mono text-xs">
+                          <Link
+                            to="/dispatch/$id"
+                            params={{ id: r.id }}
+                            className="text-primary hover:underline"
+                          >
+                            {r.dispatch_no}
+                          </Link>
+                        </TableCell>
+                      )}
+                      {!isHidden("so") && (
+                        <TableCell className="font-mono text-xs">
+                          {r.sales_order?.so_no ?? "—"}
+                        </TableCell>
+                      )}
+                      {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
+                      {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
+                      {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
+                      {!isHidden("status") && (
+                        <TableCell>
+                          <StatusPill status={r.status} />
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <RowActions
+                          onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
+                          onDelete={() => setToDelete(r)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DataTableShell>
+          )}
 
-      <ConfirmDialog
-        open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete dispatch?"
-        description={toDelete ? `${toDelete.dispatch_no} will be removed.` : ""}
-        busy={del.isPending}
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
-      />
+          <ConfirmDialog
+            open={!!toDelete}
+            onOpenChange={(o) => !o && setToDelete(null)}
+            title="Delete dispatch?"
+            description={toDelete ? `${toDelete.dispatch_no} will be removed.` : ""}
+            busy={del.isPending}
+            tone="danger"
+            onConfirm={() => toDelete && del.mutate(toDelete.id)}
+          />
+        </TabsContent>
+
+        <TabsContent value="carting">
+          <LocalCartingView />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

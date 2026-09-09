@@ -24,8 +24,8 @@ A central, in-process event dispatcher. Every ERP module — today, specifically
 interface VieEvent<TPayload = unknown> {
   type: string;
   payload: TPayload;
-  occurredAt: string;   // ISO timestamp
-  source: string;       // "workflowEngine.executeAction", etc.
+  occurredAt: string; // ISO timestamp
+  source: string; // "workflowEngine.executeAction", etc.
   correlationId?: string;
 }
 ```
@@ -110,7 +110,7 @@ resolveUniversalEntitiesByType(type, query, limit?): Promise<UniversalEntityResu
 resolveUniversalEntities(query, { types?, limitPerType? }): Promise<UniversalEntityResult[]>
 ```
 
-**Why this doesn't become a third, competing search system:** the codebase already had two — `globalSearch()` (21 groups, raw inline Supabase queries, powers the Cmd/Ctrl+K palette) and `nl-search/resolve.ts` (16 types, calls existing module `list*()` functions, powers Copilot's Ask mode, has real business filtering). This resolver sits *underneath* both, as the plain "does anything match this text" layer neither needs to re-declare:
+**Why this doesn't become a third, competing search system:** the codebase already had two — `globalSearch()` (21 groups, raw inline Supabase queries, powers the Cmd/Ctrl+K palette) and `nl-search/resolve.ts` (16 types, calls existing module `list*()` functions, powers Copilot's Ask mode, has real business filtering). This resolver sits _underneath_ both, as the plain "does anything match this text" layer neither needs to re-declare:
 
 - 9 of the 12 types (customer, project, enquiry, quote, invoice, sales_order, rfq, vendor, task) call the exact same `list*()` functions `nl-search/resolve.ts` already called — no new query logic, just a shared typed shape around an existing authoritative function.
 - The 3 polymorphic types (activity, comment, document) — previously inline-duplicated inside `globalSearch()` — were extracted into shared, exported functions in `search/api.ts` (`fetchActivityHits`, `fetchCommentHits`, `fetchDocumentHits`); `globalSearch()` itself now calls these same functions instead of its old inline code, and this resolver adapts their output.
@@ -161,7 +161,7 @@ Map-based registry (`registry.ts`, same pattern as `actions/registry.ts`), with 
 
 The prior sprint's audit had confirmed one remaining gap: the dashboard's Quick-create floating pill bar (`fixed inset-x-0 bottom-4`) had zero safe-area handling — on an Android 15 edge-to-edge device (forced by `android/variables.gradle`'s `targetSdkVersion`/`compileSdkVersion` 36) it would sit flush against the gesture/3-button nav bar with no clearance.
 
-Fixed by making the existing `bottom-4` (1rem) offset the *floor*, with the safe-area inset added on top — the same additive pattern `Copilot.tsx`'s floating action button already uses (`bottom-[calc(1.25rem+env(safe-area-inset-bottom))]`):
+Fixed by making the existing `bottom-4` (1rem) offset the _floor_, with the safe-area inset added on top — the same additive pattern `Copilot.tsx`'s floating action button already uses (`bottom-[calc(1.25rem+env(safe-area-inset-bottom))]`):
 
 ```diff
 - className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-3"
@@ -170,25 +170,26 @@ Fixed by making the existing `bottom-4` (1rem) offset the *floor*, with the safe
 
 **Full re-audit this sprint** (not just the one known gap) — every `fixed`/`sticky` element in `src/components` and `src/routes` was enumerated and checked:
 
-| Element | Status |
-|---|---|
-| Dashboard Quick-create bar | **Fixed this sprint** (above) |
-| `Copilot.tsx` floating trigger | Already correct (prior sprint) |
-| `FormLayout.tsx` sticky action bar | Already correct — full `env()` on bottom + left/right (prior sprint) |
-| `dialog.tsx` / `sheet.tsx` / `alert-dialog.tsx` / `drawer.tsx` overlays & content | Already correct — each has its own inset-aware padding (prior sprint) |
-| `sidebar.tsx` fixed desktop rail (`md:flex`, hidden below `md`) | No safe-area needed — desktop-only, not rendered on mobile viewports |
-| `table.tsx` / `rfqs/$rfqId.tsx` `sticky top-0` table headers | No safe-area needed — sticky relative to their own scroll container, not the physical device edge; the page's outer header above them already reserves `safe-area-inset-top` |
-| `vendor/rfqs/index.tsx` sticky filter bar | Same as above — nested sticky, not edge-anchored |
-| `vendor/rfqs/$rfqId.tsx` sticky bottom action row | Already correct — has `pb-[max(0.75rem,env(safe-area-inset-bottom))]` |
-| `ViewportDebugPanel.tsx` fixed debug overlay | Out of scope by design — `import.meta.env.DEV`-gated, never ships to production |
+| Element                                                                           | Status                                                                                                                                                                       |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard Quick-create bar                                                        | **Fixed this sprint** (above)                                                                                                                                                |
+| `Copilot.tsx` floating trigger                                                    | Already correct (prior sprint)                                                                                                                                               |
+| `FormLayout.tsx` sticky action bar                                                | Already correct — full `env()` on bottom + left/right (prior sprint)                                                                                                         |
+| `dialog.tsx` / `sheet.tsx` / `alert-dialog.tsx` / `drawer.tsx` overlays & content | Already correct — each has its own inset-aware padding (prior sprint)                                                                                                        |
+| `sidebar.tsx` fixed desktop rail (`md:flex`, hidden below `md`)                   | No safe-area needed — desktop-only, not rendered on mobile viewports                                                                                                         |
+| `table.tsx` / `rfqs/$rfqId.tsx` `sticky top-0` table headers                      | No safe-area needed — sticky relative to their own scroll container, not the physical device edge; the page's outer header above them already reserves `safe-area-inset-top` |
+| `vendor/rfqs/index.tsx` sticky filter bar                                         | Same as above — nested sticky, not edge-anchored                                                                                                                             |
+| `vendor/rfqs/$rfqId.tsx` sticky bottom action row                                 | Already correct — has `pb-[max(0.75rem,env(safe-area-inset-bottom))]`                                                                                                        |
+| `ViewportDebugPanel.tsx` fixed debug overlay                                      | Out of scope by design — `import.meta.env.DEV`-gated, never ships to production                                                                                              |
 
-**No desktop regression:** every change here is an `env(safe-area-inset-*)` *addition* inside a `calc()`/`max()` — it resolves to `0px` on any non-notched or non-native viewport (any desktop browser, any plain mobile browser tab), so desktop and ordinary web-mobile rendering is byte-identical to before.
+**No desktop regression:** every change here is an `env(safe-area-inset-*)` _addition_ inside a `calc()`/`max()` — it resolves to `0px` on any non-notched or non-native viewport (any desktop browser, any plain mobile browser tab), so desktop and ordinary web-mobile rendering is byte-identical to before.
 
 ---
 
 ## Files changed
 
 **New files (13):**
+
 - `src/lib/vie/eventBus.ts`, `src/lib/vie/eventBus.test.ts`
 - `src/lib/vie/businessIntent.ts`, `src/lib/vie/businessIntent.test.ts`
 - `src/lib/vie/universalEntityResolver.ts`, `src/lib/vie/universalEntityResolver.test.ts`
@@ -201,6 +202,7 @@ Fixed by making the existing `bottom-4` (1rem) offset the *floor*, with the safe
 - `src/lib/notifications/channels/channels.test.ts`
 
 **Modified files (8):**
+
 - `src/lib/vie/workflowEngine.ts` — publishes `VIE_EVENTS.ACTION_EXECUTED`/`ACTION_FAILED`
 - `src/lib/search/api.ts` — extracted `fetchCommentHits`/`fetchDocumentHits`/`fetchActivityHits`, `globalSearch()` now calls them
 - `src/lib/ai/nl-search/types.ts` — `NlEntityType` gains `comment`/`document`/`activity`

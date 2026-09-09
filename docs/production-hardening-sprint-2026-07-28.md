@@ -38,7 +38,7 @@ This sprint covered 7 goals: production configuration, mobile compatibility, the
 
 ## 5. Voice capture foundation (commit `a24e35d`)
 
-- New `useSpeechCapture()` hook (`src/lib/voice/useSpeechCapture.ts`) wraps the browser's Web Speech API and feeds the transcript straight into Copilot's existing "Do" mode textarea — zero new parsing code, per the brief's explicit "do not hardcode parsing rules" instruction. The transcript flows through the **already-existing** VIE pipeline (LLM classification → Planner → Workflow Engine), which already handled Hindi/Gujarati/English/mixed *typed* text end-to-end before this sprint.
+- New `useSpeechCapture()` hook (`src/lib/voice/useSpeechCapture.ts`) wraps the browser's Web Speech API and feeds the transcript straight into Copilot's existing "Do" mode textarea — zero new parsing code, per the brief's explicit "do not hardcode parsing rules" instruction. The transcript flows through the **already-existing** VIE pipeline (LLM classification → Planner → Workflow Engine), which already handled Hindi/Gujarati/English/mixed _typed_ text end-to-end before this sprint.
 - Extended the fields VIE can extract and act on: `budgetInr`, `timelineRelativeDays` (converted deterministically to a delivery date — never LLM-computed), `requirements` for enquiries; `email`/`address` for new customers. These now flow all the way to `createEnquiry()`/`createCustomer()` — the same functions the manual forms call.
 - **Named, not glossed over, limitation:** the Web Speech API recognizes one language per session (`en-IN` default, switchable to `hi-IN`/`gu-IN`) and does not reliably handle intra-sentence Hindi/Gujarati/English code-switching the way the LLM classifier already does for typed text. True robust code-switched voice transcription needs a server-side, audio-capable model (e.g. asking the Lovable AI Gateway for a multimodal model) — that's a credentials/cost decision this sandbox can't make unilaterally, so it's flagged here as the concrete next step rather than implemented.
 
@@ -70,7 +70,7 @@ This sprint covered 7 goals: production configuration, mobile compatibility, the
 ## Testing performed
 
 - `npx tsc --noEmit` — clean after every commit, no exceptions.
-- `npx eslint` on every touched file — zero errors after every commit (pre-existing warnings/errors in *untouched* files are explicitly out of scope baseline debt, not something introduced this sprint).
+- `npx eslint` on every touched file — zero errors after every commit (pre-existing warnings/errors in _untouched_ files are explicitly out of scope baseline debt, not something introduced this sprint).
 - `bun test` — **331 pass / 0 fail** maintained after every commit; assertion count rose from 683 to 698 as new code paths got exercised by existing tests, with no existing test broken.
 - **Not run, and why:** `npm run build:capacitor` (sandbox IPv6 bind limitation, pre-existing, reproduces on unmodified `main`) and `npm run test:e2e` (missing `playwright` dependency in this sandbox, pre-existing). Neither reflects a problem with the code changed this sprint — both are documented as sandbox verification gaps, not passed-over regressions.
 
@@ -87,4 +87,4 @@ This sprint covered 7 goals: production configuration, mobile compatibility, the
 
 ---
 
-*Prepared as part of the production-hardening sprint. See `docs/sprint-2.0-production-recovery.md` for the Users & Roles root cause, and the migration bundle docs (`engineering/migration-*`) for the unrelated, earlier migration split-brain crisis this repo also went through.*
+_Prepared as part of the production-hardening sprint. See `docs/sprint-2.0-production-recovery.md` for the Users & Roles root cause, and the migration bundle docs (`engineering/migration-_`) for the unrelated, earlier migration split-brain crisis this repo also went through.\*

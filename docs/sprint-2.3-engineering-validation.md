@@ -29,14 +29,14 @@ either ignore file.
 **Baseline** (current, fully-excluded state): `npx eslint . -f json` →
 639 files scanned, 16 files with issues, **0 errors, 18 warnings**.
 
-| File | Both ignore layers removed | Errors contributed | Other files affected |
-|---|---|---|---|
-| `src/integrations/supabase/types.ts` | yes | **7,385** | none — diff showed exactly 1 new file vs. baseline |
-| `src/routes/mcp.ts` | yes | **1** | none |
-| `src/routes/[.mcp]/list-tools.ts` | yes | **1** | none |
-| `src/routes/[.mcp]/invoke-tool/$tool.ts` | yes | **1** | none |
-| `src/routes/[.well-known]/oauth-protected-resource.ts` | yes | **1** | none |
-| `src/routeTree.gen.ts` (inline `/* eslint-disable */`, not config-based) | `--no-inline-config` flag, file untouched on disk | **158** | n/a (single-file run) |
+| File                                                                     | Both ignore layers removed                        | Errors contributed | Other files affected                               |
+| ------------------------------------------------------------------------ | ------------------------------------------------- | ------------------ | -------------------------------------------------- |
+| `src/integrations/supabase/types.ts`                                     | yes                                               | **7,385**          | none — diff showed exactly 1 new file vs. baseline |
+| `src/routes/mcp.ts`                                                      | yes                                               | **1**              | none                                               |
+| `src/routes/[.mcp]/list-tools.ts`                                        | yes                                               | **1**              | none                                               |
+| `src/routes/[.mcp]/invoke-tool/$tool.ts`                                 | yes                                               | **1**              | none                                               |
+| `src/routes/[.well-known]/oauth-protected-resource.ts`                   | yes                                               | **1**              | none                                               |
+| `src/routeTree.gen.ts` (inline `/* eslint-disable */`, not config-based) | `--no-inline-config` flag, file untouched on disk | **158**            | n/a (single-file run)                              |
 
 Sum: **7,385 + 1 + 1 + 1 + 1 + 158 = 7,547** lint errors that would
 appear in a full `eslint .` run if none of these exclusions existed —
@@ -83,18 +83,18 @@ the file).
 
 ## PART 2 — CI toolchain consistency
 
-| Tool | `package.json` range | `bun.lock` resolved | Satisfies range? |
-|---|---|---|---|
-| `typescript` | `^5.8.3` | `5.9.3` | yes |
-| `eslint` | `^9.32.0` | `9.39.4` | yes |
-| `eslint-config-prettier` | `^10.1.1` | `10.1.8` | yes |
-| `eslint-plugin-prettier` | `^5.2.6` | `5.5.5` | yes |
-| `eslint-plugin-react-hooks` | `^5.2.0` | `5.2.0` | yes |
-| `eslint-plugin-react-refresh` | `^0.4.20` | `0.4.26` | yes |
-| `typescript-eslint` | `^8.56.1` | `8.59.0` | yes |
-| `prettier` | `^3.7.3` | `3.8.3` | yes |
-| `@eslint/js` | `^9.32.0` | `9.39.4` | yes |
-| `globals` | `^15.15.0` | `15.15.0` | yes |
+| Tool                          | `package.json` range | `bun.lock` resolved | Satisfies range? |
+| ----------------------------- | -------------------- | ------------------- | ---------------- |
+| `typescript`                  | `^5.8.3`             | `5.9.3`             | yes              |
+| `eslint`                      | `^9.32.0`            | `9.39.4`            | yes              |
+| `eslint-config-prettier`      | `^10.1.1`            | `10.1.8`            | yes              |
+| `eslint-plugin-prettier`      | `^5.2.6`             | `5.5.5`             | yes              |
+| `eslint-plugin-react-hooks`   | `^5.2.0`             | `5.2.0`             | yes              |
+| `eslint-plugin-react-refresh` | `^0.4.20`            | `0.4.26`            | yes              |
+| `typescript-eslint`           | `^8.56.1`            | `8.59.0`            | yes              |
+| `prettier`                    | `^3.7.3`             | `3.8.3`             | yes              |
+| `@eslint/js`                  | `^9.32.0`            | `9.39.4`            | yes              |
+| `globals`                     | `^15.15.0`           | `15.15.0`           | yes              |
 
 No mismatches. `bun.lock`'s resolved versions were extracted with a
 script (`re.search` against each package's lock entry), not read by
@@ -121,18 +121,19 @@ versions first (see Sprint 2.2 §4's account of the `prettier@3.9.5` vs.
 
 **Multiple package managers — why:** three are present in this repo in
 some form:
+
 - **Bun** — the only one that touches the registry. `bun install
-  --frozen-lockfile` populates `node_modules`; `bun test` runs the
+--frozen-lockfile` populates `node_modules`; `bun test` runs the
   suite directly. This is the canonical installer.
 - **npm** — used as a task-runner only. `.github/workflows/ci.yml` runs
   `npm run typecheck:tests`, `npm run lint`, `npm run
-  verify:auth-context`, `npm run build` — these invocations read
+verify:auth-context`, `npm run build` — these invocations read
   `package.json`'s `"scripts"` block and execute the listed shell
   command using whatever's already in `node_modules/.bin` (populated by
   Bun in the prior step); they do not re-resolve dependencies or touch
   `package-lock.json`. `npx tsc --noEmit` (the plain "Typecheck" step)
   is the same mechanism, invoked directly rather than through `npm
-  run`. There is no discoverable reason documented anywhere in the repo
+run`. There is no discoverable reason documented anywhere in the repo
   for mixing `npm run` invocations into an otherwise Bun-installed
   pipeline — it reads as incidental (most likely carried over from the
   project's Lovable-generated scaffolding, which defaults to npm
@@ -140,7 +141,7 @@ some form:
   (confirmed: no registry access, no lockfile writes) but is a real,
   if cosmetic, inconsistency — see §7 for whether it's worth changing.
 - **pnpm** — referenced only as an inert `"pnpm": { "overrides": {
-  "entities": "4.5.0" } }` key in `package.json` (line 107-110). No
+"entities": "4.5.0" } }` key in `package.json` (line 107-110). No
   `pnpm-lock.yaml`, no `pnpm-workspace.yaml`, no `.npmrc`, nothing in
   `.github/` invokes `pnpm`. `grep -rln "pnpm"` across the repo (json/
   yml/yaml/md) returns only `package.json` itself and this sprint's own
@@ -166,14 +167,14 @@ each backed by a search:
 
 - **Referenced by content anywhere in `.github/`, `docs/`, `scripts/`,
   `package.json`, or deployment config?** No. `grep -rn
-  "package-lock.json" .github/ docs/ scripts/ package.json
-  vite.config.ts wrangler.jsonc capacitor.config.ts` returns only this
+"package-lock.json" .github/ docs/ scripts/ package.json
+vite.config.ts wrangler.jsonc capacitor.config.ts` returns only this
   document's own text and Sprint 2.2's doc (which already flagged this
   exact question as a recommendation) — no operational reference
   anywhere.
 - **Is `npm ci` or `npm install` (the commands that actually consume a
   lockfile) used anywhere?** No. `grep -rn "npm ci\b|npm install\b"
-  .github/ docs/ scripts/ package.json` returns nothing. `.github/workflows/ci.yml`'s
+.github/ docs/ scripts/ package.json` returns nothing. `.github/workflows/ci.yml`'s
   only install step is `bun install --frozen-lockfile` (line 32); every
   other step is `npm run <script>` / `npx <bin>` / `bun test`, none of
   which read `package-lock.json`.
@@ -188,7 +189,7 @@ each backed by a search:
   never `npm install`/`npm ci`.
 - **Does Vercel, Cloudflare, or any deployment process rely on it?**
   `wrangler.jsonc` has no install-command override (`grep -in
-  "install|npm|bun|build" wrangler.jsonc` returns nothing on those
+"install|npm|bun|build" wrangler.jsonc` returns nothing on those
   terms). `vite.config.ts`'s own comments (lines 1-13) state the
   production deploy path is Lovable's build pipeline generating
   `.output/server/wrangler.json` at build time via `vite build` — no
@@ -238,6 +239,7 @@ marker file was produced.
 
 **3. What happens if `"prepare": "husky"` exists but `husky` isn't a
 resolvable dependency (the exact risk Sprint 2.2 flagged)?**
+
 ```
 $ bun install --frozen-lockfile
 bun install v1.3.13 (bf2e2cec)
@@ -245,6 +247,7 @@ $ husky
 /usr/bin/bash: line 1: husky: command not found
 error: prepare script from "bun-prepare-fail" exited with 127
 ```
+
 Exit code **127**, and `bun install` itself fails (non-zero exit). This
 is direct, reproduced proof — not inference — that committing the
 `husky`/`lint-staged` `package.json` changes without a matching
@@ -291,6 +294,7 @@ purpose.
 
 **Exact commands required** (unchanged from Sprint 2.2 §4, reconfirmed
 correct by the empirical tests above):
+
 ```bash
 bun add -d husky lint-staged
 bunx husky init
@@ -310,27 +314,28 @@ partially. Not installed in this sprint (per instruction).
 
 Full-repo baselines (this sandbox, `bun.lock`-pinned toolchain):
 
-| Command | Scope | Wall time |
-|---|---|---|
-| `npx tsc --noEmit` | whole program (639 files) | **50.8s** |
-| `npx eslint .` | whole repo | **23.1s** |
+| Command                  | Scope                      | Wall time |
+| ------------------------ | -------------------------- | --------- |
+| `npx tsc --noEmit`       | whole program (639 files)  | **50.8s** |
+| `npx eslint .`           | whole repo                 | **23.1s** |
 | `npx prettier --check .` | whole repo (incl. `docs/`) | **14.2s** |
 
 Targeted (5 representative already-tracked source files, simulating a
 typical commit's staged-file count):
 
-| Command | Files | Wall time |
-|---|---|---|
-| `npx eslint --fix <5 files>` | 5 | **2.3s** |
-| `npx prettier --write <5 files>` | 5 | **1.1s** |
+| Command                          | Files | Wall time |
+| -------------------------------- | ----- | --------- |
+| `npx eslint --fix <5 files>`     | 5     | **2.3s**  |
+| `npx prettier --write <5 files>` | 5     | **1.1s**  |
 
 **Recommendation: `eslint --fix` + `prettier --write`, scoped to staged
 files only. Do not run `typecheck` in the pre-commit hook.**
 
 Reasoning, evidenced:
+
 - `eslint --fix` and `prettier --write`, run only against staged files
   (what `lint-staged` does — it builds the file list from `git diff
-  --cached`, not the whole repo), measured at **~3.4s combined** for a
+--cached`, not the whole repo), measured at **~3.4s combined** for a
   5-file commit. That's within normal pre-commit-hook latency
   expectations (sub-5s).
 - `tsc --noEmit` **cannot be meaningfully scoped to staged files.**
@@ -355,15 +360,17 @@ non-source globs are actually meant to be enforced, rather than a bare
 `*.{js,jsx,json,css,md}` that reaches into `docs/`.
 
 Recommended config (updates Sprint 2.2 §4's draft with this finding):
+
 ```json
 "lint-staged": {
   "src/**/*.{ts,tsx}": ["eslint --fix", "prettier --write"],
   "*.{js,jsx,json,css}": ["prettier --write"]
 }
 ```
+
 (Markdown intentionally omitted until the existing 18-file docs debt is
 addressed as its own decision — see Sprint 2.2 §8 recommendation #2's
-sibling concern; adding `*.md` today would make the *first* commit
+sibling concern; adding `*.md` today would make the _first_ commit
 touching any of those 18 files silently reformat it.)
 
 Not implemented this sprint — `lint-staged` is not installed (§4).
@@ -377,20 +384,20 @@ None were auto-fixed. Two families:
 
 ### `react-refresh/only-export-components` (11 occurrences)
 
-| File:Line | Export shape (confirmed by reading the file) |
-|---|---|
-| `src/components/ui/alert.tsx:61` | `export { Alert, AlertTitle, AlertDescription, alertVariants }` |
-| `src/components/ui/badge.tsx:51` | `export { Badge, badgeVariants }` |
-| `src/components/ui/button.tsx:80` | `export { Button, buttonVariants }` |
-| `src/components/ui/card.tsx:88` | `export { Card, ..., cardVariants }` |
-| `src/components/ui/form.tsx:163` | `export { ... }` (component + helpers) |
-| `src/components/ui/navigation-menu.tsx:111` | `export { ... }` (component + helpers) |
-| `src/components/ui/sidebar.tsx:743` | `export { ... }` (component + helpers) |
-| `src/components/ui/toggle.tsx:42` | `export { Toggle, toggleVariants }` |
-| `src/components/dashboard/ChartCards.tsx:27,191` | components + `CHART_COLORS` const + `moneyShort()` fn |
-| `src/components/data/ConfirmDialog.tsx:121` | dialog component + `useConfirm()` hook |
-| `src/hooks/use-roles.tsx:50` | `useRoles()` hook + `RolesState` type re-export shape |
-| `src/lib/demo/context.tsx:80` | provider component + `useDemoMode()` hook |
+| File:Line                                        | Export shape (confirmed by reading the file)                    |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| `src/components/ui/alert.tsx:61`                 | `export { Alert, AlertTitle, AlertDescription, alertVariants }` |
+| `src/components/ui/badge.tsx:51`                 | `export { Badge, badgeVariants }`                               |
+| `src/components/ui/button.tsx:80`                | `export { Button, buttonVariants }`                             |
+| `src/components/ui/card.tsx:88`                  | `export { Card, ..., cardVariants }`                            |
+| `src/components/ui/form.tsx:163`                 | `export { ... }` (component + helpers)                          |
+| `src/components/ui/navigation-menu.tsx:111`      | `export { ... }` (component + helpers)                          |
+| `src/components/ui/sidebar.tsx:743`              | `export { ... }` (component + helpers)                          |
+| `src/components/ui/toggle.tsx:42`                | `export { Toggle, toggleVariants }`                             |
+| `src/components/dashboard/ChartCards.tsx:27,191` | components + `CHART_COLORS` const + `moneyShort()` fn           |
+| `src/components/data/ConfirmDialog.tsx:121`      | dialog component + `useConfirm()` hook                          |
+| `src/hooks/use-roles.tsx:50`                     | `useRoles()` hook + `RolesState` type re-export shape           |
+| `src/lib/demo/context.tsx:80`                    | provider component + `useDemoMode()` hook                       |
 
 **Classification: Safe to ignore — Intentional.** All 8 `src/components/ui/*`
 files are unmodified shadcn/ui primitives following shadcn's own
@@ -470,6 +477,7 @@ Only one workflow file exists: `.github/workflows/ci.yml` (single job,
 `verify`, `ubuntu-latest`, 9 sequential steps).
 
 **Already correct — verified, no change required:**
+
 - **Concurrency control** (lines 8-10): `cancel-in-progress: true`
   keyed on `${{ github.workflow }}-${{ github.ref }}` — superseded runs
   on rapid pushes to the same ref are cancelled automatically. This is
@@ -493,7 +501,7 @@ Only one workflow file exists: `.github/workflows/ci.yml` (single job,
 **Real, measurable gap — dependency caching:**
 `oven-sh/setup-bun@v2`, per its own documentation (fetched 2026-07-23),
 has no built-in dependency-caching feature — its only cache-related
-input (`no-cache`) caches the Bun *binary* itself, not installed
+input (`no-cache`) caches the Bun _binary_ itself, not installed
 packages. `actions/setup-node@v4`'s built-in `cache` input doesn't
 support `bun` as a package-manager value either way, and isn't
 configured here regardless. Net effect: `bun install --frozen-lockfile`
@@ -531,16 +539,16 @@ introducing one is a scope decision, not a bug fix.
 
 ## PART 8 — Prettier as the sole formatting authority
 
-| Candidate competing/complementary config | Present? |
-|---|---|
-| `.editorconfig` | No |
-| `.vscode/settings.json` | No |
-| `.vscode/extensions.json` | No |
-| `biome.json` / `biome.jsonc` | No |
-| `rome.json` | No |
-| `.stylelintrc` | No |
-| Alternate formatter devDependency (`biome`, `rome`, `standard`, `xo`, `dprint`) | No — scanned `package.json`'s full dependency list |
-| `.prettierrc` | **Yes** — `{"printWidth": 100, "semi": true, "singleQuote": false, "trailingComma": "all"}` |
+| Candidate competing/complementary config                                        | Present?                                                                                    |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `.editorconfig`                                                                 | No                                                                                          |
+| `.vscode/settings.json`                                                         | No                                                                                          |
+| `.vscode/extensions.json`                                                       | No                                                                                          |
+| `biome.json` / `biome.jsonc`                                                    | No                                                                                          |
+| `rome.json`                                                                     | No                                                                                          |
+| `.stylelintrc`                                                                  | No                                                                                          |
+| Alternate formatter devDependency (`biome`, `rome`, `standard`, `xo`, `dprint`) | No — scanned `package.json`'s full dependency list                                          |
+| `.prettierrc`                                                                   | **Yes** — `{"printWidth": 100, "semi": true, "singleQuote": false, "trailingComma": "all"}` |
 
 `eslint.config.js`'s final entry in the config array is
 `eslintPluginPrettier` (`eslint-plugin-prettier/recommended`, which
@@ -556,7 +564,7 @@ back off.
 this repo — no competing config exists at any layer (editor, linter, or
 standalone formatter). Verified. No change required.**
 
-(The *absence* of `.editorconfig` / `.vscode/*` isn't a competing-authority
+(The _absence_ of `.editorconfig` / `.vscode/*` isn't a competing-authority
 problem — nothing conflicts with Prettier — but it is an onboarding gap;
 carried into §9.)
 
@@ -567,16 +575,16 @@ carried into §9.)
 Can a developer clone this repo and start working with zero manual
 setup? Checked directly:
 
-| Item | Present? | Effect if missing |
-|---|---|---|
-| `README.md` | **No** (`find` at repo root: none) | No written guidance on which package manager to use, how to run the app, or how to run checks — a new contributor has to infer from `package.json` alone, and would plausibly reach for `npm install` given `package-lock.json` sits right next to `bun.lock` (§3). |
-| `CONTRIBUTING.md` | **No** | No documented contribution/checks workflow. |
-| `.vscode/extensions.json` | **No** | VS Code never prompts to install the ESLint or Prettier extensions — a contributor without them already installed gets no inline lint/format feedback at all. |
-| `.vscode/settings.json` | **No** | No workspace-level `editor.formatOnSave`, no `editor.defaultFormatter` pin, no `typescript.tsdk` pointer to the workspace TypeScript version. |
-| `.editorconfig` | **No** | No baseline indent-style/charset/EOL enforcement for editors or contexts that don't run Prettier (e.g., quick edits through GitHub's web UI). |
-| `package.json` `"engines"` field | **No** | A contributor on an incompatible Node/Bun version gets no early warning — the first symptom would be a confusing install or type error, not a clear version message. |
+| Item                             | Present?                           | Effect if missing                                                                                                                                                                                                                                                   |
+| -------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                      | **No** (`find` at repo root: none) | No written guidance on which package manager to use, how to run the app, or how to run checks — a new contributor has to infer from `package.json` alone, and would plausibly reach for `npm install` given `package-lock.json` sits right next to `bun.lock` (§3). |
+| `CONTRIBUTING.md`                | **No**                             | No documented contribution/checks workflow.                                                                                                                                                                                                                         |
+| `.vscode/extensions.json`        | **No**                             | VS Code never prompts to install the ESLint or Prettier extensions — a contributor without them already installed gets no inline lint/format feedback at all.                                                                                                       |
+| `.vscode/settings.json`          | **No**                             | No workspace-level `editor.formatOnSave`, no `editor.defaultFormatter` pin, no `typescript.tsdk` pointer to the workspace TypeScript version.                                                                                                                       |
+| `.editorconfig`                  | **No**                             | No baseline indent-style/charset/EOL enforcement for editors or contexts that don't run Prettier (e.g., quick edits through GitHub's web UI).                                                                                                                       |
+| `package.json` `"engines"` field | **No**                             | A contributor on an incompatible Node/Bun version gets no early warning — the first symptom would be a confusing install or type error, not a clear version message.                                                                                                |
 
-**Verdict: a fresh clone does *not* have a zero-manual-setup path
+**Verdict: a fresh clone does _not_ have a zero-manual-setup path
 today.** Nothing here is incorrect or broken — the app runs fine once a
 developer correctly guesses to run `bun install` — but every one of the
 6 items above is a real, evidenced gap, and the missing
@@ -593,21 +601,21 @@ executed, consistent with this sprint's verification-only mandate).
 
 ## PART 10 — Final engineering scorecard
 
-| Area | Status | Basis |
-|---|---|---|
-| Formatting | 🟢 Green | Single authority (Prettier, §8); `.prettierrc`/`.prettierignore` correctly scoped; generated files correctly excluded and verified by direct removal (§1). |
-| Lint | 🟢 Green | `eslint .` exits 0 errors (§1 baseline); every remaining warning individually reviewed and classified, none blocking (§6). |
-| CI | 🟡 Yellow | Correct and passing today (§7); no dependency caching (measurable, evidenced gap, §7); npm/bun invocation mixing is cosmetic (§2, §7). |
-| Testing | 🟢 Green | `bun test`: 323 pass, 0 fail (re-confirmed this sprint, §5 timing run). |
-| Build | 🟢 Green | `npm run build` succeeds; 27.7s measured this sprint. |
-| Deployment | 🟡 Yellow | No in-repo deployment config references `package-lock.json` or npm (§3) — consistent with prior sprints' finding that the actual production deploy path (Lovable's pipeline) is outside this repo's direct control/verification. |
-| Developer Experience | 🟡 Yellow | No `README`, no `.vscode/*`, no `.editorconfig`, no `engines` field (§9) — real onboarding gaps, nothing broken. |
-| Git workflow | 🟢 Green | `.gitignore` correct for build output; no stray generated/build artifacts tracked (verified via `git status --ignored` in Sprint 2.2 and reconfirmed clean here). |
-| Package management | 🟡 Yellow | `bun.lock` is authoritative and fully consistent (§2); `package-lock.json` has no discoverable purpose (§3, not deleted per instruction); inert `pnpm` key (§2). |
-| Generated code | 🟢 Green | All known generated-code sources (`routeTree.gen.ts`, `types.ts`, 4 mcp-js routes) correctly excluded from both linters, verified by individually removing each exclusion and measuring the exact contribution (§1). |
-| Branch readiness | 🟢 Green | Zero code changes this sprint (`git status` clean throughout, §12); nothing in this audit found a defect requiring a code fix — every finding is either already-correct (stated explicitly per-part) or a documented, unexecuted recommendation. |
-| Merge readiness | 🟢 Green | No new files touch Sprint 2.1's 19-file conflict list (this sprint wrote zero files to `src/` or any tracked file — verification only). |
-| Production readiness | 🟡 Yellow | Everything this sandbox can verify is green; production-specific unknowns from earlier sprints (Sprint 2.0's Supabase-secrets hypothesis, the unpushed-commits situation) are unchanged and outside this sprint's scope. |
+| Area                 | Status    | Basis                                                                                                                                                                                                                                            |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Formatting           | 🟢 Green  | Single authority (Prettier, §8); `.prettierrc`/`.prettierignore` correctly scoped; generated files correctly excluded and verified by direct removal (§1).                                                                                       |
+| Lint                 | 🟢 Green  | `eslint .` exits 0 errors (§1 baseline); every remaining warning individually reviewed and classified, none blocking (§6).                                                                                                                       |
+| CI                   | 🟡 Yellow | Correct and passing today (§7); no dependency caching (measurable, evidenced gap, §7); npm/bun invocation mixing is cosmetic (§2, §7).                                                                                                           |
+| Testing              | 🟢 Green  | `bun test`: 323 pass, 0 fail (re-confirmed this sprint, §5 timing run).                                                                                                                                                                          |
+| Build                | 🟢 Green  | `npm run build` succeeds; 27.7s measured this sprint.                                                                                                                                                                                            |
+| Deployment           | 🟡 Yellow | No in-repo deployment config references `package-lock.json` or npm (§3) — consistent with prior sprints' finding that the actual production deploy path (Lovable's pipeline) is outside this repo's direct control/verification.                 |
+| Developer Experience | 🟡 Yellow | No `README`, no `.vscode/*`, no `.editorconfig`, no `engines` field (§9) — real onboarding gaps, nothing broken.                                                                                                                                 |
+| Git workflow         | 🟢 Green  | `.gitignore` correct for build output; no stray generated/build artifacts tracked (verified via `git status --ignored` in Sprint 2.2 and reconfirmed clean here).                                                                                |
+| Package management   | 🟡 Yellow | `bun.lock` is authoritative and fully consistent (§2); `package-lock.json` has no discoverable purpose (§3, not deleted per instruction); inert `pnpm` key (§2).                                                                                 |
+| Generated code       | 🟢 Green  | All known generated-code sources (`routeTree.gen.ts`, `types.ts`, 4 mcp-js routes) correctly excluded from both linters, verified by individually removing each exclusion and measuring the exact contribution (§1).                             |
+| Branch readiness     | 🟢 Green  | Zero code changes this sprint (`git status` clean throughout, §12); nothing in this audit found a defect requiring a code fix — every finding is either already-correct (stated explicitly per-part) or a documented, unexecuted recommendation. |
+| Merge readiness      | 🟢 Green  | No new files touch Sprint 2.1's 19-file conflict list (this sprint wrote zero files to `src/` or any tracked file — verification only).                                                                                                          |
+| Production readiness | 🟡 Yellow | Everything this sandbox can verify is green; production-specific unknowns from earlier sprints (Sprint 2.0's Supabase-secrets hypothesis, the unpushed-commits situation) are unchanged and outside this sprint's scope.                         |
 
 **Explicit "Verified. No change required." statements**, per the
 sprint's own instruction to state this plainly wherever true:
@@ -621,6 +629,7 @@ sprint's own instruction to state this plainly wherever true:
   any layer.
 
 **Recommendations carried forward (none executed this sprint):**
+
 1. Decide `package-lock.json`'s fate — remove or document why it's
    kept (§3; also Sprint 2.2 §8 rec. #3).
 2. Add `actions/cache` for Bun's install cache, keyed on
@@ -631,7 +640,7 @@ sprint's own instruction to state this plainly wherever true:
    `src/routes/_authenticated/communication.tsx:141`,
    `src/routes/_authenticated/estimates/index.tsx:60`.
 4. Review `NotificationsBell.tsx:40`'s `useMemo(() => new Date(),
-   [items])` for intended staleness behavior (§6) — a product
+[items])` for intended staleness behavior (§6) — a product
    decision, not a mechanical fix.
 5. Add `.vscode/extensions.json` + `.vscode/settings.json` +
    `.editorconfig` + a minimal `README.md` setup section +

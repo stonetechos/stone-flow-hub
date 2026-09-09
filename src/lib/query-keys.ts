@@ -136,6 +136,7 @@ export const qk = {
     list: () => ["installationAgencies", "list"] as const,
   },
   installationLedger: {
+    all: () => ["installationLedger"] as const,
     summaries: () => ["installationLedger", "summaries"] as const,
     byAgency: (agencyId: string) => ["installationLedger", "byAgency", agencyId] as const,
   },

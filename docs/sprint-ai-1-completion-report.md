@@ -29,12 +29,12 @@ action:
   returned `vie_actions` row is appended to the chat thread as a new message kind and rendered
   purely as a function of its `status`:
 
-  | `status` | Rendered as |
-  |---|---|
-  | `awaiting_confirmation` | A confirmation card — intent, the AI's canonical reading of the utterance, every field in `plan.params`, and a **Confirm** button that calls `confirmVieAction({ actionId })` |
-  | `draft` | A clarification card — the blockers VIE's Planner reported, the plan so far, and inline fields for whatever's still unresolved; **Complete & execute** calls `completeDraftAction({ actionId, patch })` with only the fields the user actually filled in |
-  | `applied` | A success card, with a link to the record that was actually created (via `linked_record_type`/`linked_record_id`) |
-  | `failed` / `rejected` | The real `error_message` VIE/the Workflow Engine recorded, verbatim |
+  | `status`                | Rendered as                                                                                                                                                                                                                                              |
+  | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `awaiting_confirmation` | A confirmation card — intent, the AI's canonical reading of the utterance, every field in `plan.params`, and a **Confirm** button that calls `confirmVieAction({ actionId })`                                                                            |
+  | `draft`                 | A clarification card — the blockers VIE's Planner reported, the plan so far, and inline fields for whatever's still unresolved; **Complete & execute** calls `completeDraftAction({ actionId, patch })` with only the fields the user actually filled in |
+  | `applied`               | A success card, with a link to the record that was actually created (via `linked_record_type`/`linked_record_id`)                                                                                                                                        |
+  | `failed` / `rejected`   | The real `error_message` VIE/the Workflow Engine recorded, verbatim                                                                                                                                                                                      |
 
   A local-only **Dismiss** button is also offered on the confirmation and draft cards — this never
   calls any server function (there is no cancel/reject endpoint in VIE today, and adding one would
@@ -46,6 +46,7 @@ tables or columns, no changes to VIE's intents, resolvers, execution policy, or 
 ## 2. Files modified
 
 **New:**
+
 - `src/components/copilot/VieActionCard.tsx` — the `vie_actions` row renderer described in § 1:
   `VieActionMessage` (status dispatch), `DraftCard` (blocker + inline patch form), `ParamsPreview`
   (a generic `plan.params` renderer — labeled key/value rows, arrays of objects as a nested list —
@@ -55,6 +56,7 @@ tables or columns, no changes to VIE's intents, resolvers, execution policy, or 
   logic.
 
 **Modified:**
+
 - `src/components/copilot/Copilot.tsx` — added the `mode` state and `Tabs` toggle; added the
   `stageAction`/`confirmAction`/`completeDraft` mutations wrapping the three VIE server functions;
   added the `vie-action` message kind and its rendering branch; updated the `send` mutation's chat
@@ -72,6 +74,7 @@ Action Registry, all four intent handlers, execution policy), `src/lib/ai/copilo
 ## 3. Build status
 
 **Green.**
+
 - `npm run typecheck` — clean.
 - `npm run typecheck:tests` — clean.
 - `eslint`, scoped to both touched files — two Prettier formatting issues introduced by this
@@ -101,7 +104,7 @@ not swept aside.
 - **Draft completion is a generic key/value form, not a real disambiguation UI.** `plan_blockers`
   is still an untyped `string[]` today — VIE Phase 2's own review scoped structuring it (with
   actual candidate lists, e.g. "which of these two Rameshes?") as Milestone 5, not implemented.
-  Without that structure, this sprint's draft card can show the blocker *text* and offer a plain
+  Without that structure, this sprint's draft card can show the blocker _text_ and offer a plain
   text/number field for whichever top-level `plan.params` keys are null — it cannot offer a picker
   for an ambiguous customer match, because the candidate IDs that would populate one aren't in the
   data it has access to. Complex fields (e.g. a quotation's line items) are shown read-only in the

@@ -50,7 +50,7 @@ defect:
 - **`src/lib/errors.ts`** — added `parseMissingSupabaseEnvError(err)`, a
   pure function that recognizes the exact message shape both
   `auth-middleware.ts` and `client.server.ts` throw (`"Missing Supabase
-  environment variable(s): X, Y. Connect Supabase in Lovable Cloud."`) and
+environment variable(s): X, Y. Connect Supabase in Lovable Cloud."`) and
   extracts the missing variable names, or returns `null` for anything else.
   Deliberately parses the already-thrown error's own message instead of
   adding a new server round trip — the message already carries everything
@@ -77,7 +77,7 @@ defect:
 No changes to `client.ts`, `auth-middleware.ts`, or `client.server.ts`
 themselves — all three are Lovable-generated ("do not edit it directly")
 and their behavior (including the exact error message this fix now parses)
-is correct as-is; only the *unhandled* end of that error was missing UI.
+is correct as-is; only the _unhandled_ end of that error was missing UI.
 
 ### Verification
 
@@ -125,7 +125,7 @@ were made because no genuine defect was found.
   (`client.ts`'s browser/SSR-fallback pair, `auth-middleware.ts`'s
   server-only pair, `client.server.ts`'s service-role pair) is internally
   consistent and matches `docs/DEPLOYMENT.md`'s documented split. This is
-  the same finding Milestone 1 fixed the *symptom* of; the underlying
+  the same finding Milestone 1 fixed the _symptom_ of; the underlying
   three files are correct as designed.
 - **Every `createServerFn` in the repo requires authentication.**
   Enumerated all 18 `createServerFn` definitions across 8 files
@@ -168,14 +168,14 @@ were made because no genuine defect was found.
   (every `CREATE TABLE` has a matching `ENABLE ROW LEVEL SECURITY`) and
   went one step further this time: checked every RLS-enabled table also
   has at least one matching `CREATE POLICY`, to catch the case where RLS
-  is enabled but zero policies exist (which would silently deny *all*
+  is enabled but zero policies exist (which would silently deny _all_
   access, including to admins — a production correctness bug, not a
   security hole). Two passes of a regex-based scan produced false
   positives (16 "gaps" total across both attempts) purely from two
   different `CREATE POLICY` naming conventions in the migration history —
   quoted string names (`CREATE POLICY "Staff manage dispatch items" ON
-  ...`) on multiple lines, and bare identifier names (`CREATE POLICY
-  grn_items_staff ON public.grn_items FOR ALL ...`) on one line. Manually
+...`) on multiple lines, and bare identifier names (`CREATE POLICY
+grn_items_staff ON public.grn_items FOR ALL ...`) on one line. Manually
   inspected every flagged table's migration source directly; all 16 do
   have a policy — this was a static-analysis limitation, not a real gap.
   No RLS coverage issue found.
@@ -222,8 +222,8 @@ cross-referencing the Cloudflare/cron deployment surface against
 
 1. **`wrangler.jsonc` didn't declare `compatibility_flags: ["nodejs_compat"]`**,
    even though `docs/DEPLOYMENT.md` documents this project's runtime as
-   "Cloudflare Workers (nodejs_compat)". In practice this was harmless
-   *today* — the real publish pipeline (Lovable's build, via
+   "Cloudflare Workers (nodejs*compat)". In practice this was harmless
+   \_today* — the real publish pipeline (Lovable's build, via
    `@lovable.dev/vite-tanstack-config`'s nitro `cloudflare-module` preset)
    generates its own `.output/server/wrangler.json` at build time and
    injects the flag automatically (confirmed in the generated file) — but
@@ -234,7 +234,7 @@ cross-referencing the Cloudflare/cron deployment surface against
 2. **`workforce-daily.ts` didn't implement the auth contract
    `docs/DEPLOYMENT.md`'s own Production Checklist documents for it**
    ("send `x-cron-secret: $CRON_SHARED_SECRET`"). The actual handler
-   checked only that an `apikey`/`authorization` header was *present* (any
+   checked only that an `apikey`/`authorization` header was _present_ (any
    non-empty value passed), then used that value directly as the Supabase
    client's API key — never validating it against any configured secret.
    Combined with `workforce_tasks` and `customer_payment_schedules` both
@@ -247,7 +247,7 @@ cross-referencing the Cloudflare/cron deployment surface against
    discarded — it always returned `{ ok: true }` regardless of whether
    anything actually happened. This daily workforce-housekeeping job has
    in all likelihood never run successfully in production. Separately, its
-   sibling `customer-payment-reminders.ts` (which *does* implement the
+   sibling `customer-payment-reminders.ts` (which _does_ implement the
    secret-validated pattern correctly) reads the secret from
    `process.env.CRON_SECRET` — a different env var name than the
    `CRON_SHARED_SECRET` the docs document — a second, smaller inconsistency
@@ -343,14 +343,14 @@ never execute. `npm run lint` fails today with the same 7,409 pre-existing
 problems Milestones 2 and 3's verification runs kept reporting as an
 unchanged baseline — and this is not new: the repo's own
 `docs/CI_LINT_DEBT.md` (dated 2026-07-18, from a prior, unrelated CI-fix
-effort) documents that the *moment* CI's typecheck step was fixed and
+effort) documents that the _moment_ CI's typecheck step was fixed and
 lint became reachable for the first time, it immediately started failing
 on ~315 files' worth of pre-existing formatting drift, and flags the bulk
 reformat as a deliberate human call, not something to auto-apply. That
 call was apparently never made — meaning every push to `main` and every
 PR since has had its CI job die at the `Lint` step, and `Verify auth
 context`, `Run tests`, and `Build` — the three steps that would actually
-catch a *new* regression — have not run in CI for any commit in that
+catch a _new_ regression — have not run in CI for any commit in that
 entire window. Combined with the Sprint 1.8 audit's finding that GitHub
 Actions is verification-only and has no deploy step, this means: nothing
 has been gating deployment on CI status, and even if it had been, CI
@@ -407,7 +407,7 @@ npm run build             succeeds
   on its own, separate lineage — unchanged from the Sprint 1.8 audit
   except for this sprint's own new commits.
 - **The underlying lint debt itself is still unresolved** — this milestone
-  restored CI's ability to *see* new regressions but did not reduce the
+  restored CI's ability to _see_ new regressions but did not reduce the
   315-file formatting debt by one file. That remains an open decision for
   whoever owns this repo, framed with options already in
   `docs/CI_LINT_DEBT.md`.
@@ -485,7 +485,7 @@ near-total rewrites against the merge-base (which didn't have this file at
 all), which looked like two independent implementations at a glance. Direct
 diff between the two versions shows otherwise: `origin/main`'s version is
 byte-for-byte identical in structure, docstrings, and function signature to
-an *earlier draft* of the exact same file — it still uses the old inline
+an _earlier draft_ of the exact same file — it still uses the old inline
 `blocker: string | null` shape from before Sprint AI-1.5's structured
 `PlannerBlocker` refactor, and has none of Sprint AI-1.6's
 `entityResolution.ts` framework calls. `src/lib/vie/planner/index.ts` shows
@@ -558,7 +558,7 @@ changes on both sides), and `src/routes/__root.tsx`/`src/routes/auth.tsx`.
    "earlier snapshot" hypothesis holds (diff each file's `origin/main`
    side against the merge-base and skim for anything past a
    structural/formatting difference) before taking `feature/vie-
-   quotation`'s side wholesale.
+quotation`'s side wholesale.
 2. Resolve the branding question once, explicitly, with whoever owns
    product naming — "STOS" (as origin/main's rebrand commit already
    shipped in 4+ places) vs. the `APPLICATION_NAME` constant's current
@@ -566,7 +566,7 @@ changes on both sides), and `src/routes/__root.tsx`/`src/routes/auth.tsx`.
    `AppShell.tsx`, `Copilot.tsx`, `route.tsx`, `settings.tsx` rather than
    letting the merge tool or a blind per-file choice decide it
    inconsistently.
-3. Hand-merge `AppShell.tsx` specifically to keep *both* real changes: this
+3. Hand-merge `AppShell.tsx` specifically to keep _both_ real changes: this
    branch's Sprint 1.8 branding-constant work and `origin/main`'s mobile
    scroll-region/`h-dvh`-fallback bug fixes are not mutually exclusive —
    losing either is a regression, not a simplification.
@@ -575,7 +575,7 @@ changes on both sides), and `src/routes/__root.tsx`/`src/routes/auth.tsx`.
    were sampled deeply enough this milestone to characterize their risk
    the way `AppShell.tsx`/`resolveProject.ts` were. `admin/users.tsx` in
    particular now needs three-way reconciliation (merge-base, `origin/
-   main`'s independent changes, and this sprint's own Milestone 1 fix).
+main`'s independent changes, and this sprint's own Milestone 1 fix).
 5. After every file is resolved, run the full verification suite
    (typecheck/typecheck:tests/lint/test/build) against the merged result
    before considering it done — the same bar every milestone in this
@@ -643,7 +643,7 @@ abstract recommendation:
    merging (no direct pushes, including from this sandbox or any future
    Claude/Cowork session — route everything through a PR), require the CI
    status checks to pass before merge. Given Milestone 4's fix, the checks
-   worth marking *required* right now are `Typecheck`, `Typecheck tests`,
+   worth marking _required_ right now are `Typecheck`, `Typecheck tests`,
    `Verify auth context`, `Run tests`, and `Build` — not `Lint`, until the
    315-file formatting debt is actually resolved (marking a
    known-permanently-red check as required just blocks all merges
@@ -708,14 +708,14 @@ product decision before it can be executed safely.
 
 ## Sprint 1.9 summary
 
-| Milestone | Outcome |
-|---|---|
-| 1. Fix Users & Roles | Root-caused the reported production bug to a deployment secrets gap (external, needs dashboard access) plus one genuine code gap (no dedicated UI for that failure mode) — fixed the code gap. |
-| 2. Verify Supabase server integration | Clean bill of health — auth middleware, service-role usage, `has_role` security-definer functions, and RLS coverage all verified correct. No changes needed. |
+| Milestone                                     | Outcome                                                                                                                                                                                                                                                                                  |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Fix Users & Roles                          | Root-caused the reported production bug to a deployment secrets gap (external, needs dashboard access) plus one genuine code gap (no dedicated UI for that failure mode) — fixed the code gap.                                                                                           |
+| 2. Verify Supabase server integration         | Clean bill of health — auth middleware, service-role usage, `has_role` security-definer functions, and RLS coverage all verified correct. No changes needed.                                                                                                                             |
 | 3. Verify Cloudflare deployment configuration | Found and fixed a real bug: `workforce-daily`'s cron endpoint didn't implement its own documented auth contract and silently discarded write errors — likely never ran successfully in production. Also aligned `wrangler.jsonc` and `docs/DEPLOYMENT.md` with what's actually deployed. |
-| 4. Verify GitHub integration | Found that CI has been unable to reach its Test/Build steps on any commit since 2026-07-18 because of pre-existing lint debt blocking the pipeline early — fixed the pipeline structure without touching the underlying debt. |
-| 5. Eliminate deployment inconsistencies | Corrected the known branch-conflict surface from 2 files to the real 19, characterized the risk with actual evidence, and deliberately did not force a blind merge — left an evidence-based, ordered plan instead. |
-| 6. Source-of-truth enforcement | Documented the concrete, sequenced checklist for making GitHub `main` the enforced source of truth — all steps require access this sandbox doesn't have. |
+| 4. Verify GitHub integration                  | Found that CI has been unable to reach its Test/Build steps on any commit since 2026-07-18 because of pre-existing lint debt blocking the pipeline early — fixed the pipeline structure without touching the underlying debt.                                                            |
+| 5. Eliminate deployment inconsistencies       | Corrected the known branch-conflict surface from 2 files to the real 19, characterized the risk with actual evidence, and deliberately did not force a blind merge — left an evidence-based, ordered plan instead.                                                                       |
+| 6. Source-of-truth enforcement                | Documented the concrete, sequenced checklist for making GitHub `main` the enforced source of truth — all steps require access this sandbox doesn't have.                                                                                                                                 |
 
 **Genuine production defects found and fixed this sprint:** 2 —
 `workforce-daily.ts`'s unimplemented auth contract (Milestone 3) and the

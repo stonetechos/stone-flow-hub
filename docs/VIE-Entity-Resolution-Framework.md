@@ -14,14 +14,14 @@ This sprint factors that shared shape out into `entityResolution.ts` once, so ea
 
 ## 2. What the framework owns vs. what stays resolver-specific
 
-| Framework (`entityResolution.ts`) | Resolver-specific (each `resolve*.ts`) |
-|---|---|
-| Classifying a candidate list as none/one/many | The actual search call (which `api.ts` function) |
-| Candidate-list construction and the 20-item cap | Display label / subtitle per record type |
-| `PlannerBlocker` assembly for all three blocker shapes | Blocker message text and `type`/`field` |
-| The "no input at all" precondition blocker | Business-specific narrowing (e.g. a project-text hint) |
+| Framework (`entityResolution.ts`)                      | Resolver-specific (each `resolve*.ts`)                 |
+| ------------------------------------------------------ | ------------------------------------------------------ |
+| Classifying a candidate list as none/one/many          | The actual search call (which `api.ts` function)       |
+| Candidate-list construction and the 20-item cap        | Display label / subtitle per record type               |
+| `PlannerBlocker` assembly for all three blocker shapes | Blocker message text and `type`/`field`                |
+| The "no input at all" precondition blocker             | Business-specific narrowing (e.g. a project-text hint) |
 
-This split matches the sprint's own instruction: *"Individual resolvers should only specify: entity type, database lookup, display label, subtitle, search fields, business-specific validation."*
+This split matches the sprint's own instruction: _"Individual resolvers should only specify: entity type, database lookup, display label, subtitle, search fields, business-specific validation."_
 
 ## 3. The framework's contract
 
@@ -44,7 +44,7 @@ export async function searchAndClassify<TRecord>(
 
 `classifyMatches()` is the one primitive every resolver uses, including `resolveProduct.ts` — which uses **only** this, never the blocker-building helpers below, since it is deliberately never a blocker (an unresolved product falls back to raw text, not a clarification prompt). `searchAndClassify()` adds the search call itself for the common case of "search by a raw query, then classify" with no pre-filtering step.
 
-`resolveProject.ts` calls `classifyMatches()` directly rather than `searchAndClassify()`, because it needs to run its own business-specific narrowing (the `projectTextHint` step — see §4) on the fetched candidate list *before* classification, something a single combined search-and-classify call couldn't accommodate without absorbing that narrowing into the framework itself. Keeping narrowing in the resolver and classification in the framework is exactly the intended seam.
+`resolveProject.ts` calls `classifyMatches()` directly rather than `searchAndClassify()`, because it needs to run its own business-specific narrowing (the `projectTextHint` step — see §4) on the fetched candidate list _before_ classification, something a single combined search-and-classify call couldn't accommodate without absorbing that narrowing into the framework itself. Keeping narrowing in the resolver and classification in the framework is exactly the intended seam.
 
 ### 3.2 Blocker assembly — three shapes
 
@@ -54,23 +54,31 @@ Every blocker any current resolver produces fits one of three shapes:
 
 ```ts
 export function missingPrerequisiteBlocker(config: {
-  id: string; type: PlannerBlockerType; field: string; message: string;
+  id: string;
+  type: PlannerBlockerType;
+  field: string;
+  message: string;
 }): PlannerBlocker;
 
 /** Convenience wrapper defaulting `type` to "text_required" — the common
  *  case for a missing raw-text field. */
 export function requiredInputBlocker(config: {
-  id: string; field: string; message: string; type?: PlannerBlockerType;
+  id: string;
+  field: string;
+  message: string;
+  type?: PlannerBlockerType;
 }): PlannerBlocker;
 ```
 
-**Selection** — a search ran and the result was empty or ambiguous. Built from an already-classified outcome (not from a raw query), so a resolver that pre-filters its own candidates can still hand the *post-filter* outcome to this helper.
+**Selection** — a search ran and the result was empty or ambiguous. Built from an already-classified outcome (not from a raw query), so a resolver that pre-filters its own candidates can still hand the _post-filter_ outcome to this helper.
 
 ```ts
 export function selectionBlocker<TRecord>(
   outcome: { kind: "none" } | { kind: "many"; records: TRecord[] },
   config: {
-    id: string; type: PlannerBlockerType; field: string;
+    id: string;
+    type: PlannerBlockerType;
+    field: string;
     toCandidate: (record: TRecord) => RankedCandidate;
     noMatchMessage: string;
     multipleMatchesMessage: (count: number) => string;
@@ -84,7 +92,17 @@ export function selectionBlocker<TRecord>(
  *  resolveCustomer.ts and resolveFollowupTarget.ts's name-lookup branch. */
 export async function resolveEntityByQuery<TRecord>(
   query: string,
-  config: { id, field?, type, search, toCandidate, noMatchMessage, multipleMatchesMessage, maxCandidates?, rank? },
+  config: {
+    id;
+    field?;
+    type;
+    search;
+    toCandidate;
+    noMatchMessage;
+    multipleMatchesMessage;
+    maxCandidates?;
+    rank?;
+  },
 ): Promise<{ record: TRecord | null; blocker: PlannerBlocker | null }>;
 ```
 
@@ -94,7 +112,9 @@ export async function resolveEntityByQuery<TRecord>(
 export function confirmationBlocker<TRecord>(
   record: TRecord,
   config: {
-    id: string; field: string; message: string;
+    id: string;
+    field: string;
+    message: string;
     toCandidate: (record: TRecord) => RankedCandidate;
     currentValue?: unknown;
   },
@@ -103,20 +123,20 @@ export function confirmationBlocker<TRecord>(
 
 ### 3.3 Extension points that exist but nothing uses yet
 
-The sprint's framework-responsibilities list names "fuzzy match," "candidate ranking," and "confidence metadata" explicitly. Every current resolver delegates matching entirely to an existing `api.ts` list function's own `ILIKE`-based partial search — no resolver today does client-side fuzzy scoring or ranking, and changing that was explicitly out of scope ("existing behaviour must remain identical," "the generated PlannerBlockers should remain identical"). Two extension points exist for a *future* entity that does need this, without requiring a framework change when it arrives:
+The sprint's framework-responsibilities list names "fuzzy match," "candidate ranking," and "confidence metadata" explicitly. Every current resolver delegates matching entirely to an existing `api.ts` list function's own `ILIKE`-based partial search — no resolver today does client-side fuzzy scoring or ranking, and changing that was explicitly out of scope ("existing behaviour must remain identical," "the generated PlannerBlockers should remain identical"). Two extension points exist for a _future_ entity that does need this, without requiring a framework change when it arrives:
 
 - **`rank?: (records: TRecord[]) => TRecord[]`** on `searchAndClassify()`/`resolveEntityByQuery()` — reorders/scores the result set before classification. Every current caller omits it, which is exactly why today's candidate ordering is unchanged.
 - **`RankedCandidate`** — `PlannerBlockerCandidate & { confidence?: number }` — the type every `toCandidate` callback returns. No current resolver sets `confidence`; it's declared on the framework's own candidate-building input type, not on `PlannerBlockerCandidate` itself (the wire shape persisted to `vie_actions.plan_blockers` and read by the Copilot UI), so adding it here required zero changes to `types.ts`, `vie.functions.ts`, or `VieActionCard.tsx`.
 
 ## 4. Resolver migration summary
 
-| Resolver | Framework helpers used | What stayed resolver-specific |
-|---|---|---|
-| `resolveCustomer.ts` | `requiredInputBlocker`, `resolveEntityByQuery` | The `listCustomers` search call and its untrimmed-message/trimmed-search-call split (see §5), candidate label/subtitle (`name`/`customer_code`) |
-| `resolveFollowupTarget.ts` | `requiredInputBlocker`, `resolveEntityByQuery` | The caller-supplied-context short-circuit (nothing to search for at all), same trim split as above |
-| `resolveProject.ts` | `missingPrerequisiteBlocker`, `classifyMatches`, `selectionBlocker` | The `projectTextHint` narrowing step, the `who` (customer-label-or-generic-phrase) message construction |
-| `resolveCustomerDuplicate.ts` | `confirmationBlocker` | The `findCustomerByPhone` lookup and the decision to check at all |
-| `resolveProduct.ts` | `classifyMatches` only | Never builds a blocker — deliberately the one resolver that only uses the framework's classification primitive |
+| Resolver                      | Framework helpers used                                              | What stayed resolver-specific                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resolveCustomer.ts`          | `requiredInputBlocker`, `resolveEntityByQuery`                      | The `listCustomers` search call and its untrimmed-message/trimmed-search-call split (see §5), candidate label/subtitle (`name`/`customer_code`) |
+| `resolveFollowupTarget.ts`    | `requiredInputBlocker`, `resolveEntityByQuery`                      | The caller-supplied-context short-circuit (nothing to search for at all), same trim split as above                                              |
+| `resolveProject.ts`           | `missingPrerequisiteBlocker`, `classifyMatches`, `selectionBlocker` | The `projectTextHint` narrowing step, the `who` (customer-label-or-generic-phrase) message construction                                         |
+| `resolveCustomerDuplicate.ts` | `confirmationBlocker`                                               | The `findCustomerByPhone` lookup and the decision to check at all                                                                               |
+| `resolveProduct.ts`           | `classifyMatches` only                                              | Never builds a blocker — deliberately the one resolver that only uses the framework's classification primitive                                  |
 
 Every resolver's own file-header comment documents exactly this split for that resolver, so a reader doesn't need this document open to understand which parts are generic and which are that resolver's own responsibility.
 

@@ -23,11 +23,13 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotificationSettingsRouteImport } from './routes/_authenticated/notification-settings'
 import { Route as AuthenticatedMessageTemplatesRouteImport } from './routes/_authenticated/message-templates'
+import { Route as AuthenticatedLocalCartingRouteImport } from './routes/_authenticated/local-carting'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCommunicationRouteImport } from './routes/_authenticated/communication'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedAgencyPaymentsRouteImport } from './routes/_authenticated/agency-payments'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -50,6 +52,7 @@ import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages/index'
 import { Route as AuthenticatedMastersIndexRouteImport } from './routes/_authenticated/masters/index'
 import { Route as AuthenticatedLiabilitiesIndexRouteImport } from './routes/_authenticated/liabilities/index'
+import { Route as AuthenticatedLedgerIndexRouteImport } from './routes/_authenticated/ledger/index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices/index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedInstallationsIndexRouteImport } from './routes/_authenticated/installations/index'
@@ -262,6 +265,12 @@ const AuthenticatedMessageTemplatesRoute =
     path: '/message-templates',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLocalCartingRoute =
+  AuthenticatedLocalCartingRouteImport.update({
+    id: '/local-carting',
+    path: '/local-carting',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFavoritesRoute = AuthenticatedFavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -288,6 +297,12 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgencyPaymentsRoute =
+  AuthenticatedAgencyPaymentsRouteImport.update({
+    id: '/agency-payments',
+    path: '/agency-payments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -414,6 +429,12 @@ const AuthenticatedLiabilitiesIndexRoute =
   AuthenticatedLiabilitiesIndexRouteImport.update({
     id: '/liabilities/',
     path: '/liabilities/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLedgerIndexRoute =
+  AuthenticatedLedgerIndexRouteImport.update({
+    id: '/ledger/',
+    path: '/ledger/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInvoicesIndexRoute =
@@ -1238,11 +1259,13 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/local-carting': typeof AuthenticatedLocalCartingRoute
   '/message-templates': typeof AuthenticatedMessageTemplatesRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -1354,6 +1377,7 @@ export interface FileRoutesByFullPath {
   '/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/ledger/': typeof AuthenticatedLedgerIndexRoute
   '/liabilities/': typeof AuthenticatedLiabilitiesIndexRoute
   '/masters/': typeof AuthenticatedMastersIndexRoute
   '/messages/': typeof AuthenticatedMessagesIndexRoute
@@ -1419,11 +1443,13 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
+  '/local-carting': typeof AuthenticatedLocalCartingRoute
   '/message-templates': typeof AuthenticatedMessageTemplatesRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -1535,6 +1561,7 @@ export interface FileRoutesByTo {
   '/installations': typeof AuthenticatedInstallationsIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
+  '/ledger': typeof AuthenticatedLedgerIndexRoute
   '/liabilities': typeof AuthenticatedLiabilitiesIndexRoute
   '/masters': typeof AuthenticatedMastersIndexRoute
   '/messages': typeof AuthenticatedMessagesIndexRoute
@@ -1602,11 +1629,13 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/communication': typeof AuthenticatedCommunicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
+  '/_authenticated/local-carting': typeof AuthenticatedLocalCartingRoute
   '/_authenticated/message-templates': typeof AuthenticatedMessageTemplatesRoute
   '/_authenticated/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -1718,6 +1747,7 @@ export interface FileRoutesById {
   '/_authenticated/installations/': typeof AuthenticatedInstallationsIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
+  '/_authenticated/ledger/': typeof AuthenticatedLedgerIndexRoute
   '/_authenticated/liabilities/': typeof AuthenticatedLiabilitiesIndexRoute
   '/_authenticated/masters/': typeof AuthenticatedMastersIndexRoute
   '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
@@ -1785,11 +1815,13 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
+    | '/agency-payments'
     | '/calendar'
     | '/communication'
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/local-carting'
     | '/message-templates'
     | '/notification-settings'
     | '/notifications'
@@ -1901,6 +1933,7 @@ export interface FileRouteTypes {
     | '/installations/'
     | '/inventory/'
     | '/invoices/'
+    | '/ledger/'
     | '/liabilities/'
     | '/masters/'
     | '/messages/'
@@ -1966,11 +1999,13 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
+    | '/agency-payments'
     | '/calendar'
     | '/communication'
     | '/dashboard'
     | '/documents'
     | '/favorites'
+    | '/local-carting'
     | '/message-templates'
     | '/notification-settings'
     | '/notifications'
@@ -2082,6 +2117,7 @@ export interface FileRouteTypes {
     | '/installations'
     | '/inventory'
     | '/invoices'
+    | '/ledger'
     | '/liabilities'
     | '/masters'
     | '/messages'
@@ -2148,11 +2184,13 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/activity'
+    | '/_authenticated/agency-payments'
     | '/_authenticated/calendar'
     | '/_authenticated/communication'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/favorites'
+    | '/_authenticated/local-carting'
     | '/_authenticated/message-templates'
     | '/_authenticated/notification-settings'
     | '/_authenticated/notifications'
@@ -2264,6 +2302,7 @@ export interface FileRouteTypes {
     | '/_authenticated/installations/'
     | '/_authenticated/inventory/'
     | '/_authenticated/invoices/'
+    | '/_authenticated/ledger/'
     | '/_authenticated/liabilities/'
     | '/_authenticated/masters/'
     | '/_authenticated/messages/'
@@ -2448,6 +2487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMessageTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/local-carting': {
+      id: '/_authenticated/local-carting'
+      path: '/local-carting'
+      fullPath: '/local-carting'
+      preLoaderRoute: typeof AuthenticatedLocalCartingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/favorites': {
       id: '/_authenticated/favorites'
       path: '/favorites'
@@ -2481,6 +2527,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agency-payments': {
+      id: '/_authenticated/agency-payments'
+      path: '/agency-payments'
+      fullPath: '/agency-payments'
+      preLoaderRoute: typeof AuthenticatedAgencyPaymentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/activity': {
@@ -2635,6 +2688,13 @@ declare module '@tanstack/react-router' {
       path: '/liabilities'
       fullPath: '/liabilities/'
       preLoaderRoute: typeof AuthenticatedLiabilitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ledger/': {
+      id: '/_authenticated/ledger/'
+      path: '/ledger'
+      fullPath: '/ledger/'
+      preLoaderRoute: typeof AuthenticatedLedgerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invoices/': {
@@ -3766,11 +3826,13 @@ const AuthenticatedVendorsVendorIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedAgencyPaymentsRoute: typeof AuthenticatedAgencyPaymentsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCommunicationRoute: typeof AuthenticatedCommunicationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
+  AuthenticatedLocalCartingRoute: typeof AuthenticatedLocalCartingRoute
   AuthenticatedMessageTemplatesRoute: typeof AuthenticatedMessageTemplatesRoute
   AuthenticatedNotificationSettingsRoute: typeof AuthenticatedNotificationSettingsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -3876,6 +3938,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInstallationsIndexRoute: typeof AuthenticatedInstallationsIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
+  AuthenticatedLedgerIndexRoute: typeof AuthenticatedLedgerIndexRoute
   AuthenticatedLiabilitiesIndexRoute: typeof AuthenticatedLiabilitiesIndexRoute
   AuthenticatedMastersIndexRoute: typeof AuthenticatedMastersIndexRoute
   AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
@@ -3909,11 +3972,13 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedAgencyPaymentsRoute: AuthenticatedAgencyPaymentsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCommunicationRoute: AuthenticatedCommunicationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
+  AuthenticatedLocalCartingRoute: AuthenticatedLocalCartingRoute,
   AuthenticatedMessageTemplatesRoute: AuthenticatedMessageTemplatesRoute,
   AuthenticatedNotificationSettingsRoute:
     AuthenticatedNotificationSettingsRoute,
@@ -4058,6 +4123,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInstallationsIndexRoute: AuthenticatedInstallationsIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
+  AuthenticatedLedgerIndexRoute: AuthenticatedLedgerIndexRoute,
   AuthenticatedLiabilitiesIndexRoute: AuthenticatedLiabilitiesIndexRoute,
   AuthenticatedMastersIndexRoute: AuthenticatedMastersIndexRoute,
   AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,

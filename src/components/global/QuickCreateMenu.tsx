@@ -3,17 +3,17 @@ import { Link } from "@tanstack/react-router";
 import {
   Plus,
   Users,
-  Building2,
   Factory,
   PackageSearch,
   ClipboardList,
   FileText,
-  ShoppingCart,
-  ClipboardCheck,
+  FileCheck,
   Receipt,
   Wallet,
+  CreditCard,
   Truck,
-  CheckSquare,
+  Navigation,
+  Landmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,25 +25,39 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type MenuCategory = "Sales" | "Purchase" | "Inventory" | "Finance";
+
 const ITEMS: ReadonlyArray<{
   to: string;
   label: string;
   icon: typeof Users;
-  group: "Master" | "Sales" | "Ops";
+  group: MenuCategory;
 }> = [
-  { to: "/customers", label: "Customer", icon: Users, group: "Master" },
-  { to: "/projects", label: "Project", icon: Building2, group: "Master" },
-  { to: "/vendors", label: "Vendor", icon: Factory, group: "Master" },
-  { to: "/products", label: "Product", icon: PackageSearch, group: "Master" },
-  { to: "/enquiries", label: "Enquiry", icon: ClipboardList, group: "Sales" },
+  // Sales
+  { to: "/customers", label: "Customer", icon: Users, group: "Sales" },
   { to: "/quotes/new", label: "Quotation", icon: FileText, group: "Sales" },
-  { to: "/sales-orders/new", label: "Sales Order", icon: ShoppingCart, group: "Sales" },
   { to: "/invoices/new", label: "Invoice", icon: Receipt, group: "Sales" },
-  { to: "/receipts/new", label: "Receipt", icon: Wallet, group: "Sales" },
-  { to: "/purchase-orders/new", label: "Purchase Order", icon: ClipboardCheck, group: "Ops" },
-  { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Ops" },
-  { to: "/dispatch/new", label: "Dispatch", icon: Truck, group: "Ops" },
-  { to: "/tasks", label: "Task", icon: CheckSquare, group: "Ops" },
+  { to: "/dispatch/new", label: "Dispatch", icon: Truck, group: "Sales" },
+  { to: "/local-carting", label: "Local Carting", icon: Navigation, group: "Sales" },
+
+  // Purchase
+  { to: "/vendors", label: "Vendor", icon: Factory, group: "Purchase" },
+  { to: "/rfqs", label: "RFQ", icon: ClipboardList, group: "Purchase" },
+  { to: "/purchase-invoices/new", label: "Purchase Invoice", icon: FileCheck, group: "Purchase" },
+  {
+    to: "/purchase-transport/new",
+    label: "Purchase Transportation",
+    icon: Truck,
+    group: "Purchase",
+  },
+
+  // Inventory
+  { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Inventory" },
+
+  // Finance
+  { to: "/receipts/new", label: "Customer Payment", icon: Wallet, group: "Finance" },
+  { to: "/vendor-payments/new", label: "Vendor Payment", icon: CreditCard, group: "Finance" },
+  { to: "/agency-payments", label: "Agency Payment", icon: Landmark, group: "Finance" },
 ];
 
 export function QuickCreateMenu({
@@ -53,7 +67,7 @@ export function QuickCreateMenu({
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 } = {}) {
-  const groups: ReadonlyArray<"Master" | "Sales" | "Ops"> = ["Master", "Sales", "Ops"];
+  const groups: ReadonlyArray<MenuCategory> = ["Sales", "Purchase", "Inventory", "Finance"];
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>

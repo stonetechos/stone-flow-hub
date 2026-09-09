@@ -30,22 +30,9 @@ async function hasAny(table: string, column: string, value: string): Promise<boo
 export async function probeDownstream(entity: GuidedEntity, entityId: string): Promise<boolean> {
   switch (entity) {
     case "customer":
-      return hasAny("enquiries", "customer_id", entityId);
-    case "enquiry": {
-      // Projects don't carry enquiry_id; the enquiry itself is stamped with
-      // project_id when converted.
-      const { data, error } = await supabase
-        .from("enquiries")
-        .select("project_id")
-        .eq("id", entityId)
-        .maybeSingle();
-      if (error) throw error;
-      return !!data?.project_id;
-    }
-    case "project":
-      return hasAny("quotes", "project_id", entityId);
+      return hasAny("quotes", "customer_id", entityId);
     case "quote":
-      return hasAny("sales_orders", "quote_id", entityId);
+      return hasAny("invoices", "quote_id", entityId);
     case "invoice":
       return hasAny("payments", "invoice_id", entityId);
     default:

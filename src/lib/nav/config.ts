@@ -20,6 +20,7 @@ import {
   Truck,
   Warehouse,
   ClipboardCheck,
+  BookOpen,
   Wallet,
   Banknote,
   HandCoins,
@@ -42,6 +43,7 @@ import {
 export type NavGroupId =
   | "sales"
   | "purchase"
+  | "inventory"
   | "finance"
   | "payroll"
   | "workforce"
@@ -56,18 +58,11 @@ export interface NavGroupDef {
   adminOnly?: boolean;
 }
 
-// Order here is the sidebar's group order. Sales / Purchase / Payroll /
-// Workforce Intelligence are pinned at the top per the 2026-09-04 Purchase
-// module restructure (see project doc
-// engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md) —
-// everything else keeps its previous relative order below them.
+// Order here is the sidebar's group order.
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "sales", label: "Sales" },
   { id: "purchase", label: "Purchase" },
-  // New 2026-09-04 — Rishi's ₹50L goal/Liabilities/Business Expenses
-  // request explicitly asked for "a section in the sidebar". Its own group
-  // (rather than folding into "Others") also gives Installation Agency
-  // Ledger (Task #48) a natural home later.
+  { id: "inventory", label: "Inventory" },
   { id: "finance", label: "Finance" },
   { id: "payroll", label: "Payroll" },
   { id: "workforce", label: "Workforce Intelligence" },
@@ -87,45 +82,13 @@ export interface NavItemDef {
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
-  // Sales
+  // Sales: Customers -> Quotations -> Invoices -> Dispatches (with Local Carting)
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
-  { id: "enquiries", to: "/enquiries", label: "Enquiries", icon: ClipboardList, group: "sales" },
-  { id: "projects", to: "/projects", label: "Projects", icon: Building2, group: "sales" },
-  // "Estimation Studio" removed from the sidebar 2026-09-06 (Rishi: sidebar
-  // felt densely populated / "estimation studios and all" was confusing next
-  // to Quotations). Page and route are untouched — build a quote from
-  // Enquiries/Projects or the Quotations page itself. Restore by
-  // uncommenting if a direct link is ever wanted again.
-  // { id: "estimates", to: "/estimates", label: "Estimation Studio", icon: FileText, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
-  {
-    id: "sales-orders",
-    to: "/sales-orders",
-    label: "Sales Orders",
-    icon: ShoppingCart,
-    group: "sales",
-  },
-  { id: "payments", to: "/payments", label: "Payments", icon: Wallet, group: "sales" },
   { id: "invoices", to: "/invoices", label: "Invoices", icon: Receipt, group: "sales" },
-  // Was "Receipts & Ledger" — relabelled to pair with the new "Purchase
-  // Ledger" below. Same page/route, label only.
-  { id: "receipts", to: "/receipts", label: "Sales Ledger", icon: Wallet, group: "sales" },
-  // Moved here from "operations": this is the outbound-to-customer delivery
-  // tracking (carting agency/driver, partial dispatch, pending-delivery
-  // balance) — sales-facing, not purchase-facing. See the restructure plan
-  // doc for the reasoning; flagged for confirmation, not a literal instruction.
-  { id: "dispatch", to: "/dispatch", label: "Dispatch", icon: Truck, group: "sales" },
-  { id: "followups", to: "/followups", label: "Follow-ups", icon: CalendarClock, group: "sales" },
-  // "Tasks" and "Calendar" removed from the sidebar 2026-09-06 (2026-09-06
-  // decluttering — generic to-do/calendar utilities, not sales-pipeline
-  // steps; Follow-ups already covers sales-side scheduling). Pages/routes
-  // untouched; uncomment to bring back.
-  // { id: "tasks", to: "/tasks", label: "Tasks", icon: CheckSquare, group: "sales" },
-  // { id: "calendar", to: "/calendar", label: "Calendar", icon: Calendar, group: "sales" },
+  { id: "dispatch", to: "/dispatch", label: "Dispatches", icon: Truck, group: "sales" },
 
-  // Purchase (was "Operations" — Manufacturing / Slab Register / Stock
-  // Movements removed entirely per the 2026-09-04 restructure, not just
-  // unlinked; see the plan doc's "Purchase scope" decision)
+  // Purchase: Vendors -> RFQ -> Purchase Invoices (with Inward Transportation)
   {
     id: "vendors",
     to: "/vendors",
@@ -133,25 +96,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Factory,
     group: "purchase",
   },
-  {
-    id: "purchase-orders",
-    to: "/purchase-orders",
-    label: "Purchase Orders",
-    icon: ClipboardCheck,
-    group: "purchase",
-  },
-  // Moved here from "sales": the whole vendor-negotiation/approval workflow
-  // this drives is procurement, not sales. Flagged for confirmation in the
-  // plan doc, not a literal instruction.
-  { id: "rfqs", to: "/rfqs", label: "RFQs", icon: Send, group: "purchase" },
-  { id: "inventory", to: "/inventory", label: "Inventory", icon: Warehouse, group: "purchase" },
-  {
-    id: "purchase-ledger",
-    to: "/purchase-ledger",
-    label: "Purchase Ledger",
-    icon: Wallet,
-    group: "purchase",
-  },
+  { id: "rfqs", to: "/rfqs", label: "RFQ", icon: Send, group: "purchase" },
   {
     id: "purchase-invoices",
     to: "/purchase-invoices",
@@ -159,35 +104,31 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Receipt,
     group: "purchase",
   },
-  {
-    // Route stays "/vendor-payments" — that module already existed
-    // (src/lib/vendor-payments/) before this Purchase-module build, and
-    // renaming its URL would break every existing deep link into it (the
-    // "Pay vendor" buttons on Purchase Orders and Purchase Invoices).
-    // Same pattern as "Sales Ledger" keeping the /receipts URL.
-    id: "purchase-payments",
-    to: "/vendor-payments",
-    label: "Purchase Payments",
-    icon: Banknote,
-    group: "purchase",
-  },
-  // Task #40 — inbound-from-vendor shipment tracking (carting agency/
-  // driver, freight, amount paid), keyed to Purchase Order. Purchase-side
-  // mirror of Dispatch above, which stays in Sales for outbound delivery.
-  {
-    id: "purchase-transport",
-    to: "/purchase-transport",
-    label: "Purchase Transportation",
-    icon: Truck,
-    group: "purchase",
-  },
-  // Still not started (tasks #41/#42) — left commented until the pages
-  // exist so the sidebar never links to a 404.
-  // { id: "vendor-quality", to: "/vendors/quality-issues", label: "Quality & Breakage", icon: AlertTriangle, group: "purchase" },
-  // { id: "vendor-scorecard", to: "/vendors/scorecard", label: "Vendor Scorecard", icon: Gauge, group: "purchase" },
 
-  // Finance (Task #44/#45 — ₹50L annual goal lives on the Liabilities page
-  // itself, not a separate nav item)
+  // Inventory (Individual Category)
+  {
+    id: "inventory",
+    to: "/inventory",
+    label: "Inventory",
+    icon: Warehouse,
+    group: "inventory",
+  },
+
+  // Finance: Payments -> Ledgers -> Liabilities -> Business Expenses
+  {
+    id: "payments",
+    to: "/payments",
+    label: "Payments",
+    icon: Wallet,
+    group: "finance",
+  },
+  {
+    id: "ledger",
+    to: "/ledger",
+    label: "Ledgers",
+    icon: BookOpen,
+    group: "finance",
+  },
   {
     id: "liabilities",
     to: "/liabilities",
@@ -200,15 +141,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/business-expenses",
     label: "Business Expenses",
     icon: ReceiptText,
-    group: "finance",
-  },
-  // Task #48 — manual charge/payment entries only (Rishi's explicit
-  // decision); no auto-posting from Approved Quotations (Task #49).
-  {
-    id: "installation-ledger",
-    to: "/installation-ledger",
-    label: "Installation Agency Ledger",
-    icon: HandCoins,
     group: "finance",
   },
 

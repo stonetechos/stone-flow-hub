@@ -29,7 +29,7 @@ What is **unchanged**:
 - The Understand layer, Workflow Engine, Action Registry, execution policies, server function signatures, AI provider, authentication/authorization, and audit logging.
 - The one rule that decides whether a plan can auto-execute: `resolveEffectiveMode()` (`planner/index.ts`) still only ever asks `blockers.length > 0` to force `"draft"`. A configured `"auto"` policy still requires confidence to clear its threshold; `"confirm"`/`"draft"` policies are still a ceiling never upgraded by confidence. Only the element type of the array changed — the downgrade logic did not.
 - The `vie_actions` table schema. `plan_blockers` is still the same `Json` column; only the JS-side shape written into it changed (see §4).
-- Every existing intent's actual resolution behavior (which name matches which customer, when a project is ambiguous, when a mobile number is invalid, ...). No resolver's decision of *whether* to block changed — only *what it hands back* when it does.
+- Every existing intent's actual resolution behavior (which name matches which customer, when a project is ambiguous, when a mobile number is invalid, ...). No resolver's decision of _whether_ to block changed — only _what it hands back_ when it does.
 
 ## 2. The blocker model
 
@@ -37,20 +37,20 @@ What is **unchanged**:
 
 A closed, generic set (`PLANNER_BLOCKER_TYPES` in `types.ts`) covering every kind of unresolved prerequisite a `planX()` function can produce:
 
-| Type | Meaning | Current producer(s) |
-|---|---|---|
-| `customer_selection` | Ambiguous or unmatched customer name | `resolveCustomer.ts`, `resolveFollowupTarget.ts` |
-| `vendor_selection` | Ambiguous or unmatched vendor | none yet — reserved for a future vendor-facing intent |
-| `project_selection` | Ambiguous, unmatched, or altogether missing project | `resolveProject.ts` |
-| `product_selection` | Ambiguous/unmatched product | none — `resolveProduct.ts` deliberately never blocks (see §5) |
-| `stone_selection`, `colour_selection`, `finish_selection`, `thickness_selection` | Reserved for future stone-attribute resolvers | none yet |
-| `quantity_required` | A line item's quantity wasn't extracted | `planCreateQuotation` |
-| `unit_price_required` | A line item's unit price wasn't extracted | `planCreateQuotation` |
-| `delivery_date_required` | Reserved — no current producer | none yet |
-| `date_required` | A relative date phrase didn't resolve | `planNoteFollowup` |
-| `text_required` | A required free-text field is missing/invalid | `resolveCustomer.ts` (no name), `resolveFollowupTarget.ts` (no target), `planCreateCustomer` (name/mobile) |
-| `number_required` | Reserved, generic — no current producer | none yet |
-| `confirmation_required` | Not a missing value — a fact the human must see before proceeding | `resolveCustomerDuplicate.ts` |
+| Type                                                                             | Meaning                                                           | Current producer(s)                                                                                        |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `customer_selection`                                                             | Ambiguous or unmatched customer name                              | `resolveCustomer.ts`, `resolveFollowupTarget.ts`                                                           |
+| `vendor_selection`                                                               | Ambiguous or unmatched vendor                                     | none yet — reserved for a future vendor-facing intent                                                      |
+| `project_selection`                                                              | Ambiguous, unmatched, or altogether missing project               | `resolveProject.ts`                                                                                        |
+| `product_selection`                                                              | Ambiguous/unmatched product                                       | none — `resolveProduct.ts` deliberately never blocks (see §5)                                              |
+| `stone_selection`, `colour_selection`, `finish_selection`, `thickness_selection` | Reserved for future stone-attribute resolvers                     | none yet                                                                                                   |
+| `quantity_required`                                                              | A line item's quantity wasn't extracted                           | `planCreateQuotation`                                                                                      |
+| `unit_price_required`                                                            | A line item's unit price wasn't extracted                         | `planCreateQuotation`                                                                                      |
+| `delivery_date_required`                                                         | Reserved — no current producer                                    | none yet                                                                                                   |
+| `date_required`                                                                  | A relative date phrase didn't resolve                             | `planNoteFollowup`                                                                                         |
+| `text_required`                                                                  | A required free-text field is missing/invalid                     | `resolveCustomer.ts` (no name), `resolveFollowupTarget.ts` (no target), `planCreateCustomer` (name/mobile) |
+| `number_required`                                                                | Reserved, generic — no current producer                           | none yet                                                                                                   |
+| `confirmation_required`                                                          | Not a missing value — a fact the human must see before proceeding | `resolveCustomerDuplicate.ts`                                                                              |
 
 Types with no current producer (`vendor_selection`, `delivery_date_required`, `number_required`, the stone-attribute types) are included because the sprint's own model named them explicitly as real future cases and the type is free to declare. Adding the producer later needs **no UI change** — the renderer (§3) already treats every `*_selection` type identically, and the scalar-input types by shared behavior, not by name.
 
@@ -85,13 +85,13 @@ Unlike every other blocker type, `confirmation_required` isn't a missing value t
 
 `VieActionCard.tsx`'s `BlockerField` component is the single place that turns a `PlannerBlocker` into a control. It switches **only on `blocker.type`** — it never inspects or parses `blocker.message`:
 
-| `blocker.type` | Control |
-|---|---|
-| `quantity_required`, `unit_price_required`, `number_required` | Number input |
-| `delivery_date_required`, `date_required` | Date input (native `<input type="date">`, converted to an ISO timestamp on submit) |
-| `text_required` | Text input, pre-filled with `currentValue` as a placeholder when present |
-| `confirmation_required` | Read-only notice card — the message plus the sole candidate (if any), no input |
-| everything else (every `*_selection` type) | `CandidatePicker` — see below |
+| `blocker.type`                                                | Control                                                                            |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `quantity_required`, `unit_price_required`, `number_required` | Number input                                                                       |
+| `delivery_date_required`, `date_required`                     | Date input (native `<input type="date">`, converted to an ISO timestamp on submit) |
+| `text_required`                                               | Text input, pre-filled with `currentValue` as a placeholder when present           |
+| `confirmation_required`                                       | Read-only notice card — the message plus the sole candidate (if any), no input     |
+| everything else (every `*_selection` type)                    | `CandidatePicker` — see below                                                      |
 
 `CandidatePicker` is one generic component covering `customer_selection`, `vendor_selection`, `project_selection`, `product_selection`, `stone_selection`, `colour_selection`, `finish_selection`, and `thickness_selection` (and any future `*_selection` type, via the `default` branch of the switch above) rather than one component per type, per the sprint's own "keep it generic and reusable" allowance:
 
@@ -103,7 +103,7 @@ This threshold is a display heuristic, not new resolution logic — the resolver
 
 ## 5. How future intents add blockers
 
-1. **Reuse an existing `PlannerBlockerType`** if the new prerequisite fits one (most `*_selection`/`*_required` cases will). Only add a new member to `PLANNER_BLOCKER_TYPES` (`types.ts`) for a genuinely new *kind* of unresolved prerequisite — never overload an existing type to mean two different things, since the UI's dispatch is purely type-driven.
+1. **Reuse an existing `PlannerBlockerType`** if the new prerequisite fits one (most `*_selection`/`*_required` cases will). Only add a new member to `PLANNER_BLOCKER_TYPES` (`types.ts`) for a genuinely new _kind_ of unresolved prerequisite — never overload an existing type to mean two different things, since the UI's dispatch is purely type-driven.
 2. **Build the `PlannerBlocker` object where the real data already is.** If a resolver already fetches the candidate list to decide whether a match is ambiguous, construct the blocker there (see `resolveCustomer.ts`, `resolveProject.ts`) — never reconstruct it later in `planner/index.ts` from a resolver's return value, and never truncate a candidate list for prose-readability the way the old string blockers did (a rendered list has no such limit; cap generously — the existing resolvers use 20 — purely to bound a pathological search term, not to shorten a sentence).
 3. **Set `field` to the exact `params` key (or dot-path) the resolved value belongs at**, so `completeDraftAction`'s patch can be merged in directly for a top-level field. For a nested field, see §3.2's documented gap before assuming a patch alone will fix it.
 4. **Push the blocker into the `planX()` function's `blockers: PlannerBlocker[]` array** the same way every existing intent does — `resolveEffectiveMode()` needs no changes; it already treats any non-empty array as forcing `"draft"`.

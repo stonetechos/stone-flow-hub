@@ -9,7 +9,7 @@
 > `eslint .` to a clean 0 errors, and `.github/workflows/ci.yml`'s Lint
 > step is a real blocking gate again (the `continue-on-error` added in
 > Milestone 4 below has been removed). The "315 files fail `prettier
-> --check`" figure was also stale by the time of this audit — most of
+--check`" figure was also stale by the time of this audit — most of
 > that drift had already been cleaned up by intervening commits; only 5
 > source files still needed a real reformat. See
 > `docs/sprint-2.2-developer-experience-ci-audit.md` for the full

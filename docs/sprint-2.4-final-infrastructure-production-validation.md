@@ -3,7 +3,7 @@
 **Date:** 2026-07-23
 **Branch:** `feature/vie-quotation`
 **Objective:** validate what Sprints 2.2/2.3 could not — everything
-*outside* the repository. Per the sprint's own rule, every finding below
+_outside_ the repository. Per the sprint's own rule, every finding below
 is tagged **Verified** (checked directly, evidence attached), **Inferred**
 (a reasoned conclusion from code/config/docs, not independently confirmed
 against live state), or **Cannot verify from sandbox** (requires a live
@@ -21,7 +21,7 @@ state, end of document).
 --frozen-lockfile` (line 32); `grep -rn "actions/cache" .github/` returns
 no matches. `oven-sh/setup-bun@v2`'s own documentation (fetched
 2026-07-23) confirms its only cache-related input, `no-cache`, caches the
-Bun *binary*, not installed packages — there is no built-in dependency
+Bun _binary_, not installed packages — there is no built-in dependency
 cache to enable. Bun's own official CI/CD guide
 (bun.sh/guides/runtime/cicd, fetched 2026-07-23) shows the minimal
 `checkout` → `setup-bun` → `bun install` pattern with no caching step
@@ -57,7 +57,7 @@ saved" figure would be a guess, which the sprint's rules forbid — none
 is given. What can be said with evidence: 837 packages is a non-trivial
 install (573MB sampled), Bun's own docs describe its cache-hit path as
 skip-the-download-entirely (not just faster-copy), and the current
-workflow re-fetches all 837 from a *private, non-CDN-backed* mirror on
+workflow re-fetches all 837 from a _private, non-CDN-backed_ mirror on
 every single run — the caching opportunity is real and structural, even
 though this sandbox cannot produce a before/after number for it.
 
@@ -73,6 +73,7 @@ own documentation (fetched 2026-07-23):**
     restore-keys: |
       bun-${{ runner.os }}-
 ```
+
 Placed after "Setup Bun", before "Install dependencies".
 
 - **Primary key** (`hashFiles('bun.lock')`): changes if and only if the
@@ -95,7 +96,7 @@ Placed after "Setup Bun", before "Install dependencies".
   commit cadence) frequent CI activity.
 
 **Reproducibility — explicitly addressed, per the sprint's rule not to
-weaken it.** The cache does not change *what* gets installed: `bun
+weaken it.** The cache does not change _what_ gets installed: `bun
 install --frozen-lockfile` still resolves exclusively from `bun.lock`
 regardless of cache state, and Bun verifies each cached package's
 integrity before reusing it (per its own cache documentation). The cache
@@ -125,6 +126,7 @@ JSON. Confirmed by direct reading of both files.
 
 **Verified — Wrangler config, both layers.** The checked-in
 `wrangler.jsonc`:
+
 ```json
 {
   "name": "stone-flow-hub",
@@ -134,8 +136,10 @@ JSON. Confirmed by direct reading of both files.
   "assets": { "directory": ".output/public" }
 }
 ```
-The *actual* generated config a real `wrangler deploy` would use
+
+The _actual_ generated config a real `wrangler deploy` would use
 (`.output/server/wrangler.json`, produced by rebuilding this sprint):
+
 ```json
 {
   "compatibility_date": "2026-07-16",
@@ -147,6 +151,7 @@ The *actual* generated config a real `wrangler deploy` would use
   "rules": [{ "type": "ESModule", "globs": ["**/*.mjs", "**/*.js"] }]
 }
 ```
+
 `name` and `compatibility_date` match exactly between the two, confirming
 the checked-in file's own header comment (from Sprint 1.9 M3): those two
 fields carry through unmodified; `main`/`assets` are regenerated (paths
@@ -185,7 +190,7 @@ identical redeploy of this same undifferentiated config to a
 differently-named Worker/route at the Cloudflare account level, or (b)
 configured entirely through the Cloudflare dashboard, invisible to
 version control and code review. Either way, this is real drift
-*potential*, not a confirmed drift *event*: this sandbox has no
+_potential_, not a confirmed drift _event_: this sandbox has no
 Cloudflare account/dashboard access to check whether a Preview
 environment exists, what it's bound to, or whether its environment
 variables match Production's. `src/routes/api/public/diagnostics/env-status.ts`
@@ -208,12 +213,12 @@ sprint's investigation (`2026-07-23 13:40 UTC`). Since the fork point
 (`24174f0`, "Added form primitives"), `origin/main` has accumulated
 **31 commits** — broken down by author:
 
-| Author | Commits | Pattern |
-|---|---|---|
-| `gpt-engineer-app[bot]` | 21 | Generic messages ("Changes", "Work in progress") interleaved with specific ones ("Renamed app to STOS", "Applied audit fixes", "Audited deployment integrity", "Fixed activity_log RLS policy") |
-| `Claude (Cowork)` | 7 | A **different** Cowork session/account than this one, committing directly to `main` — e.g. "Apply Prettier formatting across repository", "Mobile UX Polish", "AI foundation integration" |
-| `stonetechos` (human) | 2 | Merge-PR commits |
-| `Claude` | 1 | — |
+| Author                  | Commits | Pattern                                                                                                                                                                                         |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gpt-engineer-app[bot]` | 21      | Generic messages ("Changes", "Work in progress") interleaved with specific ones ("Renamed app to STOS", "Applied audit fixes", "Audited deployment integrity", "Fixed activity_log RLS policy") |
+| `Claude (Cowork)`       | 7       | A **different** Cowork session/account than this one, committing directly to `main` — e.g. "Apply Prettier formatting across repository", "Mobile UX Polish", "AI foundation integration"       |
+| `stonetechos` (human)   | 2       | Merge-PR commits                                                                                                                                                                                |
+| `Claude`                | 1       | —                                                                                                                                                                                               |
 
 `gpt-engineer-app[bot]` is the git identity of Lovable's platform sync
 (Lovable's underlying engine was originally "GPT Engineer," which
@@ -281,24 +286,24 @@ reference across `src/`, `scripts/`, `vite.config.ts` — not by reading
 docs, so this reflects what the code actually reads, cross-checked
 against `docs/DEPLOYMENT.md`'s documented list.
 
-| Variable | Scope | Required? | Evidence |
-|---|---|---|---|
-| `VITE_SUPABASE_URL` | Browser (build-time embedded) | **Required** | `src/integrations/supabase/client.ts` — no fallback found |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser | **Required** | same |
-| `VITE_SUPABASE_PROJECT_ID` | Browser | Optional | `src/lib/mcp/index.ts:26` — falls back to `"project-ref-unset"` |
-| `VITE_CAPACITOR_BUILD` | Build-time only | Development/build-variant only | Set only by `npm run build:capacitor`; every other script leaves it unset — `vite.config.ts` |
-| `SUPABASE_URL` | Server | **Required** | `auth-middleware.ts`'s `requireSupabaseAuth` throws `"Missing Supabase environment variable(s)"` without it (Sprint 1.9 M1 finding) |
-| `SUPABASE_PUBLISHABLE_KEY` | Server | **Required** | same throw site |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server | **Required** (production) | `client.server.ts`'s `supabaseAdmin`; docs mark it "Lovable-managed; not user-accessible" |
-| `LOVABLE_API_KEY` | Server | **Required** | docs: "required for AI Gateway"; `daily-digest.ts` returns a 500 without it |
-| `LOVABLE_SEND_URL` | Server | Optional | passed as one field of a config object to the email-send helper in `src/routes/lovable/email/queue/process.ts` — not independently guarded, but the helper accepts it alongside a required `apiKey` |
-| `CRON_SECRET` (alias `CRON_SHARED_SECRET`) | Server | **Required** to enable 2 cron endpoints | Sprint 1.9 M3: both endpoints accept either name, `CRON_SECRET` checked first |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Server | Optional | docs: "without them, payment links stay in queued state" |
-| `RAZORPAY_WEBHOOK_SECRET` | Server | Optional (but required for `razorpay.ts` to accept webhooks) | `razorpay.ts` returns 500 "Not configured" without it — optional *for the app to run*, required *for that one feature* |
-| `RESEND_API_KEY` | Server | Optional | `dispatch.server.ts`: `if (!apiKey) return { ok: false, error: "RESEND_API_KEY secret not set" }` — graceful degradation confirmed in code |
-| `WHATSAPP_VERIFY_TOKEN` | Server | Optional | `whatsapp.ts` falls back to an `app_settings` DB row if unset |
-| `WHATSAPP_APP_SECRET` | Server | Optional (required for that one feature) | `whatsapp.ts` HMAC verification |
-| `WHATSAPP_PHONE_NUMBER_ID` / `WHATSAPP_BUSINESS_ACCOUNT_ID` | Server | Optional | `dispatch.server.ts` — both have a `cfg.x ||` fallback to a DB-stored config value before the env var |
+| Variable                                                    | Scope                         | Required?                                                    | Evidence                                                                                                                                                                                            |
+| ----------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --------------------------------------------------------- |
+| `VITE_SUPABASE_URL`                                         | Browser (build-time embedded) | **Required**                                                 | `src/integrations/supabase/client.ts` — no fallback found                                                                                                                                           |
+| `VITE_SUPABASE_PUBLISHABLE_KEY`                             | Browser                       | **Required**                                                 | same                                                                                                                                                                                                |
+| `VITE_SUPABASE_PROJECT_ID`                                  | Browser                       | Optional                                                     | `src/lib/mcp/index.ts:26` — falls back to `"project-ref-unset"`                                                                                                                                     |
+| `VITE_CAPACITOR_BUILD`                                      | Build-time only               | Development/build-variant only                               | Set only by `npm run build:capacitor`; every other script leaves it unset — `vite.config.ts`                                                                                                        |
+| `SUPABASE_URL`                                              | Server                        | **Required**                                                 | `auth-middleware.ts`'s `requireSupabaseAuth` throws `"Missing Supabase environment variable(s)"` without it (Sprint 1.9 M1 finding)                                                                 |
+| `SUPABASE_PUBLISHABLE_KEY`                                  | Server                        | **Required**                                                 | same throw site                                                                                                                                                                                     |
+| `SUPABASE_SERVICE_ROLE_KEY`                                 | Server                        | **Required** (production)                                    | `client.server.ts`'s `supabaseAdmin`; docs mark it "Lovable-managed; not user-accessible"                                                                                                           |
+| `LOVABLE_API_KEY`                                           | Server                        | **Required**                                                 | docs: "required for AI Gateway"; `daily-digest.ts` returns a 500 without it                                                                                                                         |
+| `LOVABLE_SEND_URL`                                          | Server                        | Optional                                                     | passed as one field of a config object to the email-send helper in `src/routes/lovable/email/queue/process.ts` — not independently guarded, but the helper accepts it alongside a required `apiKey` |
+| `CRON_SECRET` (alias `CRON_SHARED_SECRET`)                  | Server                        | **Required** to enable 2 cron endpoints                      | Sprint 1.9 M3: both endpoints accept either name, `CRON_SECRET` checked first                                                                                                                       |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`                   | Server                        | Optional                                                     | docs: "without them, payment links stay in queued state"                                                                                                                                            |
+| `RAZORPAY_WEBHOOK_SECRET`                                   | Server                        | Optional (but required for `razorpay.ts` to accept webhooks) | `razorpay.ts` returns 500 "Not configured" without it — optional _for the app to run_, required _for that one feature_                                                                              |
+| `RESEND_API_KEY`                                            | Server                        | Optional                                                     | `dispatch.server.ts`: `if (!apiKey) return { ok: false, error: "RESEND_API_KEY secret not set" }` — graceful degradation confirmed in code                                                          |
+| `WHATSAPP_VERIFY_TOKEN`                                     | Server                        | Optional                                                     | `whatsapp.ts` falls back to an `app_settings` DB row if unset                                                                                                                                       |
+| `WHATSAPP_APP_SECRET`                                       | Server                        | Optional (required for that one feature)                     | `whatsapp.ts` HMAC verification                                                                                                                                                                     |
+| `WHATSAPP_PHONE_NUMBER_ID` / `WHATSAPP_BUSINESS_ACCOUNT_ID` | Server                        | Optional                                                     | `dispatch.server.ts` — both have a `cfg.x                                                                                                                                                           |     | ` fallback to a DB-stored config value before the env var |
 
 **Real documentation-drift finding:** `docs/DEPLOYMENT.md` (lines 39-40)
 lists the WhatsApp variables as `WHATSAPP_PHONE_ID` / `WHATSAPP_TOKEN` —
@@ -313,7 +318,7 @@ state. Not fixed this sprint (documentation correction, not
 infrastructure) — flagged as a concrete, high-confidence finding for the
 release checklist (Part 8) and as a recommendation.
 
-**Cannot verify from sandbox:** which of these are actually *set* in the
+**Cannot verify from sandbox:** which of these are actually _set_ in the
 live Cloudflare Worker's environment today. `env-status.ts` reports
 presence for `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`/`CRON_SHARED_SECRET`, and
@@ -350,7 +355,7 @@ expected pattern for Supabase/most SQL migration tooling: applied
 migrations are tracked in a metadata table and never re-run, so a
 first-time `CREATE TABLE` has no practical need for an `IF NOT EXISTS`
 guard. By contrast, every migration read in this sprint that alters an
-*already-existing* table — `super_admin_protection.sql`'s `ADD COLUMN
+_already-existing_ table — `super_admin_protection.sql`'s `ADD COLUMN
 IF NOT EXISTS ip_address`, `activity_log_audit_columns.sql`'s four `ADD
 COLUMN IF NOT EXISTS` — does use the guard, consistent with a real,
 if informal, convention: guard alterations to shared tables, don't
@@ -400,7 +405,7 @@ conclusion, reached by reading the actual SQL rather than assuming
 disjoint filenames imply disjoint effects.
 
 **Cannot verify from sandbox:** whether these migrations have actually
-been *applied* to any live database (production or otherwise), whether
+been _applied_ to any live database (production or otherwise), whether
 `origin/main`'s and `feature/vie-quotation`'s live databases (if they
 are different Supabase projects/branches) are currently in sync with
 their respective migration histories, or whether a real `supabase db
@@ -421,7 +426,7 @@ history — confirmed via a set-difference (`comm -23`) between the two
 lists, which returned empty. This confirms no table was created without
 an RLS-enable statement. It does **not** confirm that every table's
 policies are individually correct or sufficiently restrictive — auditing
-policy *quality* for 128 RLS-related statements across 95 files is
+policy _quality_ for 128 RLS-related statements across 95 files is
 beyond what this sprint's evidence-gathering covered; flagged as a scope
 boundary, not a clean bill of health on policy logic itself.
 
@@ -447,34 +452,37 @@ authenticated admin action, not a scheduler.
 
 ### Endpoint classification (every route under `src/routes/api/**`)
 
-| Endpoint | Classification | Auth mechanism | Verified detail |
-|---|---|---|---|
-| `POST /api/public/hooks/daily-digest` | Cron | **Weak — see finding below** | Accepts any non-empty `apikey`/`authorization` header value and uses it directly as the Supabase client key; never validates it as a real credential in its own code |
-| `POST /api/public/hooks/customer-payment-reminders` | Cron | Shared secret, `timingSafeEqual` | Compares against `CRON_SECRET`/`CRON_SHARED_SECRET`, length-checked before `timingSafeEqual` |
-| `POST /api/public/hooks/dispatch-queue` | Admin | Real user JWT + role check | `auth.getUser()` then `requireAdminOrSuperAdmin` |
-| `GET`+`POST /api/public/hooks/whatsapp` | Cron/webhook | Verify-token (GET) + HMAC-SHA256 `timingSafeEqual` (POST) | Correct constant-time comparison, length-checked first |
-| `POST /api/public/hooks/workforce-daily` | Cron | Shared secret, `timingSafeEqual` | Fixed in Sprint 1.9 M3; reconfirmed present |
-| `POST /api/public/webhooks/razorpay` | Cron/webhook | HMAC-SHA256 `timingSafeEqual` | Correct constant-time comparison, length-checked first |
-| `GET /api/public/diagnostics/env-status` | Public, unauthenticated (by design) | None | Boolean-only presence output, no values/lengths/prefixes — reasoned safe by design in Sprint 2.0, reconfirmed by re-reading the handler this sprint: still exactly boolean presence checks, no drift since Sprint 2.0 |
+| Endpoint                                            | Classification                      | Auth mechanism                                            | Verified detail                                                                                                                                                                                                       |
+| --------------------------------------------------- | ----------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/public/hooks/daily-digest`               | Cron                                | **Weak — see finding below**                              | Accepts any non-empty `apikey`/`authorization` header value and uses it directly as the Supabase client key; never validates it as a real credential in its own code                                                  |
+| `POST /api/public/hooks/customer-payment-reminders` | Cron                                | Shared secret, `timingSafeEqual`                          | Compares against `CRON_SECRET`/`CRON_SHARED_SECRET`, length-checked before `timingSafeEqual`                                                                                                                          |
+| `POST /api/public/hooks/dispatch-queue`             | Admin                               | Real user JWT + role check                                | `auth.getUser()` then `requireAdminOrSuperAdmin`                                                                                                                                                                      |
+| `GET`+`POST /api/public/hooks/whatsapp`             | Cron/webhook                        | Verify-token (GET) + HMAC-SHA256 `timingSafeEqual` (POST) | Correct constant-time comparison, length-checked first                                                                                                                                                                |
+| `POST /api/public/hooks/workforce-daily`            | Cron                                | Shared secret, `timingSafeEqual`                          | Fixed in Sprint 1.9 M3; reconfirmed present                                                                                                                                                                           |
+| `POST /api/public/webhooks/razorpay`                | Cron/webhook                        | HMAC-SHA256 `timingSafeEqual`                             | Correct constant-time comparison, length-checked first                                                                                                                                                                |
+| `GET /api/public/diagnostics/env-status`            | Public, unauthenticated (by design) | None                                                      | Boolean-only presence output, no values/lengths/prefixes — reasoned safe by design in Sprint 2.0, reconfirmed by re-reading the handler this sprint: still exactly boolean presence checks, no drift since Sprint 2.0 |
 
 **Real security finding — `daily-digest.ts`'s auth pattern is
 materially weaker than every sibling endpoint, and inconsistent with
 this codebase's own established pattern.** Read directly:
+
 ```ts
 const auth = request.headers.get("apikey") ?? request.headers.get("authorization");
 if (!auth) return new Response("Missing apikey", { status: 401 });
 const supabase = createClient(process.env.SUPABASE_URL!, auth.replace(/^Bearer\s+/i, ""), {...});
 ```
+
 This never compares the header value against any known secret (no
 `timingSafeEqual`, no equality check of any kind against
 `SUPABASE_SERVICE_ROLE_KEY` or any other reference value) — it takes
-*whatever string the caller supplies* and uses it directly as the
+_whatever string the caller supplies_ and uses it directly as the
 Supabase API key for every subsequent query. The endpoint's own logic
-only confirms the header is *non-empty*; the actual security boundary
+only confirms the header is _non-empty_; the actual security boundary
 is entirely delegated to Supabase's own key validation on each
 downstream `.select()`/`.insert()` call. Practical consequences,
 reasoned from the code (not tested live — no network path to Supabase
 from this sandbox):
+
 - A caller supplying garbage would have their queries rejected by
   Supabase itself, not by this endpoint — meaning Supabase's own error
   text (`sErr.message`) gets echoed back in a 500 response to an
@@ -487,7 +495,7 @@ from this sandbox):
   the anon role — not verified in this audit (see RLS caveat above).
 - This is a fundamentally different trust model than every other
   cron/webhook endpoint in this codebase, all of which validate the
-  caller *before* trusting them (`timingSafeEqual` against a
+  caller _before_ trusting them (`timingSafeEqual` against a
   server-held secret, or a real `auth.getUser()` call) and only then
   reach for a separately-trusted service-role client. `daily-digest.ts`
   instead forwards the caller's own input as the credential.
@@ -521,6 +529,7 @@ Sprint 2.0's original reasoning with no drift found).
 ## PART 7 — Observability
 
 **Verified — what already exists.**
+
 - `src/lib/errors.ts`: a real structured-error layer — `AppError` (code +
   status), `FailureCategory` (`network` / `auth_expired` / `permission` /
   `not_found` / `backend` / `validation` / `programming_bug`), and
@@ -536,6 +545,7 @@ Sprint 2.0's original reasoning with no drift found).
   path.
 
 **Verified — real gaps.**
+
 - **No external log aggregation or error-tracking service.** No
   Sentry/Bugsnag/Rollbar/Datadog/Logtail/BetterStack dependency exists
   in `package.json` (confirmed in Sprint 2.2/2.3's full dependency
@@ -544,7 +554,7 @@ Sprint 2.0's original reasoning with no drift found).
 - **No dedicated health/liveness endpoint.** The only `*health*` matches
   under `src/routes/` are business dashboards (`procurement-health.tsx`,
   etc.) — unrelated to infrastructure health. `env-status.ts` reports
-  env-var *presence*, not actual Supabase connectivity (it never makes a
+  env-var _presence_, not actual Supabase connectivity (it never makes a
   real Supabase call) — it cannot distinguish "secrets are set" from
   "secrets are set but wrong" or "Supabase is down."
 - **No structured/correlated logging.** `console.error` calls are ad hoc
@@ -570,6 +580,7 @@ client-side, leaves no trace.**
 **Recommendations (not implemented — infrastructure/config decisions
 for the team, several requiring an external service choice this sandbox
 can't make unilaterally):**
+
 1. A real health endpoint that verifies Supabase reachability (not just
    env-var presence) — e.g., `GET /api/public/diagnostics/health` doing
    a cheap authenticated `select 1`-equivalent query, distinct from the
@@ -596,78 +607,89 @@ through 2.3 in this engagement. Each item is marked with how it was last
 verified.
 
 **Git**
+
 - [ ] `feature/vie-quotation` pushed to `origin` — **currently blocked**:
-  this sandbox has no GitHub push credentials (`git push` fails with
-  "could not read Username"); has been true and unchanged across every
-  sprint in this engagement.
+      this sandbox has no GitHub push credentials (`git push` fails with
+      "could not read Username"); has been true and unchanged across every
+      sprint in this engagement.
 - [ ] Re-run Sprint 2.1's conflict analysis against `origin/main`'s
-  *current* HEAD before merging — **the existing analysis is stale**
-  (Part 3: `main` has moved 31 commits past the fork, with continuous
-  activity as of 4 hours before this sprint).
+      _current_ HEAD before merging — **the existing analysis is stale**
+      (Part 3: `main` has moved 31 commits past the fork, with continuous
+      activity as of 4 hours before this sprint).
 - [ ] Confirm no new conflicting files beyond Sprint 2.1's 19, given
-  `main`'s continued movement.
+      `main`'s continued movement.
 
 **Build**
+
 - [x] `npm run build` succeeds — reconfirmed this sprint (clean run,
-  `.output/server/wrangler.json` generated correctly with
-  `nodejs_compat` present).
+      `.output/server/wrangler.json` generated correctly with
+      `nodejs_compat` present).
 
 **Tests**
+
 - [x] `bun test` — 323 pass, 0 fail, reconfirmed this sprint.
 
 **Typecheck**
+
 - [x] `npx tsc --noEmit` — clean, reconfirmed this sprint.
 - [x] `npm run typecheck:tests` — clean, reconfirmed this sprint.
 
 **Lint**
+
 - [x] `npm run lint` — 0 errors, 18 pre-existing non-blocking warnings
-  (Sprint 2.3 individually classified all 18; none block CI).
+      (Sprint 2.3 individually classified all 18; none block CI).
 
 **Supabase**
+
 - [ ] Confirm live production secrets (`SUPABASE_URL`,
-  `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) are actually
-  set — **cannot verify from sandbox** (§2/§4); `env-status.ts` is the
-  tool, but this sandbox cannot reach it.
+      `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) are actually
+      set — **cannot verify from sandbox** (§2/§4); `env-status.ts` is the
+      tool, but this sandbox cannot reach it.
 - [ ] Correct the WhatsApp env-var names in `docs/DEPLOYMENT.md` before
-  anyone provisions that integration from the docs (Part 4 finding —
-  docs say `WHATSAPP_PHONE_ID`/`WHATSAPP_TOKEN`, code reads
-  `WHATSAPP_VERIFY_TOKEN`/`WHATSAPP_APP_SECRET`/`WHATSAPP_PHONE_NUMBER_ID`/
-  `WHATSAPP_BUSINESS_ACCOUNT_ID`).
+      anyone provisions that integration from the docs (Part 4 finding —
+      docs say `WHATSAPP_PHONE_ID`/`WHATSAPP_TOKEN`, code reads
+      `WHATSAPP_VERIFY_TOKEN`/`WHATSAPP_APP_SECRET`/`WHATSAPP_PHONE_NUMBER_ID`/
+      `WHATSAPP_BUSINESS_ACCOUNT_ID`).
 - [ ] Reconcile `origin/main`'s and `feature/vie-quotation`'s divergent
-  migration sets before merge (Part 5) — verified compatible at the SQL
-  level, not yet verified against a live database.
+      migration sets before merge (Part 5) — verified compatible at the SQL
+      level, not yet verified against a live database.
 - [ ] Review `daily-digest.ts`'s auth pattern before relying on it in
-  production (Part 6 finding) — align with the `CRON_SECRET` +
-  `timingSafeEqual` + `supabaseAdmin` pattern used everywhere else.
+      production (Part 6 finding) — align with the `CRON_SECRET` +
+      `timingSafeEqual` + `supabaseAdmin` pattern used everywhere else.
 
 **Cloudflare**
+
 - [x] Worker config verified (name, compatibility_date, nodejs_compat
-  all present and correctly generated) — Part 2.
+      all present and correctly generated) — Part 2.
 - [ ] Confirm whether a Preview environment exists and, if so, whether
-  its bound secrets match Production's — **cannot verify from sandbox**
-  (Part 2); no in-repo config to check.
+      its bound secrets match Production's — **cannot verify from sandbox**
+      (Part 2); no in-repo config to check.
 
 **Lovable**
+
 - [ ] Confirm with the team (not this sandbox) exactly what "Publish"
-  deploys and whether it's `main` or something else — **cannot verify
-  from sandbox** (Part 3).
+      deploys and whether it's `main` or something else — **cannot verify
+      from sandbox** (Part 3).
 - [ ] Be aware `main` is being actively modified by Lovable's own bot
-  and at least one other Cowork session concurrently with any merge
-  planning — Part 3.
+      and at least one other Cowork session concurrently with any merge
+      planning — Part 3.
 
 **GitHub**
+
 - [ ] CI (`ci.yml`) passes on the actual PR once pushed — cannot be
-  confirmed until push access exists.
+      confirmed until push access exists.
 - [ ] Consider the Part 1 caching addition before merge, since every
-  future CI run pays the uncached install cost either way (not required
-  for correctness — purely a speed recommendation).
+      future CI run pays the uncached install cost either way (not required
+      for correctness — purely a speed recommendation).
 
 **Deployment**
+
 - [ ] No deploy step exists in `ci.yml` — deployment is entirely outside
-  this repository's automation (Lovable's own pipeline, per Part 3).
-  Confirm the team's actual deploy trigger before merge day.
+      this repository's automation (Lovable's own pipeline, per Part 3).
+      Confirm the team's actual deploy trigger before merge day.
 
 **Smoke tests**
+
 - `docs/DEPLOYMENT.md`'s existing manual smoke-test list (already
   documented, not authored this sprint): `/auth` loads, sign in,
   `/dashboard` renders, one create action succeeds, each cron endpoint
@@ -675,17 +697,19 @@ verified.
   sandbox (no live URL access).
 
 **Rollback**
+
 - [x] Strategy documented and verified this sprint (Part 5): forward-only
-  migrations, additive/nullable schema changes, rollback = redeploy
-  previous build via Cloudflare's dashboard, schema is left as-is
-  (backward-compatible by construction).
+      migrations, additive/nullable schema changes, rollback = redeploy
+      previous build via Cloudflare's dashboard, schema is left as-is
+      (backward-compatible by construction).
 
 **Verification**
+
 - [x] Every check this sandbox can run (build/test/typecheck/lint) is
-  green as of this sprint's final run (§ Final state below).
+      green as of this sprint's final run (§ Final state below).
 - [ ] Everything this sandbox cannot run (live Supabase, live
-  Cloudflare, live Lovable, live production URL) is explicitly listed
-  above, not silently assumed passing.
+      Cloudflare, live Lovable, live production URL) is explicitly listed
+      above, not silently assumed passing.
 
 ---
 

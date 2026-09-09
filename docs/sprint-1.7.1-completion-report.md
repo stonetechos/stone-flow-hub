@@ -12,6 +12,7 @@ the nine numbered parts.
 ## 1. Files changed
 
 **New:**
+
 - `supabase/migrations/20260722160001_platform_super_admin_bootstrap.sql`
 - `supabase/migrations/20260722160002_has_role_super_admin_inheritance.sql`
 - `supabase/migrations/20260722160003_activity_log_audit_columns.sql`
@@ -22,6 +23,7 @@ the nine numbered parts.
 - `docs/sprint-1.7.1-completion-report.md` (this file)
 
 **Modified:**
+
 - `docs/authentication.md` — new "Platform architecture" section, updated
   Permission hierarchy / Super Admin account / branding / audit events
   sections (Part 8).
@@ -57,6 +59,7 @@ the nine numbered parts.
   duplicate-`vite`-key bug fix (see § 2).
 
 **Deleted:**
+
 - `src/lib/branding/platform.ts` — superseded by
   `src/lib/platform/{platform,application}.ts` (Part 2/3).
 
@@ -114,29 +117,29 @@ literal string `"admin"` was located and classified below.
 
 **Fixed (now accept `super_admin` via the shared inheritance rule):**
 
-| Location | Before | After |
-|---|---|---|
-| `public.has_role` / `has_any_role` (all ~20+ RLS policies built on them) | literal `admin` only | `super_admin` inherits (migration `20260722160002`) |
-| `useRoles().isAdmin` / `.hasRole()` / `.hasAnyRole()` | literal `admin` only | routed through `roleSatisfies`/`roleSatisfiesAny` |
-| Every `<Can anyRole={["admin", ...]}>` / `roles.hasAnyRole([...])` call site (`manufacturing/index.tsx`, `workforce-intelligence/employees/{index,$id}.tsx`, `ProductionOrdersPanel.tsx`, `MasterListPage.tsx`, `CapabilityMatrix.tsx`, `CompanyProfileTab.tsx`, and any future one) | literal `admin` only | fixed automatically — all route through `useRoles()`, no per-file edit needed |
-| `AppShell.tsx`, `settings.tsx` sidebar/nav/tab admin gating | ad hoc local `user_roles` query, literal `admin` | `useRoles().isAdmin` |
-| `src/lib/admin/users.ts`'s `currentUserIsAdmin()` | literal `admin` only | `admin` OR `super_admin` |
-| `users.functions.ts`'s `requireAdminActor` | already checked both roles (Sprint 1.7) — now a thin wrapper over the shared `requireAdminOrSuperAdmin` instead of a second inline copy | same behavior, single implementation |
-| `dispatch.functions.ts`'s `assertAdmin` (6 call sites: `checkProviderStatus`, `sendTestMessage`, `dispatchQueueNow`, `sendWhatsappTestTemplate`, `runWhatsappConnectionTest`, `getWhatsappHealth`) | literal `admin` only | `admin` OR `super_admin`, via shared helper |
-| `dispatch-queue.ts` external scheduler webhook | literal `admin` only | `admin` OR `super_admin`, via shared helper |
-| `users.functions.ts`'s "last active admin" safeguard (`countActiveAdminsExcluding`) | counted literal `admin` holders only | counts `admin` OR `super_admin` holders — see judgment call below |
+| Location                                                                                                                                                                                                                                                                             | Before                                                                                                                                  | After                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `public.has_role` / `has_any_role` (all ~20+ RLS policies built on them)                                                                                                                                                                                                             | literal `admin` only                                                                                                                    | `super_admin` inherits (migration `20260722160002`)                           |
+| `useRoles().isAdmin` / `.hasRole()` / `.hasAnyRole()`                                                                                                                                                                                                                                | literal `admin` only                                                                                                                    | routed through `roleSatisfies`/`roleSatisfiesAny`                             |
+| Every `<Can anyRole={["admin", ...]}>` / `roles.hasAnyRole([...])` call site (`manufacturing/index.tsx`, `workforce-intelligence/employees/{index,$id}.tsx`, `ProductionOrdersPanel.tsx`, `MasterListPage.tsx`, `CapabilityMatrix.tsx`, `CompanyProfileTab.tsx`, and any future one) | literal `admin` only                                                                                                                    | fixed automatically — all route through `useRoles()`, no per-file edit needed |
+| `AppShell.tsx`, `settings.tsx` sidebar/nav/tab admin gating                                                                                                                                                                                                                          | ad hoc local `user_roles` query, literal `admin`                                                                                        | `useRoles().isAdmin`                                                          |
+| `src/lib/admin/users.ts`'s `currentUserIsAdmin()`                                                                                                                                                                                                                                    | literal `admin` only                                                                                                                    | `admin` OR `super_admin`                                                      |
+| `users.functions.ts`'s `requireAdminActor`                                                                                                                                                                                                                                           | already checked both roles (Sprint 1.7) — now a thin wrapper over the shared `requireAdminOrSuperAdmin` instead of a second inline copy | same behavior, single implementation                                          |
+| `dispatch.functions.ts`'s `assertAdmin` (6 call sites: `checkProviderStatus`, `sendTestMessage`, `dispatchQueueNow`, `sendWhatsappTestTemplate`, `runWhatsappConnectionTest`, `getWhatsappHealth`)                                                                                   | literal `admin` only                                                                                                                    | `admin` OR `super_admin`, via shared helper                                   |
+| `dispatch-queue.ts` external scheduler webhook                                                                                                                                                                                                                                       | literal `admin` only                                                                                                                    | `admin` OR `super_admin`, via shared helper                                   |
+| `users.functions.ts`'s "last active admin" safeguard (`countActiveAdminsExcluding`)                                                                                                                                                                                                  | counted literal `admin` holders only                                                                                                    | counts `admin` OR `super_admin` holders — see judgment call below             |
 
 **Intentionally left admin-only (verified, not a gap):**
 
-| Location | Why it's correct as-is |
-|---|---|
-| `canManageTargetUser`'s Super-Admin-target branch (`permissions.ts`) | Deliberately Super-Admin-*specific*, not admin-inheritable — the whole point of this function is that the Super Admin is protected from *everyone*, including other admins. |
-| `useRoles().isSuperAdmin` | By definition an exact check — inheriting it would make it meaningless. |
-| `admin/users.tsx`'s route `beforeLoad` guard | Already checked `.in("role", ["admin", "super_admin"])` since Sprint 1.7 — no change needed. |
-| `admin/users.tsx`'s local `self.isAdmin` flag (line ~213) | Feeds `canManageTargetUser`, which already ORs `isSuperAdmin \|\| isAdmin` — a literal check here is harmless because the broader OR happens one level up. |
+| Location                                                                                                                                                 | Why it's correct as-is                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `canManageTargetUser`'s Super-Admin-target branch (`permissions.ts`)                                                                                     | Deliberately Super-Admin-_specific_, not admin-inheritable — the whole point of this function is that the Super Admin is protected from _everyone_, including other admins.                               |
+| `useRoles().isSuperAdmin`                                                                                                                                | By definition an exact check — inheriting it would make it meaningless.                                                                                                                                   |
+| `admin/users.tsx`'s route `beforeLoad` guard                                                                                                             | Already checked `.in("role", ["admin", "super_admin"])` since Sprint 1.7 — no change needed.                                                                                                              |
+| `admin/users.tsx`'s local `self.isAdmin` flag (line ~213)                                                                                                | Feeds `canManageTargetUser`, which already ORs `isSuperAdmin \|\| isAdmin` — a literal check here is harmless because the broader OR happens one level up.                                                |
 | `users.functions.ts`'s "is target literally an admin" checks (`deleteAuthUser`/`setUserActive`, deciding whether to run the last-admin safeguard at all) | Correct to stay literal: a Super Admin target never reaches this code — `canManageTargetUser` already denies delete/deactivate against a Super Admin target unconditionally, earlier in the same handler. |
-| `nav/config.ts`'s `adminOnly: true` flags | Data declarations, not permission checks — consumed by `resolveNav(prefs, isAdmin)`, which receives the already-inheritance-aware `isAdmin` from `useRoles()`. |
-| `admin/users.tsx`'s `qk.users`/`qk.auth` query-key namespacing | The string `"admin"` here is a React Query cache key segment, unrelated to authorization. |
+| `nav/config.ts`'s `adminOnly: true` flags                                                                                                                | Data declarations, not permission checks — consumed by `resolveNav(prefs, isAdmin)`, which receives the already-inheritance-aware `isAdmin` from `useRoles()`.                                            |
+| `admin/users.tsx`'s `qk.users`/`qk.auth` query-key namespacing                                                                                           | The string `"admin"` here is a React Query cache key segment, unrelated to authorization.                                                                                                                 |
 
 **Judgment call — "last active admin" safeguard**: before this sprint,
 `deleteAuthUser`/`setUserActive` blocked removing the very last literal
@@ -148,7 +151,7 @@ permission model now justifies. `countActiveAdminsExcluding` now counts
 allowed when the platform-owning Super Admin still exists and remains
 fully able to administer the platform. The Super Admin itself was already
 unconditionally protected from deletion/deactivation before this change
-and still is; this only affects whether *removing a plain Admin* is
+and still is; this only affects whether _removing a plain Admin_ is
 blocked.
 
 ## 4. Migration notes

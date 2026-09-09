@@ -19,7 +19,7 @@ Manufacturing Stages, Quality Grades, Packaging Types, Units of
 Measurement, QC Templates) each reduce to a config entry plus a
 one-line route file under `src/routes/_authenticated/masters/`. This was
 already true before Sprint 1.8 — the sprint's job was auditing whether
-anything *else* in the app is really the same shape and could join it, and
+anything _else_ in the app is really the same shape and could join it, and
 extracting the parts of `MasterListPage` and its neighbors that were
 duplicated by hand elsewhere.
 
@@ -152,7 +152,7 @@ standard set — `PageHeader`, `Card`-based `DataTableShell`, `SkeletonTable`
 create/edit, `ConfirmDialog` for delete, standard `Button`/`Input`/`Label`/
 `Switch`, `ColumnsMenu`/`DensityMenu` for table chrome — with no hand-built
 replacements found during the audit. This was true going in; Sprint 1.8's
-Part 3 extraction (§ 3) removed duplicated *state logic* behind those
+Part 3 extraction (§ 3) removed duplicated _state logic_ behind those
 components, not the components themselves, so this section is a
 confirmation rather than a migration.
 
@@ -171,6 +171,7 @@ truth, and centralized both:
   and the mobile topbar label now use `APPLICATION_NAME`.
 
 **Deliberately left as literals:**
+
 - `src/components/layout/AppShell.tsx`'s sidebar logo mark (`Stone Tech` +
   a separately mint-coloured `OS` in two spans) — this is the stylized
   customer-facing brand mark itself, not a duplicated plain string.

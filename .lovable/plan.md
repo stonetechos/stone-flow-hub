@@ -11,6 +11,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 ## P0 — Must fix before public production
 
 ### 1. Custom domain `erp.stonetech.in` serves an unconfigured build
+
 - Severity: critical | Module: Deployment / infrastructure
 - Evidence: `https://stone-flow-hub.lovable.app/api/public/diagnostics/env-status` returns all `true`; `https://erp.stonetech.in/api/public/diagnostics/env-status` returns `supabase_url`, `supabase_publishable_key`, `supabase_service_role_key`, `cron_secret`, `lovable_api_key` all `false`.
 - Why it matters: on the branded domain every server function, cron hook, AI feature and admin screen fails. If customers are pointed at `erp.stonetech.in`, the product is effectively down.
@@ -19,6 +20,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 - Order: 1
 
 ### 2. Users can re-activate their own deactivated account
+
 - Severity: high | Module: Admin / Users & Roles (RLS)
 - Evidence: security scan finding `profiles_self_update_sensitive_fields` — the "Users update own profile" UPDATE policy has no column restriction, so `is_active`, `department` and `job_title` are self-writable.
 - Why it matters: privilege/lifecycle bypass. An admin deactivating a leaver does not actually revoke access; the user can flip `is_active` back with one API call. This directly undermines the user-lifecycle work already shipped.
@@ -31,6 +33,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 ## P1 — Should fix before production
 
 ### 3. `permission denied for function current_vendor_id` / `has_staff_access`
+
 - Severity: medium-high | Module: Vendor portal, RFQs, quotes, purchase orders, staff-gated screens
 - Evidence: monitoring finding `error_log_finding_7dfbfe...` (19x + 3x ERROR in Postgres logs). Confirmed by `pg_proc.proacl`: EXECUTE is granted only to `postgres`, `authenticated`, `service_role` — `anon` is excluded, and RLS policies on those tables call the functions unconditionally.
 - Why it matters: any request arriving before the session hydrates (or on a partially-authenticated session) gets a raw Postgres permission error instead of an empty list or a sign-in prompt, so vendors/staff see broken pages rather than a clear state.
@@ -39,6 +42,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 - Order: 3
 
 ### 4. Hydration mismatch on `/auth`
+
 - Severity: medium | Module: Authentication
 - Evidence: current preview runtime errors show React regenerating the tree — server emitted the `States.tsx` pending fallback while the client committed `<main>` from `auth.tsx:100`. The `pendingMinMs: 300` mitigation already in the route has not eliminated it.
 - Why it matters: the sign-in page is the first screen every user sees; a full client re-render causes a visible flash and logs a console error on every load. Cosmetic in outcome, but it is the one place where a bad first impression is guaranteed.
@@ -47,6 +51,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 - Order: 4
 
 ### 5. Public storage bucket allows listing
+
 - Severity: medium | Module: Storage / documents
 - Evidence: Supabase scan finding `SUPA_public_bucket_allows_listing` — a public bucket has a broad SELECT policy on `storage.objects`.
 - Why it matters: anyone can enumerate every file in that bucket. Generated invoices/POs carry customer names and GST numbers; enumeration turns "unguessable URL" into "downloadable index".
@@ -55,6 +60,7 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 - Order: 5
 
 ### 6. Staff can write audit entries for entities they never touched
+
 - Severity: medium | Module: Activity log
 - Evidence: scan finding `activity_log_fabricated_entries` — the `al insert staff self` policy only checks `actor_id = auth.uid()`, not that the actor can access `entity_id`.
 - Why it matters: the activity log is the audit trail behind financial documents. If it can be fabricated, it is not evidence.
@@ -67,17 +73,20 @@ The `*.lovable.app` production deployment is healthy: all five server environmen
 ## P2 — Can safely ship
 
 ### 7. `SECURITY DEFINER` functions broadly executable
+
 - Severity: low | Module: Database
 - Evidence: database linter, ~14 warnings across lint rules 0028/0029.
 - Why it matters: defence in depth only — the flagged functions already validate their caller. Tightening EXECUTE is hygiene, and overlaps with item 3, so it should be done as one deliberate grants pass, not piecemeal.
 - Credits: ~25-40 | Effort: 3-4 h | Order: after v1
 
 ### 8. Extension installed in `public` schema
+
 - Severity: low | Module: Database | Evidence: linter warning 0014.
 - Why it matters: namespace hygiene; no exploit path in this app. Moving it risks breaking dependent functions, so it is not worth doing before a release.
 - Credits: ~10 | Effort: 1 h | Order: after v1
 
 ### 9. Residual ESLint warnings and deferred SmartForms adoption
+
 - Severity: low | Module: Cross-cutting
 - Evidence: last sprint closed with 0 errors and 15 pre-existing warnings; the SmartForms sprint explicitly deferred line-item editors and `dirty` tracking on quote/estimate/receipt full-page forms.
 - Why it matters: technical debt with no user-visible impact. CI is green.

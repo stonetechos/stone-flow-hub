@@ -2,12 +2,12 @@
 
 **Date:** 2026-07-23
 **Branch:** `feature/vie-quotation`
-**Objective (verbatim):** *"Perform a Developer Experience and CI audit.
+**Objective (verbatim):** _"Perform a Developer Experience and CI audit.
 Eliminate the root causes that repeatedly generate formatting and lint
 failures. Standardize formatting, linting, generated-file handling,
 pre-commit hooks, and GitHub Actions so that future commits consistently
 pass CI without requiring separate formatting sprints. Preserve code
-quality rules; improve the workflow instead of weakening the checks."*
+quality rules; improve the workflow instead of weakening the checks."_
 
 None of the 5 files this sprint touches appear in Sprint 2.1's 19-file
 merge-conflict list (`docs/sprint-2.1-integration-readiness.md`), so this
@@ -200,7 +200,7 @@ problem this session can resolve, and not something to work around by
 disabling lockfile verification or hand-editing `bun.lock`'s pinned
 URLs.
 
-`npm install` against the public `registry.npmjs.org` (which *is*
+`npm install` against the public `registry.npmjs.org` (which _is_
 reachable) was used **only** to locally verify the hook configuration
 works and to restore a working `node_modules` for this sprint's own
 `typecheck`/`lint`/`test`/`build` verification — package-lock.json was
@@ -283,14 +283,14 @@ and neither warning class blocks CI today.
 
 ## 6. Files changed
 
-| File | Change |
-|---|---|
-| `.prettierignore` | Added `src/integrations/supabase/types.ts` and the 4 mcp-js-generated route files. |
-| `eslint.config.js` | Same 5 paths added to `ignores`, with explanatory comments. |
-| `src/components/forms/inputs/SmartInputs.tsx` | `prettier --write` — line-wrapping only, no logic change. |
-| `.github/workflows/ci.yml` | Removed `continue-on-error: true` from the Lint step; updated the comment to explain why it's safe to be blocking again and to warn against re-adding it as a shortcut. |
-| `docs/CI_LINT_DEBT.md` | Added a "RESOLVED" note at the top pointing here; left the original investigation intact for history. |
-| `docs/sprint-2.2-developer-experience-ci-audit.md` | This document. |
+| File                                               | Change                                                                                                                                                                  |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.prettierignore`                                  | Added `src/integrations/supabase/types.ts` and the 4 mcp-js-generated route files.                                                                                      |
+| `eslint.config.js`                                 | Same 5 paths added to `ignores`, with explanatory comments.                                                                                                             |
+| `src/components/forms/inputs/SmartInputs.tsx`      | `prettier --write` — line-wrapping only, no logic change.                                                                                                               |
+| `.github/workflows/ci.yml`                         | Removed `continue-on-error: true` from the Lint step; updated the comment to explain why it's safe to be blocking again and to warn against re-adding it as a shortcut. |
+| `docs/CI_LINT_DEBT.md`                             | Added a "RESOLVED" note at the top pointing here; left the original investigation intact for history.                                                                   |
+| `docs/sprint-2.2-developer-experience-ci-audit.md` | This document.                                                                                                                                                          |
 
 **Not changed (see §4):** `package.json`, `bun.lock`, `.husky/` — the
 pre-commit hook is fully designed and documented but blocked on
@@ -304,14 +304,14 @@ Run with the exact `bun.lock`-pinned toolchain versions
 (`prettier@3.8.3`, `eslint@9.39.4`, `eslint-plugin-prettier@5.5.5`,
 `eslint-config-prettier@10.1.8`, `typescript-eslint@8.59.0`):
 
-| Check | Result |
-|---|---|
-| `npx tsc --noEmit` | Pass |
-| `npm run typecheck:tests` | Pass |
-| `npm run lint` (`eslint .`) | **0 errors**, 18 pre-existing non-blocking warnings (§5) — exit 0 |
-| `npm run verify:auth-context` | Pass (18/18 checks) |
-| `bun test` | 323 pass, 0 fail (23 files, 675 assertions) |
-| `npm run build` | Pass (`.output/` generated cleanly, no new warnings) |
+| Check                         | Result                                                            |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `npx tsc --noEmit`            | Pass                                                              |
+| `npm run typecheck:tests`     | Pass                                                              |
+| `npm run lint` (`eslint .`)   | **0 errors**, 18 pre-existing non-blocking warnings (§5) — exit 0 |
+| `npm run verify:auth-context` | Pass (18/18 checks)                                               |
+| `bun test`                    | 323 pass, 0 fail (23 files, 675 assertions)                       |
+| `npm run build`               | Pass (`.output/` generated cleanly, no new warnings)              |
 
 `git status --short` before this sprint's commit shows exactly the 6
 files in §6 as modified, plus this new doc — no generated/build output

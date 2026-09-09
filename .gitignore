@@ -35,3 +35,6 @@ dist-capacitor
 # Local secrets — never commit (contains live Supabase service-role key)
 .env
 .env.local
+
+# Supabase CLI temp
+supabase/.temp/

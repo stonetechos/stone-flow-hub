@@ -17,9 +17,11 @@ This is a pure refactor. Every resolver's exported function signature and return
 ## 2. Files modified
 
 **Framework (new):**
+
 - `src/lib/vie/planner/entityResolution.ts`
 
 **Resolvers (refactored into thin adapters; no exported-shape or behavior change):**
+
 - `src/lib/vie/planner/resolveCustomer.ts`
 - `src/lib/vie/planner/resolveFollowupTarget.ts`
 - `src/lib/vie/planner/resolveProject.ts`
@@ -27,6 +29,7 @@ This is a pure refactor. Every resolver's exported function signature and return
 - `src/lib/vie/planner/resolveProduct.ts`
 
 **Documentation (new):**
+
 - `docs/VIE-Entity-Resolution-Framework.md`
 - `docs/sprint-ai-1.6-completion-report.md` (this file)
 
@@ -46,13 +49,13 @@ Two declared-but-unused extension points satisfy the sprint's "fuzzy match / can
 
 ## 4. Resolver migration summary
 
-| Resolver | Framework helpers used | Business-specific logic retained |
-|---|---|---|
-| `resolveCustomer.ts` | `requiredInputBlocker`, `resolveEntityByQuery` | `listCustomers` search wiring, untrimmed-message/trimmed-search split |
-| `resolveFollowupTarget.ts` | `requiredInputBlocker`, `resolveEntityByQuery` | Caller-supplied-context short-circuit |
-| `resolveProject.ts` | `missingPrerequisiteBlocker`, `classifyMatches`, `selectionBlocker` | `projectTextHint` candidate narrowing, `who`-phrase message construction |
-| `resolveCustomerDuplicate.ts` | `confirmationBlocker` | `findCustomerByPhone` lookup |
-| `resolveProduct.ts` | `classifyMatches` only | Never blocks — the one resolver using only the classification primitive |
+| Resolver                      | Framework helpers used                                              | Business-specific logic retained                                         |
+| ----------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `resolveCustomer.ts`          | `requiredInputBlocker`, `resolveEntityByQuery`                      | `listCustomers` search wiring, untrimmed-message/trimmed-search split    |
+| `resolveFollowupTarget.ts`    | `requiredInputBlocker`, `resolveEntityByQuery`                      | Caller-supplied-context short-circuit                                    |
+| `resolveProject.ts`           | `missingPrerequisiteBlocker`, `classifyMatches`, `selectionBlocker` | `projectTextHint` candidate narrowing, `who`-phrase message construction |
+| `resolveCustomerDuplicate.ts` | `confirmationBlocker`                                               | `findCustomerByPhone` lookup                                             |
+| `resolveProduct.ts`           | `classifyMatches` only                                              | Never blocks — the one resolver using only the classification primitive  |
 
 `Customer`, `Project`, `Follow-up Target`, `Customer Duplicate`, and `Product` — every entity type the sprint named for refactoring — are covered. `Vendor`, `Stone`, `Colour`, `Finish`, `Thickness`, `Sales Executive`, and `Site` have no resolver yet (none did before this sprint either); `docs/VIE-Entity-Resolution-Framework.md` §6 documents exactly which framework shape each would use once its `api.ts` lookup exists.
 
@@ -80,7 +83,7 @@ Zero test changes were needed — the strongest available confirmation that "exi
 
 ## 7. Remaining limitations
 
-- **No new entity types were actually added.** The sprint's "future-ready support for" list (Vendor, Stone, Colour, Finish, Thickness, Sales Executive, Site) describes entities the framework is *shaped* to support once each has its own `api.ts` lookup and (where needed) a `PlannerBlockerType` — none of those lookups exist yet, so no new resolver was written this sprint. This matches the sprint's own framing ("future-ready support for," not "implement").
+- **No new entity types were actually added.** The sprint's "future-ready support for" list (Vendor, Stone, Colour, Finish, Thickness, Sales Executive, Site) describes entities the framework is _shaped_ to support once each has its own `api.ts` lookup and (where needed) a `PlannerBlockerType` — none of those lookups exist yet, so no new resolver was written this sprint. This matches the sprint's own framing ("future-ready support for," not "implement").
 - **No genuine fuzzy matching or candidate ranking exists yet.** The `rank` hook and `RankedCandidate.confidence` field are real extension points, but every current resolver still delegates entirely to its underlying `api.ts` function's existing `ILIKE`-based partial search — changing that was explicitly out of scope ("existing behaviour must remain identical").
 - **The untrimmed-message/trimmed-search-call split in `resolveCustomer.ts`/`resolveFollowupTarget.ts`** (documented in `docs/VIE-Entity-Resolution-Framework.md` §5) is preserved exactly but is a slightly awkward wart inherited from before this sprint — a future cleanup could normalize this once a test explicitly covers the whitespace-in-message case, if that's ever judged worth a deliberate behavior change (it wasn't in scope here).
 - **`resolveProject.ts`'s hint-narrowing step still lives entirely in that resolver**, not as a framework primitive — it's the only resolver with this shape today, so generalizing it into the framework would be speculative rather than reusable; documented as the concrete example future narrowing-style resolvers should follow, not abstracted further.

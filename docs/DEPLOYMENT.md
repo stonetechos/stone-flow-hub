@@ -32,10 +32,10 @@ three above which required an active Lovable relationship to keep working.
 
 ## Environments
 
-| Env           | URL                 | Notes                                             |
-| ------------- | ------------------- | -------------------------------------------------- |
-| Production    | `*.workers.dev`      | Every push to `main` that passes CI, via `deploy.yml` |
-| Custom domain | `erp.stonetech.in`   | Attached to the Worker as a Cloudflare custom domain (`routes` in the generated wrangler config — see `scripts/prepare-wrangler-deploy.mjs`) |
+| Env           | URL                | Notes                                                                                                                                        |
+| ------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production    | `*.workers.dev`    | Every push to `main` that passes CI, via `deploy.yml`                                                                                        |
+| Custom domain | `erp.stonetech.in` | Attached to the Worker as a Cloudflare custom domain (`routes` in the generated wrangler config — see `scripts/prepare-wrangler-deploy.mjs`) |
 
 There is no separate Preview environment in this pipeline (Lovable's
 Preview/Production split is gone). A pull request only runs CI

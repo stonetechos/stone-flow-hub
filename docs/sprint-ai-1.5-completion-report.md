@@ -10,7 +10,7 @@ This sprint builds directly on Sprint AI-1 (Copilot ↔ VIE Integration). It doe
 
 Before this sprint, a blocked plan carried its unresolved prerequisites as an array of pre-formatted English sentences (`plan_blockers: string[]`). The Copilot draft card could only display them as a bullet list and fall back to a generic "edit any primitive top-level param" form — it had no reliable way to know which specific field a given sentence referred to, or to offer a picker for an ambiguous match, without parsing prose.
 
-`PlannerBlocker` (`src/lib/vie/types.ts`) replaces the string with a small structured object — `{ id, type, message, field, required, currentValue?, candidates? }` — built at the exact point in each resolver (or `planX()` function) where the real data already exists, rather than reconstructed downstream from formatted text. The one rule that decides whether a plan can auto-execute — `resolveEffectiveMode()`'s `blockers.length > 0 → "draft"` — is byte-for-byte unchanged; only what each element of that array *is* changed, not whether one exists or what it does once it does.
+`PlannerBlocker` (`src/lib/vie/types.ts`) replaces the string with a small structured object — `{ id, type, message, field, required, currentValue?, candidates? }` — built at the exact point in each resolver (or `planX()` function) where the real data already exists, rather than reconstructed downstream from formatted text. The one rule that decides whether a plan can auto-execute — `resolveEffectiveMode()`'s `blockers.length > 0 → "draft"` — is byte-for-byte unchanged; only what each element of that array _is_ changed, not whether one exists or what it does once it does.
 
 The Copilot draft card (`VieActionCard.tsx`) now dispatches purely on `blocker.type` to pick a control: a radio list or searchable filter list for every `*_selection` type, a number input for `quantity_required`/`unit_price_required`/`number_required`, a date input for `date_required`/`delivery_date_required`, a text input for `text_required`, and a read-only notice for `confirmation_required`. It never inspects `blocker.message` to decide what to render — `message` is still shown verbatim as the human-readable explanation alongside whichever control renders.
 
@@ -19,24 +19,30 @@ Full design rationale, the complete type reference, the resolver → UI lifecycl
 ## 2. Files modified
 
 **Blocker model:**
+
 - `src/lib/vie/types.ts` — added `PLANNER_BLOCKER_TYPES`, `PlannerBlockerType`, `PlannerBlockerCandidate`, `PlannerBlocker`; changed `VieExecutionPlan.blockers` from `string[]` to `PlannerBlocker[]`.
 
 **Resolvers (build the structured blocker where the real candidate data already exists):**
+
 - `src/lib/vie/planner/resolveCustomer.ts`
 - `src/lib/vie/planner/resolveCustomerDuplicate.ts`
 - `src/lib/vie/planner/resolveFollowupTarget.ts`
 - `src/lib/vie/planner/resolveProject.ts`
 
 **Planner aggregation (inline blockers converted; resolver-sourced blockers needed no change since resolvers now hand back the structured shape directly):**
+
 - `src/lib/vie/planner/index.ts` — `resolveEffectiveMode()`'s signature, and every `planX()` function's inline blockers (missing customer/date/name/mobile/quantity/unit-price).
 
 **Serialization (one line):**
+
 - `src/lib/vie/vie.functions.ts` — `plan_blockers` now goes through the same `toJson()` round-trip `plan` already used, since `PlannerBlocker.currentValue?: unknown` isn't directly `Json`-assignable the way the old `string[]` was.
 
 **UI rendering:**
+
 - `src/components/copilot/VieActionCard.tsx` — `DraftCard` now renders structured controls per blocker (`BlockerField`, `CandidatePicker`, `ConfirmationNotice`), replacing the old generic top-level-field edit form and raw bullet list.
 
 **Tests (rewritten to assert the structured shape, preserving each test's original intent):**
+
 - `src/lib/vie/planner/resolveCustomer.test.ts`
 - `src/lib/vie/planner/resolveCustomerDuplicate.test.ts`
 - `src/lib/vie/planner/resolveFollowupTarget.test.ts`
@@ -45,6 +51,7 @@ Full design rationale, the complete type reference, the resolver → UI lifecycl
 - `src/lib/vie/planner/index.test.ts`
 
 **Documentation (new):**
+
 - `docs/VIE-Structured-Blockers.md`
 - `docs/sprint-ai-1.5-completion-report.md` (this file)
 
@@ -54,10 +61,21 @@ Full design rationale, the complete type reference, the resolver → UI lifecycl
 
 ```ts
 export const PLANNER_BLOCKER_TYPES = [
-  "customer_selection", "vendor_selection", "project_selection", "product_selection",
-  "stone_selection", "colour_selection", "finish_selection", "thickness_selection",
-  "quantity_required", "unit_price_required", "delivery_date_required", "date_required",
-  "text_required", "number_required", "confirmation_required",
+  "customer_selection",
+  "vendor_selection",
+  "project_selection",
+  "product_selection",
+  "stone_selection",
+  "colour_selection",
+  "finish_selection",
+  "thickness_selection",
+  "quantity_required",
+  "unit_price_required",
+  "delivery_date_required",
+  "date_required",
+  "text_required",
+  "number_required",
+  "confirmation_required",
 ] as const;
 export type PlannerBlockerType = (typeof PLANNER_BLOCKER_TYPES)[number];
 
@@ -82,17 +100,17 @@ This is the user-suggested model, essentially unchanged — `required` is docume
 
 Every existing intent now returns structured blockers where it previously returned strings, per the sprint's own mapping:
 
-| Old string blocker | New `PlannerBlocker.type` |
-|---|---|
-| Customer ambiguous / not found | `customer_selection` |
-| Project ambiguous / none exists | `project_selection` |
-| Customer name missing | `text_required` |
-| Mobile missing/invalid | `text_required` |
-| Duplicate mobile match | `confirmation_required` |
-| Follow-up target unresolved | `customer_selection` / `text_required` |
-| Follow-up date not extracted | `date_required` |
-| Line-item quantity missing | `quantity_required` |
-| Line-item unit price missing | `unit_price_required` |
+| Old string blocker              | New `PlannerBlocker.type`              |
+| ------------------------------- | -------------------------------------- |
+| Customer ambiguous / not found  | `customer_selection`                   |
+| Project ambiguous / none exists | `project_selection`                    |
+| Customer name missing           | `text_required`                        |
+| Mobile missing/invalid          | `text_required`                        |
+| Duplicate mobile match          | `confirmation_required`                |
+| Follow-up target unresolved     | `customer_selection` / `text_required` |
+| Follow-up date not extracted    | `date_required`                        |
+| Line-item quantity missing      | `quantity_required`                    |
+| Line-item unit price missing    | `unit_price_required`                  |
 
 ## 4. UI rendering changes
 
