@@ -16,10 +16,28 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            def ks = file('/Users/stonetech/Desktop/stonetechos-release.keystore')
+            if (!ks.exists()) {
+                ks = file('/Users/stonetech/Documents/Android Keystores/stonetechos-release.keystore')
+            }
+            if (ks.exists()) {
+                storeFile     ks
+                storePassword 'StoneTech@2026'
+                keyAlias      'stonetechos'
+                keyPassword   'StoneTech@2026'
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'        }
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
 }
 
