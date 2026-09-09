@@ -144,8 +144,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           // the concrete payload shape so the rest of this loop can access named
           // fields without repeated per-line casts.
           const messages = rawMessages as unknown as
-            | { msg_id: number; read_ct: number; message: EmailQueuePayload }[]
-            | null;
+            { msg_id: number; read_ct: number; message: EmailQueuePayload }[] | null;
 
           if (readError) {
             console.error("Failed to read email batch", { queue, error: readError });

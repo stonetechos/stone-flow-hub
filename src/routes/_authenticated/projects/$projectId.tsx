@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -22,7 +22,11 @@ import {
   Users,
   Sparkles,
   UserCheck,
+  CheckCircle2,
+  MessageCircle,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
@@ -33,8 +37,11 @@ import { Card, CardContent, CardHeader, CardTitle, cardVariants } from "@/compon
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
+import { invalidateProject } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
-import { getProject } from "@/lib/projects/api";
+import { getProject, completeProject, getProjectLedgerSummary } from "@/lib/projects/api";
+import { openProjectCompletionWhatsapp } from "@/lib/projects/projectCompletionWhatsapp";
+
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
@@ -54,6 +61,7 @@ export const Route = createFileRoute("/_authenticated/projects/$projectId")({
 function ProjectHub() {
   const { projectId } = Route.useParams();
   const [tab, setTab] = useState("overview");
+  const qc = useQueryClient();
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;
   const [transferOpen, setTransferOpen] = useState(false);
@@ -61,6 +69,22 @@ function ProjectHub() {
     queryKey: qk.projects.byId(projectId),
     queryFn: () => getProject(projectId),
   });
+
+  const ledgerQ = useQuery({
+    queryKey: ["projects", projectId, "ledger-summary"],
+    queryFn: () => getProjectLedgerSummary(projectId),
+  });
+
+  const completeMut = useMutation({
+    mutationFn: () => completeProject(projectId),
+    onSuccess: (res) => {
+      toast.success(`Project ${res.project.name} marked as completed`);
+      invalidateProject(qc, projectId);
+      qc.invalidateQueries({ queryKey: qk.projects.all });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Project not found." />;
@@ -105,6 +129,43 @@ function ProjectHub() {
             pin={{ entityType: "project", entityId: projectId, label: p.name }}
             primary={
               <>
+                {p.customer && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-emerald-600/40 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                    onClick={() => {
+                      openProjectCompletionWhatsapp({
+                        customerName: p.customer?.name || "Customer",
+                        projectName: p.name,
+                        projectCode: p.project_code,
+                        customerPhone: (p.customer as { primary_phone?: string })?.primary_phone,
+                        customerWhatsapp: (p.customer as { whatsapp?: string })?.whatsapp,
+                        totalInvoiced: ledgerQ.data?.totalInvoiced,
+                        totalReceived: ledgerQ.data?.totalReceived,
+                        balanceDue: ledgerQ.data?.balanceDue,
+                      });
+                    }}
+                  >
+                    <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                    Notify Customer
+                  </Button>
+                )}
+                {p.is_active && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => completeMut.mutate()}
+                    disabled={completeMut.isPending}
+                  >
+                    {completeMut.isPending ? (
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                    )}
+                    Complete Project
+                  </Button>
+                )}
                 <Link to="/enquiries">
                   <Button size="sm">
                     <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
@@ -130,6 +191,7 @@ function ProjectHub() {
                 </Link>
               </>
             }
+
             overflow={[
               {
                 label: "Add notes",

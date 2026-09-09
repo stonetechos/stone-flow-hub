@@ -39,7 +39,9 @@ import { AppMark } from "@/components/brand/AppMark";
 import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryBroadcaster";
+import { NotificationBanner } from "@/components/global/NotificationBanner";
 import { DemoProvider } from "@/lib/demo/context";
+
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
   resolveNav,
@@ -769,6 +771,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Copilot />
         <DangerNotifications />
         <GrowthAdvisoryBroadcaster />
+        <NotificationBanner />
       </div>
     </DemoProvider>
   );

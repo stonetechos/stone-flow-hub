@@ -14,7 +14,9 @@ import {
   History,
   UserCheck,
   Copy,
+  CheckCircle2,
 } from "lucide-react";
+
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { useRoles } from "@/hooks/use-roles";
@@ -182,6 +184,21 @@ function QuoteDetailPage() {
                     onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
                   >
                     <Pencil className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                )}
+                {!isAccepted && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => statusMut.mutate("accepted")}
+                    disabled={statusMut.isPending}
+                  >
+                    {statusMut.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                    )}
+                    Approve Quote
                   </Button>
                 )}
                 {isAccepted && (

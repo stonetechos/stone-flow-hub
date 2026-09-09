@@ -29,9 +29,7 @@ This split matches the sprint's own instruction: _"Individual resolvers should o
 
 ```ts
 export type MatchOutcome<TRecord> =
-  | { kind: "none" }
-  | { kind: "one"; record: TRecord }
-  | { kind: "many"; records: TRecord[] };
+  { kind: "none" } | { kind: "one"; record: TRecord } | { kind: "many"; records: TRecord[] };
 
 export function classifyMatches<TRecord>(records: TRecord[]): MatchOutcome<TRecord>;
 

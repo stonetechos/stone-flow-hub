@@ -89,6 +89,16 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     .single();
 
   if (error) throw new AppError(mapDbError(error));
+
+  if (data) {
+    try {
+      const { broadcastCustomerCreated } = await import("@/lib/notifications/broadcast");
+      broadcastCustomerCreated(data);
+    } catch (e) {
+      console.warn("[customers] notification dispatch skipped", e);
+    }
+  }
+
   return data;
 }
 

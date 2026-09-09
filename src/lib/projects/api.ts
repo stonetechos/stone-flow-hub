@@ -135,3 +135,70 @@ export async function deleteProject(id: string): Promise<void> {
   const { error } = await getDb().from("projects").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
+
+export async function getProjectLedgerSummary(projectId: string): Promise<{
+  totalInvoiced: number;
+  totalReceived: number;
+  balanceDue: number;
+}> {
+  const { data: invRows, error } = await getDb()
+    .from("invoices")
+    .select("total, amount_paid")
+    .eq("project_id", projectId);
+  if (error) throw new AppError(mapDbError(error));
+
+  const totalInvoiced = (invRows ?? []).reduce((acc, i) => acc + Number(i.total || 0), 0);
+  const totalReceived = (invRows ?? []).reduce((acc, i) => acc + Number(i.amount_paid || 0), 0);
+
+  const balanceDue = Math.max(0, totalInvoiced - totalReceived);
+  return { totalInvoiced, totalReceived, balanceDue };
+}
+
+export async function completeProject(id: string): Promise<{
+  project: ProjectRow;
+  ledger: { totalInvoiced: number; totalReceived: number; balanceDue: number };
+}> {
+  const { data: project, error } = await getDb()
+    .from("projects")
+    .update({
+      is_active: false,
+      lifecycle_status: "archived",
+    } as never)
+    .eq("id", id)
+    .select("*, customer:customers!projects_customer_id_fkey(id,name,primary_phone,whatsapp)")
+    .single();
+
+  if (error) throw new AppError(mapDbError(error));
+
+  const ledger = await getProjectLedgerSummary(id);
+
+  try {
+    const custAny = (
+      project as unknown as {
+        customer?: {
+          id?: string;
+          name?: string;
+          primary_phone?: string;
+          whatsapp?: string;
+        } | null;
+      }
+    )?.customer;
+
+    const { notifyAdminProjectCompleted } = await import("@/lib/notifications/broadcast");
+    notifyAdminProjectCompleted({
+      id: project.id,
+      name: project.name,
+      customer_id: custAny?.id,
+      customer_name: custAny?.name,
+      customer_phone: custAny?.primary_phone,
+      customer_whatsapp: custAny?.whatsapp,
+      totalInvoiced: ledger.totalInvoiced,
+      totalReceived: ledger.totalReceived,
+      balanceDue: ledger.balanceDue,
+    });
+  } catch (err) {
+    console.warn("[projects] completeProject notification skipped", err);
+  }
+
+  return { project, ledger };
+}

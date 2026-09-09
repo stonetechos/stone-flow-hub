@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
-import { paymentCreateSchema, type PaymentCreateInput } from "./schema";
+import { paymentCreateSchema, toDbPaymentMethod, type PaymentCreateInput } from "./schema";
 
 export type PaymentRow = DbTable<"payments">;
 export type PaymentListItem = PaymentRow & {
@@ -64,6 +64,11 @@ export async function getPayment(id: string): Promise<PaymentListItem | null> {
 
 export async function createPayment(input: PaymentCreateInput): Promise<PaymentRow> {
   const p = paymentCreateSchema.parse(input);
+  const dbMethod = toDbPaymentMethod(p.method);
+  const notes = dbMethod.accountUsed
+    ? [p.notes, `Account: ${dbMethod.accountUsed}`].filter(Boolean).join(" | ")
+    : (p.notes ?? null);
+
   const { data, error } = await supabase
     .from("payments")
     .insert({
@@ -76,28 +81,48 @@ export async function createPayment(input: PaymentCreateInput): Promise<PaymentR
       payment_no: "",
       invoice_id: p.invoice_id,
       amount: p.amount,
-      method: p.method,
+      method: dbMethod.method,
       paid_at: p.paid_at,
       reference_no: p.reference_no ?? null,
-      notes: p.notes ?? null,
+      notes,
     })
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (data) {
+    try {
+      const { notifyAdminPaymentReceived } = await import("@/lib/notifications/broadcast");
+      notifyAdminPaymentReceived({
+        amount: data.amount,
+        method: p.method,
+        account_used: dbMethod.accountUsed,
+        reference_no: data.reference_no,
+      });
+    } catch (e) {
+      console.warn("[payments] admin notification skipped", e);
+    }
+  }
+
   return data;
 }
 
 export async function updatePayment(id: string, input: PaymentCreateInput): Promise<PaymentRow> {
   const p = paymentCreateSchema.parse(input);
+  const dbMethod = toDbPaymentMethod(p.method);
+  const notes = dbMethod.accountUsed
+    ? [p.notes, `Account: ${dbMethod.accountUsed}`].filter(Boolean).join(" | ")
+    : (p.notes ?? null);
+
   const { data, error } = await supabase
     .from("payments")
     .update({
       invoice_id: p.invoice_id,
       amount: p.amount,
-      method: p.method,
+      method: dbMethod.method,
       paid_at: p.paid_at,
       reference_no: p.reference_no ?? null,
-      notes: p.notes ?? null,
+      notes,
     })
     .eq("id", id)
     .select("*")

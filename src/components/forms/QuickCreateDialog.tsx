@@ -82,12 +82,14 @@ function QuickCreateCustomer({
   const [form, setForm] = useState<{
     name: string;
     mobile: string;
+    whatsapp: string;
     email: string;
     city: string;
     customer_type: DbEnum<"customer_type">;
   }>({
     name: initialName ?? "",
     mobile: "",
+    whatsapp: "",
     email: "",
     city: "",
     customer_type: "walk_in",
@@ -135,10 +137,53 @@ function QuickCreateCustomer({
             <Field label="Mobile" required hint="10 digits, +91 optional">
               <PhoneInput
                 value={form.mobile}
-                onChange={(v) => setForm({ ...form, mobile: v })}
+                onChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    mobile: v,
+                    whatsapp: !f.whatsapp || f.whatsapp === f.mobile ? v : f.whatsapp,
+                  }))
+                }
                 required
               />
             </Field>
+            <Field
+              label="WhatsApp"
+              hint={form.mobile ? "Dropdown defaults to Phone Number" : "10 digits"}
+            >
+              <div className="space-y-1.5">
+                {form.mobile ? (
+                  <Select
+                    value={
+                      form.whatsapp === form.mobile
+                        ? "same_as_phone"
+                        : form.whatsapp
+                          ? "custom"
+                          : "same_as_phone"
+                    }
+                    onValueChange={(val) => {
+                      if (val === "same_as_phone") {
+                        setForm((f) => ({ ...f, whatsapp: f.mobile }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs bg-muted/30">
+                      <SelectValue placeholder="Select WhatsApp..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="same_as_phone">Same as Phone ({form.mobile})</SelectItem>
+                      <SelectItem value="custom">Enter Different Number</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : null}
+                <PhoneInput
+                  value={form.whatsapp}
+                  onChange={(v) => setForm((f) => ({ ...f, whatsapp: v }))}
+                  placeholder="WhatsApp number"
+                />
+              </div>
+            </Field>
+
             <Field label="Email">
               <EmailInput value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
             </Field>

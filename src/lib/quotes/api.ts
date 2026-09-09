@@ -140,9 +140,26 @@ export async function setQuoteStatus(
     .from("quotes")
     .update({ status })
     .eq("id", id)
-    .select("*")
+    .select("*, customer:customers!quotes_customer_id_fkey(name)")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (status === "accepted" && data) {
+    try {
+      const { broadcastQuoteApproved } = await import("@/lib/notifications/broadcast");
+      const customerName =
+        (data as unknown as { customer?: { name?: string } | null })?.customer?.name ?? null;
+      broadcastQuoteApproved({
+        id: data.id,
+        quote_no: data.quote_no,
+        total_amount: Number(data.total ?? 0),
+        customer_name: customerName,
+      });
+    } catch (e) {
+      console.warn("[quotes] approval notification failed", e);
+    }
+  }
+
   return data;
 }
 

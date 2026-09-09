@@ -9,6 +9,7 @@ import {
   type ReceiptCreateInput,
   type ReceiptUpdateInput,
 } from "./schema";
+import { toDbPaymentMethod } from "@/lib/payments/schema";
 
 export type ReceiptRow = DbTable<"receipts">;
 export type ReceiptAllocationRow = DbTable<"receipt_allocations">;
@@ -134,6 +135,9 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
   // leaves a phantom advance behind.
   await assertAllocationsFitInvoices(parsed.allocations);
 
+  const dbMethod = toDbPaymentMethod(parsed.method);
+  const accountUsed = parsed.account_used || dbMethod.accountUsed || null;
+
   const { data: rcpt, error } = await getDb()
     .from("receipts")
     .insert({
@@ -141,9 +145,9 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
       customer_id: parsed.customer_id,
       received_at: parsed.received_at,
       amount: parsed.amount,
-      method: parsed.method,
+      method: dbMethod.method,
       bank_name: parsed.bank_name ?? null,
-      account_used: parsed.account_used ?? null,
+      account_used: accountUsed,
       reference_no: parsed.reference_no ?? null,
       cheque_no: parsed.cheque_no ?? null,
       cheque_date: parsed.cheque_date ?? null,
@@ -175,6 +179,25 @@ export async function createReceipt(input: ReceiptCreateInput): Promise<ReceiptR
       throw new AppError(mapDbError(aErr));
     }
   }
+
+  try {
+    const { data: cust } = await getDb()
+      .from("customers")
+      .select("name")
+      .eq("id", parsed.customer_id)
+      .maybeSingle();
+    const { notifyAdminPaymentReceived } = await import("@/lib/notifications/broadcast");
+    notifyAdminPaymentReceived({
+      amount: parsed.amount,
+      method: parsed.method,
+      account_used: accountUsed ?? undefined,
+      customer_name: cust?.name,
+      reference_no: parsed.reference_no,
+    });
+  } catch (e) {
+    console.warn("[receipts] admin notification skipped", e);
+  }
+
   return rcpt;
 }
 
@@ -202,14 +225,18 @@ export async function updateReceipt(id: string, input: ReceiptUpdateInput): Prom
       );
     }
   }
+  const dbMethod = parsed.method ? toDbPaymentMethod(parsed.method) : undefined;
+  const accountUsed =
+    parsed.account_used !== undefined ? parsed.account_used : (dbMethod?.accountUsed ?? undefined);
+
   const { data, error } = await getDb()
     .from("receipts")
     .update({
       received_at: parsed.received_at,
       amount: parsed.amount,
-      method: parsed.method,
+      ...(dbMethod ? { method: dbMethod.method } : {}),
       bank_name: parsed.bank_name ?? null,
-      account_used: parsed.account_used ?? null,
+      account_used: accountUsed ?? null,
       reference_no: parsed.reference_no ?? null,
       cheque_no: parsed.cheque_no ?? null,
       cheque_date: parsed.cheque_date ?? null,

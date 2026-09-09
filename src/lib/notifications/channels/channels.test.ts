@@ -26,11 +26,20 @@ const capacitorMock = {
   isNativePlatform: mock((): boolean => false),
   getPlatform: mock((): string => "web"),
 };
+export const localNotificationsMock = {
+  checkPermissions: mock(async () => ({ display: "granted" })),
+  requestPermissions: mock(async () => ({ display: "granted" })),
+  createChannel: mock(async () => {}),
+  schedule: mock(async () => {}),
+};
 
 mock.module("@/lib/notifications/toast", () => ({ ...toastActual, ...toastMock }));
 mock.module("@capacitor/core", () => ({
   ...capacitorActual,
   Capacitor: { ...capacitorActual.Capacitor, ...capacitorMock },
+}));
+mock.module("@capacitor/local-notifications", () => ({
+  LocalNotifications: localNotificationsMock,
 }));
 
 const { desktopChannel } = await import("./desktop");
@@ -97,10 +106,15 @@ describe("androidChannel", () => {
     expect(androidChannel.isAvailable()).toBe(false);
   });
 
-  test("deliver() throws NotificationChannelNotImplementedError (foundation-only)", () => {
-    expect(() => androidChannel.deliver({ tier: "info", title: "x" })).toThrow(
-      NotificationChannelNotImplementedError,
-    );
+  test("deliver() schedules local notification via LocalNotifications", async () => {
+    capacitorMock.isNativePlatform.mockImplementation(() => true);
+    capacitorMock.getPlatform.mockImplementation(() => "android");
+    await androidChannel.deliver({
+      tier: "important",
+      title: "Material Dispatched",
+      body: "Challan #1234 on the way",
+    });
+    expect(localNotificationsMock.schedule).toHaveBeenCalled();
   });
 });
 

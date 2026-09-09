@@ -1,27 +1,57 @@
-/**
- * Android (native) notification channel — foundation only.
- *
- * `isAvailable()` is a real, working signal: true only when this bundle is
- * actually running inside the packaged Capacitor Android app (the same
- * `Capacitor.isNativePlatform()` check `src/lib/capacitor/status-bar.ts`
- * already uses to gate native-only plugin calls). `deliver()` is
- * deliberately NOT implemented — a real Android channel needs a native
- * local-notifications plugin (e.g. `@capacitor/local-notifications`,
- * runtime permission prompts, a notification-channel/importance setup on
- * the OS side) that this sprint was not asked to build ("Prepare
- * notification channels" — plumbing, not the plugin integration itself).
- * Registered now so the registry/dispatch plumbing has a real slot to grow
- * into, per `NotificationChannel`'s own contract for a foundation-phase
- * channel.
- */
 import { Capacitor } from "@capacitor/core";
-import { NotificationChannelNotImplementedError, type NotificationChannel } from "./types";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import type { ChannelNotificationPayload, NotificationChannel } from "./types";
+
+let channelCreated = false;
+
+async function ensureAndroidChannel(): Promise<void> {
+  if (channelCreated || !Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
+    return;
+  }
+  try {
+    const perm = await LocalNotifications.checkPermissions();
+    if (perm.display === "prompt" || perm.display === "prompt-with-rationale") {
+      await LocalNotifications.requestPermissions();
+    }
+    await LocalNotifications.createChannel({
+      id: "stos_operations",
+      name: "STOS Operations",
+      description: "Realtime alerts for orders, dispatches, quotes, and customers",
+      importance: 5, // High / Heads-up
+      visibility: 1, // Public
+      vibration: true,
+    });
+    channelCreated = true;
+  } catch (err) {
+    console.warn("[notifications] Failed to ensure Android channel", err);
+  }
+}
 
 export const androidChannel: NotificationChannel = {
   id: "android",
   label: "Android (native)",
   isAvailable: () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android",
-  deliver() {
-    throw new NotificationChannelNotImplementedError("android");
+  async deliver(payload: ChannelNotificationPayload): Promise<void> {
+    try {
+      await ensureAndroidChannel();
+      const notifId = Math.floor(Math.random() * 2000000000) + 1;
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notifId,
+            title: payload.title,
+            body: payload.body ?? "",
+            channelId: "stos_operations",
+            extra: {
+              linkPath: payload.linkPath,
+              entityType: payload.entityType,
+              entityId: payload.entityId,
+            },
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("[notifications] Failed to schedule Android local notification", err);
+    }
   },
 };

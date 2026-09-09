@@ -389,9 +389,55 @@ function CustomerFormDialog({
             )}
 
             <Field label="Phone Number" required hint="10 digits, +91 optional">
-              <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
+              <PhoneInput
+                value={form.mobile}
+                onChange={(v) => {
+                  set("mobile", v);
+                  // If whatsapp is currently matching or unset, keep it synced
+                  if (!form.whatsapp || form.whatsapp === form.mobile) {
+                    set("whatsapp", v);
+                  }
+                }}
+                required
+              />
             </Field>
-            <Field label="Site's Area/Address">
+            <Field
+              label="WhatsApp"
+              hint={form.mobile ? "Dropdown defaults to Phone Number" : "10 digits"}
+            >
+              <div className="space-y-1.5">
+                {form.mobile ? (
+                  <Select
+                    value={
+                      form.whatsapp === form.mobile
+                        ? "same_as_phone"
+                        : form.whatsapp
+                          ? "custom"
+                          : "same_as_phone"
+                    }
+                    onValueChange={(val) => {
+                      if (val === "same_as_phone") {
+                        set("whatsapp", form.mobile);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs bg-muted/30">
+                      <SelectValue placeholder="Select WhatsApp..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="same_as_phone">Same as Phone ({form.mobile})</SelectItem>
+                      <SelectItem value="custom">Enter Different Number</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : null}
+                <PhoneInput
+                  value={form.whatsapp ?? ""}
+                  onChange={(v) => set("whatsapp", v)}
+                  placeholder="WhatsApp number"
+                />
+              </div>
+            </Field>
+            <Field label="Site's Area/Address" className="md:col-span-2">
               <Input
                 value={form.site_address ?? ""}
                 onChange={(e) => set("site_address", e.target.value)}
@@ -455,9 +501,6 @@ function CustomerFormDialog({
             </Field>
             <Field label="City">
               <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
-            </Field>
-            <Field label="WhatsApp">
-              <PhoneInput value={form.whatsapp ?? ""} onChange={(v) => set("whatsapp", v)} />
             </Field>
           </QuickForm.MoreDetails>
 

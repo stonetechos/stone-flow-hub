@@ -99,3 +99,30 @@ export function notifyBroadcast(
 ): Promise<{ id: string } | null> {
   return notify({ ...input, userId: null });
 }
+
+/** Sends targeted notifications to all admin and super_admin users. */
+export async function notifyAdmins(input: Omit<NotifyInput, "userId">): Promise<{ count: number }> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: adminRows, error } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .in("role", ["admin", "super_admin"]);
+
+    if (error || !adminRows || adminRows.length === 0) {
+      const res = await notifyBroadcast(input);
+      return { count: res ? 1 : 0 };
+    }
+
+    const userIds = Array.from(new Set(adminRows.map((r) => r.user_id).filter(Boolean)));
+    let count = 0;
+    for (const uid of userIds) {
+      const res = await notify({ ...input, userId: uid });
+      if (res) count++;
+    }
+    return { count };
+  } catch (err) {
+    console.error("[notifications] notifyAdmins failed", err);
+    return { count: 0 };
+  }
+}

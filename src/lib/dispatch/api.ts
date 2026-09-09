@@ -108,6 +108,20 @@ export async function createDispatch(input: DispatchCreateInput): Promise<Dispat
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (data) {
+    try {
+      const { broadcastMaterialDispatched } = await import("@/lib/notifications/broadcast");
+      broadcastMaterialDispatched({
+        id: data.id,
+        dispatch_no: data.dispatch_no,
+        carrier: data.carrier,
+      });
+    } catch (e) {
+      console.warn("[dispatch] broadcast failed", e);
+    }
+  }
+
   return data;
 }
 
@@ -120,6 +134,20 @@ export async function updateDispatch(id: string, input: DispatchCreateInput): Pr
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (data && (p.status === "in_transit" || p.status === "delivered")) {
+    try {
+      const { broadcastMaterialDispatched } = await import("@/lib/notifications/broadcast");
+      broadcastMaterialDispatched({
+        id: data.id,
+        dispatch_no: data.dispatch_no,
+        carrier: data.carrier,
+      });
+    } catch (e) {
+      console.warn("[dispatch] broadcast failed", e);
+    }
+  }
+
   return data;
 }
 

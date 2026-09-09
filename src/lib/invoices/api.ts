@@ -116,6 +116,20 @@ export async function recordManualPayment(input: RecordPaymentInput): Promise<Pa
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (data) {
+    try {
+      const { notifyAdminPaymentReceived } = await import("@/lib/notifications/broadcast");
+      notifyAdminPaymentReceived({
+        amount: data.amount,
+        method: data.method,
+        reference_no: data.reference_no,
+      });
+    } catch (e) {
+      console.warn("[invoices] admin payment notification skipped", e);
+    }
+  }
+
   return data;
 }
 

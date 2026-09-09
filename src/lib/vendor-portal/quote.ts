@@ -98,5 +98,32 @@ export async function submitQuote(vendorRequestId: string): Promise<VendorQuoteR
     _payload: { vendor_request_id: vendorRequestId },
   });
 
+  try {
+    const { data: vr } = await supabase
+      .from("vendor_requests")
+      .select("rfq_id, rfq:rfqs(id, rfq_no), vendor:vendors(id, name)")
+      .eq("id", vendorRequestId)
+      .maybeSingle();
+
+    const vrAny = vr as unknown as {
+      rfq?: { id: string; rfq_no: string } | null;
+      vendor?: { id: string; name: string } | null;
+    } | null;
+
+    const vendorName = vrAny?.vendor?.name || "Vendor";
+    const rfqNo = vrAny?.rfq?.rfq_no || "RFQ";
+    const rfqId = vrAny?.rfq?.id;
+
+    const { broadcastVendorQuoteReceived } = await import("@/lib/notifications/broadcast");
+    broadcastVendorQuoteReceived({
+      rfqNo,
+      vendorName,
+      totalInr: Number(data.total_inr ?? 0),
+      rfqId,
+    });
+  } catch (err) {
+    console.warn("[vendor-portal] failed to broadcast vendor quote notification", err);
+  }
+
   return data;
 }

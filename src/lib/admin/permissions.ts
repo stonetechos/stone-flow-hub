@@ -44,11 +44,7 @@ export interface ActingUserRef {
 }
 
 export type UserManagementAction =
-  | "delete"
-  | "deactivate"
-  | "reset_password"
-  | "revoke_role"
-  | "change_role";
+  "delete" | "deactivate" | "reset_password" | "revoke_role" | "change_role";
 
 /**
  * Sprint 1.7.1, Part 6/7 — single client-side source of truth for "does

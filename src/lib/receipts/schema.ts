@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const RECEIPT_METHODS = [
+  "upi_stone_tech",
   "cash",
+  "current_bob",
+  "upi_raman",
+  "upi_rishi",
   "upi_manual",
   "upi_bob_current",
   "upi_personal",
@@ -18,7 +22,11 @@ export const RECEIPT_METHODS = [
 export type ReceiptMethod = (typeof RECEIPT_METHODS)[number];
 
 export const RECEIPT_METHOD_LABELS: Record<ReceiptMethod, string> = {
-  cash: "Cash Received",
+  upi_stone_tech: "Stone Tech UPI",
+  cash: "Cash",
+  current_bob: "Current Account BOB",
+  upi_raman: "Personal UPI – Raman",
+  upi_rishi: "Personal UPI – Rishi",
   upi_manual: "UPI",
   upi_bob_current: "UPI – Stone Tech BOB Current A/c",
   upi_personal: "UPI – Personal Account",
