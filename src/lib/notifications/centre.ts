@@ -145,18 +145,37 @@ export async function hasTodaysBroadcast(entityType: string): Promise<boolean> {
   return (data ?? []).length > 0;
 }
 
+const deliveredIds = new Set<string>();
+
 export function subscribeToNotifications(
   onInsert: (notification: CentreNotification) => void,
 ): () => void {
+  const deliverOnce = (n: CentreNotification) => {
+    if (!n.id || deliveredIds.has(n.id)) return;
+    deliveredIds.add(n.id);
+    if (deliveredIds.size > 200) {
+      const first = deliveredIds.values().next().value;
+      if (first) deliveredIds.delete(first);
+    }
+    onInsert(n);
+  };
+
   const channel: RealtimeChannel = supabase
     .channel("notifications_feed")
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "notifications" },
       (payload: { new: NotificationRow }) => {
-        onInsert(mapRow(payload.new));
+        if (payload?.new) {
+          deliverOnce(mapRow(payload.new));
+        }
       },
     )
+    .on("broadcast", { event: "new_notification" }, (payload: { payload: NotificationRow }) => {
+      if (payload?.payload) {
+        deliverOnce(mapRow(payload.payload));
+      }
+    })
     .subscribe();
 
   return () => {

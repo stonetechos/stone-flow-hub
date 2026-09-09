@@ -392,10 +392,17 @@ function AuthCard({
       <p className="mt-6 text-center text-[11.5px] leading-relaxed text-text-muted">
         Accounts are provisioned by an administrator. Contact your admin for access.
       </p>
-      {/* Sprint 1.7, Part 9: subtle platform attribution — does not replace
-          the STOS wordmark shown above, just credits the company
-          that builds and operates it. */}
-      <p className="mt-2 text-center text-[11px] text-text-muted">{POWERED_BY_LINE}</p>
+      <p className="mt-2 text-center text-[11px] text-text-muted">
+        {POWERED_BY_LINE} ·{" "}
+        <a
+          href="/privacy.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-text-secondary"
+        >
+          Privacy Policy
+        </a>
+      </p>
     </div>
   );
 }

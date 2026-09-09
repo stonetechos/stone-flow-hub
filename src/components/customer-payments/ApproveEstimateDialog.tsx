@@ -1,3 +1,4 @@
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -91,6 +92,15 @@ export function ApproveEstimateDialog(props: ApproveEstimateDialogProps) {
     mutationFn: () => approveEstimate(estimateId, rows),
     onSuccess: () => {
       toast.success("Estimate approved. Payment schedule created.");
+      void dispatchSystemNotification({
+        scope: "broadcast",
+        tier: "important",
+        title: "Quotation Approved",
+        body: `A quotation has been approved: Estimate #${estimateId.slice(0, 8)} for ₹${Number(estimateTotal).toLocaleString("en-IN")}`,
+        entityType: "estimate",
+        entityId: estimateId,
+        linkPath: `/estimates/${estimateId}`,
+      });
       invalidateEstimate(qc, estimateId);
       qc.invalidateQueries({ queryKey: ["customer-payments"] });
       onOpenChange(false);

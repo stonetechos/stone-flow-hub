@@ -1,3 +1,4 @@
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 /**
  * <QuickCreateDialog> — Inline create for customer/vendor/project/product from any picker.
  *
@@ -106,6 +107,15 @@ function QuickCreateCustomer({
     onSuccess: (row) => {
       toast.success(`Customer ${row.customer_code} created`);
       seedPickerCache(qc, "customer", row);
+      void dispatchSystemNotification({
+        scope: "broadcast",
+        tier: "info",
+        title: "New Customer Added",
+        body: `A new customer entry has been made: ${row.name} (${row.customer_code})`,
+        entityType: "customer",
+        entityId: row.id,
+        linkPath: `/customers/${row.id}`,
+      });
       invalidateCustomer(qc, row.id);
       onCreated(row);
       onOpenChange(false);

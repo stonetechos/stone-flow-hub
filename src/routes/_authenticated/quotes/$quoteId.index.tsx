@@ -1,3 +1,4 @@
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
 import { useState } from "react";
@@ -101,8 +102,19 @@ function QuoteDetailPage() {
 
   const statusMut = useMutation({
     mutationFn: (s: QuoteStatus) => setQuoteStatus(quoteId, s),
-    onSuccess: () => {
+    onSuccess: (_, s) => {
       toast.success("Status updated");
+      if (s === "accepted") {
+        void dispatchSystemNotification({
+          scope: "broadcast",
+          tier: "important",
+          title: "Quotation Approved",
+          body: `A quotation has been approved: ${q.data?.quote_no ?? "Quotation"} for ${q.data?.customer?.name ?? "Customer"}`,
+          entityType: "quote",
+          entityId: quoteId,
+          linkPath: `/quotes/${quoteId}`,
+        });
+      }
       invalidateQuote(qc, quoteId);
     },
     onError: (err) => toast.error(toUserMessage(err)),

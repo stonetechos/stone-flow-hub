@@ -1,3 +1,4 @@
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 /** Vendor quote comparison for procurement. Staff-only via RLS (has_staff_access). */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
@@ -188,6 +189,15 @@ export async function approveVendorQuote(quoteId: string): Promise<void> {
     _entity_type: "vendor_quote",
     _entity_id: quoteId,
     _payload: {},
+  });
+  void dispatchSystemNotification({
+    scope: "broadcast",
+    tier: "important",
+    title: "Quotation Approved",
+    body: "A quotation has been approved: Vendor quote approved.",
+    entityType: "vendor_quote",
+    entityId: quoteId,
+    linkPath: "/rfqs",
   });
 }
 

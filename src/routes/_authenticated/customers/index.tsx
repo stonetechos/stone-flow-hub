@@ -1,3 +1,4 @@
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -315,7 +316,18 @@ function CustomerFormDialog({
       editing ? updateCustomer(editing.id, input) : createCustomer(input),
     onSuccess: (row) => {
       toast.success(editing ? "Customer updated" : `Customer ${row.customer_code} created`);
-      if (!editing) seedPickerCache(qc, "customer", row);
+      if (!editing) {
+        seedPickerCache(qc, "customer", row);
+        void dispatchSystemNotification({
+          scope: "broadcast",
+          tier: "info",
+          title: "New Customer Added",
+          body: `A new customer entry has been made: ${row.name} (${row.customer_code})`,
+          entityType: "customer",
+          entityId: row.id,
+          linkPath: `/customers/${row.id}`,
+        });
+      }
       invalidateCustomer(qc, row.id);
       onOpenChange(false);
     },
