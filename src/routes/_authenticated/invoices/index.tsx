@@ -108,7 +108,7 @@ function InvoicesPage() {
   return (
     <div>
       <PageHeader
-        title="Invoices"
+        title="Sales Invoices"
         subtitle="Collect payments — Razorpay links or manual entries."
       />
 

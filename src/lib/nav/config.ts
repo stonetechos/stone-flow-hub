@@ -81,10 +81,10 @@ export interface NavItemDef {
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
-  // Sales: Customers -> Quotations -> Invoices -> Dispatches (with Local Carting)
+  // Sales: Customers -> Quotations -> Sales Invoices -> Dispatches (with Local Carting)
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
-  { id: "invoices", to: "/invoices", label: "Invoices", icon: Receipt, group: "sales" },
+  { id: "invoices", to: "/invoices", label: "Sales Invoices", icon: Receipt, group: "sales" },
   { id: "dispatch", to: "/dispatch", label: "Dispatches", icon: Truck, group: "sales" },
 
   // Purchase: Vendors -> RFQ -> Purchase Invoices (with Inward Transportation)
