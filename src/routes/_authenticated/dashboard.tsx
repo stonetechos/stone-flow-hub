@@ -28,7 +28,7 @@
  * buildSuggestions); left untouched.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -65,6 +65,12 @@ import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  ZohoDashboardHeader,
+  type DashboardViewTab,
+} from "@/components/dashboard/zoho/ZohoDashboardHeader";
+import { ZohoDashboardView } from "@/components/dashboard/zoho/ZohoDashboardView";
+import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAuxiliaryViews";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -80,18 +86,34 @@ function DashboardPage() {
   const qc = useQueryClient();
   const { processedInsights } = useExecutiveInsights();
 
-  const kpisQ = useQuery({ queryKey: qk.dashboard, queryFn: getDashboardKpis });
+  const [activeTab, setActiveTab] = useState<DashboardViewTab>("financial");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await qc.invalidateQueries();
+    setIsRefreshing(false);
+  };
+
+  const kpisQ = useQuery({
+    queryKey: qk.dashboard,
+    queryFn: getDashboardKpis,
+    enabled: activeTab === "operations",
+  });
   const activityQ = useQuery({
     queryKey: qk.activity.recent,
     queryFn: () => listRecentActivity(8),
+    enabled: activeTab === "operations",
   });
   const tasksQ = useQuery({
     queryKey: ["tasks", "dashboard", "pending"],
     queryFn: () => listTasks({ status: "pending" }),
+    enabled: activeTab === "operations",
   });
   const followupsQ = useQuery({
     queryKey: qk.followups.scope("today"),
     queryFn: () => listFollowups("today"),
+    enabled: activeTab === "operations",
   });
   const profileQ = useQuery({
     queryKey: ["me", "profile", user?.id],
@@ -125,66 +147,98 @@ function DashboardPage() {
     year: "numeric",
   });
 
-  if (kpisQ.isLoading || !kpisQ.data)
-    return <ShellLoading greeting={greeting} name={name} today={today} />;
-  if (kpisQ.error)
-    return <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />;
-
-  const kpis = kpisQ.data!;
+  const kpis = kpisQ.data;
   const tasks = tasksQ.data ?? [];
   const followups = followupsQ.data ?? [];
-  const health = computeHealth(kpis);
+  const health = kpis ? computeHealth(kpis) : { score: 100, band: "strong" as HealthBand };
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
   const brief = buildBrief(topInsights, tasks);
-  const headline = pickHeadline(kpis);
+  const headline = kpis
+    ? pickHeadline(kpis)
+    : { label: "Revenue", value: "₹0", context: "tracking", to: "/invoices" };
 
   return (
-    <div className="relative pb-24">
-      {/* Two-column shell: main + right Copilot rail on xl+ */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        {/* MAIN COLUMN */}
-        <div className="space-y-6">
-          <ExecutiveHero
-            greeting={greeting}
-            name={name}
-            today={today}
-            health={health}
-            headline={headline}
-            brief={brief}
-          />
+    <div className="relative pb-24 -mt-2">
+      {/* Zoho Books Top Header & Navigation Sub-tabs */}
+      <ZohoDashboardHeader
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      />
 
-          <BusinessHealthGrid kpis={kpis} />
-
-          <OperationalRadar kpis={kpis} tasks={tasks} followups={followups} />
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <CashFlowSnapshot kpis={kpis} />
-            <DispatchAndInstallation kpis={kpis} />
-          </div>
-
-          <SalesCommandCentre kpis={kpis} />
-
-          <TodayTimeline
-            followups={followups}
-            tasks={tasks}
-            deliveriesToday={kpis.deliveriesToday}
-            onToggleTask={(id, done) => toggleTask.mutate({ id, done })}
-          />
+      {/* Main Tab Views */}
+      {activeTab === "financial" && (
+        <div className="px-2 sm:px-4">
+          <ZohoDashboardView />
         </div>
+      )}
 
-        {/* RIGHT RAIL */}
-        <CopilotDock
-          health={health}
-          kpis={kpis}
-          topInsights={topInsights}
-          activity={activityQ.data ?? []}
-          activityLoading={activityQ.isLoading}
-        />
-      </div>
+      {activeTab === "operations" && (
+        <div className="px-2 sm:px-4">
+          {kpisQ.isLoading || !kpisQ.data ? (
+            <ShellLoading greeting={greeting} name={name} today={today} />
+          ) : kpisQ.error ? (
+            <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />
+          ) : (
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              {/* MAIN COLUMN */}
+              <div className="space-y-6">
+                <ExecutiveHero
+                  greeting={greeting}
+                  name={name}
+                  today={today}
+                  health={computeHealth(kpisQ.data)}
+                  headline={pickHeadline(kpisQ.data)}
+                  brief={brief}
+                />
 
-      <QuickActionsDock />
+                <BusinessHealthGrid kpis={kpisQ.data} />
+
+                <OperationalRadar kpis={kpisQ.data} tasks={tasks} followups={followups} />
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <CashFlowSnapshot kpis={kpisQ.data} />
+                  <DispatchAndInstallation kpis={kpisQ.data} />
+                </div>
+
+                <SalesCommandCentre kpis={kpisQ.data} />
+
+                <TodayTimeline
+                  followups={followups}
+                  tasks={tasks}
+                  deliveriesToday={kpisQ.data.deliveriesToday}
+                  onToggleTask={(id, done) => toggleTask.mutate({ id, done })}
+                />
+              </div>
+
+              {/* RIGHT RAIL */}
+              <CopilotDock
+                health={computeHealth(kpisQ.data)}
+                kpis={kpisQ.data}
+                topInsights={topInsights}
+                activity={activityQ.data ?? []}
+                activityLoading={activityQ.isLoading}
+              />
+            </div>
+          )}
+          <QuickActionsDock />
+        </div>
+      )}
+
+      {activeTab === "announcements" && (
+        <div className="px-2 sm:px-4">
+          <AnnouncementsView />
+        </div>
+      )}
+
+      {activeTab === "help" && (
+        <div className="px-2 sm:px-4">
+          <HelpView />
+        </div>
+      )}
     </div>
   );
 }
