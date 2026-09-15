@@ -18,19 +18,19 @@ export function ZohoDashboardHeader({
   canViewFinancial?: boolean;
 }) {
   return (
-    <div className="border-b border-border bg-card px-4 sm:px-6 pt-4 pb-0 mb-6">
+    <div className="mb-6 rounded-2xl border border-blue-100/80 bg-white/95 p-4 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs sm:px-6 sm:py-5">
       {/* Top row: Company name + actions */}
-      <div className="flex items-center justify-between gap-4 pb-3">
-        <div className="flex items-center gap-2">
-          {/* Stone Tech Logo glyph */}
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
+        <div className="flex items-center gap-3">
+          {/* Stone Tech Logo glyph in rich sapphire blue */}
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/25">
             <svg
-              width="20"
-              height="20"
+              width="22"
+              height="22"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -39,50 +39,51 @@ export function ZohoDashboardHeader({
               <polyline points="2 12 12 17 22 12" />
             </svg>
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-1.5 text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
-          >
-            <span>STONE TECH</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-display text-lg font-black tracking-tight text-slate-900 sm:text-xl">
+                STONE TECH
+              </span>
+              <span className="rounded-full border border-blue-200/80 bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide uppercase text-blue-700">
+                Live ERP
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">Executive & Operational Hub</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            className="h-8.5 gap-2 rounded-xl border-blue-200 bg-blue-50/50 text-xs font-semibold text-blue-700 shadow-xs transition-all hover:border-blue-600 hover:bg-blue-600 hover:text-white"
             title="Refresh dashboard data"
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw
+              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-blue-600")}
+            />
+            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
           </Button>
         </div>
       </div>
 
-      {/* Tabs Row */}
-      <div className="flex items-center gap-6 overflow-x-auto text-sm font-medium">
+      {/* Tabs Row — Modern Milky Segmented Pill Bar */}
+      <div className="flex items-center gap-1.5 overflow-x-auto rounded-xl border border-blue-100/70 bg-slate-50/80 p-1 text-xs sm:text-sm">
         {canViewFinancial && (
           <button
             type="button"
             onClick={() => onTabChange("financial")}
             className={cn(
-              "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap",
+              "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
               activeTab === "financial"
-                ? "border-primary text-primary font-semibold"
-                : "border-transparent text-muted-foreground hover:text-foreground",
+                ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+                : "text-slate-600 hover:bg-white hover:text-blue-700",
             )}
           >
-            <CheckCircle2
-              className={cn(
-                "h-4 w-4",
-                activeTab === "financial" ? "text-primary" : "text-muted-foreground",
-              )}
-            />
-            <span>Dashboard</span>
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Financial Dashboard</span>
           </button>
         )}
 
@@ -90,10 +91,10 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("operations")}
           className={cn(
-            "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
             activeTab === "operations"
-              ? "border-primary text-primary font-semibold"
-              : "border-transparent text-muted-foreground hover:text-foreground",
+              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >
           <Gauge className="h-4 w-4" />
@@ -104,25 +105,25 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("announcements")}
           className={cn(
-            "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap relative",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
             activeTab === "announcements"
-              ? "border-primary text-primary font-semibold"
-              : "border-transparent text-muted-foreground hover:text-foreground",
+              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >
           <Megaphone className="h-4 w-4" />
           <span>Announcements</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
         </button>
 
         <button
           type="button"
           onClick={() => onTabChange("help")}
           className={cn(
-            "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
             activeTab === "help"
-              ? "border-primary text-primary font-semibold"
-              : "border-transparent text-muted-foreground hover:text-foreground",
+              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >
           <HelpCircle className="h-4 w-4" />

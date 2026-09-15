@@ -270,16 +270,16 @@ function ExecutiveHero({
 }) {
   return (
     <section
-      className="material-granite stone-grain overflow-hidden rounded-lg border border-border-inverse shadow-e3"
+      className="relative overflow-hidden rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]"
       aria-label="Executive briefing"
     >
       <div className="relative z-10 p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
+            <div className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600">
               {today}
             </div>
-            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-text-on-material sm:text-[28px]">
+            <h1 className="mt-2 font-display text-2xl font-black tracking-tight text-slate-900 sm:text-[28px]">
               {greeting}, {name}.
             </h1>
           </div>
@@ -288,31 +288,31 @@ function ExecutiveHero({
 
         {/* Headline metric */}
         <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-blue-700">
             {headline.label}
           </span>
           <Link
             to={headline.to}
-            className="font-display text-3xl font-semibold tabular-nums text-text-on-material hover:underline sm:text-[36px]"
+            className="font-display text-3xl font-black tabular-nums text-slate-900 transition-colors hover:text-blue-600 sm:text-[36px]"
           >
             {headline.value}
           </Link>
-          <span className="text-[13px] text-text-on-material-muted">{headline.context}</span>
+          <span className="text-[13px] font-medium text-slate-500">{headline.context}</span>
         </div>
 
         {/* AI Executive Brief */}
-        <div className="mt-6 border-t border-white/8 pt-5">
-          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
-            <Sparkles className="h-3 w-3" aria-hidden />
+        <div className="mt-6 border-t border-blue-50 pt-5">
+          <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-blue-700">
+            <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
             Executive brief
           </div>
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {brief.map((line, i) => (
               <li
                 key={i}
-                className="flex gap-2.5 text-[14px] leading-relaxed text-text-on-material/90"
+                className="flex gap-2.5 text-[14px] font-medium leading-relaxed text-slate-700"
               >
-                <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mint-300/80" />
+                <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
                 <span>{line}</span>
               </li>
             ))}
@@ -330,11 +330,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
   const c = 2 * Math.PI * r;
   const offset = c - (Math.max(0, Math.min(100, score)) / 100) * c;
   const ringColor =
-    band === "strong"
-      ? "text-mint-300"
-      : band === "steady"
-        ? "text-status-warning-fg"
-        : "text-status-danger-fg";
+    band === "strong" ? "text-blue-600" : band === "steady" ? "text-sky-500" : "text-amber-500";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
@@ -345,7 +341,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
           stroke="currentColor"
           strokeWidth={stroke}
           fill="none"
-          className="text-text-on-material/10"
+          className="text-slate-100"
         />
         <circle
           cx={size / 2}
@@ -362,10 +358,8 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-xl font-semibold tabular-nums text-text-on-material">
-          {score}
-        </span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-on-material-muted">
+        <span className="font-display text-xl font-black tabular-nums text-slate-900">{score}</span>
+        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-blue-600">
           Health
         </span>
       </div>
@@ -605,32 +599,42 @@ function RadarColumn({
   return (
     <div
       className={cn(
-        "flex min-h-[160px] flex-col rounded-md border border-border-subtle border-t-2 bg-surface-card p-3 shadow-e1",
+        "flex min-h-[160px] flex-col rounded-2xl border border-blue-100/80 bg-white/95 p-4 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]",
         accent,
       )}
     >
-      <div className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em]">
-        {icon}
-        <span>{title}</span>
-        <span className="ml-auto text-text-muted">{items.length}</span>
+      <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em]">
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+          {icon}
+        </span>
+        <span className="font-bold text-slate-800">{title}</span>
+        <span className="ml-auto rounded-full bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-bold text-blue-700">
+          {items.length}
+        </span>
       </div>
       {items.length === 0 ? (
-        <div className="flex flex-1 items-center text-[12px] text-text-muted">{empty}</div>
+        <div className="flex flex-1 items-center text-[12px] font-medium text-slate-400">
+          {empty}
+        </div>
       ) : (
         <ul className="space-y-1.5">
           {items.slice(0, 5).map((item, i) => (
             <li key={i}>
               <Link
                 to={item.to}
-                className="group flex items-start justify-between gap-2 rounded-sm px-1.5 py-1 -mx-1.5 text-text-primary transition-colors hover:bg-surface-card-hover"
+                className="group -mx-1.5 flex items-start justify-between gap-2 rounded-xl px-2 py-1.5 text-slate-900 transition-all hover:bg-blue-50/70"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-medium">{item.label}</div>
+                  <div className="truncate text-[13px] font-semibold text-slate-800 transition-colors group-hover:text-blue-700">
+                    {item.label}
+                  </div>
                   {item.sub && (
-                    <div className="truncate text-[11px] text-text-muted">{item.sub}</div>
+                    <div className="truncate text-[11px] font-medium text-slate-400">
+                      {item.sub}
+                    </div>
                   )}
                 </div>
-                <ArrowRight className="mt-1 h-3 w-3 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+                <ArrowRight className="mt-1 h-3 w-3 shrink-0 text-blue-400 opacity-0 transition-opacity group-hover:opacity-100" />
               </Link>
             </li>
           ))}
@@ -793,21 +797,21 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
       title="Pipeline pulse"
       to="/dashboards/sales"
     >
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2.5 sm:grid-cols-3">
         {cells.map((c) => (
           <Link
             key={c.label}
             to={c.to}
             className={cn(
-              "flex flex-col rounded-sm border border-border-subtle bg-surface-panel px-2.5 py-2 transition-colors",
-              "hover:border-border-default hover:bg-surface-card-hover",
-              c.tone === "warn" && "border-status-warning-fg/40",
+              "flex flex-col rounded-xl border border-blue-100/80 bg-blue-50/50 px-3 py-2.5 transition-all",
+              "hover:border-blue-300 hover:bg-blue-50/80 hover:shadow-xs",
+              c.tone === "warn" && "border-amber-200 bg-amber-50/40",
             )}
           >
-            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-blue-700">
               {c.label}
             </span>
-            <span className="mt-1 font-display text-[18px] font-semibold tabular-nums text-text-primary">
+            <span className="mt-1 font-display text-[20px] font-black tabular-nums text-slate-900">
               {c.value}
             </span>
           </Link>
@@ -853,25 +857,23 @@ function CopilotDock({
   const suggestions = buildSuggestions(topInsights);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-      {/* Contextual summary */}
-      <div className="material-basalt stone-grain overflow-hidden rounded-md border border-border-inverse shadow-e2">
-        <div className="relative z-10 p-4">
-          <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-text-on-material-muted">
-            <Sparkles className="h-3 w-3" aria-hidden />
-            AI copilot
-          </div>
-          <div className="font-display text-[15px] font-medium leading-snug text-text-on-material">
-            {health.band === "strong"
-              ? "The business is running well. Focus on growth."
-              : health.band === "steady"
-                ? "Steady day. A few items want attention."
-                : "Several risks are open. Address them first."}
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/8 pt-3">
-            <MiniStat label="Cash today" value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
-            <MiniStat label="To approve" value={String(kpis.pendingQuotes)} />
-            <MiniStat label="Overdue" value={String(kpis.overdueFollowups)} />
-          </div>
+      {/* Contextual summary in Milky White Box */}
+      <div className="overflow-hidden rounded-2xl border border-blue-100/80 bg-white/95 p-5 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all hover:border-blue-200">
+        <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-blue-700">
+          <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
+          AI copilot
+        </div>
+        <div className="font-display text-[15px] font-bold leading-snug text-slate-900">
+          {health.band === "strong"
+            ? "The business is running strong. Focus on growth."
+            : health.band === "steady"
+              ? "Steady day. A few items want attention."
+              : "Several risks are open. Address them first."}
+        </div>
+        <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-blue-50 pt-3">
+          <MiniStat label="Cash today" value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
+          <MiniStat label="To approve" value={String(kpis.pendingQuotes)} />
+          <MiniStat label="Overdue" value={String(kpis.overdueFollowups)} />
         </div>
       </div>
 
@@ -882,7 +884,7 @@ function CopilotDock({
         title="What to do next"
       >
         {suggestions.length === 0 ? (
-          <div className="rounded-sm border border-dashed border-border-subtle px-3 py-6 text-center text-[12px] text-text-muted">
+          <div className="rounded-xl border border-dashed border-blue-100 px-3 py-6 text-center text-[12px] text-slate-400">
             Nothing pressing. A good moment to plan next week.
           </div>
         ) : (
@@ -891,10 +893,10 @@ function CopilotDock({
               <li key={s.label}>
                 <Link
                   to={s.to}
-                  className="flex items-center justify-between gap-2 rounded-sm border border-border-subtle bg-surface-panel px-2.5 py-2 text-[13px] text-text-primary transition-colors hover:border-border-default hover:bg-surface-card-hover"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-blue-100/80 bg-blue-50/40 px-3 py-2 text-[13px] font-semibold text-slate-800 transition-colors hover:border-blue-300 hover:bg-blue-50/80"
                 >
                   <span className="min-w-0 truncate">{s.label}</span>
-                  <ArrowRight className="h-3 w-3 shrink-0 text-text-muted" aria-hidden />
+                  <ArrowRight className="h-3 w-3 shrink-0 text-blue-500" aria-hidden />
                 </Link>
               </li>
             ))}
@@ -912,20 +914,20 @@ function CopilotDock({
         {activityLoading ? (
           <ul className="space-y-2" aria-hidden>
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={i} className="h-8 animate-pulse rounded-sm bg-surface-panel" />
+              <li key={i} className="h-8 animate-pulse rounded-lg bg-blue-50/40" />
             ))}
           </ul>
         ) : activity.length === 0 ? (
-          <div className="rounded-sm px-2 py-4 text-center text-[12px] text-text-muted">
+          <div className="rounded-xl px-2 py-4 text-center text-[12px] text-slate-400">
             Quiet so far.
           </div>
         ) : (
           <ol className="space-y-2">
             {activity.slice(0, 5).map((a) => (
               <li key={a.id} className="text-[12px] leading-snug">
-                <span className="text-text-primary">{a.actor_name ?? "Someone"}</span>{" "}
-                <span className="text-text-muted">{a.action.replace(/_/g, " ")}</span>
-                {a.summary && <span className="text-text-secondary"> {a.summary}</span>}
+                <span className="font-semibold text-slate-900">{a.actor_name ?? "Someone"}</span>{" "}
+                <span className="text-slate-500">{a.action.replace(/_/g, " ")}</span>
+                {a.summary && <span className="text-slate-600 font-medium"> {a.summary}</span>}
               </li>
             ))}
           </ol>
@@ -937,11 +939,11 @@ function CopilotDock({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="font-mono text-[9px] uppercase tracking-wider text-text-on-material-muted">
+    <div className="rounded-lg border border-blue-100/70 bg-blue-50/40 p-2 text-center">
+      <div className="font-mono text-[9px] font-bold uppercase tracking-wider text-blue-700">
         {label}
       </div>
-      <div className="mt-0.5 font-display text-[14px] font-semibold tabular-nums text-text-on-material">
+      <div className="mt-0.5 font-display text-[14px] font-extrabold tabular-nums text-slate-900">
         {value}
       </div>
     </div>
@@ -1036,31 +1038,33 @@ function TodayTimeline({
         action={{ label: "Open calendar", to: "/calendar" }}
       />
       {events.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border-subtle bg-surface-card px-4 py-8 text-center text-[13px] text-text-muted">
+        <div className="rounded-2xl border border-dashed border-blue-200/80 bg-white/95 px-4 py-8 text-center text-[13px] text-slate-400">
           Nothing scheduled. A rare quiet day.
         </div>
       ) : (
-        <ol className="relative rounded-md border border-border-subtle bg-surface-card shadow-e1">
+        <ol className="relative rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs">
           {events.map((e, i) => (
             <li
               key={e.key}
               className={cn(
-                "flex items-center gap-3 px-4 py-2.5",
-                i > 0 && "border-t border-border-subtle",
+                "flex items-center gap-3 px-5 py-3 transition-colors hover:bg-blue-50/40",
+                i > 0 && "border-t border-blue-50",
+                i === 0 && "rounded-t-2xl",
+                i === events.length - 1 && "rounded-b-2xl",
               )}
             >
-              <span className="w-16 shrink-0 font-mono text-[11px] uppercase tracking-wider text-text-muted tabular-nums">
+              <span className="w-16 shrink-0 font-mono text-[11px] font-bold uppercase tracking-wider text-blue-600 tabular-nums">
                 {e.time}
               </span>
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-surface-panel text-text-secondary">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600 shadow-xs">
                 {iconFor(e.kind)}
               </span>
               <div className="min-w-0 flex-1">
                 <Link
                   to={e.to}
                   className={cn(
-                    "block truncate text-[13px] text-text-primary hover:text-intent-primary",
-                    e.done && "text-text-muted line-through",
+                    "block truncate text-[13px] font-semibold text-slate-800 transition-colors hover:text-blue-600",
+                    e.done && "text-slate-400 line-through",
                   )}
                 >
                   {e.label}
@@ -1117,15 +1121,15 @@ function QuickActionsDock() {
       className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 flex justify-center px-3"
       aria-label="Quick create actions"
     >
-      <div className="pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border-inverse bg-surface-nav/95 px-1.5 py-1 shadow-e3 backdrop-blur">
-        <span className="pl-2 pr-1 font-mono text-[10px] uppercase tracking-[0.18em] text-text-on-material-muted">
-          <Plus className="inline h-3 w-3" aria-hidden /> New
+      <div className="pointer-events-auto flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-blue-200/90 bg-white/95 px-3 py-1.5 shadow-xl shadow-blue-600/10 backdrop-blur-md">
+        <span className="flex items-center gap-1 pl-1 pr-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+          <Plus className="inline h-3.5 w-3.5 text-blue-600" aria-hidden /> New
         </span>
         {actions.map((a) => (
           <Link
             key={a.to}
             to={a.to}
-            className="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] text-text-on-material-muted transition-colors hover:bg-white/8 hover:text-text-on-material"
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
           >
             {a.icon}
             {a.label}
@@ -1154,17 +1158,17 @@ function SectionTitle({
   return (
     <header className="mb-3 flex items-end justify-between gap-4">
       <div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-muted">
+        <div className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-blue-600">
           {kicker}
         </div>
-        <h2 id={id} className="mt-0.5 font-display text-[18px] font-semibold text-text-primary">
+        <h2 id={id} className="mt-0.5 font-display text-[18px] font-bold text-slate-900">
           {title}
         </h2>
       </div>
       {action && (
         <Link
           to={action.to}
-          className="flex items-center gap-1 text-[12px] text-text-secondary hover:text-intent-primary"
+          className="flex items-center gap-1 text-[12px] font-semibold text-blue-600 transition-colors hover:text-blue-800"
         >
           {action.label}
           <ArrowRight className="h-3 w-3" aria-hidden />
@@ -1188,21 +1192,21 @@ function SurfaceCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-border-subtle bg-surface-card p-4 shadow-e1">
-      <header className="mb-3 flex items-start justify-between gap-4">
+    <section className="rounded-2xl border border-blue-100/80 bg-white/95 p-5 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
+      <header className="mb-3.5 flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">
-            {icon}
+          <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-blue-700">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+              {icon}
+            </span>
             {kicker}
           </div>
-          <h3 className="mt-0.5 font-display text-[15px] font-semibold text-text-primary">
-            {title}
-          </h3>
+          <h3 className="mt-1 font-display text-[16px] font-bold text-slate-900">{title}</h3>
         </div>
         {to && (
           <Link
             to={to}
-            className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-intent-primary"
+            className="flex items-center gap-1 text-[12px] font-semibold text-blue-600 transition-colors hover:text-blue-800"
           >
             Open
             <ArrowRight className="h-3 w-3" aria-hidden />

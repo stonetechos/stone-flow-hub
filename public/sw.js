@@ -16,7 +16,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "stos-3";
+const CACHE_VERSION = "stos-5";
 const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -61,6 +61,7 @@ async function precacheOfflinePage(cache) {
 const SUPABASE_HOST_HINT = "supabase.co";
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       const cache = await caches.open(STATIC_CACHE);

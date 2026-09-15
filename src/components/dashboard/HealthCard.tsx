@@ -58,38 +58,40 @@ export function HealthCard({
     <Link
       to={to}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-md border border-border-subtle bg-surface-card p-4",
-        "shadow-e1 transition-all duration-150 hover:-translate-y-px hover:border-border-default hover:shadow-e2",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-intent-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-blue-100/80 bg-white/95 p-5",
+        "shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-text-muted">
-          <span className="text-text-secondary">{icon}</span>
-          {label}
+        <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wider uppercase text-slate-500">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600 shadow-xs">
+            {icon}
+          </span>
+          <span>{label}</span>
         </div>
         <span
           className={cn(
-            "rounded-sm px-1.5 py-px font-mono text-[10px] uppercase tracking-wider",
+            "rounded-md px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide uppercase",
             TONE_ACCENT[tone],
           )}
         >
           {TONE_LABEL[tone]}
         </span>
       </div>
-      <div className="mt-3 font-display text-[26px] font-semibold tabular-nums text-text-primary">
+      <div className="mt-3 font-display text-[26px] font-black tracking-tight text-slate-900 tabular-nums">
         {value}
       </div>
-      <div className="mt-0.5 text-[12px] text-text-secondary">{trend}</div>
-      <div className="mt-3 border-t border-border-subtle pt-2 text-[11px] text-text-muted">
+      <div className="mt-0.5 text-[12px] font-medium text-slate-500">{trend}</div>
+      <div className="mt-3 border-t border-blue-50 pt-2 text-[11px] font-semibold text-blue-600">
         {target}
       </div>
-      <div className="mt-1 flex items-start gap-1.5 text-[12px] leading-snug text-text-secondary">
+      <div className="mt-1 flex items-start gap-1.5 text-[12px] leading-snug text-slate-600">
         <span>{insight}</span>
       </div>
       <ArrowUpRight
         aria-hidden
-        className="absolute right-3 top-3 h-3.5 w-3.5 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute right-3.5 top-3.5 h-4 w-4 text-blue-400 opacity-0 transition-opacity group-hover:opacity-100"
       />
     </Link>
   );

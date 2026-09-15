@@ -53,21 +53,21 @@ export function SalesAndExpenseCard({
   const totalExpenses = summary?.totalExpenses ?? 0;
 
   return (
-    <Card className="border border-border/80 shadow-xs bg-card flex flex-col justify-between">
+    <Card className="flex flex-col justify-between rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
       <CardHeader className="p-6 pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
-            <span className="p-1 rounded-full border border-border bg-muted text-foreground inline-flex">
-              <PieChart className="h-3.5 w-3.5" />
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2.5 text-sm font-bold text-slate-900">
+            <span className="inline-flex rounded-xl border border-blue-100 bg-blue-50 p-2 text-blue-600 shadow-xs">
+              <PieChart className="h-4 w-4" />
             </span>
-            <span>Sales & Expense</span>
+            <span>Sales & Expenses</span>
           </CardTitle>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+                className="flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100/70"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -78,7 +78,7 @@ export function SalesAndExpenseCard({
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
-                  className={cn(period === pKey && "font-semibold text-primary")}
+                  className={cn(period === pKey && "font-semibold text-blue-600")}
                 >
                   {PERIOD_LABELS[pKey]}
                 </DropdownMenuItem>
@@ -87,17 +87,17 @@ export function SalesAndExpenseCard({
           </DropdownMenu>
         </div>
 
-        {/* Accrual vs Cash Toggle */}
+        {/* Accrual vs Cash Toggle in Blue styling */}
         <div className="pt-2">
-          <div className="inline-flex rounded-md border border-border bg-muted/50 p-0.5 text-xs">
+          <div className="inline-flex rounded-xl border border-blue-100/70 bg-slate-100 p-0.5 text-xs">
             <button
               type="button"
               onClick={() => onModeChange("accrual")}
               className={cn(
-                "rounded px-3 py-1 font-medium transition-all",
+                "rounded-lg px-3 py-1 font-semibold transition-all",
                 mode === "accrual"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-blue-700",
               )}
             >
               Accrual
@@ -106,10 +106,10 @@ export function SalesAndExpenseCard({
               type="button"
               onClick={() => onModeChange("cash")}
               className={cn(
-                "rounded px-3 py-1 font-medium transition-all",
+                "rounded-lg px-3 py-1 font-semibold transition-all",
                 mode === "cash"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-blue-700",
               )}
             >
               Cash
@@ -118,11 +118,11 @@ export function SalesAndExpenseCard({
         </div>
       </CardHeader>
 
-      <CardContent className="p-6 pt-2 space-y-4">
+      <CardContent className="space-y-4 p-6 pt-2">
         {/* Bar Chart */}
         <div className="h-60 w-full pt-1">
           {isLoading ? (
-            <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-xs text-slate-400">
               Loading Sales & Expense data…
             </div>
           ) : (
@@ -131,48 +131,49 @@ export function SalesAndExpenseCard({
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="hsl(var(--border))"
-                  opacity={0.6}
+                  stroke="#E2E8F0"
+                  opacity={0.8}
                 />
                 <XAxis
                   dataKey="month"
                   tickLine={false}
-                  axisLine={{ stroke: "hsl(var(--border))", opacity: 0.8 }}
-                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={{ stroke: "#CBD5E1", opacity: 0.6 }}
+                  tick={{ fontSize: 10, fill: "#64748B" }}
                   interval="preserveStartEnd"
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={formatIndianCompact}
-                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fontSize: 10, fill: "#64748B" }}
                 />
                 <Tooltip
                   formatter={(val: number, name: string) => [
                     formatInrFull(val),
-                    name === "sales" ? "Sales / Income" : "Expenses",
+                    name === "sales" ? "Sales / Inflow" : "Expenses / Outflow",
                   ]}
-                  labelStyle={{ fontWeight: "bold", fontSize: "12px" }}
+                  labelStyle={{ fontWeight: "bold", fontSize: "12px", color: "#0F172A" }}
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    borderColor: "hsl(var(--border))",
-                    borderRadius: "6px",
+                    backgroundColor: "#ffffff",
+                    borderColor: "#BFDBFE",
+                    borderRadius: "12px",
+                    boxShadow: "0 10px 25px -5px rgba(30, 58, 138, 0.1)",
                     fontSize: "12px",
                   }}
                 />
                 <Bar
                   dataKey="sales"
                   name="Sales"
-                  fill="#2563eb"
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={16}
+                  fill="#2563EB"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={18}
                 />
                 <Bar
                   dataKey="expenses"
                   name="Expenses"
-                  fill="#f43f5e"
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={16}
+                  fill="#60A5FA"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={18}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -180,19 +181,21 @@ export function SalesAndExpenseCard({
         </div>
 
         {/* Bottom Income & Expenses Summary Boxes */}
-        <div className="grid grid-cols-2 gap-4 border-t border-border/60 pt-4 text-center">
-          <div className="rounded-md bg-muted/40 p-3">
-            <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">Total Income</div>
-            <div className="mt-1 text-base sm:text-lg font-bold text-foreground tabular-nums">
+        <div className="grid grid-cols-2 gap-3.5 border-t border-blue-50 pt-4 text-center">
+          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-700">
+              Total Income
+            </div>
+            <div className="mt-1 font-display text-base font-black text-slate-900 tabular-nums sm:text-lg">
               {formatInrFull(totalSales)}
             </div>
           </div>
 
-          <div className="rounded-md bg-muted/40 p-3">
-            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+          <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-sky-700">
               Total Expenses
             </div>
-            <div className="mt-1 text-base sm:text-lg font-bold text-foreground tabular-nums">
+            <div className="mt-1 font-display text-base font-black text-slate-900 tabular-nums sm:text-lg">
               {formatInrFull(totalExpenses)}
             </div>
           </div>
