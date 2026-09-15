@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type MenuCategory = "Sales" | "Purchase" | "Inventory" | "Finance";
+type MenuCategory = "Sales" | "Purchase" | "Inventory" | "Finance" | "People";
 
 const ITEMS: ReadonlyArray<{
   to: string;
@@ -55,9 +55,17 @@ const ITEMS: ReadonlyArray<{
   { to: "/inventory/new", label: "Inventory Item", icon: PackageSearch, group: "Inventory" },
 
   // Finance
-  { to: "/receipts/new", label: "Customer Payment", icon: Wallet, group: "Finance" },
+  { to: "/receipts/new", label: "Customer Payment / Receipt", icon: Wallet, group: "Finance" },
   { to: "/vendor-payments/new", label: "Vendor Payment", icon: CreditCard, group: "Finance" },
   { to: "/agency-payments", label: "Agency Payment", icon: Landmark, group: "Finance" },
+
+  // People / HR
+  {
+    to: "/workforce-intelligence/employees/new",
+    label: "Employee",
+    icon: Users,
+    group: "People",
+  },
 ];
 
 export function QuickCreateMenu({
@@ -67,7 +75,13 @@ export function QuickCreateMenu({
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 } = {}) {
-  const groups: ReadonlyArray<MenuCategory> = ["Sales", "Purchase", "Inventory", "Finance"];
+  const groups: ReadonlyArray<MenuCategory> = [
+    "Sales",
+    "Purchase",
+    "Inventory",
+    "Finance",
+    "People",
+  ];
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>

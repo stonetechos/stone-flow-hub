@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   Keyboard,
   Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -219,6 +220,15 @@ function NavList({
         : [...p.collapsedGroups, gid],
     }));
 
+  const starredItems = useMemo(
+    () => resolved.starred.filter((item) => item.id !== "dashboard"),
+    [resolved.starred],
+  );
+  const nonOverviewGroups = useMemo(
+    () => resolved.groups.filter((group) => group.id !== "overview"),
+    [resolved.groups],
+  );
+
   return (
     <nav
       className={cn(
@@ -228,7 +238,22 @@ function NavList({
       )}
       aria-label="Primary"
     >
-      {resolved.starred.length > 0 && (
+      {/* Top primary item: Dashboard is always above Sales and never collapsed */}
+      <div className="space-y-px">
+        <NavLinkRow
+          key="dashboard"
+          to="/dashboard"
+          label="Dashboard"
+          Icon={LayoutDashboard}
+          active={isActive("/dashboard")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+          starred={false}
+          onToggleStar={() => toggleStar("dashboard")}
+        />
+      </div>
+
+      {starredItems.length > 0 && (
         <section aria-labelledby="nav-pinned">
           {!collapsed && (
             <h4
@@ -240,7 +265,7 @@ function NavList({
             </h4>
           )}
           <div className="space-y-px">
-            {resolved.starred.map((item) => (
+            {starredItems.map((item) => (
               <NavLinkRow
                 key={item.id}
                 to={item.to}
@@ -257,7 +282,7 @@ function NavList({
         </section>
       )}
 
-      {resolved.groups.map((group) => {
+      {nonOverviewGroups.map((group) => {
         if (group.items.length === 0) return null;
         const groupCollapsed = collapsedSet.has(group.id);
         return (

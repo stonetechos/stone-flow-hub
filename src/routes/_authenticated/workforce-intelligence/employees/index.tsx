@@ -49,7 +49,7 @@ function EmployeesPage() {
         subtitle="Workforce master"
         eyebrow="Workforce Intelligence"
         actions={
-          <Can anyRole={["admin", "sales_manager"]}>
+          <Can anyRole={["admin", "sales_manager", "hr"]}>
             <Button asChild size="sm">
               <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
                 <Plus className="mr-1 h-4 w-4" /> New employee
@@ -74,6 +74,15 @@ function EmployeesPage() {
         <EmptyState
           title="No employees yet"
           message="Add your team to unlock Today, KRA tracking and workload planning."
+          action={
+            <Can anyRole={["admin", "sales_manager", "hr"]}>
+              <Button asChild size="sm">
+                <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+                  <Plus className="mr-1 h-4 w-4" /> Add employee
+                </Link>
+              </Button>
+            </Can>
+          }
         />
       ) : (
         <Table>

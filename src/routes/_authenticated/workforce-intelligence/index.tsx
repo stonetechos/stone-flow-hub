@@ -3,7 +3,7 @@
  * Personal work queue: every task currently assigned to the signed-in
  * employee, deep-linkable back into the ERP.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -77,7 +77,12 @@ export function TodayView() {
         <PageHeader title="Workforce Intelligence" subtitle="Today's work queue" />
         <EmptyState
           title="No employee record linked"
-          message="Ask an owner to create your employee profile and link it to your login."
+          message="Ask an owner or HR manager to create your employee profile, or add an employee record."
+          action={
+            <Button asChild size="sm">
+              <Link to="/workforce-intelligence/employees">View Employees</Link>
+            </Button>
+          }
         />
       </>
     );

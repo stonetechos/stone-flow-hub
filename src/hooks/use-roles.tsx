@@ -28,6 +28,7 @@ interface RolesState {
    * `src/lib/admin/permissions.ts`), not as a substitute for `isAdmin`. */
   isSuperAdmin: boolean;
   isSalesManager: boolean;
+  isHr: boolean;
   /** Inheritance-aware — `hasRole("admin")` is true for a Platform Super
    * Admin too (see `roleSatisfies`). Every other role is an exact check, as
    * there is no other inheritance rule. */
@@ -56,7 +57,7 @@ export function useRoles(): RolesState {
     enabled: !!uid,
     staleTime: 5 * 60_000,
   });
-  const roles = q.data ?? [];
+  const roles = useMemo(() => q.data ?? [], [q.data]);
   return useMemo<RolesState>(() => {
     // Sprint 1.7.1, Part 6/7 — routed through the single shared
     // roleSatisfies[Any] implementation in src/lib/admin/permissions.ts
@@ -71,9 +72,10 @@ export function useRoles(): RolesState {
       isAdmin: has("admin"),
       isSuperAdmin: roles.includes("super_admin"),
       isSalesManager: has("sales_manager"),
+      isHr: has("hr"),
       hasRole: has,
       hasAnyRole: hasAny,
-      canWrite: hasAny(["admin", "sales_manager", "sales", "purchase"]),
+      canWrite: hasAny(["admin", "sales_manager", "hr", "sales", "purchase"]),
       canDelete: hasAny(["admin", "sales_manager"]),
     };
   }, [roles, auth.isReady, uid, q.isFetched]);

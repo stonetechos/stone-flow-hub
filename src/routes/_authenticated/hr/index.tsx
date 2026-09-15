@@ -12,9 +12,11 @@ import {
   Users,
   Building2,
   ArrowRight,
+  Plus,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { listAttendanceDays, listHolidays, listLeaveRequests, listBranches } from "@/lib/hr/api";
@@ -71,6 +73,13 @@ function HrDashboard() {
         title="Human Resources"
         subtitle="Headcount, attendance, shifts and leave at a glance."
         eyebrow="People"
+        actions={
+          <Button asChild size="sm">
+            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+              <Plus className="mr-1 h-4 w-4" /> Add employee
+            </Link>
+          </Button>
+        }
       />
 
       {error ? (

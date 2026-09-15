@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -38,7 +39,9 @@ import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/new")({
   head: () => ({ meta: [{ title: "New employee" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({ id: (s.id as string) || undefined }),
+  validateSearch: (s: Record<string, unknown>): { id?: string } => ({
+    id: (s.id as string) || undefined,
+  }),
   component: EmployeeFormPage,
 });
 
@@ -71,7 +74,7 @@ function EmployeeFormPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
-  const canWrite = roles.isAdmin || roles.isSalesManager;
+  const canWrite = roles.isAdmin || roles.isSalesManager || roles.isHr || roles.canWrite;
 
   const existing = useQuery({
     queryKey: ["wf", "employees", id],
@@ -132,10 +135,22 @@ function EmployeeFormPage() {
     mut.mutate(form);
   }
 
+  if (!roles.isReady) {
+    return (
+      <div className="space-y-4 p-6">
+        <PageHeader title={id ? "Edit employee" : "New employee"} subtitle="Loading permissions…" />
+        <SkeletonTable rows={4} columns={2} />
+      </div>
+    );
+  }
+
   if (!canWrite) {
     return (
       <>
-        <PageHeader title="Not authorized" subtitle="Only owners can edit employee records." />
+        <PageHeader
+          title="Not authorized"
+          subtitle="Only administrators and HR managers can edit employee records."
+        />
       </>
     );
   }

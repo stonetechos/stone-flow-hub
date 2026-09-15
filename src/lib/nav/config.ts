@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 
 export type NavGroupId =
+  | "overview"
   | "sales"
   | "purchase"
   | "inventory"
@@ -60,6 +61,7 @@ export interface NavGroupDef {
 
 // Order here is the sidebar's group order.
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
+  { id: "overview", label: "Overview" },
   { id: "sales", label: "Sales" },
   { id: "purchase", label: "Purchase" },
   { id: "inventory", label: "Inventory" },
@@ -81,6 +83,15 @@ export interface NavItemDef {
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
+  // Overview: Dashboard is placed right at the top above Sales for instant access
+  {
+    id: "dashboard",
+    to: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    group: "overview",
+  },
+
   // Sales: Customers -> Quotations -> Sales Invoices -> Dispatches (with Local Carting)
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
@@ -215,7 +226,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   // { id: "notification-settings", to: "/notification-settings", label: "Notification Settings", icon: BellRing, group: "communication" },
 
   // Others
-  { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "others" },
   {
     id: "dashboards",
     to: "/dashboards",

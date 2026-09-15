@@ -63,8 +63,11 @@ function normalize(p: Partial<NavPreferences> | null | undefined): NavPreference
     starred: (p.starred ?? []).filter((id) => known.has(id)),
     hidden: (p.hidden ?? []).filter((id) => known.has(id)),
     groupOrder: [
-      ...(p.groupOrder ?? []).filter((g): g is NavGroupId => knownGroups.has(g as NavGroupId)),
-      ...base.groupOrder.filter((g) => !(p.groupOrder ?? []).includes(g)),
+      "overview",
+      ...(p.groupOrder ?? []).filter(
+        (g): g is NavGroupId => knownGroups.has(g as NavGroupId) && g !== "overview",
+      ),
+      ...base.groupOrder.filter((g) => g !== "overview" && !(p.groupOrder ?? []).includes(g)),
     ],
     itemOrderByGroup: Object.fromEntries(
       Object.entries(p.itemOrderByGroup ?? {}).map(([g, ids]) => [

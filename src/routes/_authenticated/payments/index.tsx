@@ -83,6 +83,20 @@ function UnifiedPaymentsPage() {
       <PageHeader
         title="Payments"
         subtitle="Manage customer payment receipts, vendor bill settlements, and agency disbursements in one place."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm">
+              <Link to="/receipts/new">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/vendor-payments/new">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Vendor Payment
+              </Link>
+            </Button>
+          </div>
+        }
       />
 
       <Tabs
@@ -179,7 +193,7 @@ function CustomerPaymentsTab() {
         action={
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/receipts/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
             </Button>
           ) : null
         }
@@ -197,7 +211,7 @@ function CustomerPaymentsTab() {
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/receipts/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> New receipt
+                <Plus className="mr-2 h-4 w-4" /> Record Customer Payment
               </Button>
             ) : undefined
           }

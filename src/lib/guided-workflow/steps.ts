@@ -73,6 +73,8 @@ export function nextGuidedStep(
   entityId: string,
   ctx: GuidedContext = {},
 ): GuidedStep | null {
+  if (!entityId || !entityId.trim()) return null;
+
   const clean = (o: Record<string, string | null | undefined>): Record<string, string> => {
     const out: Record<string, string> = {};
     for (const [k, v] of Object.entries(o)) if (v) out[k] = v;
