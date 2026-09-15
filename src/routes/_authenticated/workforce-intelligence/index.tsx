@@ -33,7 +33,7 @@ import { getCurrentEmployee, listTasks, updateTask } from "@/lib/workforce/api";
 import type { WorkforceTaskStatus } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { format } from "date-fns";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Plus, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/")({
   head: () => ({ meta: [{ title: "Workforce Intelligence — Today" }] }),
@@ -73,18 +73,24 @@ export function TodayView() {
   if (me.isLoading) return <SkeletonTable />;
   if (!me.data) {
     return (
-      <>
-        <PageHeader title="Workforce Intelligence" subtitle="Today's work queue" />
-        <EmptyState
-          title="No employee record linked"
-          message="Ask an owner or HR manager to create your employee profile, or add an employee record."
-          action={
+      <EmptyState
+        title="No employee record linked"
+        message="Ask an owner or HR manager to create your employee profile, or add an employee record to get started."
+        action={
+          <div className="flex items-center gap-2">
             <Button asChild size="sm">
-              <Link to="/workforce-intelligence/employees">View Employees</Link>
+              <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> Add employee
+              </Link>
             </Button>
-          }
-        />
-      </>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/workforce-intelligence/employees">
+                <Users className="mr-1.5 h-3.5 w-3.5" /> View employees
+              </Link>
+            </Button>
+          </div>
+        }
+      />
     );
   }
 
@@ -94,11 +100,16 @@ export function TodayView() {
 
   return (
     <>
-      <PageHeader
-        title={`Hello, ${me.data.full_name.split(" ")[0]}`}
-        subtitle={`${pending.length} pending • ${done} completed`}
-        eyebrow="Workforce Intelligence"
-      />
+      <div className="flex items-center justify-between pb-2 border-b">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Hello, {me.data.full_name.split(" ")[0]}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {pending.length} pending • {done} completed
+          </p>
+        </div>
+      </div>
 
       {tasks.isLoading ? (
         <SkeletonTable />
@@ -180,6 +191,26 @@ export function WorkforceHubPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Workforce Intelligence"
+        subtitle="Today's operations, performance scorecards, and workload intelligence."
+        eyebrow="Operations"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm">
+              <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/workforce-intelligence/employees">
+                <Users className="mr-1.5 h-3.5 w-3.5" /> All employees
+              </Link>
+            </Button>
+          </div>
+        }
+      />
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="today">Today's Work</TabsTrigger>

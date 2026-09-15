@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import {
   getEmployee,
   listTasks,
@@ -40,11 +41,20 @@ import {
   deleteOwnerNote,
   listEmployeeDocuments,
   listDesignations,
+  updateEmployeeStatus,
+  deleteEmployee,
 } from "@/lib/workforce/api";
 import { computeEmployeeScore } from "@/lib/workforce/scoring";
-import { GRADE_LABELS, OWNER_NOTE_KINDS, type OwnerNoteKind } from "@/lib/workforce/types";
+import {
+  GRADE_LABELS,
+  OWNER_NOTE_KINDS,
+  EMPLOYMENT_STATUSES,
+  EMPLOYMENT_STATUS_LABELS,
+  type OwnerNoteKind,
+  type EmploymentStatus,
+} from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
-import { useRoles, Can } from "@/hooks/use-roles";
+import { useRoles } from "@/hooks/use-roles";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/$id")({
@@ -56,6 +66,10 @@ function EmployeeProfile() {
   const { id } = Route.useParams();
   const roles = useRoles();
   const isOwner = roles.isAdmin || roles.isSalesManager;
+
+  const qc = useQueryClient();
+  const nav = useNavigate();
+  const [showDelete, setShowDelete] = useState(false);
 
   const emp = useQuery({ queryKey: ["wf", "employees", id], queryFn: () => getEmployee(id) });
   const designations = useQuery({ queryKey: ["wf", "designations"], queryFn: listDesignations });
@@ -82,6 +96,25 @@ function EmployeeProfile() {
     enabled: !!emp.data && !!designation?.id,
   });
 
+  const updateStatusMut = useMutation({
+    mutationFn: (status: EmploymentStatus) => updateEmployeeStatus(id, status),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["wf", "employees"] });
+      toast.success("Employment status updated");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteEmployee(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["wf", "employees"] });
+      toast.success("Employee removed successfully");
+      nav({ to: "/workforce-intelligence/employees" });
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   if (emp.isLoading) return <SkeletonTable />;
   if (emp.isError) return <ErrorBlock message={toUserMessage(emp.error)} />;
   if (!emp.data) return <EmptyState title="Employee not found" />;
@@ -92,16 +125,42 @@ function EmployeeProfile() {
     <>
       <PageHeader
         title={e.full_name}
-        subtitle={`${e.employee_code} • ${designation?.name ?? "No designation"}`}
+        subtitle={`${e.employee_code || "No code"} • ${designation?.name ?? "No designation"}`}
         eyebrow="Workforce Intelligence"
         actions={
-          <Can anyRole={["admin", "sales_manager"]}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={e.employment_status}
+              disabled={updateStatusMut.isPending}
+              onValueChange={(val) => updateStatusMut.mutate(val as EmploymentStatus)}
+            >
+              <SelectTrigger className="h-8 w-[130px] text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EMPLOYMENT_STATUSES.map((st) => (
+                  <SelectItem key={st} value={st} className="text-xs">
+                    {EMPLOYMENT_STATUS_LABELS[st]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button asChild size="sm" variant="outline">
               <Link to="/workforce-intelligence/employees/new" search={{ id }}>
-                <Pencil className="mr-1 h-4 w-4" /> Edit
+                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
               </Link>
             </Button>
-          </Can>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setShowDelete(true)}
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
+            </Button>
+          </div>
         }
       />
 
@@ -285,6 +344,17 @@ function EmployeeProfile() {
           <DocumentsTab employeeId={id} />
         </TabsContent>
       </Tabs>
+
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Remove Employee"
+        description={`Are you sure you want to remove ${e.full_name}? This action cannot be undone.`}
+        confirmLabel="Remove"
+        tone="danger"
+        onConfirm={() => deleteMut.mutate()}
+        busy={deleteMut.isPending}
+      />
     </>
   );
 }

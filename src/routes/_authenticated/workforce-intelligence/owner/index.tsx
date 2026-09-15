@@ -5,10 +5,11 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Award, HeartHandshake, ShieldAlert, Users } from "lucide-react";
+import { AlertTriangle, Award, HeartHandshake, Plus, ShieldAlert, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, SkeletonTable, ErrorBlock } from "@/components/layout/States";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -86,6 +87,13 @@ export function OwnerIntelView() {
         title="Owner Intelligence"
         subtitle="Morning brief — rule-based, explainable."
         eyebrow="Workforce Intelligence"
+        actions={
+          <Button asChild size="sm">
+            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
+            </Link>
+          </Button>
+        }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">

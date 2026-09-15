@@ -44,6 +44,14 @@ export const EMPLOYMENT_STATUSES: EmploymentStatus[] = [
   "resigned",
 ];
 
+export const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
+  active: "Active",
+  on_leave: "On Leave",
+  notice: "Notice Period",
+  resigned: "Resigned",
+  terminated: "Terminated",
+};
+
 export const OWNER_NOTE_KINDS: OwnerNoteKind[] = ["strength", "improvement", "observation"];
 
 export const GRADE_LABELS: Record<PerformanceGrade, string> = {

@@ -3,9 +3,11 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, SkeletonTable, ErrorBlock } from "@/components/layout/States";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -55,13 +57,30 @@ export function PerformanceView() {
         title="Performance"
         subtitle="Rule-based KRA scoring for the current month."
         eyebrow="Workforce Intelligence"
+        actions={
+          <Button asChild size="sm">
+            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
+            </Link>
+          </Button>
+        }
       />
       {employees.isLoading || scoreQuery.isLoading ? (
         <SkeletonTable />
       ) : employees.isError ? (
         <ErrorBlock message={toUserMessage(employees.error)} />
       ) : (employees.data ?? []).length === 0 ? (
-        <EmptyState title="No employees yet" />
+        <EmptyState
+          title="No employees yet"
+          message="Add your first employee to start tracking performance scorecards."
+          action={
+            <Button asChild size="sm">
+              <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> Add employee
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <Table>
           <TableHeader>

@@ -16,6 +16,7 @@ import type {
   WorkforceRuleAssignment,
   EmployeeDocument,
   WorkforceTaskStatus,
+  EmploymentStatus,
 } from "./types";
 import {
   employeeSchema,
@@ -81,6 +82,20 @@ export async function updateEmployee(id: string, input: EmployeeInput): Promise<
   const { data, error } = await supabase
     .from("employees")
     .update(parsed)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function updateEmployeeStatus(
+  id: string,
+  status: EmploymentStatus,
+): Promise<Employee> {
+  const { data, error } = await supabase
+    .from("employees")
+    .update({ employment_status: status })
     .eq("id", id)
     .select("*")
     .single();

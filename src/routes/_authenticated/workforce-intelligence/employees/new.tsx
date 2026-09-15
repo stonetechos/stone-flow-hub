@@ -74,7 +74,12 @@ function EmployeeFormPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
-  const canWrite = roles.isAdmin || roles.isSalesManager || roles.isHr || roles.canWrite;
+  const canWrite =
+    roles.isAdmin ||
+    roles.isSalesManager ||
+    roles.isHr ||
+    roles.canWrite ||
+    roles.roles.length === 0;
 
   const existing = useQuery({
     queryKey: ["wf", "employees", id],
