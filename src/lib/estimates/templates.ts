@@ -5,13 +5,25 @@
  * `estimates.template` column and never changes after creation.
  */
 export type EstimateTemplateKey =
-  "material_supply" | "material_install" | "custom_articles" | "custom_manufacturing";
+  | "material_supply"
+  | "material_install"
+  | "custom_articles"
+  | "custom_manufacturing";
 
 export type EstimateItemCategoryKey =
-  "material" | "manufacturing" | "installation" | "consumable" | "other";
+  | "material"
+  | "manufacturing"
+  | "installation"
+  | "consumable"
+  | "other";
 
 export type CostComponentKind =
-  "adhesives" | "chemicals" | "sealer" | "packing" | "freight" | "other";
+  | "adhesives"
+  | "chemicals"
+  | "sealer"
+  | "packing"
+  | "freight"
+  | "other";
 
 export interface EstimateTemplateConfig {
   key: EstimateTemplateKey;
