@@ -1,12 +1,4 @@
-import {
-  ChevronDown,
-  RefreshCw,
-  Bell,
-  HelpCircle,
-  CheckCircle2,
-  Megaphone,
-  Gauge,
-} from "lucide-react";
+import { ChevronDown, RefreshCw, HelpCircle, CheckCircle2, Megaphone, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +9,13 @@ export function ZohoDashboardHeader({
   onTabChange,
   onRefresh,
   isRefreshing,
+  canViewFinancial = true,
 }: {
   activeTab: DashboardViewTab;
   onTabChange: (tab: DashboardViewTab) => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
+  canViewFinancial?: boolean;
 }) {
   return (
     <div className="border-b border-border bg-card px-4 sm:px-6 pt-4 pb-0 mb-6">
@@ -66,38 +60,31 @@ export function ZohoDashboardHeader({
             <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-primary")} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground relative"
-            title="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500" />
-          </Button>
         </div>
       </div>
 
       {/* Tabs Row */}
       <div className="flex items-center gap-6 overflow-x-auto text-sm font-medium">
-        <button
-          type="button"
-          onClick={() => onTabChange("financial")}
-          className={cn(
-            "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap",
-            activeTab === "financial"
-              ? "border-primary text-primary font-semibold"
-              : "border-transparent text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <CheckCircle2
+        {canViewFinancial && (
+          <button
+            type="button"
+            onClick={() => onTabChange("financial")}
             className={cn(
-              "h-4 w-4",
-              activeTab === "financial" ? "text-primary" : "text-muted-foreground",
+              "flex items-center gap-1.5 pb-2.5 border-b-2 transition-colors whitespace-nowrap",
+              activeTab === "financial"
+                ? "border-primary text-primary font-semibold"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
-          />
-          <span>Dashboard</span>
-        </button>
+          >
+            <CheckCircle2
+              className={cn(
+                "h-4 w-4",
+                activeTab === "financial" ? "text-primary" : "text-muted-foreground",
+              )}
+            />
+            <span>Dashboard</span>
+          </button>
+        )}
 
         <button
           type="button"

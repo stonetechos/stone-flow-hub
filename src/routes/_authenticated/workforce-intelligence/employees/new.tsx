@@ -36,6 +36,8 @@ import type { EmployeeInput } from "@/lib/workforce/schema";
 import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
+import { supabase } from "@/integrations/supabase/client";
+import { assignRole, type AppRole } from "@/lib/admin/users";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/new")({
   head: () => ({ meta: [{ title: "New employee" }] }),
@@ -93,8 +95,27 @@ function EmployeeFormPage() {
   });
 
   const [form, setForm] = useState<EmployeeInput>(empty);
+  const [systemRole, setSystemRole] = useState<AppRole>("sales");
   const [baseline, setBaseline] = useState<string>(() => JSON.stringify(empty()));
   const dirty = JSON.stringify(form) !== baseline;
+
+  // Query existing role if employee has user_id
+  useQuery({
+    queryKey: ["employee_user_role", existing.data?.user_id],
+    queryFn: async () => {
+      if (!existing.data?.user_id) return null;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", existing.data.user_id)
+        .maybeSingle();
+      if (data?.role) {
+        setSystemRole(data.role as AppRole);
+      }
+      return data;
+    },
+    enabled: !!existing.data?.user_id,
+  });
 
   // Load existing into state on first fetch
   if (id && existing.data && form.full_name === "" && !existing.isFetching) {
@@ -125,7 +146,36 @@ function EmployeeFormPage() {
   }
 
   const mut = useMutation({
-    mutationFn: (v: EmployeeInput) => (id ? updateEmployee(id, v) : createEmployee(v)),
+    mutationFn: async (v: EmployeeInput) => {
+      // If email provided, link to user if auth profile exists
+      if (v.email?.trim() && !v.user_id) {
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("email", v.email.trim().toLowerCase())
+            .maybeSingle();
+          if (prof?.id) {
+            v.user_id = prof.id;
+          }
+        } catch {
+          /* skip */
+        }
+      }
+
+      const empRow = id ? await updateEmployee(id, v) : await createEmployee(v);
+
+      // Assign system role if user_id linked
+      if (empRow.user_id && systemRole) {
+        try {
+          await assignRole(empRow.user_id, systemRole);
+        } catch {
+          /* ignore duplicate role */
+        }
+      }
+
+      return empRow;
+    },
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
       toast.success(id ? "Employee updated" : "Employee created");
@@ -256,6 +306,33 @@ function EmployeeFormPage() {
                       {s.replace("_", " ")}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </FormGrid>
+        </FormSection>
+
+        <FormSection
+          title="System Access & Role"
+          description="Controls what features this employee can access upon signing in with their work email. Non-admins will never see firm accounts or financial dashboards."
+        >
+          <FormGrid>
+            <Field
+              label="System Access Role"
+              hint="Sales sees only Sales modules; Purchase sees only Procurement; Accounts/Finance is restricted to Admins."
+            >
+              <Select value={systemRole} onValueChange={(v) => setSystemRole(v as AppRole)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select system role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sales">Sales & Field Sales (Sales Only)</SelectItem>
+                  <SelectItem value="purchase">Purchase & Procurement (Purchase Only)</SelectItem>
+                  <SelectItem value="sales_manager">Sales Manager (Sales & Workforce)</SelectItem>
+                  <SelectItem value="hr">HR & People Operations</SelectItem>
+                  <SelectItem value="admin">
+                    System Administrator (Full Access + Accounts)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>

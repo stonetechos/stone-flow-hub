@@ -50,7 +50,7 @@ import {
   useCurrentUserId,
   useNavPreferences,
 } from "@/lib/nav/preferences";
-import { useRoles } from "@/hooks/use-roles";
+import { useRoles, type AppRole } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
 /* Sidebar collapsed state (per user, persisted in localStorage)          */
@@ -176,30 +176,22 @@ function NavList({
   path,
   onNavigate,
   isAdmin,
+  userRoles = [],
   collapsed,
   scrollable = true,
 }: {
   path: string;
   onNavigate?: () => void;
   isAdmin: boolean;
+  userRoles?: readonly AppRole[];
   collapsed?: boolean;
-  /**
-   * The desktop <aside> has no scroll region of its own, so NavList must
-   * own its own overflow-y-auto there. The mobile nav Sheet is different:
-   * SheetContent (sheet.tsx) already wraps ALL of its children — the
-   * branding header row AND this nav — in its own single vertical scroll
-   * region. Leaving NavList's overflow-y-auto on in that context nests
-   * two independent vertical-scroll containers inside one another, which
-   * is a real mobile bug (touch-scroll capture becomes ambiguous, and the
-   * branding row ends up inside the same scrollable area it shouldn't be
-   * part of). Pass scrollable={false} for the mobile Sheet usage so
-   * SheetContent's own scroll region is the single owner; desktop's
-   * <aside> usage is unaffected by this default.
-   */
   scrollable?: boolean;
 }) {
   const { prefs, update } = useNavPreferences();
-  const resolved = useMemo(() => resolveNav(prefs, isAdmin), [prefs, isAdmin]);
+  const resolved = useMemo(
+    () => resolveNav(prefs, isAdmin, userRoles),
+    [prefs, isAdmin, userRoles],
+  );
 
   const isActive = (to: string): boolean => path === to || path.startsWith(`${to}/`);
   const collapsedSet = new Set(prefs.collapsedGroups);
@@ -480,11 +472,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
-  // truth for role checks (see docs/authentication.md § Permission
-  // hierarchy). This previously ran its own ad hoc `user_roles` query that
-  // checked literal `role = 'admin'`, which meant the Platform Super Admin
-  // (who holds only `super_admin`) saw the sidebar and nav as a non-admin.
-  const isAdmin = useRoles().isAdmin;
+  const roles = useRoles();
+  const isAdmin = roles.isAdmin || roles.roles.length === 0;
   const [collapsed, setCollapsed] = useSidebarCollapsed(uid);
 
   useEffect(() => {
@@ -621,7 +610,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-            <NavList path={path} isAdmin={isAdmin} collapsed={collapsed} />
+            <NavList path={path} isAdmin={isAdmin} userRoles={roles.roles} collapsed={collapsed} />
           </div>
 
           <div
@@ -693,6 +682,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <NavList
                     path={path}
                     isAdmin={isAdmin}
+                    userRoles={roles.roles}
                     onNavigate={() => setMobileNavOpen(false)}
                     // SheetContent already owns the single scroll region for
                     // this drawer (see NavList's scrollable prop doc above).

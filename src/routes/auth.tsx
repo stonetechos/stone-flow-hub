@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   Factory,
+  Fingerprint,
   Loader2,
   Lock,
   LockKeyhole,
@@ -19,6 +20,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  authenticateWithBiometrics,
+  checkBiometricSupport,
+  saveBiometricSession,
+  getLastBiometricEmail,
+} from "@/lib/auth/biometrics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -417,11 +424,15 @@ function SignInCard() {
   const [showPw, setShowPw] = useState(false);
   const [capsOn, setCapsOn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [bioSupported, setBioSupported] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     emailRef.current?.focus();
+    checkBiometricSupport().then((res) => {
+      setBioSupported(res.isSupported);
+    });
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -432,8 +443,14 @@ function SignInCard() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Signed in");
-      const { data: sess } = await supabase.auth.getUser();
-      const uid = sess.user?.id;
+      const { data: sess } = await supabase.auth.getSession();
+      if (sess.session) {
+        saveBiometricSession(email, {
+          access_token: sess.session.access_token,
+          refresh_token: sess.session.refresh_token,
+        });
+      }
+      const uid = sess.session?.user?.id;
       let isVendor = false;
       if (uid) {
         const { data: vu } = await supabase
@@ -453,13 +470,50 @@ function SignInCard() {
     }
   }
 
+  async function onBiometricSignIn() {
+    setFormError(null);
+    setBusy(true);
+    try {
+      const targetEmail = email.trim() || getLastBiometricEmail() || "";
+      if (!targetEmail) {
+        setFormError("Enter your registered work email first to use fingerprint sign in.");
+        emailRef.current?.focus();
+        setBusy(false);
+        return;
+      }
+      toast.loading("Touch your phone's fingerprint sensor…", { id: "bio-auth" });
+      await authenticateWithBiometrics(targetEmail);
+      toast.dismiss("bio-auth");
+      toast.success("Fingerprint verified! Welcome back.");
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      let isVendor = false;
+      if (uid) {
+        const { data: vu } = await supabase
+          .from("vendor_users")
+          .select("vendor_id")
+          .eq("user_id", uid)
+          .maybeSingle();
+        isVendor = !!vu;
+      }
+      await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
+    } catch (err: unknown) {
+      toast.dismiss("bio-auth");
+      const msg = toUserMessage(err);
+      setFormError(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const canSubmit = email.trim().length > 0 && password.length > 0 && !busy;
 
   return (
     <AuthCard
       eyebrow="Welcome back"
       title="Sign in to STOS"
-      description="Sign in using your company credentials."
+      description="Sign in using your company credentials or phone fingerprint."
       footer={
         <span>
           Need help?{" "}
@@ -553,6 +607,30 @@ function SignInCard() {
             </>
           )}
         </Button>
+
+        {bioSupported && (
+          <>
+            <div className="relative flex items-center py-1">
+              <div className="flex-grow border-t border-border" />
+              <span className="mx-3 shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                or biometric sign in
+              </span>
+              <div className="flex-grow border-t border-border" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={onBiometricSignIn}
+              disabled={busy}
+              className="w-full h-11 gap-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-foreground font-medium"
+            >
+              <Fingerprint className="h-5 w-5 text-primary" />
+              Sign in with Fingerprint
+            </Button>
+          </>
+        )}
       </form>
     </AuthCard>
   );

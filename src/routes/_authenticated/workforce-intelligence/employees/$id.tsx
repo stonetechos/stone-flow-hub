@@ -6,7 +6,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Fingerprint } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { isBiometricLinked, registerDeviceBiometric } from "@/lib/auth/biometrics";
 import {
   getEmployee,
   listTasks,
@@ -95,6 +96,29 @@ function EmployeeProfile() {
     queryFn: () => computeEmployeeScore(id, designation?.id ?? null, emp.data?.user_id ?? null),
     enabled: !!emp.data && !!designation?.id,
   });
+
+  const [bioLinked, setBioLinked] = useState(false);
+  const [linkingBio, setLinkingBio] = useState(false);
+
+  const handleLinkFingerprint = async () => {
+    if (!emp.data?.email) {
+      toast.error("Employee email is required to link fingerprint.");
+      return;
+    }
+    setLinkingBio(true);
+    try {
+      toast.loading("Touch your phone's fingerprint sensor to register…", { id: "bio-reg" });
+      await registerDeviceBiometric(emp.data.email, emp.data.user_id || emp.data.id);
+      toast.dismiss("bio-reg");
+      toast.success("Device fingerprint registered successfully!");
+      setBioLinked(true);
+    } catch (err: unknown) {
+      toast.dismiss("bio-reg");
+      toast.error(toUserMessage(err));
+    } finally {
+      setLinkingBio(false);
+    }
+  };
 
   const updateStatusMut = useMutation({
     mutationFn: (status: EmploymentStatus) => updateEmployeeStatus(id, status),
@@ -208,6 +232,40 @@ function EmployeeProfile() {
               </>
             )}
           </div>
+
+          {/* Biometric Phone Authentication */}
+          <div className="rounded-lg border border-border p-4 bg-muted/20">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
+                  <Fingerprint className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold">Phone Fingerprint Authentication</h4>
+                  <p className="text-xs text-muted-foreground">
+                    {bioLinked || (e.email && isBiometricLinked(e.email))
+                      ? "Device fingerprint is linked. This employee can log in using biometric verification."
+                      : "No fingerprint linked on this device yet. Tap to link this phone's biometric."}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant={
+                  bioLinked || (e.email && isBiometricLinked(e.email)) ? "outline" : "default"
+                }
+                size="sm"
+                className="gap-1.5 text-xs shrink-0"
+                onClick={handleLinkFingerprint}
+                disabled={linkingBio || !e.email}
+              >
+                <Fingerprint className="h-3.5 w-3.5" />
+                {bioLinked || (e.email && isBiometricLinked(e.email))
+                  ? "Re-link Fingerprint"
+                  : "Link Device Fingerprint"}
+              </Button>
+            </div>
+          </div>
+
           {e.remarks && (
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Remarks</div>

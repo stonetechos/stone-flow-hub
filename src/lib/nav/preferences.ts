@@ -255,18 +255,44 @@ export interface ResolvedNav {
   hidden: NavItemDef[];
 }
 
+import type { AppRole } from "@/lib/admin/users";
+
+function isGroupAllowed(
+  group: (typeof NAV_GROUPS)[number],
+  isAdmin: boolean,
+  userRoles: readonly AppRole[],
+): boolean {
+  if (group.adminOnly && !isAdmin) return false;
+  if (!group.allowedRoles || group.allowedRoles.length === 0) return true;
+  if (isAdmin || userRoles.length === 0) return true;
+  return group.allowedRoles.some((r) => userRoles.includes(r));
+}
+
+function isItemAllowed(item: NavItemDef, isAdmin: boolean, userRoles: readonly AppRole[]): boolean {
+  if (item.adminOnly && !isAdmin) return false;
+  if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
+  if (isAdmin || userRoles.length === 0) return true;
+  return item.allowedRoles.some((r) => userRoles.includes(r));
+}
+
 /**
  * Resolve the user's preferences against the current NAV_ITEMS catalog.
  * New modules added later automatically appear in their default group at the
- * end. Admin-only items are filtered out for non-admins.
+ * end. Role-restricted and admin-only items are filtered according to user roles.
  */
-export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav {
-  const visibleItems = NAV_ITEMS.filter((i) => (i.adminOnly ? isAdmin : true));
+export function resolveNav(
+  prefs: NavPreferences,
+  isAdmin: boolean,
+  userRoles: readonly AppRole[] = [],
+): ResolvedNav {
+  const visibleItems = NAV_ITEMS.filter((i) => isItemAllowed(i, isAdmin, userRoles));
   const hiddenSet = new Set(prefs.hidden);
 
   const starred = prefs.starred
     .map((id) => NAV_ITEMS_BY_ID[id])
-    .filter((i): i is NavItemDef => !!i && (i.adminOnly ? isAdmin : true) && !hiddenSet.has(i.id));
+    .filter(
+      (i): i is NavItemDef => !!i && isItemAllowed(i, isAdmin, userRoles) && !hiddenSet.has(i.id),
+    );
 
   const starredSet = new Set(starred.map((i) => i.id));
 
@@ -276,7 +302,7 @@ export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav
   const groups: ResolvedNavGroup[] = prefs.groupOrder
     .filter((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
-      return def && (def.adminOnly ? isAdmin : true);
+      return def && isGroupAllowed(def, isAdmin, userRoles);
     })
     .map((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
@@ -295,9 +321,12 @@ export function resolveNav(prefs: NavPreferences, isAdmin: boolean): ResolvedNav
         label: def?.label ?? gid,
         items: ordered.filter((i) => !starredSet.has(i.id) && !hiddenSet.has(i.id)),
       };
-    });
+    })
+    .filter((g) => g.items.length > 0 || g.id === "overview");
 
-  const hidden = NAV_ITEMS.filter((i) => hiddenSet.has(i.id) && (i.adminOnly ? isAdmin : true));
+  const hidden = NAV_ITEMS.filter(
+    (i) => hiddenSet.has(i.id) && isItemAllowed(i, isAdmin, userRoles),
+  );
 
   return { starred, groups, hidden };
 }

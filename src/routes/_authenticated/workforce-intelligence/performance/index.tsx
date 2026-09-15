@@ -57,13 +57,6 @@ export function PerformanceView() {
         title="Performance"
         subtitle="Rule-based KRA scoring for the current month."
         eyebrow="Workforce Intelligence"
-        actions={
-          <Button asChild size="sm">
-            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
-            </Link>
-          </Button>
-        }
       />
       {employees.isLoading || scoreQuery.isLoading ? (
         <SkeletonTable />

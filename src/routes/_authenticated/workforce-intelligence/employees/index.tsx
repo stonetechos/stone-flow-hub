@@ -133,12 +133,6 @@ function EmployeesPage() {
             </Select>
           </div>
         </div>
-
-        <Button asChild size="sm" className="shrink-0">
-          <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
-          </Link>
-        </Button>
       </div>
 
       {employees.isLoading ? (

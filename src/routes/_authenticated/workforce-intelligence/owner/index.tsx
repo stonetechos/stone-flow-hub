@@ -87,13 +87,6 @@ export function OwnerIntelView() {
         title="Owner Intelligence"
         subtitle="Morning brief — rule-based, explainable."
         eyebrow="Workforce Intelligence"
-        actions={
-          <Button asChild size="sm">
-            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
-            </Link>
-          </Button>
-        }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">

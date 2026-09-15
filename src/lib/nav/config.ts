@@ -39,6 +39,7 @@ import {
   UserCog,
   type LucideIcon,
 } from "lucide-react";
+import type { AppRole } from "@/lib/admin/users";
 
 export type NavGroupId =
   | "overview"
@@ -57,20 +58,50 @@ export interface NavGroupDef {
   id: NavGroupId;
   label: string;
   adminOnly?: boolean;
+  allowedRoles?: readonly AppRole[];
 }
 
 // Order here is the sidebar's group order.
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Overview" },
-  { id: "sales", label: "Sales" },
-  { id: "purchase", label: "Purchase" },
-  { id: "inventory", label: "Inventory" },
-  { id: "finance", label: "Finance" },
+  {
+    id: "sales",
+    label: "Sales",
+    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+  },
+  {
+    id: "purchase",
+    label: "Purchase",
+    allowedRoles: ["admin", "super_admin", "purchase"],
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    allowedRoles: ["admin", "super_admin", "purchase", "sales_manager"],
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    adminOnly: true,
+    allowedRoles: ["admin", "super_admin"],
+  },
   { id: "payroll", label: "HR Operations" },
-  { id: "masterData", label: "Master Data" },
-  { id: "communication", label: "Communication" },
-  { id: "others", label: "Others" },
-  { id: "admin", label: "Administration", adminOnly: true },
+  {
+    id: "masterData",
+    label: "Master Data",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "communication",
+    label: "Communication",
+    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+  },
+  {
+    id: "others",
+    label: "Others",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  { id: "admin", label: "Administration", adminOnly: true, allowedRoles: ["admin", "super_admin"] },
 ];
 
 export interface NavItemDef {
@@ -80,6 +111,7 @@ export interface NavItemDef {
   icon: LucideIcon;
   group: NavGroupId;
   adminOnly?: boolean;
+  allowedRoles?: readonly AppRole[];
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
@@ -125,12 +157,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Finance: Payments -> Ledgers -> Liabilities -> Business Expenses
+  // Strictly Admin-only — non-admin employees are never shown the firm's accounts.
   {
     id: "payments",
     to: "/payments",
     label: "Payments",
     icon: Wallet,
     group: "finance",
+    adminOnly: true,
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "ledger",
@@ -138,6 +173,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Ledgers",
     icon: BookOpen,
     group: "finance",
+    adminOnly: true,
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "liabilities",
@@ -145,6 +182,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Liabilities",
     icon: Landmark,
     group: "finance",
+    adminOnly: true,
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "business-expenses",
@@ -152,6 +191,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Business Expenses",
     icon: ReceiptText,
     group: "finance",
+    adminOnly: true,
+    allowedRoles: ["admin", "super_admin"],
   },
 
   // HR Operations (Merged HR Operations & Workforce Intelligence)
@@ -165,6 +206,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Employees",
     icon: Users,
     group: "payroll",
+    allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
   },
   {
     id: "hr-attendance",
@@ -172,6 +214,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Attendance & Leave",
     icon: Fingerprint,
     group: "payroll",
+    allowedRoles: ["admin", "super_admin", "hr"],
   },
   {
     id: "hr-payroll",
@@ -179,6 +222,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Payroll",
     icon: Banknote,
     group: "payroll",
+    allowedRoles: ["admin", "super_admin", "hr"],
   },
   {
     id: "wf-today",
