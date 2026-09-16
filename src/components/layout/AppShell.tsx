@@ -799,7 +799,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <main
             id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-blue-50/25 via-slate-50/35 to-slate-100/50 px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             {/* Single consistent content container (Sprint 1.1): every
                 route previously decided its own width ad hoc, or didn't

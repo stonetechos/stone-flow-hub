@@ -41,13 +41,13 @@ export function DataToolbar({
   className?: string;
 }) {
   return (
-    <div className={cn("mb-3 flex flex-wrap items-center gap-2", className)}>
+    <div className={cn("mb-3.5 flex flex-wrap items-center gap-2.5", className)}>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         {title && (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{title}</span>
+            <span className="font-display text-sm font-bold text-engraved-title">{title}</span>
             {typeof count === "number" && (
-              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-blue-700 shadow-2xs">
                 {count.toLocaleString()}
               </span>
             )}
@@ -55,19 +55,19 @@ export function DataToolbar({
         )}
         {onSearchChange && (
           <div className="relative w-full sm:w-72">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-blue-600/70" />
             <Input
               value={search ?? ""}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
-              className="h-8 pl-8 pr-8 text-sm"
+              className="h-8.5 rounded-xl border-blue-200/70 bg-white/90 pl-8 pr-8 text-xs font-medium shadow-2xs transition-colors focus:border-blue-500 focus:bg-white"
             />
             {search && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                 onClick={() => onSearchChange("")}
                 aria-label="Clear search"
               >

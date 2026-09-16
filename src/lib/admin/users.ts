@@ -14,6 +14,15 @@ export const APP_ROLES: readonly AppRole[] = [
   "purchase",
 ] as const;
 
+export const ALL_ROLES_INCLUDING_SUPER: readonly AppRole[] = [
+  "super_admin",
+  "admin",
+  "sales_manager",
+  "hr",
+  "sales",
+  "purchase",
+] as const;
+
 /**
  * Fallback shown when a profile has no `full_name` set yet. Derives a display
  * label from the email local-part (before `@`). Once an admin assigns a real
@@ -173,6 +182,9 @@ export async function assignRoleGuarded(
   target: { id: string; roles: AppRole[] },
   role: AppRole,
 ): Promise<void> {
+  if (role === "super_admin" && !actor.isSuperAdmin) {
+    throw new AppError("Only a Super Admin can grant the Super Admin role.");
+  }
   const decision = canManageTargetUser(
     actor,
     { id: target.id, isSuperAdmin: target.roles.includes("super_admin") },
@@ -182,7 +194,7 @@ export async function assignRoleGuarded(
     await logRoleChangeAttempt(
       target.id,
       actor.id,
-      "Attempted to grant a role to the protected Super Admin account.",
+      "Attempted to grant a role to a protected Super Admin account.",
     );
     throw new AppError(decision.reason ?? "Forbidden");
   }

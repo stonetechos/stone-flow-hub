@@ -39,21 +39,27 @@ export function Stat({
   search?: Record<string, string>;
   className?: string;
 }) {
+  const isDefaultTone = tone === "default" || tone === "primary";
   const body = (
-    <div className={cn("group flex flex-col gap-1", className)}>
-      <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        {icon && <span className="opacity-70">{icon}</span>}
+    <div
+      className={cn(
+        "card-3d-milky group flex flex-col gap-1.5 p-4 shadow-2xs transition-transform hover:-translate-y-0.5",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-engraved-kicker">
+        {icon && <span className="opacity-80 text-blue-600">{icon}</span>}
         <span className="truncate">{label}</span>
       </div>
       <div
         className={cn(
-          "font-display text-[26px] font-semibold leading-none tracking-tight tabular-nums",
-          toneClass[tone],
+          "font-display text-[26px] font-black leading-none tracking-tight tabular-nums",
+          isDefaultTone ? "text-engraved-blue-lg" : toneClass[tone],
         )}
       >
         {value}
       </div>
-      {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
+      {hint && <div className="text-xs font-medium text-slate-500">{hint}</div>}
     </div>
   );
   if (to) {
@@ -61,7 +67,7 @@ export function Stat({
       <Link
         to={to}
         search={search as never}
-        className="block rounded-md p-1 -m-1 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="block rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       >
         {body}
       </Link>

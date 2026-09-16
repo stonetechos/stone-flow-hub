@@ -20,19 +20,47 @@ import {
 } from "./permissions";
 
 const superAdmin: ActingUserRef = { id: "super-1", isSuperAdmin: true, isAdmin: false };
+const otherSuperAdmin: ActingUserRef = { id: "super-2", isSuperAdmin: true, isAdmin: false };
 const admin: ActingUserRef = { id: "admin-1", isSuperAdmin: false, isAdmin: true };
 const otherAdmin: ActingUserRef = { id: "admin-2", isSuperAdmin: false, isAdmin: true };
 const employeeActor: ActingUserRef = { id: "emp-1", isSuperAdmin: false, isAdmin: false };
 
 const superAdminTarget: ManagedUserRef = { id: "super-1", isSuperAdmin: true };
+const otherSuperAdminTarget: ManagedUserRef = { id: "super-2", isSuperAdmin: true };
 const adminTarget: ManagedUserRef = { id: "admin-2", isSuperAdmin: false };
 const employeeTarget: ManagedUserRef = { id: "emp-1", isSuperAdmin: false };
 
-describe("canManageTargetUser — Super Admin protection (Parts 2-4)", () => {
-  test("Super Admin cannot be deleted, even by itself", () => {
+describe("canManageTargetUser — Multi-Seat Super Admin governance", () => {
+  test("Super Admin cannot self-delete", () => {
     expect(canManageTargetUser(superAdmin, superAdminTarget, "delete")).toEqual({
       allowed: false,
-      reason: "This account is protected.",
+      reason: "You cannot delete or deactivate your own account.",
+    });
+  });
+
+  test("Super Admin cannot self-deactivate", () => {
+    expect(canManageTargetUser(superAdmin, superAdminTarget, "deactivate")).toEqual({
+      allowed: false,
+      reason: "You cannot delete or deactivate your own account.",
+    });
+  });
+
+  test("Super Admin cannot self-revoke role", () => {
+    expect(canManageTargetUser(superAdmin, superAdminTarget, "revoke_role")).toEqual({
+      allowed: false,
+      reason: "You cannot remove your own administrator role.",
+    });
+  });
+
+  test("Super Admin CAN manage another Super Admin", () => {
+    expect(canManageTargetUser(superAdmin, otherSuperAdminTarget, "delete")).toEqual({
+      allowed: true,
+    });
+    expect(canManageTargetUser(superAdmin, otherSuperAdminTarget, "reset_password")).toEqual({
+      allowed: true,
+    });
+    expect(canManageTargetUser(superAdmin, otherSuperAdminTarget, "revoke_role")).toEqual({
+      allowed: true,
     });
   });
 

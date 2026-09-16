@@ -89,14 +89,14 @@ export function FormSection({
   className?: string;
 }) {
   return (
-    <section className={cn("scroll-mt-24", className)}>
-      <header className="mb-4 flex items-start justify-between gap-4 border-b border-border/60 pb-3">
+    <section className={cn("card-3d-milky scroll-mt-24 p-5 sm:p-7 shadow-xs", className)}>
+      <header className="mb-5 flex items-start justify-between gap-4 border-b border-blue-50/70 pb-3.5">
         <div>
-          <h2 className="font-display text-[15px] font-semibold tracking-tight text-foreground">
+          <h2 className="font-display text-[16px] font-bold tracking-tight text-engraved-title">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+            <p className="mt-1 text-xs font-medium text-slate-500">{description}</p>
           ) : null}
         </div>
         {aside ? <div className="shrink-0">{aside}</div> : null}

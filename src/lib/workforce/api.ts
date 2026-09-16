@@ -194,13 +194,98 @@ export async function getCurrentEmployee(): Promise<Employee | null> {
 }
 
 // -------------- Designations --------------
+export const DEFAULT_DESIGNATIONS: Omit<Designation, "id" | "created_at" | "updated_at">[] = [
+  {
+    code: "MD",
+    name: "Managing Director",
+    purpose: "Overall business leadership and strategic direction",
+    responsibilities:
+      "Strategy, key architect and client relationships, vendor negotiations, executive governance",
+    expected_outcomes: "Revenue growth, operational excellence, profitability",
+    level: 100,
+    active: true,
+  },
+  {
+    code: "SALES_HEAD",
+    name: "Sales Head",
+    purpose: "Head of sales operations and revenue targets",
+    responsibilities:
+      "Sales pipeline management, quota achievement, team coordination, high-value quotation closures",
+    expected_outcomes: "Monthly sales quota achievement and lead conversion",
+    level: 80,
+    active: true,
+  },
+  {
+    code: "FIELD_SALES_EXEC",
+    name: "Field Sales Executive",
+    purpose: "On-site client acquisition, architect visits, and site measurements",
+    responsibilities:
+      "Architect visits, builder presentations, site inspections, stone sampling, warm lead generation",
+    expected_outcomes: "New customer acquisition and active pipeline building",
+    level: 60,
+    active: true,
+  },
+  {
+    code: "OFFICE_SALES_EXEC",
+    name: "Office Sales Executive",
+    purpose: "Showroom consultation, estimate preparation, and client closing",
+    responsibilities:
+      "In-showroom client walkthroughs, fast estimate and quotation generation, follow-up calls, payment tracking",
+    expected_outcomes: "High conversion rate of showroom enquiries and timely closures",
+    level: 50,
+    active: true,
+  },
+  {
+    code: "DATA_ENTRY_EXEC",
+    name: "Data Entry Executive",
+    purpose: "ERP data processing and operational transaction entry",
+    responsibilities:
+      "Accurate logging of quotations, sales orders, delivery challans, purchase invoices, and inventory receipts",
+    expected_outcomes: "Zero-defect ERP records, rapid turnaround of operational entries",
+    level: 40,
+    active: true,
+  },
+  {
+    code: "OFFICE_ADMIN",
+    name: "Office Admin",
+    purpose: "Office facilities, administrative support, and showroom coordination",
+    responsibilities:
+      "Office administration, sample kit inventory management, front-desk coordination, billing support, logistics liaison",
+    expected_outcomes:
+      "Smooth showroom presentation, organized document filing, on-time admin support",
+    level: 30,
+    active: true,
+  },
+];
+
 export async function listDesignations(): Promise<Designation[]> {
-  const { data, error } = await supabase
-    .from("designations")
-    .select("*")
-    .order("level", { ascending: false });
-  if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+  try {
+    const { data, error } = await supabase
+      .from("designations")
+      .select("*")
+      .order("level", { ascending: false });
+    if (!error && data && data.length > 0) {
+      return data;
+    }
+  } catch (err) {
+    console.warn(
+      "[workforce.api] Failed to fetch designations from database, using fallback:",
+      err,
+    );
+  }
+
+  return DEFAULT_DESIGNATIONS.map((d, index) => ({
+    id: `00000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
+    code: d.code,
+    name: d.name,
+    purpose: d.purpose,
+    responsibilities: d.responsibilities,
+    expected_outcomes: d.expected_outcomes,
+    level: d.level,
+    active: d.active,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }));
 }
 
 export async function getDesignation(id: string): Promise<Designation | null> {

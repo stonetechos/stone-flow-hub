@@ -19,78 +19,164 @@ interface KraKpaBuilderProps {
 }
 
 const PRESET_KRAS = {
-  sales: [
+  managing_director: [
     {
-      title: "Monthly Order Booking Target",
-      weightage: 40,
-      target_period: "monthly" as const,
-      description: "Achieve assigned monthly gross sales and quota.",
-    },
-    {
-      title: "Enquiry-to-Quotation Conversion",
+      title: "Strategic Growth & Revenue Quota",
       weightage: 30,
       target_period: "monthly" as const,
-      description: "Turn warm enquiries into accepted quotes within 48h.",
+      description: "Drive overall enterprise growth and monthly revenue quota.",
     },
     {
-      title: "Customer Payment & Advance Collection",
-      weightage: 30,
+      title: "Luxury Architect & Builder Relationships",
+      weightage: 25,
       target_period: "monthly" as const,
-      description: "Collect client advances and balance payments on schedule.",
+      description: "Direct relationship management with top architectural firms.",
+    },
+    {
+      title: "Quarry Sourcing & Vendor Agreements",
+      weightage: 25,
+      target_period: "quarterly" as const,
+      description: "Secure direct quarry raw block contracts and competitive terms.",
+    },
+    {
+      title: "Profitability & Cash Flow Governance",
+      weightage: 20,
+      target_period: "monthly" as const,
+      description: "Maintain gross profit margins and timely collections.",
     },
   ],
-  operations: [
+  sales_head: [
     {
-      title: "Order Dispatch & Timeliness SLA",
+      title: "Sales Team Revenue Target",
+      weightage: 40,
+      target_period: "monthly" as const,
+      description: "Achieve overall team sales targets and quota fulfillment.",
+    },
+    {
+      title: "Quotation Closure & Conversion Rate",
+      weightage: 30,
+      target_period: "weekly" as const,
+      description: "Review estimates and drive high-value quotation conversions within 48h.",
+    },
+    {
+      title: "Sales Team Mentorship & Site Inspections",
+      weightage: 30,
+      target_period: "weekly" as const,
+      description: "Lead on-site joint meetings with field sales executives.",
+    },
+  ],
+  field_sales_exec: [
+    {
+      title: "Architect & Builder Site Visits",
       weightage: 40,
       target_period: "weekly" as const,
-      description: "Ensure orders are packaged and dispatched as per promised dates.",
+      description: "Conduct minimum 15 architect/builder visits per week.",
     },
     {
-      title: "Procurement & Vendor Coordination",
+      title: "Site Measurements & Dry Lay Coordination",
       weightage: 30,
-      target_period: "monthly" as const,
-      description: "Ensure raw blocks and slabs are ordered and received without stockouts.",
+      target_period: "weekly" as const,
+      description: "Ensure exact on-site dimensions and stone dry-lay sign-offs.",
     },
     {
-      title: "Inventory Accuracy & Stock Auditing",
+      title: "New Project Lead Inception",
       weightage: 30,
       target_period: "monthly" as const,
-      description: "Maintain physical vs system stock discrepancy below 1%.",
+      description: "Generate warm inquiries for marble, granite, and quartz projects.",
     },
   ],
-  production: [
+  office_sales_exec: [
     {
-      title: "Fabrication & Edge Profiling Quality",
+      title: "Showroom Walkthrough Conversion",
+      weightage: 40,
+      target_period: "monthly" as const,
+      description: "Convert showroom walk-in visitors into confirmed quotations.",
+    },
+    {
+      title: "Fast Estimate & Sample Turnaround",
+      weightage: 30,
+      target_period: "daily" as const,
+      description: "Deliver priced estimates and stone swatch kits within 3 hours.",
+    },
+    {
+      title: "Booking Advance & Balance Collection",
+      weightage: 30,
+      target_period: "weekly" as const,
+      description: "Collect order booking advances and dispatch balance payments.",
+    },
+  ],
+  data_entry_exec: [
+    {
+      title: "ERP Quotation & Sales Order Entry Speed",
       weightage: 40,
       target_period: "daily" as const,
-      description: "Zero defects and accurate tolerances on cuts and mitres.",
+      description: "Log quotations, sales orders, and challans within 1 hour.",
     },
     {
-      title: "Material Yield & Wastage Control",
-      weightage: 30,
-      target_period: "monthly" as const,
-      description: "Optimize gang-saw and CNC slab nesting to minimize offcuts.",
+      title: "ERP Data & Invoicing Zero-Defect Accuracy",
+      weightage: 35,
+      target_period: "daily" as const,
+      description: "Zero errors in billing dimensions, item rates, and GST taxes.",
     },
     {
-      title: "Site Installation Supervision",
+      title: "Delivery Challan & LR Archival",
+      weightage: 25,
+      target_period: "daily" as const,
+      description: "Upload signed delivery challans and lorry receipts same day.",
+    },
+  ],
+  office_admin: [
+    {
+      title: "Showroom & Sample Gallery Presentation",
+      weightage: 35,
+      target_period: "daily" as const,
+      description: "Maintain display slabs, lighting, and sample kit availability.",
+    },
+    {
+      title: "Front Desk & Visitor Coordination",
+      weightage: 35,
+      target_period: "daily" as const,
+      description: "Welcome guests and coordinate instant sales executive handover.",
+    },
+    {
+      title: "Office Facilities & Administrative Support",
       weightage: 30,
       target_period: "weekly" as const,
-      description: "Ensure on-site dry lays, epoxy joints, and client sign-offs.",
+      description: "Oversee courier logs, office supplies, and administrative tasks.",
     },
   ],
 };
 
 const PRESET_KPAS = {
-  sales: [
-    { title: "Daily Client Follow-ups", metric: "Minimum 20 customer calls/visits daily" },
-    { title: "Quote Turnaround Time", metric: "Generate estimates within 3 hours of request" },
-    { title: "Sample Handover", metric: "Submit stone sample kits within 24 hours" },
+  managing_director: [
+    { title: "Quarterly Strategy Review", metric: "1 executive board review per quarter" },
+    { title: "Key VIP Architect Meetings", metric: "Minimum 4 architect meetings monthly" },
+    { title: "Cash Flow Audit", metric: "Weekly review of receivables and liabilities" },
   ],
-  operations: [
-    { title: "Purchase Order Issuance", metric: "Issue PO within 4 hours of requisition" },
-    { title: "Dispatch Note & LR Upload", metric: "100% same-day LR and e-way bill upload" },
-    { title: "Vendor Bill Verification", metric: "Clear inward material verification in 24h" },
+  sales_head: [
+    { title: "Daily Pipeline Review", metric: "Daily morning sync on open high-value quotes" },
+    { title: "High-Ticket Closures", metric: "Close minimum ₹25L+ revenue weekly" },
+    { title: "Lead Response SLA", metric: "Enquiry contacted within 2 hours" },
+  ],
+  field_sales_exec: [
+    { title: "Daily Architect Visits", metric: "Minimum 3 architectural visits per day" },
+    { title: "Site Measurement Reports", metric: "100% same-day measurement upload" },
+    { title: "Sample Kit Distribution", metric: "Hand over minimum 10 sample kits weekly" },
+  ],
+  office_sales_exec: [
+    { title: "Showroom Consultations", metric: "Log all showroom visits in ERP within 1 hour" },
+    { title: "Estimate Turnaround", metric: "Issue quote within 3 hours of request" },
+    { title: "Payment Follow-up Calls", metric: "Minimum 25 payment follow-ups daily" },
+  ],
+  data_entry_exec: [
+    { title: "Same-Day Entry SLA", metric: "100% orders logged on day of receipt" },
+    { title: "Error Rate", metric: "< 0.5% rate/tax discrepancy rate" },
+    { title: "E-Way Bill & LR Upload", metric: "100% uploaded before vehicle departure" },
+  ],
+  office_admin: [
+    { title: "Morning Showroom Inspection", metric: "Inspection complete by 9:30 AM daily" },
+    { title: "Sample Inventory Audit", metric: "Weekly stock reconciliation of sample boxes" },
+    { title: "Courier Dispatch Tracking", metric: "100% same-day tracking shared with clients" },
   ],
 };
 
@@ -207,24 +293,45 @@ export function KraKpaBuilder({
             </span>
             <button
               type="button"
-              onClick={() => applyKraPreset("sales")}
-              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors"
+              onClick={() => applyKraPreset("managing_director")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
             >
-              Sales Role KRAs
+              Managing Director
             </button>
             <button
               type="button"
-              onClick={() => applyKraPreset("operations")}
-              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors"
+              onClick={() => applyKraPreset("sales_head")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
             >
-              Operations / Admin KRAs
+              Sales Head
             </button>
             <button
               type="button"
-              onClick={() => applyKraPreset("production")}
-              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors"
+              onClick={() => applyKraPreset("field_sales_exec")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
             >
-              Production &amp; Site KRAs
+              Field Sales Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("office_sales_exec")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Office Sales Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("data_entry_exec")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Data Entry Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("office_admin")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Office Admin
             </button>
           </div>
         )}
@@ -370,17 +477,45 @@ export function KraKpaBuilder({
             </span>
             <button
               type="button"
-              onClick={() => applyKpaPreset("sales")}
-              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors"
+              onClick={() => applyKpaPreset("managing_director")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
             >
-              Sales Performance KPAs
+              Managing Director
             </button>
             <button
               type="button"
-              onClick={() => applyKpaPreset("operations")}
-              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors"
+              onClick={() => applyKpaPreset("sales_head")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
             >
-              Operations &amp; Dispatch KPAs
+              Sales Head
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("field_sales_exec")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Field Sales Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("office_sales_exec")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Office Sales Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("data_entry_exec")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Data Entry Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("office_admin")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Office Admin
             </button>
           </div>
         )}

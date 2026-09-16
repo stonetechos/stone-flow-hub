@@ -31,14 +31,16 @@ export function PageHeader({
     >
       <div className="min-w-0">
         {eyebrow && (
-          <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="mb-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-engraved-kicker">
             {eyebrow}
           </div>
         )}
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[26px] truncate">
+        <h1 className="font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px] truncate">
           {title}
         </h1>
-        {subtitle && <p className="mt-1 truncate text-sm text-muted-foreground">{subtitle}</p>}
+        {subtitle && (
+          <p className="mt-1 truncate text-xs sm:text-sm font-medium text-slate-500">{subtitle}</p>
+        )}
       </div>
       {actions && <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
     </div>

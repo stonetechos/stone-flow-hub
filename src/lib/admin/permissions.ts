@@ -97,25 +97,34 @@ export function canManageTargetUser(
   target: ManagedUserRef,
   action: UserManagementAction,
 ): PermissionResult {
-  // The Super Admin account is immutable to everyone but itself,
-  // and even the Super Admin cannot self-delete or self-deactivate (there
-  // would be nothing left to administer the platform).
+  // Multi-Seat Super Admin governance:
+  // Standard Admins can never modify or revoke a Super Admin account.
+  // Super Admins CAN manage other Super Admin accounts, but cannot self-delete,
+  // self-deactivate, or self-demote (preventing orphaned administration).
   if (target.isSuperAdmin) {
-    if (action === "reset_password") {
-      // "Only the Super Admin may edit ... its own password" — anyone else,
-      // including another Super Admin in a future multi-seat world, is
-      // denied. Since only one Super Admin ever exists in Sprint 1.7, this
-      // reduces to "must be acting on themselves".
-      if (actor.id === target.id) return { allowed: true };
+    if (!actor.isSuperAdmin) {
       return { allowed: false, reason: PROTECTED_MESSAGE };
     }
-    // delete / deactivate / revoke_role / change_role: never allowed, by
-    // anyone, including the Super Admin themselves.
-    return { allowed: false, reason: PROTECTED_MESSAGE };
+
+    // Actor IS a Super Admin:
+    if (action === "reset_password") {
+      return { allowed: true };
+    }
+
+    if (actor.id === target.id) {
+      if (action === "delete" || action === "deactivate") {
+        return { allowed: false, reason: "You cannot delete or deactivate your own account." };
+      }
+      if (action === "revoke_role") {
+        return { allowed: false, reason: "You cannot remove your own administrator role." };
+      }
+    }
+
+    // A Super Admin managing another Super Admin
+    return { allowed: true };
   }
 
-  // Target is not the Super Admin — Part 4: Admins keep every existing
-  // permission for every non-Super-Admin target, including other Admins.
+  // Target is not a Super Admin — Admins and Super Admins have full management access
   if (actor.isSuperAdmin || actor.isAdmin) {
     return { allowed: true };
   }

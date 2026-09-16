@@ -68,6 +68,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toUserMessage, parseMissingSupabaseEnvError } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 import { ServerConfigurationErrorState } from "@/components/global/ServerConfigurationErrorState";
 import {
   listAppUsers,
@@ -77,6 +78,7 @@ import {
   updateDisplayName,
   fallbackName,
   APP_ROLES,
+  ALL_ROLES_INCLUDING_SUPER,
   type AppRole,
 } from "@/lib/admin/users";
 import {
@@ -556,6 +558,7 @@ function UsersAdminPage() {
         onOpenChange={setInviteOpen}
         busyInvite={invite.isPending}
         busyPassword={createWithPassword.isPending}
+        isSuperAdmin={actor.isSuperAdmin}
         onSubmitInvite={(v) => invite.mutateAsync(v).then(() => setInviteOpen(false))}
         onSubmitPassword={(v) => createWithPassword.mutateAsync(v).then(() => setInviteOpen(false))}
       />
@@ -629,11 +632,13 @@ function CreateUserDialog({
   busyPassword,
   onSubmitInvite,
   onSubmitPassword,
+  isSuperAdmin,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   busyInvite: boolean;
   busyPassword: boolean;
+  isSuperAdmin?: boolean;
   onSubmitInvite: (v: {
     email: string;
     full_name?: string | null;
@@ -673,6 +678,7 @@ function CreateUserDialog({
               busy={busyInvite}
               onCancel={() => onOpenChange(false)}
               onSubmit={(v) => onSubmitInvite(v)}
+              isSuperAdmin={isSuperAdmin}
             />
           </TabsContent>
           <TabsContent value="password">
@@ -681,6 +687,7 @@ function CreateUserDialog({
               onCancel={() => confirmCloseIfDirty(false, passwordDirty) && onOpenChange(false)}
               onSubmit={(v) => onSubmitPassword(v)}
               onDirtyChange={setPasswordDirty}
+              isSuperAdmin={isSuperAdmin}
             />
           </TabsContent>
         </Tabs>
@@ -693,14 +700,17 @@ function InviteForm({
   busy,
   onCancel,
   onSubmit,
+  isSuperAdmin,
 }: {
   busy: boolean;
   onCancel: () => void;
   onSubmit: (v: { email: string; full_name?: string | null; role?: AppRole | null }) => void;
+  isSuperAdmin?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AppRole | "none">("none");
+  const availableRoles = isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
 
   return (
     <QuickForm
@@ -744,7 +754,7 @@ function InviteForm({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No role (assign later)</SelectItem>
-              {APP_ROLES.map((r) => (
+              {availableRoles.map((r) => (
                 <SelectItem key={r} value={r}>
                   {ROLE_LABEL[r]}
                 </SelectItem>
@@ -776,6 +786,7 @@ function PasswordCreateForm({
   onCancel,
   onSubmit,
   onDirtyChange,
+  isSuperAdmin,
 }: {
   busy: boolean;
   onCancel: () => void;
@@ -786,10 +797,12 @@ function PasswordCreateForm({
     role?: AppRole | null;
   }) => void;
   onDirtyChange?: (dirty: boolean) => void;
+  isSuperAdmin?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AppRole | "none">("none");
+  const availableRoles = isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const strength = scorePasswordStrength(password);
@@ -871,7 +884,7 @@ function PasswordCreateForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">No role (assign later)</SelectItem>
-            {APP_ROLES.map((r) => (
+            {availableRoles.map((r) => (
               <SelectItem key={r} value={r}>
                 {ROLE_LABEL[r]}
               </SelectItem>
@@ -1107,7 +1120,8 @@ function UserRowView({
   lifecycleBusy: boolean;
   renaming: boolean;
 }) {
-  const available = APP_ROLES.filter((r) => !user.roles.includes(r));
+  const rolePool = actor.isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
+  const available = rolePool.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(user.full_name ?? "");
   const pendingInvite = user.status === "invited" || user.status === "expired";
@@ -1117,7 +1131,7 @@ function UserRowView({
   // actions the request would be denied anyway — the server (and, for
   // user_roles, the DB trigger) remains the authoritative check.
   const targetRef = { id: user.id, isSuperAdmin: user.roles.includes("super_admin") };
-  const isProtected = targetRef.isSuperAdmin;
+  const isProtected = targetRef.isSuperAdmin && !actor.isSuperAdmin;
   const canDelete = !isSelf && canManageTargetUser(actor, targetRef, "delete").allowed;
   const canDeactivate = !isSelf && canManageTargetUser(actor, targetRef, "deactivate").allowed;
   const canSetPassword = canManageTargetUser(actor, targetRef, "reset_password").allowed;
@@ -1199,17 +1213,31 @@ function UserRowView({
           <div className="flex flex-wrap items-center gap-1.5">
             {user.roles.map((r) =>
               r === "super_admin" ? (
-                // Never revocable, by anyone — no
-                // remove control at all, not even a disabled one, so
-                // there's nothing here that looks actionable.
                 <Badge
                   key={r}
                   variant="secondary"
-                  className="gap-1"
-                  title="This account is protected."
+                  className="gap-1 border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                  title={
+                    actor.isSuperAdmin
+                      ? isSelf
+                        ? "You cannot remove your own Super Admin role."
+                        : "Click to revoke Super Admin"
+                      : "This account is protected."
+                  }
                 >
-                  <ShieldAlert className="h-3 w-3" />
+                  <ShieldAlert className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                   {ROLE_LABEL[r]}
+                  {actor.isSuperAdmin && !isSelf && (
+                    <button
+                      type="button"
+                      onClick={() => onRevoke(r)}
+                      disabled={busy}
+                      className="ml-0.5 rounded hover:bg-blue-200/60 dark:hover:bg-blue-900"
+                      aria-label="Remove Super Admin"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
                 </Badge>
               ) : (
                 <Badge key={r} variant="secondary" className="gap-1">
@@ -1243,18 +1271,21 @@ function UserRowView({
       <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(user.created_at)}</td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-end gap-1.5">
-          {/* Sprint 1.7, Part 3: the protected account's role set is fixed —
-              no additional roles can be granted to it either. */}
           {!isProtected &&
             available.map((r) => (
               <Button
                 key={r}
                 size="sm"
                 variant="outline"
+                className={cn(
+                  "h-7 text-xs font-semibold",
+                  r === "super_admin" &&
+                    "border-blue-300 bg-blue-50/70 text-blue-800 hover:bg-blue-100 hover:border-blue-400 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300",
+                )}
                 disabled={busy}
                 onClick={() => onAssign(r)}
               >
-                Grant {ROLE_LABEL[r]}
+                + {ROLE_LABEL[r]}
               </Button>
             ))}
           <DropdownMenu>

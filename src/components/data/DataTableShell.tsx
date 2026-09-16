@@ -29,11 +29,11 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-border/70 bg-card",
+        "card-3d-milky overflow-hidden shadow-xs",
         // Row / head padding driven by data-attribute so descendants can react.
-        density === "dense" && "[&_tbody_td]:py-1.5 [&_thead_th]:h-8",
-        density === "compact" && "[&_tbody_td]:py-2 [&_thead_th]:h-9",
-        density === "comfortable" && "[&_tbody_td]:py-3 [&_thead_th]:h-10",
+        density === "dense" && "[&_tbody_td]:py-1.5 [&_thead_th]:h-8.5",
+        density === "compact" && "[&_tbody_td]:py-2.5 [&_thead_th]:h-9.5",
+        density === "comfortable" && "[&_tbody_td]:py-3.5 [&_thead_th]:h-11",
         className,
       )}
       data-density={density}
