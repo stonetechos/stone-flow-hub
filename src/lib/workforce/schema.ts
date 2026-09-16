@@ -22,6 +22,24 @@ export const employeeSchema = z.object({
     z.number().nullable().optional(),
   ),
   skills: z.array(z.string()).default([]),
+  kras: z
+    .array(
+      z.object({
+        title: z.string().default(""),
+        description: z.string().optional().default(""),
+        weightage: z.preprocess((v) => Number(v ?? 0), z.number().min(0).max(100).default(0)),
+        target_period: z.enum(["daily", "weekly", "monthly", "quarterly"]).default("monthly"),
+      }),
+    )
+    .default([]),
+  kpas: z
+    .array(
+      z.object({
+        title: z.string().default(""),
+        metric: z.string().optional().default(""),
+      }),
+    )
+    .default([]),
   employment_status: z
     .enum(["active", "on_leave", "notice", "terminated", "resigned"])
     .default("active"),
@@ -30,6 +48,8 @@ export const employeeSchema = z.object({
   user_id: z.string().uuid().nullable().optional(),
 });
 export type EmployeeInput = z.infer<typeof employeeSchema>;
+export type EmployeeKra = EmployeeInput["kras"][number];
+export type EmployeeKpa = EmployeeInput["kpas"][number];
 
 export const designationSchema = z.object({
   code: zRequired("Code"),

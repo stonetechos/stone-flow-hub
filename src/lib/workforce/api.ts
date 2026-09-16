@@ -66,22 +66,93 @@ export async function getEmployee(id: string): Promise<Employee | null> {
   return data;
 }
 
-export async function createEmployee(input: EmployeeInput): Promise<Employee> {
+import { saveEmployeeServerFn } from "./workforce.functions";
+
+export async function createEmployee(input: EmployeeInput, systemRole?: string): Promise<Employee> {
   const parsed = employeeSchema.parse(input);
+  try {
+    const res = await saveEmployeeServerFn({ data: { data: parsed, systemRole } });
+    if (res) return res;
+  } catch (serverErr) {
+    console.warn("[workforce.api] Server function failed, attempting client fallback:", serverErr);
+  }
+
+  // Fallback to client-side insert if server function unreachable
   const { data, error } = await supabase
     .from("employees")
-    .insert({ ...parsed, employee_code: "" })
+    .insert({
+      full_name: parsed.full_name,
+      designation_id: parsed.designation_id,
+      department: parsed.department,
+      employment_type: parsed.employment_type,
+      reporting_manager_id: parsed.reporting_manager_id,
+      joining_date: parsed.joining_date,
+      phone: parsed.phone,
+      email: parsed.email,
+      emergency_contact: parsed.emergency_contact,
+      address: parsed.address,
+      aadhaar: parsed.aadhaar,
+      pan: parsed.pan,
+      bank_details: {
+        ...(parsed.bank_details ?? {}),
+        _kras: parsed.kras,
+        _kpas: parsed.kpas,
+      },
+      salary_ctc: parsed.salary_ctc,
+      skills: parsed.skills,
+      employment_status: parsed.employment_status,
+      photo_url: parsed.photo_url,
+      remarks: parsed.remarks,
+      user_id: parsed.user_id,
+      employee_code: "",
+    })
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
   return data;
 }
 
-export async function updateEmployee(id: string, input: EmployeeInput): Promise<Employee> {
+export async function updateEmployee(
+  id: string,
+  input: EmployeeInput,
+  systemRole?: string,
+): Promise<Employee> {
   const parsed = employeeSchema.parse(input);
+  try {
+    const res = await saveEmployeeServerFn({ data: { id, data: parsed, systemRole } });
+    if (res) return res;
+  } catch (serverErr) {
+    console.warn("[workforce.api] Server function failed, attempting client fallback:", serverErr);
+  }
+
+  // Fallback to client-side update
   const { data, error } = await supabase
     .from("employees")
-    .update(parsed)
+    .update({
+      full_name: parsed.full_name,
+      designation_id: parsed.designation_id,
+      department: parsed.department,
+      employment_type: parsed.employment_type,
+      reporting_manager_id: parsed.reporting_manager_id,
+      joining_date: parsed.joining_date,
+      phone: parsed.phone,
+      email: parsed.email,
+      emergency_contact: parsed.emergency_contact,
+      address: parsed.address,
+      aadhaar: parsed.aadhaar,
+      pan: parsed.pan,
+      bank_details: {
+        ...(parsed.bank_details ?? {}),
+        _kras: parsed.kras,
+        _kpas: parsed.kpas,
+      },
+      salary_ctc: parsed.salary_ctc,
+      skills: parsed.skills,
+      employment_status: parsed.employment_status,
+      photo_url: parsed.photo_url,
+      remarks: parsed.remarks,
+      user_id: parsed.user_id,
+    })
     .eq("id", id)
     .select("*")
     .single();

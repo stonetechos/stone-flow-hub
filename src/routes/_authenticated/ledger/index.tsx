@@ -27,6 +27,7 @@ import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { listVendors } from "@/lib/vendors/api";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 export const Route = createFileRoute("/_authenticated/ledger/")({
   ssr: false,
@@ -37,45 +38,47 @@ function UnifiedLedgersPage() {
   const [activeTab, setActiveTab] = useState<"sales" | "purchase" | "agency">("sales");
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Ledgers"
-        subtitle="Unified financial ledger statements and running balances across Customers, Vendors, and Agencies."
-      />
+    <AccountingGuard moduleName="Financial Ledgers">
+      <div className="space-y-6">
+        <PageHeader
+          title="Ledgers"
+          subtitle="Unified financial ledger statements and running balances across Customers, Vendors, and Agencies."
+        />
 
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as "sales" | "purchase" | "agency")}
-        className="space-y-4"
-      >
-        <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
-          <TabsTrigger value="sales" className="gap-2">
-            <Users className="h-4 w-4" />
-            <span>Sales Ledger (Customers)</span>
-          </TabsTrigger>
-          <TabsTrigger value="purchase" className="gap-2">
-            <Factory className="h-4 w-4" />
-            <span>Purchase Ledger (Vendors)</span>
-          </TabsTrigger>
-          <TabsTrigger value="agency" className="gap-2">
-            <HandCoins className="h-4 w-4" />
-            <span>Agency Ledger (Agencies)</span>
-          </TabsTrigger>
-        </TabsList>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "sales" | "purchase" | "agency")}
+          className="space-y-4"
+        >
+          <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
+            <TabsTrigger value="sales" className="gap-2">
+              <Users className="h-4 w-4" />
+              <span>Sales Ledger (Customers)</span>
+            </TabsTrigger>
+            <TabsTrigger value="purchase" className="gap-2">
+              <Factory className="h-4 w-4" />
+              <span>Purchase Ledger (Vendors)</span>
+            </TabsTrigger>
+            <TabsTrigger value="agency" className="gap-2">
+              <HandCoins className="h-4 w-4" />
+              <span>Agency Ledger (Agencies)</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="sales">
-          <SalesLedgerView />
-        </TabsContent>
+          <TabsContent value="sales">
+            <SalesLedgerView />
+          </TabsContent>
 
-        <TabsContent value="purchase">
-          <PurchaseLedgerView />
-        </TabsContent>
+          <TabsContent value="purchase">
+            <PurchaseLedgerView />
+          </TabsContent>
 
-        <TabsContent value="agency">
-          <AgencyLedgerView />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="agency">
+            <AgencyLedgerView />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AccountingGuard>
   );
 }
 

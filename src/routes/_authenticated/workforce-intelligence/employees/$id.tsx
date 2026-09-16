@@ -57,6 +57,7 @@ import {
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 import { format } from "date-fns";
+import type { EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/$id")({
   head: () => ({ meta: [{ title: "Employee — Workforce Intelligence" }] }),
@@ -220,7 +221,26 @@ function EmployeeProfile() {
             <InfoRow label="Department" value={e.department ?? "—"} />
             <InfoRow label="Address" value={e.address ?? "—"} />
             <InfoRow label="Emergency contact" value={e.emergency_contact ?? "—"} />
-            <InfoRow label="Skills" value={(e.skills ?? []).join(", ") || "—"} />
+            <InfoRow
+              label="Skills"
+              value={
+                (e.skills ?? []).length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {e.skills.map((s) => (
+                      <Badge
+                        key={s}
+                        variant="secondary"
+                        className="text-xs bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                      >
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  "—"
+                )
+              }
+            />
             {isOwner && (
               <>
                 <InfoRow label="Aadhaar" value={e.aadhaar ?? "—"} />
@@ -266,6 +286,87 @@ function EmployeeProfile() {
             </div>
           </div>
 
+          {/* KRAs & KPAs Summary on Overview */}
+          {(() => {
+            const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
+            const empKras = ((e as unknown as { kras?: EmployeeKra[] }).kras ??
+              (bankObj as { _kras?: EmployeeKra[] })._kras ??
+              []) as EmployeeKra[];
+            const empKpas = ((e as unknown as { kpas?: EmployeeKpa[] }).kpas ??
+              (bankObj as { _kpas?: EmployeeKpa[] })._kpas ??
+              []) as EmployeeKpa[];
+            if (empKras.length === 0 && empKpas.length === 0) return null;
+            return (
+              <div className="rounded-xl border border-blue-200/80 bg-gradient-to-b from-blue-50/30 to-transparent p-4 dark:border-blue-900/40 dark:from-blue-950/20 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-foreground">
+                    Employee Assigned KRAs &amp; KPAs
+                  </h4>
+                  <Link
+                    to="/workforce-intelligence/employees/new"
+                    search={{ id: e.id }}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    Edit KRAs
+                  </Link>
+                </div>
+                {empKras.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Key Result Areas (KRAs)
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                      {empKras.map((k, i) => (
+                        <div
+                          key={i}
+                          className="rounded-lg border border-border/80 bg-background/90 p-2.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-foreground line-clamp-1">
+                              {k.title || "KRA"}
+                            </span>
+                            {k.weightage != null && (
+                              <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+                                {k.weightage}%
+                              </Badge>
+                            )}
+                          </div>
+                          {k.description && (
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+                              {k.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {empKpas.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Key Performance Areas &amp; Activities (KPAs)
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {empKpas.map((k, i) => (
+                        <div
+                          key={i}
+                          className="rounded-md border border-border bg-background px-3 py-1.5 text-xs"
+                        >
+                          <span className="font-medium text-foreground">{k.title}</span>
+                          {k.metric && (
+                            <span className="ml-1.5 text-muted-foreground font-mono text-[11px]">
+                              ({k.metric})
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {e.remarks && (
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Remarks</div>
@@ -274,36 +375,123 @@ function EmployeeProfile() {
           )}
         </TabsContent>
 
-        <TabsContent value="kras" className="mt-4">
-          {kras.isLoading ? (
-            <SkeletonTable />
-          ) : (kras.data ?? []).length === 0 ? (
-            <EmptyState
-              title="No KRAs configured"
-              message="Configure KRAs against the role master."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>KRA</TableHead>
-                  <TableHead>Weight</TableHead>
-                  <TableHead>Target</TableHead>
-                  <TableHead>Period</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(kras.data ?? []).map((k) => (
-                  <TableRow key={k.id}>
-                    <TableCell className="font-medium">{k.name}</TableCell>
-                    <TableCell>{Number(k.weightage)}%</TableCell>
-                    <TableCell>{Number(k.target_value)}</TableCell>
-                    <TableCell>{k.target_period}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+        <TabsContent value="kras" className="mt-4 space-y-6">
+          {(() => {
+            const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
+            const empKras = ((e as unknown as { kras?: EmployeeKra[] }).kras ??
+              (bankObj as { _kras?: EmployeeKra[] })._kras ??
+              []) as EmployeeKra[];
+            const empKpas = ((e as unknown as { kpas?: EmployeeKpa[] }).kpas ??
+              (bankObj as { _kpas?: EmployeeKpa[] })._kpas ??
+              []) as EmployeeKpa[];
+
+            return (
+              <>
+                {empKras.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-bold text-foreground">Employee-Specific KRAs</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>KRA Title</TableHead>
+                          <TableHead>Weightage</TableHead>
+                          <TableHead>Period</TableHead>
+                          <TableHead>Description / Target</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {empKras.map((k, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="font-semibold text-foreground">
+                              {k.title}
+                            </TableCell>
+                            <TableCell className="font-mono font-bold">
+                              {k.weightage ?? 0}%
+                            </TableCell>
+                            <TableCell className="capitalize">
+                              {k.target_period ?? "monthly"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-xs">
+                              {k.description || "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {empKpas.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-bold text-foreground">
+                      Employee-Specific KPAs (Performance Activities)
+                    </h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Activity / Performance Area</TableHead>
+                          <TableHead>Target Metric</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {empKpas.map((k, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="font-semibold text-foreground">
+                              {k.title}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-blue-700 dark:text-blue-300 font-medium">
+                              {k.metric || "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-foreground">
+                    Designation Master KRAs ({designation?.name ?? "Role"})
+                  </h4>
+                  {kras.isLoading ? (
+                    <SkeletonTable />
+                  ) : (kras.data ?? []).length === 0 ? (
+                    empKras.length === 0 ? (
+                      <EmptyState
+                        title="No KRAs configured"
+                        message="Configure KRAs against the role master or assign employee-specific KRAs."
+                      />
+                    ) : (
+                      <div className="text-xs text-muted-foreground italic">
+                        No additional role master KRAs.
+                      </div>
+                    )
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>KRA</TableHead>
+                          <TableHead>Weight</TableHead>
+                          <TableHead>Target</TableHead>
+                          <TableHead>Period</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(kras.data ?? []).map((k) => (
+                          <TableRow key={k.id}>
+                            <TableCell className="font-medium">{k.name}</TableCell>
+                            <TableCell>{Number(k.weightage)}%</TableCell>
+                            <TableCell>{Number(k.target_value)}</TableCell>
+                            <TableCell>{k.target_period}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-4">

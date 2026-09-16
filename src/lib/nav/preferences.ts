@@ -260,18 +260,34 @@ import type { AppRole } from "@/lib/admin/users";
 function isGroupAllowed(
   group: (typeof NAV_GROUPS)[number],
   isAdmin: boolean,
+  isSuperAdmin: boolean,
   userRoles: readonly AppRole[],
 ): boolean {
+  if (group.superAdminOnly && !isSuperAdmin) return false;
   if (group.adminOnly && !isAdmin) return false;
   if (!group.allowedRoles || group.allowedRoles.length === 0) return true;
-  if (isAdmin || userRoles.length === 0) return true;
+  if (isSuperAdmin) return true;
+  if (group.allowedRoles.length === 1 && group.allowedRoles[0] === "super_admin") return false;
+  if (isAdmin) {
+    return group.allowedRoles.includes("admin");
+  }
   return group.allowedRoles.some((r) => userRoles.includes(r));
 }
 
-function isItemAllowed(item: NavItemDef, isAdmin: boolean, userRoles: readonly AppRole[]): boolean {
+function isItemAllowed(
+  item: NavItemDef,
+  isAdmin: boolean,
+  isSuperAdmin: boolean,
+  userRoles: readonly AppRole[],
+): boolean {
+  if (item.superAdminOnly && !isSuperAdmin) return false;
   if (item.adminOnly && !isAdmin) return false;
   if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
-  if (isAdmin || userRoles.length === 0) return true;
+  if (isSuperAdmin) return true;
+  if (item.allowedRoles.length === 1 && item.allowedRoles[0] === "super_admin") return false;
+  if (isAdmin) {
+    return item.allowedRoles.includes("admin");
+  }
   return item.allowedRoles.some((r) => userRoles.includes(r));
 }
 
@@ -283,15 +299,24 @@ function isItemAllowed(item: NavItemDef, isAdmin: boolean, userRoles: readonly A
 export function resolveNav(
   prefs: NavPreferences,
   isAdmin: boolean,
-  userRoles: readonly AppRole[] = [],
+  userRolesOrSuperAdmin: readonly AppRole[] | boolean = [],
+  maybeUserRoles: readonly AppRole[] = [],
 ): ResolvedNav {
-  const visibleItems = NAV_ITEMS.filter((i) => isItemAllowed(i, isAdmin, userRoles));
+  const isSuperAdmin =
+    typeof userRolesOrSuperAdmin === "boolean"
+      ? userRolesOrSuperAdmin
+      : userRolesOrSuperAdmin.includes("super_admin");
+  const userRoles =
+    typeof userRolesOrSuperAdmin === "boolean" ? maybeUserRoles : userRolesOrSuperAdmin;
+
+  const visibleItems = NAV_ITEMS.filter((i) => isItemAllowed(i, isAdmin, isSuperAdmin, userRoles));
   const hiddenSet = new Set(prefs.hidden);
 
   const starred = prefs.starred
     .map((id) => NAV_ITEMS_BY_ID[id])
     .filter(
-      (i): i is NavItemDef => !!i && isItemAllowed(i, isAdmin, userRoles) && !hiddenSet.has(i.id),
+      (i): i is NavItemDef =>
+        !!i && isItemAllowed(i, isAdmin, isSuperAdmin, userRoles) && !hiddenSet.has(i.id),
     );
 
   const starredSet = new Set(starred.map((i) => i.id));
@@ -302,7 +327,7 @@ export function resolveNav(
   const groups: ResolvedNavGroup[] = prefs.groupOrder
     .filter((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
-      return def && isGroupAllowed(def, isAdmin, userRoles);
+      return def && isGroupAllowed(def, isAdmin, isSuperAdmin, userRoles);
     })
     .map((gid) => {
       const def = NAV_GROUPS.find((g) => g.id === gid);
@@ -325,7 +350,7 @@ export function resolveNav(
     .filter((g) => g.items.length > 0 || g.id === "overview");
 
   const hidden = NAV_ITEMS.filter(
-    (i) => hiddenSet.has(i.id) && isItemAllowed(i, isAdmin, userRoles),
+    (i) => hiddenSet.has(i.id) && isItemAllowed(i, isAdmin, isSuperAdmin, userRoles),
   );
 
   return { starred, groups, hidden };

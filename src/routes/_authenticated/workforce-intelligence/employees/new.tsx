@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { FormLayout, FormSection, FormGrid, FormActions } from "@/components/forms/FormLayout";
 import { Field } from "@/components/forms/Field";
+import { SkillsInput } from "@/components/workforce/SkillsInput";
+import { KraKpaBuilder } from "@/components/workforce/KraKpaBuilder";
 import {
   createEmployee,
   updateEmployee,
@@ -32,7 +34,7 @@ import {
   listDesignations,
   listEmployees,
 } from "@/lib/workforce/api";
-import type { EmployeeInput } from "@/lib/workforce/schema";
+import type { EmployeeInput, EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
 import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
@@ -64,6 +66,8 @@ function empty(): EmployeeInput {
     bank_details: {},
     salary_ctc: null,
     skills: [],
+    kras: [],
+    kpas: [],
     employment_status: "active",
     photo_url: "",
     remarks: "",
@@ -120,6 +124,7 @@ function EmployeeFormPage() {
   // Load existing into state on first fetch
   if (id && existing.data && form.full_name === "" && !existing.isFetching) {
     const e = existing.data;
+    const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
     const loaded: EmployeeInput = {
       full_name: e.full_name,
       designation_id: e.designation_id,
@@ -133,9 +138,17 @@ function EmployeeFormPage() {
       address: e.address ?? "",
       aadhaar: e.aadhaar ?? "",
       pan: e.pan ?? "",
-      bank_details: (e.bank_details as Record<string, unknown>) ?? {},
+      bank_details: bankObj,
       salary_ctc: e.salary_ctc,
       skills: e.skills ?? [],
+      kras:
+        (e as unknown as { kras?: EmployeeKra[] }).kras ??
+        (bankObj as { _kras?: EmployeeKra[] })._kras ??
+        [],
+      kpas:
+        (e as unknown as { kpas?: EmployeeKpa[] }).kpas ??
+        (bankObj as { _kpas?: EmployeeKpa[] })._kpas ??
+        [],
       employment_status: e.employment_status,
       photo_url: e.photo_url ?? "",
       remarks: e.remarks ?? "",
@@ -163,7 +176,9 @@ function EmployeeFormPage() {
         }
       }
 
-      const empRow = id ? await updateEmployee(id, v) : await createEmployee(v);
+      const empRow = id
+        ? await updateEmployee(id, v, systemRole)
+        : await createEmployee(v, systemRole);
 
       // Assign system role if user_id linked
       if (empRow.user_id && systemRole) {
@@ -314,29 +329,58 @@ function EmployeeFormPage() {
 
         <FormSection
           title="System Access & Role"
-          description="Controls what features this employee can access upon signing in with their work email. Non-admins will never see firm accounts or financial dashboards."
+          description="Controls what features this employee can access upon signing in with their work email. Main accounting is strictly restricted to Super Admin."
         >
           <FormGrid>
             <Field
               label="System Access Role"
-              hint="Sales sees only Sales modules; Purchase sees only Procurement; Accounts/Finance is restricted to Admins."
+              hint="Super Admin has full system access including Accounting. Admin has full operational access without Accounting. Sales and Purchase access their specific operational modules."
             >
               <Select value={systemRole} onValueChange={(v) => setSystemRole(v as AppRole)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select system role" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="super_admin">
+                    Super Admin (Owner — Full Access + Main Accounting & Finance)
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    Admin (Operations, Sales, Purchase & Workforce — No Accounting)
+                  </SelectItem>
                   <SelectItem value="sales">Sales & Field Sales (Sales Only)</SelectItem>
                   <SelectItem value="purchase">Purchase & Procurement (Purchase Only)</SelectItem>
-                  <SelectItem value="sales_manager">Sales Manager (Sales & Workforce)</SelectItem>
-                  <SelectItem value="hr">HR & People Operations</SelectItem>
-                  <SelectItem value="admin">
-                    System Administrator (Full Access + Accounts)
+                  <SelectItem value="sales_manager">
+                    Sales Manager (Sales & Workforce Management)
                   </SelectItem>
+                  <SelectItem value="hr">HR & People Operations</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
           </FormGrid>
+        </FormSection>
+
+        <FormSection
+          title="Skills, KRAs & KPAs"
+          description="Define professional skills, Key Result Areas (KRAs) with target weightages, and Key Performance Areas (KPAs) for workforce performance tracking."
+        >
+          <div className="space-y-6">
+            <Field
+              label="Skills & Competencies"
+              hint="Tag stone fabrication, design, machinery, and management competencies."
+            >
+              <SkillsInput
+                skills={form.skills ?? []}
+                onChange={(skills) => setForm({ ...form, skills })}
+              />
+            </Field>
+
+            <KraKpaBuilder
+              kras={form.kras ?? []}
+              onKrasChange={(kras) => setForm({ ...form, kras })}
+              kpas={form.kpas ?? []}
+              onKpasChange={(kpas) => setForm({ ...form, kpas })}
+            />
+          </div>
         </FormSection>
 
         <FormSection title="Contact">
@@ -388,20 +432,6 @@ function EmployeeFormPage() {
                 }
                 onChange={(v) => setForm({ ...form, salary_ctc: v === "" ? null : Number(v) })}
                 min={0}
-              />
-            </Field>
-            <Field label="Skills (comma-separated)">
-              <Input
-                value={(form.skills ?? []).join(", ")}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    skills: e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  })
-                }
               />
             </Field>
           </FormGrid>

@@ -176,6 +176,7 @@ function NavList({
   path,
   onNavigate,
   isAdmin,
+  isSuperAdmin,
   userRoles = [],
   collapsed,
   scrollable = true,
@@ -183,14 +184,15 @@ function NavList({
   path: string;
   onNavigate?: () => void;
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
   userRoles?: readonly AppRole[];
   collapsed?: boolean;
   scrollable?: boolean;
 }) {
   const { prefs, update } = useNavPreferences();
   const resolved = useMemo(
-    () => resolveNav(prefs, isAdmin, userRoles),
-    [prefs, isAdmin, userRoles],
+    () => resolveNav(prefs, isAdmin, isSuperAdmin ?? false, userRoles),
+    [prefs, isAdmin, isSuperAdmin, userRoles],
   );
 
   const isActive = (to: string): boolean => path === to || path.startsWith(`${to}/`);
@@ -328,10 +330,12 @@ function UserMenu({
   onSignOut,
   onOpenShortcuts,
   isAdmin,
+  isSuperAdmin,
 }: {
   onSignOut: () => void;
   onOpenShortcuts: () => void;
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
 }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
@@ -353,20 +357,18 @@ function UserMenu({
     (email || "?")
       .split("@")[0]
       .split(/[._\-\s]+/)
-      .map((s) => s[0])
-      .filter(Boolean)
       .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?";
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("") || "?";
 
   const lastLoginLabel = lastLogin
-    ? new Date(lastLogin).toLocaleString(undefined, {
-        month: "short",
+    ? new Date(lastLogin).toLocaleDateString("en-IN", {
         day: "numeric",
+        month: "short",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "—";
+    : "First session";
 
   return (
     <DropdownMenu>
@@ -404,13 +406,15 @@ function UserMenu({
                 <span
                   className={cn(
                     "inline-flex items-center gap-1 rounded-sm px-1.5 py-px font-mono text-[10px] uppercase tracking-wider",
-                    isAdmin
-                      ? "bg-mint-500/20 text-mint-200"
-                      : "bg-white/8 text-text-on-material-muted",
+                    isSuperAdmin
+                      ? "bg-blue-500/30 text-blue-200 border border-blue-400/40"
+                      : isAdmin
+                        ? "bg-mint-500/20 text-mint-200"
+                        : "bg-white/8 text-text-on-material-muted",
                   )}
                 >
-                  {isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
-                  {isAdmin ? "Admin" : "Member"}
+                  {isSuperAdmin || isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
+                  {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Member"}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
                   STOS
@@ -610,7 +614,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-            <NavList path={path} isAdmin={isAdmin} userRoles={roles.roles} collapsed={collapsed} />
+            <NavList
+              path={path}
+              isAdmin={isAdmin}
+              isSuperAdmin={roles.isSuperAdmin}
+              userRoles={roles.roles}
+              collapsed={collapsed}
+            />
           </div>
 
           <div
@@ -682,6 +692,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <NavList
                     path={path}
                     isAdmin={isAdmin}
+                    isSuperAdmin={roles.isSuperAdmin}
                     userRoles={roles.roles}
                     onNavigate={() => setMobileNavOpen(false)}
                     // SheetContent already owns the single scroll region for
@@ -751,7 +762,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               <NotificationsBell />
               <ThemeSwitcher />
               <div className="ml-1">
-                <UserMenu onSignOut={onSignOut} onOpenShortcuts={openShortcuts} isAdmin={isAdmin} />
+                <UserMenu
+                  onSignOut={onSignOut}
+                  onOpenShortcuts={openShortcuts}
+                  isAdmin={isAdmin}
+                  isSuperAdmin={roles.isSuperAdmin}
+                />
               </div>
             </div>
           </header>

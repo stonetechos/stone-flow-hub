@@ -86,7 +86,7 @@ function DashboardPage() {
   const { user } = useAuthReady();
   const qc = useQueryClient();
   const roles = useRoles();
-  const canViewFinancial = roles.isAdmin || roles.roles.length === 0;
+  const canViewFinancial = roles.isSuperAdmin;
   const { processedInsights } = useExecutiveInsights();
 
   const [activeTab, setActiveTab] = useState<DashboardViewTab>(() =>

@@ -58,6 +58,7 @@ export interface NavGroupDef {
   id: NavGroupId;
   label: string;
   adminOnly?: boolean;
+  superAdminOnly?: boolean;
   allowedRoles?: readonly AppRole[];
 }
 
@@ -82,8 +83,8 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   {
     id: "finance",
     label: "Finance",
-    adminOnly: true,
-    allowedRoles: ["admin", "super_admin"],
+    superAdminOnly: true,
+    allowedRoles: ["super_admin"],
   },
   { id: "payroll", label: "HR Operations" },
   {
@@ -111,6 +112,7 @@ export interface NavItemDef {
   icon: LucideIcon;
   group: NavGroupId;
   adminOnly?: boolean;
+  superAdminOnly?: boolean;
   allowedRoles?: readonly AppRole[];
 }
 
@@ -157,15 +159,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // Finance: Payments -> Ledgers -> Liabilities -> Business Expenses
-  // Strictly Admin-only — non-admin employees are never shown the firm's accounts.
+  // Strictly Super-Admin-only (Owner) — admins and other employees are never shown the firm's main accounts.
   {
     id: "payments",
     to: "/payments",
     label: "Payments",
     icon: Wallet,
     group: "finance",
-    adminOnly: true,
-    allowedRoles: ["admin", "super_admin"],
+    superAdminOnly: true,
+    allowedRoles: ["super_admin"],
   },
   {
     id: "ledger",
@@ -173,8 +175,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Ledgers",
     icon: BookOpen,
     group: "finance",
-    adminOnly: true,
-    allowedRoles: ["admin", "super_admin"],
+    superAdminOnly: true,
+    allowedRoles: ["super_admin"],
   },
   {
     id: "liabilities",
@@ -182,8 +184,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Liabilities",
     icon: Landmark,
     group: "finance",
-    adminOnly: true,
-    allowedRoles: ["admin", "super_admin"],
+    superAdminOnly: true,
+    allowedRoles: ["super_admin"],
   },
   {
     id: "business-expenses",
@@ -191,8 +193,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Business Expenses",
     icon: ReceiptText,
     group: "finance",
-    adminOnly: true,
-    allowedRoles: ["admin", "super_admin"],
+    superAdminOnly: true,
+    allowedRoles: ["super_admin"],
   },
 
   // HR Operations (Merged HR Operations & Workforce Intelligence)

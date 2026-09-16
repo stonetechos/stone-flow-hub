@@ -62,6 +62,7 @@ import {
 import { invalidatePayment, invalidateVendorPayment } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 import { formatInr, formatDate } from "@/lib/format";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
   ssr: false,
@@ -79,59 +80,61 @@ function UnifiedPaymentsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Payments"
-        subtitle="Manage customer payment receipts, vendor bill settlements, and agency disbursements in one place."
-        actions={
-          <div className="flex items-center gap-2">
-            <Button asChild size="sm">
-              <Link to="/receipts/new">
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to="/vendor-payments/new">
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Vendor Payment
-              </Link>
-            </Button>
-          </div>
-        }
-      />
+    <AccountingGuard moduleName="Payments & Disbursements">
+      <div className="space-y-6">
+        <PageHeader
+          title="Payments"
+          subtitle="Manage customer payment receipts, vendor bill settlements, and agency disbursements in one place."
+          actions={
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm">
+                <Link to="/receipts/new">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/vendor-payments/new">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Vendor Payment
+                </Link>
+              </Button>
+            </div>
+          }
+        />
 
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as "customer" | "vendor" | "agency")}
-        className="space-y-4"
-      >
-        <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
-          <TabsTrigger value="customer" className="gap-2">
-            <Wallet className="h-4 w-4" />
-            <span>Customer Payments</span>
-          </TabsTrigger>
-          <TabsTrigger value="vendor" className="gap-2">
-            <Banknote className="h-4 w-4" />
-            <span>Vendor Payments</span>
-          </TabsTrigger>
-          <TabsTrigger value="agency" className="gap-2">
-            <HandCoins className="h-4 w-4" />
-            <span>Agency Payments</span>
-          </TabsTrigger>
-        </TabsList>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "customer" | "vendor" | "agency")}
+          className="space-y-4"
+        >
+          <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
+            <TabsTrigger value="customer" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              <span>Customer Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="vendor" className="gap-2">
+              <Banknote className="h-4 w-4" />
+              <span>Vendor Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="agency" className="gap-2">
+              <HandCoins className="h-4 w-4" />
+              <span>Agency Payments</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="customer">
-          <CustomerPaymentsTab />
-        </TabsContent>
+          <TabsContent value="customer">
+            <CustomerPaymentsTab />
+          </TabsContent>
 
-        <TabsContent value="vendor">
-          <VendorPaymentsTab />
-        </TabsContent>
+          <TabsContent value="vendor">
+            <VendorPaymentsTab />
+          </TabsContent>
 
-        <TabsContent value="agency">
-          <AgencyPaymentsTab />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="agency">
+            <AgencyPaymentsTab />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AccountingGuard>
   );
 }
 

@@ -41,6 +41,7 @@ import {
 } from "@/lib/business-expenses/api";
 import type { BusinessExpenseInput } from "@/lib/business-expenses/schema";
 import { useRoles } from "@/hooks/use-roles";
+import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 /**
  * Business Expenses (Task #45) — Rishi: "There should be Business Expense
@@ -136,157 +137,165 @@ function BusinessExpensesPage() {
   const total = useMemo(() => rows.reduce((s, r) => s + r.amount, 0), [rows]);
 
   return (
-    <div>
-      <PageHeader
-        title="Business Expenses"
-        subtitle="Day-to-day office spend — stationery, tea, maid, donations, and the like."
-      />
-
-      {roles.canWrite && (
-        <Card className="mb-6 p-4">
-          <form
-            className="grid gap-3 sm:grid-cols-[160px_1fr_180px_auto] sm:items-end"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!quickDesc.trim()) {
-                toast.error("Description is required");
-                return;
-              }
-              createMut.mutate({
-                expense_date: quickDate,
-                description: quickDesc.trim(),
-                amount: Number(quickAmount || 0),
-              });
-            }}
-          >
-            <Field label="Date" required>
-              <Input type="date" value={quickDate} onChange={(e) => setQuickDate(e.target.value)} />
-            </Field>
-            <Field label="Description" required>
-              <Input
-                value={quickDesc}
-                onChange={(e) => setQuickDesc(e.target.value)}
-                placeholder="e.g. Stationery, Tea, Maid, Donation…"
-              />
-            </Field>
-            <Field label="Amount" required>
-              <CurrencyInput value={quickAmount} onChange={setQuickAmount} />
-            </Field>
-            <Button type="submit" disabled={createMut.isPending}>
-              <Plus className="mr-2 h-4 w-4" /> Add
-            </Button>
-          </form>
-        </Card>
-      )}
-
-      {query.isLoading ? (
-        <SkeletonTable rows={5} columns={4} />
-      ) : query.error ? (
-        <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          title="No expenses recorded yet"
-          message="Use the form above to log your first business expense."
+    <AccountingGuard moduleName="Business Expenses">
+      <div>
+        <PageHeader
+          title="Business Expenses"
+          subtitle="Day-to-day office spend — stationery, tea, maid, donations, and the like."
         />
-      ) : (
-        <>
-          <div className="overflow-x-auto rounded-md border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="text-sm">{r.expense_date}</TableCell>
-                    <TableCell className="font-medium">{r.description}</TableCell>
-                    <TableCell>{formatInr(r.amount)}</TableCell>
-                    <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                      {r.notes ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <RowActions onEdit={() => openEdit(r)} onDelete={() => setToDelete(r)} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="mt-2 flex justify-end text-sm font-semibold">
-            Total: {formatInr(total)}
-          </div>
-        </>
-      )}
 
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit expense</DialogTitle>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (editing) updateMut.mutate({ id: editing.id, input: form });
-            }}
-          >
-            <DialogBody className="grid gap-3">
+        {roles.canWrite && (
+          <Card className="mb-6 p-4">
+            <form
+              className="grid gap-3 sm:grid-cols-[160px_1fr_180px_auto] sm:items-end"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!quickDesc.trim()) {
+                  toast.error("Description is required");
+                  return;
+                }
+                createMut.mutate({
+                  expense_date: quickDate,
+                  description: quickDesc.trim(),
+                  amount: Number(quickAmount || 0),
+                });
+              }}
+            >
               <Field label="Date" required>
                 <Input
                   type="date"
-                  value={form.expense_date}
-                  onChange={(e) => setForm((f) => ({ ...f, expense_date: e.target.value }))}
-                  required
+                  value={quickDate}
+                  onChange={(e) => setQuickDate(e.target.value)}
                 />
               </Field>
               <Field label="Description" required>
                 <Input
-                  value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  required
+                  value={quickDesc}
+                  onChange={(e) => setQuickDesc(e.target.value)}
+                  placeholder="e.g. Stationery, Tea, Maid, Donation…"
                 />
               </Field>
               <Field label="Amount" required>
-                <CurrencyInput
-                  value={String(form.amount ?? "")}
-                  onChange={(v) => setForm((f) => ({ ...f, amount: Number(v || 0) }))}
-                />
+                <CurrencyInput value={quickAmount} onChange={setQuickAmount} />
               </Field>
-              <Field label="Notes">
-                <Textarea
-                  rows={2}
-                  value={form.notes ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                />
-              </Field>
-            </DialogBody>
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-                Cancel
+              <Button type="submit" disabled={createMut.isPending}>
+                <Plus className="mr-2 h-4 w-4" /> Add
               </Button>
-              <Button type="submit" disabled={updateMut.isPending}>
-                Save
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+            </form>
+          </Card>
+        )}
 
-      <ConfirmDialog
-        open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete this expense?"
-        description={
-          toDelete ? `${toDelete.description} (${formatInr(toDelete.amount)}) will be removed.` : ""
-        }
-        busy={delMut.isPending}
-        onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
-      />
-    </div>
+        {query.isLoading ? (
+          <SkeletonTable rows={5} columns={4} />
+        ) : query.error ? (
+          <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            title="No expenses recorded yet"
+            message="Use the form above to log your first business expense."
+          />
+        ) : (
+          <>
+            <div className="overflow-x-auto rounded-md border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead className="w-12" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="text-sm">{r.expense_date}</TableCell>
+                      <TableCell className="font-medium">{r.description}</TableCell>
+                      <TableCell>{formatInr(r.amount)}</TableCell>
+                      <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
+                        {r.notes ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <RowActions onEdit={() => openEdit(r)} onDelete={() => setToDelete(r)} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-2 flex justify-end text-sm font-semibold">
+              Total: {formatInr(total)}
+            </div>
+          </>
+        )}
+
+        <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit expense</DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (editing) updateMut.mutate({ id: editing.id, input: form });
+              }}
+            >
+              <DialogBody className="grid gap-3">
+                <Field label="Date" required>
+                  <Input
+                    type="date"
+                    value={form.expense_date}
+                    onChange={(e) => setForm((f) => ({ ...f, expense_date: e.target.value }))}
+                    required
+                  />
+                </Field>
+                <Field label="Description" required>
+                  <Input
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    required
+                  />
+                </Field>
+                <Field label="Amount" required>
+                  <CurrencyInput
+                    value={String(form.amount ?? "")}
+                    onChange={(v) => setForm((f) => ({ ...f, amount: Number(v || 0) }))}
+                  />
+                </Field>
+                <Field label="Notes">
+                  <Textarea
+                    rows={2}
+                    value={form.notes ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                  />
+                </Field>
+              </DialogBody>
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateMut.isPending}>
+                  Save
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <ConfirmDialog
+          open={!!toDelete}
+          onOpenChange={(o) => !o && setToDelete(null)}
+          title="Delete this expense?"
+          description={
+            toDelete
+              ? `${toDelete.description} (${formatInr(toDelete.amount)}) will be removed.`
+              : ""
+          }
+          busy={delMut.isPending}
+          onConfirm={() => toDelete && delMut.mutate(toDelete.id)}
+        />
+      </div>
+    </AccountingGuard>
   );
 }
