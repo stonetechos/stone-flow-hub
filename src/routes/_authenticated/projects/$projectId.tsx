@@ -133,7 +133,7 @@ function ProjectHub() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-emerald-600/40 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                    className="border-blue-300 bg-blue-50/70 text-blue-700 hover:border-blue-400 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"
                     onClick={() => {
                       openProjectCompletionWhatsapp({
                         customerName: p.customer?.name || "Customer",
@@ -147,14 +147,14 @@ function ProjectHub() {
                       });
                     }}
                   >
-                    <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                    <MessageCircle className="mr-1.5 h-4 w-4 text-blue-600 dark:text-blue-400" />
                     Notify Customer
                   </Button>
                 )}
                 {p.is_active && (
                   <Button
                     size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
                     onClick={() => completeMut.mutate()}
                     disabled={completeMut.isPending}
                   >

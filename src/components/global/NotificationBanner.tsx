@@ -191,7 +191,7 @@ export function NotificationBanner() {
                   size="sm"
                   variant="default"
                   onClick={handleAction}
-                  className="h-8 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
+                  className="h-8 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-sm"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   Notify Customer via WhatsApp

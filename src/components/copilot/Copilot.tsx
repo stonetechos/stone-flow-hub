@@ -428,10 +428,10 @@ export function Copilot() {
           aria-label="Open AI Copilot (⌘J)"
           className={cn(
             "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex h-12 w-12 items-center justify-center rounded-full",
-            "bg-primary text-primary-foreground shadow-3 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/35 border border-blue-400/40 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
           )}
         >
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="h-5 w-5 text-white" />
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">

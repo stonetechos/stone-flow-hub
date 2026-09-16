@@ -201,7 +201,7 @@ function QuoteDetailPage() {
                 {!isAccepted && (
                   <Button
                     size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
                     onClick={() => statusMut.mutate("accepted")}
                     disabled={statusMut.isPending}
                   >

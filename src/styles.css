@@ -300,28 +300,28 @@
   --text-inverse-muted: oklch(0.75 0.01 250);
   --text-on-material: var(--stone-limestone-50);
   --text-on-material-muted: oklch(0.75 0.01 250);
-  --text-on-intent: var(--stone-graphite-900);
-  --text-link: var(--mint-700);
+  --text-on-intent: #ffffff;
+  --text-link: #1d4ed8;
 
   /* Borders */
   --border-subtle: oklch(from var(--stone-slate-400) l c h / 0.12);
   --border-default: oklch(from var(--stone-slate-400) l c h / 0.2);
-  --border-intent: var(--mint-500);
+  --border-intent: #2563eb;
   --border-danger: var(--hue-danger-500);
   --border-inverse: oklch(from white l c h / 0.1);
 
-  /* Intent */
-  --intent-primary: var(--mint-500);
-  --intent-primary-hover: var(--mint-600);
-  --intent-primary-active: var(--mint-700);
-  --intent-primary-fg: var(--text-on-intent);
+  /* Intent — Royal Sapphire Blue */
+  --intent-primary: #1d4ed8;
+  --intent-primary-hover: #1e40af;
+  --intent-primary-active: #172554;
+  --intent-primary-fg: #ffffff;
   --intent-secondary: var(--surface-card);
   --intent-secondary-fg: var(--text-primary);
   --intent-ghost-hover: oklch(from var(--stone-slate-400) l c h / 0.08);
   --intent-destructive: var(--hue-danger-500);
   --intent-destructive-fg: var(--stone-limestone-50);
-  --intent-focus-ring: var(--mint-500);
-  --intent-selection: oklch(from var(--mint-500) l c h / 0.08);
+  --intent-focus-ring: #2563eb;
+  --intent-selection: oklch(from #2563eb l c h / 0.08);
 
   /* Status */
   --status-success-fg: var(--hue-success-700);
@@ -408,7 +408,7 @@
   --input: oklch(0.9 0.006 250);
   --ring: var(--intent-focus-ring);
 
-  --chart-1: var(--mint-500);
+  --chart-1: #2563eb;
   --chart-2: var(--stone-slate-500);
   --chart-3: var(--hue-warning-500);
   --chart-4: var(--hue-info-500);
@@ -466,26 +466,26 @@
   --text-inverse-muted: var(--stone-slate-500);
   --text-on-material: var(--stone-limestone-50);
   --text-on-material-muted: oklch(0.75 0.01 250);
-  --text-on-intent: var(--stone-graphite-900);
-  --text-link: var(--mint-300);
+  --text-on-intent: #ffffff;
+  --text-link: #60a5fa;
 
   /* Borders */
   --border-subtle: oklch(from white l c h / 0.08);
   --border-default: oklch(from white l c h / 0.14);
-  --border-intent: var(--mint-400);
+  --border-intent: #3b82f6;
   --border-danger: var(--hue-danger-500);
   --border-inverse: oklch(from black l c h / 0.2);
 
-  /* Intent */
-  --intent-primary: var(--mint-500);
-  --intent-primary-hover: var(--mint-400);
-  --intent-primary-active: var(--mint-300);
-  --intent-primary-fg: var(--stone-graphite-900);
+  /* Intent — Royal Sapphire Blue */
+  --intent-primary: #2563eb;
+  --intent-primary-hover: #1d4ed8;
+  --intent-primary-active: #1e40af;
+  --intent-primary-fg: #ffffff;
   --intent-secondary: var(--surface-card);
   --intent-secondary-fg: var(--text-primary);
   --intent-ghost-hover: oklch(from white l c h / 0.06);
-  --intent-focus-ring: var(--mint-400);
-  --intent-selection: oklch(from var(--mint-500) l c h / 0.14);
+  --intent-focus-ring: #3b82f6;
+  --intent-selection: oklch(from #2563eb l c h / 0.14);
 
   /* Status (darker tints) */
   --status-success-fg: oklch(0.86 0.1 155);
@@ -542,12 +542,12 @@
 
   --sidebar: var(--surface-nav);
   --sidebar-foreground: var(--text-inverse);
-  --sidebar-primary: var(--mint-400);
-  --sidebar-primary-foreground: var(--stone-basalt-900);
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--surface-nav-hover);
   --sidebar-accent-foreground: var(--text-inverse);
   --sidebar-border: var(--border-inverse);
-  --sidebar-ring: var(--mint-400);
+  --sidebar-ring: #38bdf8;
 }
 
 /* ==============================================================
@@ -579,24 +579,24 @@
   --text-inverse-muted: var(--stone-slate-500);
   --text-on-material: var(--stone-limestone-50);
   --text-on-material-muted: oklch(0.75 0.01 250);
-  --text-on-intent: var(--stone-graphite-900);
-  --text-link: var(--mint-300);
+  --text-on-intent: #ffffff;
+  --text-link: #60a5fa;
 
   --border-subtle: oklch(from white l c h / 0.08);
   --border-default: oklch(from white l c h / 0.14);
-  --border-intent: var(--mint-400);
+  --border-intent: #3b82f6;
   --border-danger: var(--hue-danger-500);
   --border-inverse: oklch(from black l c h / 0.24);
 
-  --intent-primary: var(--mint-500);
-  --intent-primary-hover: var(--mint-400);
-  --intent-primary-active: var(--mint-300);
-  --intent-primary-fg: var(--stone-graphite-900);
+  --intent-primary: #2563eb;
+  --intent-primary-hover: #1d4ed8;
+  --intent-primary-active: #1e40af;
+  --intent-primary-fg: #ffffff;
   --intent-secondary: var(--surface-card);
   --intent-secondary-fg: var(--text-primary);
   --intent-ghost-hover: oklch(from white l c h / 0.06);
-  --intent-focus-ring: var(--mint-400);
-  --intent-selection: oklch(from var(--mint-500) l c h / 0.16);
+  --intent-focus-ring: #3b82f6;
+  --intent-selection: oklch(from #2563eb l c h / 0.16);
 
   --status-success-fg: oklch(0.88 0.1 155);
   --status-success-bg: oklch(from var(--hue-success-500) l c h / 0.18);
@@ -648,12 +648,12 @@
   --ring: var(--intent-focus-ring);
   --sidebar: var(--surface-nav);
   --sidebar-foreground: var(--text-inverse);
-  --sidebar-primary: var(--mint-400);
-  --sidebar-primary-foreground: var(--stone-basalt-900);
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--surface-nav-hover);
   --sidebar-accent-foreground: var(--text-inverse);
   --sidebar-border: var(--border-inverse);
-  --sidebar-ring: var(--mint-400);
+  --sidebar-ring: #38bdf8;
 }
 
 /* ==============================================================
@@ -685,24 +685,24 @@
   --text-inverse-muted: oklch(0.85 0 0);
   --text-on-material: oklch(1 0 0);
   --text-on-material-muted: oklch(0.85 0 0);
-  --text-on-intent: var(--stone-graphite-900);
-  --text-link: var(--mint-700);
+  --text-on-intent: #ffffff;
+  --text-link: #1d4ed8;
 
   --border-subtle: oklch(from var(--stone-graphite-900) l c h / 0.24);
   --border-default: oklch(from var(--stone-graphite-900) l c h / 0.4);
-  --border-intent: var(--mint-700);
+  --border-intent: #1d4ed8;
   --border-danger: var(--hue-danger-700);
   --border-inverse: oklch(from white l c h / 0.18);
 
-  --intent-primary: var(--mint-600);
-  --intent-primary-hover: var(--mint-700);
-  --intent-primary-active: var(--mint-700);
-  --intent-primary-fg: var(--stone-graphite-900);
+  --intent-primary: #1d4ed8;
+  --intent-primary-hover: #1e40af;
+  --intent-primary-active: #172554;
+  --intent-primary-fg: #ffffff;
   --intent-secondary: oklch(1 0 0);
   --intent-secondary-fg: var(--stone-graphite-900);
   --intent-ghost-hover: oklch(from var(--stone-graphite-900) l c h / 0.08);
-  --intent-focus-ring: var(--stone-graphite-900);
-  --intent-selection: oklch(from var(--mint-500) l c h / 0.14);
+  --intent-focus-ring: #1d4ed8;
+  --intent-selection: oklch(from #1d4ed8 l c h / 0.14);
 
   /* Suppress the material engine — atelier is austere paper */
   --material-grain-opacity-nav: 0;
@@ -732,12 +732,12 @@
   --ring: var(--stone-graphite-900);
   --sidebar: var(--surface-nav);
   --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: var(--mint-300);
-  --sidebar-primary-foreground: var(--stone-graphite-900);
+  --sidebar-primary: #1d4ed8;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--surface-nav-hover);
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: var(--border-inverse);
-  --sidebar-ring: var(--mint-300);
+  --sidebar-ring: #1d4ed8;
 }
 
 /* ==============================================================

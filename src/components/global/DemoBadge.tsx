@@ -36,12 +36,16 @@ export function DemoBadge() {
               "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold uppercase tracking-wide transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isDemo
-                ? "bg-status-info-bg text-status-info-fg hover:bg-status-info-bg/80 border border-status-info-border"
-                : "bg-status-success-bg text-status-success-fg hover:bg-status-success-bg/80 border border-status-success-border",
+                ? "bg-amber-50 text-amber-800 hover:bg-amber-100/80 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                : "bg-blue-50 text-blue-700 hover:bg-blue-100/80 border border-blue-200/80 shadow-2xs dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
             )}
             aria-label={`Current mode: ${isDemo ? "Demo" : "Live"}. Change mode`}
           >
-            {isDemo ? <FlaskConical className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
+            {isDemo ? (
+              <FlaskConical className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
+            ) : (
+              <Radio className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+            )}
             {isDemo ? "Demo" : "Live"}
           </button>
         </DropdownMenuTrigger>
@@ -49,7 +53,7 @@ export function DemoBadge() {
           <DropdownMenuLabel>Workspace Mode</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => void setMode(false)} disabled={!isDemo}>
-            <Radio className="mr-2 h-4 w-4 text-status-success-fg" />
+            <Radio className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
             Live Mode
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => void setMode(true)} disabled={isDemo}>

@@ -34,7 +34,7 @@ function LedgerPage() {
           cust.data ? (
             <Button
               size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-xs"
               onClick={() => {
                 openProjectCompletionWhatsapp({
                   customerName: cust.data?.name || "Customer",
