@@ -151,16 +151,16 @@ export function NotificationsBell() {
         align="end"
         className="w-[380px] overflow-hidden p-0 border-border-default shadow-e3"
       >
-        {/* Basalt header */}
-        <div className="material-basalt stone-grain relative">
+        {/* Sapphire Blue header */}
+        <div className="material-sapphire stone-grain relative">
           <div className="relative z-10 flex items-center justify-between px-3.5 py-3">
             <div className="flex items-center gap-2">
-              <Inbox className="h-3.5 w-3.5 text-text-on-material-muted" aria-hidden />
-              <span className="font-display text-[13px] font-medium tracking-tight text-text-on-material">
+              <Inbox className="h-3.5 w-3.5 text-blue-200" aria-hidden />
+              <span className="font-display text-[13px] font-bold tracking-tight text-white">
                 Notifications
               </span>
               {unread > 0 && (
-                <span className="rounded-full bg-primary/25 px-1.5 py-px font-mono text-[10px] font-medium text-text-on-material">
+                <span className="rounded-full bg-white/20 px-1.5 py-px font-mono text-[10px] font-bold text-white shadow-xs">
                   {unread}
                 </span>
               )}
@@ -171,8 +171,8 @@ export function NotificationsBell() {
               disabled={unread === 0}
               className={cn(
                 "flex items-center gap-1 rounded-sm px-1.5 py-1 text-[11px]",
-                "text-text-on-material-muted transition-colors",
-                "hover:bg-white/5 hover:text-text-on-material",
+                "text-blue-200 transition-colors",
+                "hover:bg-white/10 hover:text-white",
                 "disabled:opacity-40 disabled:hover:bg-transparent",
               )}
             >

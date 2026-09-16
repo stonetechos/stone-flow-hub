@@ -37,14 +37,14 @@ export function AppMark({ size, className }: { size: number; className?: string 
         style={{
           width: size,
           height: size,
-          background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
+          background: "linear-gradient(140deg, #3b82f6, #1d4ed8)",
         }}
       >
         <svg
           viewBox="0 0 32 32"
           width={Math.round(size * 0.62)}
           height={Math.round(size * 0.62)}
-          className="text-text-on-intent"
+          className="text-white"
           fill="none"
           stroke="currentColor"
           strokeWidth={1.5}

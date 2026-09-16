@@ -135,7 +135,7 @@ function HeroPanel({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "material-basalt relative flex-col justify-between overflow-hidden px-10 py-12 lg:px-14 lg:py-16",
+        "material-sapphire relative flex-col justify-between overflow-hidden px-10 py-12 lg:px-14 lg:py-16",
         // Border only where it butts up to the form panel on desktop.
         "lg:border-r lg:border-border-inverse",
         className,

@@ -273,9 +273,9 @@
   --surface-elevated: var(--stone-limestone-50);
   --surface-overlay: var(--stone-limestone-50);
   --surface-header: var(--stone-limestone-100);
-  --surface-nav: var(--stone-basalt-900);
-  --surface-nav-hover: var(--stone-basalt-800);
-  --surface-nav-active: oklch(from var(--mint-500) l c h / 0.14);
+  --surface-nav: #1e40af;
+  --surface-nav-hover: rgba(255, 255, 255, 0.12);
+  --surface-nav-active: rgba(255, 255, 255, 0.22);
   --surface-executive: var(--stone-granite-800);
   --surface-inverse: var(--stone-graphite-900);
   --surface-scrim: oklch(from var(--stone-basalt-950) l c h / 0.4);
@@ -351,8 +351,8 @@
     0 8px 24px -12px oklch(from var(--stone-basalt-900) l c h / 0.12);
   --elev-focus: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--intent-focus-ring);
 
-  /* Material engine layers */
-  --material-basalt-fill: linear-gradient(180deg, var(--stone-basalt-800), var(--stone-basalt-900));
+  --material-basalt-fill: linear-gradient(180deg, #1d4ed8 0%, #1e40af 45%, #172554 100%);
+  --material-sapphire-fill: linear-gradient(180deg, #1d4ed8 0%, #1e40af 45%, #172554 100%);
   --material-granite-fill: linear-gradient(
     160deg,
     var(--stone-granite-700),
@@ -415,14 +415,14 @@
   --chart-5: var(--hue-danger-500);
   --chart-6: oklch(0.55 0.08 300);
 
-  --sidebar: var(--surface-nav);
-  --sidebar-foreground: var(--text-inverse);
-  --sidebar-primary: var(--mint-400);
-  --sidebar-primary-foreground: var(--stone-basalt-900);
-  --sidebar-accent: var(--surface-nav-hover);
-  --sidebar-accent-foreground: var(--text-inverse);
-  --sidebar-border: var(--border-inverse);
-  --sidebar-ring: var(--mint-400);
+  --sidebar: #1e40af;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: rgba(255, 255, 255, 0.15);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #60a5fa;
 }
 
 /* Alias: explicit Quarry class matches :root */
@@ -895,6 +895,22 @@
     background: var(--material-specular);
     mix-blend-mode: screen;
     opacity: var(--material-grain-opacity-nav);
+    z-index: 0;
+  }
+}
+
+@utility material-sapphire {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 45%, #172554 100%);
+  color: #ffffff;
+  box-shadow: 2px 0 16px rgba(30, 58, 138, 0.25);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.18), transparent 70%);
     z-index: 0;
   }
 }

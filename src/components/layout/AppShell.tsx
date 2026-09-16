@@ -108,24 +108,29 @@ function NavLinkRow({
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex flex-1 items-center gap-3 rounded-md py-1.5 pr-8 text-[13px] outline-none",
-        "transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        "relative flex flex-1 items-center gap-3 rounded-lg py-2 pr-8 text-[13px] outline-none",
+        "transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white/40",
         collapsed ? "justify-center pl-2 pr-2" : "pl-3",
         active
-          ? "bg-sidebar-accent/60 text-sidebar-accent-foreground font-medium"
-          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
+          ? "bg-white/20 text-white font-semibold shadow-xs border border-white/25 backdrop-blur-xs"
+          : "text-blue-100/80 hover:bg-white/12 hover:text-white font-medium",
       )}
     >
-      {/* Restrained left accent instead of full pill */}
+      {/* Luminous left accent indicator */}
       <span
         aria-hidden
         className={cn(
-          "absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r-full bg-sidebar-primary transition-opacity duration-150",
+          "absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)] transition-opacity duration-150",
           active ? "opacity-100" : "opacity-0",
         )}
       />
       <Icon
-        className={cn("h-4 w-4 shrink-0 transition-opacity", active ? "opacity-90" : "opacity-60")}
+        className={cn(
+          "h-4 w-4 shrink-0 transition-all",
+          active
+            ? "text-white opacity-100 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+            : "text-blue-200/80 opacity-80 group-hover:text-white group-hover:opacity-100",
+        )}
         aria-hidden
       />
       {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
@@ -138,7 +143,10 @@ function NavLinkRow({
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>{link}</TooltipTrigger>
-            <TooltipContent side="right" className="text-xs">
+            <TooltipContent
+              side="right"
+              className="border-blue-800 bg-blue-950 text-xs text-white shadow-lg"
+            >
               {label}
             </TooltipContent>
           </Tooltip>
@@ -157,9 +165,11 @@ function NavLinkRow({
           aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
           aria-pressed={starred}
           className={cn(
-            "absolute right-1 rounded-sm p-1 text-sidebar-foreground/40 hover:text-sidebar-foreground",
-            "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring",
-            starred ? "opacity-100 text-amber-400" : "opacity-0 group-hover:opacity-100",
+            "absolute right-1 rounded-sm p-1 transition-all",
+            "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
+            starred
+              ? "opacity-100 text-amber-300 drop-shadow-[0_0_4px_rgba(252,211,77,0.7)]"
+              : "opacity-0 group-hover:opacity-100 text-blue-200/50 hover:text-white",
           )}
         >
           <Star className={cn("h-3 w-3", starred && "fill-current")} aria-hidden />
@@ -252,9 +262,9 @@ function NavList({
           {!collapsed && (
             <h4
               id="nav-pinned"
-              className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40"
+              className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-blue-200/70"
             >
-              <Star className="h-3 w-3" aria-hidden />
+              <Star className="h-3 w-3 text-amber-300" aria-hidden />
               Pinned
             </h4>
           )}
@@ -287,12 +297,12 @@ function NavList({
                 id={`nav-group-${group.id}`}
                 onClick={() => toggleGroup(group.id)}
                 aria-expanded={!groupCollapsed}
-                className="mb-1 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/40 hover:text-sidebar-foreground/70"
+                className="mb-1 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-blue-200/70 transition-colors hover:text-white"
               >
                 <span>{group.label}</span>
                 <ChevronDown
                   className={cn(
-                    "h-3 w-3 transition-transform duration-150",
+                    "h-3 w-3 text-blue-200/70 transition-transform duration-150",
                     groupCollapsed && "-rotate-90",
                   )}
                   aria-hidden
@@ -390,16 +400,16 @@ function UserMenu({
         align="end"
         className="w-72 overflow-hidden p-0 border-border-default shadow-e3"
       >
-        {/* Basalt header with identity */}
-        <div className="material-basalt stone-grain relative">
+        {/* Sapphire Blue header with identity */}
+        <div className="material-sapphire stone-grain relative">
           <div className="relative z-10 flex items-start gap-3 px-3.5 py-3.5">
-            <Avatar className="h-10 w-10 border border-white/10 shadow-e2">
-              <AvatarFallback className="bg-surface-nav text-[13px] font-medium text-text-on-material">
+            <Avatar className="h-10 w-10 border border-white/25 shadow-md">
+              <AvatarFallback className="bg-blue-900 text-[13px] font-bold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-display text-[13px] font-medium text-text-on-material">
+              <div className="truncate font-display text-[13px] font-bold text-white">
                 {email || "Account"}
               </div>
               <div className="mt-0.5 flex items-center gap-1.5">
@@ -407,23 +417,23 @@ function UserMenu({
                   className={cn(
                     "inline-flex items-center gap-1 rounded-sm px-1.5 py-px font-mono text-[10px] uppercase tracking-wider",
                     isSuperAdmin
-                      ? "bg-blue-500/30 text-blue-200 border border-blue-400/40"
+                      ? "bg-white/20 text-white border border-white/40 font-bold"
                       : isAdmin
-                        ? "bg-mint-500/20 text-mint-200"
-                        : "bg-white/8 text-text-on-material-muted",
+                        ? "bg-cyan-400/20 text-cyan-200 border border-cyan-400/30 font-semibold"
+                        : "bg-white/10 text-blue-100",
                   )}
                 >
                   {isSuperAdmin || isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
                   {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Member"}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-blue-200">
                   STOS
                 </span>
               </div>
             </div>
           </div>
-          <div className="relative z-10 border-t border-white/8 px-3.5 py-1.5">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
+          <div className="relative z-10 border-t border-white/12 px-3.5 py-1.5">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-blue-200">
               <span>Last login</span>
               <span>{lastLoginLabel}</span>
             </div>
@@ -580,11 +590,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           for backdrop-filter on the header below and in FormActions.
         */}
 
-        {/* Desktop sidebar — Basalt material with restrained grain */}
+        {/* Desktop sidebar — Royal Sapphire Blue */}
         <aside
           className={cn(
-            "material-basalt stone-grain",
-            "hidden shrink-0 flex-col border-r border-border-inverse text-sidebar-foreground md:flex",
+            "material-sapphire stone-grain",
+            "hidden shrink-0 flex-col border-r border-blue-900/60 text-white md:flex",
             "pt-[env(safe-area-inset-top)]",
             "transition-[width] duration-200 ease-out",
             sidebarWidth,
@@ -593,20 +603,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div
             className={cn(
-              "relative z-10 flex h-14 shrink-0 items-center gap-2 border-b border-white/6",
+              "relative z-10 flex h-14 shrink-0 items-center gap-2.5 border-b border-white/12",
               collapsed ? "justify-center px-0" : "px-4",
             )}
           >
             <AppMark
               size={28}
-              className="h-7 w-7 shrink-0 rounded-md shadow-e1 ring-1 ring-white/10"
+              className="h-7 w-7 shrink-0 rounded-md shadow-md shadow-blue-950/40 ring-1 ring-white/25"
             />
             {!collapsed && (
               <div className="flex min-w-0 flex-col justify-center leading-tight">
-                <span className="font-display text-[14px] font-semibold tracking-tight text-text-on-material">
+                <span className="font-display text-[15px] font-bold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                   STOS
                 </span>
-                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-text-on-material-muted">
+                <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-blue-200 font-semibold">
                   By Vedora Vision
                 </span>
               </div>
@@ -625,12 +635,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div
             className={cn(
-              "relative z-10 flex items-center border-t border-white/6 p-1.5",
+              "relative z-10 flex items-center border-t border-white/12 p-1.5",
               collapsed ? "justify-center" : "justify-between",
             )}
           >
             {!collapsed && (
-              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-text-on-material-muted">
+              <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-blue-200/70 font-semibold">
                 v1 · Quarry
               </span>
             )}
@@ -640,7 +650,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <button
                     type="button"
                     onClick={() => setCollapsed(!collapsed)}
-                    className="rounded-md p-1.5 text-text-on-material-muted hover:bg-white/6 hover:text-text-on-material focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    className="rounded-md p-1.5 text-blue-200/80 hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     aria-pressed={collapsed}
                   >
@@ -651,7 +661,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     )}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="right" className="text-xs">
+                <TooltipContent
+                  side="right"
+                  className="border-blue-800 bg-blue-950 text-xs text-white shadow-lg"
+                >
                   {collapsed ? "Expand" : "Collapse"}
                   <span className="ml-1 opacity-60">⌘B</span>
                 </TooltipContent>
@@ -672,7 +685,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 md:hidden"
+                  className="h-8 w-8 text-text-primary hover:bg-surface-panel md:hidden"
                   aria-label="Open navigation menu"
                 >
                   <Menu className="h-4 w-4" />
@@ -680,11 +693,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="material-basalt stone-grain flex w-64 flex-col border-r-0 p-0 text-sidebar-foreground"
+                className="material-sapphire stone-grain flex w-64 flex-col border-r-0 p-0 text-white"
               >
-                <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2 border-b border-white/6 px-4 py-0 space-y-0">
-                  <AppMark size={28} className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/10" />
-                  <SheetTitle className="font-display text-[14px] font-semibold text-text-on-material">
+                <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2.5 border-b border-white/12 px-4 py-0 space-y-0">
+                  <AppMark
+                    size={28}
+                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/25 shadow-md shadow-blue-950/40"
+                  />
+                  <SheetTitle className="font-display text-[15px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                     STOS
                   </SheetTitle>
                 </SheetHeader>
