@@ -41,6 +41,7 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { LostReasonDialog } from "@/components/enquiry/LostReasonDialog";
+import { ShareInquiryDialog } from "@/components/enquiry/ShareInquiryDialog";
 import { invalidateCustomer, invalidateEnquiry } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -231,6 +232,7 @@ function EnquiriesPage() {
       <PageHeader
         title="Enquiries"
         subtitle="Every lead in the pipeline — capture first, qualify later."
+        actions={<ShareInquiryDialog />}
       />
 
       <DataToolbar

@@ -145,6 +145,74 @@ const PRESET_KRAS = {
       description: "Oversee courier logs, office supplies, and administrative tasks.",
     },
   ],
+  operations_head: [
+    {
+      title: "Production Scheduling & Output Delivery",
+      weightage: 35,
+      target_period: "daily" as const,
+      description:
+        "Ensure scheduled fabrication jobs and CNC quotas are met daily without bottlenecks.",
+    },
+    {
+      title: "Quality Control & Zero-Defect Inspection",
+      weightage: 35,
+      target_period: "daily" as const,
+      description:
+        "Audit slab edge polishing, dimension accuracy, and packing to achieve < 1% rejection rate.",
+    },
+    {
+      title: "Site Installation & Logistics SLA",
+      weightage: 30,
+      target_period: "weekly" as const,
+      description:
+        "Manage dispatch fleet, crane offloading, and site installer teams for 100% on-time handover.",
+    },
+  ],
+  customer_care: [
+    {
+      title: "Client Enquiry & Ticket Response",
+      weightage: 40,
+      target_period: "daily" as const,
+      description: "Respond to all customer calls, inquiries, and complaints within 15 minutes.",
+    },
+    {
+      title: "Post-Installation Satisfaction & Reviews",
+      weightage: 35,
+      target_period: "weekly" as const,
+      description:
+        "Follow up with clients 48h post-installation and collect customer satisfaction feedback.",
+    },
+    {
+      title: "Service Issue Resolution & Retention",
+      weightage: 25,
+      target_period: "monthly" as const,
+      description:
+        "Resolve warranty and service claims promptly to maintain > 95% client satisfaction.",
+    },
+  ],
+  housekeeping: [
+    {
+      title: "Showroom & Display Cleanliness",
+      weightage: 45,
+      target_period: "daily" as const,
+      description:
+        "Keep display stone slabs, sample stands, glass panels, and desks spotlessly clean.",
+    },
+    {
+      title: "Office & Restroom Hygiene",
+      weightage: 35,
+      target_period: "daily" as const,
+      description:
+        "Conduct scheduled sanitization of office restrooms, pantry, and common corridors.",
+    },
+    {
+      title: "Safe Waste Disposal & Maintenance",
+      weightage: 20,
+      target_period: "daily" as const,
+      description:
+        "Proper sorting and disposal of packaging scrap, broken samples, and waste materials.",
+    },
+  ],
 };
 
 const PRESET_KPAS = {
@@ -177,6 +245,27 @@ const PRESET_KPAS = {
     { title: "Morning Showroom Inspection", metric: "Inspection complete by 9:30 AM daily" },
     { title: "Sample Inventory Audit", metric: "Weekly stock reconciliation of sample boxes" },
     { title: "Courier Dispatch Tracking", metric: "100% same-day tracking shared with clients" },
+  ],
+  operations_head: [
+    { title: "Daily Factory Throughput", metric: "Minimum 1,500 sq.ft daily fabrication output" },
+    { title: "Zero-Defect Inspection", metric: "100% pre-dispatch quality sign-offs" },
+    {
+      title: "Installation Handover SLA",
+      metric: "Complete installation within committed project delivery timeline",
+    },
+  ],
+  customer_care: [
+    { title: "First Response Time", metric: "< 15 minutes average enquiry callback" },
+    { title: "Customer CSAT Score", metric: "> 4.8 / 5.0 client feedback score" },
+    { title: "Open Ticket Resolution", metric: "98% issues resolved within 24 hours" },
+  ],
+  housekeeping: [
+    { title: "Morning Readiness Audit", metric: "Showroom and desks fully prepped before 9:30 AM" },
+    {
+      title: "Hourly Inspection Checklist",
+      metric: "100% checklist compliance for display and restrooms",
+    },
+    { title: "Zero Clutter Hazard", metric: "Zero obstructions or hazards in showroom aisles" },
   ],
 };
 
@@ -332,6 +421,27 @@ export function KraKpaBuilder({
               className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
             >
               Office Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("customer_care")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Customer Care
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("operations_head")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Operations Head
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKraPreset("housekeeping")}
+              className="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-800 hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 transition-colors shadow-2xs"
+            >
+              Housekeeping
             </button>
           </div>
         )}
@@ -516,6 +626,27 @@ export function KraKpaBuilder({
               className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
             >
               Office Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("customer_care")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Customer Care
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("operations_head")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Operations Head
+            </button>
+            <button
+              type="button"
+              onClick={() => applyKpaPreset("housekeeping")}
+              className="rounded-md border border-indigo-200 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 transition-colors shadow-2xs"
+            >
+              Housekeeping
             </button>
           </div>
         )}

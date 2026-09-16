@@ -4,6 +4,7 @@ import { zOptional, zRequired } from "@/lib/zod";
 export const employeeSchema = z.object({
   full_name: zRequired("Full name"),
   designation_id: z.string().uuid().nullable().optional(),
+  designation_ids: z.array(z.string().uuid()).default([]),
   department: zOptional(),
   employment_type: z
     .enum(["full_time", "part_time", "contract", "intern", "consultant"])

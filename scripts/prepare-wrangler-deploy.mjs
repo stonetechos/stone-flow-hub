@@ -23,7 +23,12 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const configPath = join(__dirname, "..", ".output", "server", "wrangler.json");
 
-const customDomain = process.env.PRODUCTION_CUSTOM_DOMAIN || "erp.stonetech.in";
+const defaultDomains = ["erp.stonetech.in", "stonetech.in", "www.stonetech.in"];
+const customDomains = process.env.PRODUCTION_CUSTOM_DOMAINS
+  ? process.env.PRODUCTION_CUSTOM_DOMAINS.split(",").map((s) => s.trim())
+  : process.env.PRODUCTION_CUSTOM_DOMAIN
+    ? [process.env.PRODUCTION_CUSTOM_DOMAIN]
+    : defaultDomains;
 
 let config;
 try {
@@ -33,14 +38,21 @@ try {
   throw err;
 }
 
-const alreadyPresent = (config.routes ?? []).some(
-  (r) => typeof r === "object" && r.pattern === customDomain,
-);
+let modified = false;
+for (const domain of customDomains) {
+  const alreadyPresent = (config.routes ?? []).some(
+    (r) => typeof r === "object" && r.pattern === domain,
+  );
 
-if (!alreadyPresent) {
-  config.routes = [...(config.routes ?? []), { pattern: customDomain, custom_domain: true }];
+  if (!alreadyPresent) {
+    config.routes = [...(config.routes ?? []), { pattern: domain, custom_domain: true }];
+    modified = true;
+    console.log(`Added custom domain route "${domain}" to ${configPath}`);
+  } else {
+    console.log(`Custom domain route "${domain}" already present in ${configPath}`);
+  }
+}
+
+if (modified) {
   writeFileSync(configPath, JSON.stringify(config, null, 2));
-  console.log(`Added custom domain route "${customDomain}" to ${configPath}`);
-} else {
-  console.log(`Custom domain route "${customDomain}" already present in ${configPath}`);
 }

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import {
   DEFAULT_DESIGNATIONS,
+  DEFAULT_DESIGNATION_IDS,
   type Employee,
   type Designation,
   type Kra,
@@ -43,7 +44,37 @@ import {
   deleteEmployeeServerFn,
   getEmployeeServerFn,
   listEmployeesServerFn,
+  listDesignationsServerFn,
 } from "./workforce.functions";
+
+function enrichEmployee(e: Employee): Employee {
+  const bankObj =
+    e.bank_details && typeof e.bank_details === "object"
+      ? (e.bank_details as Record<string, unknown>)
+      : {};
+  const rawDesigIds = (bankObj as { _designation_ids?: unknown })._designation_ids;
+  const designationIds: string[] = Array.isArray(rawDesigIds)
+    ? (rawDesigIds as string[])
+    : e.designation_id
+      ? [e.designation_id]
+      : [];
+
+  return {
+    ...e,
+    designation_ids: designationIds,
+    kras: Array.isArray(e.kras)
+      ? e.kras
+      : Array.isArray((bankObj as { _kras?: unknown })._kras)
+        ? ((bankObj as { _kras?: unknown })._kras as Employee["kras"])
+        : [],
+    kpas: Array.isArray(e.kpas)
+      ? e.kpas
+      : Array.isArray((bankObj as { _kpas?: unknown })._kpas)
+        ? ((bankObj as { _kpas?: unknown })._kpas as Employee["kpas"])
+        : [],
+    skills: Array.isArray(e.skills) ? e.skills : [],
+  };
+}
 
 // -------------- Employees --------------
 export async function listEmployees(q = ""): Promise<Employee[]> {
@@ -65,14 +96,14 @@ export async function listEmployees(q = ""): Promise<Employee[]> {
       );
     }
     const { data, error } = await query;
-    if (!error && data && data.length > 0) return data;
+    if (!error && data && data.length > 0) return data.map(enrichEmployee);
   } catch (clientErr) {
     console.warn("[workforce.api] Client listEmployees failed, trying server function:", clientErr);
   }
 
   try {
     const serverList = await listEmployeesServerFn({ data: { q } });
-    if (serverList) return serverList;
+    if (serverList) return serverList.map(enrichEmployee);
   } catch (serverErr) {
     console.warn("[workforce.api] listEmployeesServerFn fallback failed:", serverErr);
   }
@@ -82,14 +113,14 @@ export async function listEmployees(q = ""): Promise<Employee[]> {
 export async function getEmployee(id: string): Promise<Employee | null> {
   try {
     const { data, error } = await supabase.from("employees").select("*").eq("id", id).maybeSingle();
-    if (!error && data) return data;
+    if (!error && data) return enrichEmployee(data);
   } catch (clientErr) {
     console.warn("[workforce.api] Client getEmployee failed, trying server function:", clientErr);
   }
 
   try {
     const serverEmp = await getEmployeeServerFn({ data: { id } });
-    if (serverEmp) return serverEmp;
+    if (serverEmp) return enrichEmployee(serverEmp);
   } catch (serverErr) {
     console.warn("[workforce.api] getEmployeeServerFn fallback failed:", serverErr);
   }
@@ -100,7 +131,7 @@ export async function createEmployee(input: EmployeeInput, systemRole?: string):
   const parsed = employeeSchema.parse(input);
   try {
     const res = await saveEmployeeServerFn({ data: { data: parsed, systemRole } });
-    if (res) return res;
+    if (res) return enrichEmployee(res);
   } catch (serverErr: unknown) {
     console.error("[workforce.api] saveEmployeeServerFn failed:", serverErr);
     const msg = serverErr instanceof Error ? serverErr.message : String(serverErr);
@@ -113,12 +144,20 @@ export async function createEmployee(input: EmployeeInput, systemRole?: string):
     }
   }
 
+  const desigIds =
+    parsed.designation_ids && parsed.designation_ids.length > 0
+      ? parsed.designation_ids
+      : parsed.designation_id
+        ? [parsed.designation_id]
+        : [];
+  const primaryDesigId = desigIds[0] ?? parsed.designation_id ?? null;
+
   // Fallback to client-side insert if server function unreachable
   const { data, error } = await supabase
     .from("employees")
     .insert({
       full_name: parsed.full_name,
-      designation_id: parsed.designation_id,
+      designation_id: primaryDesigId,
       department: parsed.department,
       employment_type: parsed.employment_type,
       reporting_manager_id: parsed.reporting_manager_id,
@@ -133,6 +172,7 @@ export async function createEmployee(input: EmployeeInput, systemRole?: string):
         ...(parsed.bank_details ?? {}),
         _kras: parsed.kras,
         _kpas: parsed.kpas,
+        _designation_ids: desigIds,
       },
       salary_ctc: parsed.salary_ctc,
       skills: parsed.skills,
@@ -145,7 +185,7 @@ export async function createEmployee(input: EmployeeInput, systemRole?: string):
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return enrichEmployee(data);
 }
 
 export async function updateEmployee(
@@ -156,7 +196,7 @@ export async function updateEmployee(
   const parsed = employeeSchema.parse(input);
   try {
     const res = await saveEmployeeServerFn({ data: { id, data: parsed, systemRole } });
-    if (res) return res;
+    if (res) return enrichEmployee(res);
   } catch (serverErr: unknown) {
     console.error("[workforce.api] updateEmployee server function failed:", serverErr);
     const msg = serverErr instanceof Error ? serverErr.message : String(serverErr);
@@ -169,12 +209,20 @@ export async function updateEmployee(
     }
   }
 
+  const desigIds =
+    parsed.designation_ids && parsed.designation_ids.length > 0
+      ? parsed.designation_ids
+      : parsed.designation_id
+        ? [parsed.designation_id]
+        : [];
+  const primaryDesigId = desigIds[0] ?? parsed.designation_id ?? null;
+
   // Fallback to client-side update
   const { data, error } = await supabase
     .from("employees")
     .update({
       full_name: parsed.full_name,
-      designation_id: parsed.designation_id,
+      designation_id: primaryDesigId,
       department: parsed.department,
       employment_type: parsed.employment_type,
       reporting_manager_id: parsed.reporting_manager_id,
@@ -189,6 +237,7 @@ export async function updateEmployee(
         ...(parsed.bank_details ?? {}),
         _kras: parsed.kras,
         _kpas: parsed.kpas,
+        _designation_ids: desigIds,
       },
       salary_ctc: parsed.salary_ctc,
       skills: parsed.skills,
@@ -201,7 +250,7 @@ export async function updateEmployee(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return enrichEmployee(data);
 }
 
 export async function updateEmployeeStatus(
@@ -215,7 +264,7 @@ export async function updateEmployeeStatus(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return enrichEmployee(data);
 }
 
 export async function deleteEmployee(id: string): Promise<void> {
@@ -239,40 +288,57 @@ export async function getCurrentEmployee(): Promise<Employee | null> {
     .eq("user_id", uid)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return data ? enrichEmployee(data) : null;
 }
 
 // -------------- Designations --------------
-export { DEFAULT_DESIGNATIONS };
+export { DEFAULT_DESIGNATIONS, DEFAULT_DESIGNATION_IDS };
 
 export async function listDesignations(): Promise<Designation[]> {
+  let dbRows: Designation[] = [];
   try {
-    const { data, error } = await supabase
-      .from("designations")
-      .select("*")
-      .order("level", { ascending: false });
-    if (!error && data && data.length > 0) {
-      return data;
+    const serverRows = await listDesignationsServerFn();
+    if (serverRows && serverRows.length > 0) {
+      dbRows = serverRows as Designation[];
     }
-  } catch (err) {
-    console.warn(
-      "[workforce.api] Failed to fetch designations from database, using fallback:",
-      err,
-    );
+  } catch {
+    try {
+      const { data, error } = await supabase
+        .from("designations")
+        .select("*")
+        .order("level", { ascending: false });
+      if (!error && data && data.length > 0) {
+        dbRows = data as Designation[];
+      }
+    } catch (err) {
+      console.warn("[workforce.api] Client listDesignations error:", err);
+    }
   }
 
-  return DEFAULT_DESIGNATIONS.map((d, index) => ({
-    id: `00000000-0000-0000-0000-${String(index + 1).padStart(12, "0")}`,
-    code: d.code,
-    name: d.name,
-    purpose: d.purpose,
-    responsibilities: d.responsibilities,
-    expected_outcomes: d.expected_outcomes,
-    level: d.level,
-    active: d.active,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }));
+  const existingCodes = new Set(dbRows.map((d) => d.code?.toUpperCase()));
+  const merged: Designation[] = [...dbRows];
+
+  DEFAULT_DESIGNATIONS.forEach((d) => {
+    if (!existingCodes.has(d.code.toUpperCase())) {
+      const fixedId =
+        DEFAULT_DESIGNATION_IDS[d.code] ??
+        `00000000-0000-0000-0000-${String(merged.length + 1).padStart(12, "0")}`;
+      merged.push({
+        id: fixedId,
+        code: d.code,
+        name: d.name,
+        purpose: d.purpose,
+        responsibilities: d.responsibilities,
+        expected_outcomes: d.expected_outcomes,
+        level: d.level,
+        active: d.active,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+  });
+
+  return merged.sort((a, b) => (b.level ?? 0) - (a.level ?? 0));
 }
 
 export async function getDesignation(id: string): Promise<Designation | null> {

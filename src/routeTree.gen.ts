@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as InquiryRouteImport } from './routes/inquiry'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as VendorRouteRouteImport } from './routes/vendor/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -196,6 +197,11 @@ import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InquiryRoute = InquiryRouteImport.update({
+  id: '/inquiry',
+  path: '/inquiry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -1255,6 +1261,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/inquiry': typeof InquiryRoute
   '/mcp': typeof McpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -1439,6 +1446,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/inquiry': typeof InquiryRoute
   '/mcp': typeof McpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -1625,6 +1633,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/inquiry': typeof InquiryRoute
   '/mcp': typeof McpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -1811,6 +1820,7 @@ export interface FileRouteTypes {
     | '/'
     | '/vendor'
     | '/auth'
+    | '/inquiry'
     | '/mcp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -1995,6 +2005,7 @@ export interface FileRouteTypes {
     | '/'
     | '/vendor'
     | '/auth'
+    | '/inquiry'
     | '/mcp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -2180,6 +2191,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/vendor'
     | '/auth'
+    | '/inquiry'
     | '/mcp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -2366,6 +2378,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  InquiryRoute: typeof InquiryRoute
   McpRoute: typeof McpRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -2394,6 +2407,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inquiry': {
+      id: '/inquiry'
+      path: '/inquiry'
+      fullPath: '/inquiry'
+      preLoaderRoute: typeof InquiryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -4194,6 +4214,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  InquiryRoute: InquiryRoute,
   McpRoute: McpRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:

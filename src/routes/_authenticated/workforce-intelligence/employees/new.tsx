@@ -27,6 +27,7 @@ import { FormLayout, FormSection, FormGrid, FormActions } from "@/components/for
 import { Field } from "@/components/forms/Field";
 import { SkillsInput } from "@/components/workforce/SkillsInput";
 import { KraKpaBuilder } from "@/components/workforce/KraKpaBuilder";
+import { DesignationMultiSelect } from "@/components/workforce/DesignationMultiSelect";
 import {
   createEmployee,
   updateEmployee,
@@ -53,6 +54,7 @@ function empty(): EmployeeInput {
   return {
     full_name: "",
     designation_id: null,
+    designation_ids: [],
     department: "",
     employment_type: "full_time",
     reporting_manager_id: null,
@@ -125,9 +127,18 @@ function EmployeeFormPage() {
   if (id && existing.data && form.full_name === "" && !existing.isFetching) {
     const e = existing.data;
     const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
+    const rawDesigIds =
+      e.designation_ids ?? (bankObj as { _designation_ids?: string[] })._designation_ids;
+    const loadedDesignationIds: string[] = Array.isArray(rawDesigIds)
+      ? (rawDesigIds as string[])
+      : e.designation_id
+        ? [e.designation_id]
+        : [];
+
     const loaded: EmployeeInput = {
       full_name: e.full_name,
       designation_id: e.designation_id,
+      designation_ids: loadedDesignationIds,
       department: e.department ?? "",
       employment_type: e.employment_type,
       reporting_manager_id: e.reporting_manager_id,
@@ -244,22 +255,29 @@ function EmployeeFormPage() {
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
               />
             </Field>
-            <Field label="Designation">
-              <Select
-                value={form.designation_id ?? ""}
-                onValueChange={(v) => setForm({ ...form, designation_id: v || null })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(designations.data ?? []).map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field
+              label="Designation(s)"
+              hint="Select one or multiple designations. The first designation is Primary."
+              className="sm:col-span-2"
+            >
+              <DesignationMultiSelect
+                selectedIds={
+                  form.designation_ids && form.designation_ids.length > 0
+                    ? form.designation_ids
+                    : form.designation_id
+                      ? [form.designation_id]
+                      : []
+                }
+                onChange={(ids) => {
+                  setForm({
+                    ...form,
+                    designation_ids: ids,
+                    designation_id: ids[0] ?? null,
+                  });
+                }}
+                designations={designations.data ?? []}
+                disabled={mut.isPending}
+              />
             </Field>
             <Field label="Department">
               <Input

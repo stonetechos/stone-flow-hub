@@ -30,18 +30,20 @@ three above which required an active Lovable relationship to keep working.
 - Auth/transactional email: Resend (`RESEND_API_KEY`), receiving Supabase's
   native Auth "Send Email" webhook directly.
 
-## Environments
+## Environments & Custom Domains
 
-| Env           | URL                | Notes                                                                                                                                        |
-| ------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Production    | `*.workers.dev`    | Every push to `main` that passes CI, via `deploy.yml`                                                                                        |
-| Custom domain | `erp.stonetech.in` | Attached to the Worker as a Cloudflare custom domain (`routes` in the generated wrangler config — see `scripts/prepare-wrangler-deploy.mjs`) |
+| Env           | URL                                                        | Notes                                                                                                                                                                         |
+| ------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production    | `*.workers.dev`                                            | Every push to `main` that passes CI, via `deploy.yml`                                                                                                                         |
+| Public Portal | `www.stonetech.in`<br>`stonetech.in`<br>`erp.stonetech.in` | Attached to the Worker as Cloudflare custom domains via `scripts/prepare-wrangler-deploy.mjs`. Hosts the public lead-generation portal at `/` with separate Staff ERP access. |
 
-There is no separate Preview environment in this pipeline (Lovable's
-Preview/Production split is gone). A pull request only runs CI
-(typecheck/lint/test/build) — nothing is deployed until it merges to
-`main`. If a PR-preview deploy is wanted later, `wrangler versions upload`
-against a PR branch is the natural extension; not built yet.
+### Instagram & Social Lead Automation
+
+When prospective customers reach out via Instagram comments, DMs, or Facebook messages:
+
+- **Trigger keywords**: "price", "catalog", "estimate", "quote", "veneer", "cladding", "marble", "rate".
+- **Automated reply message**:
+  > _"Namaste! ✨ Thank you for contacting Stone Tech. You can explore our natural stone collection, select products (Stone Veneer, 3D Cladding, Inlays), upload your site photos/drawings, and pick your required date here for a quick quote on your WhatsApp: https://www.stonetech.in"_
 
 ## Environment Variables
 

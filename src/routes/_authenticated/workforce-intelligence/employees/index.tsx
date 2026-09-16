@@ -197,8 +197,35 @@ function EmployeesPage() {
                       {e.full_name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {e.designation_id ? (desigById.get(e.designation_id) ?? "—") : "—"}
+                  <TableCell>
+                    {(() => {
+                      const desigIds =
+                        e.designation_ids && e.designation_ids.length > 0
+                          ? e.designation_ids
+                          : e.designation_id
+                            ? [e.designation_id]
+                            : [];
+                      const names = desigIds
+                        .map((id) => desigById.get(id))
+                        .filter(Boolean) as string[];
+                      if (names.length === 0) {
+                        return <span className="text-muted-foreground">—</span>;
+                      }
+                      if (names.length === 1) {
+                        return <span className="text-foreground">{names[0]}</span>;
+                      }
+                      return (
+                        <div
+                          className="flex items-center gap-1.5 flex-wrap"
+                          title={names.join(", ")}
+                        >
+                          <span className="font-medium text-foreground">{names[0]}</span>
+                          <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
+                            +{names.length - 1} more
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{e.department ?? "—"}</TableCell>
                   <TableCell>

@@ -53,6 +53,7 @@ import {
   EMPLOYMENT_STATUS_LABELS,
   type OwnerNoteKind,
   type EmploymentStatus,
+  type Designation,
 } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
@@ -120,9 +121,23 @@ function EmployeeProfile() {
 
   const emp = useQuery({ queryKey: ["wf", "employees", id], queryFn: () => getEmployee(id) });
   const designations = useQuery({ queryKey: ["wf", "designations"], queryFn: listDesignations });
-  const designation = emp.data?.designation_id
-    ? (designations.data ?? []).find((d) => d.id === emp.data!.designation_id)
-    : undefined;
+
+  const empDesignationIds =
+    emp.data?.designation_ids && emp.data.designation_ids.length > 0
+      ? emp.data.designation_ids
+      : emp.data?.designation_id
+        ? [emp.data.designation_id]
+        : [];
+
+  const empDesignations = empDesignationIds
+    .map((dId) => (designations.data ?? []).find((d) => d.id === dId))
+    .filter(Boolean) as Designation[];
+
+  const designation =
+    empDesignations[0] ??
+    (emp.data?.designation_id
+      ? (designations.data ?? []).find((d) => d.id === emp.data!.designation_id)
+      : undefined);
 
   const tasks = useQuery({
     queryKey: ["wf", "tasks", "emp", id],
@@ -194,11 +209,16 @@ function EmployeeProfile() {
   const isBioLinked = !!(e.email && isBiometricLinked(e.email));
   const hasFingerprint = bioLinked || isBioLinked;
 
+  const designationSubtitle =
+    empDesignations.length > 0
+      ? empDesignations.map((d) => d.name).join(" • ")
+      : (designation?.name ?? "No designation");
+
   return (
     <>
       <PageHeader
         title={e.full_name}
-        subtitle={`${e.employee_code || "No code"} • ${designation?.name ?? "No designation"}`}
+        subtitle={`${e.employee_code || "No code"} • ${designationSubtitle}`}
         eyebrow="Workforce Intelligence"
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -261,6 +281,33 @@ function EmployeeProfile() {
 
         <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <InfoRow
+              label="Designation(s)"
+              value={
+                empDesignations.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {empDesignations.map((d, index) => (
+                      <Badge
+                        key={d.id}
+                        variant={index === 0 ? "default" : "secondary"}
+                        className={
+                          index === 0
+                            ? "text-xs font-semibold bg-primary text-primary-foreground"
+                            : "text-xs font-medium bg-blue-50 text-blue-900 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                        }
+                      >
+                        {d.name}
+                        {index === 0 && empDesignations.length > 1 && (
+                          <span className="ml-1 text-[10px] opacity-80">(Primary)</span>
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  (designation?.name ?? "—")
+                )
+              }
+            />
             <InfoRow label="Employment type" value={e.employment_type} />
             <InfoRow label="Status" value={<Badge>{e.employment_status}</Badge>} />
             <InfoRow label="Joining date" value={e.joining_date ?? "—"} />
