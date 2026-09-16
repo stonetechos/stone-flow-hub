@@ -523,7 +523,7 @@ function HomePage() {
                 size="sm"
                 className="h-8 gap-1.5 text-xs font-medium border-border hover:bg-muted"
               >
-                <Link to="/auth">
+                <Link to="/auth" search={{ flow: "signin" }}>
                   <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="hidden sm:inline">Staff</span> Login
                 </Link>
@@ -1064,6 +1064,7 @@ function HomePage() {
             <span>•</span>
             <Link
               to="/auth"
+              search={{ flow: "signin" }}
               className="text-muted-foreground hover:text-foreground hover:underline flex items-center gap-1"
             >
               <Lock className="h-3 w-3" />

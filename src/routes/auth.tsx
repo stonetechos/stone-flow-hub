@@ -58,6 +58,8 @@ import { LoadingBlock } from "@/components/layout/States";
 const flowSchema = z.object({
   flow: z
     .enum(["signin", "reset", "update", "invite", "force-change", "expired", "denied", "loading"])
+    .optional()
+    .default("signin")
     .catch("signin"),
   redirect: z.string().optional().catch(undefined),
 });
