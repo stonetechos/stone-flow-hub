@@ -38,36 +38,63 @@ import {
   type RuleAssignmentInput,
 } from "./schema";
 
+import {
+  saveEmployeeServerFn,
+  deleteEmployeeServerFn,
+  getEmployeeServerFn,
+  listEmployeesServerFn,
+} from "./workforce.functions";
+
 // -------------- Employees --------------
 export async function listEmployees(q = ""): Promise<Employee[]> {
-  let query = supabase
-    .from("employees")
-    .select("*")
-    .order("full_name", { ascending: true })
-    .limit(500);
-  if (q.trim()) {
-    const s = q.trim();
-    query = query.or(
-      [
-        `full_name.ilike.%${s}%`,
-        `employee_code.ilike.%${s}%`,
-        `email.ilike.%${s}%`,
-        `phone.ilike.%${s}%`,
-      ].join(","),
-    );
+  try {
+    let query = supabase
+      .from("employees")
+      .select("*")
+      .order("full_name", { ascending: true })
+      .limit(500);
+    if (q.trim()) {
+      const s = q.trim();
+      query = query.or(
+        [
+          `full_name.ilike.%${s}%`,
+          `employee_code.ilike.%${s}%`,
+          `email.ilike.%${s}%`,
+          `phone.ilike.%${s}%`,
+        ].join(","),
+      );
+    }
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) return data;
+  } catch (clientErr) {
+    console.warn("[workforce.api] Client listEmployees failed, trying server function:", clientErr);
   }
-  const { data, error } = await query;
-  if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+
+  try {
+    const serverList = await listEmployeesServerFn({ data: { q } });
+    if (serverList) return serverList;
+  } catch (serverErr) {
+    console.warn("[workforce.api] listEmployeesServerFn fallback failed:", serverErr);
+  }
+  return [];
 }
 
 export async function getEmployee(id: string): Promise<Employee | null> {
-  const { data, error } = await supabase.from("employees").select("*").eq("id", id).maybeSingle();
-  if (error) throw new AppError(mapDbError(error));
-  return data;
-}
+  try {
+    const { data, error } = await supabase.from("employees").select("*").eq("id", id).maybeSingle();
+    if (!error && data) return data;
+  } catch (clientErr) {
+    console.warn("[workforce.api] Client getEmployee failed, trying server function:", clientErr);
+  }
 
-import { saveEmployeeServerFn, deleteEmployeeServerFn } from "./workforce.functions";
+  try {
+    const serverEmp = await getEmployeeServerFn({ data: { id } });
+    if (serverEmp) return serverEmp;
+  } catch (serverErr) {
+    console.warn("[workforce.api] getEmployeeServerFn fallback failed:", serverErr);
+  }
+  return null;
+}
 
 export async function createEmployee(input: EmployeeInput, systemRole?: string): Promise<Employee> {
   const parsed = employeeSchema.parse(input);

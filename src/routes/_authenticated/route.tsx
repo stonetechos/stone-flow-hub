@@ -119,8 +119,9 @@ function AuthenticatedLayout() {
 
 function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  console.error("[RouteErrorFallback] Caught unhandled route render failure:", error);
   return (
-    <div className="p-4">
+    <div className="p-4 space-y-3">
       <ErrorBlock
         message="This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page."
         onRetry={() => {
@@ -128,10 +129,11 @@ function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void 
           reset();
         }}
       />
-      {import.meta.env.DEV && (
-        <pre className="mt-3 max-w-full overflow-auto rounded-md border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">
-          {error.message}
-        </pre>
+      {error?.message && (
+        <div className="mx-auto max-w-2xl rounded-md border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">
+          <p className="font-semibold mb-1">Error diagnostics:</p>
+          <pre className="whitespace-pre-wrap break-words font-mono">{error.message}</pre>
+        </div>
       )}
     </div>
   );

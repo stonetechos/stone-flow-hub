@@ -51,8 +51,12 @@ export async function checkBiometricSupport(email?: string): Promise<BiometricSt
  */
 export function isBiometricLinked(email: string): boolean {
   if (typeof window === "undefined" || !email) return false;
-  const key = `${BIOMETRIC_PREFIX}${email.trim().toLowerCase()}`;
-  return !!window.localStorage.getItem(key);
+  try {
+    const key = `${BIOMETRIC_PREFIX}${email.trim().toLowerCase()}`;
+    return !!window.localStorage.getItem(key);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -238,11 +242,15 @@ export async function authenticateWithBiometrics(
  */
 export function getLastBiometricEmail(): string | null {
   if (typeof window === "undefined") return null;
-  for (let i = 0; i < window.localStorage.length; i++) {
-    const key = window.localStorage.key(i);
-    if (key && key.startsWith(BIOMETRIC_PREFIX)) {
-      return key.replace(BIOMETRIC_PREFIX, "");
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(BIOMETRIC_PREFIX)) {
+        return key.replace(BIOMETRIC_PREFIX, "");
+      }
     }
+  } catch {
+    return null;
   }
   return null;
 }

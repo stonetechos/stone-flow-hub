@@ -45,7 +45,7 @@ import {
   updateEmployeeStatus,
   deleteEmployee,
 } from "@/lib/workforce/api";
-import { computeEmployeeScore } from "@/lib/workforce/scoring";
+import { computeEmployeeScore, type ScoredKra } from "@/lib/workforce/scoring";
 import {
   GRADE_LABELS,
   OWNER_NOTE_KINDS,
@@ -62,7 +62,52 @@ import type { EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/$id")({
   head: () => ({ meta: [{ title: "Employee — Workforce Intelligence" }] }),
   component: EmployeeProfile,
+  errorComponent: ({ error, reset }) => (
+    <div className="p-6">
+      <ErrorBlock
+        message={`Unable to load employee profile: ${error instanceof Error ? error.message : "Unknown error"}`}
+        onRetry={reset}
+      />
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-6">
+      <EmptyState
+        title="Employee not found"
+        message="The requested employee record could not be found or has been removed."
+      />
+    </div>
+  ),
 });
+
+function safeFormatDate(val: string | null | undefined, pattern = "d MMM yyyy"): string {
+  if (!val) return "—";
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "—";
+    return format(d, pattern);
+  } catch {
+    return "—";
+  }
+}
+
+function safeParseArray<T>(val: unknown): T[] {
+  if (Array.isArray(val)) return val as T[];
+  if (typeof val === "string" && val.trim()) {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed as T[];
+    } catch {
+      // If comma-separated string, e.g. skills: "react, node"
+      const parts = val
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (parts.length > 0) return parts as unknown as T[];
+    }
+  }
+  return [];
+}
 
 function EmployeeProfile() {
   const { id } = Route.useParams();
@@ -145,6 +190,9 @@ function EmployeeProfile() {
   if (!emp.data) return <EmptyState title="Employee not found" />;
 
   const e = emp.data;
+  const skillsList = safeParseArray<string>(e.skills);
+  const isBioLinked = !!(e.email && isBiometricLinked(e.email));
+  const hasFingerprint = bioLinked || isBioLinked;
 
   return (
     <>
@@ -224,9 +272,9 @@ function EmployeeProfile() {
             <InfoRow
               label="Skills"
               value={
-                (e.skills ?? []).length > 0 ? (
+                skillsList.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {e.skills.map((s) => (
+                    {skillsList.map((s) => (
                       <Badge
                         key={s}
                         variant="secondary"
@@ -263,38 +311,45 @@ function EmployeeProfile() {
                 <div>
                   <h4 className="text-sm font-semibold">Phone Fingerprint Authentication</h4>
                   <p className="text-xs text-muted-foreground">
-                    {bioLinked || (e.email && isBiometricLinked(e.email))
+                    {hasFingerprint
                       ? "Device fingerprint is linked. This employee can log in using biometric verification."
                       : "No fingerprint linked on this device yet. Tap to link this phone's biometric."}
                   </p>
                 </div>
               </div>
               <Button
-                variant={
-                  bioLinked || (e.email && isBiometricLinked(e.email)) ? "outline" : "default"
-                }
+                variant={hasFingerprint ? "outline" : "default"}
                 size="sm"
                 className="gap-1.5 text-xs shrink-0"
                 onClick={handleLinkFingerprint}
                 disabled={linkingBio || !e.email}
               >
                 <Fingerprint className="h-3.5 w-3.5" />
-                {bioLinked || (e.email && isBiometricLinked(e.email))
-                  ? "Re-link Fingerprint"
-                  : "Link Device Fingerprint"}
+                {hasFingerprint ? "Re-link Fingerprint" : "Link Device Fingerprint"}
               </Button>
             </div>
           </div>
 
           {/* KRAs & KPAs Summary on Overview */}
           {(() => {
-            const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
-            const empKras = ((e as unknown as { kras?: EmployeeKra[] }).kras ??
-              (bankObj as { _kras?: EmployeeKra[] })._kras ??
-              []) as EmployeeKra[];
-            const empKpas = ((e as unknown as { kpas?: EmployeeKpa[] }).kpas ??
-              (bankObj as { _kpas?: EmployeeKpa[] })._kpas ??
-              []) as EmployeeKpa[];
+            const bankObj = (() => {
+              if (!e.bank_details) return {};
+              if (typeof e.bank_details === "object")
+                return e.bank_details as Record<string, unknown>;
+              if (typeof e.bank_details === "string") {
+                try {
+                  return JSON.parse(e.bank_details) as Record<string, unknown>;
+                } catch {
+                  return {};
+                }
+              }
+              return {};
+            })();
+
+            const rawKras = (e as unknown as { kras?: unknown }).kras ?? bankObj._kras;
+            const rawKpas = (e as unknown as { kpas?: unknown }).kpas ?? bankObj._kpas;
+            const empKras = safeParseArray<EmployeeKra>(rawKras);
+            const empKpas = safeParseArray<EmployeeKpa>(rawKpas);
             if (empKras.length === 0 && empKpas.length === 0) return null;
             return (
               <div className="rounded-xl border border-blue-200/80 bg-gradient-to-b from-blue-50/30 to-transparent p-4 dark:border-blue-900/40 dark:from-blue-950/20 space-y-4">
@@ -377,13 +432,24 @@ function EmployeeProfile() {
 
         <TabsContent value="kras" className="mt-4 space-y-6">
           {(() => {
-            const bankObj = (e.bank_details as Record<string, unknown>) ?? {};
-            const empKras = ((e as unknown as { kras?: EmployeeKra[] }).kras ??
-              (bankObj as { _kras?: EmployeeKra[] })._kras ??
-              []) as EmployeeKra[];
-            const empKpas = ((e as unknown as { kpas?: EmployeeKpa[] }).kpas ??
-              (bankObj as { _kpas?: EmployeeKpa[] })._kpas ??
-              []) as EmployeeKpa[];
+            const bankObj = (() => {
+              if (!e.bank_details) return {};
+              if (typeof e.bank_details === "object")
+                return e.bank_details as Record<string, unknown>;
+              if (typeof e.bank_details === "string") {
+                try {
+                  return JSON.parse(e.bank_details) as Record<string, unknown>;
+                } catch {
+                  return {};
+                }
+              }
+              return {};
+            })();
+
+            const rawKras = (e as unknown as { kras?: unknown }).kras ?? bankObj._kras;
+            const rawKpas = (e as unknown as { kpas?: unknown }).kpas ?? bankObj._kpas;
+            const empKras = safeParseArray<EmployeeKra>(rawKras);
+            const empKpas = safeParseArray<EmployeeKpa>(rawKpas);
 
             return (
               <>
@@ -516,9 +582,7 @@ function EmployeeProfile() {
                     <TableCell>
                       <Badge variant="outline">{t.priority}</Badge>
                     </TableCell>
-                    <TableCell className="text-xs">
-                      {t.due_at ? format(new Date(t.due_at), "d MMM") : "—"}
-                    </TableCell>
+                    <TableCell className="text-xs">{safeFormatDate(t.due_at, "d MMM")}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{t.status}</Badge>
                     </TableCell>
@@ -542,7 +606,9 @@ function EmployeeProfile() {
               <div className="flex items-center gap-4">
                 <div className="text-4xl font-semibold">{score.data.overall_pct}%</div>
                 <div>
-                  <Badge variant="secondary">Grade: {GRADE_LABELS[score.data.grade]}</Badge>
+                  <Badge variant="secondary">
+                    Grade: {GRADE_LABELS[score.data.grade] ?? "N/A"}
+                  </Badge>
                   <div className="mt-1 text-xs text-muted-foreground">
                     {score.data.period_start} → {score.data.period_end}
                   </div>
@@ -559,7 +625,7 @@ function EmployeeProfile() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {score.data.kras.map((k) => (
+                  {safeParseArray<ScoredKra>(score.data.kras).map((k) => (
                     <TableRow key={k.kra_id}>
                       <TableCell className="font-medium">{k.kra_name}</TableCell>
                       <TableCell>{k.weight}%</TableCell>
@@ -698,7 +764,7 @@ function OwnerNotesTab({ employeeId }: { employeeId: string }) {
                 <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{n.body}</p>
               )}
               <div className="mt-1 text-xs text-muted-foreground">
-                {format(new Date(n.created_at), "d MMM yyyy, HH:mm")}
+                {safeFormatDate(n.created_at, "d MMM yyyy, HH:mm")}
               </div>
             </div>
           ))}
@@ -732,9 +798,7 @@ function DocumentsTab({ employeeId }: { employeeId: string }) {
           <TableRow key={d.id}>
             <TableCell>{d.doc_type}</TableCell>
             <TableCell>{d.title ?? "—"}</TableCell>
-            <TableCell className="text-xs">
-              {format(new Date(d.created_at), "d MMM yyyy")}
-            </TableCell>
+            <TableCell className="text-xs">{safeFormatDate(d.created_at, "d MMM yyyy")}</TableCell>
           </TableRow>
         ))}
       </TableBody>

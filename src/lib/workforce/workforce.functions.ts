@@ -248,3 +248,68 @@ export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
     }
     return { success: true };
   });
+
+export const getEmployeeServerFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => z.object({ id: z.string().uuid() }).parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: emp, error } = await supabaseAdmin
+      .from("employees")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) {
+      console.error("[workforce.functions] getEmployeeServerFn failed:", error);
+      throw new Error(error.message || "Failed to fetch employee");
+    }
+    if (!emp) return null;
+
+    const bankObj =
+      emp.bank_details && typeof emp.bank_details === "object"
+        ? (emp.bank_details as Record<string, unknown>)
+        : {};
+    const kras =
+      (emp as unknown as { kras?: unknown }).kras ?? (bankObj as { _kras?: unknown })._kras ?? [];
+    const kpas =
+      (emp as unknown as { kpas?: unknown }).kpas ?? (bankObj as { _kpas?: unknown })._kpas ?? [];
+
+    return {
+      ...emp,
+      kras: Array.isArray(kras) ? kras : [],
+      kpas: Array.isArray(kpas) ? kpas : [],
+      skills: Array.isArray(emp.skills) ? emp.skills : [],
+    } as unknown as Employee;
+  });
+
+export const listEmployeesServerFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => z.object({ q: z.string().optional() }).parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let query = supabaseAdmin
+      .from("employees")
+      .select("*")
+      .order("full_name", { ascending: true })
+      .limit(500);
+    if (data.q?.trim()) {
+      const s = data.q.trim();
+      query = query.or(
+        [
+          `full_name.ilike.%${s}%`,
+          `employee_code.ilike.%${s}%`,
+          `email.ilike.%${s}%`,
+          `phone.ilike.%${s}%`,
+        ].join(","),
+      );
+    }
+    const { data: emps, error } = await query;
+    if (error) {
+      console.error("[workforce.functions] listEmployeesServerFn failed:", error);
+      throw new Error(error.message || "Failed to list employees");
+    }
+    return (emps ?? []).map((e) => ({
+      ...e,
+      skills: Array.isArray(e.skills) ? e.skills : [],
+    })) as unknown as Employee[];
+  });
