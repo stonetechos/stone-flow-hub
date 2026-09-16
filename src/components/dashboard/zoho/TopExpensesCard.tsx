@@ -1,6 +1,5 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { CircleDot, ChevronDown } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,21 +44,23 @@ export function TopExpensesCard({
   }));
 
   return (
-    <Card className="flex flex-col justify-between rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
-      <CardHeader className="p-6 pb-2">
+    <div className="card-3d-milky flex flex-col justify-between p-6">
+      <div className="pb-2">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2.5 text-sm font-bold text-slate-900">
-            <span className="inline-flex rounded-xl border border-blue-100 bg-blue-50 p-2 text-blue-600 shadow-xs">
+          <div className="flex items-center gap-2.5 text-sm font-bold">
+            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
               <CircleDot className="h-4 w-4" />
             </span>
-            <span>Expense Distribution</span>
-          </CardTitle>
+            <span className="font-display text-base font-black text-engraved-title">
+              Expense Distribution
+            </span>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100/70"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -78,9 +79,9 @@ export function TopExpensesCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4 p-6 pt-2">
+      <div className="space-y-4 pt-2">
         {isLoading ? (
           <div className="flex h-56 items-center justify-center text-xs text-slate-400">
             Loading Expense breakdown…
@@ -132,15 +133,15 @@ export function TopExpensesCard({
                         className="h-2.5 w-2.5 shrink-0 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="truncate font-medium text-slate-700">{item.category}</span>
+                      <span className="truncate font-semibold text-slate-800">{item.category}</span>
                     </div>
-                    <span className="font-display font-bold text-slate-900 tabular-nums">
+                    <span className="font-mono font-bold text-engraved-blue tabular-nums">
                       {formatInrFull(item.amount)}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/80 p-0.5 shadow-inner">
                     <div
-                      className="h-full rounded-full transition-all"
+                      className="h-full rounded-full transition-all shadow-xs"
                       style={{ width: `${item.percentage}%`, backgroundColor: item.color }}
                     />
                   </div>
@@ -150,13 +151,13 @@ export function TopExpensesCard({
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-blue-50 pt-3 text-xs">
-          <span className="font-medium text-slate-500">Total Expenses:</span>
-          <span className="font-display text-sm font-black text-slate-900 tabular-nums">
+        <div className="engraved-well flex items-center justify-between rounded-xl p-3 text-xs">
+          <span className="font-mono font-bold uppercase text-slate-500">Total Expenses:</span>
+          <span className="font-display text-sm font-black text-engraved-blue-lg tabular-nums sm:text-base">
             {formatInrFull(total)}
           </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

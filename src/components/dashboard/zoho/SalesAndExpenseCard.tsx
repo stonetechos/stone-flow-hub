@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -10,7 +9,6 @@ import {
   Legend,
 } from "recharts";
 import { PieChart, ChevronDown } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,21 +51,23 @@ export function SalesAndExpenseCard({
   const totalExpenses = summary?.totalExpenses ?? 0;
 
   return (
-    <Card className="flex flex-col justify-between rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
-      <CardHeader className="p-6 pb-2">
+    <div className="card-3d-milky flex flex-col justify-between p-6">
+      <div className="pb-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2.5 text-sm font-bold text-slate-900">
-            <span className="inline-flex rounded-xl border border-blue-100 bg-blue-50 p-2 text-blue-600 shadow-xs">
+          <div className="flex items-center gap-2.5 text-sm font-bold">
+            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
               <PieChart className="h-4 w-4" />
             </span>
-            <span>Sales & Expenses</span>
-          </CardTitle>
+            <span className="font-display text-base font-black text-engraved-title">
+              Sales &amp; Expenses
+            </span>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100/70"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -87,14 +87,14 @@ export function SalesAndExpenseCard({
           </DropdownMenu>
         </div>
 
-        {/* Accrual vs Cash Toggle in Blue styling */}
-        <div className="pt-2">
-          <div className="inline-flex rounded-xl border border-blue-100/70 bg-slate-100 p-0.5 text-xs">
+        {/* Accrual vs Cash Toggle in 3D Engraved well */}
+        <div className="pt-3">
+          <div className="engraved-well inline-flex rounded-xl p-1 text-xs">
             <button
               type="button"
               onClick={() => onModeChange("accrual")}
               className={cn(
-                "rounded-lg px-3 py-1 font-semibold transition-all",
+                "rounded-lg px-3 py-1 font-bold transition-all",
                 mode === "accrual"
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-blue-700",
@@ -106,7 +106,7 @@ export function SalesAndExpenseCard({
               type="button"
               onClick={() => onModeChange("cash")}
               className={cn(
-                "rounded-lg px-3 py-1 font-semibold transition-all",
+                "rounded-lg px-3 py-1 font-bold transition-all",
                 mode === "cash"
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-blue-700",
@@ -116,14 +116,14 @@ export function SalesAndExpenseCard({
             </button>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4 p-6 pt-2">
-        {/* Bar Chart */}
-        <div className="h-60 w-full pt-1">
+      <div className="space-y-4 pt-2">
+        {/* Dual Bar Chart with Sapphire & Sky Blue */}
+        <div className="h-64 w-full pt-2">
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-xs text-slate-400">
-              Loading Sales & Expense data…
+              Loading Sales & Expenses trends…
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -180,22 +180,22 @@ export function SalesAndExpenseCard({
           )}
         </div>
 
-        {/* Bottom Income & Expenses Summary Boxes */}
+        {/* Bottom Income & Expenses Summary in 3D Engraved Wells */}
         <div className="grid grid-cols-2 gap-3.5 border-t border-blue-50 pt-4 text-center">
-          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-blue-700">
+          <div className="engraved-well-glow rounded-xl p-3.5">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-engraved-kicker">
               Total Income
             </div>
-            <div className="mt-1 font-display text-base font-black text-slate-900 tabular-nums sm:text-lg">
+            <div className="mt-1 font-display text-base font-black text-engraved-blue-lg tabular-nums sm:text-lg">
               {formatInrFull(totalSales)}
             </div>
           </div>
 
-          <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-sky-700">
+          <div className="engraved-well rounded-xl p-3.5">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-indigo-700">
               Total Expenses
             </div>
-            <div className="mt-1 font-display text-base font-black text-slate-900 tabular-nums sm:text-lg">
+            <div className="mt-1 font-display text-base font-black text-indigo-900 tabular-nums sm:text-lg">
               {formatInrFull(totalExpenses)}
             </div>
           </div>
@@ -205,7 +205,7 @@ export function SalesAndExpenseCard({
         <p className="text-[11px] text-muted-foreground italic text-center">
           Income and expense values displayed are exclusive of taxes
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

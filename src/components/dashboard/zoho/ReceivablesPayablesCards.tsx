@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { ChevronDown, AlertCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,116 +97,114 @@ function MetricCard({
   const overduePercent = total > 0 ? Math.min(100, Math.round((overdue / total) * 100)) : 100;
 
   return (
-    <Card className="rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
-      <CardContent className="p-6">
-        {/* Card Header with Icon, Title and Period Dropdown */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-xl border shadow-xs",
-                accentBg,
-              )}
-            >
-              {icon}
-            </div>
-            <span
-              className={cn("font-mono text-xs font-bold tracking-wider uppercase", titleColor)}
-            >
-              {title}
-            </span>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100/70"
-              >
-                <span>{PERIOD_LABELS[period]}</span>
-                <ChevronDown className="h-3 w-3" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 text-xs">
-              {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
-                <DropdownMenuItem
-                  key={pKey}
-                  onClick={() => onPeriodChange(pKey)}
-                  className={cn(period === pKey && "font-semibold text-blue-600")}
-                >
-                  {PERIOD_LABELS[pKey]}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Large Amount */}
-        <div className="mt-5">
-          <div className="font-display text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-4xl">
-            {isLoading ? "Loading…" : formatInrFull(total)}
-          </div>
-        </div>
-
-        {/* Sleek Blue Indicator Bar */}
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+    <div className="card-3d-milky p-6">
+      {/* Card Header with Icon, Title and Period Dropdown */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              "h-full rounded-full transition-all duration-500",
-              type === "receivables"
-                ? "bg-gradient-to-r from-blue-600 to-cyan-500"
-                : "bg-gradient-to-r from-indigo-600 to-blue-500",
+              "flex h-9 w-9 items-center justify-center rounded-xl border shadow-xs",
+              accentBg,
             )}
-            style={{ width: `${overduePercent}%` }}
-          />
+          >
+            {icon}
+          </div>
+          <span className="font-mono text-xs font-black tracking-wider uppercase text-engraved-title">
+            {title}
+          </span>
         </div>
 
-        {/* Bottom Current vs Overdue Row */}
-        <div className="mt-5 flex items-center justify-between border-t border-blue-50 pt-4 text-xs">
-          <div>
-            <div className="font-medium text-slate-500">Current Due</div>
-            <div className="mt-0.5 font-display text-sm font-bold text-slate-900 tabular-nums">
-              {isLoading ? "—" : formatInrFull(current)}
-            </div>
-          </div>
-
-          <div className="text-right">
-            <div className="font-medium text-slate-500">Overdue</div>
-
-            {/* Interactive Aging Popover */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="group mt-0.5 inline-flex items-center gap-1 font-display text-sm font-bold text-blue-600 tabular-nums transition-colors hover:text-blue-800"
-                >
-                  <span>{isLoading ? "—" : formatInrFull(overdue)}</span>
-                  <ChevronDown className="h-3 w-3 text-blue-500 group-hover:text-blue-700" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                className="w-64 rounded-xl border-blue-100 p-3.5 text-xs shadow-lg"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
+            >
+              <span>{PERIOD_LABELS[period]}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44 text-xs">
+            {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
+              <DropdownMenuItem
+                key={pKey}
+                onClick={() => onPeriodChange(pKey)}
+                className={cn(period === pKey && "font-semibold text-blue-600")}
               >
-                <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2 font-semibold text-slate-900">
-                  <AlertCircle className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Overdue Aging Breakdown</span>
-                </div>
-                <div className="mt-2.5 space-y-2">
-                  {aging.map((bucket) => (
-                    <div key={bucket.label} className="flex items-center justify-between">
-                      <span className="text-slate-500">{bucket.label}:</span>
-                      <span className="font-semibold text-slate-900 tabular-nums">
-                        {formatInrFull(bucket.amount)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+                {PERIOD_LABELS[pKey]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Large Amount carved into an illuminated engraved stone well */}
+      <div className="engraved-well-glow mt-5 rounded-2xl p-4 text-center">
+        <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-engraved-kicker">
+          Total Balance
+        </div>
+        <div className="mt-1 font-display text-3xl font-black tracking-tight text-engraved-blue-lg tabular-nums sm:text-4xl">
+          {isLoading ? "Loading…" : formatInrFull(total)}
+        </div>
+      </div>
+
+      {/* 3D Indicator Bar */}
+      <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-slate-200/80 p-0.5 shadow-inner">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-500 shadow-sm",
+            type === "receivables"
+              ? "bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-400 shadow-blue-500/50"
+              : "bg-gradient-to-r from-indigo-700 via-blue-600 to-blue-400 shadow-indigo-500/50",
+          )}
+          style={{ width: `${overduePercent}%` }}
+        />
+      </div>
+
+      {/* Bottom Current vs Overdue Row in 3D Wells */}
+      <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
+        <div className="engraved-well rounded-xl p-3">
+          <div className="font-mono text-[10px] font-bold uppercase text-slate-500">
+            Current Due
+          </div>
+          <div className="mt-0.5 font-display text-sm font-black text-engraved-title tabular-nums">
+            {isLoading ? "—" : formatInrFull(current)}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="engraved-well rounded-xl p-3 text-right">
+          <div className="font-mono text-[10px] font-bold uppercase text-slate-500">Overdue</div>
+
+          {/* Interactive Aging Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="group mt-0.5 inline-flex items-center gap-1 font-display text-sm font-black text-engraved-blue tabular-nums transition-colors hover:scale-105"
+              >
+                <span>{isLoading ? "—" : formatInrFull(overdue)}</span>
+                <ChevronDown className="h-3 w-3 text-blue-500 group-hover:text-blue-700" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="card-3d-milky-sm w-64 p-3.5 text-xs shadow-xl">
+              <div className="flex items-center gap-1.5 border-b border-blue-100/80 pb-2 font-bold text-engraved-title">
+                <AlertCircle className="h-3.5 w-3.5 text-blue-600" />
+                <span>Overdue Aging Breakdown</span>
+              </div>
+              <div className="mt-2.5 space-y-2">
+                {aging.map((bucket) => (
+                  <div key={bucket.label} className="flex items-center justify-between">
+                    <span className="font-medium text-slate-500">{bucket.label}:</span>
+                    <span className="font-mono font-bold text-engraved-blue tabular-nums">
+                      {formatInrFull(bucket.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   CartesianGrid,
 } from "recharts";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,21 +50,23 @@ export function CashFlowCard({
   const endDate = summary?.endDate ?? "31/03/27";
 
   return (
-    <Card className="flex flex-col justify-between rounded-2xl border border-blue-100/80 bg-white/95 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]">
-      <CardHeader className="p-6 pb-2">
+    <div className="card-3d-milky flex flex-col justify-between p-6">
+      <div className="pb-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2.5 text-sm font-bold text-slate-900">
-            <span className="inline-flex rounded-xl border border-blue-100 bg-blue-50 p-2 text-blue-600 shadow-xs">
+          <div className="flex items-center gap-2.5 text-sm font-bold">
+            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
               <ArrowUpRight className="h-4 w-4" />
             </span>
-            <span>Cash Flow Pulse</span>
-          </CardTitle>
+            <span className="font-display text-base font-black text-engraved-title">
+              Cash Flow Pulse
+            </span>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50/50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100/70"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -84,9 +85,9 @@ export function CashFlowCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4 p-6 pt-2">
+      <div className="space-y-4 pt-2">
         {/* Area Chart with Royal Blue Palette */}
         <div className="h-64 w-full pt-2">
           {isLoading ? (
@@ -98,8 +99,8 @@ export function CashFlowCard({
               <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cashGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.01} />
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -145,37 +146,45 @@ export function CashFlowCard({
           )}
         </div>
 
-        {/* Bottom Metrics Bar with Milky Blue Pill highlights */}
+        {/* Bottom Metrics Bar with 3D Engraved Wells */}
         <div className="grid grid-cols-2 gap-2.5 border-t border-blue-50 pt-4 text-xs sm:grid-cols-4">
-          <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-2.5">
-            <div className="truncate text-slate-500">Opening ({startDate})</div>
-            <div className="mt-0.5 font-display font-bold text-slate-900 tabular-nums">
+          <div className="engraved-well rounded-xl p-2.5">
+            <div className="truncate font-mono text-[10px] font-bold uppercase text-slate-500">
+              Opening ({startDate})
+            </div>
+            <div className="mt-0.5 font-display font-black text-engraved-title tabular-nums">
               {formatInrFull(openingCash)}
             </div>
           </div>
 
-          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-2.5">
-            <div className="truncate font-semibold text-blue-700">+ Inflow</div>
-            <div className="mt-0.5 font-display font-bold text-blue-800 tabular-nums">
+          <div className="engraved-well rounded-xl p-2.5">
+            <div className="truncate font-mono text-[10px] font-bold uppercase text-engraved-kicker">
+              + Inflow
+            </div>
+            <div className="mt-0.5 font-display font-black text-engraved-blue tabular-nums">
               {formatInrFull(incoming)}
             </div>
           </div>
 
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-2.5">
-            <div className="truncate font-semibold text-indigo-700">- Outflow</div>
-            <div className="mt-0.5 font-display font-bold text-indigo-800 tabular-nums">
+          <div className="engraved-well rounded-xl p-2.5">
+            <div className="truncate font-mono text-[10px] font-bold uppercase text-indigo-700">
+              - Outflow
+            </div>
+            <div className="mt-0.5 font-display font-black text-indigo-900 tabular-nums">
               {formatInrFull(outgoing)}
             </div>
           </div>
 
-          <div className="rounded-xl border border-blue-600 bg-blue-600 p-2.5 text-white shadow-xs">
-            <div className="truncate text-blue-100">Closing ({endDate})</div>
-            <div className="mt-0.5 font-display font-black text-white tabular-nums">
+          <div className="engraved-well-glow rounded-xl p-2.5">
+            <div className="truncate font-mono text-[10px] font-bold uppercase text-engraved-kicker">
+              Closing ({endDate})
+            </div>
+            <div className="mt-0.5 font-display font-black text-engraved-blue-lg text-sm sm:text-base tabular-nums">
               {formatInrFull(closingCash)}
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

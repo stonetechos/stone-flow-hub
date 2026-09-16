@@ -18,15 +18,15 @@ export function ZohoDashboardHeader({
   canViewFinancial?: boolean;
 }) {
   return (
-    <div className="mb-6 rounded-2xl border border-blue-100/80 bg-white/95 p-4 shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs sm:px-6 sm:py-5">
+    <div className="card-3d-milky mb-6 p-4 sm:px-6 sm:py-5">
       {/* Top row: Company name + actions */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <div className="flex items-center gap-3">
           {/* Stone Tech Logo glyph in rich sapphire blue */}
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/25">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/30 border border-blue-400/40">
             <svg
-              width="22"
-              height="22"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -41,14 +41,16 @@ export function ZohoDashboardHeader({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-display text-lg font-black tracking-tight text-slate-900 sm:text-xl">
+              <span className="font-display text-lg font-black tracking-tight text-engraved-title sm:text-xl">
                 STONE TECH
               </span>
-              <span className="rounded-full border border-blue-200/80 bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide uppercase text-blue-700">
+              <span className="engraved-well-glow rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black tracking-wide uppercase text-engraved-blue">
                 Live ERP
               </span>
             </div>
-            <p className="text-xs text-slate-500">Executive & Operational Hub</p>
+            <p className="font-mono text-xs font-semibold text-engraved-kicker">
+              Executive &amp; Operational Hub
+            </p>
           </div>
         </div>
 
@@ -58,7 +60,7 @@ export function ZohoDashboardHeader({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="h-8.5 gap-2 rounded-xl border-blue-200 bg-blue-50/50 text-xs font-semibold text-blue-700 shadow-xs transition-all hover:border-blue-600 hover:bg-blue-600 hover:text-white"
+            className="engraved-well h-9 gap-2 rounded-xl px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-blue-400"
             title="Refresh dashboard data"
           >
             <RefreshCw
@@ -69,16 +71,16 @@ export function ZohoDashboardHeader({
         </div>
       </div>
 
-      {/* Tabs Row — Modern Milky Segmented Pill Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto rounded-xl border border-blue-100/70 bg-slate-50/80 p-1 text-xs sm:text-sm">
+      {/* Tabs Row — 3D Engraved Recessed Pill Bar */}
+      <div className="engraved-well flex items-center gap-1.5 overflow-x-auto rounded-xl p-1.5 text-xs sm:text-sm">
         {canViewFinancial && (
           <button
             type="button"
             onClick={() => onTabChange("financial")}
             className={cn(
-              "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
+              "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
               activeTab === "financial"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+                ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
                 : "text-slate-600 hover:bg-white hover:text-blue-700",
             )}
           >
@@ -91,9 +93,9 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("operations")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "operations"
-              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >
@@ -105,9 +107,9 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("announcements")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "announcements"
-              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >
@@ -120,9 +122,9 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("help")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-semibold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "help"
-              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-blue-700",
           )}
         >

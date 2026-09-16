@@ -1076,6 +1076,150 @@
   padding-top: max(0px, env(safe-area-inset-top));
 }
 
+/* ============================================================
+ *  3D Milky Stone Pattern Surfaces & Illuminated Blue Engraved Typography
+ * ============================================================ */
+
+@utility card-3d-milky {
+  position: relative;
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -20%, rgba(219, 234, 254, 0.6), transparent),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.03) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(37, 99, 235, 0.03) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(37, 99, 235, 0.03) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(37, 99, 235, 0.03) 25%, transparent 25%);
+  background-size:
+    100% 100%,
+    20px 20px,
+    20px 20px,
+    20px 20px,
+    20px 20px;
+  background-position:
+    0 0,
+    0 0,
+    10px 0,
+    10px -10px,
+    0px 10px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-right: 1.5px solid rgba(203, 213, 225, 0.8);
+  border-bottom: 2.5px solid rgba(148, 163, 184, 0.7);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 -1px 0 rgba(203, 213, 225, 0.5) inset,
+    0 4px 6px -1px rgba(0, 0, 0, 0.03),
+    0 10px 24px -2px rgba(37, 99, 235, 0.09),
+    0 20px 28px -4px rgba(15, 23, 42, 0.06);
+  border-radius: 1rem;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 1) inset,
+      0 -1px 0 rgba(191, 219, 254, 0.6) inset,
+      0 8px 16px -2px rgba(37, 99, 235, 0.12),
+      0 18px 36px -4px rgba(37, 99, 235, 0.14),
+      0 26px 36px -6px rgba(15, 23, 42, 0.08);
+  }
+}
+
+@utility card-3d-milky-sm {
+  position: relative;
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -20%, rgba(219, 234, 254, 0.5), transparent),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.02) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(37, 99, 235, 0.02) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(37, 99, 235, 0.02) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(37, 99, 235, 0.02) 25%, transparent 25%);
+  background-size:
+    100% 100%,
+    16px 16px,
+    16px 16px,
+    16px 16px,
+    16px 16px;
+  background-position:
+    0 0,
+    0 0,
+    8px 0,
+    8px -8px,
+    0px 8px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-right: 1.5px solid rgba(203, 213, 225, 0.75);
+  border-bottom: 2px solid rgba(148, 163, 184, 0.65);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 -1px 0 rgba(203, 213, 225, 0.4) inset,
+    0 3px 6px -1px rgba(0, 0, 0, 0.03),
+    0 8px 18px -2px rgba(37, 99, 235, 0.07);
+  border-radius: 0.75rem;
+}
+
+@utility text-engraved-blue {
+  color: #1d4ed8;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95),
+    0 -1px 1px rgba(15, 23, 42, 0.35),
+    0 0 10px rgba(37, 99, 235, 0.65),
+    0 0 22px rgba(59, 130, 246, 0.35);
+}
+
+@utility text-engraved-blue-lg {
+  color: #1e40af;
+  font-weight: 800;
+  text-shadow:
+    0 1.5px 0 rgba(255, 255, 255, 1),
+    0 -1.5px 1.5px rgba(15, 23, 42, 0.4),
+    0 0 14px rgba(37, 99, 235, 0.75),
+    0 0 28px rgba(37, 99, 235, 0.45),
+    0 0 45px rgba(59, 130, 246, 0.3);
+}
+
+@utility text-engraved-title {
+  color: #1e3a8a;
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 -1px 0.5px rgba(15, 23, 42, 0.25),
+    0 0 8px rgba(37, 99, 235, 0.5);
+}
+
+@utility text-engraved-kicker {
+  color: #2563eb;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 -0.5px 0.5px rgba(15, 23, 42, 0.2),
+    0 0 6px rgba(37, 99, 235, 0.4);
+}
+
+@utility engraved-well {
+  background: linear-gradient(180deg, #edf2f7 0%, #f8fafc 100%);
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  border-top-color: rgba(148, 163, 184, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    inset 0 2px 4px rgba(15, 23, 42, 0.08),
+    inset 0 1px 2px rgba(15, 23, 42, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@utility engraved-well-glow {
+  background: linear-gradient(180deg, #e0e7ff 0%, #f1f5f9 100%);
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  border-top-color: rgba(147, 197, 253, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 1);
+  box-shadow:
+    inset 0 2px 5px rgba(30, 58, 138, 0.12),
+    inset 0 0 14px rgba(37, 99, 235, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
 /* When any Radix overlay is open, Radix already locks body scroll.
  * We additionally suppress overscroll so mobile Safari can't rubber-band
  * the underlying page through the scrim. */

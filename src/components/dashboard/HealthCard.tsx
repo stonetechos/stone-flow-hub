@@ -58,14 +58,13 @@ export function HealthCard({
     <Link
       to={to}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-blue-100/80 bg-white/95 p-5",
-        "shadow-[0_4px_20px_rgba(30,58,138,0.04)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)]",
+        "card-3d-milky group relative flex flex-col p-5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wider uppercase text-slate-500">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600 shadow-xs">
+        <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wider uppercase text-engraved-title">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-xs">
             {icon}
           </span>
           <span>{label}</span>
@@ -79,19 +78,25 @@ export function HealthCard({
           {TONE_LABEL[tone]}
         </span>
       </div>
-      <div className="mt-3 font-display text-[26px] font-black tracking-tight text-slate-900 tabular-nums">
-        {value}
+
+      <div className="engraved-well-glow mt-3 flex items-baseline justify-between rounded-xl px-3.5 py-2">
+        <div className="font-display text-[26px] font-black tracking-tight text-engraved-blue-lg tabular-nums">
+          {value}
+        </div>
+        <div className="font-mono text-[11px] font-bold uppercase text-engraved-kicker">
+          {trend}
+        </div>
       </div>
-      <div className="mt-0.5 text-[12px] font-medium text-slate-500">{trend}</div>
-      <div className="mt-3 border-t border-blue-50 pt-2 text-[11px] font-semibold text-blue-600">
+
+      <div className="mt-3 border-t border-blue-50 pt-2 text-[11px] font-bold text-engraved-blue">
         {target}
       </div>
-      <div className="mt-1 flex items-start gap-1.5 text-[12px] leading-snug text-slate-600">
+      <div className="mt-1 flex items-start gap-1.5 text-[12px] font-medium leading-snug text-slate-600">
         <span>{insight}</span>
       </div>
       <ArrowUpRight
         aria-hidden
-        className="absolute right-3.5 top-3.5 h-4 w-4 text-blue-400 opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute right-3.5 top-3.5 h-4 w-4 text-blue-500 opacity-0 transition-all group-hover:opacity-100 group-hover:scale-110"
       />
     </Link>
   );
