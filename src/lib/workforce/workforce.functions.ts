@@ -8,7 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { employeeSchema } from "./schema";
-import type { Employee } from "./types";
+import { DEFAULT_DESIGNATIONS, type Employee } from "./types";
 import type { Database } from "@/integrations/supabase/types";
 
 const employeeMutationInput = z.object({
@@ -20,14 +20,32 @@ const employeeMutationInput = z.object({
 export const saveEmployeeServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => employeeMutationInput.parse(raw))
-  .handler(async ({ context, data }) => {
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { id, data: input, systemRole } = data;
 
+    // 1. Resolve and sanitize user_id
     let targetUserId = input.user_id ?? null;
-
-    // If an email is provided and no user_id is linked yet, check profiles / auth
-    if (input.email?.trim() && !targetUserId) {
+    if (targetUserId) {
+      try {
+        const { data: userRow } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
+        if (!userRow?.user) {
+          targetUserId = null;
+        } else {
+          // Check if already linked to a different employee
+          const { data: existingEmp } = await supabaseAdmin
+            .from("employees")
+            .select("id")
+            .eq("user_id", targetUserId)
+            .maybeSingle();
+          if (existingEmp && existingEmp.id !== id) {
+            targetUserId = null;
+          }
+        }
+      } catch {
+        targetUserId = null;
+      }
+    } else if (input.email?.trim()) {
       const emailClean = input.email.trim().toLowerCase();
       try {
         const { data: prof } = await supabaseAdmin
@@ -36,14 +54,84 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
           .eq("email", emailClean)
           .maybeSingle();
         if (prof?.id) {
-          targetUserId = prof.id;
+          const { data: existingEmp } = await supabaseAdmin
+            .from("employees")
+            .select("id")
+            .eq("user_id", prof.id)
+            .maybeSingle();
+          if (!existingEmp || existingEmp.id === id) {
+            targetUserId = prof.id;
+          }
         }
       } catch {
         /* skip profile lookup error */
       }
     }
 
-    // Prepare payload with backup of KRAs & KPAs inside bank_details for zero-migration failure risk
+    // 2. Resolve designation_id (ensure foreign key is valid in DB)
+    let validDesignationId: string | null = null;
+    if (input.designation_id) {
+      try {
+        const { data: desigRow } = await supabaseAdmin
+          .from("designations")
+          .select("id")
+          .eq("id", input.designation_id)
+          .maybeSingle();
+        if (desigRow?.id) {
+          validDesignationId = desigRow.id;
+        } else {
+          // If designation ID is from our standardized fallback list, ensure it is in DB
+          const fallbackMatch = DEFAULT_DESIGNATIONS.find(
+            (d, idx) =>
+              `00000000-0000-0000-0000-${String(idx + 1).padStart(12, "0")}` ===
+              input.designation_id,
+          );
+          if (fallbackMatch) {
+            const { data: upserted } = await supabaseAdmin
+              .from("designations")
+              .upsert(
+                {
+                  id: input.designation_id,
+                  code: fallbackMatch.code,
+                  name: fallbackMatch.name,
+                  purpose: fallbackMatch.purpose,
+                  responsibilities: fallbackMatch.responsibilities,
+                  expected_outcomes: fallbackMatch.expected_outcomes,
+                  level: fallbackMatch.level,
+                  active: fallbackMatch.active,
+                },
+                { onConflict: "code" },
+              )
+              .select("id")
+              .maybeSingle();
+            if (upserted?.id) {
+              validDesignationId = upserted.id;
+            }
+          }
+        }
+      } catch (desigErr) {
+        console.warn("[workforce.functions] Designation check failed:", desigErr);
+      }
+    }
+
+    // 3. Resolve reporting_manager_id
+    let validManagerId: string | null = null;
+    if (input.reporting_manager_id) {
+      try {
+        const { data: mgrRow } = await supabaseAdmin
+          .from("employees")
+          .select("id")
+          .eq("id", input.reporting_manager_id)
+          .maybeSingle();
+        if (mgrRow?.id && mgrRow.id !== id) {
+          validManagerId = mgrRow.id;
+        }
+      } catch {
+        /* skip */
+      }
+    }
+
+    // 4. Prepare payload with KRAs & KPAs safely stored inside bank_details
     const baseBankDetails =
       input.bank_details && typeof input.bank_details === "object" ? input.bank_details : {};
     const bankWithMeta = {
@@ -52,73 +140,81 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       _kpas: input.kpas ?? [],
     };
 
+    // Only standard schema-verified columns are included in rowPayload
+    // (Never kras or kpas at the top level, preventing PGRST204 errors)
     const rowPayload: Record<string, unknown> = {
-      full_name: input.full_name,
-      designation_id: input.designation_id || null,
-      department: input.department || null,
-      employment_type: input.employment_type,
-      reporting_manager_id: input.reporting_manager_id || null,
-      joining_date: input.joining_date || null,
-      phone: input.phone || null,
+      full_name: input.full_name.trim(),
+      designation_id: validDesignationId,
+      department: input.department?.trim() || null,
+      employment_type: input.employment_type || "full_time",
+      reporting_manager_id: validManagerId,
+      joining_date: input.joining_date?.trim() || null,
+      phone: input.phone?.trim() || null,
       email: input.email ? input.email.trim().toLowerCase() : null,
-      emergency_contact: input.emergency_contact || null,
-      address: input.address || null,
-      aadhaar: input.aadhaar || null,
-      pan: input.pan || null,
+      emergency_contact: input.emergency_contact?.trim() || null,
+      address: input.address?.trim() || null,
+      aadhaar: input.aadhaar?.trim() || null,
+      pan: input.pan?.trim() ? input.pan.trim().toUpperCase() : null,
       bank_details: bankWithMeta,
       salary_ctc: input.salary_ctc ?? null,
-      skills: input.skills ?? [],
-      kras: input.kras ?? [],
-      kpas: input.kpas ?? [],
-      employment_status: input.employment_status,
-      photo_url: input.photo_url || null,
-      remarks: input.remarks || null,
+      skills: Array.isArray(input.skills) ? input.skills : [],
+      employment_status: input.employment_status || "active",
+      photo_url: input.photo_url?.trim() || null,
+      remarks: input.remarks?.trim() || null,
       user_id: targetUserId,
     };
 
     let savedEmployee: Employee | null = null;
 
-    async function executeSave(payload: Record<string, unknown>): Promise<Employee> {
-      if (id) {
-        const { data: updated, error } = await supabaseAdmin
-          .from("employees")
-          .update(payload as unknown as Database["public"]["Tables"]["employees"]["Update"])
-          .eq("id", id)
-          .select("*")
-          .single();
-        if (error) throw error;
-        return updated as unknown as Employee;
-      } else {
-        const insertPayload = {
-          ...payload,
+    if (id) {
+      const { data: updated, error } = await supabaseAdmin
+        .from("employees")
+        .update(rowPayload as unknown as Database["public"]["Tables"]["employees"]["Update"])
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) {
+        console.error("[workforce.functions] Update employee failed:", error);
+        throw new Error(error.message || "Failed to update employee");
+      }
+      savedEmployee = updated as unknown as Employee;
+    } else {
+      // First attempt with employee_code: "" to let trigger set_employee_code generate sequence
+      const res1 = await supabaseAdmin
+        .from("employees")
+        .insert({
+          ...rowPayload,
           employee_code: "",
-        } as unknown as Database["public"]["Tables"]["employees"]["Insert"];
-        const { data: created, error } = await supabaseAdmin
+        } as unknown as Database["public"]["Tables"]["employees"]["Insert"])
+        .select("*")
+        .single();
+
+      let created = res1.data;
+      let err = res1.error;
+
+      // If "" failed for trigger or sequence issue, generate a fallback unique code
+      if (err && (err.message?.includes("employee_code") || err.code === "23502")) {
+        const fallbackCode = `EMP-${Date.now().toString().slice(-5)}`;
+        const res2 = await supabaseAdmin
           .from("employees")
-          .insert(insertPayload)
+          .insert({
+            ...rowPayload,
+            employee_code: fallbackCode,
+          } as unknown as Database["public"]["Tables"]["employees"]["Insert"])
           .select("*")
           .single();
-        if (error) throw error;
-        return created as unknown as Employee;
+        created = res2.data;
+        err = res2.error;
       }
+
+      if (err) {
+        console.error("[workforce.functions] Insert employee failed:", err);
+        throw new Error(err.message || "Failed to create employee");
+      }
+      savedEmployee = created as unknown as Employee;
     }
 
-    try {
-      savedEmployee = await executeSave(rowPayload);
-    } catch (err: unknown) {
-      const dbErr = err as { code?: string; message?: string };
-      // 42703 is Postgres undefined_column error if kras / kpas columns haven't been migrated yet
-      if (dbErr.code === "42703" || dbErr.message?.includes('column "kras"')) {
-        const fallbackPayload = { ...rowPayload };
-        delete fallbackPayload.kras;
-        delete fallbackPayload.kpas;
-        savedEmployee = await executeSave(fallbackPayload);
-      } else {
-        throw new Error(dbErr.message || "Failed to save employee");
-      }
-    }
-
-    // If a system role was specified and the employee has an associated user_id, assign role
+    // 5. Assign system role if user_id linked and role specified
     if (targetUserId && systemRole) {
       try {
         await supabaseAdmin.from("user_roles").upsert(
@@ -133,5 +229,22 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       }
     }
 
-    return savedEmployee;
+    return {
+      ...savedEmployee,
+      kras: input.kras ?? [],
+      kpas: input.kpas ?? [],
+    } as unknown as Employee;
+  });
+
+export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => z.object({ id: z.string().uuid() }).parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("employees").delete().eq("id", data.id);
+    if (error) {
+      console.error("[workforce.functions] Delete employee failed:", error);
+      throw new Error(error.message || "Failed to delete employee");
+    }
+    return { success: true };
   });

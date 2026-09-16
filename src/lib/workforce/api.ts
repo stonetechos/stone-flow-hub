@@ -5,18 +5,19 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import type {
-  Employee,
-  Designation,
-  Kra,
-  WorkloadCapacity,
-  WorkforceTask,
-  WorkforceScoreSnapshot,
-  OwnerNote,
-  WorkforceRuleAssignment,
-  EmployeeDocument,
-  WorkforceTaskStatus,
-  EmploymentStatus,
+import {
+  DEFAULT_DESIGNATIONS,
+  type Employee,
+  type Designation,
+  type Kra,
+  type WorkloadCapacity,
+  type WorkforceTask,
+  type WorkforceScoreSnapshot,
+  type OwnerNote,
+  type WorkforceRuleAssignment,
+  type EmployeeDocument,
+  type WorkforceTaskStatus,
+  type EmploymentStatus,
 } from "./types";
 import {
   employeeSchema,
@@ -66,15 +67,23 @@ export async function getEmployee(id: string): Promise<Employee | null> {
   return data;
 }
 
-import { saveEmployeeServerFn } from "./workforce.functions";
+import { saveEmployeeServerFn, deleteEmployeeServerFn } from "./workforce.functions";
 
 export async function createEmployee(input: EmployeeInput, systemRole?: string): Promise<Employee> {
   const parsed = employeeSchema.parse(input);
   try {
     const res = await saveEmployeeServerFn({ data: { data: parsed, systemRole } });
     if (res) return res;
-  } catch (serverErr) {
-    console.warn("[workforce.api] Server function failed, attempting client fallback:", serverErr);
+  } catch (serverErr: unknown) {
+    console.error("[workforce.api] saveEmployeeServerFn failed:", serverErr);
+    const msg = serverErr instanceof Error ? serverErr.message : String(serverErr);
+    const isNetwork =
+      msg.includes("Failed to fetch") ||
+      msg.includes("NetworkError") ||
+      msg.includes("Load failed");
+    if (!isNetwork) {
+      throw new AppError(msg || "Failed to create employee");
+    }
   }
 
   // Fallback to client-side insert if server function unreachable
@@ -121,8 +130,16 @@ export async function updateEmployee(
   try {
     const res = await saveEmployeeServerFn({ data: { id, data: parsed, systemRole } });
     if (res) return res;
-  } catch (serverErr) {
-    console.warn("[workforce.api] Server function failed, attempting client fallback:", serverErr);
+  } catch (serverErr: unknown) {
+    console.error("[workforce.api] updateEmployee server function failed:", serverErr);
+    const msg = serverErr instanceof Error ? serverErr.message : String(serverErr);
+    const isNetwork =
+      msg.includes("Failed to fetch") ||
+      msg.includes("NetworkError") ||
+      msg.includes("Load failed");
+    if (!isNetwork) {
+      throw new AppError(msg || "Failed to update employee");
+    }
   }
 
   // Fallback to client-side update
@@ -175,8 +192,13 @@ export async function updateEmployeeStatus(
 }
 
 export async function deleteEmployee(id: string): Promise<void> {
-  const { error } = await supabase.from("employees").delete().eq("id", id);
-  if (error) throw new AppError(mapDbError(error));
+  try {
+    await deleteEmployeeServerFn({ data: { id } });
+    return;
+  } catch {
+    const { error } = await supabase.from("employees").delete().eq("id", id);
+    if (error) throw new AppError(mapDbError(error));
+  }
 }
 
 // -------------- Current signed-in employee --------------
@@ -194,69 +216,7 @@ export async function getCurrentEmployee(): Promise<Employee | null> {
 }
 
 // -------------- Designations --------------
-export const DEFAULT_DESIGNATIONS: Omit<Designation, "id" | "created_at" | "updated_at">[] = [
-  {
-    code: "MD",
-    name: "Managing Director",
-    purpose: "Overall business leadership and strategic direction",
-    responsibilities:
-      "Strategy, key architect and client relationships, vendor negotiations, executive governance",
-    expected_outcomes: "Revenue growth, operational excellence, profitability",
-    level: 100,
-    active: true,
-  },
-  {
-    code: "SALES_HEAD",
-    name: "Sales Head",
-    purpose: "Head of sales operations and revenue targets",
-    responsibilities:
-      "Sales pipeline management, quota achievement, team coordination, high-value quotation closures",
-    expected_outcomes: "Monthly sales quota achievement and lead conversion",
-    level: 80,
-    active: true,
-  },
-  {
-    code: "FIELD_SALES_EXEC",
-    name: "Field Sales Executive",
-    purpose: "On-site client acquisition, architect visits, and site measurements",
-    responsibilities:
-      "Architect visits, builder presentations, site inspections, stone sampling, warm lead generation",
-    expected_outcomes: "New customer acquisition and active pipeline building",
-    level: 60,
-    active: true,
-  },
-  {
-    code: "OFFICE_SALES_EXEC",
-    name: "Office Sales Executive",
-    purpose: "Showroom consultation, estimate preparation, and client closing",
-    responsibilities:
-      "In-showroom client walkthroughs, fast estimate and quotation generation, follow-up calls, payment tracking",
-    expected_outcomes: "High conversion rate of showroom enquiries and timely closures",
-    level: 50,
-    active: true,
-  },
-  {
-    code: "DATA_ENTRY_EXEC",
-    name: "Data Entry Executive",
-    purpose: "ERP data processing and operational transaction entry",
-    responsibilities:
-      "Accurate logging of quotations, sales orders, delivery challans, purchase invoices, and inventory receipts",
-    expected_outcomes: "Zero-defect ERP records, rapid turnaround of operational entries",
-    level: 40,
-    active: true,
-  },
-  {
-    code: "OFFICE_ADMIN",
-    name: "Office Admin",
-    purpose: "Office facilities, administrative support, and showroom coordination",
-    responsibilities:
-      "Office administration, sample kit inventory management, front-desk coordination, billing support, logistics liaison",
-    expected_outcomes:
-      "Smooth showroom presentation, organized document filing, on-time admin support",
-    level: 30,
-    active: true,
-  },
-];
+export { DEFAULT_DESIGNATIONS };
 
 export async function listDesignations(): Promise<Designation[]> {
   try {

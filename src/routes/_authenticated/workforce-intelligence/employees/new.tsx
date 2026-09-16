@@ -169,7 +169,14 @@ function EmployeeFormPage() {
             .eq("email", v.email.trim().toLowerCase())
             .maybeSingle();
           if (prof?.id) {
-            v.user_id = prof.id;
+            const { data: existingEmp } = await supabase
+              .from("employees")
+              .select("id")
+              .eq("user_id", prof.id)
+              .maybeSingle();
+            if (!existingEmp || existingEmp.id === id) {
+              v.user_id = prof.id;
+            }
           }
         } catch {
           /* skip */
