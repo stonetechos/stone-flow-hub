@@ -74,6 +74,16 @@ export function registerServiceWorker(): void {
     let reloading = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController || reloading) return;
+      try {
+        const lastReload = Number(sessionStorage.getItem("stos:sw-last-reload") || 0);
+        if (Date.now() - lastReload < 15000) {
+          // Throttled: already reloaded within last 15s, prevent looping
+          return;
+        }
+        sessionStorage.setItem("stos:sw-last-reload", String(Date.now()));
+      } catch {
+        // ignore storage errors
+      }
       reloading = true;
       window.location.reload();
     });
