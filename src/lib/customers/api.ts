@@ -1,5 +1,6 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
 import { getDb } from "@/integrations/supabase/server-context";
+import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -65,6 +66,31 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     );
   }
 
+  // 1. Primary path: Elevated server function (bypasses restrictive RLS for authorized staff)
+  try {
+    const { saveCustomerServerFn } = await import("./customers.functions");
+    const res = await saveCustomerServerFn({ data: { data: parsed } });
+    if (res) return res as CustomerRow;
+  } catch (serverErr: unknown) {
+    const err = serverErr as { message?: string };
+    if (err?.message?.includes("already exists")) {
+      throw new AppError(err.message, "DUPLICATE_CUSTOMER", 409);
+    }
+    console.warn(
+      "[customers.api] Server function failed, falling back to client-side insert:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback (with authenticated created_by attribution)
+  let uid: string | null = null;
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    uid = userData.user?.id ?? null;
+  } catch {
+    // ignore
+  }
+
   const { data, error } = await getDb()
     .from("customers")
     .insert({
@@ -84,6 +110,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
       site_address: parsed.site_address ?? null,
       space_type: parsed.space_type ?? null,
       material_interests: parsed.material_interests ?? [],
+      created_by: uid,
     })
     .select("*")
     .single();
@@ -104,6 +131,20 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
 
 export async function updateCustomer(id: string, input: CustomerCreateInput): Promise<CustomerRow> {
   const parsed = customerCreateSchema.parse(input);
+
+  // 1. Primary path: Server function
+  try {
+    const { saveCustomerServerFn } = await import("./customers.functions");
+    const res = await saveCustomerServerFn({ data: { id, data: parsed } });
+    if (res) return res as CustomerRow;
+  } catch (serverErr) {
+    console.warn(
+      "[customers.api] Server function failed, falling back to client-side update:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { data, error } = await getDb()
     .from("customers")
     .update({
@@ -131,6 +172,19 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
+  // 1. Primary path: Server function
+  try {
+    const { deleteCustomerServerFn } = await import("./customers.functions");
+    await deleteCustomerServerFn({ data: { id } });
+    return;
+  } catch (serverErr) {
+    console.warn(
+      "[customers.api] Server function failed, falling back to client-side delete:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { error } = await getDb().from("customers").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }

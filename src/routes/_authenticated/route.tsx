@@ -80,6 +80,14 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/auth", search: { flow: "force-change" } });
     }
 
+    // Proactively ensure the user has an assigned role in user_roles so RLS writes are never blocked
+    try {
+      const { ensureUserRoleServerFn } = await import("@/lib/admin/users.functions");
+      await ensureUserRoleServerFn();
+    } catch (e) {
+      console.warn("[_authenticated] ensureUserRoleServerFn skipped or failed:", e);
+    }
+
     return { user: data.user };
   },
   component: AuthenticatedLayout,

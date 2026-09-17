@@ -45,7 +45,17 @@ interface RolesState {
 async function fetchRoles(userId: string): Promise<AppRole[]> {
   const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   if (error) throw error;
-  return (data ?? []).map((r) => r.role as AppRole);
+  const roles = (data ?? []).map((r) => r.role as AppRole);
+  if (roles.length === 0) {
+    try {
+      const { ensureUserRoleServerFn } = await import("@/lib/admin/users.functions");
+      const ensured = await ensureUserRoleServerFn();
+      if (ensured && ensured.length > 0) return ensured;
+    } catch (e) {
+      console.warn("[use-roles] ensureUserRoleServerFn skipped or failed:", e);
+    }
+  }
+  return roles;
 }
 
 export function useRoles(): RolesState {

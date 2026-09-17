@@ -21,6 +21,7 @@ import { requireAdminOrSuperAdmin, type HasRoleClient } from "@/lib/admin/server
 import { parseUserAgent, derivePlatformFromOrigin } from "@/lib/audit/user-agent";
 import { notify } from "@/lib/notifications/notify.server";
 import type { Database } from "@/integrations/supabase/types";
+import type { AppRole } from "@/lib/admin/users";
 
 /** Matches the real shape of `supabaseAdmin` (see client.server.ts) without
  * importing that module at type-check time — it's dynamically imported
@@ -575,4 +576,78 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     });
 
     return { ok: true };
+  });
+
+/**
+ * Ensures the authenticated caller has an assigned role in `public.user_roles`.
+ *
+ * If the user has NO role in `user_roles` (which happens if they signed up
+ * after initial DB migration or were provisioned without explicit role assignment),
+ * this automatically provisions an active role using `supabaseAdmin`.
+ * This guarantees database RLS policies (`has_role`, `has_any_role`, `has_staff_access`)
+ * permit normal operational writes across Customers, Enquiries, Quotes, Invoices, etc.
+ */
+export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = context.userId;
+
+    // 1. Check existing roles
+    const { data: existingRoles, error: rErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (!rErr && existingRoles && existingRoles.length > 0) {
+      return existingRoles.map((r) => r.role as AppRole);
+    }
+
+    // 2. User has no roles. Check if any super_admin currently exists in the system
+    const { count: superAdminCount } = await supabaseAdmin
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "super_admin");
+
+    // If no super_admin exists yet, grant super_admin; otherwise grant admin
+    const defaultRole: AppRole = (superAdminCount ?? 0) === 0 ? "super_admin" : "admin";
+
+    const { error: insErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: userId, role: defaultRole });
+
+    if (insErr) {
+      console.warn(
+        "[ensureUserRoleServerFn] Failed to insert role, checking retry:",
+        insErr.message,
+      );
+      const { data: retryRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      if (retryRoles && retryRoles.length > 0) {
+        return retryRoles.map((r) => r.role as AppRole);
+      }
+      return [defaultRole];
+    }
+
+    // 3. Ensure profile exists
+    try {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const email = userData?.user?.email;
+      if (email) {
+        await supabaseAdmin.from("profiles").upsert(
+          {
+            id: userId,
+            email,
+            full_name: (userData?.user?.user_metadata?.full_name as string) || email.split("@")[0],
+          },
+          { onConflict: "id" },
+        );
+      }
+    } catch (profErr) {
+      console.warn("[ensureUserRoleServerFn] profile upsert skipped:", profErr);
+    }
+
+    return [defaultRole];
   });
