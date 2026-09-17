@@ -1,6 +1,5 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
 import { getDb } from "@/integrations/supabase/server-context";
-import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
@@ -85,7 +84,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
   // 2. Client fallback (with authenticated created_by attribution)
   let uid: string | null = null;
   try {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await getDb().auth.getUser();
     uid = userData.user?.id ?? null;
   } catch {
     // ignore
