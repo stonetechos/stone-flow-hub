@@ -505,7 +505,9 @@ function HomePage() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs mb-3 shadow-inner">
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Inquiry Received!</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Inquiry Received!
+              </h1>
               <p className="text-emerald-100 text-sm mt-1">
                 Thank you, {submittedResult.customer_name}. We have registered your custom stone
                 requirements.
@@ -836,8 +838,8 @@ function HomePage() {
                       ⚡ Quick Response
                     </Badge>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-                    Get Free Stone Estimate & Swatches
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    Get Free Stone Estimate &amp; Swatches
                   </h2>
                   <p className="text-xs text-stone-300">
                     Receive transparent factory pricing, dry-lay guidance, and swatch kit on

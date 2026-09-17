@@ -820,7 +820,7 @@
   h6 {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
-    color: var(--color-foreground);
+    color: inherit;
   }
   /* Universal quiet focus ring */
   :where(a, button, [role="button"], input, select, textarea, [tabindex]):focus-visible {
