@@ -43,8 +43,8 @@ export function ReceivablesPayablesCards({
         type="receivables"
         title="Total Receivables"
         icon={<ArrowDownLeft className="h-4 w-4" />}
-        accentBg="bg-blue-50 text-blue-600 border-blue-100"
-        titleColor="text-blue-800"
+        accentBg="bg-cyan-50 text-cyan-700 border-cyan-100"
+        titleColor="text-cyan-900"
         summary={receivables}
         period={period}
         onPeriodChange={onPeriodChange}
@@ -118,7 +118,7 @@ function MetricCard({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
+              className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
             >
               <span>{PERIOD_LABELS[period]}</span>
               <ChevronDown className="h-3 w-3" />
@@ -129,7 +129,7 @@ function MetricCard({
               <DropdownMenuItem
                 key={pKey}
                 onClick={() => onPeriodChange(pKey)}
-                className={cn(period === pKey && "font-semibold text-blue-600")}
+                className={cn(period === pKey && "font-semibold text-cyan-700")}
               >
                 {PERIOD_LABELS[pKey]}
               </DropdownMenuItem>
@@ -154,8 +154,8 @@ function MetricCard({
           className={cn(
             "h-full rounded-full transition-all duration-500 shadow-sm",
             type === "receivables"
-              ? "bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-400 shadow-blue-500/50"
-              : "bg-gradient-to-r from-indigo-700 via-blue-600 to-blue-400 shadow-indigo-500/50",
+              ? "bg-gradient-to-r from-cyan-800 via-cyan-700 to-teal-400 shadow-cyan-600/50"
+              : "bg-gradient-to-r from-teal-800 via-cyan-700 to-cyan-400 shadow-teal-600/50",
           )}
           style={{ width: `${overduePercent}%` }}
         />
@@ -183,12 +183,12 @@ function MetricCard({
                 className="group mt-0.5 inline-flex items-center gap-1 font-display text-sm font-black text-engraved-blue tabular-nums transition-colors hover:scale-105"
               >
                 <span>{isLoading ? "—" : formatInrFull(overdue)}</span>
-                <ChevronDown className="h-3 w-3 text-blue-500 group-hover:text-blue-700" />
+                <ChevronDown className="h-3 w-3 text-cyan-600 group-hover:text-cyan-800" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="card-3d-milky-sm w-64 p-3.5 text-xs shadow-xl">
-              <div className="flex items-center gap-1.5 border-b border-blue-100/80 pb-2 font-bold text-engraved-title">
-                <AlertCircle className="h-3.5 w-3.5 text-blue-600" />
+              <div className="flex items-center gap-1.5 border-b border-cyan-100/80 pb-2 font-bold text-engraved-title">
+                <AlertCircle className="h-3.5 w-3.5 text-cyan-700" />
                 <span>Overdue Aging Breakdown</span>
               </div>
               <div className="mt-2.5 space-y-2">

@@ -48,7 +48,7 @@ export function Stat({
       )}
     >
       <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-engraved-kicker">
-        {icon && <span className="opacity-80 text-blue-600">{icon}</span>}
+        {icon && <span className="opacity-80 text-cyan-700">{icon}</span>}
         <span className="truncate">{label}</span>
       </div>
       <div
@@ -67,7 +67,7 @@ export function Stat({
       <Link
         to={to}
         search={search as never}
-        className="block rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="block rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2"
       >
         {body}
       </Link>

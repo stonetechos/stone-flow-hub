@@ -72,6 +72,7 @@ import {
 } from "@/components/dashboard/zoho/ZohoDashboardHeader";
 import { ZohoDashboardView } from "@/components/dashboard/zoho/ZohoDashboardView";
 import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAuxiliaryViews";
+import { WebsiteLeadsDashboardCard } from "@/components/dashboard/WebsiteLeadsDashboardCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -174,6 +175,11 @@ function DashboardPage() {
         isRefreshing={isRefreshing}
         canViewFinancial={canViewFinancial}
       />
+
+      {/* stonetech.in Website Inquiries & CRM Leads Box */}
+      <div className="px-2 sm:px-4 mb-6">
+        <WebsiteLeadsDashboardCard />
+      </div>
 
       {/* Main Tab Views */}
       {canViewFinancial && activeTab === "financial" && (
@@ -311,7 +317,7 @@ function ExecutiveHero({
               >
                 <span
                   aria-hidden
-                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600 shadow-sm shadow-blue-500/50"
+                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-700 shadow-sm shadow-cyan-700/50"
                 />
                 <span>{line}</span>
               </li>
@@ -601,7 +607,7 @@ function RadarColumn({
   return (
     <div className={cn("card-3d-milky flex min-h-[160px] flex-col p-4", accent)}>
       <div className="mb-3 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em]">
-        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200 shadow-xs">
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-xs">
           {icon}
         </span>
         <span className="font-bold text-engraved-title">{title}</span>
@@ -695,7 +701,7 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
                 {r.tone === "in" && (
                   <span
                     aria-hidden
-                    className="h-2 w-2 rounded-full bg-blue-600 shadow-xs shadow-blue-500/50"
+                    className="h-2 w-2 rounded-full bg-cyan-700 shadow-xs shadow-cyan-700/50"
                   />
                 )}
                 {r.tone === "out" && (
@@ -760,7 +766,7 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
               className="engraved-well flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition-all hover:scale-[1.01]"
             >
               <span className="flex items-center gap-2 text-[13px] font-semibold text-slate-700">
-                <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-xs">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 shadow-xs">
                   {r.icon}
                 </span>
                 {r.label}
@@ -918,7 +924,7 @@ function CopilotDock({
         {activityLoading ? (
           <ul className="space-y-2" aria-hidden>
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={i} className="h-8 animate-pulse rounded-lg bg-blue-50/40" />
+              <li key={i} className="h-8 animate-pulse rounded-lg bg-cyan-50/40" />
             ))}
           </ul>
         ) : activity.length === 0 ? (
@@ -1051,7 +1057,7 @@ function TodayTimeline({
             <li
               key={e.key}
               className={cn(
-                "flex items-center gap-3 px-5 py-3 transition-colors hover:bg-blue-50/40",
+                "flex items-center gap-3 px-5 py-3 transition-colors hover:bg-cyan-50/40",
                 i > 0 && "border-t border-slate-200/60",
                 i === 0 && "rounded-t-2xl",
                 i === events.length - 1 && "rounded-b-2xl",
@@ -1060,7 +1066,7 @@ function TodayTimeline({
               <span className="w-16 shrink-0 font-mono text-[11px] font-black uppercase tracking-wider text-engraved-kicker tabular-nums">
                 {e.time}
               </span>
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-xs">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 shadow-xs">
                 {iconFor(e.kind)}
               </span>
               <div className="min-w-0 flex-1">
@@ -1187,7 +1193,7 @@ function SurfaceCard({
       <header className="mb-3.5 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-engraved-kicker">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200 shadow-xs">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-xs">
               {icon}
             </span>
             {kicker}

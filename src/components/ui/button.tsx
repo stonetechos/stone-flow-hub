@@ -39,7 +39,7 @@ const buttonVariants = cva(
         outline:
           "border border-border-default bg-transparent text-foreground hover:bg-[var(--intent-ghost-hover)] hover:border-border-strong",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        soft: "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300",
+        soft: "bg-cyan-50 text-cyan-800 hover:bg-cyan-100 dark:bg-cyan-950/50 dark:text-cyan-300",
         subtle: "bg-surface-panel text-foreground hover:bg-[var(--intent-ghost-hover)]",
         ghost: "text-foreground hover:bg-[var(--intent-ghost-hover)]",
         link: "text-[var(--text-link)] underline-offset-4 hover:underline p-0 h-auto",

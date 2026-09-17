@@ -54,7 +54,7 @@ export function CashFlowCard({
       <div className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-sm font-bold">
-            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
+            <span className="inline-flex rounded-xl border border-cyan-200 bg-cyan-50 p-2 text-cyan-700 shadow-xs">
               <ArrowUpRight className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
@@ -66,7 +66,7 @@ export function CashFlowCard({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -77,7 +77,7 @@ export function CashFlowCard({
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
-                  className={cn(period === pKey && "font-semibold text-blue-600")}
+                  className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
                   {PERIOD_LABELS[pKey]}
                 </DropdownMenuItem>
@@ -147,7 +147,7 @@ export function CashFlowCard({
         </div>
 
         {/* Bottom Metrics Bar with 3D Engraved Wells */}
-        <div className="grid grid-cols-2 gap-2.5 border-t border-blue-50 pt-4 text-xs sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 border-t border-cyan-50 pt-4 text-xs sm:grid-cols-4">
           <div className="engraved-well rounded-xl p-2.5">
             <div className="truncate font-mono text-[10px] font-bold uppercase text-slate-500">
               Opening ({startDate})

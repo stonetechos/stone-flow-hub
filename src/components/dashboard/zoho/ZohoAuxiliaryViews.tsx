@@ -94,7 +94,7 @@ export function HelpView() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border border-border/80 p-4 space-y-2">
-          <div className="h-8 w-8 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 flex items-center justify-center">
             <BookOpen className="h-4 w-4" />
           </div>
           <h3 className="font-semibold text-sm text-foreground">User Manual</h3>

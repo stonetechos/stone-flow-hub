@@ -59,12 +59,12 @@ export function HealthCard({
       to={to}
       className={cn(
         "card-3d-milky group relative flex flex-col p-5",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2",
       )}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wider uppercase text-engraved-title">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-xs">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 shadow-xs">
             {icon}
           </span>
           <span>{label}</span>
@@ -88,7 +88,7 @@ export function HealthCard({
         </div>
       </div>
 
-      <div className="mt-3 border-t border-blue-50 pt-2 text-[11px] font-bold text-engraved-blue">
+      <div className="mt-3 border-t border-cyan-50 pt-2 text-[11px] font-bold text-engraved-blue">
         {target}
       </div>
       <div className="mt-1 flex items-start gap-1.5 text-[12px] font-medium leading-snug text-slate-600">
@@ -96,7 +96,7 @@ export function HealthCard({
       </div>
       <ArrowUpRight
         aria-hidden
-        className="absolute right-3.5 top-3.5 h-4 w-4 text-blue-500 opacity-0 transition-all group-hover:opacity-100 group-hover:scale-110"
+        className="absolute right-3.5 top-3.5 h-4 w-4 text-cyan-600 opacity-0 transition-all group-hover:opacity-100 group-hover:scale-110"
       />
     </Link>
   );

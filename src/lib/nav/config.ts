@@ -37,6 +37,7 @@ import {
   Fingerprint,
   CalendarDays,
   UserCog,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/lib/admin/users";
@@ -67,7 +68,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Overview" },
   {
     id: "sales",
-    label: "Sales",
+    label: "Sales & CRM",
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   {
@@ -126,7 +127,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
 
-  // Sales: Customers -> Quotations -> Sales Invoices -> Dispatches (with Local Carting)
+  // Sales & CRM: Website Leads & CRM -> Customers -> Quotations -> Sales Invoices -> Dispatches
+  {
+    id: "enquiries",
+    to: "/enquiries",
+    label: "Website Leads & CRM",
+    icon: Globe,
+    group: "sales",
+    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+  },
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
   { id: "invoices", to: "/invoices", label: "Sales Invoices", icon: Receipt, group: "sales" },

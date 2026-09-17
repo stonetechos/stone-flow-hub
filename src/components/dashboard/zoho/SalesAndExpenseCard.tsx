@@ -55,7 +55,7 @@ export function SalesAndExpenseCard({
       <div className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-sm font-bold">
-            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
+            <span className="inline-flex rounded-xl border border-cyan-200 bg-cyan-50 p-2 text-cyan-700 shadow-xs">
               <PieChart className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
@@ -67,7 +67,7 @@ export function SalesAndExpenseCard({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -78,7 +78,7 @@ export function SalesAndExpenseCard({
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
-                  className={cn(period === pKey && "font-semibold text-blue-600")}
+                  className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
                   {PERIOD_LABELS[pKey]}
                 </DropdownMenuItem>
@@ -96,8 +96,8 @@ export function SalesAndExpenseCard({
               className={cn(
                 "rounded-lg px-3 py-1 font-bold transition-all",
                 mode === "accrual"
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-blue-700",
+                  ? "bg-cyan-700 text-white shadow-xs"
+                  : "text-slate-600 hover:text-cyan-800",
               )}
             >
               Accrual
@@ -108,8 +108,8 @@ export function SalesAndExpenseCard({
               className={cn(
                 "rounded-lg px-3 py-1 font-bold transition-all",
                 mode === "cash"
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-blue-700",
+                  ? "bg-cyan-700 text-white shadow-xs"
+                  : "text-slate-600 hover:text-cyan-800",
               )}
             >
               Cash
@@ -181,7 +181,7 @@ export function SalesAndExpenseCard({
         </div>
 
         {/* Bottom Income & Expenses Summary in 3D Engraved Wells */}
-        <div className="grid grid-cols-2 gap-3.5 border-t border-blue-50 pt-4 text-center">
+        <div className="grid grid-cols-2 gap-3.5 border-t border-cyan-50 pt-4 text-center">
           <div className="engraved-well-glow rounded-xl p-3.5">
             <div className="font-mono text-xs font-bold uppercase tracking-wider text-engraved-kicker">
               Total Income

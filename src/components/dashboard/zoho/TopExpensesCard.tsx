@@ -48,7 +48,7 @@ export function TopExpensesCard({
       <div className="pb-2">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-sm font-bold">
-            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
+            <span className="inline-flex rounded-xl border border-cyan-200 bg-cyan-50 p-2 text-cyan-700 shadow-xs">
               <CircleDot className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
@@ -60,7 +60,7 @@ export function TopExpensesCard({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-blue-400"
+                className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-500"
               >
                 <span>{PERIOD_LABELS[period]}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -71,7 +71,7 @@ export function TopExpensesCard({
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
-                  className={cn(period === pKey && "font-semibold text-blue-600")}
+                  className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
                   {PERIOD_LABELS[pKey]}
                 </DropdownMenuItem>

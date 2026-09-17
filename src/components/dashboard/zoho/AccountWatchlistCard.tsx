@@ -38,7 +38,7 @@ export function AccountWatchlistCard({
       <div className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-sm font-bold">
-            <span className="inline-flex rounded-xl border border-blue-200 bg-blue-50 p-2 text-blue-600 shadow-xs">
+            <span className="inline-flex rounded-xl border border-cyan-200 bg-cyan-50 p-2 text-cyan-700 shadow-xs">
               <Landmark className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">

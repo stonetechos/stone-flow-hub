@@ -22,8 +22,8 @@ export function ZohoDashboardHeader({
       {/* Top row: Company name + actions */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <div className="flex items-center gap-3">
-          {/* Stone Tech Logo glyph in rich sapphire blue */}
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/30 border border-blue-400/40">
+          {/* Stone Tech Logo glyph in rich dark turquoise */}
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-800 via-cyan-700 to-teal-600 text-white shadow-md shadow-cyan-700/30 border border-cyan-400/40">
             <svg
               width="24"
               height="24"
@@ -60,11 +60,11 @@ export function ZohoDashboardHeader({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="engraved-well h-9 gap-2 rounded-xl px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-blue-400"
+            className="engraved-well h-9 gap-2 rounded-xl px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-cyan-400"
             title="Refresh dashboard data"
           >
             <RefreshCw
-              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-blue-600")}
+              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-cyan-600")}
             />
             <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
           </Button>
@@ -80,8 +80,8 @@ export function ZohoDashboardHeader({
             className={cn(
               "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
               activeTab === "financial"
-                ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
-                : "text-slate-600 hover:bg-white hover:text-blue-700",
+                ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
+                : "text-slate-600 hover:bg-white hover:text-cyan-800",
             )}
           >
             <CheckCircle2 className="h-4 w-4" />
@@ -95,8 +95,8 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "operations"
-              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-blue-700",
+              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
+              : "text-slate-600 hover:bg-white hover:text-cyan-800",
           )}
         >
           <Gauge className="h-4 w-4" />
@@ -109,13 +109,13 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "announcements"
-              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-blue-700",
+              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
+              : "text-slate-600 hover:bg-white hover:text-cyan-800",
           )}
         >
           <Megaphone className="h-4 w-4" />
           <span>Announcements</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
         </button>
 
         <button
@@ -124,8 +124,8 @@ export function ZohoDashboardHeader({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
             activeTab === "help"
-              ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-600/35 border-t border-white/40"
-              : "text-slate-600 hover:bg-white hover:text-blue-700",
+              ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
+              : "text-slate-600 hover:bg-white hover:text-cyan-800",
           )}
         >
           <HelpCircle className="h-4 w-4" />

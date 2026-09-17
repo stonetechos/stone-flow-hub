@@ -73,6 +73,7 @@ import { listEnquirySignals } from "@/lib/lead-stage/signals";
 import { LeadHealthBadge } from "@/components/enquiry/LeadHealthBadge";
 import { StageAgeChip } from "@/components/enquiry/StageAgeChip";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+import { cn } from "@/lib/utils";
 
 const UMBRELLA_IDS = LEAD_UMBRELLAS.map((u) => u.id) as ReadonlyArray<LeadUmbrellaId>;
 
@@ -81,13 +82,26 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
   component: EnquiriesPage,
   validateSearch: (
     s: Record<string, unknown>,
-  ): { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } => {
-    const out: { edit?: string; umbrella?: LeadUmbrellaId; new?: string; customer?: string } = {};
+  ): {
+    edit?: string;
+    umbrella?: LeadUmbrellaId;
+    new?: string;
+    customer?: string;
+    web_only?: boolean;
+  } => {
+    const out: {
+      edit?: string;
+      umbrella?: LeadUmbrellaId;
+      new?: string;
+      customer?: string;
+      web_only?: boolean;
+    } = {};
     if (typeof s.edit === "string") out.edit = s.edit;
     if (typeof s.umbrella === "string" && (UMBRELLA_IDS as readonly string[]).includes(s.umbrella))
       out.umbrella = s.umbrella as LeadUmbrellaId;
     if (typeof s.new === "string") out.new = s.new;
     if (typeof s.customer === "string") out.customer = s.customer;
+    if (s.web_only === true || s.web_only === "true" || s.web_only === "1") out.web_only = true;
     return out;
   },
 });
@@ -95,7 +109,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 function EnquiriesPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit, umbrella, new: newParam, customer: customerParam } = Route.useSearch();
+  const { edit, umbrella, new: newParam, customer: customerParam, web_only } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [newOpen, setNewOpen] = useState(false);
@@ -121,7 +135,7 @@ function EnquiriesPage() {
   );
 
   const query = useQuery({ queryKey: qk.enquiries.list(dq), queryFn: () => listEnquiries(dq) });
-  useEffect(() => setPage(1), [dq, umbrella]);
+  useEffect(() => setPage(1), [dq, umbrella, web_only]);
 
   useEffect(() => {
     if (!edit) return;
@@ -182,9 +196,29 @@ function EnquiriesPage() {
 
   const [lostFor, setLostFor] = useState<{ id: string; stage: LeadStage } | null>(null);
 
-  const rows = (query.data ?? []).filter((r) =>
-    umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true,
+  const webLeadsCount = useMemo(
+    () =>
+      (query.data ?? []).filter(
+        (r) =>
+          r.source === "Shareable Web Link" ||
+          r.source?.toLowerCase().includes("web") ||
+          r.source?.toLowerCase().includes("stonetech") ||
+          r.notes?.toLowerCase().includes("whatsapp"),
+      ).length,
+    [query.data],
   );
+
+  const rows = (query.data ?? []).filter((r) => {
+    if (web_only) {
+      const isWeb =
+        r.source === "Shareable Web Link" ||
+        r.source?.toLowerCase().includes("web") ||
+        r.source?.toLowerCase().includes("stonetech") ||
+        r.notes?.toLowerCase().includes("whatsapp");
+      if (!isWeb) return false;
+    }
+    return umbrella ? STAGE_TO_UMBRELLA[r.stage] === umbrella : true;
+  });
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   const rowIds = pageRows.map((r) => r.id);
@@ -206,20 +240,79 @@ function EnquiriesPage() {
   const signals = signalsQ.data ?? {};
 
   const umbrellaFilter = (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5">
       <button
         type="button"
-        onClick={() => nav({ to: "/enquiries", search: {}, replace: true })}
-        className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${!umbrella ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+        onClick={() =>
+          nav({
+            to: "/enquiries",
+            search: (s: Record<string, unknown>) => ({
+              ...s,
+              web_only: undefined,
+              umbrella: undefined,
+            }),
+            replace: true,
+          })
+        }
+        className={cn(
+          "rounded-full border px-2.5 py-1 text-xs transition-colors",
+          !umbrella && !web_only
+            ? "border-primary bg-primary/10 text-primary font-bold"
+            : "border-border hover:bg-accent",
+        )}
       >
         All
       </button>
+
+      <button
+        type="button"
+        onClick={() =>
+          nav({
+            to: "/enquiries",
+            search: (s: Record<string, unknown>) => ({
+              ...s,
+              web_only: web_only ? undefined : true,
+            }),
+            replace: true,
+          })
+        }
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all",
+          web_only
+            ? "border-cyan-600 bg-cyan-700 text-white shadow-xs font-bold"
+            : "border-cyan-300 bg-cyan-50/70 text-cyan-900 hover:bg-cyan-100",
+        )}
+      >
+        <span>🌐 stonetech.in Leads</span>
+        {webLeadsCount > 0 && (
+          <span
+            className={cn(
+              "rounded-full px-1.5 py-0.2 font-mono text-[10px] font-bold",
+              web_only ? "bg-white/20 text-white" : "bg-cyan-200 text-cyan-900",
+            )}
+          >
+            {webLeadsCount}
+          </span>
+        )}
+      </button>
+
       {LEAD_UMBRELLAS.map((u) => (
         <button
           key={u.id}
           type="button"
-          onClick={() => nav({ to: "/enquiries", search: { umbrella: u.id }, replace: true })}
-          className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${umbrella === u.id ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+          onClick={() =>
+            nav({
+              to: "/enquiries",
+              search: (s: Record<string, unknown>) => ({ ...s, umbrella: u.id }),
+              replace: true,
+            })
+          }
+          className={cn(
+            "rounded-full border px-2.5 py-1 text-xs transition-colors",
+            umbrella === u.id && !web_only
+              ? "border-primary bg-primary/10 text-primary font-bold"
+              : "border-border hover:bg-accent",
+          )}
         >
           {u.label}
         </button>
@@ -326,17 +419,56 @@ function EnquiriesPage() {
                   <TableRow key={e.id}>
                     {!isHidden("no") && (
                       <TableCell className="font-mono text-xs">
-                        <Link
-                          to="/enquiries/$enquiryId"
-                          params={{ enquiryId: e.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {e.enquiry_no}
-                        </Link>
+                        <div className="flex flex-col gap-1">
+                          <Link
+                            to="/enquiries/$enquiryId"
+                            params={{ enquiryId: e.id }}
+                            className="text-primary hover:underline font-bold"
+                          >
+                            {e.enquiry_no}
+                          </Link>
+                          {(e.source === "Shareable Web Link" ||
+                            e.source?.toLowerCase().includes("web") ||
+                            e.source?.toLowerCase().includes("stonetech")) && (
+                            <span className="inline-flex items-center gap-1 rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-cyan-800 border border-cyan-200 w-fit">
+                              🌐 stonetech.in
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                     )}
                     {!isHidden("customer") && (
-                      <TableCell className="font-medium">{e.customer?.name ?? "—"}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col gap-0.5">
+                          <span>{e.customer?.name ?? "—"}</span>
+                          {(() => {
+                            const ext =
+                              typeof e.external_ref === "object" && e.external_ref !== null
+                                ? (e.external_ref as Record<string, unknown>)
+                                : {};
+                            const rawPhone =
+                              (typeof ext.client_whatsapp === "string"
+                                ? ext.client_whatsapp
+                                : null) || e.notes?.match(/Customer WhatsApp:\s*([^\s|]+)/)?.[1];
+                            const cleanDigits = rawPhone ? rawPhone.replace(/\D/g, "") : "";
+                            if (!cleanDigits) return null;
+                            return (
+                              <a
+                                href={`https://wa.me/${cleanDigits}?text=${encodeURIComponent(
+                                  `Hello ${e.customer?.name || "there"}! Regarding your Stone Tech inquiry ${e.enquiry_no}:`,
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 hover:underline w-fit"
+                                title="Click to chat on WhatsApp"
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                <span>WhatsApp: {rawPhone}</span>
+                              </a>
+                            );
+                          })()}
+                        </div>
+                      </TableCell>
                     )}
                     {!isHidden("requirement") && (
                       <TableCell className="max-w-xs truncate">{e.requirement ?? "—"}</TableCell>

@@ -151,11 +151,11 @@ export function NotificationsBell() {
         align="end"
         className="w-[380px] overflow-hidden p-0 border-border-default shadow-e3"
       >
-        {/* Sapphire Blue header */}
-        <div className="material-sapphire stone-grain relative">
+        {/* Solid Dark Turquoise header */}
+        <div className="material-sapphire relative">
           <div className="relative z-10 flex items-center justify-between px-3.5 py-3">
             <div className="flex items-center gap-2">
-              <Inbox className="h-3.5 w-3.5 text-blue-200" aria-hidden />
+              <Inbox className="h-3.5 w-3.5 text-cyan-100" aria-hidden />
               <span className="font-display text-[13px] font-bold tracking-tight text-white">
                 Notifications
               </span>
@@ -171,7 +171,7 @@ export function NotificationsBell() {
               disabled={unread === 0}
               className={cn(
                 "flex items-center gap-1 rounded-sm px-1.5 py-1 text-[11px]",
-                "text-blue-200 transition-colors",
+                "text-cyan-100 transition-colors",
                 "hover:bg-white/10 hover:text-white",
                 "disabled:opacity-40 disabled:hover:bg-transparent",
               )}
