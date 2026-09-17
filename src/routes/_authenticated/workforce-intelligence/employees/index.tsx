@@ -6,7 +6,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Filter } from "lucide-react";
+import { Plus, Pencil, Trash2, Filter, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -42,6 +42,7 @@ import {
 } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/")({
   head: () => ({ meta: [{ title: "Employees — Workforce Intelligence" }] }),
@@ -50,6 +51,8 @@ export const Route = createFileRoute("/_authenticated/workforce-intelligence/emp
 
 function EmployeesPage() {
   const qc = useQueryClient();
+  const roles = useRoles();
+  const isSuperAdmin = roles.isSuperAdmin;
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [toDelete, setToDelete] = useState<Employee | null>(null);
@@ -66,8 +69,14 @@ function EmployeesPage() {
   const desigById = new Map((designations.data ?? []).map((d) => [d.id, d.name]));
 
   const updateStatusMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: EmploymentStatus }) =>
-      updateEmployeeStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: EmploymentStatus }) => {
+      if (status === "terminated" && !roles.isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+        );
+      }
+      return updateEmployeeStatus(id, status);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
       toast.success("Employment status updated");
@@ -76,7 +85,14 @@ function EmployeesPage() {
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: string) => deleteEmployee(id),
+    mutationFn: (id: string) => {
+      if (!roles.isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate or delete employees. Only Super Admin can remove staff.",
+        );
+      }
+      return deleteEmployee(id);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
       toast.success("Employee removed successfully");
@@ -175,6 +191,7 @@ function EmployeesPage() {
               <TableRow>
                 <TableHead>Code</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Registered Email</TableHead>
                 <TableHead>Designation</TableHead>
                 <TableHead>Department</TableHead>
                 <TableHead>Employment Status</TableHead>
@@ -196,6 +213,20 @@ function EmployeesPage() {
                     >
                       {e.full_name}
                     </Link>
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    {e.email ? (
+                      <a
+                        href={`mailto:${e.email}`}
+                        className="text-primary hover:underline font-mono inline-flex items-center gap-1.5"
+                        title={e.email}
+                      >
+                        <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span className="truncate max-w-[170px]">{e.email}</span>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {(() => {
@@ -232,19 +263,30 @@ function EmployeesPage() {
                     <Select
                       value={e.employment_status}
                       disabled={updateStatusMut.isPending}
-                      onValueChange={(val) =>
-                        updateStatusMut.mutate({ id: e.id, status: val as EmploymentStatus })
-                      }
+                      onValueChange={(val) => {
+                        if (val === "terminated" && !isSuperAdmin) {
+                          toast.error(
+                            "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+                          );
+                          return;
+                        }
+                        updateStatusMut.mutate({ id: e.id, status: val as EmploymentStatus });
+                      }}
                     >
                       <SelectTrigger className="h-7 w-[125px] text-xs font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {EMPLOYMENT_STATUSES.map((st) => (
-                          <SelectItem key={st} value={st} className="text-xs">
-                            {EMPLOYMENT_STATUS_LABELS[st]}
-                          </SelectItem>
-                        ))}
+                        {EMPLOYMENT_STATUSES.map((st) => {
+                          if (st === "terminated" && !isSuperAdmin) {
+                            return null;
+                          }
+                          return (
+                            <SelectItem key={st} value={st} className="text-xs">
+                              {EMPLOYMENT_STATUS_LABELS[st]}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -262,15 +304,17 @@ function EmployeesPage() {
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                         </Link>
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        title="Remove employee"
-                        onClick={() => setToDelete(e)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {isSuperAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Remove employee (Super Admin only)"
+                          onClick={() => setToDelete(e)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

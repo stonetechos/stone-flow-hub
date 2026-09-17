@@ -17,6 +17,8 @@ export const publicInquiryInputSchema = z.object({
   whatsapp: z.string().trim().min(7, "Please enter a valid WhatsApp number"),
   email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
   city: z.string().trim().min(2, "Please enter your city or project location"),
+  customer_role: z.string().optional().default("Owner / Homeowner"),
+  customer_type: z.string().optional().default("individual"),
   space_type: z.string().optional().default(""),
   required_date: z.string().min(1, "Please select when you need this by"),
   selected_products: z.array(z.string()).default([]),
@@ -158,14 +160,24 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
           whatsapp: normalizedPhone,
           primary_email: input.email ? input.email.trim().toLowerCase() : null,
           city: input.city.trim(),
-          customer_type: "individual",
+          customer_type: ([
+            "builder",
+            "architect",
+            "interior_designer",
+            "contractor",
+            "individual",
+            "company",
+            "other",
+          ].includes(input.customer_type)
+            ? input.customer_type
+            : "individual") as Database["public"]["Enums"]["customer_type"],
           source: "Shareable Web Link",
           space_type: (input.space_type as Database["public"]["Enums"]["space_type"]) || null,
           material_interests:
             (input.selected_products.map((p) =>
               p.toLowerCase().replace(/[\s-]+/g, "_"),
             ) as Database["public"]["Enums"]["material_interest"][]) || [],
-          notes: `Lead generated from public web link. Required by: ${input.required_date}`,
+          notes: `Lead from public web form. Role: ${input.customer_role || "Owner / Homeowner"}. Required by: ${input.required_date}`,
         } as unknown as Database["public"]["Tables"]["customers"]["Insert"])
         .select("id, customer_code")
         .single();
@@ -242,6 +254,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         : "General Stone Requirement";
 
     const requirementText = [
+      input.customer_role ? `Customer Role: ${input.customer_role}` : "",
       `Products: ${formattedProducts}`,
       input.space_type ? `Space Type: ${input.space_type}` : "",
       `Required by: ${input.required_date}`,
@@ -264,10 +277,11 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         source: "Shareable Web Link",
         requirement: requirementText,
         required_delivery_date: input.required_date,
-        notes: `Customer WhatsApp: ${normalizedPhone} | City: ${input.city.trim()} | Delivery Required: ${input.required_date}`,
+        notes: `Customer WhatsApp: ${normalizedPhone} | Role: ${input.customer_role || "Owner / Homeowner"} | City: ${input.city.trim()} | Delivery Required: ${input.required_date}`,
         external_ref: {
           client_whatsapp: normalizedPhone,
           client_city: input.city.trim(),
+          client_role: input.customer_role || "Owner / Homeowner",
           space_type: input.space_type || null,
           selected_products: input.selected_products,
           photos: photoObjects,

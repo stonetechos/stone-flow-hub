@@ -105,12 +105,20 @@ describe("canManageTargetUser — Multi-Seat Super Admin governance", () => {
     });
   });
 
-  test("Admin can delete Admin", () => {
-    expect(canManageTargetUser(admin, adminTarget, "delete")).toEqual({ allowed: true });
+  test("Admin cannot delete Admin", () => {
+    expect(canManageTargetUser(admin, adminTarget, "delete")).toEqual({
+      allowed: false,
+      reason:
+        "Admins are not permitted to terminate or delete accounts. Only Super Admin can perform termination.",
+    });
   });
 
-  test("Admin can delete Employee", () => {
-    expect(canManageTargetUser(admin, employeeTarget, "delete")).toEqual({ allowed: true });
+  test("Admin cannot delete Employee", () => {
+    expect(canManageTargetUser(admin, employeeTarget, "delete")).toEqual({
+      allowed: false,
+      reason:
+        "Admins are not permitted to terminate or delete accounts. Only Super Admin can perform termination.",
+    });
   });
 
   test("Super Admin can delete Admin", () => {
@@ -142,8 +150,8 @@ describe("assertCanManageTargetUser", () => {
     );
   });
 
-  test("does not throw when allowed", () => {
-    expect(() => assertCanManageTargetUser(admin, employeeTarget, "delete")).not.toThrow();
+  test("does not throw when allowed for Super Admin", () => {
+    expect(() => assertCanManageTargetUser(superAdmin, employeeTarget, "delete")).not.toThrow();
   });
 });
 

@@ -124,12 +124,25 @@ export function canManageTargetUser(
     return { allowed: true };
   }
 
-  // Target is not a Super Admin — Admins and Super Admins have full management access
-  if (actor.isSuperAdmin || actor.isAdmin) {
-    return { allowed: true };
+  // Target is not a Super Admin
+  if (!actor.isSuperAdmin && !actor.isAdmin) {
+    return { allowed: false, reason: "You don't have permission to manage this user." };
   }
 
-  return { allowed: false, reason: "You don't have permission to manage this user." };
+  // Admin policy: an admin is not allowed to terminate or delete anyone.
+  // Only Super Admin has authority to delete or deactivate accounts.
+  if (action === "delete" || action === "deactivate") {
+    if (!actor.isSuperAdmin) {
+      return {
+        allowed: false,
+        reason:
+          "Admins are not permitted to terminate or delete accounts. Only Super Admin can perform termination.",
+      };
+    }
+  }
+
+  // Other management actions (e.g. change_role, revoke_role, reset_password)
+  return { allowed: true };
 }
 
 /** Convenience wrapper — throws with the exact Part 3 copy when denied, for

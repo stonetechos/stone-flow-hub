@@ -61,7 +61,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
-import { InstagramGallery } from "@/components/landing/InstagramGallery";
+import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
+import { ContactCenter } from "@/components/landing/ContactCenter";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -81,6 +82,14 @@ export const Route = createFileRoute("/")({
   }),
   component: HomePage,
 });
+
+export const CUSTOMER_ROLES = [
+  { label: "Owner / Homeowner", value: "Owner / Homeowner", type: "individual" },
+  { label: "Architect", value: "Architect", type: "architect" },
+  { label: "Interior Designer", value: "Interior Designer", type: "interior_designer" },
+  { label: "Contractor / Builder", value: "Contractor / Builder", type: "contractor" },
+  { label: "Other", value: "Other", type: "other" },
+];
 
 interface ProductOption {
   id: string;
@@ -252,6 +261,7 @@ function HomePage() {
   const [planDescription, setPlanDescription] = useState<string>("");
 
   // Customer contact states with country code
+  const [customerRole, setCustomerRole] = useState<string>("Owner / Homeowner");
   const [name, setName] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("+91");
   const [whatsapp, setWhatsapp] = useState<string>("");
@@ -395,6 +405,7 @@ function HomePage() {
     setIsSubmitting(true);
 
     try {
+      const selectedRoleObj = CUSTOMER_ROLES.find((r) => r.value === customerRole);
       const result = await submitPublicEnquiryServerFn({
         data: {
           name: name.trim(),
@@ -402,6 +413,8 @@ function HomePage() {
           whatsapp: cleanDigits,
           email: email.trim(),
           city: city.trim(),
+          customer_role: customerRole,
+          customer_type: selectedRoleObj?.type || "individual",
           space_type: spaceType,
           required_date: requiredDate,
           selected_products: selectedProducts,
@@ -569,8 +582,8 @@ function HomePage() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-muted-foreground">
-            <a href="#instagram-feed" className="hover:text-primary transition-colors">
-              Instagram Feed
+            <a href="#gallery-feed" className="hover:text-primary transition-colors">
+              Our Work
             </a>
             <a href="#how-it-works" className="hover:text-primary transition-colors">
               How It Works
@@ -591,8 +604,8 @@ function HomePage() {
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog />
 
-            {/* Staff ERP Login or Dashboard Jump */}
-            {isAuthenticatedStaff ? (
+            {/* Authenticated Staff ERP Shortcut (hidden for general visitors) */}
+            {isAuthenticatedStaff && (
               <Button
                 asChild
                 size="sm"
@@ -603,27 +616,15 @@ function HomePage() {
                   <span className="hidden sm:inline">Open</span> ERP
                 </Link>
               </Button>
-            ) : (
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-medium border-border hover:bg-muted"
-              >
-                <Link to="/auth" search={{ flow: "signin" }}>
-                  <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="hidden sm:inline">Staff</span> Login
-                </Link>
-              </Button>
             )}
 
-            {/* Primary Get Estimate CTA */}
+            {/* Primary Request Estimate CTA */}
             <Button
               onClick={() => scrollToForm()}
               size="sm"
               className="h-8 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
             >
-              <span>Get Estimate</span>
+              <span>Request Estimate</span>
               <ArrowRight className="h-3.5 w-3.5 hidden sm:inline" />
             </Button>
           </div>
@@ -634,39 +635,26 @@ function HomePage() {
       <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 border-b border-border/60 bg-gradient-to-b from-stone-100/60 via-background to-stone-50/40 dark:from-slate-900/50 dark:via-background dark:to-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* LEFT COLUMN: Authority, Brand Prestige & Trust Metrics */}
+            {/* LEFT COLUMN: Authority, Brand Prestige, Embedded Feed & Contact Center */}
             <div className="lg:col-span-6 space-y-6 pt-2">
-              {/* Category Pill */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-600/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold tracking-wide">
-                <Gem className="h-3.5 w-3.5" />
-                <span>India's Premier Natural Stone Atelier • Direct Quarry Pricing</span>
-              </div>
-
               {/* Bold Architectural Headline */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-                Bespoke Natural Stone & Architectural Finishes for{" "}
+                Bespoke Natural Stone &amp; Architectural Finishes for{" "}
                 <span className="bg-gradient-to-r from-amber-600 via-amber-700 to-stone-800 bg-clip-text text-transparent dark:from-amber-400 dark:to-stone-200">
                   Luxury Living
                 </span>
               </h1>
 
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Flexible Stone Veneers, 3D Elevation Claddings, CNC Temple Murals & Bookmatched
-                Italian Marble. Handcrafted direct from Rajasthan quarries with a 10-year surface
-                durability guarantee.
-              </p>
-
-              {/* Livspace-style 4 Trust Counters */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-2">
+              {/* 4 Trust Counters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-1">
                 <div className="p-3 rounded-xl border border-border/80 bg-background/80 shadow-2xs">
-                  <div className="text-2xl font-black text-foreground">500+</div>
+                  <div className="text-2xl font-black text-foreground">1500+</div>
                   <div className="text-xs text-muted-foreground font-medium mt-0.5">
-                    Luxury Projects Done
+                    Customers Trust
                   </div>
                 </div>
                 <div className="p-3 rounded-xl border border-border/80 bg-background/80 shadow-2xs">
-                  <div className="text-2xl font-black text-foreground">10-Year</div>
+                  <div className="text-2xl font-black text-foreground">3 Years</div>
                   <div className="text-xs text-muted-foreground font-medium mt-0.5">
                     Surface Warranty
                   </div>
@@ -687,102 +675,28 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Assurance Checklist */}
-              <div className="space-y-2.5 pt-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                    <Check className="h-3.5 w-3.5 stroke-[3]" />
-                  </div>
-                  <span>Complimentary physical swatch kit dispatched to your doorstep</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                    <Check className="h-3.5 w-3.5 stroke-[3]" />
-                  </div>
-                  <span>3D dry-lay & laser vein matching photos approved before dispatch</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                    <Check className="h-3.5 w-3.5 stroke-[3]" />
-                  </div>
-                  <span>Transparent quarry-direct estimate sent straight to your WhatsApp</span>
-                </div>
+              {/* Embedded Stone Gallery Feed in a rounded container without sharp edges */}
+              <div id="gallery-feed">
+                <StoneGalleryFeed onSelectProduct={scrollToForm} />
               </div>
 
-              {/* Quick Social Proof Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {/* Google Verified Card */}
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=Stone+Tech+Marble+Granite"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl border border-blue-200/80 bg-gradient-to-r from-blue-50/50 via-sky-50/30 to-background hover:border-blue-300 dark:border-blue-900/40 dark:from-blue-950/20 dark:to-slate-900 transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-border shadow-xs text-blue-600 font-black text-sm">
-                      G
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground flex items-center gap-1">
-                        <span>Showroom Locator</span>
-                        <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 py-0.2 rounded">
-                          ⭐ 4.9
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-rose-500" />
-                        <span>Get directions</span>
-                      </div>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-blue-600 transition-colors" />
-                </a>
-
-                {/* Instagram Portfolio Card */}
-                <a
-                  href="https://www.instagram.com/stonetech.ahmedabad/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl border border-pink-200/80 bg-gradient-to-r from-pink-50/50 via-rose-50/30 to-background hover:border-pink-300 dark:border-pink-900/40 dark:from-pink-950/20 dark:to-slate-900 transition-all shadow-2xs group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-xs">
-                      <Camera className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400">
-                        Instagram Gallery
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        @stonetech.ahmedabad • 500+ sites
-                      </div>
-                    </div>
-                  </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-pink-600 transition-colors" />
-                </a>
-              </div>
+              {/* "How to reach Us?" Section with direct WhatsApp, Email, Location & 5-Star Reviews */}
+              <ContactCenter />
             </div>
 
-            {/* RIGHT COLUMN: Livspace Floating Lead Capture Card */}
+            {/* RIGHT COLUMN: Floating Request for Estimate Card */}
             <div id="lead-form" className="lg:col-span-6 scroll-mt-24">
               <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
                 {/* Card Top Title Banner */}
                 <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 text-white p-5 sm:p-6 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest font-bold text-amber-300">
-                      Step-by-Step Estimate
-                    </span>
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                      Request for estimate
+                    </h2>
                     <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-400/30 text-[10px] font-semibold">
                       ⚡ Quick Response
                     </Badge>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                    Get Free Stone Estimate &amp; Swatches
-                  </h2>
-                  <p className="text-xs text-stone-300">
-                    Receive transparent factory pricing, dry-lay guidance, and swatch kit on
-                    WhatsApp.
-                  </p>
                 </div>
 
                 {/* Step Progress Continuation Bar (1/2 and 2/2) */}
@@ -1075,8 +989,40 @@ function HomePage() {
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 4
                               </span>
-                              <span>WhatsApp &amp; Required Date:</span>
+                              <span>Contact &amp; Timeline:</span>
                             </label>
+                          </div>
+
+                          {/* Customer Persona / Role Selector */}
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-semibold text-foreground flex items-center justify-between">
+                              <span>
+                                Your Role / Identity <span className="text-destructive">*</span>
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">Select one</span>
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                              {CUSTOMER_ROLES.map((role) => {
+                                const isSelected = customerRole === role.value;
+                                return (
+                                  <button
+                                    key={role.value}
+                                    type="button"
+                                    onClick={() => setCustomerRole(role.value)}
+                                    className={`p-2 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1 ${
+                                      isSelected
+                                        ? "border-amber-600 bg-amber-500/10 text-foreground font-bold ring-1 ring-amber-500/30 shadow-2xs"
+                                        : "border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground"
+                                    }`}
+                                  >
+                                    <span className="truncate">{role.label}</span>
+                                    {isSelected && (
+                                      <Check className="h-3.5 w-3.5 text-amber-600 shrink-0 stroke-[3]" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1122,7 +1068,7 @@ function HomePage() {
                                 required
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
-                                placeholder="e.g. Jaipur, Delhi, Dubai"
+                                placeholder="e.g. Ahmedabad, Jaipur, Delhi"
                                 className="h-9 text-xs bg-background"
                               />
                             </div>
@@ -1217,11 +1163,11 @@ function HomePage() {
                             {isSubmitting ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Submitting requirement &amp; photos...</span>
+                                <span>Submitting request &amp; photos...</span>
                               </>
                             ) : (
                               <>
-                                <span>Get Free Stone Estimate &amp; Swatches</span>
+                                <span>Request for estimate</span>
                                 <ArrowRight className="h-4 w-4" />
                               </>
                             )}
@@ -1230,7 +1176,7 @@ function HomePage() {
 
                         <div className="text-center text-[11px] text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                          <span>Zero-spam guarantee • Direct quarry pricing sent to WhatsApp</span>
+                          <span>Direct quarry pricing sent to WhatsApp</span>
                         </div>
                       </div>
                     )}
@@ -1242,8 +1188,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 3. OFFICIAL INSTAGRAM FEED & EXECUTED SITES GALLERY (300 POSTS) */}
-      <InstagramGallery onSelectProduct={scrollToForm} />
+      {/* 2. HOW STONE TECH WORKS (THE LIVSPACE 3-STEP JOURNEY) */}
 
       {/* 4. HOW STONE TECH WORKS (THE LIVSPACE 3-STEP JOURNEY) */}
       <section
@@ -1424,11 +1369,11 @@ function HomePage() {
                 </div>
 
                 <div className="p-4 rounded-xl border border-border bg-background flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
                     <Camera className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-foreground">Instagram Showcase</div>
+                    <div className="text-xs font-bold text-foreground">Live Project Showcase</div>
                     <div className="text-[11px] text-muted-foreground">
                       Over 500+ site photos & videos
                     </div>
@@ -1450,20 +1395,10 @@ function HomePage() {
                   </a>
                 </Button>
 
-                <Button
-                  asChild
-                  variant="outline"
-                  size="default"
-                  className="gap-2 text-xs h-10 border-pink-300 text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/20"
-                >
-                  <a
-                    href="https://www.instagram.com/stonetech.ahmedabad/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Camera className="h-4 w-4" />
-                    <span>Explore Instagram Feed (@stonetech.ahmedabad)</span>
-                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                <Button asChild variant="outline" size="default" className="gap-2 text-xs h-10">
+                  <a href="#gallery-feed">
+                    <Camera className="h-4 w-4 text-primary" />
+                    <span>Explore Site Reels & Gallery</span>
                   </a>
                 </Button>
               </div>
@@ -1595,14 +1530,9 @@ function HomePage() {
                 <MapPin className="h-3.5 w-3.5 text-rose-500" />
                 <span>Locate Showroom</span>
               </a>
-              <a
-                href="https://www.instagram.com/stonetech.ahmedabad/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-pink-600 flex items-center gap-1"
-              >
-                <Camera className="h-3.5 w-3.5 text-pink-500" />
-                <span>Instagram (@stonetech.ahmedabad)</span>
+              <a href="#gallery-feed" className="hover:text-foreground flex items-center gap-1">
+                <Camera className="h-3.5 w-3.5 text-primary" />
+                <span>Site Gallery & Reels</span>
               </a>
               <Link
                 to="/auth"

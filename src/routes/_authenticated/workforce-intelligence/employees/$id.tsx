@@ -6,7 +6,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil, Plus, Trash2, Fingerprint } from "lucide-react";
+import { Pencil, Plus, Trash2, Fingerprint, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -182,7 +182,14 @@ function EmployeeProfile() {
   };
 
   const updateStatusMut = useMutation({
-    mutationFn: (status: EmploymentStatus) => updateEmployeeStatus(id, status),
+    mutationFn: (status: EmploymentStatus) => {
+      if (status === "terminated" && !roles.isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+        );
+      }
+      return updateEmployeeStatus(id, status);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
       toast.success("Employment status updated");
@@ -191,7 +198,14 @@ function EmployeeProfile() {
   });
 
   const deleteMut = useMutation({
-    mutationFn: () => deleteEmployee(id),
+    mutationFn: () => {
+      if (!roles.isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate or delete employees. Only Super Admin can remove staff.",
+        );
+      }
+      return deleteEmployee(id);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
       toast.success("Employee removed successfully");
@@ -225,17 +239,28 @@ function EmployeeProfile() {
             <Select
               value={e.employment_status}
               disabled={updateStatusMut.isPending}
-              onValueChange={(val) => updateStatusMut.mutate(val as EmploymentStatus)}
+              onValueChange={(val) => {
+                if (val === "terminated" && !roles.isSuperAdmin) {
+                  toast.error(
+                    "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+                  );
+                  return;
+                }
+                updateStatusMut.mutate(val as EmploymentStatus);
+              }}
             >
               <SelectTrigger className="h-8 w-[130px] text-xs font-medium">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {EMPLOYMENT_STATUSES.map((st) => (
-                  <SelectItem key={st} value={st} className="text-xs">
-                    {EMPLOYMENT_STATUS_LABELS[st]}
-                  </SelectItem>
-                ))}
+                {EMPLOYMENT_STATUSES.map((st) => {
+                  if (st === "terminated" && !roles.isSuperAdmin) return null;
+                  return (
+                    <SelectItem key={st} value={st} className="text-xs">
+                      {EMPLOYMENT_STATUS_LABELS[st]}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
 
@@ -245,14 +270,16 @@ function EmployeeProfile() {
               </Link>
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => setShowDelete(true)}
-            >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
-            </Button>
+            {roles.isSuperAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setShowDelete(true)}
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
+              </Button>
+            )}
           </div>
         }
       />
@@ -312,7 +339,22 @@ function EmployeeProfile() {
             <InfoRow label="Status" value={<Badge>{e.employment_status}</Badge>} />
             <InfoRow label="Joining date" value={e.joining_date ?? "—"} />
             <InfoRow label="Phone" value={e.phone ?? "—"} />
-            <InfoRow label="Email" value={e.email ?? "—"} />
+            <InfoRow
+              label="Registered Email"
+              value={
+                e.email ? (
+                  <a
+                    href={`mailto:${e.email}`}
+                    className="text-primary hover:underline font-mono inline-flex items-center gap-1.5"
+                  >
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span>{e.email}</span>
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )
+              }
+            />
             <InfoRow label="Department" value={e.department ?? "—"} />
             <InfoRow label="Address" value={e.address ?? "—"} />
             <InfoRow label="Emergency contact" value={e.emergency_contact ?? "—"} />

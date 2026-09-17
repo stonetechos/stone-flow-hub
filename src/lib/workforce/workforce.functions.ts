@@ -20,9 +20,23 @@ const employeeMutationInput = z.object({
 export const saveEmployeeServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => employeeMutationInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { id, data: input, systemRole } = data;
+
+    // Terminate check: Admin is not allowed to terminate anyone. Only Super Admin can terminate.
+    if (input.employment_status === "terminated") {
+      const { data: callerRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.userId);
+      const isSuperAdmin = (callerRoles ?? []).some((r) => r.role === "super_admin");
+      if (!isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate employees. Only Super Admin has authority to terminate.",
+        );
+      }
+    }
 
     // 1. Resolve and sanitize user_id
     let targetUserId = input.user_id ?? null;
@@ -257,8 +271,21 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
 export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => z.object({ id: z.string().uuid() }).parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Terminate/delete check: Admin is not allowed to terminate anyone.
+    const { data: callerRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    const isSuperAdmin = (callerRoles ?? []).some((r) => r.role === "super_admin");
+    if (!isSuperAdmin) {
+      throw new Error(
+        "Admins are not permitted to terminate or delete employees. Only Super Admin has authority to perform employee removal.",
+      );
+    }
+
     const { error } = await supabaseAdmin.from("employees").delete().eq("id", data.id);
     if (error) {
       console.error("[workforce.functions] Delete employee failed:", error);

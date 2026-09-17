@@ -220,6 +220,12 @@ function EmployeeFormPage() {
   function submit(ev: FormEvent) {
     ev.preventDefault();
     if (!canWrite) return;
+    if (form.employment_status === "terminated" && !roles.isSuperAdmin) {
+      toast.error(
+        "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+      );
+      return;
+    }
     mut.mutate(form);
   }
 
@@ -333,19 +339,28 @@ function EmployeeFormPage() {
             <Field label="Employment status">
               <Select
                 value={form.employment_status}
-                onValueChange={(v) =>
-                  setForm({ ...form, employment_status: v as EmployeeInput["employment_status"] })
-                }
+                onValueChange={(v) => {
+                  if (v === "terminated" && !roles.isSuperAdmin) {
+                    toast.error(
+                      "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
+                    );
+                    return;
+                  }
+                  setForm({ ...form, employment_status: v as EmployeeInput["employment_status"] });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {EMPLOYMENT_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s.replace("_", " ")}
-                    </SelectItem>
-                  ))}
+                  {EMPLOYMENT_STATUSES.map((s) => {
+                    if (s === "terminated" && !roles.isSuperAdmin) return null;
+                    return (
+                      <SelectItem key={s} value={s}>
+                        {s.replace("_", " ")}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </Field>
