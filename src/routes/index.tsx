@@ -38,7 +38,6 @@ import {
   ShieldCheck,
   Star,
   ExternalLink,
-  Layers,
   Send,
   Loader2,
   CheckCircle2,
@@ -46,7 +45,6 @@ import {
   Gem,
   Compass,
   Truck,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +61,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
+import { InstagramGallery } from "@/components/landing/InstagramGallery";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -144,69 +143,6 @@ const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
     id: "agate_semi_precious",
     name: "Agate & Semi-Precious Slabs",
     tagline: "Backlit translucent luxury quartz slabs for bar counters & entry foyers",
-  },
-];
-
-const CURATED_COLLECTIONS = [
-  {
-    id: "stone_veneer",
-    title: "Flexible Stone Veneer",
-    productName: "Stone Veneer",
-    subtitle: "Real 100% natural stone cut to 1.5mm thickness",
-    description:
-      "Engineered on a fiberglass and resin backing. Bendable over curved walls, pillars, and lightweight ceilings. Available in translucent grades for dramatic backlighting.",
-    tags: ["Ultra-Lightweight", "Curved Surfaces", "Translucent Backlit", "Zero Structural Load"],
-    gradient: "from-amber-950/40 via-stone-900/60 to-slate-950",
-  },
-  {
-    id: "custom_stone_cladding",
-    title: "3D Elevation Stone Cladding",
-    productName: "Custom Stone Cladding",
-    subtitle: "Weatherproof architectural wall envelopes",
-    description:
-      "Hand-chiseled and machine-honed natural sandstone, granite, and slate panels designed to withstand extreme tropical weather while creating striking facade textures.",
-    tags: ["Exterior Elevation", "Thermal Insulation", "Weather Resistant", "Zero Fading"],
-    gradient: "from-stone-900/50 via-slate-900/60 to-zinc-950",
-  },
-  {
-    id: "interlocking_panels",
-    title: "Interlocking Ledgestone",
-    productName: "Interlocking Panels",
-    subtitle: "Z-shaped modular panels for seamless jointing",
-    description:
-      "Precision-cut multi-depth stone strips that interlock without visible grouting seams. Perfect for TV feature walls, entryway niches, and exterior boundary accents.",
-    tags: ["Seamless Joints", "Acoustic Texture", "Quick Installation", "Natural Shadow Lines"],
-    gradient: "from-slate-900/50 via-stone-950 to-neutral-950",
-  },
-  {
-    id: "stone_mosaics_inlay",
-    title: "Waterjet & Brass Stone Inlays",
-    productName: "Stone Mosaics & Inlay",
-    subtitle: "Heritage royal palace craft meets CNC technology",
-    description:
-      "Bespoke Italian marble medallions, floor borders, and brass inlaid floral motifs fabricated with sub-millimeter waterjet precision for grand foyer entryways.",
-    tags: ["Sub-mm Waterjet", "Brass & Mother of Pearl", "Custom Motifs", "Palatial Finish"],
-    gradient: "from-amber-900/30 via-slate-900/50 to-stone-950",
-  },
-  {
-    id: "stone_murals_carvings",
-    title: "CNC Mandir & Spiritual Murals",
-    productName: "Stone Murals & Carvings",
-    subtitle: "Sacred temple architecture & 3D relief art",
-    description:
-      "Intricate 3D carved temple sanctums, Radha Krishna relief panels, floral jaali screens, and bespoke deity murals sculpted in Makrana white marble and pink sandstone.",
-    tags: ["3D Relief Sculptures", "Makrana Marble", "Vastu Compliant", "Hand-Polished Detailing"],
-    gradient: "from-rose-950/30 via-stone-900/50 to-slate-950",
-  },
-  {
-    id: "marble_granite_flooring",
-    title: "Italian Marble & Dry-Lay Slabs",
-    productName: "Custom Flooring",
-    subtitle: "Hand-picked imported blocks with vein continuity",
-    description:
-      "Statuario, Botticino, Grey William, and Michelangelo marble slabs laid out in our workshop prior to cutting to ensure seamless continuous bookmatched veins across your rooms.",
-    tags: ["Dry-Lay Inspection", "Bookmatched Veins", "Imported Blocks", "Mirror Polish"],
-    gradient: "from-sky-950/30 via-slate-900/60 to-stone-950",
   },
 ];
 
@@ -633,8 +569,8 @@ function HomePage() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-muted-foreground">
-            <a href="#collections" className="hover:text-primary transition-colors">
-              Collections
+            <a href="#instagram-feed" className="hover:text-primary transition-colors">
+              Instagram Feed
             </a>
             <a href="#how-it-works" className="hover:text-primary transition-colors">
               How It Works
@@ -804,7 +740,7 @@ function HomePage() {
 
                 {/* Instagram Portfolio Card */}
                 <a
-                  href="https://www.instagram.com"
+                  href="https://www.instagram.com/stonetech.in"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-3 rounded-xl border border-pink-200/80 bg-gradient-to-r from-pink-50/50 via-rose-50/30 to-background hover:border-pink-300 dark:border-pink-900/40 dark:from-pink-950/20 dark:to-slate-900 transition-all shadow-2xs group"
@@ -1304,84 +1240,8 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 3. CURATED COLLECTIONS SHOWCASE (LIVSPACE CATALOG STYLE) */}
-      <section id="collections" className="py-16 sm:py-20 border-b border-border/60">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest text-amber-600 border-amber-500/30 bg-amber-500/10 font-bold"
-            >
-              Artisanal Stone Catalog
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Explore Our Stone Collections
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Every slab, panel, and veneer is hand-selected from heritage quarries in Rajasthan and
-              global stone centers, shaped with sub-millimeter precision.
-            </p>
-          </div>
-
-          {/* 6 Category Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CURATED_COLLECTIONS.map((col) => (
-              <Card
-                key={col.id}
-                className="overflow-hidden border-border/80 hover:border-amber-500/50 transition-all duration-300 hover:shadow-lg flex flex-col justify-between group"
-              >
-                <div>
-                  {/* Decorative Gradient Header Card */}
-                  <div
-                    className={`h-36 bg-gradient-to-br ${col.gradient} p-5 text-white flex flex-col justify-between relative overflow-hidden`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 text-[10px] font-semibold backdrop-blur-xs">
-                        {col.subtitle}
-                      </Badge>
-                      <Layers className="h-5 w-5 text-amber-300 opacity-80" />
-                    </div>
-                    <div className="relative z-10">
-                      <h3 className="text-lg font-bold tracking-tight text-white">{col.title}</h3>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-5 space-y-3.5">
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {col.description}
-                    </p>
-
-                    {/* Feature Chips */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {col.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] rounded-md px-2 py-0.5 border border-border/70 bg-muted/30 text-muted-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </div>
-
-                <div className="p-5 pt-0">
-                  <Button
-                    onClick={() => scrollToForm(col.productName)}
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs font-semibold gap-1.5 border-amber-600/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 hover:border-amber-600"
-                  >
-                    <span>Select & Estimate</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 3. OFFICIAL INSTAGRAM FEED & EXECUTED SITES GALLERY (300 POSTS) */}
+      <InstagramGallery onSelectProduct={scrollToForm} />
 
       {/* 4. HOW STONE TECH WORKS (THE LIVSPACE 3-STEP JOURNEY) */}
       <section
@@ -1594,7 +1454,11 @@ function HomePage() {
                   size="default"
                   className="gap-2 text-xs h-10 border-pink-300 text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/20"
                 >
-                  <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://www.instagram.com/stonetech.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Camera className="h-4 w-4" />
                     <span>Explore Instagram Feed</span>
                     <ExternalLink className="h-3.5 w-3.5 opacity-70" />
@@ -1730,7 +1594,7 @@ function HomePage() {
                 <span>Locate Showroom</span>
               </a>
               <a
-                href="https://www.instagram.com"
+                href="https://www.instagram.com/stonetech.in"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-pink-600 flex items-center gap-1"
