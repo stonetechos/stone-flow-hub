@@ -21,7 +21,7 @@ const PERIOD_LABELS: Record<PeriodFilter, string> = {
   today: "Today",
 };
 
-const BLUE_PALETTE = ["#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#0284C7"];
+const ORANGE_PALETTE = ["#c2410c", "#ea580c", "#f97316", "#d97706", "#fb923c", "#b45309"];
 
 export function TopExpensesCard({
   expenses,
@@ -37,10 +37,10 @@ export function TopExpensesCard({
   const hasExpenses = expenses.length > 0;
   const total = expenses.reduce((acc, e) => acc + e.amount, 0);
 
-  // Remap colors to blue harmonic palette
+  // Remap colors to dark orange harmonic palette
   const themedExpenses = expenses.map((item, idx) => ({
     ...item,
-    color: BLUE_PALETTE[idx % BLUE_PALETTE.length],
+    color: ORANGE_PALETTE[idx % ORANGE_PALETTE.length],
   }));
 
   return (

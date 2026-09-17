@@ -334,7 +334,11 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
   const c = 2 * Math.PI * r;
   const offset = c - (Math.max(0, Math.min(100, score)) / 100) * c;
   const ringColor =
-    band === "strong" ? "text-blue-600" : band === "steady" ? "text-sky-500" : "text-amber-500";
+    band === "strong"
+      ? "text-orange-600"
+      : band === "steady"
+        ? "text-orange-500"
+        : "text-amber-500";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
@@ -362,7 +366,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg">
+        <span className="font-display text-2xl font-black tabular-nums text-orange-700">
           {score}
         </span>
         <span className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-engraved-kicker">

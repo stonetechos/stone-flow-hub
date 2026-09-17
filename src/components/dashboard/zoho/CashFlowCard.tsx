@@ -99,8 +99,8 @@ export function CashFlowCard({
               <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cashGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="#ea580c" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -127,16 +127,16 @@ export function CashFlowCard({
                   labelStyle={{ fontWeight: "bold", fontSize: "12px", color: "#0F172A" }}
                   contentStyle={{
                     backgroundColor: "#ffffff",
-                    borderColor: "#BFDBFE",
+                    borderColor: "#fed7aa",
                     borderRadius: "12px",
-                    boxShadow: "0 10px 25px -5px rgba(30, 58, 138, 0.1)",
+                    boxShadow: "0 10px 25px -5px rgba(234, 88, 12, 0.1)",
                     fontSize: "12px",
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="balance"
-                  stroke="#2563EB"
+                  stroke="#c2410c"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#cashGradient)"

@@ -194,13 +194,7 @@ function TrendChart({
               tickFormatter={(v: number) => (money ? `₹${Math.round(v / 1000)}k` : String(v))}
             />
             <Tooltip formatter={(v: number) => (money ? formatInr(v) : v)} />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--primary)"
-              strokeWidth={2}
-              dot={false}
-            />
+            <Line type="monotone" dataKey="value" stroke="#ea580c" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

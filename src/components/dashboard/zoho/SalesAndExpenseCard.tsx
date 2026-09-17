@@ -164,14 +164,14 @@ export function SalesAndExpenseCard({
                 <Bar
                   dataKey="sales"
                   name="Sales"
-                  fill="#2563EB"
+                  fill="#c2410c"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={18}
                 />
                 <Bar
                   dataKey="expenses"
                   name="Expenses"
-                  fill="#60A5FA"
+                  fill="#f59e0b"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={18}
                 />

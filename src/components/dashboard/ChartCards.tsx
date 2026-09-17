@@ -25,6 +25,7 @@ function truncateLabel(label: string, maxLen: number): string {
 }
 
 export const CHART_COLORS = [
+  "#ea580c",
   "var(--primary)",
   "hsl(173 58% 39%)",
   "hsl(43 74% 66%)",
@@ -174,13 +175,7 @@ export function LineCard({
             <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatValue(v)} />
             <Tooltip formatter={(v: number) => formatValue(v)} />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--primary)"
-              strokeWidth={2}
-              dot={false}
-            />
+            <Line type="monotone" dataKey="value" stroke="#ea580c" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

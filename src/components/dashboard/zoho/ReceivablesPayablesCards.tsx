@@ -154,8 +154,8 @@ function MetricCard({
           className={cn(
             "h-full rounded-full transition-all duration-500 shadow-sm",
             type === "receivables"
-              ? "bg-gradient-to-r from-cyan-800 via-cyan-700 to-teal-400 shadow-cyan-600/50"
-              : "bg-gradient-to-r from-teal-800 via-cyan-700 to-cyan-400 shadow-teal-600/50",
+              ? "bg-gradient-to-r from-orange-700 via-orange-600 to-amber-500 shadow-orange-600/50"
+              : "bg-gradient-to-r from-amber-700 via-orange-600 to-orange-400 shadow-amber-600/50",
           )}
           style={{ width: `${overduePercent}%` }}
         />
