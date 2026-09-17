@@ -740,7 +740,7 @@ function HomePage() {
 
                 {/* Instagram Portfolio Card */}
                 <a
-                  href="https://www.instagram.com/stonetech.in"
+                  href="https://www.instagram.com/stonetech.ahmedabad/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-3 rounded-xl border border-pink-200/80 bg-gradient-to-r from-pink-50/50 via-rose-50/30 to-background hover:border-pink-300 dark:border-pink-900/40 dark:from-pink-950/20 dark:to-slate-900 transition-all shadow-2xs group"
@@ -753,7 +753,9 @@ function HomePage() {
                       <div className="text-xs font-bold text-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400">
                         Instagram Gallery
                       </div>
-                      <div className="text-[11px] text-muted-foreground">500+ executed sites</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        @stonetech.ahmedabad • 500+ sites
+                      </div>
                     </div>
                   </div>
                   <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-pink-600 transition-colors" />
@@ -1455,12 +1457,12 @@ function HomePage() {
                   className="gap-2 text-xs h-10 border-pink-300 text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/20"
                 >
                   <a
-                    href="https://www.instagram.com/stonetech.in"
+                    href="https://www.instagram.com/stonetech.ahmedabad/"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Camera className="h-4 w-4" />
-                    <span>Explore Instagram Feed</span>
+                    <span>Explore Instagram Feed (@stonetech.ahmedabad)</span>
                     <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                   </a>
                 </Button>
@@ -1594,13 +1596,13 @@ function HomePage() {
                 <span>Locate Showroom</span>
               </a>
               <a
-                href="https://www.instagram.com/stonetech.in"
+                href="https://www.instagram.com/stonetech.ahmedabad/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-pink-600 flex items-center gap-1"
               >
                 <Camera className="h-3.5 w-3.5 text-pink-500" />
-                <span>Instagram Portfolio</span>
+                <span>Instagram (@stonetech.ahmedabad)</span>
               </a>
               <Link
                 to="/auth"

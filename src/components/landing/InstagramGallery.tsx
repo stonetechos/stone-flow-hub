@@ -113,7 +113,7 @@ export function InstagramGallery({ onSelectProduct }: InstagramGalleryProps) {
             </div>
             <div className="text-left font-sans">
               <div className="font-bold text-foreground flex items-center gap-1.5">
-                <span>@stonetech.in</span>
+                <span>@stonetech.ahmedabad</span>
                 <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.2 rounded-full dark:bg-blue-950 dark:text-blue-300">
                   ✓ Verified Atelier
                 </span>
@@ -123,7 +123,7 @@ export function InstagramGallery({ onSelectProduct }: InstagramGalleryProps) {
               </div>
             </div>
             <a
-              href="https://www.instagram.com/stonetech.in"
+              href="https://www.instagram.com/stonetech.ahmedabad/"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-1 inline-flex items-center gap-1 font-bold text-pink-600 hover:text-pink-700 bg-pink-50 dark:bg-pink-950/40 px-3 py-1.5 rounded-full border border-pink-200 dark:border-pink-900 transition-colors"
@@ -290,7 +290,7 @@ export function InstagramGallery({ onSelectProduct }: InstagramGalleryProps) {
                         </div>
                         <div>
                           <DialogTitle className="text-xs font-bold text-foreground">
-                            @stonetech.in
+                            @stonetech.ahmedabad
                           </DialogTitle>
                           <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                             <MapPin className="h-2.5 w-2.5 text-amber-600" />

@@ -221,7 +221,7 @@ function createPost(
   return {
     id: `post-${postNum}`,
     shortcode,
-    permalink: `https://www.instagram.com/p/${shortcode}/`,
+    permalink: "https://www.instagram.com/stonetech.ahmedabad/",
     mediaUrl: image,
     caption: `${caption} (Site Project #${1000 + postNum}, ${location})`,
     category,
