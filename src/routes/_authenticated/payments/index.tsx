@@ -79,12 +79,18 @@ function UnifiedPaymentsPage() {
     (search.tab as "customer" | "vendor" | "agency") || "customer",
   );
 
+  useEffect(() => {
+    if (search.tab === "customer" || search.tab === "vendor" || search.tab === "agency") {
+      setActiveTab(search.tab);
+    }
+  }, [search.tab]);
+
   return (
     <AccountingGuard moduleName="Payments & Disbursements">
       <div className="space-y-6">
         <PageHeader
-          title="Payments"
-          subtitle="Manage customer payment receipts, vendor bill settlements, and agency disbursements in one place."
+          title="Payments & Disbursements"
+          subtitle="Customer receipts, vendor bill payments, and installation agency disbursements under Money Flow."
           actions={
             <div className="flex items-center gap-2">
               <Button asChild size="sm">

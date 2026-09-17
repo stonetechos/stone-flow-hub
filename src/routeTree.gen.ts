@@ -23,6 +23,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNotificationSettingsRouteImport } from './routes/_authenticated/notification-settings'
+import { Route as AuthenticatedMoneyFlowRouteImport } from './routes/_authenticated/money-flow'
 import { Route as AuthenticatedMessageTemplatesRouteImport } from './routes/_authenticated/message-templates'
 import { Route as AuthenticatedLocalCartingRouteImport } from './routes/_authenticated/local-carting'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
@@ -265,6 +266,11 @@ const AuthenticatedNotificationSettingsRoute =
     path: '/notification-settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMoneyFlowRoute = AuthenticatedMoneyFlowRouteImport.update({
+  id: '/money-flow',
+  path: '/money-flow',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMessageTemplatesRoute =
   AuthenticatedMessageTemplatesRouteImport.update({
     id: '/message-templates',
@@ -1274,6 +1280,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/local-carting': typeof AuthenticatedLocalCartingRoute
   '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -1459,6 +1466,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/local-carting': typeof AuthenticatedLocalCartingRoute
   '/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -1646,6 +1654,7 @@ export interface FileRoutesById {
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
   '/_authenticated/local-carting': typeof AuthenticatedLocalCartingRoute
   '/_authenticated/message-templates': typeof AuthenticatedMessageTemplatesRoute
+  '/_authenticated/money-flow': typeof AuthenticatedMoneyFlowRoute
   '/_authenticated/notification-settings': typeof AuthenticatedNotificationSettingsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -1833,6 +1842,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/local-carting'
     | '/message-templates'
+    | '/money-flow'
     | '/notification-settings'
     | '/notifications'
     | '/reports'
@@ -2018,6 +2028,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/local-carting'
     | '/message-templates'
+    | '/money-flow'
     | '/notification-settings'
     | '/notifications'
     | '/reports'
@@ -2204,6 +2215,7 @@ export interface FileRouteTypes {
     | '/_authenticated/favorites'
     | '/_authenticated/local-carting'
     | '/_authenticated/message-templates'
+    | '/_authenticated/money-flow'
     | '/_authenticated/notification-settings'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
@@ -2498,6 +2510,13 @@ declare module '@tanstack/react-router' {
       path: '/notification-settings'
       fullPath: '/notification-settings'
       preLoaderRoute: typeof AuthenticatedNotificationSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/money-flow': {
+      id: '/_authenticated/money-flow'
+      path: '/money-flow'
+      fullPath: '/money-flow'
+      preLoaderRoute: typeof AuthenticatedMoneyFlowRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/message-templates': {
@@ -3854,6 +3873,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
   AuthenticatedLocalCartingRoute: typeof AuthenticatedLocalCartingRoute
   AuthenticatedMessageTemplatesRoute: typeof AuthenticatedMessageTemplatesRoute
+  AuthenticatedMoneyFlowRoute: typeof AuthenticatedMoneyFlowRoute
   AuthenticatedNotificationSettingsRoute: typeof AuthenticatedNotificationSettingsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -4000,6 +4020,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
   AuthenticatedLocalCartingRoute: AuthenticatedLocalCartingRoute,
   AuthenticatedMessageTemplatesRoute: AuthenticatedMessageTemplatesRoute,
+  AuthenticatedMoneyFlowRoute: AuthenticatedMoneyFlowRoute,
   AuthenticatedNotificationSettingsRoute:
     AuthenticatedNotificationSettingsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

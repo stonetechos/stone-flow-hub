@@ -38,6 +38,8 @@ import {
   CalendarDays,
   UserCog,
   Globe,
+  ArrowLeftRight,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import type { AppRole } from "@/lib/admin/users";
@@ -83,9 +85,8 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   },
   {
     id: "finance",
-    label: "Finance",
-    superAdminOnly: true,
-    allowedRoles: ["super_admin"],
+    label: "Money Flow",
+    allowedRoles: ["admin", "super_admin"],
   },
   { id: "payroll", label: "HR Operations" },
   {
@@ -167,34 +168,70 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "inventory",
   },
 
-  // Finance: Payments -> Ledgers -> Liabilities -> Business Expenses
-  // Strictly Super-Admin-only (Owner) — admins and other employees are never shown the firm's main accounts.
+  // Money Flow: Unified Command Center, Customer & Vendor & Agency Payments, and Ledgers
+  {
+    id: "money-flow",
+    to: "/money-flow",
+    label: "Money Flow",
+    icon: ArrowLeftRight,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
+  },
   {
     id: "payments",
-    to: "/payments",
-    label: "Payments",
+    to: "/payments?tab=customer",
+    label: "Customer Payments",
     icon: Wallet,
     group: "finance",
-    superAdminOnly: true,
-    allowedRoles: ["super_admin"],
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "vendor-payments",
+    to: "/vendor-payments",
+    label: "Vendor Payments",
+    icon: Banknote,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "agency-payments",
+    to: "/agency-payments",
+    label: "Agency Payments",
+    icon: HandCoins,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "ledger",
-    to: "/ledger",
-    label: "Ledgers",
+    to: "/ledger?tab=sales",
+    label: "Customer Ledgers",
     icon: BookOpen,
     group: "finance",
-    superAdminOnly: true,
-    allowedRoles: ["super_admin"],
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "vendor-ledger",
+    to: "/purchase-ledger",
+    label: "Vendor Ledgers",
+    icon: Factory,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "agency-ledger",
+    to: "/installation-ledger",
+    label: "Agency Ledgers",
+    icon: Layers,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "liabilities",
     to: "/liabilities",
-    label: "Liabilities",
+    label: "Liabilities & Loans",
     icon: Landmark,
     group: "finance",
-    superAdminOnly: true,
-    allowedRoles: ["super_admin"],
+    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "business-expenses",
@@ -202,8 +239,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Business Expenses",
     icon: ReceiptText,
     group: "finance",
-    superAdminOnly: true,
-    allowedRoles: ["super_admin"],
+    allowedRoles: ["admin", "super_admin"],
   },
 
   // HR Operations (Merged HR Operations & Workforce Intelligence)

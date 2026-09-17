@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Users, Factory, HandCoins, ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -32,10 +32,24 @@ import { AccountingGuard } from "@/components/auth/AccountingGuard";
 export const Route = createFileRoute("/_authenticated/ledger/")({
   ssr: false,
   component: UnifiedLedgersPage,
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof s.tab === "string" ? s.tab : undefined,
+  }),
 });
 
 function UnifiedLedgersPage() {
-  const [activeTab, setActiveTab] = useState<"sales" | "purchase" | "agency">("sales");
+  const search = Route.useSearch();
+  const [activeTab, setActiveTab] = useState<"sales" | "purchase" | "agency">(
+    search.tab === "sales" || search.tab === "purchase" || search.tab === "agency"
+      ? search.tab
+      : "sales",
+  );
+
+  useEffect(() => {
+    if (search.tab === "sales" || search.tab === "purchase" || search.tab === "agency") {
+      setActiveTab(search.tab);
+    }
+  }, [search.tab]);
 
   return (
     <AccountingGuard moduleName="Financial Ledgers">

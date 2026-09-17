@@ -24,8 +24,8 @@ export function AccountingGuard({
     );
   }
 
-  // Only Platform Super Admin (Owner) is authorized to access main accounting
-  if (!roles.isSuperAdmin) {
+  // Super Admin (Owner) and Admin (Management) are authorized to access Money Flow & Accounting
+  if (!roles.isSuperAdmin && !roles.isAdmin) {
     return (
       <div className="flex min-h-[65vh] items-center justify-center p-4">
         <div className="relative max-w-lg w-full rounded-2xl border border-border/80 bg-surface-card p-6 sm:p-8 shadow-e3 text-center space-y-5">
@@ -35,14 +35,14 @@ export function AccountingGuard({
 
           <div className="space-y-2">
             <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-              Super Admin Privilege Required
+              Management Privilege Required
             </span>
             <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               {moduleName} Restricted
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Company financial ledgers, payment registries, liabilities, and business expenses are
-              strictly reserved for the <strong>Platform Super Admin (Owner)</strong> profile.
+              strictly reserved for <strong>Administrator &amp; Super Admin</strong> profiles.
             </p>
             <p className="text-xs text-muted-foreground/80">
               Your profile has full access to operational administrative workflows including Sales,
