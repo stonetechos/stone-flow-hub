@@ -25,6 +25,7 @@ export interface InstagramPost {
   mediaType: "IMAGE" | "CAROUSEL_ALBUM" | "VIDEO";
   location: string;
   date: string;
+  isLivePost?: boolean;
 }
 
 export type InstagramCategoryKey =
@@ -235,7 +236,126 @@ function createPost(
   };
 }
 
+export const BEHOLD_FEED_ID = "Vb5i6b935sxwT5h8oTFo";
+
+/**
+ * Authentic Live Instagram Posts directly synced from @stonetech.ahmedabad via Behold
+ */
+export const LIVE_BEHOLD_POSTS: InstagramPost[] = [
+  {
+    id: "17928001446163498",
+    shortcode: "DcishLoIhRJ",
+    permalink: "https://www.instagram.com/p/DcishLoIhRJ/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxNzkyODAwMTQ0NjE2MzQ5OCIsImgiOiJpb2ZkZnUifQ.jpg?class=squareMedium",
+    caption:
+      "The Happy Garden. \nMural art carved in natural sandstone and installed on a balcony wall. \n#stonemural #stoneart #art #stonewall #wallartwork",
+    category: "murals",
+    categoryLabel: "Sandstone Murals",
+    productName: "The Happy Garden Sandstone Mural",
+    likes: 11,
+    comments: 0,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Atelier",
+    date: "Aug 27, 2026",
+    isLivePost: true,
+  },
+  {
+    id: "18084498995696698",
+    shortcode: "DcI8c9DiJm0",
+    permalink: "https://www.instagram.com/p/DcI8c9DiJm0/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxODA4NDQ5ODk5NTY5NjY5OCIsImgiOiIxaDQyZHVkIn0.jpg?class=squareMedium",
+    caption:
+      "Jai Shreenathji. \nIt's a combination of natural stone, faith, artistry, and divine grace. \n#shreenathji #mandir #stonemandir #ahmedabad",
+    category: "murals",
+    categoryLabel: "Spiritual Stone Sanctums",
+    productName: "Shreenathji Devotional Stone Relief",
+    likes: 28,
+    comments: 2,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Atelier",
+    date: "Aug 15, 2026",
+    isLivePost: true,
+  },
+  {
+    id: "18021340442702753",
+    shortcode: "Db79wKyiH_B",
+    permalink: "https://www.instagram.com/p/Db79wKyiH_B/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxODAyMTM0MDQ0MjcwMjc1MyIsImgiOiJ0OHkwZzUifQ.jpg?class=squareMedium",
+    caption:
+      "Natural textured sandstone applied on a wall which is giving it a raw look. \n#sandstone #texturedstone #cladding #ahmedabad",
+    category: "cladding",
+    categoryLabel: "Exterior Cladding",
+    productName: "Natural Textured Sandstone Wall",
+    likes: 19,
+    comments: 1,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Site",
+    date: "Aug 10, 2026",
+    isLivePost: true,
+  },
+  {
+    id: "18123588217701165",
+    shortcode: "Db3RI53klgu",
+    permalink: "https://www.instagram.com/p/Db3RI53klgu/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxODEyMzU4ODIxNzcwMTE2NSIsImgiOiJhbDNzMnUifQ.jpg?class=squareMedium",
+    caption:
+      "Teakwood sandstone in a bold geometric composition to give an impression of an artistic strip on the facade of a farmhouse. \n#teakwood #facade #farmhouse #stoneart",
+    category: "cladding",
+    categoryLabel: "Exterior Cladding",
+    productName: "Teakwood Sandstone Geometric Facade",
+    likes: 24,
+    comments: 3,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Farmhouse",
+    date: "Aug 8, 2026",
+    isLivePost: true,
+  },
+  {
+    id: "18138186688571422",
+    shortcode: "Db278WokhE6",
+    permalink: "https://www.instagram.com/p/Db278WokhE6/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxODEzODE4NjY4ODU3MTQyMiIsImgiOiIxa3B3Y3JmIn0.jpg?class=squareMedium",
+    caption:
+      "Red Indian Sandstone in butch finish on natural surface giving a statement to the facade of a bungalow. \n#sandstone #facade #stonecladding #ahmedabadarchitecture",
+    category: "cladding",
+    categoryLabel: "Exterior Cladding",
+    productName: "Red Indian Sandstone Butch Finish Facade",
+    likes: 31,
+    comments: 4,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Bungalow",
+    date: "Aug 5, 2026",
+    isLivePost: true,
+  },
+  {
+    id: "17951531553218704",
+    shortcode: "DbZjL1WIl9e",
+    permalink: "https://www.instagram.com/p/DbZjL1WIl9e/",
+    mediaUrl:
+      "https://behold.pictures/eyJ1IjoiY2Z3ZEl1SHBTdmRtRnkxeUFSRzdLaVBXZ1BKMyIsImYiOiJWYjVpNmI5MzVzeHdUNWg4b1RGbyIsInAiOiIxNzk1MTUzMTU1MzIxODcwNCIsImgiOiIxMzEzZXFwIn0.jpg?class=squareMedium",
+    caption:
+      "The Perfect Chisel. \nHand chiseled basalt stone shaped to give fine edges to the natural surface. \n#stonewalls #stoneart #walldecor #wallart #ahmedabad",
+    category: "ledgestone",
+    categoryLabel: "Basalt & Wall Decor",
+    productName: "Hand Chiseled Basalt Stone Wall",
+    likes: 6,
+    comments: 0,
+    mediaType: "IMAGE",
+    location: "Ahmedabad Project",
+    date: "Jul 30, 2026",
+    isLivePost: true,
+  },
+];
+
 export const INSTAGRAM_POSTS_300: InstagramPost[] = [
+  // 0. Live Instagram posts directly from @stonetech.ahmedabad
+  ...LIVE_BEHOLD_POSTS,
+
   // 1. Flexible Stone Veneer (50 posts)
   ...Array.from({ length: 50 }, (_, i) =>
     createPost(

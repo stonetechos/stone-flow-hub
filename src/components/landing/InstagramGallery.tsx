@@ -42,6 +42,7 @@ import {
   type InstagramPost,
   type InstagramCategoryKey,
 } from "@/lib/instagram/feed";
+import { BeholdWidget } from "@/components/landing/BeholdWidget";
 import { cn } from "@/lib/utils";
 
 const BATCH_SIZE = 12;
@@ -134,6 +135,43 @@ export function InstagramGallery({ onSelectProduct }: InstagramGalleryProps) {
           </div>
         </div>
 
+        {/* Live Synced Meta Feed via Behold Widget */}
+        <div className="rounded-3xl border border-pink-500/20 bg-gradient-to-b from-pink-50/30 via-background to-background p-4 sm:p-6 shadow-sm dark:from-pink-950/20">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-border/70">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <span>Live Feed (@stonetech.ahmedabad)</span>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] text-pink-600 border-pink-300 bg-pink-50 dark:bg-pink-950/40"
+                  >
+                    Auto-Synced with Meta
+                  </Badge>
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Direct stream of our latest stone wall and facade installations
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://www.instagram.com/stonetech.ahmedabad/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-semibold text-pink-600 hover:text-pink-700 flex items-center gap-1"
+            >
+              <span>View profile</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+
+          <BeholdWidget />
+        </div>
+
         {/* Category Filter Tabs Bar */}
         <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-none">
           {CATEGORY_TABS.map((tab) => {
@@ -197,7 +235,13 @@ export function InstagramGallery({ onSelectProduct }: InstagramGalleryProps) {
               </div>
 
               {/* Category Pill (Top Left) */}
-              <div className="absolute top-2.5 left-2.5 z-10">
+              <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1">
+                {post.isLivePost && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-600 text-white shadow-xs flex items-center gap-1">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    <span>LIVE</span>
+                  </span>
+                )}
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/70 text-white/90 backdrop-blur-xs shadow-xs">
                   {post.categoryLabel}
                 </span>
