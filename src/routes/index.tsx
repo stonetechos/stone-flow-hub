@@ -256,7 +256,7 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>(["Stone Veneer"]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [spaceType, setSpaceType] = useState<string>("Bungalow / Villa");
   const [planDescription, setPlanDescription] = useState<string>("");
 
@@ -525,7 +525,7 @@ function HomePage() {
                 </p>
                 <Button asChild variant="outline" size="sm" className="w-full gap-2 text-xs">
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=Stone+Tech+Marble+Granite"
+                    href="https://share.google/0J6h6joQLwo1hVTWJ"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -593,6 +593,9 @@ function HomePage() {
             </a>
             <a href="#experience-center" className="hover:text-primary transition-colors">
               Experience Center
+            </a>
+            <a href="#contact-us" className="hover:text-primary transition-colors">
+              Contact
             </a>
             <a href="#faq" className="hover:text-primary transition-colors">
               FAQ
@@ -679,9 +682,6 @@ function HomePage() {
               <div id="gallery-feed">
                 <StoneGalleryFeed onSelectProduct={scrollToForm} />
               </div>
-
-              {/* "How to reach Us?" Section with direct WhatsApp, Email, Location & 5-Star Reviews */}
-              <ContactCenter />
             </div>
 
             {/* RIGHT COLUMN: Floating Request for Estimate Card */}
@@ -1385,7 +1385,7 @@ function HomePage() {
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Button asChild size="default" className="gap-2 bg-primary font-bold text-xs h-10">
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=Stone+Tech+Marble+Granite"
+                    href="https://share.google/0J6h6joQLwo1hVTWJ"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -1498,7 +1498,10 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 8. FOOTER WITH GOOGLE BUSINESS & STAFF ERP ACCESS */}
+      {/* 8. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
+      <ContactCenter />
+
+      {/* 9. FOOTER WITH GOOGLE BUSINESS & STAFF ERP ACCESS */}
       <footer className="border-t border-border/80 pt-10 pb-16 bg-muted/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -1522,7 +1525,7 @@ function HomePage() {
 
             <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Stone+Tech+Marble+Granite"
+                href="https://share.google/0J6h6joQLwo1hVTWJ"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground flex items-center gap-1"

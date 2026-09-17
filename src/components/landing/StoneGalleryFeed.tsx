@@ -2,17 +2,24 @@
  * StoneGalleryFeed — Embedded Architectural Site Feed for Stone Tech OS.
  *
  * Displays executed stone installations in a soft-cornered rounded container
- * with smooth vertical scrolling like an authentic visual profile stream.
+ * with a 3-column grid and smooth unlimited infinite scrolling.
  *
  * STRICT REQUIREMENTS:
+ * - 3 columns of posts in that scrollable box
+ * - Unlimited scrolls (continuous infinite pagination & cycling)
  * - NO category tabs
  * - ZERO mention of the word "Instagram" on the front page
- * - Connects to Behold JSON feed with fallback to high-res executed site posts
+ * - Connects to Behold JSON feed merged seamlessly with the 300+ executed projects
  */
 
-import { useState, useEffect } from "react";
-import { Heart, MessageCircle, MapPin, Sparkles, ChevronRight, Eye } from "lucide-react";
-import { BEHOLD_FEED_ID, LIVE_BEHOLD_POSTS, type InstagramPost } from "@/lib/instagram/feed";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { Heart, MessageCircle, MapPin, Sparkles, Eye } from "lucide-react";
+import {
+  BEHOLD_FEED_ID,
+  LIVE_BEHOLD_POSTS,
+  INSTAGRAM_POSTS_300,
+  type InstagramPost,
+} from "@/lib/instagram/feed";
 import {
   Dialog,
   DialogContent,
@@ -44,11 +51,16 @@ interface RawBeholdPost {
   };
 }
 
-export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
-  const [posts, setPosts] = useState<InstagramPost[]>(LIVE_BEHOLD_POSTS);
-  const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
+const BATCH_SIZE = 24;
 
-  // Background fetch from Behold JSON feed (no external scripts or widgets)
+export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
+  // Initialize with full 300+ executed stone installation library
+  const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => INSTAGRAM_POSTS_300);
+  const [visibleCount, setVisibleCount] = useState<number>(36);
+  const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Background fetch from Behold JSON feed (prepends latest live site posts)
   useEffect(() => {
     let active = true;
     async function fetchLatest() {
@@ -68,8 +80,8 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               : "Recent";
 
             return {
-              id: p.id || `feed-${i}`,
-              shortcode: p.permalink?.split("/p/")[1]?.replace(/\//g, "") || `feed-${i}`,
+              id: p.id || `feed-live-${i}`,
+              shortcode: p.permalink?.split("/p/")[1]?.replace(/\//g, "") || `feed-live-${i}`,
               permalink: p.permalink || "#",
               mediaUrl:
                 p.sizes?.large?.mediaUrl ||
@@ -89,7 +101,13 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               isLivePost: true,
             };
           });
-          setPosts(mapped);
+
+          // Merge live posts with the 300+ library without duplicates
+          setAllPosts((prev) => {
+            const mappedIds = new Set(mapped.map((m) => m.id));
+            const existingFiltered = prev.filter((p) => !mappedIds.has(p.id));
+            return [...mapped, ...existingFiltered];
+          });
         }
       } catch (err) {
         console.warn(
@@ -104,6 +122,30 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
       active = false;
     };
   }, []);
+
+  // Infinite Scroll Handler: appends more posts as user scrolls down
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    if (scrollTop + clientHeight >= scrollHeight - 350) {
+      setVisibleCount((prev) => prev + BATCH_SIZE);
+    }
+  }, []);
+
+  // Unlimited Posts Array: cycles continuously through the 300+ pool so it never ends
+  const visiblePosts = useMemo(() => {
+    if (allPosts.length === 0) return [];
+    if (visibleCount <= allPosts.length) {
+      return allPosts.slice(0, visibleCount);
+    }
+    const result: InstagramPost[] = [];
+    while (result.length < visibleCount) {
+      const remaining = visibleCount - result.length;
+      result.push(...allPosts.slice(0, remaining));
+    }
+    return result;
+  }, [allPosts, visibleCount]);
 
   const handleInquire = (post: InstagramPost) => {
     setActiveModalPost(null);
@@ -131,81 +173,66 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               Live Installations &amp; Executed Works
             </span>
           </div>
-          <span className="text-[11px] text-muted-foreground font-medium">
-            Scroll to explore recent work
-          </span>
+          <Badge
+            variant="outline"
+            className="text-[10px] font-semibold text-muted-foreground border-border/80"
+          >
+            300+ Finishes • Unlimited Scroll
+          </Badge>
         </div>
 
-        {/* Scrollable feed container styled like a mobile profile feed */}
-        <div className="max-h-[460px] sm:max-h-[500px] overflow-y-auto pr-1 space-y-4 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              onClick={() => setActiveModalPost(post)}
-              className="group cursor-pointer rounded-2xl border border-border/70 bg-background overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 hover:border-amber-500/40"
-            >
-              {/* Image Frame */}
-              <div className="relative aspect-4/3 sm:aspect-16/10 overflow-hidden bg-stone-100 dark:bg-slate-900">
+        {/* 3-Column Scrollable Feed with Infinite Scroll */}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="max-h-[460px] sm:max-h-[500px] overflow-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth"
+        >
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
+            {visiblePosts.map((post, idx) => (
+              <div
+                key={`${post.id}-${idx}`}
+                onClick={() => setActiveModalPost(post)}
+                className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                title={post.productName}
+              >
+                {/* Image */}
                 <img
                   src={post.mediaUrl}
                   alt={post.caption}
                   loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-103"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
                 />
 
-                {/* Subtle gradient vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                {/* Subtle dark gradient overlay on hover */}
+                <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
+                      {post.productName}
+                    </span>
+                    <Eye className="h-3 w-3 shrink-0 opacity-80" />
+                  </div>
 
-                {/* Top Location Pill */}
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 text-white backdrop-blur-xs text-[10px] font-semibold">
-                    <MapPin className="h-3 w-3 text-rose-400" />
-                    <span>{post.location}</span>
-                  </span>
-                </div>
-
-                {/* Quick Enlarge Action */}
-                <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-stone-900 backdrop-blur-xs shadow-xs text-xs">
-                    <Eye className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-
-                {/* Bottom Overlay Info */}
-                <div className="absolute bottom-0 inset-x-0 p-3.5 z-10 text-white space-y-1.5">
-                  <p className="text-xs font-semibold leading-snug line-clamp-2 text-white/95 drop-shadow-xs">
-                    {post.caption}
-                  </p>
-                  <div className="flex items-center justify-between pt-1 text-[11px] text-white/80">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 font-bold">
-                        <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" />
-                        <span>{post.likes}</span>
+                  <div className="flex items-center justify-around text-[11px] font-bold">
+                    <span className="flex items-center gap-1">
+                      <Heart className="h-3 w-3 fill-rose-500 text-rose-500" />
+                      <span>{post.likes}</span>
+                    </span>
+                    {post.comments > 0 && (
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="h-3 w-3" />
+                        <span>{post.comments}</span>
                       </span>
-                      {post.comments > 0 && (
-                        <span className="flex items-center gap-1 font-medium">
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          <span>{post.comments}</span>
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-medium text-white/70">{post.date}</span>
+                    )}
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              {/* Card Footer Bar */}
-              <div className="p-2.5 px-3.5 flex items-center justify-between bg-card text-xs border-t border-border/60">
-                <span className="font-semibold text-foreground truncate max-w-[200px]">
-                  {post.productName}
-                </span>
-                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                  <span>View Details</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              </div>
-            </div>
-          ))}
+          {/* Bottom gentle indicator */}
+          <div className="py-2 text-center text-[10px] text-muted-foreground font-medium">
+            Scroll down to explore unlimited finishes...
+          </div>
         </div>
       </div>
 
