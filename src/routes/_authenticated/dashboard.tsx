@@ -176,11 +176,6 @@ function DashboardPage() {
         canViewFinancial={canViewFinancial}
       />
 
-      {/* stonetech.in Website Inquiries & CRM Leads Box */}
-      <div className="px-2 sm:px-4 mb-6">
-        <WebsiteLeadsDashboardCard />
-      </div>
-
       {/* Main Tab Views */}
       {canViewFinancial && activeTab === "financial" && (
         <div className="px-2 sm:px-4">
@@ -206,6 +201,9 @@ function DashboardPage() {
                   headline={pickHeadline(kpisQ.data)}
                   brief={brief}
                 />
+
+                {/* Visitor Inquiries & CRM Leads */}
+                <WebsiteLeadsDashboardCard />
 
                 <BusinessHealthGrid kpis={kpisQ.data} />
 

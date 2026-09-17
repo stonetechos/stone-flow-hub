@@ -118,7 +118,7 @@ export function WebsiteLeadsDashboardCard() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-display text-base font-bold tracking-tight text-engraved-title sm:text-lg">
-                stonetech.in Visitor Inquiries &amp; CRM Leads
+                Visitor Inquiries &amp; CRM Leads
               </h3>
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import stosAppIcon from "@/assets/stos-app-icon.png.asset.json";
 
 /**
  * The STOS tile in the sidebar, mobile bar and vendor header.
@@ -33,39 +32,33 @@ export function AppMark({ size, className }: { size: number; className?: string 
     return (
       <span
         aria-hidden="true"
-        className={cn("grid shrink-0 place-items-center overflow-hidden", className)}
-        style={{
-          width: size,
-          height: size,
-          background: "linear-gradient(140deg, #3b82f6, #1d4ed8)",
-        }}
+        className={cn(
+          "grid shrink-0 place-items-center overflow-hidden rounded-lg bg-cyan-900 border border-cyan-700/50",
+          className,
+        )}
+        style={{ width: size, height: size }}
       >
-        <svg
-          viewBox="0 0 32 32"
-          width={Math.round(size * 0.62)}
-          height={Math.round(size * 0.62)}
-          className="text-white"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinejoin="round"
-        >
-          <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
-          <path d="M4 10 L16 16 L28 10" />
-          <path d="M16 16 L16 28" />
-        </svg>
+        <span className="font-display font-black text-white text-[11px]">ST</span>
       </span>
     );
   }
 
   return (
-    <img
-      src={stosAppIcon.url}
-      alt="STOS"
-      width={size}
-      height={size}
-      className={className}
-      onError={() => setFailed(true)}
-    />
+    <span
+      className={cn(
+        "relative grid shrink-0 place-items-center overflow-hidden rounded-lg bg-white/95 shadow-xs p-0.5 ring-1 ring-white/30",
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      <img
+        src="/branding/stone-tech-icon.png"
+        alt="Stone Tech"
+        width={size}
+        height={size}
+        className="h-full w-full object-contain"
+        onError={() => setFailed(true)}
+      />
+    </span>
   );
 }

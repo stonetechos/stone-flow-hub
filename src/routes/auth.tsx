@@ -203,33 +203,19 @@ function HeroPanel({ className }: { className?: string }) {
 function StoneTechMark() {
   return (
     <div className="flex items-center gap-3">
-      <div
-        aria-hidden="true"
-        className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-md"
-        style={{
-          background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
-        }}
-      >
-        {/* Faceted stone mark — abstract slab silhouette */}
-        <svg
-          viewBox="0 0 32 32"
-          className="h-6 w-6 text-text-on-intent"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinejoin="round"
-        >
-          <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
-          <path d="M4 10 L16 16 L28 10" />
-          <path d="M16 16 L16 28" />
-        </svg>
+      <div className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-white/95 p-1 shadow-md ring-1 ring-white/40">
+        <img
+          src="/branding/stone-tech-icon.png"
+          alt="Stone Tech"
+          className="h-full w-full object-contain"
+        />
       </div>
       <div className="leading-tight">
-        <div className="font-display text-lg font-medium tracking-tight text-text-on-material">
-          STOS
+        <div className="font-display text-lg font-bold tracking-tight text-text-on-material">
+          STONE TECH
         </div>
         <div className="text-[11px] uppercase tracking-[0.14em] text-text-on-material-muted">
-          By Vedora Vision
+          Enterprise ERP Hub
         </div>
       </div>
     </div>
@@ -350,26 +336,16 @@ function AuthCard({
   return (
     <div className="w-full">
       {/* Mobile-only compact wordmark */}
-      <div className="mb-8 flex items-center justify-center gap-2 md:hidden">
-        <span
-          aria-hidden="true"
-          className="grid h-8 w-8 place-items-center rounded-md text-text-on-intent"
-          style={{
-            background: "linear-gradient(140deg, var(--mint-500), var(--mint-700))",
-          }}
-        >
-          <svg
-            viewBox="0 0 32 32"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path d="M4 10 L16 4 L28 10 L28 22 L16 28 L4 22 Z" />
-          </svg>
+      <div className="mb-8 flex items-center justify-center gap-2.5 md:hidden">
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-white/95 p-0.5 shadow-xs ring-1 ring-slate-200">
+          <img
+            src="/branding/stone-tech-icon.png"
+            alt="Stone Tech"
+            className="h-full w-full object-contain"
+          />
         </span>
-        <span className="font-display text-base font-medium tracking-tight text-text-primary">
-          STOS
+        <span className="font-display text-lg font-bold tracking-tight text-text-primary">
+          STONE TECH
         </span>
       </div>
 

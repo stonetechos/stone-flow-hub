@@ -22,22 +22,13 @@ export function ZohoDashboardHeader({
       {/* Top row: Company name + actions */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <div className="flex items-center gap-3">
-          {/* Stone Tech Logo glyph in rich dark turquoise */}
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-800 via-cyan-700 to-teal-600 text-white shadow-md shadow-cyan-700/30 border border-cyan-400/40">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="12 2 2 7 12 12 22 7 12 2" />
-              <polyline points="2 17 12 22 22 17" />
-              <polyline points="2 12 12 17 22 12" />
-            </svg>
+          {/* Stone Tech Official Logo */}
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-cyan-950/20 border border-cyan-200/60 ring-1 ring-cyan-500/20">
+            <img
+              src="/branding/stone-tech-icon.png"
+              alt="Stone Tech"
+              className="h-full w-full object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
