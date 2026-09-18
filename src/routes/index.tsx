@@ -23,7 +23,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useMemo, useEffect, type FormEvent, type ChangeEvent } from "react";
 import {
   Sparkles,
-  Camera,
   Upload,
   X,
   Check,
@@ -44,7 +43,6 @@ import {
   Gem,
   Compass,
   Truck,
-  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1157,12 +1155,6 @@ function HomePage() {
       <section id="why-us" className="py-16 sm:py-20 border-b border-border/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest text-amber-600 border-amber-500/30 bg-amber-500/10 font-bold"
-            >
-              Why Architects Choose Us
-            </Badge>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
               Built on Precision, Lineage & Transparency
             </h2>
@@ -1218,70 +1210,6 @@ function HomePage() {
 
       {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
       <ContactCenter />
-
-      {/* 9. FOOTER WITH GOOGLE BUSINESS & STAFF ERP ACCESS */}
-      <footer className="border-t border-border/80 pt-10 pb-16 bg-muted/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/95 p-1 shadow-xs border border-border/80">
-                <img
-                  src="/branding/stone-tech-icon.png"
-                  alt="Stone Tech"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-              <div>
-                <div className="text-sm font-black tracking-wider uppercase text-foreground">
-                  STONE TECH
-                </div>
-                <div className="text-[10px] text-muted-foreground uppercase font-semibold tracking-widest">
-                  Architectural Stone Atelier
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
-              <a
-                href="https://share.google/0J6h6joQLwo1hVTWJ"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground flex items-center gap-1"
-              >
-                <MapPin className="h-3.5 w-3.5 text-rose-500" />
-                <span>Locate Showroom</span>
-              </a>
-              <a href="#gallery-feed" className="hover:text-foreground flex items-center gap-1">
-                <Camera className="h-3.5 w-3.5 text-primary" />
-                <span>Site Gallery & Reels</span>
-              </a>
-              <JobOpeningsDialog
-                trigger={
-                  <button className="hover:text-foreground flex items-center gap-1 cursor-pointer">
-                    <Briefcase className="h-3.5 w-3.5 text-primary" />
-                    <span>Job Openings</span>
-                  </button>
-                }
-              />
-              <Link
-                to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
-                search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
-                className="hover:text-foreground flex items-center gap-1"
-              >
-                <Lock className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-amber-600 dark:text-amber-400" />
-                <span>Employees Login</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="border-t border-border/60 pt-6 flex flex-col sm:flex-row items-center justify-center text-center gap-3 text-xs text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Stone Tech. Premium Natural Stone Fabrication, Veneers &
-              Architectural Export.
-            </p>
-          </div>
-        </div>
-      </footer>
 
       {/* 9. STICKY MOBILE ACTION BAR (LIVSPACE MOBILE PATTERN) */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-3 flex items-center gap-2.5 shadow-xl">

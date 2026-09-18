@@ -118,12 +118,6 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               Live Installations &amp; Executed Works
             </span>
           </div>
-          <Badge
-            variant="outline"
-            className="text-[10px] font-semibold text-muted-foreground border-border/80"
-          >
-            Live Atelier Feed • {allPosts.length} Works
-          </Badge>
         </div>
 
         {/* 3-Column Scrollable Feed with Unique Posts and Expanded Height */}

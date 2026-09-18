@@ -54,12 +54,6 @@ export function ContactCenter({ className }: { className?: string }) {
         {/* Top Header Row with Title, Subtitle, and Google Business Rating Pill */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border/70 pb-6">
           <div className="space-y-2">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest text-primary border-primary/30 bg-primary/10 font-bold"
-            >
-              Direct Atelier &amp; Studio Access
-            </Badge>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-400 shadow-2xs">
                 <MapPin className="h-5 w-5" />
