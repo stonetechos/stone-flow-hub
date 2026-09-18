@@ -13,13 +13,8 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Heart, MessageCircle, MapPin, Sparkles, Eye } from "lucide-react";
-import {
-  BEHOLD_FEED_ID,
-  LIVE_BEHOLD_POSTS,
-  INSTAGRAM_POSTS_300,
-  type InstagramPost,
-} from "@/lib/instagram/feed";
+import { Heart, MessageCircle, Sparkles, Eye } from "lucide-react";
+import { BEHOLD_FEED_ID, LIVE_BEHOLD_POSTS, type InstagramPost } from "@/lib/instagram/feed";
 import {
   Dialog,
   DialogContent,
@@ -44,23 +39,34 @@ interface RawBeholdPost {
   mediaUrl: string;
   likeCount?: number;
   commentsCount?: number;
+  mediaType?: "IMAGE" | "CAROUSEL_ALBUM" | "VIDEO";
   sizes?: {
     small?: { mediaUrl: string };
     medium?: { mediaUrl: string };
     large?: { mediaUrl: string };
   };
+  children?: Array<{
+    id: string;
+    mediaType?: string;
+    mediaUrl: string;
+    sizes?: {
+      small?: { mediaUrl: string };
+      medium?: { mediaUrl: string };
+      large?: { mediaUrl: string };
+    };
+  }>;
 }
 
 const BATCH_SIZE = 24;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
-  // Initialize with full 300+ executed stone installation library
-  const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => INSTAGRAM_POSTS_300);
+  // Initialize EXCLUSIVELY with authentic Instagram profile photos (zero stock/Unsplash photos)
+  const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => LIVE_BEHOLD_POSTS);
   const [visibleCount, setVisibleCount] = useState<number>(36);
   const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Background fetch from Behold JSON feed (prepends latest live site posts)
+  // Background fetch from Behold JSON feed (syncs latest profile posts + unpacks carousel items)
   useEffect(() => {
     let active = true;
     async function fetchLatest() {
@@ -70,50 +76,73 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
         const data = await res.json();
         const rawPosts: RawBeholdPost[] = data?.posts || (Array.isArray(data) ? data : []);
         if (active && rawPosts.length > 0) {
-          const mapped: InstagramPost[] = rawPosts.map((p, i) => {
+          const mapped: InstagramPost[] = [];
+
+          rawPosts.forEach((p, i) => {
             const caption = p.prunedCaption || p.caption || "Stone Tech executed site project";
             const postDate = p.timestamp
               ? new Date(p.timestamp).toLocaleDateString("en-IN", {
                   month: "short",
                   day: "numeric",
+                  year: "numeric",
                 })
               : "Recent";
+            const shortcode =
+              p.permalink?.split("/p/")[1]?.replace(/\//g, "") || p.id || `feed-live-${i}`;
+            const title = (p.prunedCaption || p.caption || "Bespoke Natural Stone")
+              .split(".")[0]
+              .split("\n")[0]
+              .trim();
 
-            return {
+            // 1. Primary post tile
+            mapped.push({
               id: p.id || `feed-live-${i}`,
-              shortcode: p.permalink?.split("/p/")[1]?.replace(/\//g, "") || `feed-live-${i}`,
+              shortcode,
               permalink: p.permalink || "#",
-              mediaUrl:
-                p.sizes?.large?.mediaUrl ||
-                p.sizes?.medium?.mediaUrl ||
-                p.mediaUrl ||
-                LIVE_BEHOLD_POSTS[i]?.mediaUrl ||
-                "",
+              mediaUrl: p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl || "",
               caption,
               category: "cladding",
-              categoryLabel: "Executed Project",
-              productName: caption.split(".")[0]?.slice(0, 45) || "Bespoke Natural Stone",
-              likes: p.likeCount ?? 15 + ((i * 7) % 30),
-              comments: p.commentsCount ?? i % 3,
-              mediaType: "IMAGE",
-              location: "Ahmedabad • Live Site",
+              categoryLabel: "Executed Work",
+              productName: title.slice(0, 50),
+              likes: p.likeCount ?? 15,
+              comments: p.commentsCount ?? 0,
+              mediaType: p.mediaType || "IMAGE",
+              location: "Ahmedabad Atelier",
               date: postDate,
               isLivePost: true,
-            };
+            });
+
+            // 2. Unpack carousel child images into distinct tiles so all authentic photos are visible
+            if (p.children && p.children.length > 0) {
+              p.children.forEach((c, cIdx) => {
+                mapped.push({
+                  id: c.id || `${p.id}-child-${cIdx + 1}`,
+                  shortcode: `${shortcode}-${cIdx + 1}`,
+                  permalink: p.permalink || "#",
+                  mediaUrl:
+                    c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl || "",
+                  caption,
+                  category: "cladding",
+                  categoryLabel: "Executed Work",
+                  productName: `${title.slice(0, 42)} (Detail ${cIdx + 1})`,
+                  likes: Math.max(1, (p.likeCount ?? 10) - (cIdx + 1)),
+                  comments: p.commentsCount ?? 0,
+                  mediaType: "IMAGE",
+                  location: "Ahmedabad Atelier",
+                  date: postDate,
+                  isLivePost: true,
+                });
+              });
+            }
           });
 
-          // Merge live posts with the 300+ library without duplicates
-          setAllPosts((prev) => {
-            const mappedIds = new Set(mapped.map((m) => m.id));
-            const existingFiltered = prev.filter((p) => !mappedIds.has(p.id));
-            return [...mapped, ...existingFiltered];
-          });
+          // Set EXCLUSIVELY authentic profile posts (NEVER stock or Unsplash photos)
+          if (mapped.length > 0) {
+            setAllPosts(mapped);
+          }
         }
       } catch (err) {
-        console.warn(
-          "[StoneGalleryFeed] Falling back to pre-cached stone installation posts:",
-          err,
-        );
+        console.warn("[StoneGalleryFeed] Using pre-cached authentic Instagram profile posts:", err);
       }
     }
 
@@ -177,7 +206,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             variant="outline"
             className="text-[10px] font-semibold text-muted-foreground border-border/80"
           >
-            300+ Finishes • Unlimited Scroll
+            Live Atelier Feed • Unlimited Scroll
           </Badge>
         </div>
 
@@ -231,7 +260,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
 
           {/* Bottom gentle indicator */}
           <div className="py-2 text-center text-[10px] text-muted-foreground font-medium">
-            Scroll down to explore unlimited finishes...
+            Scroll down to explore all atelier works...
           </div>
         </div>
       </div>
