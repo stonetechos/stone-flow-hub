@@ -68,14 +68,14 @@ interface RawBeholdPost {
 const BATCH_SIZE = 24;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
-  // Initialize EXCLUSIVELY with authentic Instagram profile posts (1 tile per post, 0 stock photos)
+  // Initialize EXCLUSIVELY with authentic Instagram profile posts (1 tile per unique photo, 0 stock photos)
   const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => LIVE_BEHOLD_POSTS);
-  const [visibleCount, setVisibleCount] = useState<number>(18);
+  const [visibleCount, setVisibleCount] = useState<number>(36);
   const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Background fetch from Behold JSON feed (syncs latest profile posts)
+  // Background fetch from Behold JSON feed (syncs latest profile posts + unpacks unique photos)
   useEffect(() => {
     let active = true;
     async function fetchLatest() {
@@ -86,6 +86,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
         const rawPosts: RawBeholdPost[] = data?.posts || (Array.isArray(data) ? data : []);
         if (active && rawPosts.length > 0) {
           const mapped: InstagramPost[] = [];
+          const seenUrls = new Set<string>();
 
           rawPosts.forEach((p, i) => {
             const caption = p.prunedCaption || p.caption || "Stone Tech executed site project";
@@ -103,38 +104,65 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               .split("\n")[0]
               .trim();
 
-            const mainImg =
-              p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl || "";
-
-            // Collect all carousel images for this post without duplicating tiles in the grid
-            const carouselImages: string[] = [];
+            const allProjectImages: string[] = [];
             if (p.children && p.children.length > 0) {
               p.children.forEach((c) => {
                 const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
-                if (cImg) carouselImages.push(cImg);
+                if (cImg) allProjectImages.push(cImg);
               });
-            } else if (mainImg) {
-              carouselImages.push(mainImg);
+            } else {
+              const pImg = p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl;
+              if (pImg) allProjectImages.push(pImg);
             }
 
-            // Exactly ONE tile per Instagram post
-            mapped.push({
-              id: p.id || `feed-live-${i}`,
-              shortcode,
-              permalink: p.permalink || "#",
-              mediaUrl: mainImg,
-              caption,
-              category: "cladding",
-              categoryLabel: "Executed Work",
-              productName: title.slice(0, 50),
-              likes: p.likeCount ?? 15,
-              comments: p.commentsCount ?? 0,
-              mediaType: p.mediaType || "IMAGE",
-              location: "Ahmedabad Atelier",
-              date: postDate,
-              isLivePost: true,
-              carouselImages,
-            });
+            if (p.children && p.children.length > 0) {
+              p.children.forEach((c, cIdx) => {
+                const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
+                if (!cImg || seenUrls.has(cImg)) return;
+                seenUrls.add(cImg);
+                mapped.push({
+                  id: c.id || `${p.id}-photo-${cIdx + 1}`,
+                  shortcode: `${shortcode}-${cIdx + 1}`,
+                  permalink: p.permalink || "#",
+                  mediaUrl: cImg,
+                  caption,
+                  category: "cladding",
+                  categoryLabel: "Executed Work",
+                  productName:
+                    cIdx === 0 ? title.slice(0, 50) : `${title.slice(0, 38)} (Angle ${cIdx + 1})`,
+                  likes: Math.max(1, (p.likeCount ?? 15) - cIdx),
+                  comments: p.commentsCount ?? 0,
+                  mediaType: "IMAGE",
+                  location: "Ahmedabad Atelier",
+                  date: postDate,
+                  isLivePost: true,
+                  carouselImages: allProjectImages,
+                  currentCarouselIndex: cIdx,
+                });
+              });
+            } else {
+              const pImg = p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl;
+              if (!pImg || seenUrls.has(pImg)) return;
+              seenUrls.add(pImg);
+              mapped.push({
+                id: p.id || `feed-live-${i}`,
+                shortcode,
+                permalink: p.permalink || "#",
+                mediaUrl: pImg,
+                caption,
+                category: "cladding",
+                categoryLabel: "Executed Work",
+                productName: title.slice(0, 50),
+                likes: p.likeCount ?? 15,
+                comments: p.commentsCount ?? 0,
+                mediaType: "IMAGE",
+                location: "Ahmedabad Atelier",
+                date: postDate,
+                isLivePost: true,
+                carouselImages: allProjectImages,
+                currentCarouselIndex: 0,
+              });
+            }
           });
 
           if (mapped.length > 0) {
@@ -190,7 +218,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
 
   const handleOpenPost = (post: InstagramPost) => {
     setActiveModalPost(post);
-    setActiveImageIdx(0);
+    setActiveImageIdx(post.currentCarouselIndex ?? 0);
   };
 
   const handleInquire = (post: InstagramPost) => {
@@ -227,11 +255,11 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           </Badge>
         </div>
 
-        {/* 3-Column Scrollable Feed with Unique Posts */}
+        {/* 3-Column Scrollable Feed with Unique Posts and Expanded Height */}
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="max-h-[460px] sm:max-h-[500px] overflow-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth"
+          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth"
         >
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
             {visiblePosts.map((post, idx) => {
