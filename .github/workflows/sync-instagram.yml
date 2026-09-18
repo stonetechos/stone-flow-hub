@@ -1,0 +1,42 @@
+name: Sync Instagram Feed
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC (07:30 AM IST)
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-feed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Instagram Sync Script
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          node scripts/sync-instagram.mjs
+
+      - name: Commit and Push if Feed Changed
+        run: |
+          if [ -n "$(git status --porcelain src/data/instagram-posts.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add src/data/instagram-posts.json
+            git commit -m "chore(feed): sync latest Instagram posts from @stonetech.ahmedabad [skip ci]"
+            git push origin main
+          else
+            echo "No feed changes detected. Everything is up to date."
+          fi

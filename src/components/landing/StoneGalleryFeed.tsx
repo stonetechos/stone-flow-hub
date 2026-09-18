@@ -142,7 +142,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           });
 
           if (mapped.length > 0) {
-            setAllPosts(mapped);
+            setAllPosts((prev) => (mapped.length >= prev.length ? mapped : prev));
           }
         }
       } catch (err) {
