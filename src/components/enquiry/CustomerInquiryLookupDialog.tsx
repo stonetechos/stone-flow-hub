@@ -75,8 +75,8 @@ export function CustomerInquiryLookupDialog({ trigger }: CustomerInquiryLookupDi
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs">
-            <Search className="h-3.5 w-3.5 text-primary" />
+          <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs shrink-0">
+            <Search className="h-3.5 w-3.5 text-primary shrink-0" />
             <span>Track My Inquiry</span>
           </Button>
         )}

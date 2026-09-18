@@ -567,7 +567,7 @@ function HomePage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog />
 
@@ -577,17 +577,26 @@ function HomePage() {
               size="sm"
               variant={isAuthenticatedStaff ? "default" : "outline"}
               className={cn(
-                "h-8 gap-1.5 text-xs font-semibold shadow-2xs",
+                "h-8 px-3 gap-1.5 text-xs font-semibold shadow-2xs border transition-colors shrink-0",
                 isAuthenticatedStaff
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border-border text-foreground hover:bg-muted",
+                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                  : "border-border/90 bg-background/90 text-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
+                className="inline-flex items-center gap-1.5"
               >
-                <Lock className="h-3.5 w-3.5 text-primary" />
+                <Lock
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0 stroke-[2.25]",
+                    isAuthenticatedStaff
+                      ? "text-primary-foreground"
+                      : "text-amber-600 dark:text-amber-400",
+                  )}
+                  aria-hidden="true"
+                />
                 <span>Employees Login</span>
               </Link>
             </Button>
@@ -1264,7 +1273,7 @@ function HomePage() {
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
                 className="hover:text-foreground flex items-center gap-1"
               >
-                <Lock className="h-3.5 w-3.5" />
+                <Lock className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-amber-600 dark:text-amber-400" />
                 <span>Employees Login</span>
               </Link>
             </div>
