@@ -585,14 +585,8 @@ function HomePage() {
             <a href="#gallery-feed" className="hover:text-primary transition-colors">
               Our Work
             </a>
-            <a href="#how-it-works" className="hover:text-primary transition-colors">
-              How It Works
-            </a>
             <a href="#why-us" className="hover:text-primary transition-colors">
               Why Us
-            </a>
-            <a href="#experience-center" className="hover:text-primary transition-colors">
-              Experience Center
             </a>
             <a href="#contact-us" className="hover:text-primary transition-colors">
               Contact
@@ -1188,82 +1182,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 2. HOW STONE TECH WORKS (THE LIVSPACE 3-STEP JOURNEY) */}
-
-      {/* 4. HOW STONE TECH WORKS (THE LIVSPACE 3-STEP JOURNEY) */}
-      <section
-        id="how-it-works"
-        className="py-16 sm:py-20 bg-muted/20 border-b border-border/60 relative overflow-hidden"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest text-primary border-primary/30 bg-primary/10 font-bold"
-            >
-              The Stone Tech Process
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              From Quarry to Your Space in 3 Simple Steps
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              We eliminate intermediaries, providing direct access to master masons, laser dry-lay
-              checks, and doorstep delivery.
-            </p>
-          </div>
-
-          {/* 3 Step Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Step 1 */}
-            <div className="p-6 rounded-2xl border border-border/80 bg-background shadow-xs space-y-4 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 font-black text-xl">
-                1
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Share Requirements & Plans</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Pick your preferred stone categories, enter wall dimensions, or upload architectural
-                sketches, elevation CAD drawings, or site photos.
-              </p>
-              <div className="text-[11px] font-semibold text-primary flex items-center gap-1">
-                <span>Free Swatch Kit Included</span>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="p-6 rounded-2xl border border-border/80 bg-background shadow-xs space-y-4 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary font-black text-xl">
-                2
-              </div>
-              <h3 className="text-lg font-bold text-foreground">3D Dry-Lay & WhatsApp Quote</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Our stone architects calculate square footage, verify vein continuity, and deliver
-                an itemized factory quote along with 3D dry-lay photos directly to your WhatsApp.
-              </p>
-              <div className="text-[11px] font-semibold text-primary flex items-center gap-1">
-                <span>15-Minute Turnaround</span>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="p-6 rounded-2xl border border-border/80 bg-background shadow-xs space-y-4 relative">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 font-black text-xl">
-                3
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Quarry Crafting & Site Delivery</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Sub-millimeter CNC cutting, artisanal hand-dressing, and heavy-duty fumigated wooden
-                crating delivered safely to your project site pan-India.
-              </p>
-              <div className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                <span>Zero Transit Breakage Guarantee</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. WHY STONE TECH (THE 4 PILLARS) */}
+      {/* 2. WHY STONE TECH (THE 4 PILLARS) */}
       <section id="why-us" className="py-16 sm:py-20 border-b border-border/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -1326,142 +1245,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 6. EXPERIENCE CENTER & GOOGLE 4.9 REVIEWS SHOWCASE */}
-      <section
-        id="experience-center"
-        className="py-16 sm:py-20 bg-muted/20 border-b border-border/60"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-6">
-              <Badge
-                variant="outline"
-                className="text-xs uppercase tracking-widest text-rose-600 border-rose-500/30 bg-rose-500/10 font-bold"
-              >
-                Visit Our Studio
-              </Badge>
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                Touch & Feel 200+ Live Stone Textures at Our Experience Center
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Architects, interior designers, and discerning homeowners are invited to experience
-                our full-scale 3D stone elevation mockups, flexible stone veneer displays, and
-                waterjet medallions in person.
-              </p>
-
-              {/* Showroom Features */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="p-4 rounded-xl border border-border bg-background flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 font-bold">
-                    G
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-foreground flex items-center gap-1">
-                      <span>Google Verified Business</span>
-                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950 dark:text-amber-300 px-1 rounded">
-                        ⭐ 4.9 / 5.0
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      Based on 120+ architect reviews
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl border border-border bg-background flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
-                    <Camera className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Live Project Showcase</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      Over 500+ site photos & videos
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button asChild size="default" className="gap-2 bg-primary font-bold text-xs h-10">
-                  <a
-                    href="https://share.google/0J6h6joQLwo1hVTWJ"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MapPin className="h-4 w-4 text-rose-400" />
-                    <span>Get Directions on Google Maps</span>
-                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                  </a>
-                </Button>
-
-                <Button asChild variant="outline" size="default" className="gap-2 text-xs h-10">
-                  <a href="#gallery-feed">
-                    <Camera className="h-4 w-4 text-primary" />
-                    <span>Explore Site Reels & Gallery</span>
-                  </a>
-                </Button>
-              </div>
-            </div>
-
-            {/* Testimonials Card */}
-            <div className="lg:col-span-5 space-y-4">
-              <Card className="border-border/80 bg-background shadow-lg p-6 space-y-4">
-                <div className="flex items-center gap-1 text-amber-500">
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                </div>
-                <blockquote className="text-xs sm:text-sm text-foreground italic leading-relaxed">
-                  "Stone Tech transformed our bungalow facade with their 3D elevation cladding and
-                  translucent stone veneer foyer wall. The WhatsApp progress updates and dry-lay
-                  matching gave us 100% confidence before shipping."
-                </blockquote>
-                <div className="flex items-center justify-between border-t border-border/80 pt-3">
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Vikramaditya S.</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Principal Architect, Jaipur
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-[10px]">
-                    Verified Project
-                  </Badge>
-                </div>
-              </Card>
-
-              <Card className="border-border/80 bg-background shadow-lg p-6 space-y-4">
-                <div className="flex items-center gap-1 text-amber-500">
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                </div>
-                <blockquote className="text-xs sm:text-sm text-foreground italic leading-relaxed">
-                  "The Makrana marble mandir jaali carving was delivered with zero transit damage.
-                  Every edge was laser-smooth. Truly master craftsmanship."
-                </blockquote>
-                <div className="flex items-center justify-between border-t border-border/80 pt-3">
-                  <div>
-                    <div className="text-xs font-bold text-foreground">Ananya Mehrotra</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Villa Owner, South Delhi
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-[10px]">
-                    Verified Project
-                  </Badge>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. FREQUENTLY ASKED QUESTIONS (LIVSPACE RADIX ACCORDION) */}
+      {/* 3. FREQUENTLY ASKED QUESTIONS (LIVSPACE RADIX ACCORDION) */}
       <section id="faq" className="py-16 sm:py-20 border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center space-y-3">
@@ -1548,13 +1332,10 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="border-t border-border/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="border-t border-border/60 pt-6 flex flex-col sm:flex-row items-center justify-center text-center gap-3 text-xs text-muted-foreground">
             <p>
               © {new Date().getFullYear()} Stone Tech. Premium Natural Stone Fabrication, Veneers &
               Architectural Export.
-            </p>
-            <p className="flex items-center gap-1">
-              <span>Rajasthan Quarry Operations • Worldwide Dispatch</span>
             </p>
           </div>
         </div>
