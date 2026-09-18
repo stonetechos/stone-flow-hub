@@ -8,8 +8,7 @@
  * - 3 columns of posts in that scrollable box
  * - Unlimited scrolls (continuous infinite pagination & cycling)
  * - NO category tabs
- * - ZERO mention of the word "Instagram" on the front page
- * - Connects to Behold JSON feed merged seamlessly with the 300+ executed projects
+ * - Synced via GitHub Actions directly from Meta Instagram Graph API (300 authentic projects)
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -21,8 +20,9 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  Play,
 } from "lucide-react";
-import { BEHOLD_FEED_ID, LIVE_BEHOLD_POSTS, type InstagramPost } from "@/lib/instagram/feed";
+import { INSTAGRAM_POSTS, type InstagramPost } from "@/lib/instagram/feed";
 import {
   Dialog,
   DialogContent,
@@ -38,123 +38,18 @@ interface StoneGalleryFeedProps {
   className?: string;
 }
 
-interface RawBeholdPost {
-  id: string;
-  caption?: string;
-  prunedCaption?: string;
-  permalink: string;
-  timestamp: string;
-  mediaUrl: string;
-  likeCount?: number;
-  commentsCount?: number;
-  mediaType?: "IMAGE" | "CAROUSEL_ALBUM" | "VIDEO";
-  sizes?: {
-    small?: { mediaUrl: string };
-    medium?: { mediaUrl: string };
-    large?: { mediaUrl: string };
-  };
-  children?: Array<{
-    id: string;
-    mediaType?: string;
-    mediaUrl: string;
-    sizes?: {
-      small?: { mediaUrl: string };
-      medium?: { mediaUrl: string };
-      large?: { mediaUrl: string };
-    };
-  }>;
-}
-
-const BATCH_SIZE = 24;
+const BATCH_SIZE = 30;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
-  // Initialize EXCLUSIVELY with authentic Instagram profile posts (1 tile per unique photo, 0 stock photos)
-  const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => LIVE_BEHOLD_POSTS);
-  const [visibleCount, setVisibleCount] = useState<number>(36);
+  // Directly powered by authentic posts synced via GitHub Actions into src/data/instagram-posts.json
+  const [allPosts] = useState<InstagramPost[]>(() => INSTAGRAM_POSTS);
+  // Display at least 210 posts immediately (all 300 authentic executed works)
+  const [visibleCount, setVisibleCount] = useState<number>(() =>
+    Math.max(210, INSTAGRAM_POSTS.length),
+  );
   const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // Background fetch from Behold JSON feed (syncs latest profile posts + unpacks unique photos)
-  useEffect(() => {
-    let active = true;
-    async function fetchLatest() {
-      try {
-        const res = await fetch(`https://feeds.behold.so/${BEHOLD_FEED_ID}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const rawPosts: RawBeholdPost[] = data?.posts || (Array.isArray(data) ? data : []);
-        if (active && rawPosts.length > 0) {
-          const mapped: InstagramPost[] = [];
-
-          rawPosts.forEach((p, i) => {
-            const caption = p.prunedCaption || p.caption || "Stone Tech executed site project";
-            const postDate = p.timestamp
-              ? new Date(p.timestamp).toLocaleDateString("en-IN", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : "Recent";
-            const shortcode =
-              p.permalink?.split("/p/")[1]?.replace(/\//g, "") || p.id || `feed-live-${i}`;
-            const title = (p.prunedCaption || p.caption || "Bespoke Natural Stone")
-              .split(".")[0]
-              .split("\n")[0]
-              .trim();
-
-            const allProjectImages: string[] = [];
-            if (p.children && p.children.length > 0) {
-              p.children.forEach((c) => {
-                const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
-                if (cImg && !allProjectImages.includes(cImg)) allProjectImages.push(cImg);
-              });
-            } else {
-              const pImg = p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl;
-              if (pImg) allProjectImages.push(pImg);
-            }
-
-            const coverImg =
-              allProjectImages[0] ||
-              p.sizes?.large?.mediaUrl ||
-              p.sizes?.medium?.mediaUrl ||
-              p.mediaUrl;
-
-            mapped.push({
-              id: p.id || `feed-live-${i}`,
-              shortcode,
-              permalink: p.permalink || "#",
-              mediaUrl: coverImg,
-              caption,
-              category: "cladding",
-              categoryLabel: "Executed Work",
-              productName: title.slice(0, 50),
-              likes: p.likeCount ?? 15,
-              comments: p.commentsCount ?? 0,
-              mediaType:
-                p.children && p.children.length > 1 ? "CAROUSEL_ALBUM" : p.mediaType || "IMAGE",
-              location: "Ahmedabad Atelier",
-              date: postDate,
-              isLivePost: true,
-              carouselImages: allProjectImages,
-              currentCarouselIndex: 0,
-            });
-          });
-
-          if (mapped.length > 0) {
-            setAllPosts((prev) => (mapped.length >= prev.length ? mapped : prev));
-          }
-        }
-      } catch (err) {
-        console.warn("[StoneGalleryFeed] Using pre-cached authentic Instagram profile posts:", err);
-      }
-    }
-
-    void fetchLatest();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Keyboard navigation for multi-photo modal
   useEffect(() => {
@@ -242,6 +137,9 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               const hasMultiplePhotos =
                 (post.carouselImages && post.carouselImages.length > 1) ||
                 post.mediaType === "CAROUSEL_ALBUM";
+              const isVideo =
+                post.mediaType === "VIDEO" ||
+                Boolean(post.mediaUrl && post.mediaUrl.includes(".mp4"));
 
               return (
                 <div
@@ -250,21 +148,43 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                   className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
                   title={post.productName}
                 >
-                  {/* Image */}
-                  <img
-                    src={post.mediaUrl}
-                    alt={post.caption}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
-                  />
+                  {/* Media: Video or Image */}
+                  {isVideo ? (
+                    <video
+                      src={post.mediaUrl}
+                      muted
+                      playsInline
+                      autoPlay
+                      loop
+                      preload="metadata"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108 pointer-events-none"
+                    />
+                  ) : (
+                    <img
+                      src={post.mediaUrl}
+                      alt={post.caption}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+                    />
+                  )}
 
-                  {/* Multi-photo indicator icon for carousels (similar to Instagram) */}
+                  {/* Multi-photo indicator icon for carousels */}
                   {hasMultiplePhotos && (
                     <div
                       className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md shadow-xs pointer-events-none z-10"
                       title={`${post.carouselImages?.length ?? "Multiple"} photos`}
                     >
                       <Layers className="h-3 w-3" />
+                    </div>
+                  )}
+
+                  {/* Video indicator icon for reels */}
+                  {isVideo && (
+                    <div
+                      className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md shadow-xs pointer-events-none z-10"
+                      title="Video Walkthrough"
+                    >
+                      <Play className="h-3 w-3 fill-white text-white" />
                     </div>
                   )}
 
@@ -313,6 +233,9 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               : [activeModalPost.mediaUrl];
           const currentImg = modalImages[activeImageIdx] || activeModalPost.mediaUrl;
           const hasMultiple = modalImages.length > 1;
+          const isCurrentVideo =
+            activeModalPost.mediaType === "VIDEO" ||
+            Boolean(currentImg && currentImg.includes(".mp4"));
 
           return (
             <Dialog
@@ -323,11 +246,22 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   {/* Media View / Carousel Viewer */}
                   <div className="relative aspect-square md:aspect-auto bg-black flex items-center justify-center select-none overflow-hidden group">
-                    <img
-                      src={currentImg}
-                      alt={activeModalPost.caption}
-                      className="w-full h-full object-cover max-h-[440px] transition-all duration-300"
-                    />
+                    {isCurrentVideo ? (
+                      <video
+                        src={currentImg}
+                        controls
+                        autoPlay
+                        playsInline
+                        loop
+                        className="w-full h-full object-contain max-h-[440px]"
+                      />
+                    ) : (
+                      <img
+                        src={currentImg}
+                        alt={activeModalPost.caption}
+                        className="w-full h-full object-cover max-h-[440px] transition-all duration-300"
+                      />
+                    )}
 
                     {hasMultiple && (
                       <>

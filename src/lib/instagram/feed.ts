@@ -46,14 +46,13 @@ export interface CategoryTab {
 }
 import seededPosts from "@/data/instagram-posts.json";
 
-export const BEHOLD_FEED_ID = "Vb5i6b935sxwT5h8oTFo";
-
 /**
  * Authentic Live Instagram Posts directly synced from @stonetech.ahmedabad
+ * via GitHub Actions and Meta Instagram Graph API (src/data/instagram-posts.json).
  */
-export const LIVE_BEHOLD_POSTS: InstagramPost[] = seededPosts as InstagramPost[];
-export const INSTAGRAM_POSTS_300: InstagramPost[] = LIVE_BEHOLD_POSTS;
+export const INSTAGRAM_POSTS: InstagramPost[] = seededPosts as InstagramPost[];
+export const INSTAGRAM_POSTS_300: InstagramPost[] = INSTAGRAM_POSTS;
 
 export const CATEGORY_TABS: CategoryTab[] = [
-  { key: "all", label: "All Works", count: LIVE_BEHOLD_POSTS.length },
+  { key: "all", label: "All Works", count: INSTAGRAM_POSTS.length },
 ];
