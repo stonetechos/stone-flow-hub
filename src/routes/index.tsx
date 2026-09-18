@@ -13,11 +13,10 @@
  * - WhatsApp-first sign up with international country code dropdown
  * - Live interactive calendar date picker starting strictly from current date
  * - Curated Stone Collections grid with 1-tap "Select & Estimate" triggers
- * - 3-step fabrication journey & 4 core value pillars
- * - Experience Center showcase with Google 4.9 rating & direct Maps directions
- * - Collapsible Radix FAQ accordion
+ * - 4 core value pillars (Quarry Direct, CNC Cutting, WhatsApp proofs, Export crating)
+ * - Broad "How to reach Us?" section with Google 4.9 rating & direct Maps directions
  * - Returning customer inquiry tracking modal
- * - Separate Staff / Employee ERP portal login and authenticated ERP jump
+ * - Separate Staff / Employee ERP portal login in footer
  * - Sticky mobile bottom action bar
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -51,12 +50,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
@@ -175,29 +168,6 @@ const QUICK_IDEA_SUGGESTIONS = [
   "Bathroom Wall Cladding",
   "Dining Table Top",
   "Balcony Feature Wall",
-];
-
-const FAQ_ITEMS = [
-  {
-    q: "How soon will I receive my quote and stone consultation on WhatsApp?",
-    a: "Within 15 to 30 minutes during business hours. Once you submit your inquiry, our automated system registers your specs and alerts our senior stone architect. You will receive an immediate acknowledgment followed by an itemized estimate, CAD recommendations, and photos directly on WhatsApp.",
-  },
-  {
-    q: "Can I get physical stone swatches delivered to my doorstep?",
-    a: "Yes! We courier curated swatch boxes containing real samples of Flexible Stone Veneer, Cladding stones, and Marble finishes directly to your site or office so you and your architect can inspect texture, weight, and color in natural light.",
-  },
-  {
-    q: "What is Dry-Lay inspection and how does it prevent mismatches?",
-    a: "Before cutting or packing Italian marble and stone claddings, our master masons assemble the full slab layout on our workshop floor. We take high-resolution 4K photos and video walkthroughs to confirm vein flow and color harmony with you before dispatch.",
-  },
-  {
-    q: "Do you deliver and install outside Rajasthan across India?",
-    a: "Absolutely. We ship nationwide across all major metros (Delhi NCR, Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata, Pune) as well as tier-2/3 cities and international export hubs (UAE, USA, UK). Materials are shipped in engineered, foam-padded wooden crates with transit insurance.",
-  },
-  {
-    q: "How do I track my submitted inquiry or existing order?",
-    a: "Click 'Track My Inquiry' in the top navigation bar at any time. Enter the WhatsApp number you used during submission to see live status updates, assigned stone specialist, and quotation details.",
-  },
 ];
 
 // Helper to compress image in browser using HTML5 Canvas
@@ -590,9 +560,6 @@ function HomePage() {
             </a>
             <a href="#contact-us" className="hover:text-primary transition-colors">
               Contact
-            </a>
-            <a href="#faq" className="hover:text-primary transition-colors">
-              FAQ
             </a>
           </nav>
 
@@ -1245,44 +1212,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 3. FREQUENTLY ASKED QUESTIONS (LIVSPACE RADIX ACCORDION) */}
-      <section id="faq" className="py-16 sm:py-20 border-b border-border/60">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-3">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest text-primary border-primary/30 bg-primary/10 font-bold"
-            >
-              Frequently Asked Questions
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Got Questions? We Have Answers.
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Everything you need to know about custom stone estimation, swatches, and fabrication.
-            </p>
-          </div>
-
-          <Accordion type="single" collapsible className="w-full space-y-3">
-            {FAQ_ITEMS.map((item, idx) => (
-              <AccordionItem
-                key={idx}
-                value={`faq-${idx}`}
-                className="border border-border/80 rounded-xl px-5 bg-card"
-              >
-                <AccordionTrigger className="text-sm font-bold text-foreground hover:no-underline py-4">
-                  {item.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-xs text-muted-foreground leading-relaxed pb-4">
-                  {item.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
-      {/* 8. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
+      {/* 3. BROAD "HOW TO REACH US" & VERIFIED RATINGS FOOTER */}
       <ContactCenter />
 
       {/* 9. FOOTER WITH GOOGLE BUSINESS & STAFF ERP ACCESS */}
