@@ -86,7 +86,6 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
         const rawPosts: RawBeholdPost[] = data?.posts || (Array.isArray(data) ? data : []);
         if (active && rawPosts.length > 0) {
           const mapped: InstagramPost[] = [];
-          const seenUrls = new Set<string>();
 
           rawPosts.forEach((p, i) => {
             const caption = p.prunedCaption || p.caption || "Stone Tech executed site project";
@@ -108,61 +107,38 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             if (p.children && p.children.length > 0) {
               p.children.forEach((c) => {
                 const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
-                if (cImg) allProjectImages.push(cImg);
+                if (cImg && !allProjectImages.includes(cImg)) allProjectImages.push(cImg);
               });
             } else {
               const pImg = p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl;
               if (pImg) allProjectImages.push(pImg);
             }
 
-            if (p.children && p.children.length > 0) {
-              p.children.forEach((c, cIdx) => {
-                const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
-                if (!cImg || seenUrls.has(cImg)) return;
-                seenUrls.add(cImg);
-                mapped.push({
-                  id: c.id || `${p.id}-photo-${cIdx + 1}`,
-                  shortcode: `${shortcode}-${cIdx + 1}`,
-                  permalink: p.permalink || "#",
-                  mediaUrl: cImg,
-                  caption,
-                  category: "cladding",
-                  categoryLabel: "Executed Work",
-                  productName:
-                    cIdx === 0 ? title.slice(0, 50) : `${title.slice(0, 38)} (Angle ${cIdx + 1})`,
-                  likes: Math.max(1, (p.likeCount ?? 15) - cIdx),
-                  comments: p.commentsCount ?? 0,
-                  mediaType: "IMAGE",
-                  location: "Ahmedabad Atelier",
-                  date: postDate,
-                  isLivePost: true,
-                  carouselImages: allProjectImages,
-                  currentCarouselIndex: cIdx,
-                });
-              });
-            } else {
-              const pImg = p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl;
-              if (!pImg || seenUrls.has(pImg)) return;
-              seenUrls.add(pImg);
-              mapped.push({
-                id: p.id || `feed-live-${i}`,
-                shortcode,
-                permalink: p.permalink || "#",
-                mediaUrl: pImg,
-                caption,
-                category: "cladding",
-                categoryLabel: "Executed Work",
-                productName: title.slice(0, 50),
-                likes: p.likeCount ?? 15,
-                comments: p.commentsCount ?? 0,
-                mediaType: "IMAGE",
-                location: "Ahmedabad Atelier",
-                date: postDate,
-                isLivePost: true,
-                carouselImages: allProjectImages,
-                currentCarouselIndex: 0,
-              });
-            }
+            const coverImg =
+              allProjectImages[0] ||
+              p.sizes?.large?.mediaUrl ||
+              p.sizes?.medium?.mediaUrl ||
+              p.mediaUrl;
+
+            mapped.push({
+              id: p.id || `feed-live-${i}`,
+              shortcode,
+              permalink: p.permalink || "#",
+              mediaUrl: coverImg,
+              caption,
+              category: "cladding",
+              categoryLabel: "Executed Work",
+              productName: title.slice(0, 50),
+              likes: p.likeCount ?? 15,
+              comments: p.commentsCount ?? 0,
+              mediaType:
+                p.children && p.children.length > 1 ? "CAROUSEL_ALBUM" : p.mediaType || "IMAGE",
+              location: "Ahmedabad Atelier",
+              date: postDate,
+              isLivePost: true,
+              carouselImages: allProjectImages,
+              currentCarouselIndex: 0,
+            });
           });
 
           if (mapped.length > 0) {
