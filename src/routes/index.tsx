@@ -44,6 +44,7 @@ import {
   Gem,
   Compass,
   Truck,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
 import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { ContactCenter } from "@/components/landing/ContactCenter";
+import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPublicEnquiryServerFn,
@@ -558,6 +560,7 @@ function HomePage() {
             <a href="#why-us" className="hover:text-primary transition-colors">
               Why Us
             </a>
+            <JobOpeningsDialog />
             <a href="#contact-us" className="hover:text-primary transition-colors">
               Contact
             </a>
@@ -568,28 +571,25 @@ function HomePage() {
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog />
 
-            {/* Authenticated Staff ERP Shortcut (hidden for general visitors) */}
-            {isAuthenticatedStaff && (
-              <Button
-                asChild
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-semibold bg-primary text-primary-foreground"
-              >
-                <Link to="/dashboard">
-                  <Building className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Open</span> ERP
-                </Link>
-              </Button>
-            )}
-
-            {/* Primary Request Estimate CTA */}
+            {/* Employees Login CTA */}
             <Button
-              onClick={() => scrollToForm()}
+              asChild
               size="sm"
-              className="h-8 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+              variant={isAuthenticatedStaff ? "default" : "outline"}
+              className={cn(
+                "h-8 gap-1.5 text-xs font-semibold shadow-2xs",
+                isAuthenticatedStaff
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border-border text-foreground hover:bg-muted",
+              )}
             >
-              <span>Request Estimate</span>
-              <ArrowRight className="h-3.5 w-3.5 hidden sm:inline" />
+              <Link
+                to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
+                search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
+              >
+                <Lock className="h-3.5 w-3.5 text-primary" />
+                <span>Employees Login</span>
+              </Link>
             </Button>
           </div>
         </div>
@@ -1251,13 +1251,21 @@ function HomePage() {
                 <Camera className="h-3.5 w-3.5 text-primary" />
                 <span>Site Gallery & Reels</span>
               </a>
+              <JobOpeningsDialog
+                trigger={
+                  <button className="hover:text-foreground flex items-center gap-1 cursor-pointer">
+                    <Briefcase className="h-3.5 w-3.5 text-primary" />
+                    <span>Job Openings</span>
+                  </button>
+                }
+              />
               <Link
-                to="/auth"
-                search={{ flow: "signin" }}
+                to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
+                search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
                 className="hover:text-foreground flex items-center gap-1"
               >
                 <Lock className="h-3.5 w-3.5" />
-                <span>Staff & Employee ERP Portal</span>
+                <span>Employees Login</span>
               </Link>
             </div>
           </div>
