@@ -13,7 +13,15 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Heart, MessageCircle, Sparkles, Eye } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Sparkles,
+  Eye,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { BEHOLD_FEED_ID, LIVE_BEHOLD_POSTS, type InstagramPost } from "@/lib/instagram/feed";
 import {
   Dialog,
@@ -60,13 +68,14 @@ interface RawBeholdPost {
 const BATCH_SIZE = 24;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
-  // Initialize EXCLUSIVELY with authentic Instagram profile photos (zero stock/Unsplash photos)
+  // Initialize EXCLUSIVELY with authentic Instagram profile posts (1 tile per post, 0 stock photos)
   const [allPosts, setAllPosts] = useState<InstagramPost[]>(() => LIVE_BEHOLD_POSTS);
-  const [visibleCount, setVisibleCount] = useState<number>(36);
+  const [visibleCount, setVisibleCount] = useState<number>(18);
   const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
+  const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Background fetch from Behold JSON feed (syncs latest profile posts + unpacks carousel items)
+  // Background fetch from Behold JSON feed (syncs latest profile posts)
   useEffect(() => {
     let active = true;
     async function fetchLatest() {
@@ -94,12 +103,26 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               .split("\n")[0]
               .trim();
 
-            // 1. Primary post tile
+            const mainImg =
+              p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl || "";
+
+            // Collect all carousel images for this post without duplicating tiles in the grid
+            const carouselImages: string[] = [];
+            if (p.children && p.children.length > 0) {
+              p.children.forEach((c) => {
+                const cImg = c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl;
+                if (cImg) carouselImages.push(cImg);
+              });
+            } else if (mainImg) {
+              carouselImages.push(mainImg);
+            }
+
+            // Exactly ONE tile per Instagram post
             mapped.push({
               id: p.id || `feed-live-${i}`,
               shortcode,
               permalink: p.permalink || "#",
-              mediaUrl: p.sizes?.large?.mediaUrl || p.sizes?.medium?.mediaUrl || p.mediaUrl || "",
+              mediaUrl: mainImg,
               caption,
               category: "cladding",
               categoryLabel: "Executed Work",
@@ -110,33 +133,10 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               location: "Ahmedabad Atelier",
               date: postDate,
               isLivePost: true,
+              carouselImages,
             });
-
-            // 2. Unpack carousel child images into distinct tiles so all authentic photos are visible
-            if (p.children && p.children.length > 0) {
-              p.children.forEach((c, cIdx) => {
-                mapped.push({
-                  id: c.id || `${p.id}-child-${cIdx + 1}`,
-                  shortcode: `${shortcode}-${cIdx + 1}`,
-                  permalink: p.permalink || "#",
-                  mediaUrl:
-                    c.sizes?.large?.mediaUrl || c.sizes?.medium?.mediaUrl || c.mediaUrl || "",
-                  caption,
-                  category: "cladding",
-                  categoryLabel: "Executed Work",
-                  productName: `${title.slice(0, 42)} (Detail ${cIdx + 1})`,
-                  likes: Math.max(1, (p.likeCount ?? 10) - (cIdx + 1)),
-                  comments: p.commentsCount ?? 0,
-                  mediaType: "IMAGE",
-                  location: "Ahmedabad Atelier",
-                  date: postDate,
-                  isLivePost: true,
-                });
-              });
-            }
           });
 
-          // Set EXCLUSIVELY authentic profile posts (NEVER stock or Unsplash photos)
           if (mapped.length > 0) {
             setAllPosts(mapped);
           }
@@ -152,29 +152,46 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
     };
   }, []);
 
-  // Infinite Scroll Handler: appends more posts as user scrolls down
+  // Keyboard navigation for multi-photo modal
+  useEffect(() => {
+    if (!activeModalPost) return;
+    const images =
+      activeModalPost.carouselImages && activeModalPost.carouselImages.length > 0
+        ? activeModalPost.carouselImages
+        : [activeModalPost.mediaUrl];
+    if (images.length <= 1) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        setActiveImageIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+      } else if (e.key === "ArrowRight") {
+        setActiveImageIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeModalPost]);
+
+  // Infinite Scroll Handler: appends more posts as user scrolls down (up to allPosts.length)
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const { scrollTop, scrollHeight, clientHeight } = el;
     if (scrollTop + clientHeight >= scrollHeight - 350) {
-      setVisibleCount((prev) => prev + BATCH_SIZE);
+      setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, allPosts.length));
     }
-  }, []);
+  }, [allPosts.length]);
 
-  // Unlimited Posts Array: cycles continuously through the 300+ pool so it never ends
+  // Unique posts only: never clone or repeat posts to create duplicates
   const visiblePosts = useMemo(() => {
-    if (allPosts.length === 0) return [];
-    if (visibleCount <= allPosts.length) {
-      return allPosts.slice(0, visibleCount);
-    }
-    const result: InstagramPost[] = [];
-    while (result.length < visibleCount) {
-      const remaining = visibleCount - result.length;
-      result.push(...allPosts.slice(0, remaining));
-    }
-    return result;
+    return allPosts.slice(0, visibleCount);
   }, [allPosts, visibleCount]);
+
+  const handleOpenPost = (post: InstagramPost) => {
+    setActiveModalPost(post);
+    setActiveImageIdx(0);
+  };
 
   const handleInquire = (post: InstagramPost) => {
     setActiveModalPost(null);
@@ -206,118 +223,210 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             variant="outline"
             className="text-[10px] font-semibold text-muted-foreground border-border/80"
           >
-            Live Atelier Feed • Unlimited Scroll
+            Live Atelier Feed • {allPosts.length} Works
           </Badge>
         </div>
 
-        {/* 3-Column Scrollable Feed with Infinite Scroll */}
+        {/* 3-Column Scrollable Feed with Unique Posts */}
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
           className="max-h-[460px] sm:max-h-[500px] overflow-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth"
         >
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
-            {visiblePosts.map((post, idx) => (
-              <div
-                key={`${post.id}-${idx}`}
-                onClick={() => setActiveModalPost(post)}
-                className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
-                title={post.productName}
-              >
-                {/* Image */}
-                <img
-                  src={post.mediaUrl}
-                  alt={post.caption}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
-                />
+            {visiblePosts.map((post, idx) => {
+              const hasMultiplePhotos =
+                (post.carouselImages && post.carouselImages.length > 1) ||
+                post.mediaType === "CAROUSEL_ALBUM";
 
-                {/* Subtle dark gradient overlay on hover */}
-                <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
-                      {post.productName}
-                    </span>
-                    <Eye className="h-3 w-3 shrink-0 opacity-80" />
-                  </div>
+              return (
+                <div
+                  key={`${post.id}-${idx}`}
+                  onClick={() => handleOpenPost(post)}
+                  className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                  title={post.productName}
+                >
+                  {/* Image */}
+                  <img
+                    src={post.mediaUrl}
+                    alt={post.caption}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
+                  />
 
-                  <div className="flex items-center justify-around text-[11px] font-bold">
-                    <span className="flex items-center gap-1">
-                      <Heart className="h-3 w-3 fill-rose-500 text-rose-500" />
-                      <span>{post.likes}</span>
-                    </span>
-                    {post.comments > 0 && (
-                      <span className="flex items-center gap-1">
-                        <MessageCircle className="h-3 w-3" />
-                        <span>{post.comments}</span>
+                  {/* Multi-photo indicator icon for carousels (similar to Instagram) */}
+                  {hasMultiplePhotos && (
+                    <div
+                      className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md shadow-xs pointer-events-none z-10"
+                      title={`${post.carouselImages?.length ?? "Multiple"} photos`}
+                    >
+                      <Layers className="h-3 w-3" />
+                    </div>
+                  )}
+
+                  {/* Subtle dark gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-2 text-white z-10">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-semibold truncate max-w-[85%] drop-shadow-xs">
+                        {post.productName}
                       </span>
-                    )}
+                      <Eye className="h-3 w-3 shrink-0 opacity-80" />
+                    </div>
+
+                    <div className="flex items-center justify-around text-[11px] font-bold">
+                      <span className="flex items-center gap-1">
+                        <Heart className="h-3 w-3 fill-rose-500 text-rose-500" />
+                        <span>{post.likes}</span>
+                      </span>
+                      {post.comments > 0 && (
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="h-3 w-3" />
+                          <span>{post.comments}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Bottom gentle indicator */}
           <div className="py-2 text-center text-[10px] text-muted-foreground font-medium">
-            Scroll down to explore all atelier works...
+            {visiblePosts.length < allPosts.length
+              ? "Scroll down to explore all atelier works..."
+              : `Showing all ${allPosts.length} executed atelier projects`}
           </div>
         </div>
       </div>
 
       {/* Lightbox / Project Details Modal */}
-      {activeModalPost && (
-        <Dialog open={!!activeModalPost} onOpenChange={(open) => !open && setActiveModalPost(null)}>
-          <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-3xl border-border">
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Media View */}
-              <div className="relative aspect-square md:aspect-auto bg-black flex items-center justify-center">
-                <img
-                  src={activeModalPost.mediaUrl}
-                  alt={activeModalPost.caption}
-                  className="w-full h-full object-cover max-h-[440px]"
-                />
-              </div>
+      {activeModalPost &&
+        (() => {
+          const modalImages =
+            activeModalPost.carouselImages && activeModalPost.carouselImages.length > 0
+              ? activeModalPost.carouselImages
+              : [activeModalPost.mediaUrl];
+          const currentImg = modalImages[activeImageIdx] || activeModalPost.mediaUrl;
+          const hasMultiple = modalImages.length > 1;
 
-              {/* Details & Inquire CTA */}
-              <div className="p-6 flex flex-col justify-between space-y-4 bg-background">
-                <DialogHeader className="space-y-2 text-left">
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      variant="outline"
-                      className="text-[11px] border-amber-500/30 text-amber-700 dark:text-amber-300"
-                    >
-                      {activeModalPost.location}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{activeModalPost.date}</span>
+          return (
+            <Dialog
+              open={!!activeModalPost}
+              onOpenChange={(open) => !open && setActiveModalPost(null)}
+            >
+              <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-3xl border-border">
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  {/* Media View / Carousel Viewer */}
+                  <div className="relative aspect-square md:aspect-auto bg-black flex items-center justify-center select-none overflow-hidden group">
+                    <img
+                      src={currentImg}
+                      alt={activeModalPost.caption}
+                      className="w-full h-full object-cover max-h-[440px] transition-all duration-300"
+                    />
+
+                    {hasMultiple && (
+                      <>
+                        {/* Photo Counter */}
+                        <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold px-2 py-0.5 rounded-full z-20">
+                          {activeImageIdx + 1} / {modalImages.length}
+                        </div>
+
+                        {/* Previous Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIdx((prev) =>
+                              prev > 0 ? prev - 1 : modalImages.length - 1,
+                            );
+                          }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all shadow-md z-20 focus:outline-none cursor-pointer"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+
+                        {/* Next Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIdx((prev) =>
+                              prev < modalImages.length - 1 ? prev + 1 : 0,
+                            );
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all shadow-md z-20 focus:outline-none cursor-pointer"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+
+                        {/* Dot Indicators */}
+                        <div className="absolute bottom-3 left-0 right-0 flex justify-center items-center gap-1.5 z-20">
+                          {modalImages.map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveImageIdx(i);
+                              }}
+                              className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                                i === activeImageIdx
+                                  ? "w-5 bg-white"
+                                  : "w-1.5 bg-white/50 hover:bg-white/75"
+                              }`}
+                              aria-label={`Go to photo ${i + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <DialogTitle className="text-lg font-bold text-foreground leading-snug">
-                    {activeModalPost.productName}
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed max-h-[160px] overflow-y-auto">
-                    {activeModalPost.caption}
-                  </DialogDescription>
-                </DialogHeader>
 
-                <div className="space-y-3 pt-3 border-t border-border/80">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                    <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
-                    <span>{activeModalPost.likes} Architectural Approvals</span>
+                  {/* Details & Inquire CTA */}
+                  <div className="p-6 flex flex-col justify-between space-y-4 bg-background">
+                    <DialogHeader className="space-y-2 text-left">
+                      <div className="flex items-center justify-between">
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] border-amber-500/30 text-amber-700 dark:text-amber-300"
+                        >
+                          {activeModalPost.location}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {activeModalPost.date}
+                        </span>
+                      </div>
+                      <DialogTitle className="text-lg font-bold text-foreground leading-snug">
+                        {activeModalPost.productName}
+                      </DialogTitle>
+                      <DialogDescription className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed max-h-[160px] overflow-y-auto">
+                        {activeModalPost.caption}
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-3 pt-3 border-t border-border/80">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                        <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+                        <span>{activeModalPost.likes} Architectural Approvals</span>
+                      </div>
+
+                      <Button
+                        onClick={() => handleInquire(activeModalPost)}
+                        className="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 shadow-sm"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        <span>Request Estimate for this Finish</span>
+                      </Button>
+                    </div>
                   </div>
-
-                  <Button
-                    onClick={() => handleInquire(activeModalPost)}
-                    className="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 shadow-sm"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    <span>Request Estimate for this Finish</span>
-                  </Button>
                 </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+              </DialogContent>
+            </Dialog>
+          );
+        })()}
     </>
   );
 }
