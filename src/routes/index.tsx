@@ -658,15 +658,10 @@ function HomePage() {
             <div id="lead-form" className="lg:col-span-6 scroll-mt-24">
               <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
                 {/* Card Top Title Banner */}
-                <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 text-white p-5 sm:p-6 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                      Request for estimate
-                    </h2>
-                    <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-400/30 text-[10px] font-semibold">
-                      ⚡ Quick Response
-                    </Badge>
-                  </div>
+                <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 text-white p-5 sm:p-6">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    Request for estimate
+                  </h2>
                 </div>
 
                 {/* Step Progress Continuation Bar (1/2 and 2/2) */}
