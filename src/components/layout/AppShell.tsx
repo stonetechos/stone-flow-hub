@@ -12,11 +12,13 @@ import {
   Keyboard,
   Shield,
   LayoutDashboard,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import { Sheet, SheetPortal, SheetOverlay, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
@@ -691,33 +693,61 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="flex w-64 flex-col border-r-0 p-0 text-white bg-[#083b43] isolation-isolate [&>button]:text-white [&>button]:hover:bg-white/15 [&>div]:p-0 [&>div]:gap-0"
-                style={{ background: "#083b43" }}
-              >
-                <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2.5 border-b border-white/12 px-4 py-0 space-y-0">
-                  <AppMark
-                    size={28}
-                    className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/25 shadow-md shadow-teal-950/40"
-                  />
-                  <SheetTitle className="font-display text-[15px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                    STOS
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-                  <NavList
-                    path={path}
-                    isAdmin={isAdmin}
-                    isSuperAdmin={roles.isSuperAdmin}
-                    userRoles={roles.roles}
-                    onNavigate={() => setMobileNavOpen(false)}
-                    // SheetContent already owns the single scroll region for
-                    // this drawer (see NavList's scrollable prop doc above).
-                    scrollable={false}
-                  />
-                </div>
-              </SheetContent>
+
+              {/* Use raw Radix DialogPrimitive.Content (via SheetPortal + SheetOverlay)
+                  instead of SheetContent so the dark turquoise background is not
+                  overridden by SheetContent's CVA base-class bg-[var(--surface-elevated)].
+                  The animation data-attributes mirror the SheetContent left-side variant. */}
+              <SheetPortal>
+                <SheetOverlay />
+                <DialogPrimitive.Content
+                  className={cn(
+                    // Layout & sizing
+                    "fixed z-50 inset-y-0 left-0 flex flex-col",
+                    "h-screen supports-[height:100dvh]:h-dvh w-64",
+                    // Safe-area insets
+                    "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]",
+                    // Animation (mirrors SheetContent left variant)
+                    "transition ease-[var(--ease-out)]",
+                    "data-[state=closed]:duration-[var(--duration-base)] data-[state=open]:duration-[var(--duration-slow)]",
+                    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+                    "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+                    // Colours — set both ways to guarantee dark turquoise wins
+                    "text-white border-r-0",
+                  )}
+                  style={{ background: "#083b43" }}
+                >
+                  {/* Close button — white on teal */}
+                  <DialogPrimitive.Close
+                    aria-label="Close navigation"
+                    className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-md text-white/60 transition-colors hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                    <span className="sr-only">Close</span>
+                  </DialogPrimitive.Close>
+
+                  <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2.5 border-b border-white/12 px-4 py-0 space-y-0">
+                    <AppMark
+                      size={28}
+                      className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/25 shadow-md shadow-teal-950/40"
+                    />
+                    <SheetTitle className="font-display text-[15px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                      STOS
+                    </SheetTitle>
+                  </SheetHeader>
+
+                  <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto">
+                    <NavList
+                      path={path}
+                      isAdmin={isAdmin}
+                      isSuperAdmin={roles.isSuperAdmin}
+                      userRoles={roles.roles}
+                      onNavigate={() => setMobileNavOpen(false)}
+                      scrollable={false}
+                    />
+                  </div>
+                </DialogPrimitive.Content>
+              </SheetPortal>
             </Sheet>
 
             <div className="flex items-center gap-2 md:hidden">
