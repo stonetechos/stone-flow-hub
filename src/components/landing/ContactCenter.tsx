@@ -15,34 +15,15 @@
 import { Phone, Mail, MapPin, Star, ExternalLink, MessageCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 
 const GOOGLE_BUSINESS_URL = "https://share.google/0J6h6joQLwo1hVTWJ";
 
-const REVIEWS = [
-  {
-    quote:
-      "Exceptional craftsmanship on our villa's fluted stone elevation. The dry-lay matching and sub-millimeter tolerances delivered by Stone Tech were impeccable.",
-    author: "Ar. Mihir Patel",
-    role: "Principal Architect, Ahmedabad",
-    rating: 5,
-  },
-  {
-    quote:
-      "Visited their SG Business Hub showroom in Gota. The CNC mandir murals and flexible stone veneers exceeded our expectations. Extremely prompt WhatsApp coordination.",
-    author: "Bhavin Shah",
-    role: "Homeowner, Gota, Ahmedabad",
-    rating: 5,
-  },
-  {
-    quote:
-      "Direct Rajasthan quarry sourcing with 3-year warranty and zero transit breakage. The most reliable natural stone partner for our luxury residences.",
-    author: "Pooja Mehta",
-    role: "Luxury Interior Designer",
-    rating: 5,
-  },
-];
-
 export function ContactCenter({ className }: { className?: string }) {
+  const settings = useSiteSettingsValue();
+  const REVIEWS = settings.reviews;
+  const googleRating = settings.google_rating;
+
   return (
     <section
       id="contact-us"
@@ -66,7 +47,7 @@ export function ContactCenter({ className }: { className?: string }) {
             </p>
           </div>
 
-          {/* Real 4.9 Google Verified Rating Pill */}
+          {/* Google Verified Rating Pill */}
           <a
             href={GOOGLE_BUSINESS_URL}
             target="_blank"
@@ -75,7 +56,7 @@ export function ContactCenter({ className }: { className?: string }) {
             title="View Stone Tech on Google Business"
           >
             <div className="flex items-center gap-1.5 font-black text-sm">
-              <span>4.9</span>
+              <span>{googleRating}</span>
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
@@ -87,6 +68,7 @@ export function ContactCenter({ className }: { className?: string }) {
             </span>
             <ExternalLink className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
           </a>
+
         </div>
 
         {/* 3-Column Broad Layout */}

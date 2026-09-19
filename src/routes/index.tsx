@@ -61,6 +61,8 @@ import {
   submitPublicEnquiryServerFn,
   type PublicInquiryResult,
 } from "@/lib/enquiries/public-inquiry.functions";
+import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -213,6 +215,7 @@ async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Pr
 
 function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const siteSettings = useSiteSettingsValue();
 
   // Auth state for staff
   const [isAuthenticatedStaff, setIsAuthenticatedStaff] = useState(false);
@@ -486,7 +489,7 @@ function HomePage() {
                     variant="outline"
                     className="text-[11px] gap-1 border-amber-300 text-amber-800 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 font-semibold"
                   >
-                    <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> 4.9 on Google
+                    <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> {siteSettings.google_rating} on Google
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -638,7 +641,7 @@ function HomePage() {
                 </div>
                 <div className="p-3 rounded-xl border border-amber-300/80 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20 shadow-2xs">
                   <div className="text-2xl font-black text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                    4.9 <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                    {siteSettings.google_rating} <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
                   </div>
                   <div className="text-xs text-muted-foreground font-medium mt-0.5">
                     Google Verified
@@ -912,13 +915,6 @@ function HomePage() {
                             <span>Continue to Step 2/2: Delivery &amp; Contact Details</span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
-                          <div className="text-center text-[11px] text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
-                            <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                            <span>
-                              Next: Enter WhatsApp number to receive dry-lay photos &amp; instant
-                              pricing
-                            </span>
-                          </div>
                         </div>
                       </div>
                     )}
