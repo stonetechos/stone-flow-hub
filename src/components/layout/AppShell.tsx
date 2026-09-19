@@ -693,7 +693,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="material-sapphire flex w-64 flex-col border-r-0 p-0 text-white"
+                className="flex w-64 flex-col border-r-0 p-0 text-white bg-[#083b43] isolation-isolate [&>button]:text-white [&>button]:hover:bg-white/15 [&>div]:p-0 [&>div]:gap-0"
+                style={{ background: "#083b43" }}
               >
                 <SheetHeader className="relative z-10 h-14 flex-row items-center gap-2.5 border-b border-white/12 px-4 py-0 space-y-0">
                   <AppMark
