@@ -31,7 +31,7 @@ import type { SiteReview } from "@/lib/site-settings/types";
 import { SITE_SETTINGS_DEFAULTS } from "@/lib/site-settings/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/backend/site-settings" as any)({
+export const Route = createFileRoute("/backend/site-settings")({
   component: SiteSettingsPage,
   errorComponent: () => (
     <div className="p-10 text-sm text-destructive">Failed to load site settings.</div>

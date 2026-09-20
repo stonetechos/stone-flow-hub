@@ -17,8 +17,7 @@ import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
 import { useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/backend" as any)({
+export const Route = createFileRoute("/backend")({
   ssr: false,
   beforeLoad: async () => {
     if (!getSupabaseConfigStatus().ok) return { user: null };

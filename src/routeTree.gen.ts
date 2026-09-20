@@ -13,11 +13,14 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InquiryRouteImport } from './routes/inquiry'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as VendorRouteRouteImport } from './routes/vendor/route'
+import { Route as BackendRouteRouteImport } from './routes/backend/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BackendIndexRouteImport } from './routes/backend/index'
 import { Route as VendorProfileRouteImport } from './routes/vendor/profile'
 import { Route as VendorDashboardRouteImport } from './routes/vendor/dashboard'
 import { Route as PayLinkIdRouteImport } from './routes/pay.$linkId'
+import { Route as BackendSiteSettingsRouteImport } from './routes/backend/site-settings'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -215,6 +218,11 @@ const VendorRouteRoute = VendorRouteRouteImport.update({
   path: '/vendor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BackendRouteRoute = BackendRouteRouteImport.update({
+  id: '/backend',
+  path: '/backend',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -223,6 +231,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BackendIndexRoute = BackendIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BackendRouteRoute,
 } as any)
 const VendorProfileRoute = VendorProfileRouteImport.update({
   id: '/profile',
@@ -238,6 +251,11 @@ const PayLinkIdRoute = PayLinkIdRouteImport.update({
   id: '/pay/$linkId',
   path: '/pay/$linkId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BackendSiteSettingsRoute = BackendSiteSettingsRouteImport.update({
+  id: '/site-settings',
+  path: '/site-settings',
+  getParentRoute: () => BackendRouteRoute,
 } as any)
 const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   id: '/tasks',
@@ -1265,6 +1283,7 @@ const AuthenticatedCustomersCustomerIdTimelineRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/backend': typeof BackendRouteRouteWithChildren
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inquiry': typeof InquiryRoute
@@ -1286,9 +1305,11 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
+  '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
+  '/backend/': typeof BackendIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -1472,9 +1493,11 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
+  '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
+  '/backend': typeof BackendIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -1639,6 +1662,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/backend': typeof BackendRouteRouteWithChildren
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inquiry': typeof InquiryRoute
@@ -1660,9 +1684,11 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
+  '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
+  '/backend/': typeof BackendIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -1827,6 +1853,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/backend'
     | '/vendor'
     | '/auth'
     | '/inquiry'
@@ -1848,9 +1875,11 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/tasks'
+    | '/backend/site-settings'
     | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
+    | '/backend/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users'
@@ -2034,9 +2063,11 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/tasks'
+    | '/backend/site-settings'
     | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
+    | '/backend'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users'
@@ -2200,6 +2231,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/backend'
     | '/vendor'
     | '/auth'
     | '/inquiry'
@@ -2221,9 +2253,11 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
+    | '/backend/site-settings'
     | '/pay/$linkId'
     | '/vendor/dashboard'
     | '/vendor/profile'
+    | '/backend/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/users'
@@ -2388,6 +2422,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  BackendRouteRoute: typeof BackendRouteRouteWithChildren
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   InquiryRoute: typeof InquiryRoute
@@ -2442,6 +2477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VendorRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/backend': {
+      id: '/backend'
+      path: '/backend'
+      fullPath: '/backend'
+      preLoaderRoute: typeof BackendRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -2455,6 +2497,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/backend/': {
+      id: '/backend/'
+      path: '/'
+      fullPath: '/backend/'
+      preLoaderRoute: typeof BackendIndexRouteImport
+      parentRoute: typeof BackendRouteRoute
     }
     '/vendor/profile': {
       id: '/vendor/profile'
@@ -2476,6 +2525,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pay/$linkId'
       preLoaderRoute: typeof PayLinkIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/backend/site-settings': {
+      id: '/backend/site-settings'
+      path: '/site-settings'
+      fullPath: '/backend/site-settings'
+      preLoaderRoute: typeof BackendSiteSettingsRouteImport
+      parentRoute: typeof BackendRouteRoute
     }
     '/_authenticated/tasks': {
       id: '/_authenticated/tasks'
@@ -4210,6 +4266,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface BackendRouteRouteChildren {
+  BackendSiteSettingsRoute: typeof BackendSiteSettingsRoute
+  BackendIndexRoute: typeof BackendIndexRoute
+}
+
+const BackendRouteRouteChildren: BackendRouteRouteChildren = {
+  BackendSiteSettingsRoute: BackendSiteSettingsRoute,
+  BackendIndexRoute: BackendIndexRoute,
+}
+
+const BackendRouteRouteWithChildren = BackendRouteRoute._addFileChildren(
+  BackendRouteRouteChildren,
+)
+
 interface VendorRouteRouteChildren {
   VendorDashboardRoute: typeof VendorDashboardRoute
   VendorProfileRoute: typeof VendorProfileRoute
@@ -4233,6 +4303,7 @@ const VendorRouteRouteWithChildren = VendorRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  BackendRouteRoute: BackendRouteRouteWithChildren,
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   InquiryRoute: InquiryRoute,
