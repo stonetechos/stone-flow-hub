@@ -701,6 +701,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <SheetPortal>
                 <SheetOverlay />
                 <DialogPrimitive.Content
+                  data-nav-drawer="true"
                   className={cn(
                     // Layout & sizing
                     "fixed z-50 inset-y-0 left-0 flex flex-col",
@@ -712,10 +713,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                     "data-[state=closed]:duration-[var(--duration-base)] data-[state=open]:duration-[var(--duration-slow)]",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
-                    // Colours — set both ways to guarantee dark turquoise wins
-                    "text-white border-r-0",
+                    "text-white border-r-0 material-sapphire",
                   )}
-                  style={{ background: "#083b43" }}
                 >
                   {/* Close button — white on teal */}
                   <DialogPrimitive.Close

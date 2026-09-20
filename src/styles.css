@@ -907,6 +907,18 @@
   box-shadow: 2px 0 16px rgba(8, 59, 67, 0.25);
 }
 
+/* Mobile nav drawer — guaranteed dark turquoise background.
+   Uses !important to beat Tailwind utility classes (e.g. SheetContent's
+   bg-[var(--surface-elevated)]) regardless of CSS cascade order. */
+[data-nav-drawer="true"] {
+  background: #083b43 !important;
+  color: #ffffff;
+}
+[data-nav-drawer="true"] * {
+  --tw-text-opacity: 1;
+}
+
+
 @utility material-granite {
   position: relative;
   isolation: isolate;
