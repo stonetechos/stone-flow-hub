@@ -43,7 +43,11 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 
   return {
     google_rating: parseSetting(rows, "google_rating", SITE_SETTINGS_DEFAULTS.google_rating),
-    reviews: parseSetting<"reviews">(rows, "reviews", SITE_SETTINGS_DEFAULTS.reviews) as SiteReview[],
+    reviews: parseSetting<"reviews">(
+      rows,
+      "reviews",
+      SITE_SETTINGS_DEFAULTS.reviews,
+    ) as SiteReview[],
     estimate_card_heading: parseSetting(
       rows,
       "estimate_card_heading",
@@ -58,9 +62,8 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function upsertSiteSetting(key: string, value: unknown): Promise<void> {
-  const { error } = await db.from("site_settings").upsert(
-    { key, value, updated_at: new Date().toISOString() },
-    { onConflict: "key" },
-  );
+  const { error } = await db
+    .from("site_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
   if (error) throw new Error(error.message);
 }

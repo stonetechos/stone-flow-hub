@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 
-
 interface ShareInquiryDialogProps {
   trigger?: React.ReactNode;
 }
@@ -34,7 +33,6 @@ export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const siteSettings = useSiteSettingsValue();
-
 
   const getShareUrl = () => {
     if (typeof window !== "undefined") {
@@ -173,7 +171,10 @@ export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-                <span>Google Verified Business {siteSettings.google_rating} rating &amp; direct Maps showroom route</span>
+                <span>
+                  Google Verified Business {siteSettings.google_rating} rating &amp; direct Maps
+                  showroom route
+                </span>
               </li>
             </ul>
           </div>

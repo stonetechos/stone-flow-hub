@@ -89,7 +89,9 @@ function SiteSettingsPage() {
       await upsert.mutateAsync({ key, value });
       toast.success(`${label} saved successfully.`);
     } catch (err) {
-      toast.error(`Failed to save ${label}: ${err instanceof Error ? err.message : "Unknown error"}`);
+      toast.error(
+        `Failed to save ${label}: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -98,10 +100,7 @@ function SiteSettingsPage() {
   }
 
   function addReview() {
-    setReviews((prev) => [
-      ...prev,
-      { quote: "", author: "", role: "", rating: 5 },
-    ]);
+    setReviews((prev) => [...prev, { quote: "", author: "", role: "", rating: 5 }]);
   }
 
   function removeReview(index: number) {
@@ -180,7 +179,11 @@ function SiteSettingsPage() {
               disabled={!ratingValid || upsert.isPending}
               onClick={() => save("google_rating", rating, "Google Rating")}
             >
-              {upsert.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+              {upsert.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              ) : (
+                <Save className="h-3.5 w-3.5 mr-1.5" />
+              )}
               Save Rating
             </Button>
             <Button
@@ -205,7 +208,8 @@ function SiteSettingsPage() {
             <CardTitle className="text-base">Customer Reviews</CardTitle>
           </div>
           <CardDescription>
-            The review carousel shown in the "How to Reach Us" section. You can add, edit or remove reviews.
+            The review carousel shown in the "How to Reach Us" section. You can add, edit or remove
+            reviews.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -284,7 +288,11 @@ function SiteSettingsPage() {
               disabled={upsert.isPending}
               onClick={() => save("reviews", reviews, "Reviews")}
             >
-              {upsert.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+              {upsert.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              ) : (
+                <Save className="h-3.5 w-3.5 mr-1.5" />
+              )}
               Save Reviews
             </Button>
             <Button
@@ -340,7 +348,11 @@ function SiteSettingsPage() {
                 await save("estimate_card_subtext", estimateSubtext, "Estimate Sub-text");
               }}
             >
-              {upsert.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+              {upsert.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              ) : (
+                <Save className="h-3.5 w-3.5 mr-1.5" />
+              )}
               Save Estimate Card
             </Button>
             <Button

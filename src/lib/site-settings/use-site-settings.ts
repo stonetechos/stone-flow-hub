@@ -25,8 +25,7 @@ export function useSiteSettingsValue(): SiteSettings {
 export function useUpsertSiteSetting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ key, value }: { key: string; value: unknown }) =>
-      upsertSiteSetting(key, value),
+    mutationFn: ({ key, value }: { key: string; value: unknown }) => upsertSiteSetting(key, value),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: SITE_SETTINGS_QUERY_KEY });
     },
