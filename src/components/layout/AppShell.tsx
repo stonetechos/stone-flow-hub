@@ -43,6 +43,8 @@ import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
+import { LanguageToggle } from "@/components/global/LanguageToggle";
+import { useTranslation } from "react-i18next";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
 import { AppMark } from "@/components/brand/AppMark";
@@ -208,6 +210,7 @@ function NavList({
   collapsed?: boolean;
   scrollable?: boolean;
 }) {
+  const { t } = useTranslation();
   const { prefs, update } = useNavPreferences();
   const resolved = useMemo(
     () => resolveNav(prefs, isAdmin, isSuperAdmin ?? false, userRoles),
@@ -256,7 +259,7 @@ function NavList({
         <NavLinkRow
           key="dashboard"
           to="/dashboard"
-          label="Dashboard"
+          label={t("nav.items.dashboard", "Dashboard")}
           Icon={LayoutDashboard}
           active={isActive("/dashboard")}
           collapsed={collapsed}
@@ -274,7 +277,7 @@ function NavList({
               className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70"
             >
               <Star className="h-3 w-3 text-amber-300" aria-hidden />
-              Pinned
+              {t("nav.pinned", "Pinned")}
             </h4>
           )}
           <div className="space-y-px">
@@ -282,7 +285,7 @@ function NavList({
               <NavLinkRow
                 key={item.id}
                 to={item.to}
-                label={item.label}
+                label={t(`nav.items.${item.id}`, item.label)}
                 Icon={item.icon}
                 active={isActive(item.to)}
                 collapsed={collapsed}
@@ -308,7 +311,7 @@ function NavList({
                 aria-expanded={!groupCollapsed}
                 className="mb-1 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70 transition-colors hover:text-white"
               >
-                <span>{group.label}</span>
+                <span>{t(`nav.groups.${group.id}`, group.label)}</span>
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 text-cyan-200/70 transition-transform duration-150",
@@ -324,7 +327,7 @@ function NavList({
                   <NavLinkRow
                     key={item.id}
                     to={item.to}
-                    label={item.label}
+                    label={t(`nav.items.${item.id}`, item.label)}
                     Icon={item.icon}
                     active={isActive(item.to)}
                     collapsed={collapsed}
@@ -356,6 +359,7 @@ function UserMenu({
   isAdmin: boolean;
   isSuperAdmin?: boolean;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [lastLogin, setLastLogin] = useState<string | null>(null);
@@ -387,7 +391,7 @@ function UserMenu({
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "First session";
+    : t("user.firstSession", "First session");
 
   return (
     <DropdownMenu>
@@ -433,7 +437,11 @@ function UserMenu({
                   )}
                 >
                   {isSuperAdmin || isAdmin ? <Shield className="h-2.5 w-2.5" aria-hidden /> : null}
-                  {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Member"}
+                  {isSuperAdmin
+                    ? t("user.role.superAdmin", "Super Admin")
+                    : isAdmin
+                      ? t("user.role.admin", "Admin")
+                      : t("user.role.member", "Member")}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200">
                   STOS
@@ -443,7 +451,7 @@ function UserMenu({
           </div>
           <div className="relative z-10 border-t border-white/12 px-3.5 py-1.5">
             <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-cyan-200/80">
-              <span>Last login</span>
+              <span>{t("user.lastLogin", "Last login")}</span>
               <span>{lastLoginLabel}</span>
             </div>
           </div>
@@ -452,11 +460,11 @@ function UserMenu({
         <div className="bg-surface-card py-1">
           <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
             <UserIcon className="mr-2 h-4 w-4" aria-hidden />
-            Profile
+            {t("user.profile", "Profile")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => void navigate({ to: "/settings" })}>
             <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
-            Preferences
+            {t("user.preferences", "Preferences")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={(e) => {
@@ -465,7 +473,7 @@ function UserMenu({
             }}
           >
             <Keyboard className="mr-2 h-4 w-4" aria-hidden />
-            Keyboard shortcuts
+            {t("user.keyboardShortcuts", "Keyboard shortcuts")}
             <kbd className="ml-auto rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
               ?
             </kbd>
@@ -476,7 +484,7 @@ function UserMenu({
             className="text-intent-destructive focus:text-intent-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" aria-hidden />
-            Sign out
+            {t("user.signOut", "Sign out")}
           </DropdownMenuItem>
         </div>
       </DropdownMenuContent>

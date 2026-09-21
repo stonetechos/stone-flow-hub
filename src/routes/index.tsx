@@ -542,7 +542,7 @@ function HomePage() {
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12">
       {/* 1. LIVSPACE LUXURY NAVBAR */}
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md shadow-2xs">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Brand Logo & Tagline */}
           <div className="flex items-center gap-3">
@@ -707,6 +707,10 @@ function HomePage() {
                           toast.error("Please select at least one stone product to proceed.");
                           return;
                         }
+                        if (!spaceType.trim()) {
+                          toast.error("Please select the project space type (e.g. Bungalow, Apartment, etc.).");
+                          return;
+                        }
                         setFormStep(2);
                       }}
                       className={cn(
@@ -749,7 +753,9 @@ function HomePage() {
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 1
                               </span>
-                              <span>Select Stone Products:</span>
+                              <span>
+                                Select Stone Products <span className="text-destructive">*</span>:
+                              </span>
                             </label>
                             <span className="text-[11px] text-muted-foreground">
                               Select multiple
@@ -789,7 +795,9 @@ function HomePage() {
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 2
                               </span>
-                              <span>Project Space &amp; Concept:</span>
+                              <span>
+                                Project Space Type <span className="text-destructive">*</span>:
+                              </span>
                             </label>
                           </div>
 
@@ -917,6 +925,10 @@ function HomePage() {
                             onClick={() => {
                               if (selectedProducts.length === 0) {
                                 toast.error("Please select at least one stone product to proceed.");
+                                return;
+                              }
+                              if (!spaceType.trim()) {
+                                toast.error("Please select the project space type (e.g. Bungalow, Apartment, etc.).");
                                 return;
                               }
                               setFormStep(2);
@@ -1226,7 +1238,7 @@ function HomePage() {
           className="flex-1 h-11 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1.5 text-xs"
         >
           <a
-            href="https://api.whatsapp.com/send?phone=919829000000&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements"
+            href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements"
             target="_blank"
             rel="noopener noreferrer"
           >
