@@ -708,7 +708,9 @@ function HomePage() {
                           return;
                         }
                         if (!spaceType.trim()) {
-                          toast.error("Please select the project space type (e.g. Bungalow, Apartment, etc.).");
+                          toast.error(
+                            "Please select the project space type (e.g. Bungalow, Apartment, etc.).",
+                          );
                           return;
                         }
                         setFormStep(2);
@@ -928,7 +930,9 @@ function HomePage() {
                                 return;
                               }
                               if (!spaceType.trim()) {
-                                toast.error("Please select the project space type (e.g. Bungalow, Apartment, etc.).");
+                                toast.error(
+                                  "Please select the project space type (e.g. Bungalow, Apartment, etc.).",
+                                );
                                 return;
                               }
                               setFormStep(2);

@@ -695,7 +695,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             demo banner are plain shrink-0 flow items instead of sticky. */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Topbar (48px) — fixed chrome, no longer sticky-against-scroll */}
-          <header className="z-20 flex min-h-12 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
+          <header className="z-20 flex min-h-[calc(3rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-header/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-surface-header/75 sm:px-3">
             {/* Mobile nav trigger */}
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
@@ -722,7 +722,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     "fixed z-50 inset-y-0 left-0 flex flex-col",
                     "h-screen supports-[height:100dvh]:h-dvh w-64",
                     // Safe-area insets
-                    "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]",
+                    "pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)]",
                     // Animation (mirrors SheetContent left variant)
                     "transition ease-[var(--ease-out)]",
                     "data-[state=closed]:duration-[var(--duration-base)] data-[state=open]:duration-[var(--duration-slow)]",
@@ -820,6 +820,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <SyncStatusIndicator />
+              <LanguageToggle />
               <NotificationsBell />
               <ThemeSwitcher />
               <div className="ml-1">
