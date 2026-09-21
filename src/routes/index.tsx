@@ -348,10 +348,24 @@ function HomePage() {
         toast.error("Please select at least one stone product to proceed.");
         return;
       }
+      if (!spaceType.trim()) {
+        toast.error("Please select the project space type (e.g., Bungalow, Apartment, etc.).");
+        return;
+      }
       setFormStep(2);
       return;
     }
 
+    if (selectedProducts.length === 0) {
+      toast.error("Please select at least one stone product.");
+      setFormStep(1);
+      return;
+    }
+    if (!spaceType.trim()) {
+      toast.error("Please select the project space type.");
+      setFormStep(1);
+      return;
+    }
     if (!name.trim()) {
       toast.error("Please enter your full name.");
       return;
@@ -367,10 +381,6 @@ function HomePage() {
     }
     if (!requiredDate) {
       toast.error("Please pick your required completion date from the calendar.");
-      return;
-    }
-    if (selectedProducts.length === 0 && !planDescription.trim() && photos.length === 0) {
-      toast.error("Please select a product, upload photos, or describe your stone requirements.");
       return;
     }
 

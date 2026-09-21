@@ -19,9 +19,9 @@ export const publicInquiryInputSchema = z.object({
   city: z.string().trim().min(2, "Please enter your city or project location"),
   customer_role: z.string().optional().default("Owner / Homeowner"),
   customer_type: z.string().optional().default("individual"),
-  space_type: z.string().optional().default(""),
+  space_type: z.string().trim().min(1, "Please select the type of space"),
   required_date: z.string().min(1, "Please select when you need this by"),
-  selected_products: z.array(z.string()).default([]),
+  selected_products: z.array(z.string()).min(1, "Please select at least one product"),
   plan_description: z.string().optional().default(""),
   photos: z
     .array(
@@ -35,6 +35,73 @@ export const publicInquiryInputSchema = z.object({
     .max(10, "You can upload a maximum of 10 photos")
     .default([]),
 });
+
+const VALID_SPACE_TYPES: Record<string, Database["public"]["Enums"]["space_type"]> = {
+  bungalow: "bungalow",
+  "bungalow / villa": "bungalow",
+  villa: "bungalow",
+  apartment: "apartment",
+  "apartment / flat": "apartment",
+  flat: "apartment",
+  "commercial office": "commercial_space",
+  commercial_space: "commercial_space",
+  "hotel / resort": "resort",
+  hotel: "hotel",
+  resort: "resort",
+  "temple / mandir": "holy_place",
+  temple: "holy_place",
+  mandir: "holy_place",
+  holy_place: "holy_place",
+  farmhouse: "farmhouse",
+  "restaurant / cafe": "restaurant",
+  restaurant: "restaurant",
+  "showroom / retail": "showroom",
+  showroom: "showroom",
+  spa: "spa",
+  residential_building: "residential_building",
+  educational_institution: "educational_institution",
+  garden: "garden",
+  exhibition: "exhibition",
+  college: "college",
+  hostel: "hostel",
+  mall: "mall",
+  govt_institution: "govt_institution",
+};
+
+const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["material_interest"]> = {
+  "stone murals & carvings": "stone_murals",
+  "stone murals": "stone_murals",
+  "stone_murals": "stone_murals",
+  "custom flooring": "custom_flooring",
+  "general flooring": "general_flooring",
+  "custom_flooring": "custom_flooring",
+  "table tops & countertops": "table_top",
+  "table top": "table_top",
+  "table_top": "table_top",
+  "pu decorative panels": "pu_panels",
+  "pu panels": "pu_panels",
+  "pu_panels": "pu_panels",
+  "stepping stones & landscape": "stepping_stone",
+  "stepping stone": "stepping_stone",
+  "stepping_stone": "stepping_stone",
+  "agate & semi-precious slabs": "agate_slabs",
+  "agate slabs": "agate_slabs",
+  "agate_slabs": "agate_slabs",
+  "natural stone mosaics": "natural_stone_mosaics",
+  "natural_stone_mosaics": "natural_stone_mosaics",
+  "inlay work": "inlay_work",
+  "inlay_work": "inlay_work",
+  "custom stone cladding": "custom_stone_cladding",
+  "custom_stone_cladding": "custom_stone_cladding",
+  "crazy pattern in stone": "crazy_pattern_in_stone",
+  "crazy_pattern_in_stone": "crazy_pattern_in_stone",
+  "stone veneer": "stone_veneer",
+  "stone_veneer": "stone_veneer",
+  "stone veneer artwork": "stone_veneer_artwork",
+  "stone_veneer_artwork": "stone_veneer_artwork",
+  "natural stone interlocking panels": "natural_stone_interlocking_panels",
+  "natural_stone_interlocking_panels": "natural_stone_interlocking_panels",
+};
 
 export type PublicInquiryInput = z.infer<typeof publicInquiryInputSchema>;
 
@@ -172,12 +239,11 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
             ? input.customer_type
             : "individual") as Database["public"]["Enums"]["customer_type"],
           source: "Shareable Web Link",
-          space_type: (input.space_type as Database["public"]["Enums"]["space_type"]) || null,
-          material_interests:
-            (input.selected_products.map((p) =>
-              p.toLowerCase().replace(/[\s-]+/g, "_"),
-            ) as Database["public"]["Enums"]["material_interest"][]) || [],
-          notes: `Lead from public web form. Role: ${input.customer_role || "Owner / Homeowner"}. Required by: ${input.required_date}`,
+          space_type: (input.space_type ? VALID_SPACE_TYPES[input.space_type.trim().toLowerCase()] : null) || null,
+          material_interests: (input.selected_products || [])
+            .map((p) => VALID_MATERIAL_INTERESTS[p.trim().toLowerCase()])
+            .filter((p): p is Database["public"]["Enums"]["material_interest"] => Boolean(p)),
+          notes: `Lead from public web form. Space: ${input.space_type}. Role: ${input.customer_role || "Owner / Homeowner"}. Required by: ${input.required_date}`,
         } as unknown as Database["public"]["Tables"]["customers"]["Insert"])
         .select("id, customer_code")
         .single();
@@ -317,8 +383,8 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
     const encodedMsg = encodeURIComponent(
       `Hello Stone Tech Team! I have submitted an inquiry on your website.\n\n*Reference:* ${createdEnquiry.enquiry_no}\n*Name:* ${input.name.trim()}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}`,
     );
-    // WhatsApp direct click link (using Stone Tech official or fallback number)
-    const whatsappLink = `https://api.whatsapp.com/send?phone=919829000000&text=${encodedMsg}`;
+    // WhatsApp direct click link (using Stone Tech official number +91 77420 90866)
+    const whatsappLink = `https://api.whatsapp.com/send?phone=917742090866&text=${encodedMsg}`;
 
     return {
       success: true,

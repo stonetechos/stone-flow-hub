@@ -24,6 +24,7 @@ import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
 import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
+import "@/lib/i18n";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -122,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0d9488" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "STOS" },
       { property: "og:title", content: "STOS — Professional ERP for the Natural Stone Industry" },
       {
@@ -144,7 +145,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700&display=swap",
       },
       // Phase G.10A — PWA foundation
       { rel: "manifest", href: "/manifest.json" },
