@@ -390,6 +390,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
   const { t } = useTranslation();
+  const { t } = useTranslation();
   const salesTone: HealthCardTone = kpis.salesTodayInr > 0 ? "strong" : "steady";
   const opsTone: HealthCardTone = kpis.ordersToStart > 5 ? "watch" : "steady";
   const financeTone: HealthCardTone =
@@ -481,6 +482,7 @@ function OperationalRadar({
   followups: FollowupWithEnquiry[];
 }) {
   const { t } = useTranslation();
+  const { t } = useTranslation();
   const critical: RadarItem[] = [];
   if (kpis.overdueFollowups)
     critical.push({
@@ -495,7 +497,7 @@ function OperationalRadar({
       sub: "Exceeds ₹50L threshold",
     });
   const urgentTasks = tasks.filter((t) => t.priority === "urgent").slice(0, 3);
-  for (const t of urgentTasks) critical.push({ label: t.title, to: "/tasks", sub: "Urgent task" });
+  for (const t of urgentTasks) critical.push({ label: t.title, to: "/tasks", sub: t("dashboard.radar.urgentTask") });
 
   const attention: RadarItem[] = [];
   if (kpis.pendingQuotes)
@@ -665,31 +667,31 @@ function RadarColumn({
 function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
   const rows: Array<{ label: string; value: string; to: string; tone?: "in" | "out" }> = [
     {
-      label: "Receivables",
+      label: t("dashboard.grid.receivables"),
       value: "₹" + formatMoney(kpis.outstandingInr),
       to: "/invoices",
       tone: "in",
     },
     {
-      label: "Collected this month",
+      label: t("dashboard.grid.collectedMonth"),
       value: "₹" + formatMoney(kpis.paymentsThisMonthInr),
       to: "/payments",
       tone: "in",
     },
     {
-      label: "Collected today",
+      label: t("dashboard.grid.collectedToday"),
       value: "₹" + formatMoney(kpis.collectionsTodayInr),
       to: "/payments",
       tone: "in",
     },
     {
-      label: "Sales invoiced today",
+      label: t("dashboard.grid.salesInvoicedToday"),
       value: "₹" + formatMoney(kpis.salesTodayInr),
       to: "/invoices",
       tone: "in",
     },
     {
-      label: "Revenue in pipeline",
+      label: t("dashboard.grid.revenuePipeline"),
       value: "₹" + formatMoney(kpis.revenuePipelineInr),
       to: "/quotes",
     },
@@ -745,19 +747,19 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
   const rows = [
     {
       icon: <Factory className="h-3.5 w-3.5" />,
-      label: "Sales orders to start",
+      label: t("dashboard.grid.salesOrdersStart"),
       value: kpis.ordersToStart,
       to: "/sales-orders",
     },
     {
       icon: <Truck className="h-3.5 w-3.5" />,
-      label: "Dispatches today",
+      label: t("dashboard.grid.dispatchesToday"),
       value: kpis.deliveriesToday,
       to: "/dispatch",
     },
     {
       icon: <Building2 className="h-3.5 w-3.5" />,
-      label: "Active installations",
+      label: t("dashboard.grid.activeInstallations"),
       value: kpis.activeInstallations,
       to: "/installations",
     },
@@ -805,12 +807,12 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
   const aov =
     kpis.quotesAwaitingApproval > 0 ? kpis.revenuePipelineInr / kpis.quotesAwaitingApproval : 0;
   const cells = [
-    { label: "Active enquiries", value: kpis.activeEnquiries, to: "/enquiries" },
-    { label: "Quotes to approve", value: kpis.pendingQuotes, to: "/quotes", tone: "warn" as const },
-    { label: "Orders to start", value: kpis.ordersToStart, to: "/sales-orders" },
-    { label: "Enquiry → quote", value: `${conversion}%`, to: "/dashboards/sales-funnel" },
-    { label: "Avg. quote value", value: "₹" + formatMoney(aov), to: "/quotes" },
-    { label: "Pipeline value", value: "₹" + formatMoney(kpis.revenuePipelineInr), to: "/quotes" },
+    { label: t("dashboard.grid.activeEnquiries"), value: kpis.activeEnquiries, to: "/enquiries" },
+    { label: t("dashboard.grid.quotesToApprove"), value: kpis.pendingQuotes, to: "/quotes", tone: "warn" as const },
+    { label: t("dashboard.grid.ordersToStart"), value: kpis.ordersToStart, to: "/sales-orders" },
+    { label: t("dashboard.grid.enquiryToQuote"), value: `${conversion}%`, to: "/dashboards/sales-funnel" },
+    { label: t("dashboard.grid.avgQuoteValue"), value: "₹" + formatMoney(aov), to: "/quotes" },
+    { label: t("dashboard.grid.pipelineValue"), value: "₹" + formatMoney(kpis.revenuePipelineInr), to: "/quotes" },
   ];
   return (
     <SurfaceCard
@@ -1054,7 +1056,7 @@ function TodayTimeline({
         id="timeline-heading"
         kicker="Today"
         title="Timeline"
-        action={{ label: "Open calendar", to: "/calendar" }}
+        action={{ label: t("dashboard.radar.openCalendar"), to: "/calendar" }}
       />
       {events.length === 0 ? (
         <div className="engraved-well rounded-2xl px-4 py-8 text-center text-[13px] font-medium text-slate-400">
@@ -1110,17 +1112,17 @@ function TodayTimeline({
 
 function QuickActionsDock() {
   const actions: Array<{ to: string; label: string; icon: React.ReactNode }> = [
-    { to: "/customers", label: "Customer", icon: <Users className="h-3.5 w-3.5" /> },
-    { to: "/enquiries", label: "Enquiry", icon: <FileText className="h-3.5 w-3.5" /> },
-    { to: "/quotes/new", label: "Quote", icon: <FileText className="h-3.5 w-3.5" /> },
-    { to: "/sales-orders/new", label: "Sales order", icon: <Package className="h-3.5 w-3.5" /> },
+    { to: "/customers", label: t("dashboard.actions.customer"), icon: <Users className="h-3.5 w-3.5" /> },
+    { to: "/enquiries", label: t("dashboard.actions.enquiry"), icon: <FileText className="h-3.5 w-3.5" /> },
+    { to: "/quotes/new", label: t("dashboard.actions.quote"), icon: <FileText className="h-3.5 w-3.5" /> },
+    { to: "/sales-orders/new", label: t("dashboard.actions.salesOrder"), icon: <Package className="h-3.5 w-3.5" /> },
     {
       to: "/purchase-orders/new",
-      label: "Purchase order",
+      label: t("dashboard.actions.purchaseOrder"),
       icon: <ClipboardCheck className="h-3.5 w-3.5" />,
     },
-    { to: "/receipts/new", label: "Receipt", icon: <Wallet className="h-3.5 w-3.5" /> },
-    { to: "/dispatch/new", label: "Dispatch", icon: <Truck className="h-3.5 w-3.5" /> },
+    { to: "/receipts/new", label: t("dashboard.actions.receipt"), icon: <Wallet className="h-3.5 w-3.5" /> },
+    { to: "/dispatch/new", label: t("dashboard.actions.dispatch"), icon: <Truck className="h-3.5 w-3.5" /> },
   ];
   return (
     <div
@@ -1280,7 +1282,7 @@ function pickHeadline(k: DashboardKpis, t: any): HeadlineMetric {
     };
   if (k.ordersToStart > 3)
     return {
-      label: "Orders queued for production",
+      label: t("dashboard.ordersQueued"),
       value: String(k.ordersToStart),
       context: t("dashboard.dispatchesToday", { count: k.deliveriesToday }),
       to: "/sales-orders",
