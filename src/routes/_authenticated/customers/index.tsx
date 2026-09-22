@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
