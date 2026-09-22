@@ -76,6 +76,17 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
           if (!existingEmp || existingEmp.id === id) {
             targetUserId = prof.id;
           }
+        } else {
+          // Profile doesn't exist. Invite them automatically so they can sign in.
+          const { data: result } = await supabaseAdmin.auth.admin.inviteUserByEmail(emailClean, {
+            data: { full_name: input.full_name },
+          });
+          if (result.user?.id) {
+            targetUserId = result.user.id;
+            await supabaseAdmin
+              .from("profiles")
+              .upsert({ id: targetUserId, email: emailClean, full_name: input.full_name }, { onConflict: "id" });
+          }
         }
       } catch {
         /* skip profile lookup error */
