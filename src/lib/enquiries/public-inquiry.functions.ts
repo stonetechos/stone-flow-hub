@@ -404,6 +404,28 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
       console.warn("[public-inquiry] Broadcast notification failed:", notifyErr);
     }
 
+    // 11. Dispatch automated WhatsApp to admins via message_queue
+    try {
+      const msgBody = `🚨 *New Website Lead: ${createdEnquiry.enquiry_no}*\n\n*Name:* ${input.name.trim()}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}`;
+      
+      const { error: mqErr } = await supabaseAdmin.from("message_queue").insert({
+        channel: "whatsapp",
+        to_address: "917742090866",
+        body: msgBody,
+        customer_id: customerId,
+        related_type: "enquiry",
+        related_id: createdEnquiry.id,
+      } as any);
+
+      if (!mqErr) {
+        // Force immediate dispatch so it arrives instantly, without waiting for the CRON schedule
+        const { dispatchQueueBatch } = await import("@/lib/notifications/dispatch.server");
+        await dispatchQueueBatch(supabaseAdmin as any, 10);
+      }
+    } catch (waErr) {
+      console.warn("[public-inquiry] Automated WhatsApp failed:", waErr);
+    }
+
     return {
       success: true,
       enquiry_id: createdEnquiry.id,
