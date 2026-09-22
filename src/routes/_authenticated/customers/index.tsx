@@ -78,8 +78,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 
 function CustomersPage() {
   const { t } = useTranslation();
-  const { t } = useTranslation();
-  const qc = useQueryClient();
+const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
@@ -303,7 +302,7 @@ function CustomerFormDialog({
   editing: CustomerRow | null;
 }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
+const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
   const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyForm()));
   const dirty = JSON.stringify(form) !== baseline;
