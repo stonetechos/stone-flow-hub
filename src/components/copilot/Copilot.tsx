@@ -437,8 +437,8 @@ export function Copilot() {
       <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <SheetTitle className="text-base">STOS Copilot</SheetTitle>
+            <img src="/stoneman.png" alt="Stoneman Mascot" className="h-6 w-6 object-contain drop-shadow-sm" />
+            <SheetTitle className="text-base font-display">Stoneman AI</SheetTitle>
             <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
               {ctx.entity}
             </Badge>
@@ -655,15 +655,18 @@ function Bubble({ role, content }: ChatMsg) {
   if (role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-primary-foreground shadow-sm">
           {content}
         </div>
       </div>
     );
   }
   return (
-    <div className="max-w-full whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 text-sm">
-      {content}
+    <div className="flex items-start gap-2 max-w-[90%]">
+      <img src="/stoneman.png" alt="Stoneman" className="h-7 w-7 shrink-0 mt-0.5 object-contain drop-shadow-sm" />
+      <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-foreground shadow-sm">
+        {content}
+      </div>
     </div>
   );
 }

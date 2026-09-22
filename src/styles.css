@@ -1229,3 +1229,88 @@
 body[data-scroll-locked] {
   overscroll-behavior: none;
 }
+
+/* ==============================================================
+ * OVERRIDE THEMES (Monochrome, Batman, Pink, Pop)
+ * ============================================================== */
+.theme-monochrome {
+  color-scheme: light;
+  --surface-base: #fafafa;
+  --surface-panel: #f4f4f5;
+  --surface-card: #ffffff;
+  --surface-card-hover: #f4f4f5;
+  --surface-header: #ffffff;
+  --surface-nav: #f4f4f5;
+  --surface-nav-hover: #e4e4e7;
+  --surface-nav-active: #d4d4d8;
+  --text-primary: #18181b;
+  --text-secondary: #3f3f46;
+  --text-muted: #71717a;
+  --border-default: #e4e4e7;
+  --border-subtle: #f4f4f5;
+  --border-strong: #d4d4d8;
+  --intent-primary: #18181b;
+  --intent-primary-hover: #27272a;
+}
+
+.theme-batman {
+  color-scheme: dark;
+  --surface-base: #000000;
+  --surface-panel: #09090b;
+  --surface-card: #18181b;
+  --surface-card-hover: #27272a;
+  --surface-header: #09090b;
+  --surface-nav: #09090b;
+  --surface-nav-hover: #27272a;
+  --surface-nav-active: #3f3f46;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --border-default: #27272a;
+  --border-subtle: #18181b;
+  --border-strong: #3f3f46;
+  --intent-primary: #fde047;
+  --intent-primary-hover: #fef08a;
+  --text-on-material: #000000;
+}
+
+.theme-pink {
+  color-scheme: light;
+  --surface-base: #fdf2f8;
+  --surface-panel: #fbcfe8;
+  --surface-card: #fce7f3;
+  --surface-card-hover: #fbcfe8;
+  --surface-header: #fce7f3;
+  --surface-nav: #fbcfe8;
+  --surface-nav-hover: #f9a8d4;
+  --surface-nav-active: #f472b6;
+  --text-primary: #831843;
+  --text-secondary: #9d174d;
+  --text-muted: #be185d;
+  --border-default: #f9a8d4;
+  --border-subtle: #fbcfe8;
+  --border-strong: #f472b6;
+  --intent-primary: #ec4899;
+  --intent-primary-hover: #db2777;
+}
+
+.theme-pop {
+  color-scheme: light;
+  --surface-base: #e0e7ff;
+  --surface-panel: #fef08a;
+  --surface-card: #ffffff;
+  --surface-card-hover: #fef08a;
+  --surface-header: #ffffff;
+  --surface-nav: #3b82f6;
+  --surface-nav-hover: #2563eb;
+  --surface-nav-active: #1d4ed8;
+  --text-primary: #1e3a8a;
+  --text-secondary: #1e40af;
+  --text-muted: #3b82f6;
+  --border-default: #fcd34d;
+  --border-subtle: #fef08a;
+  --border-strong: #f59e0b;
+  --intent-primary: #ef4444;
+  --intent-primary-hover: #dc2626;
+  --text-on-material: #ffffff;
+}
