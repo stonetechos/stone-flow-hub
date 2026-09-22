@@ -388,6 +388,22 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
     // WhatsApp direct click link (using Stone Tech official number +91 77420 90866)
     const whatsappLink = `https://api.whatsapp.com/send?phone=917742090866&text=${encodedMsg}`;
 
+    // 10. Broadcast notification to all staff
+    try {
+      const { notify } = await import("@/lib/notifications/notify.server");
+      await notify({
+        tier: "important",
+        title: "New Website Lead",
+        body: `${input.name.trim()} from ${input.city.trim()} inquired about ${formattedProducts}. Required by ${input.required_date}.`,
+        linkPath: `/enquiries/${createdEnquiry.id}`,
+        entityType: "enquiry",
+        entityId: createdEnquiry.id,
+        userId: null,
+      });
+    } catch (notifyErr) {
+      console.warn("[public-inquiry] Broadcast notification failed:", notifyErr);
+    }
+
     return {
       success: true,
       enquiry_id: createdEnquiry.id,

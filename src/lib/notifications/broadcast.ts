@@ -150,6 +150,28 @@ export function broadcastQuoteApproved(quote: {
 }
 
 /**
+ * 2b. Quotation Sent (Organization-wide)
+ */
+export function broadcastQuoteSent(quote: {
+  id: string;
+  quote_no: string;
+  customer_name?: string | null;
+  total_amount?: number | null;
+}): void {
+  const customerPart = quote.customer_name ? ` to ${quote.customer_name}` : "";
+  const totalPart = quote.total_amount != null ? ` (${formatInr(quote.total_amount)})` : "";
+  void dispatchStosEvent({
+    tier: "info",
+    title: "Quotation Sent",
+    body: `A quotation has been sent${customerPart}${totalPart}.`,
+    entityType: "quote",
+    entityId: quote.id,
+    linkPath: `/quotes/${quote.id}`,
+    targetRole: "all",
+  });
+}
+
+/**
  * 3. Received Quote from Vendor (Organization-wide)
  */
 export function broadcastVendorQuoteReceived(rfq: {
@@ -219,6 +241,8 @@ const PAYMENT_METHOD_NAMES: Record<string, string> = {
   razorpay: "Razorpay",
 };
 
+import { postNotificationFn } from "./notify.functions";
+
 export function notifyAdminPaymentReceived(payment: {
   amount: number;
   method: string;
@@ -234,13 +258,15 @@ export function notifyAdminPaymentReceived(payment: {
   const customerPart = payment.customer_name ? ` from ${payment.customer_name}` : "";
   const invoicePart = payment.invoice_no ? ` against ${payment.invoice_no}` : "";
 
-  void dispatchStosEvent({
-    tier: "critical",
-    title: "Payment Received (Admin Alert)",
-    body: `Received ${formatInr(payment.amount)} in ${methodLabel}${customerPart}${invoicePart}.`,
-    entityType: "receipt",
-    linkPath: "/payments",
-    targetRole: "admin",
+  void postNotificationFn({
+    data: {
+      tier: "critical",
+      title: "Payment Received",
+      body: `Received ${formatInr(payment.amount)} in ${methodLabel}${customerPart}${invoicePart}.`,
+      entityType: "receipt",
+      linkPath: "/money-flow/customer-payments",
+      targetRole: "all",
+    },
   });
 }
 

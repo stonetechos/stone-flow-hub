@@ -156,7 +156,21 @@ export async function setQuoteStatus(
         customer_name: customerName,
       });
     } catch (e) {
-      console.warn("[quotes] approval notification failed", e);
+      console.warn("[quotes] approval broadcast skipped", e);
+    }
+  } else if (status === "sent" && data) {
+    try {
+      const { broadcastQuoteSent } = await import("@/lib/notifications/broadcast");
+      const customerName =
+        (data as unknown as { customer?: { name?: string } | null })?.customer?.name ?? null;
+      broadcastQuoteSent({
+        id: data.id,
+        quote_no: data.quote_no,
+        total_amount: Number(data.total ?? 0),
+        customer_name: customerName,
+      });
+    } catch (e) {
+      console.warn("[quotes] sent broadcast skipped", e);
     }
   }
 

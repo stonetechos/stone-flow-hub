@@ -115,6 +115,18 @@
     "view": "देखें",
     "download": "डाउनलोड करें"
   },
+  "dashboard": {
+    "pillarsTitle": "चार स्तंभ, एक धड़कन",
+    "radarTitle": "आज का दिन कहाँ खड़ा है",
+    "aiCopilot": "एआई सह-पायलट",
+    "aiCopilotDesc": "व्यवसाय मजबूती से चल रहा है। विकास पर ध्यान दें।",
+    "suggested": "सुझाव",
+    "whatToDoNext": "आगे क्या करना है",
+    "reminders": "अनुस्मारक",
+    "recentActivity": "हाल की गतिविधि",
+    "nothingPressing": "कुछ भी जरूरी नहीं है। अगले सप्ताह की योजना बनाने का अच्छा समय।",
+    "quietSoFar": "अब तक शांत है।"
+  },
   "shortcuts": {
     "title": "कीबोर्ड शॉर्टकट",
     "description": "⌘/Ctrl+K — खोज · ⌘/Ctrl+B — साइडबार टॉगल · C — त्वरित निर्माण · / — खोज · ? — सहायता"

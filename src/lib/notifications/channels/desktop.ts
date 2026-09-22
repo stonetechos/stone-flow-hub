@@ -23,10 +23,17 @@ export const desktopChannel: NotificationChannel = {
       Notification.permission === "granted"
     ) {
       try {
-        new Notification(payload.title, {
+        const n = new Notification(payload.title, {
           body: payload.body ?? undefined,
           icon: "/favicon.ico",
         });
+        n.onclick = () => {
+          window.focus();
+          if (payload.linkPath) {
+            window.location.href = payload.linkPath;
+          }
+          n.close();
+        };
       } catch {
         // Ignored if browser restricts notifications outside user gestures
       }

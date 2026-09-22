@@ -35,6 +35,7 @@ import {
   listDesignations,
   listEmployees,
 } from "@/lib/workforce/api";
+import { inviteUser } from "@/lib/admin/users.functions";
 import type { EmployeeInput, EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
 import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
@@ -171,7 +172,7 @@ function EmployeeFormPage() {
 
   const mut = useMutation({
     mutationFn: async (v: EmployeeInput) => {
-      // If email provided, link to user if auth profile exists
+      // If email provided, link to user if auth profile exists, or invite them
       if (v.email?.trim() && !v.user_id) {
         try {
           const { data: prof } = await supabase
@@ -188,9 +189,13 @@ function EmployeeFormPage() {
             if (!existingEmp || existingEmp.id === id) {
               v.user_id = prof.id;
             }
+          } else {
+             // Profile doesn't exist, invite them!
+             const res = await inviteUser({ data: { email: v.email.trim().toLowerCase(), full_name: v.full_name } });
+             v.user_id = res.id ?? undefined;
           }
-        } catch {
-          /* skip */
+        } catch (e) {
+          console.error("Failed to link or invite user", e);
         }
       }
 

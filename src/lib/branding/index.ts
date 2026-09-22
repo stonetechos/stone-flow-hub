@@ -46,12 +46,18 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   tagline: "Natural Stone Excellence",
   primary: "#0d9488", // teal-600
   accent: "#334155", // granite slate-700
-  logo_url: "",
-  address: "",
-  phone: "",
-  email: "",
-  gstin: "",
-  website: "",
+  logo_url: "/logo.png", // Assuming logo is placed in public
+  address: "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, 380060",
+  phone: "+91 7742090866",
+  email: "hello@stonetech.in",
+  gstin: "24BJEPR8383P1ZB",
+  website: "www.stonetech.in",
+  bank_name: "Bank of Baroda",
+  bank_account_number: "53130200000136",
+  bank_ifsc: "BARB0CHAAHM",
+  upi_id: "stonetech.ahmedabad@okaxis",
+  authorized_signatory: "Stone Tech",
+  signature_url: "/signature.jpg",
 };
 
 function joinAddress(parts: Array<string | null | undefined>): string {

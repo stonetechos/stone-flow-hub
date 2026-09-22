@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 /**
  * STOS — Executive Command Centre
  *
@@ -27,19 +28,23 @@
  * named scope (risk.ts, OwnerInsight, and specifically buildBrief/
  * buildSuggestions); left untouched.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
 import type { ProcessedInsight } from "@/lib/insights/quality/pipeline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowRight,
   Building2,
   CalendarClock,
+  CheckCircle,
   CheckCircle2,
   CheckSquare,
   ClipboardCheck,
+  Clock,
   Factory,
   FileText,
   Flame,
@@ -84,6 +89,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 /* -------------------------------------------------------------------------- */
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const { user } = useAuthReady();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -393,7 +399,7 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
       <SectionTitle
         id="health-heading"
         kicker="Business health"
-        title="Four pillars, one heartbeat"
+        title={t("dashboard.pillarsTitle")}
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <HealthCard
@@ -557,7 +563,7 @@ function OperationalRadar({
       <SectionTitle
         id="radar-heading"
         kicker="Operational radar"
-        title="Where the day stands right now"
+        title={t("dashboard.radarTitle")}
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <RadarColumn
@@ -873,11 +879,11 @@ function CopilotDock({
       <div className="card-3d-milky p-5">
         <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-engraved-kicker">
           <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
-          AI copilot
+          {t("dashboard.aiCopilot")}
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
           {health.band === "strong"
-            ? "The business is running strong. Focus on growth."
+            ? t("dashboard.aiCopilotDesc")
             : health.band === "steady"
               ? "Steady day. A few items want attention."
               : "Several risks are open. Address them first."}
@@ -892,12 +898,12 @@ function CopilotDock({
       {/* Suggested actions */}
       <SurfaceCard
         icon={<CheckSquare className="h-3.5 w-3.5" />}
-        kicker="Suggested"
-        title="What to do next"
+        kicker={t("dashboard.suggested")}
+        title={t("dashboard.whatToDoNext")}
       >
         {suggestions.length === 0 ? (
           <div className="engraved-well rounded-xl px-3 py-6 text-center text-[12px] font-medium text-slate-400">
-            Nothing pressing. A good moment to plan next week.
+            {t("dashboard.nothingPressing")}
           </div>
         ) : (
           <ul className="space-y-2">
@@ -919,8 +925,8 @@ function CopilotDock({
       {/* Reminders — recent activity feed */}
       <SurfaceCard
         icon={<Receipt className="h-3.5 w-3.5" />}
-        kicker="Reminders"
-        title="Recent activity"
+        kicker={t("dashboard.reminders")}
+        title={t("dashboard.recentActivity")}
         to="/activity"
       >
         {activityLoading ? (
@@ -931,7 +937,7 @@ function CopilotDock({
           </ul>
         ) : activity.length === 0 ? (
           <div className="engraved-well rounded-xl px-2 py-4 text-center text-[12px] font-medium text-slate-400">
-            Quiet so far.
+            {t("dashboard.quietSoFar")}
           </div>
         ) : (
           <ol className="space-y-2">
