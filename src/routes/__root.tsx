@@ -13,7 +13,6 @@ import { installCapacitorServerFnFetchPatch } from "@/lib/capacitor/install-fetc
 import { configureStatusBarForEdgeToEdge } from "@/lib/capacitor/status-bar";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { classifyFailure } from "../lib/errors";
 import { installToastDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
 import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
@@ -64,12 +63,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, {
-      boundary: "tanstack_root_error_component",
-      category: classifyFailure(error),
-    });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

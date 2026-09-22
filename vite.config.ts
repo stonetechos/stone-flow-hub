@@ -7,7 +7,6 @@
 import { execSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 // Set by `npm run build:capacitor` only. Every other script (dev, build,
 // build:dev, preview) leaves this unset, so the default Cloudflare/Nitro
@@ -73,7 +72,6 @@ const buildTimeDefine = {
 // side effect of adding `define` here — see the Sprint 1.7.1 completion
 // report for detail.
 const viteConfig = {
-  plugins: [mcpPlugin()],
   define: buildTimeDefine,
   ...(isCapacitorBuild
     ? {

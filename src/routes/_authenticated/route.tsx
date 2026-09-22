@@ -8,7 +8,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBlock } from "@/components/layout/States";
-import { reportLovableError } from "@/lib/lovable-error-reporting";
 import { classifyFailure } from "@/lib/errors";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
@@ -103,12 +102,9 @@ function AuthenticatedLayout() {
     <AppShell>
       <CatchBoundary
         getResetKey={() => pathname}
-        onCatch={(error) =>
-          reportLovableError(error, {
-            boundary: "authenticated_route_catch_boundary",
-            category: classifyFailure(error),
-          })
-        }
+        onCatch={(error) => {
+          console.error("Authenticated layout error:", error);
+        }}
         errorComponent={RouteErrorFallback}
       >
         <Outlet />

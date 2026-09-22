@@ -151,7 +151,7 @@ function DashboardPage() {
   const profileName = profileQ.data?.full_name?.trim();
   const name = profileName ? profileName.split(" ")[0] : displayName(user);
   const now = new Date();
-  const greeting = greetingFor(now);
+  const greeting = greetingFor(now, t);
   const today = now.toLocaleDateString(undefined, {
     weekday: "long",
     day: "numeric",
@@ -1322,11 +1322,11 @@ function buildSuggestions(topInsights: ProcessedInsight[]): Array<{ label: strin
   return topInsights.slice(0, 5).map((i) => ({ label: i.action.label, to: i.action.href }));
 }
 
-function greetingFor(d: Date): string {
+function greetingFor(d: Date, t: any): string {
   const h = d.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return t("dashboard.greeting.morning", "Good morning");
+  if (h < 17) return t("dashboard.greeting.afternoon", "Good afternoon");
+  return t("dashboard.greeting.evening", "Good evening");
 }
 
 function displayName(
