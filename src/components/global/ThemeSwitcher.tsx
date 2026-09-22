@@ -19,7 +19,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-type ThemeId = "quarry" | "foundry" | "executive" | "atelier";
+type ThemeId = "monochrome" | "batman" | "pink" | "pop";
 
 const THEMES: ReadonlyArray<{
   id: ThemeId;
@@ -29,35 +29,35 @@ const THEMES: ReadonlyArray<{
   dark: boolean;
 }> = [
   {
-    id: "quarry",
-    label: "Quarry",
-    description: "Daylight · travertine surfaces",
+    id: "monochrome",
+    label: "Monochrome",
+    description: "White, grey, and black",
     swatch:
-      "linear-gradient(135deg, oklch(0.98 0.006 85) 0%, oklch(0.94 0.008 85) 55%, oklch(0.62 0.095 165) 100%)",
+      "linear-gradient(135deg, #ffffff 0%, #a3a3a3 55%, #171717 100%)",
     dark: false,
   },
   {
-    id: "foundry",
-    label: "Foundry",
-    description: "Night shift · basalt depth",
+    id: "batman",
+    label: "Batman",
+    description: "Dark knight theme",
     swatch:
-      "linear-gradient(135deg, oklch(0.19 0.010 250) 0%, oklch(0.14 0.010 250) 55%, oklch(0.62 0.095 165) 100%)",
+      "linear-gradient(135deg, #09090b 0%, #27272a 55%, #fde047 100%)",
     dark: true,
   },
   {
-    id: "executive",
-    label: "Executive",
-    description: "Boardroom · granite polish",
+    id: "pink",
+    label: "Soft Pink",
+    description: "Girly soft pink surfaces",
     swatch:
-      "linear-gradient(135deg, oklch(0.24 0.012 250) 0%, oklch(0.14 0.012 250) 55%, oklch(0.72 0.085 165) 100%)",
-    dark: true,
+      "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 55%, #ec4899 100%)",
+    dark: false,
   },
   {
-    id: "atelier",
-    label: "Atelier",
-    description: "High contrast · print-ready",
+    id: "pop",
+    label: "Pop Colored",
+    description: "Vibrant and punchy",
     swatch:
-      "linear-gradient(135deg, oklch(0.995 0.003 85) 0%, oklch(0.10 0.010 250) 55%, oklch(0.46 0.075 165) 100%)",
+      "linear-gradient(135deg, #fcd34d 0%, #3b82f6 55%, #ef4444 100%)",
     dark: false,
   },
 ];
@@ -76,18 +76,18 @@ function applyTheme(id: ThemeId): void {
 }
 
 function readInitialTheme(): ThemeId {
-  if (typeof window === "undefined") return "quarry";
+  if (typeof window === "undefined") return "monochrome";
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw && THEMES.some((t) => t.id === raw)) return raw as ThemeId;
   } catch {
     /* ignore */
   }
-  return "quarry";
+  return "monochrome";
 }
 
 export function ThemeSwitcher() {
-  const [theme, setTheme] = useState<ThemeId>("quarry");
+  const [theme, setTheme] = useState<ThemeId>("monochrome");
 
   // Hydrate from storage and apply, avoiding SSR mismatch.
   useEffect(() => {

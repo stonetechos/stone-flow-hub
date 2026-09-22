@@ -50,8 +50,8 @@ export function LanguageToggle({ className }: { className?: string }) {
         {SUPPORTED_LANGUAGES.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            className="flex items-center justify-between"
-            onClick={() => handleLanguageChange(lang.code)}
+            className="flex items-center justify-between cursor-pointer"
+            onSelect={() => handleLanguageChange(lang.code)}
           >
             <span>{lang.nativeLabel}</span>
             {currentLang === lang.code && <Check className="h-3.5 w-3.5" />}

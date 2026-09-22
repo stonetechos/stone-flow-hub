@@ -22,10 +22,10 @@
  *                    modules migrate to the semantic layer.
  *
  *  Themes are class-scoped rebindings of the semantic layer:
- *    :root / .theme-quarry     → default light
- *    .dark  / .theme-foundry   → default dark
- *    .theme-executive          → presentation / boardroom
- *    .theme-atelier            → high-contrast
+ *    :root / .theme-monochrome     → default light
+ *    .dark  / .theme-batman   → default dark
+ *    .theme-pink          → presentation / boardroom
+ *    .theme-pop            → high-contrast
  *
  *  The Stone Material Engine (grain + specular) is expressed as
  *  CSS gradients + a single shared SVG turbulence filter, injected
@@ -41,7 +41,7 @@
   --radius-xl: 10px;
   --radius-2xl: 14px;
 
-  --font-sans: "Inter", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Inter", "Roboto", "Noto Sans Gujarati", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Inter", "Roboto Slab", Georgia, serif;
   --font-mono: "JetBrains Mono", "Söhne Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
@@ -426,15 +426,15 @@
 }
 
 /* Alias: explicit Quarry class matches :root */
-.theme-quarry {
+.theme-monochrome {
   color-scheme: light;
 }
 
 /* ==============================================================
- * .dark / .theme-foundry — dark theme
+ * .dark / .theme-batman — dark theme
  * ============================================================== */
 .dark,
-.theme-foundry {
+.theme-batman {
   color-scheme: dark;
 
   /* Surfaces */
@@ -551,9 +551,9 @@
 }
 
 /* ==============================================================
- * .theme-executive — presentation / boardroom (dark, granite)
+ * .theme-pink — presentation / boardroom (dark, granite)
  * ============================================================== */
-.theme-executive {
+.theme-pink {
   color-scheme: dark;
 
   --surface-base: var(--stone-granite-900);
@@ -657,9 +657,9 @@
 }
 
 /* ==============================================================
- * .theme-atelier — high contrast (accessibility / print)
+ * .theme-pop — high contrast (accessibility / print)
  * ============================================================== */
-.theme-atelier {
+.theme-pop {
   color-scheme: light;
 
   --surface-base: oklch(1 0 0);
@@ -746,10 +746,10 @@
 @media (prefers-reduced-motion: reduce) {
   :root,
   .dark,
-  .theme-quarry,
-  .theme-foundry,
-  .theme-executive,
-  .theme-atelier {
+  .theme-monochrome,
+  .theme-batman,
+  .theme-pink,
+  .theme-pop {
     --duration-fast: 60ms;
     --duration-base: 80ms;
     --duration-slow: 100ms;
@@ -760,10 +760,10 @@
 @media (prefers-reduced-transparency: reduce) {
   :root,
   .dark,
-  .theme-quarry,
-  .theme-foundry,
-  .theme-executive,
-  .theme-atelier {
+  .theme-monochrome,
+  .theme-batman,
+  .theme-pink,
+  .theme-pop {
     --material-grain-opacity-nav: 0;
     --material-grain-opacity-hero: 0;
     --material-grain-opacity-exec: 0;
@@ -773,7 +773,7 @@
 
 @media (prefers-contrast: more) {
   :root,
-  .theme-quarry {
+  .theme-monochrome {
     --text-secondary: var(--text-primary);
     --border-subtle: var(--border-default);
   }
@@ -783,10 +783,10 @@
   /* Perf: disable the SVG grain filter on mobile */
   :root,
   .dark,
-  .theme-quarry,
-  .theme-foundry,
-  .theme-executive,
-  .theme-atelier {
+  .theme-monochrome,
+  .theme-batman,
+  .theme-pink,
+  .theme-pop {
     --material-grain-opacity-nav: 0;
     --material-grain-opacity-hero: 0;
     --material-grain-opacity-exec: 0;
