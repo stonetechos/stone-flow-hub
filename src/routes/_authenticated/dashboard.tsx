@@ -278,6 +278,7 @@ function ExecutiveHero({
   headline: HeadlineMetric;
   brief: string[];
 }) {
+  const { t } = useTranslation();
   return (
     <section className="card-3d-milky relative overflow-hidden" aria-label="Executive briefing">
       <div className="relative z-10 p-6 sm:p-8">
