@@ -1096,34 +1096,32 @@ function HomePage() {
 
                               {/* Quick Jump Timeline Chips */}
                               <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => setQuickDays(7)}
-                                  className="text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
-                                >
-                                  +7d
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setQuickDays(15)}
-                                  className="text-[10px] px-2 py-1 rounded border border-amber-600/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
-                                >
-                                  15d
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setQuickDays(30)}
-                                  className="text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
-                                >
-                                  1mo
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setQuickDays(60)}
-                                  className="text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
-                                >
-                                  2mo
-                                </button>
+                                {[
+                                  { label: "+7d", days: 7 },
+                                  { label: "15d", days: 15 },
+                                  { label: "1mo", days: 30 },
+                                  { label: "2mo", days: 60 },
+                                ].map((q) => {
+                                  const d = new Date();
+                                  d.setDate(d.getDate() + q.days);
+                                  const matchStr = d.toISOString().split("T")[0];
+                                  const isActive = requiredDate === matchStr;
+
+                                  return (
+                                    <button
+                                      key={q.days}
+                                      type="button"
+                                      onClick={() => setQuickDays(q.days)}
+                                      className={
+                                        isActive
+                                          ? "text-[10px] px-2 py-1 rounded border border-amber-600/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
+                                          : "text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
+                                      }
+                                    >
+                                      {q.label}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>
