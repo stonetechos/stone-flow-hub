@@ -76,6 +76,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 });
 
 function CustomersPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
@@ -125,7 +126,7 @@ function CustomersPage() {
 
   return (
     <div>
-      <PageHeader title="Customers" subtitle="Master list of everyone you sell to." />
+      <PageHeader title={t("customers.title", "Customers")} subtitle={t("customers.subtitle", "Master list of everyone you sell to.")} />
 
       <DataToolbar
         count={rows.length}
@@ -135,7 +136,7 @@ function CustomersPage() {
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New customer
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
           </Button>
         }
       />
@@ -151,7 +152,7 @@ function CustomersPage() {
           message="Add your first customer — only name and mobile are required."
           action={
             <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> New customer
+              <Plus className="mr-2 h-4 w-4" /> {t("customers.newCustomer", "New customer")}
             </Button>
           }
         />
@@ -174,8 +175,8 @@ function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16">Sr. No.</TableHead>
-                <TableHead>Name</TableHead>
+                <TableHead className="w-16">{t("common.srNo", "Sr. No.")}</TableHead>
+                <TableHead>{t("common.name", "Name")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -363,7 +364,7 @@ function CustomerFormDialog({
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.name}` : "New customer"}</DialogTitle>
+          <DialogTitle>{editing ? `Edit ${editing.name}` : t("customers.newCustomer", "New customer")}</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
@@ -498,7 +499,7 @@ function CustomerFormDialog({
               </div>
             </Field>
 
-            <Field label="Notes" className="md:col-span-2">
+            <Field label={t("common.notes", "Notes")} className="md:col-span-2">
               <Textarea
                 rows={2}
                 value={form.notes ?? ""}
@@ -508,29 +509,29 @@ function CustomerFormDialog({
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>
-            <Field label="Email">
+            <Field label={t("common.email", "Email")}>
               <EmailInput value={form.email ?? ""} onChange={(v) => set("email", v)} />
             </Field>
-            <Field label="City">
+            <Field label={t("common.city", "City")}>
               <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
             </Field>
           </QuickForm.MoreDetails>
 
           <QuickForm.Advanced>
-            <Field label="Billing address" className="md:col-span-2">
+            <Field label={t("customers.billingAddress", "Billing address")} className="md:col-span-2">
               <Textarea
                 rows={2}
                 value={form.billing_address ?? ""}
                 onChange={(e) => set("billing_address", e.target.value)}
               />
             </Field>
-            <Field label="State">
+            <Field label={t("common.state", "State")}>
               <Input value={form.state ?? ""} onChange={(e) => set("state", e.target.value)} />
             </Field>
-            <Field label="Pincode">
+            <Field label={t("common.pincode", "Pincode")}>
               <PincodeInput value={form.pincode ?? ""} onChange={(v) => set("pincode", v)} />
             </Field>
-            <Field label="GST number">
+            <Field label={t("customers.gstNumber", "GST number")}>
               <GstInput value={form.gst_number ?? ""} onChange={(v) => set("gst_number", v)} />
             </Field>
           </QuickForm.Advanced>
