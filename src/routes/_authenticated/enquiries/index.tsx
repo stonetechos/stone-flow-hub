@@ -138,6 +138,20 @@ function EnquiriesPage() {
   useEffect(() => setPage(1), [dq, umbrella, web_only]);
 
   useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      const sub = supabase
+        .channel("public:enquiries:list")
+        .on("postgres_changes", { event: "*", schema: "public", table: "enquiries" }, () => {
+          void qc.invalidateQueries({ queryKey: qk.enquiries.all });
+        })
+        .subscribe();
+      return () => {
+        supabase.removeChannel(sub);
+      };
+    });
+  }, [qc]);
+
+  useEffect(() => {
     if (!edit) return;
     const row = (query.data ?? []).find((r) => r.id === edit);
     if (row) {

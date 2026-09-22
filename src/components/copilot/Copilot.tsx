@@ -425,20 +425,22 @@ export function Copilot() {
       <SheetTrigger asChild>
         <button
           type="button"
-          aria-label="Open AI Copilot (⌘J)"
+          aria-label="Open Stoneman AI (⌘J)"
           className={cn(
             "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex h-12 w-12 items-center justify-center rounded-full",
-            "bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/35 border border-blue-400/40 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+            "bg-gradient-to-tr from-stone-200 via-stone-100 to-white text-stone-900 shadow-lg shadow-stone-400/35 border border-stone-200 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500",
           )}
         >
-          <Sparkles className="h-5 w-5 text-white" />
+          <img src="/stoneman.png" alt="Stoneman AI" className="h-6 w-6 object-contain" />
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2">
-            <img src="/stoneman.png" alt="Stoneman Mascot" className="h-6 w-6 object-contain drop-shadow-sm" />
-            <SheetTitle className="text-base font-display">Stoneman AI</SheetTitle>
+          <div className="flex items-center gap-2 px-1">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-stone-900/10 text-stone-900 shadow-xs dark:bg-stone-100/10 dark:text-stone-100">
+              <img src="/stoneman.png" alt="Stoneman AI" className="h-5 w-5 object-contain" />
+            </div>
+            <SheetTitle className="font-display text-sm tracking-tight">Stoneman AI</SheetTitle>
             <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
               {ctx.entity}
             </Badge>

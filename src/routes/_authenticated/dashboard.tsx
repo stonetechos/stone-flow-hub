@@ -388,6 +388,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
 /* -------------------------------------------------------------------------- */
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
+  const { t } = useTranslation();
   const salesTone: HealthCardTone = kpis.salesTodayInr > 0 ? "strong" : "steady";
   const opsTone: HealthCardTone = kpis.ordersToStart > 5 ? "watch" : "steady";
   const financeTone: HealthCardTone =
@@ -478,6 +479,7 @@ function OperationalRadar({
   tasks: TaskRow[];
   followups: FollowupWithEnquiry[];
 }) {
+  const { t } = useTranslation();
   const critical: RadarItem[] = [];
   if (kpis.overdueFollowups)
     critical.push({
@@ -872,6 +874,7 @@ function CopilotDock({
   }>;
   activityLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const suggestions = buildSuggestions(topInsights);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
@@ -992,6 +995,7 @@ function TodayTimeline({
   deliveriesToday: number;
   onToggleTask: (id: string, done: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const events = useMemo<TimelineEvent[]>(() => {
     const list: TimelineEvent[] = [];
     for (const f of followups.slice(0, 8)) {
