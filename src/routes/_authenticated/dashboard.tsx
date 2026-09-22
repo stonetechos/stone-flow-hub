@@ -168,7 +168,7 @@ function DashboardPage() {
     .slice(0, 5);
   const brief = buildBrief(topInsights, tasks);
   const headline = kpis
-    ? pickHeadline(kpis)
+    ? pickHeadline(kpis, t)
     : { label: "Revenue", value: "₹0", context: "tracking", to: "/invoices" };
 
   return (
@@ -204,7 +204,7 @@ function DashboardPage() {
                   name={name}
                   today={today}
                   health={computeHealth(kpisQ.data)}
-                  headline={pickHeadline(kpisQ.data)}
+                  headline={pickHeadline(kpisQ.data, t)}
                   brief={brief}
                 />
 
@@ -311,7 +311,7 @@ function ExecutiveHero({
         <div className="mt-6 border-t border-blue-50 pt-5">
           <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-engraved-kicker">
             <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
-            Executive brief
+            {t("dashboard.executiveBrief", "Executive brief")}
           </div>
           <ul className="space-y-2">
             {brief.map((line, i) => (
@@ -885,16 +885,12 @@ function CopilotDock({
           {t("dashboard.aiCopilot")}
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
-          {health.band === "strong"
-            ? t("dashboard.aiCopilotDesc")
-            : health.band === "steady"
-              ? "Steady day. A few items want attention."
-              : "Several risks are open. Address them first."}
+          {health.band === "strong" ? t("dashboard.aiCopilotDescStrong") : health.band === "steady" ? t("dashboard.aiCopilotDescSteady") : t("dashboard.aiCopilotDescWeak")}
         </div>
         <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-blue-50 pt-3">
-          <MiniStat label="Cash today" value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
-          <MiniStat label="To approve" value={String(kpis.pendingQuotes)} />
-          <MiniStat label="Overdue" value={String(kpis.overdueFollowups)} />
+          <MiniStat label={t("dashboard.cashToday")} value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
+          <MiniStat label={t("dashboard.toApprove")} value={String(kpis.pendingQuotes)} />
+          <MiniStat label={t("dashboard.overdue")} value={String(kpis.overdueFollowups)} />
         </div>
       </div>
 
@@ -1272,11 +1268,11 @@ function computeHealth(k: DashboardKpis): HealthScore {
 
 type HeadlineMetric = { label: string; value: string; context: string; to: string };
 
-function pickHeadline(k: DashboardKpis): HeadlineMetric {
+function pickHeadline(k: DashboardKpis, t: any): HeadlineMetric {
   // Cash first when receivables are heavy; then production; then sales.
   if (k.outstandingInr > 1_000_000)
     return {
-      label: "Outstanding receivables",
+      label: t("dashboard.outstandingReceivables"),
       value: "₹" + formatMoney(k.outstandingInr),
       context: `₹${formatMoney(k.paymentsThisMonthInr)} collected this month`,
       to: "/invoices",
@@ -1285,13 +1281,13 @@ function pickHeadline(k: DashboardKpis): HeadlineMetric {
     return {
       label: "Orders queued for production",
       value: String(k.ordersToStart),
-      context: `${k.deliveriesToday} dispatch${k.deliveriesToday === 1 ? "" : "es"} today`,
+      context: t("dashboard.dispatchesToday", { count: k.deliveriesToday }),
       to: "/sales-orders",
     };
   return {
-    label: "Revenue pipeline",
+    label: t("dashboard.revenuePipeline"),
     value: "₹" + formatMoney(k.revenuePipelineInr),
-    context: `${k.pendingQuotes} quote${k.pendingQuotes === 1 ? "" : "s"} in play`,
+    context: t("dashboard.quotesInPlay", { count: k.pendingQuotes }),
     to: "/quotes",
   };
 }

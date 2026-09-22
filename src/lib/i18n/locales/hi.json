@@ -125,10 +125,57 @@
     "reminders": "अनुस्मारक",
     "recentActivity": "हाल की गतिविधि",
     "nothingPressing": "कुछ भी जरूरी नहीं है। अगले सप्ताह की योजना बनाने का अच्छा समय।",
-    "quietSoFar": "अब तक शांत है।"
+    "quietSoFar": "अब तक शांत है।",
+    "revenuePipeline": "राजस्व पाइपलाइन",
+    "outstandingReceivables": "बकाया प्राप्य",
+    "productionWorkload": "उत्पादन कार्यभार",
+    "orderBacklog": "ऑर्डर बैकलॉग",
+    "greeting": {
+      "morning": "सुप्रभात",
+      "afternoon": "शुभ दोपहर",
+      "evening": "शुभ संध्या"
+    },
+    "aiCopilotDescStrong": "व्यवसाय मजबूती से चल रहा है। विकास पर ध्यान दें।",
+    "aiCopilotDescSteady": "स्थिर दिन। कुछ चीजों पर ध्यान देने की आवश्यकता है।",
+    "aiCopilotDescWeak": "कई जोखिम खुले हैं। पहले उनका समाधान करें।",
+    "cashToday": "आज की नकदी",
+    "toApprove": "अनुमोदित करने के लिए",
+    "overdue": "अतिदेय",
+    "quotesInPlay": "{{count}} उद्धरण चल रहे हैं",
+    "pendingCollections": "{{count}} लंबित संग्रह",
+    "urgentTasks": "{{count}} तत्काल कार्य",
+    "dispatchesToday": "{{count}} आज का डिस्पैच",
+    "briefQuiet": "सब कुछ शांत है। उत्पादन सामान्य रूप से चल रहा है।",
+    "briefNoUrgent": "कोई तत्काल कार्य नहीं। अगले सप्ताह की योजना बनाने का अच्छा समय।",
+    "executiveBrief": "कार्यकारी संक्षिप्त विवरण"
   },
   "shortcuts": {
     "title": "कीबोर्ड शॉर्टकट",
     "description": "⌘/Ctrl+K — खोज · ⌘/Ctrl+B — साइडबार टॉगल · C — त्वरित निर्माण · / — खोज · ? — सहायता"
+  },
+  "crm": {
+    "leadsTitle": "विज़िटर पूछताछ और CRM लीड्स",
+    "leadsSubtitle": "www.stonetech.in के माध्यम से सबमिट किए गए लाइव वेब विज़िटर अनुरोध",
+    "totalLeads": "कुल वेब लीड्स",
+    "newUncontacted": "नए संपर्क रहित",
+    "inDiscussion": "चर्चा / उद्धरण में",
+    "ordersWon": "ऑर्डर जीते गए",
+    "copyLink": "वेबसाइट लिंक कॉपी करें",
+    "viewFull": "पूरी CRM पाइपलाइन देखें",
+    "recentInquiries": "हाल की पूछताछ ({{total}} में से {{count}})",
+    "whatsappAvailable": "डायरेक्ट 1-क्लिक व्हाट्सएप चैट उपलब्ध",
+    "whatsapp": "व्हाट्सएप",
+    "details": "विवरण",
+    "noWhatsapp": "व्हाट्सएप नहीं",
+    "urgent": "तत्काल: {{days}} दिन शेष",
+    "pastDate": "पिछली तारीख",
+    "neededIn": "{{days}} दिन में आवश्यक",
+    "target": "लक्ष्य: {{date}}",
+    "photos": "📷 {{count}} तस्वीरें",
+    "prospectiveClient": "संभावित ग्राहक",
+    "inquiries": "पूछताछ",
+    "awaitingReply": "उत्तर की प्रतीक्षा में",
+    "active": "सक्रिय",
+    "converted": "परिवर्तित"
   }
 }

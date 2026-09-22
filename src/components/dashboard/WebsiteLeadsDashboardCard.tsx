@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Globe,
   MessageCircle,
@@ -70,6 +71,7 @@ const STAGE_CONFIG: Record<string, { label: string; tone: string }> = {
 };
 
 export function WebsiteLeadsDashboardCard() {
+  const { t } = useTranslation();
   const [copiedLink, setCopiedLink] = useState(false);
 
   const { data: leads = [], isLoading } = useQuery<WebLead[]>({
@@ -126,7 +128,7 @@ export function WebsiteLeadsDashboardCard() {
               </span>
             </div>
             <p className="font-mono text-xs font-semibold text-engraved-kicker">
-              Live web visitor requests submitted through www.stonetech.in
+              {t("crm.leadsSubtitle")}
             </p>
           </div>
         </div>
@@ -153,7 +155,7 @@ export function WebsiteLeadsDashboardCard() {
             className="h-8 gap-1.5 rounded-lg bg-cyan-700 px-3 text-xs font-bold text-white shadow-xs hover:bg-cyan-800"
           >
             <Link to="/enquiries">
-              <span>View Full CRM Pipeline</span>
+              <span>{t("crm.viewFull")}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -170,7 +172,7 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
               {totalCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">inquiries</span>
+            <span className="text-[11px] font-medium text-slate-500">{t("crm.inquiries")}</span>
           </div>
         </div>
 
@@ -189,7 +191,7 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-cyan-800 sm:text-3xl">
               {newCount}
             </span>
-            <span className="text-[11px] font-medium text-cyan-700">awaiting reply</span>
+            <span className="text-[11px] font-medium text-cyan-700">{t("crm.awaitingReply")}</span>
           </div>
         </div>
 
@@ -201,7 +203,7 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
               {inDiscussionCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">active</span>
+            <span className="text-[11px] font-medium text-slate-500">{t("crm.active")}</span>
           </div>
         </div>
 
@@ -213,7 +215,7 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-emerald-700 sm:text-3xl">
               {wonCount}
             </span>
-            <span className="text-[11px] font-medium text-emerald-600">converted</span>
+            <span className="text-[11px] font-medium text-emerald-600">{t("crm.converted")}</span>
           </div>
         </div>
       </div>
@@ -247,22 +249,22 @@ export function WebsiteLeadsDashboardCard() {
               className="mt-4 gap-2 border-cyan-300 text-cyan-800 hover:bg-cyan-50"
             >
               <Copy className="h-3.5 w-3.5" />
-              Copy www.stonetech.in Link
+              {t("crm.copyLink")}
             </Button>
           </div>
         ) : (
           <div className="space-y-2.5">
             <div className="flex items-center justify-between px-1 pb-1">
               <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Recent Inquiries ({leads.slice(0, 5).length} of {leads.length})
+                {t("crm.recentInquiries", { count: leads.slice(0, 5).length, total: leads.length })}
               </span>
-              <span className="text-xs text-slate-500">Direct 1-Click WhatsApp Chat Available</span>
+              <span className="text-xs text-slate-500">{t("crm.whatsappAvailable")}</span>
             </div>
 
             <div className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white shadow-xs">
               {leads.slice(0, 6).map((lead) => {
                 const ext = lead.external_ref || {};
-                const customerName = lead.customer?.name || "Prospective Client";
+                const customerName = lead.customer?.name || t("crm.prospectiveClient");
                 const rawPhone =
                   ext.client_whatsapp ||
                   lead.customer?.whatsapp ||
@@ -291,19 +293,19 @@ export function WebsiteLeadsDashboardCard() {
                   if (diffDays <= 7 && diffDays >= 0) {
                     dateBadge = (
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                        <Clock className="h-2.5 w-2.5" /> Urgent: {diffDays}d left
+                        <Clock className="h-2.5 w-2.5" /> {t("crm.urgent", { days: diffDays })}
                       </span>
                     );
                   } else if (diffDays < 0) {
                     dateBadge = (
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                        Past date
+                        {t("crm.pastDate")}
                       </span>
                     );
                   } else {
                     dateBadge = (
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-700">
-                        Needed in {diffDays}d
+                        {t("crm.neededIn", { days: diffDays })}
                       </span>
                     );
                   }
@@ -345,13 +347,13 @@ export function WebsiteLeadsDashboardCard() {
                         {lead.required_delivery_date && (
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-slate-400" />
-                            Target: {new Date(lead.required_delivery_date).toLocaleDateString()}
+                            {t("crm.target", { date: new Date(lead.required_delivery_date).toLocaleDateString() })}
                           </span>
                         )}
 
                         {photoCount > 0 && (
                           <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
-                            📷 {photoCount} photo{photoCount > 1 ? "s" : ""}
+                            {t("crm.photos", { count: photoCount })}
                           </span>
                         )}
                       </div>
@@ -382,10 +384,10 @@ export function WebsiteLeadsDashboardCard() {
                           className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
                         >
                           <MessageCircle className="h-3.5 w-3.5 fill-current" />
-                          <span>WhatsApp</span>
+                          <span>{t("crm.whatsapp")}</span>
                         </a>
                       ) : (
-                        <span className="text-xs text-slate-400">No WhatsApp</span>
+                        <span className="text-xs text-slate-400">{t("crm.noWhatsapp")}</span>
                       )}
 
                       <Button
@@ -395,7 +397,7 @@ export function WebsiteLeadsDashboardCard() {
                         className="h-8 gap-1 rounded-lg border-slate-200 text-xs font-semibold hover:border-cyan-400 hover:text-cyan-800"
                       >
                         <Link to="/enquiries/$enquiryId" params={{ enquiryId: lead.id }}>
-                          <span>Details</span>
+                          <span>{t("crm.details")}</span>
                           <ArrowRight className="h-3 w-3" />
                         </Link>
                       </Button>

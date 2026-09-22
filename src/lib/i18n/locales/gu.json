@@ -126,10 +126,57 @@
     "reminders": "રીમાઇન્ડર્સ",
     "recentActivity": "તાજેતરની પ્રવૃત્તિ",
     "nothingPressing": "કંઈ પણ તાત્કાલિક નથી. આવતા અઠવાડિયાનું આયોજન કરવાનો સારો સમય.",
-    "quietSoFar": "અત્યાર સુધી શાંત છે."
+    "quietSoFar": "અત્યાર સુધી શાંત છે.",
+    "revenuePipeline": "આવક પાઇપલાઇન",
+    "outstandingReceivables": "બાકી લેણાં",
+    "productionWorkload": "ઉત્પાદન કાર્યભાર",
+    "orderBacklog": "ઓર્ડર બેકલોગ",
+    "greeting": {
+      "morning": "શુભ સવાર",
+      "afternoon": "શુભ બપોર",
+      "evening": "શુભ સાંજ"
+    },
+    "aiCopilotDescStrong": "વ્યવસાય મજબૂત ચાલી રહ્યો છે. વિકાસ પર ધ્યાન આપો.",
+    "aiCopilotDescSteady": "સ્થિર દિવસ. કેટલીક બાબતો પર ધ્યાન આપવાની જરૂર છે.",
+    "aiCopilotDescWeak": "ઘણા જોખમો ખુલ્લા છે. પહેલા તેમનો ઉકેલ લાવો.",
+    "cashToday": "આજની રોકડ",
+    "toApprove": "મંજૂર કરવા માટે",
+    "overdue": "બાકી",
+    "quotesInPlay": "{{count}} અવતરણ ચાલી રહ્યા છે",
+    "pendingCollections": "{{count}} પેન્ડિંગ કલેક્શન",
+    "urgentTasks": "{{count}} તાત્કાલિક કાર્યો",
+    "dispatchesToday": "{{count}} આજનું ડિસ્પેચ",
+    "briefQuiet": "બધું શાંત છે. ઉત્પાદન સામાન્ય રીતે ચાલી રહ્યું છે.",
+    "briefNoUrgent": "કોઈ તાત્કાલિક કાર્ય નથી. આવતા સપ્તાહની યોજના બનાવવાનો સારો સમય.",
+    "executiveBrief": "એક્ઝિક્યુટિવ બ્રીફ"
   },
   "shortcuts": {
     "title": "કીબોર્ડ શૉર્ટકટ્સ",
     "description": "⌘/Ctrl+K — શોધો · ⌘/Ctrl+B — સાઇડબાર ટૉગલ કરો · C — ઝડપી બનાવો · / — શોધો · ? — મદદ"
+  },
+  "crm": {
+    "leadsTitle": "મુલાકાતી પૂછપરછ અને CRM લીડ્સ",
+    "leadsSubtitle": "www.stonetech.in દ્વારા સબમિટ કરેલી લાઇવ વિનંતીઓ",
+    "totalLeads": "કુલ વેબ લીડ્સ",
+    "newUncontacted": "નવા સંપર્ક વગરના",
+    "inDiscussion": "ચર્ચા / અવતરણમાં",
+    "ordersWon": "ઓર્ડર જીત્યા",
+    "copyLink": "વેબસાઇટ લિંક કૉપિ કરો",
+    "viewFull": "સંપૂર્ણ CRM પાઇપલાઇન જુઓ",
+    "recentInquiries": "તાજેતરની પૂછપરછ ({{total}} માંથી {{count}})",
+    "whatsappAvailable": "ડાયરેક્ટ 1-ક્લિક વોટ્સએપ ચેટ ઉપલબ્ધ",
+    "whatsapp": "વોટ્સએપ",
+    "details": "વિગતો",
+    "noWhatsapp": "વોટ્સએપ નથી",
+    "urgent": "તાત્કાલિક: {{days}} દિવસ બાકી",
+    "pastDate": "ભૂતકાળની તારીખ",
+    "neededIn": "{{days}} દિવસમાં જરૂરી",
+    "target": "લક્ષ્ય: {{date}}",
+    "photos": "📷 {{count}} ફોટા",
+    "prospectiveClient": "સંભવિત ગ્રાહક",
+    "inquiries": "પૂછપરછ",
+    "awaitingReply": "જવાબની રાહ જોવાય છે",
+    "active": "સક્રિય",
+    "converted": "રૂપાંતરિત"
   }
 }
