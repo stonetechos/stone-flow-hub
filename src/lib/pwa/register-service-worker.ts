@@ -28,11 +28,11 @@ export function registerServiceWorker(): void {
   if (isCapacitorAppOrigin(window.location.origin)) return;
   registered = true;
 
-  // Purge any stale legacy caches immediately on boot
+  // Purge any stale legacy caches (like old stos-pages-* caches) immediately on boot
   if ("caches" in window) {
     void caches.keys().then((keys) => {
       for (const key of keys) {
-        if (key !== "stos-static-stos-5") {
+        if (key.startsWith("stos-pages-") || key === "stos-static-stos-5") {
           void caches.delete(key);
         }
       }

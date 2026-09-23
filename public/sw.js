@@ -16,7 +16,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "stos-6";
+const CACHE_VERSION = "stos-7";
 const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -133,29 +133,15 @@ async function staleWhileRevalidate(request, cacheName) {
       return response;
     })
     .catch(() => undefined);
-  return cached || (await network) || Response.error();
-}
 
-// Navigations are network-only, with the offline page as the sole
-// fallback. This worker used to cache each HTML document it fetched and
-// replay it when the network failed, which sounds strictly better and is
-// not: every document references the build's content-hashed JS and CSS
-// chunks by filename, and each deploy publishes new hashes and deletes the
-// old ones. A replayed document is therefore a page whose scripts 404 —
-// a blank screen with no error, indistinguishable from the app being
-// broken, and persisting until the user clears site data. Serving a page
-// that says "you are offline" is worse only in the narrow case of a
-// genuinely offline reload, and it is honest, which the blank screen was
-// not. Restoring real offline navigation needs a build-time asset
-// manifest so the shell and the chunks it names can be versioned and
-// precached together.
-async function networkOnlyNavigation(request) {
-  try {
-    return await fetch(request);
-  } catch {
-    const offline = await caches.match(OFFLINE_URL);
-    return offline || Response.error();
-  }
+  if (cached) return cached;
+  const net = await network;
+  if (net) return net;
+  return new Response("Asset unavailable offline", {
+    status: 503,
+    statusText: "Service Unavailable",
+    headers: { "Content-Type": "text/plain" },
+  });
 }
 
 self.addEventListener("fetch", (event) => {
@@ -169,8 +155,11 @@ self.addEventListener("fetch", (event) => {
 
   if (isSensitiveRequest(url)) return; // network-only, untouched
 
+  // NEVER intercept navigation requests!
+  // Navigations must go directly to the network via native browser fetching.
+  // Intercepting navigations with fetch(request) causes WebKit / Safari to fail
+  // with "Response served by service worker is an error (WebKitInternal:0)".
   if (request.mode === "navigate") {
-    event.respondWith(networkOnlyNavigation(request));
     return;
   }
 
