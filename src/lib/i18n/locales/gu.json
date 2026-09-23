@@ -218,6 +218,102 @@
     "inquiries": "પૂછપરછ",
     "awaitingReply": "જવાબની રાહ જોવાય છે",
     "active": "સક્રિય",
-    "converted": "રૂપાંતરિત"
+    "converted": "રૂપાંતરિત",
+    "noLeadsYet": "હજી કોઈ વેબસાઇટ લીડ્સ નથી",
+    "noLeadsDesc": "ગ્રાહકો સાથે, ઇન્સ્ટાગ્રામ પર અથવા વોટ્સએપ દ્વારા તમારી લેન્ડિંગ પૃષ્ઠ લિંક www.stonetech.in શેર કરો. સબમિશન તરત જ આ બૉક્સ અને તમારી CRM પાઇપલાઇનમાં આવશે.",
+    "copied": "કૉપિ કર્યું"
+  },
+  "form": {
+    "quickFill": "ઝડપી ભરો",
+    "essentialsOnly": "— ફક્ત જરૂરી વિગતો",
+    "moreDetails": "વધુ વિગતો",
+    "advanced": "અદ્યતન"
+  },
+  "table": {
+    "density": "ઘનતા",
+    "rowDensity": "પંક્તિ ઘનતા",
+    "comfortable": "આરામદાયક",
+    "compact": "કોમ્પેક્ટ",
+    "dense": "ગાઢ",
+    "noRecords": "કોઈ રેકોર્ડ નથી",
+    "of": "માંથી",
+    "rows": "પંક્તિઓ",
+    "srNo": "ક્રમ નં.",
+    "name": "નામ",
+    "actions": "ક્રિયાઓ"
+  },
+  "field": {
+    "Customer": "ગ્રાહક",
+    "Customer name": "ગ્રાહકનું નામ",
+    "Mobile number": "મોબાઇલ નંબર",
+    "Email": "ઇમેઇલ",
+    "Lead source": "લીડ સ્રોત",
+    "Requirement": "જરૂરિયાત",
+    "Budget (INR)": "બજેટ (INR)",
+    "Notes": "નોંધ",
+    "City": "શહેર",
+    "State": "રાજ્ય",
+    "Pincode": "પિનકોડ",
+    "Billing address": "બિલિંગ સરનામું",
+    "GST number": "GST નંબર",
+    "Priority": "પ્રાથમિકતા",
+    "Required by": "જરૂરી તારીખ",
+    "Material Interests": "મટિરિયલ રસ",
+    "Type of Customer": "ગ્રાહકનો પ્રકાર",
+    "Contact Name": "સંપર્ક નામ",
+    "Company name (Optional)": "કંપનીનું નામ (વૈકલ્પિક)"
+  },
+  "hint": {
+    "Pick an existing customer or create a new one.": "હયાત ગ્રાહક પસંદ કરો અથવા નવો બનાવો.",
+    "New number → new customer created": "નવો નંબર → નવો ગ્રાહક બનશે",
+    "e.g. walk-in, referral, website": "દા.ત. વૉક-ઇન, રેફરલ, વેબસાઇટ",
+    "What is the customer looking for?": "ગ્રાહક શું શોધી રહ્યા છે?",
+    "Select all that apply": "લાગુ પડતા તમામ પસંદ કરો"
+  },
+  "picker": {
+    "Search customer by name, code, phone…": "નામ, કોડ, ફોન દ્વારા ગ્રાહક શોધો…",
+    "Select customer…": "ગ્રાહક પસંદ કરો…",
+    "Create new customer": "નવો ગ્રાહક બનાવો"
+  },
+  "page": {
+    "Customers": "ગ્રાહકો",
+    "Enquiries": "પૂછપરછ અને લીડ્સ"
+  },
+  "subtitle": {
+    "Master list of everyone you sell to.": "જેમને તમે વેચો છો તે દરેકની માસ્ટર યાદી.",
+    "Every lead in the pipeline — log, assign, follow up, and advance.": "પાઇપલાઇનમાં દરેક લીડ — લૉગ કરો, સોંપો, ફૉલોઅપ લો અને આગળ વધો."
+  },
+  "empty": {
+    "No customers yet": "હજી કોઈ ગ્રાહક નથી",
+    "Add your first customer — only name and mobile are required.": "તમારો પહેલો ગ્રાહક ઉમેરો — ફક્ત નામ અને મોબાઇલ જરૂરી છે.",
+    "No enquiries yet": "હજી કોઈ પૂછપરછ નથી",
+    "Add your first enquiry to start tracking leads.": "લીડ્સ ટ્રેક કરવાનું શરૂ કરવા માટે તમારી પ્રથમ પૂછપરછ ઉમેરો."
+  },
+  "customers": {
+    "title": "ગ્રાહકો",
+    "subtitle": "જેમને તમે વેચો છો તે દરેકની માસ્ટર યાદી.",
+    "newCustomer": "નવો ગ્રાહક",
+    "emptyTitle": "હજી કોઈ ગ્રાહક નથી",
+    "emptyMessage": "તમારો પહેલો ગ્રાહક ઉમેરો — ફક્ત નામ અને મોબાઇલ જરૂરી છે.",
+    "editCustomer": "ગ્રાહક સંપાદિત કરો",
+    "addCustomer": "ગ્રાહક ઉમેરો",
+    "formDescription": "નવી ગ્રાહક પ્રોફાઇલ બનાવો અથવા હયાતને અપડેટ કરો."
+  },
+  "enquiries": {
+    "title": "પૂછપરછ અને લીડ્સ",
+    "subtitle": "પાઇપલાઇનમાં દરેક લીડ — લૉગ કરો, સોંપો, ફૉલોઅપ લો અને આગળ વધો.",
+    "newEnquiry": "નવી પૂછપરછ",
+    "all": "બધા",
+    "emptyTitle": "હજી કોઈ પૂછપરછ નથી",
+    "emptyMessage": "લીડ્સ ટ્રેક કરવાનું શરૂ કરવા માટે તમારી પ્રથમ પૂછપરછ ઉમેરો."
+  },
+  "umbrella": {
+    "new_enquiry": "નવી પૂછપરછ",
+    "exploration": "અન્વેષણ",
+    "requirement_gathering": "જરૂરિયાત એકત્રીકરણ",
+    "estimation_quoting": "અંદાજ અને અવતરણ",
+    "negotiation": "વાટાઘાટો",
+    "order_confirmation": "ઓર્ડર પુષ્ટિ",
+    "lost_closed": "ગુમાવેલ / બંધ"
   }
 }

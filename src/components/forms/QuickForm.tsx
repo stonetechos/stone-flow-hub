@@ -11,6 +11,8 @@ import { ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
+import { useTranslation } from "react-i18next";
+
 export function QuickForm({
   onSubmit,
   children,
@@ -53,6 +55,7 @@ export function QuickForm({
 }
 
 QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     // Auto-focus the first enabled, focusable input inside the Quick Fill zone
@@ -63,17 +66,19 @@ QuickForm.QuickFill = function QuickFill({ children }: { children: ReactNode }) 
       "input:not([type=hidden]):not([disabled]), textarea:not([disabled]), [role=combobox]:not([disabled])",
     );
     // Defer to after Radix Dialog focus-trap runs its initial focus.
-    const t = window.setTimeout(() => el?.focus(), 60);
-    return () => window.clearTimeout(t);
+    const timeout = window.setTimeout(() => el?.focus(), 60);
+    return () => window.clearTimeout(timeout);
   }, []);
   return (
     <section className="rounded-md border border-border bg-card p-4 shadow-1">
       <header className="mb-3 flex items-center gap-2">
         <Star className="h-4 w-4 fill-warning text-warning" aria-hidden />
         <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
-          Quick Fill
+          {t("form.quickFill", "Quick Fill")}
         </h3>
-        <span className="text-xs text-muted-foreground">— essentials only</span>
+        <span className="text-xs text-muted-foreground">
+          {t("form.essentialsOnly", "— essentials only")}
+        </span>
       </header>
       <div ref={ref} className="grid gap-4 md:grid-cols-2">
         {children}
@@ -115,11 +120,17 @@ function CollapsibleSection({
 }
 
 QuickForm.MoreDetails = function MoreDetails({ children }: { children: ReactNode }) {
-  return <CollapsibleSection title="More details">{children}</CollapsibleSection>;
+  const { t } = useTranslation();
+  return (
+    <CollapsibleSection title={t("form.moreDetails", "More details")}>
+      {children}
+    </CollapsibleSection>
+  );
 };
 
 QuickForm.Advanced = function Advanced({ children }: { children: ReactNode }) {
-  return <CollapsibleSection title="Advanced">{children}</CollapsibleSection>;
+  const { t } = useTranslation();
+  return <CollapsibleSection title={t("form.advanced", "Advanced")}>{children}</CollapsibleSection>;
 };
 
 QuickForm.Actions = function Actions({ children }: { children: ReactNode }) {

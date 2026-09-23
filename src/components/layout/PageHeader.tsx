@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 /**
  * PageHeader — the primary page title area.
@@ -22,6 +23,14 @@ export function PageHeader({
   actions?: ReactNode;
   className?: string;
 }) {
+  const { t } = useTranslation();
+  const displayTitle =
+    typeof title === "string"
+      ? t(`page.${title}`, t(`nav.items.${title.toLowerCase()}`, title))
+      : title;
+  const displaySubtitle =
+    typeof subtitle === "string" ? t(`subtitle.${subtitle}`, subtitle) : subtitle;
+
   return (
     <div
       className={cn(
@@ -36,10 +45,12 @@ export function PageHeader({
           </div>
         )}
         <h1 className="font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px] truncate">
-          {title}
+          {displayTitle}
         </h1>
-        {subtitle && (
-          <p className="mt-1 truncate text-xs sm:text-sm font-medium text-slate-500">{subtitle}</p>
+        {displaySubtitle && (
+          <p className="mt-1 truncate text-xs sm:text-sm font-medium text-slate-500">
+            {displaySubtitle}
+          </p>
         )}
       </div>
       {actions && <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}

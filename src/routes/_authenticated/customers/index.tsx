@@ -136,7 +136,7 @@ function CustomersPage() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search by name, phone, city…"
+        searchPlaceholder={t("customers.searchPlaceholder", "Search by name, phone, city…")}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
@@ -553,11 +553,11 @@ function CustomerFormDialog({
               disabled={mutation.isPending}
               onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save
+              {t("common.save", "Save")}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 /**
  * TablePagination — compact "1–25 of 340" with page-size + prev/next.
@@ -28,6 +29,7 @@ export function TablePagination({
   onPageSizeChange?: (size: number) => void;
   pageSizes?: number[];
 }) {
+  const { t } = useTranslation();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(total, page * pageSize);
@@ -36,20 +38,20 @@ export function TablePagination({
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 px-3 py-2 text-xs text-muted-foreground">
       <div className="tabular-nums">
         {total === 0 ? (
-          "No records"
+          t("table.noRecords", "No records")
         ) : (
           <>
             <span className="text-foreground">
               {start.toLocaleString()}–{end.toLocaleString()}
             </span>{" "}
-            of <span className="text-foreground">{total.toLocaleString()}</span>
+            {t("table.of", "of")} <span className="text-foreground">{total.toLocaleString()}</span>
           </>
         )}
       </div>
       <div className="flex items-center gap-3">
         {onPageSizeChange && (
           <div className="flex items-center gap-2">
-            <span>Rows</span>
+            <span>{t("table.rows", "Rows")}</span>
             <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
               <SelectTrigger className="h-7 w-[68px] px-2 text-xs">
                 <SelectValue />

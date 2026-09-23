@@ -20,6 +20,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronsUpDown, Loader2, Plus, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -241,6 +242,10 @@ export function EntityPicker({
     return found ?? { id: value, label: "…", sublabel: null };
   }, [value, selectedQuery.data, rows, type]);
 
+  const { t } = useTranslation();
+  const rawPlaceholder = placeholder ?? LABEL[type].placeholder;
+  const displayPlaceholder = t(`picker.${rawPlaceholder}`, rawPlaceholder);
+
   const triggerLabel: ReactNode = selectedRow ? (
     <span className="flex flex-col items-start truncate text-left">
       <span className="truncate">{selectedRow.label}</span>
@@ -249,7 +254,7 @@ export function EntityPicker({
       ) : null}
     </span>
   ) : (
-    <span className="text-muted-foreground">{placeholder ?? LABEL[type].placeholder}</span>
+    <span className="text-muted-foreground">{displayPlaceholder}</span>
   );
 
   return (

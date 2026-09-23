@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Loader2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -107,6 +108,7 @@ export const Route = createFileRoute("/_authenticated/enquiries/")({
 });
 
 function EnquiriesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit, umbrella, new: newParam, customer: customerParam, web_only } = Route.useSearch();
@@ -275,7 +277,7 @@ function EnquiriesPage() {
             : "border-border hover:bg-accent",
         )}
       >
-        All
+        {t("enquiries.all", "All")}
       </button>
 
       <button
@@ -297,7 +299,7 @@ function EnquiriesPage() {
             : "border-cyan-300 bg-cyan-50/70 text-cyan-900 hover:bg-cyan-100",
         )}
       >
-        <span>🌐 stonetech.in Leads</span>
+        <span>🌐 {t("enquiries.webLeads", "stonetech.in Leads")}</span>
         {webLeadsCount > 0 && (
           <span
             className={cn(
@@ -328,7 +330,7 @@ function EnquiriesPage() {
               : "border-border hover:bg-accent",
           )}
         >
-          {u.label}
+          {t(`umbrella.${u.id}`, u.label)}
         </button>
       ))}
     </div>
@@ -346,13 +348,16 @@ function EnquiriesPage() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search by enquiry no, requirement, or notes…"
+        searchPlaceholder={t(
+          "enquiries.searchPlaceholder",
+          "Search by enquiry no, requirement, or notes…",
+        )}
         primaryFilter={umbrellaFilter}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={() => setNewOpen(true)}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New enquiry
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("enquiries.newEnquiry", "New enquiry")}
           </Button>
         }
       />
@@ -618,6 +623,7 @@ function NewEnquiryDialog({
   onOpenChange: (o: boolean) => void;
   presetCustomerId?: string | null;
 }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const [form, setForm] = useState<EnquiryCreateInput>(emptyNew);
@@ -668,7 +674,7 @@ function NewEnquiryDialog({
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>New enquiry</DialogTitle>
+          <DialogTitle>{t("enquiries.newEnquiry", "New enquiry")}</DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
@@ -784,11 +790,11 @@ function NewEnquiryDialog({
               disabled={mutation.isPending}
               onClick={() => confirmCloseIfDirty(false, dirty) && onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create
+              {t("common.create", "Create")}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

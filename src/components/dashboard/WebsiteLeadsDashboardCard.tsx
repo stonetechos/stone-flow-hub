@@ -120,7 +120,7 @@ export function WebsiteLeadsDashboardCard() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-display text-base font-bold tracking-tight text-engraved-title sm:text-lg">
-                Visitor Inquiries &amp; CRM Leads
+                {t("crm.leadsTitle", "Visitor Inquiries & CRM Leads")}
               </h3>
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
@@ -146,7 +146,9 @@ export function WebsiteLeadsDashboardCard() {
             ) : (
               <Copy className="h-3.5 w-3.5 text-slate-500" />
             )}
-            <span>{copiedLink ? "Copied" : "Copy Website Link"}</span>
+            <span>
+              {copiedLink ? t("crm.copied", "Copied") : t("crm.copyLink", "Copy Website Link")}
+            </span>
           </Button>
 
           <Button
@@ -166,7 +168,7 @@ export function WebsiteLeadsDashboardCard() {
       <div className="grid grid-cols-2 gap-2 border-b border-slate-200/80 bg-slate-50/50 p-3 sm:grid-cols-4 sm:gap-3 sm:p-4">
         <div className="engraved-well flex flex-col rounded-xl p-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            Total Web Leads
+            {t("crm.totalLeads", "Total Web Leads")}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
@@ -179,7 +181,7 @@ export function WebsiteLeadsDashboardCard() {
         <div className="engraved-well flex flex-col rounded-xl p-3 border-cyan-200/80 bg-cyan-50/30">
           <div className="flex items-center justify-between">
             <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-800">
-              New Uncontacted
+              {t("crm.newUncontacted", "New Uncontacted")}
             </span>
             {newCount > 0 && (
               <span className="inline-flex items-center gap-1 rounded-full bg-cyan-600 px-1.5 py-0.5 text-[9px] font-bold text-white animate-pulse">
@@ -197,7 +199,7 @@ export function WebsiteLeadsDashboardCard() {
 
         <div className="engraved-well flex flex-col rounded-xl p-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            In Discussion / Quoting
+            {t("crm.inDiscussion", "In Discussion / Quoting")}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
@@ -209,7 +211,7 @@ export function WebsiteLeadsDashboardCard() {
 
         <div className="engraved-well flex flex-col rounded-xl p-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-            Orders Won
+            {t("crm.ordersWon", "Orders Won")}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-black tabular-nums text-emerald-700 sm:text-3xl">
@@ -234,13 +236,13 @@ export function WebsiteLeadsDashboardCard() {
               <Globe className="h-6 w-6" />
             </div>
             <h4 className="mt-3 font-display text-base font-bold text-slate-800">
-              No Website Leads Yet
+              {t("crm.noLeadsYet", "No Website Leads Yet")}
             </h4>
             <p className="mt-1 max-w-md text-xs text-slate-500">
-              Share your landing page link{" "}
-              <code className="font-mono text-cyan-800 font-semibold">www.stonetech.in</code> with
-              customers, on Instagram, or via WhatsApp. Submissions will instantly stream into this
-              box and your CRM pipeline.
+              {t(
+                "crm.noLeadsDesc",
+                "Share your landing page link www.stonetech.in with customers, on Instagram, or via WhatsApp. Submissions will instantly stream into this box and your CRM pipeline.",
+              )}
             </p>
             <Button
               variant="outline"

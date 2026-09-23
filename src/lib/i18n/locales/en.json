@@ -217,6 +217,102 @@
     "inquiries": "inquiries",
     "awaitingReply": "awaiting reply",
     "active": "active",
-    "converted": "converted"
+    "converted": "converted",
+    "noLeadsYet": "No Website Leads Yet",
+    "noLeadsDesc": "Share your landing page link www.stonetech.in with customers, on Instagram, or via WhatsApp. Submissions will instantly stream into this box and your CRM pipeline.",
+    "copied": "Copied"
+  },
+  "form": {
+    "quickFill": "Quick Fill",
+    "essentialsOnly": "— essentials only",
+    "moreDetails": "More details",
+    "advanced": "Advanced"
+  },
+  "table": {
+    "density": "Density",
+    "rowDensity": "Row density",
+    "comfortable": "Comfortable",
+    "compact": "Compact",
+    "dense": "Dense",
+    "noRecords": "No records",
+    "of": "of",
+    "rows": "Rows",
+    "srNo": "Sr. No.",
+    "name": "Name",
+    "actions": "Actions"
+  },
+  "field": {
+    "Customer": "Customer",
+    "Customer name": "Customer name",
+    "Mobile number": "Mobile number",
+    "Email": "Email",
+    "Lead source": "Lead source",
+    "Requirement": "Requirement",
+    "Budget (INR)": "Budget (INR)",
+    "Notes": "Notes",
+    "City": "City",
+    "State": "State",
+    "Pincode": "Pincode",
+    "Billing address": "Billing address",
+    "GST number": "GST number",
+    "Priority": "Priority",
+    "Required by": "Required by",
+    "Material Interests": "Material Interests",
+    "Type of Customer": "Type of Customer",
+    "Contact Name": "Contact Name",
+    "Company name (Optional)": "Company name (Optional)"
+  },
+  "hint": {
+    "Pick an existing customer or create a new one.": "Pick an existing customer or create a new one.",
+    "New number → new customer created": "New number → new customer created",
+    "e.g. walk-in, referral, website": "e.g. walk-in, referral, website",
+    "What is the customer looking for?": "What is the customer looking for?",
+    "Select all that apply": "Select all that apply"
+  },
+  "picker": {
+    "Search customer by name, code, phone…": "Search customer by name, code, phone…",
+    "Select customer…": "Select customer…",
+    "Create new customer": "Create new customer"
+  },
+  "page": {
+    "Customers": "Customers",
+    "Enquiries": "Enquiries"
+  },
+  "subtitle": {
+    "Master list of everyone you sell to.": "Master list of everyone you sell to.",
+    "Every lead in the pipeline — log, assign, follow up, and advance.": "Every lead in the pipeline — log, assign, follow up, and advance."
+  },
+  "empty": {
+    "No customers yet": "No customers yet",
+    "Add your first customer — only name and mobile are required.": "Add your first customer — only name and mobile are required.",
+    "No enquiries yet": "No enquiries yet",
+    "Add your first enquiry to start tracking leads.": "Add your first enquiry to start tracking leads."
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Master list of everyone you sell to.",
+    "newCustomer": "New customer",
+    "emptyTitle": "No customers yet",
+    "emptyMessage": "Add your first customer — only name and mobile are required.",
+    "editCustomer": "Edit customer",
+    "addCustomer": "Add customer",
+    "formDescription": "Create a new customer profile or update an existing one."
+  },
+  "enquiries": {
+    "title": "Enquiries",
+    "subtitle": "Every lead in the pipeline — log, assign, follow up, and advance.",
+    "newEnquiry": "New enquiry",
+    "all": "All",
+    "emptyTitle": "No enquiries yet",
+    "emptyMessage": "Add your first enquiry to start tracking leads."
+  },
+  "umbrella": {
+    "new_enquiry": "New Enquiry",
+    "exploration": "Exploration",
+    "requirement_gathering": "Requirement Gathering",
+    "estimation_quoting": "Estimation & Quoting",
+    "negotiation": "Negotiation",
+    "order_confirmation": "Order Confirmation",
+    "lost_closed": "Lost / Closed"
   }
 }

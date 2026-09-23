@@ -217,6 +217,102 @@
     "inquiries": "पूछताछ",
     "awaitingReply": "उत्तर की प्रतीक्षा में",
     "active": "सक्रिय",
-    "converted": "परिवर्तित"
+    "converted": "परिवर्तित",
+    "noLeadsYet": "अभी कोई वेबसाइट लीड्स नहीं",
+    "noLeadsDesc": "ग्राहकों, इंस्टाग्राम या व्हाट्सएप के माध्यम से अपना लैंडिंग पेज लिंक www.stonetech.in साझा करें। सबमिशन तुरंत इस बॉक्स और आपकी CRM पाइपलाइन में प्रवाहित होंगे।",
+    "copied": "कॉपी किया गया"
+  },
+  "form": {
+    "quickFill": "क्विक फिल",
+    "essentialsOnly": "— केवल जरूरी चीजें",
+    "moreDetails": "अधिक विवरण",
+    "advanced": "उन्नत"
+  },
+  "table": {
+    "density": "घनत्व",
+    "rowDensity": "पंक्ति घनत्व",
+    "comfortable": "आरामदायक",
+    "compact": "कॉम्पैक्ट",
+    "dense": "सघन",
+    "noRecords": "कोई रिकॉर्ड नहीं",
+    "of": "का",
+    "rows": "पंक्तियाँ",
+    "srNo": "क्र. सं.",
+    "name": "नाम",
+    "actions": "क्रियाएं"
+  },
+  "field": {
+    "Customer": "ग्राहक",
+    "Customer name": "ग्राहक का नाम",
+    "Mobile number": "मोबाइल नंबर",
+    "Email": "ईमेल",
+    "Lead source": "लीड स्रोत",
+    "Requirement": "आवश्यकता",
+    "Budget (INR)": "बजट (INR)",
+    "Notes": "टिप्पणियाँ",
+    "City": "शहर",
+    "State": "राज्य",
+    "Pincode": "पिनकोड",
+    "Billing address": "बिलिंग पता",
+    "GST number": "जीएसटी नंबर",
+    "Priority": "प्राथमिकता",
+    "Required by": "आवश्यक तिथि",
+    "Material Interests": "सामग्री रुचि",
+    "Type of Customer": "ग्राहक का प्रकार",
+    "Contact Name": "संपर्क नाम",
+    "Company name (Optional)": "कंपनी का नाम (वैकल्पिक)"
+  },
+  "hint": {
+    "Pick an existing customer or create a new one.": "मौजूदा ग्राहक चुनें या नया बनाएं।",
+    "New number → new customer created": "नया नंबर → नया ग्राहक बन जाएगा",
+    "e.g. walk-in, referral, website": "उदा. वॉक-इन, रेफरल, वेबसाइट",
+    "What is the customer looking for?": "ग्राहक क्या तलाश रहा है?",
+    "Select all that apply": "लागू होने वाले सभी चुनें"
+  },
+  "picker": {
+    "Search customer by name, code, phone…": "नाम, कोड, फोन द्वारा ग्राहक खोजें…",
+    "Select customer…": "ग्राहक चुनें…",
+    "Create new customer": "नया ग्राहक बनाएं"
+  },
+  "page": {
+    "Customers": "ग्राहक",
+    "Enquiries": "पूछताछ और लीड्स"
+  },
+  "subtitle": {
+    "Master list of everyone you sell to.": "उन सभी की मास्टर सूची जिन्हें आप बेचते हैं।",
+    "Every lead in the pipeline — log, assign, follow up, and advance.": "पाइपलाइन में हर लीड — लॉग करें, असाइन करें, फॉलो अप करें और आगे बढ़ाएं।"
+  },
+  "empty": {
+    "No customers yet": "अभी कोई ग्राहक नहीं है",
+    "Add your first customer — only name and mobile are required.": "अपना पहला ग्राहक जोड़ें — केवल नाम और मोबाइल आवश्यक है।",
+    "No enquiries yet": "अभी कोई पूछताछ नहीं है",
+    "Add your first enquiry to start tracking leads.": "लीड्स ट्रैक करना शुरू करने के लिए अपनी पहली पूछताछ जोड़ें।"
+  },
+  "customers": {
+    "title": "ग्राहक",
+    "subtitle": "उन सभी की मास्टर सूची जिन्हें आप बेचते हैं।",
+    "newCustomer": "नया ग्राहक",
+    "emptyTitle": "अभी कोई ग्राहक नहीं है",
+    "emptyMessage": "अपना पहला ग्राहक जोड़ें — केवल नाम और मोबाइल आवश्यक है।",
+    "editCustomer": "ग्राहक संपादित करें",
+    "addCustomer": "ग्राहक जोड़ें",
+    "formDescription": "एक नई ग्राहक प्रोफ़ाइल बनाएं या मौजूदा को अपडेट करें।"
+  },
+  "enquiries": {
+    "title": "पूछताछ और लीड्स",
+    "subtitle": "पाइपलाइन में हर लीड — लॉग करें, असाइन करें, फॉलो अप करें और आगे बढ़ाएं।",
+    "newEnquiry": "नई पूछताछ",
+    "all": "सभी",
+    "emptyTitle": "अभी कोई पूछताछ नहीं है",
+    "emptyMessage": "लीड्स ट्रैक करना शुरू करने के लिए अपनी पहली पूछताछ जोड़ें।"
+  },
+  "umbrella": {
+    "new_enquiry": "नई पूछताछ",
+    "exploration": "अन्वेषण",
+    "requirement_gathering": "आवश्यकता संग्रह",
+    "estimation_quoting": "अनुमान और उद्धरण",
+    "negotiation": "बातचीत",
+    "order_confirmation": "ऑर्डर पुष्टि",
+    "lost_closed": "खोया / बंद"
   }
 }

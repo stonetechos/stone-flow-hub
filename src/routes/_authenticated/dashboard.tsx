@@ -167,7 +167,7 @@ function DashboardPage() {
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
-  const brief = buildBrief(topInsights, tasks);
+  const brief = buildBrief(topInsights, tasks, t);
   const headline = kpis
     ? pickHeadline(kpis, t)
     : { label: "Revenue", value: "₹0", context: "tracking", to: "/invoices" };
@@ -1356,11 +1356,12 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
  * is kept as a direct, judgment-free count — Tasks aren't part of the
  * Insight registry and nothing else in the app computes this, so it
  * isn't duplicate logic, just a plain tally appended to the same list. */
-function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[]): string[] {
+function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[], t: TFunction): string[] {
   const lines = topInsights.map((i) => i.title);
   const urgent = tasks.filter((t) => t.priority === "urgent").length;
   if (urgent) lines.push(`${urgent} urgent task${urgent === 1 ? "" : "s"} on your list.`);
-  if (lines.length === 0) lines.push("Everything is quiet. Production is operating normally.");
+  if (lines.length === 0)
+    lines.push(t("dashboard.briefQuiet", "Everything is quiet. Production is operating normally."));
   return lines.slice(0, 5);
 }
 

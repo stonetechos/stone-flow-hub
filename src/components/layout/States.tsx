@@ -3,6 +3,7 @@ import { Loader2, Inbox, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 /**
  * Shared loading / empty / error / skeleton primitives.
@@ -112,6 +113,10 @@ export function EmptyState({
   icon?: ReactNode;
   className?: string;
 }) {
+  const { t } = useTranslation();
+  const displayTitle = t(`empty.${title}`, title);
+  const displayMessage = message ? t(`empty.${message}`, message) : undefined;
+
   return (
     <div
       className={cn(
@@ -123,8 +128,10 @@ export function EmptyState({
         {icon ?? <Inbox className="h-5 w-5" aria-hidden />}
       </div>
       <div className="space-y-1">
-        <h3 className="font-display text-[15px] font-semibold text-foreground">{title}</h3>
-        {message && <p className="mx-auto max-w-sm text-sm text-muted-foreground">{message}</p>}
+        <h3 className="font-display text-[15px] font-semibold text-foreground">{displayTitle}</h3>
+        {displayMessage && (
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground">{displayMessage}</p>
+        )}
       </div>
       {action && <div className="pt-1">{action}</div>}
     </div>
