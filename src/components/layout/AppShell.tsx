@@ -496,6 +496,7 @@ function UserMenu({
 /* AppShell                                                               */
 /* --------------------------------------------------------------------- */
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const uid = useCurrentUserId();
@@ -512,9 +513,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [path]);
 
   const openShortcuts = (): void => {
-    toast("Keyboard shortcuts", {
-      description:
+    toast(t("shortcuts.title", "Keyboard shortcuts"), {
+      description: t(
+        "shortcuts.description",
         "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — quick create · / — search · ? — help",
+      ),
     });
   };
 
@@ -658,7 +661,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {!collapsed && (
               <span className="pl-2 font-mono text-[10px] uppercase tracking-wider text-cyan-200/70 font-semibold">
-                v1 · Quarry
+                v1 · {t("theme.quarry", "Quarry")}
               </span>
             )}
             <TooltipProvider delayDuration={200}>
@@ -783,14 +786,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                   "transition-colors hover:border-intent-primary/40 hover:text-text-primary",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-intent-focus-ring sm:flex",
                 )}
-                aria-label="Open global search (Ctrl+K)"
+                aria-label={t("header.openSearch", "Open global search (Ctrl+K)")}
               >
                 <Search
                   className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
                   aria-hidden
                 />
                 <span className="min-w-0 flex-1 truncate">
-                  Search customers, projects, invoices…
+                  {t("header.searchPlaceholder", "Search customers, projects, invoices…")}
                 </span>
                 <kbd className="ml-auto hidden rounded border border-border-subtle bg-surface-panel px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
                   ⌘K
@@ -801,7 +804,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 size="icon"
                 className="h-8 w-8 sm:hidden"
                 onClick={() => setSearchOpen(true)}
-                aria-label="Open global search"
+                aria-label={t("header.openSearch", "Open global search")}
               >
                 <Search className="h-4 w-4" />
               </Button>

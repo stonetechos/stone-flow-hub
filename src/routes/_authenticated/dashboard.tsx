@@ -336,6 +336,7 @@ function ExecutiveHero({
 }
 
 function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
+  const { t } = useTranslation();
   const size = 88;
   const stroke = 8;
   const r = (size - stroke) / 2;
@@ -378,7 +379,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
           {score}
         </span>
         <span className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-engraved-kicker">
-          Health
+          {t("dashboard.health", "Health")}
         </span>
       </div>
     </div>
@@ -401,64 +402,79 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
     <section aria-labelledby="health-heading">
       <SectionTitle
         id="health-heading"
-        kicker="Business health"
+        kicker={t("dashboard.businessHealth", "Business health")}
         title={t("dashboard.pillarsTitle")}
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <HealthCard
           to="/dashboards/sales"
           icon={<TrendingUp className="h-4 w-4" />}
-          label="Sales"
+          label={t("dashboard.sales", "Sales")}
           value={"₹" + formatMoney(kpis.salesTodayInr)}
-          trend="today"
-          target={"pipeline ₹" + formatMoney(kpis.revenuePipelineInr)}
+          trend={t("dashboard.today", "today")}
+          target={`${t("dashboard.pipeline", "pipeline")} ₹${formatMoney(kpis.revenuePipelineInr)}`}
           tone={salesTone}
           insight={
             kpis.pendingQuotes
-              ? `${kpis.pendingQuotes} quote${kpis.pendingQuotes === 1 ? "" : "s"} awaiting approval`
-              : "Pipeline is flowing"
+              ? t("dashboard.quotesAwaitingApproval", {
+                  count: kpis.pendingQuotes,
+                  defaultValue: `${kpis.pendingQuotes} quote${kpis.pendingQuotes === 1 ? "" : "s"} awaiting approval`,
+                })
+              : t("dashboard.pipelineFlowing", "Pipeline is flowing")
           }
         />
         <HealthCard
           to="/dashboards/production"
           icon={<Factory className="h-4 w-4" />}
-          label="Operations"
+          label={t("dashboard.operations", "Operations")}
           value={String(kpis.ordersToStart)}
-          trend="orders to start"
-          target={`${kpis.deliveriesToday} dispatches today`}
+          trend={t("dashboard.ordersToStartTrend", "orders to start")}
+          target={t("dashboard.dispatchesTodayCount", {
+            count: kpis.deliveriesToday,
+            defaultValue: `${kpis.deliveriesToday} dispatches today`,
+          })}
           tone={opsTone}
           insight={
             kpis.ordersToStart > 0
-              ? "Kick off confirmed orders to keep production fed"
-              : "Floor is clear to plan next batch"
+              ? t("dashboard.kickOffOrders", "Kick off confirmed orders to keep production fed")
+              : t("dashboard.floorClear", "Floor is clear to plan next batch")
           }
         />
         <HealthCard
           to="/invoices"
           icon={<Wallet className="h-4 w-4" />}
-          label="Finance"
+          label={t("dashboard.finance", "Finance")}
           value={"₹" + formatMoney(kpis.outstandingInr)}
-          trend="outstanding"
-          target={"collected MTD ₹" + formatMoney(kpis.paymentsThisMonthInr)}
+          trend={t("dashboard.outstandingTrend", "outstanding")}
+          target={`${t("dashboard.collectedMtd", "collected MTD")} ₹${formatMoney(kpis.paymentsThisMonthInr)}`}
           tone={financeTone}
           insight={
             kpis.collectionsTodayInr > 0
-              ? `₹${formatMoney(kpis.collectionsTodayInr)} collected today`
-              : "No collections logged yet today"
+              ? t("dashboard.collectedTodayAmount", {
+                  amount: formatMoney(kpis.collectionsTodayInr),
+                  defaultValue: `₹${formatMoney(kpis.collectionsTodayInr)} collected today`,
+                })
+              : t("dashboard.noCollectionsToday", "No collections logged yet today")
           }
         />
         <HealthCard
           to="/followups"
           icon={<Users className="h-4 w-4" />}
-          label="People"
+          label={t("dashboard.people", "People")}
           value={String(kpis.todayFollowups + kpis.overdueFollowups)}
-          trend="follow-ups on deck"
-          target={`${kpis.customers} active customers`}
+          trend={t("dashboard.followupsOnDeck", "follow-ups on deck")}
+          target={t("dashboard.activeCustomersCount", {
+            count: kpis.customers,
+            defaultValue: `${kpis.customers} active customers`,
+          })}
           tone={peopleTone}
           insight={
             kpis.overdueFollowups
-              ? `${kpis.overdueFollowups} overdue — call them today`
-              : "Team is on schedule"
+              ? t("dashboard.overdueCallToday", {
+                  count: kpis.overdueFollowups,
+                  defaultValue: `${kpis.overdueFollowups} overdue — call them today`,
+                })
+              : t("dashboard.teamOnSchedule", "Team is on schedule")
           }
         />
       </div>
@@ -485,57 +501,84 @@ function OperationalRadar({
   const critical: RadarItem[] = [];
   if (kpis.overdueFollowups)
     critical.push({
-      label: `${kpis.overdueFollowups} overdue follow-up${kpis.overdueFollowups === 1 ? "" : "s"}`,
+      label: t("dashboard.radar.overdueFollowups", {
+        count: kpis.overdueFollowups,
+        defaultValue: `${kpis.overdueFollowups} overdue follow-up${kpis.overdueFollowups === 1 ? "" : "s"}`,
+      }),
       to: "/followups",
-      sub: "Aged past due date",
+      sub: t("dashboard.radar.agedPastDueDate", "Aged past due date"),
     });
   if (kpis.outstandingInr > 5_000_000)
     critical.push({
-      label: `₹${formatMoney(kpis.outstandingInr)} receivables at risk`,
+      label: t("dashboard.radar.receivablesRisk", {
+        amount: formatMoney(kpis.outstandingInr),
+        defaultValue: `₹${formatMoney(kpis.outstandingInr)} receivables at risk`,
+      }),
       to: "/invoices",
-      sub: "Exceeds ₹50L threshold",
+      sub: t("dashboard.radar.exceedsThreshold", "Exceeds ₹50L threshold"),
     });
   const urgentTasks = tasks.filter((t) => t.priority === "urgent").slice(0, 3);
   for (const task of urgentTasks)
-    critical.push({ label: task.title, to: "/tasks", sub: t("dashboard.radar.urgentTask") });
+    critical.push({
+      label: task.title,
+      to: "/tasks",
+      sub: t("dashboard.radar.urgentTask", "Urgent task"),
+    });
 
   const attention: RadarItem[] = [];
   if (kpis.pendingQuotes)
     attention.push({
-      label: `${kpis.pendingQuotes} quote${kpis.pendingQuotes === 1 ? "" : "s"} awaiting response`,
+      label: t("dashboard.radar.quotesAwaiting", {
+        count: kpis.pendingQuotes,
+        defaultValue: `${kpis.pendingQuotes} quote${kpis.pendingQuotes === 1 ? "" : "s"} awaiting response`,
+      }),
       to: "/quotes",
-      sub: "In draft or sent",
+      sub: t("dashboard.radar.inDraftOrSent", "In draft or sent"),
     });
   if (kpis.ordersToStart)
     attention.push({
-      label: `${kpis.ordersToStart} sales order${kpis.ordersToStart === 1 ? "" : "s"} to start`,
+      label: t("dashboard.radar.ordersToStart", {
+        count: kpis.ordersToStart,
+        defaultValue: `${kpis.ordersToStart} sales order${kpis.ordersToStart === 1 ? "" : "s"} to start`,
+      }),
       to: "/sales-orders",
-      sub: "Confirmed but not begun",
+      sub: t("dashboard.radar.confirmedNotBegun", "Confirmed but not begun"),
     });
   if (kpis.pendingRfqs)
     attention.push({
-      label: `${kpis.pendingRfqs} RFQ${kpis.pendingRfqs === 1 ? "" : "s"} pending vendor reply`,
+      label: t("dashboard.radar.rfqsPending", {
+        count: kpis.pendingRfqs,
+        defaultValue: `${kpis.pendingRfqs} RFQ${kpis.pendingRfqs === 1 ? "" : "s"} pending vendor reply`,
+      }),
       to: "/rfqs",
-      sub: "Sent, awaiting quotes",
+      sub: t("dashboard.radar.awaitingQuotes", "Sent, awaiting quotes"),
     });
 
   const scheduled: RadarItem[] = [];
   if (kpis.todayFollowups)
     scheduled.push({
-      label: `${kpis.todayFollowups} follow-up${kpis.todayFollowups === 1 ? "" : "s"} today`,
+      label: t("dashboard.radar.todayFollowups", {
+        count: kpis.todayFollowups,
+        defaultValue: `${kpis.todayFollowups} follow-up${kpis.todayFollowups === 1 ? "" : "s"} today`,
+      }),
       to: "/followups",
-      sub: "Scheduled",
+      sub: t("dashboard.radar.scheduledSub", "Scheduled"),
     });
   if (kpis.deliveriesToday)
     scheduled.push({
-      label: `${kpis.deliveriesToday} dispatch${kpis.deliveriesToday === 1 ? "" : "es"} today`,
+      label: t("dashboard.radar.dispatchesToday", {
+        count: kpis.deliveriesToday,
+        defaultValue: `${kpis.deliveriesToday} dispatch${kpis.deliveriesToday === 1 ? "" : "es"} today`,
+      }),
       to: "/dispatch",
-      sub: "Leaving the yard",
+      sub: t("dashboard.radar.leavingYard", "Leaving the yard"),
     });
   const nextFollowup = followups[0];
   if (nextFollowup && scheduled.length < 4)
     scheduled.push({
-      label: nextFollowup.notes?.slice(0, 60) ?? "Scheduled follow-up",
+      label:
+        nextFollowup.notes?.slice(0, 60) ??
+        t("dashboard.radar.scheduledFollowup", "Scheduled follow-up"),
       to: "/followups",
       sub: new Date(nextFollowup.scheduled_at).toLocaleTimeString(undefined, {
         hour: "2-digit",
@@ -546,20 +589,29 @@ function OperationalRadar({
   const completed: RadarItem[] = [];
   if (kpis.collectionsTodayInr > 0)
     completed.push({
-      label: `₹${formatMoney(kpis.collectionsTodayInr)} collected`,
+      label: t("dashboard.radar.collected", {
+        amount: formatMoney(kpis.collectionsTodayInr),
+        defaultValue: `₹${formatMoney(kpis.collectionsTodayInr)} collected`,
+      }),
       to: "/payments",
-      sub: "Today",
+      sub: t("dashboard.today", "Today"),
     });
   if (kpis.salesTodayInr > 0)
     completed.push({
-      label: `₹${formatMoney(kpis.salesTodayInr)} invoiced`,
+      label: t("dashboard.radar.invoiced", {
+        amount: formatMoney(kpis.salesTodayInr),
+        defaultValue: `₹${formatMoney(kpis.salesTodayInr)} invoiced`,
+      }),
       to: "/invoices",
-      sub: "Today",
+      sub: t("dashboard.today", "Today"),
     });
   const doneTasks = tasks.filter((t) => t.status === "completed").length;
   if (doneTasks)
     completed.push({
-      label: `${doneTasks} task${doneTasks === 1 ? "" : "s"} closed`,
+      label: t("dashboard.radar.tasksClosed", {
+        count: doneTasks,
+        defaultValue: `${doneTasks} task${doneTasks === 1 ? "" : "s"} closed`,
+      }),
       to: "/tasks",
     });
 
@@ -567,37 +619,37 @@ function OperationalRadar({
     <section aria-labelledby="radar-heading">
       <SectionTitle
         id="radar-heading"
-        kicker="Operational radar"
+        kicker={t("dashboard.radarKicker", "Operational radar")}
         title={t("dashboard.radarTitle")}
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <RadarColumn
           icon={<Flame className="h-3.5 w-3.5" />}
-          title="Critical"
+          title={t("dashboard.radar.critical", "Critical")}
           accent="text-status-danger-fg border-t-status-danger-fg"
           items={critical}
-          empty="Nothing critical."
+          empty={t("dashboard.radar.nothingCritical", "Nothing critical.")}
         />
         <RadarColumn
           icon={<AlertTriangle className="h-3.5 w-3.5" />}
-          title="Needs attention"
+          title={t("dashboard.radar.needsAttention", "Needs attention")}
           accent="text-status-warning-fg border-t-status-warning-fg"
           items={attention}
-          empty="Inbox is clear."
+          empty={t("dashboard.radar.inboxClear", "Inbox is clear.")}
         />
         <RadarColumn
           icon={<CalendarClock className="h-3.5 w-3.5" />}
-          title="Scheduled"
+          title={t("dashboard.radar.scheduled", "Scheduled")}
           accent="text-status-info-fg border-t-status-info-fg"
           items={scheduled}
-          empty="No commitments today."
+          empty={t("dashboard.radar.noCommitments", "No commitments today.")}
         />
         <RadarColumn
           icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-          title="Completed today"
+          title={t("dashboard.radar.completedToday", "Completed today")}
           accent="text-status-success-fg border-t-status-success-fg"
           items={completed}
-          empty="First win of the day awaits."
+          empty={t("dashboard.radar.firstWinAwaits", "First win of the day awaits.")}
         />
       </div>
     </section>
@@ -701,8 +753,8 @@ function CashFlowSnapshot({ kpis }: { kpis: DashboardKpis }) {
   return (
     <SurfaceCard
       icon={<Wallet className="h-3.5 w-3.5" />}
-      kicker="Cash flow"
-      title="Snapshot"
+      kicker={t("dashboard.cashFlowKicker", "Cash flow")}
+      title={t("dashboard.snapshotTitle", "Snapshot")}
       to="/dashboards/collections"
     >
       <ul className="space-y-1.5">
@@ -771,8 +823,8 @@ function DispatchAndInstallation({ kpis }: { kpis: DashboardKpis }) {
   return (
     <SurfaceCard
       icon={<Truck className="h-3.5 w-3.5" />}
-      kicker="Dispatch & installation"
-      title="Floor status"
+      kicker={t("dashboard.dispatchKicker", "Dispatch & installation")}
+      title={t("dashboard.floorStatusTitle", "Floor status")}
       to="/dispatch"
     >
       <ul className="space-y-1.5">
@@ -836,8 +888,8 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
   return (
     <SurfaceCard
       icon={<LineChart className="h-3.5 w-3.5" />}
-      kicker="Sales command"
-      title="Pipeline pulse"
+      kicker={t("dashboard.salesCommandKicker", "Sales command")}
+      title={t("dashboard.pipelinePulseTitle", "Pipeline pulse")}
       to="/dashboards/sales"
     >
       <div className="grid gap-2.5 sm:grid-cols-3">
@@ -971,7 +1023,9 @@ function CopilotDock({
           <ol className="space-y-2">
             {activity.slice(0, 5).map((a) => (
               <li key={a.id} className="engraved-well rounded-xl p-2 text-[12px] leading-snug">
-                <span className="font-black text-engraved-title">{a.actor_name ?? "Someone"}</span>{" "}
+                <span className="font-black text-engraved-title">
+                  {a.actor_name ?? t("dashboard.someone", "Someone")}
+                </span>{" "}
                 <span className="font-medium text-slate-600">{a.action.replace(/_/g, " ")}</span>
                 {a.summary && <span className="font-bold text-engraved-blue"> — {a.summary}</span>}
               </li>
@@ -1030,7 +1084,12 @@ function TodayTimeline({
           hour: "2-digit",
           minute: "2-digit",
         }),
-        label: f.notes?.slice(0, 80) ?? `Follow up with ${f.enquiry?.customer?.name ?? "customer"}`,
+        label:
+          f.notes?.slice(0, 80) ??
+          t("dashboard.followUpWithCustomer", {
+            customer: f.enquiry?.customer?.name ?? t("dashboard.customer", "customer"),
+            defaultValue: `Follow up with ${f.enquiry?.customer?.name ?? "customer"}`,
+          }),
         kind: "follow-up",
         to: "/followups",
       });
@@ -1052,14 +1111,17 @@ function TodayTimeline({
     if (deliveriesToday > 0) {
       list.push({
         key: "d-today",
-        time: "All day",
-        label: `${deliveriesToday} dispatch${deliveriesToday === 1 ? "" : "es"} scheduled`,
+        time: t("dashboard.allDay", "All day"),
+        label: t("dashboard.dispatchesScheduled", {
+          count: deliveriesToday,
+          defaultValue: `${deliveriesToday} dispatch${deliveriesToday === 1 ? "" : "es"} scheduled`,
+        }),
         kind: "dispatch",
         to: "/dispatch",
       });
     }
     return list.sort((a, b) => (a.time > b.time ? 1 : -1)).slice(0, 12);
-  }, [followups, tasks, deliveriesToday]);
+  }, [followups, tasks, deliveriesToday, t]);
 
   const iconFor = (k: TimelineEvent["kind"]) => {
     switch (k) {
@@ -1080,13 +1142,13 @@ function TodayTimeline({
     <section aria-labelledby="timeline-heading">
       <SectionTitle
         id="timeline-heading"
-        kicker="Today"
-        title="Timeline"
+        kicker={t("dashboard.todayKicker", "Today")}
+        title={t("dashboard.timelineTitle", "Timeline")}
         action={{ label: t("dashboard.radar.openCalendar"), to: "/calendar" }}
       />
       {events.length === 0 ? (
         <div className="engraved-well rounded-2xl px-4 py-8 text-center text-[13px] font-medium text-slate-400">
-          Nothing scheduled. A rare quiet day.
+          {t("dashboard.nothingScheduled", "Nothing scheduled. A rare quiet day.")}
         </div>
       ) : (
         <ol className="card-3d-milky relative overflow-hidden">
@@ -1183,7 +1245,7 @@ function QuickActionsDock() {
     >
       <div className="card-3d-milky pointer-events-auto flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full px-3.5 py-1.5 shadow-2xl backdrop-blur-md">
         <span className="flex items-center gap-1 pl-1 pr-1 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-engraved-kicker">
-          <Plus className="inline h-3.5 w-3.5 text-blue-600" aria-hidden /> New
+          <Plus className="inline h-3.5 w-3.5 text-blue-600" aria-hidden /> {t("common.new", "New")}
         </span>
         {actions.map((a) => (
           <Link
@@ -1251,6 +1313,7 @@ function SurfaceCard({
   to?: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <section className="card-3d-milky p-5">
       <header className="mb-3.5 flex items-start justify-between gap-4">
@@ -1268,7 +1331,7 @@ function SurfaceCard({
             to={to}
             className="flex items-center gap-1 text-[12px] font-bold text-engraved-blue transition-colors hover:scale-105"
           >
-            Open
+            {t("common.open", "Open")}
             <ArrowRight className="h-3 w-3" aria-hidden />
           </Link>
         )}

@@ -16,6 +16,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export type HealthCardTone = "strong" | "steady" | "watch" | "risk";
@@ -26,7 +27,13 @@ const TONE_ACCENT: Record<HealthCardTone, string> = {
   watch: "bg-status-warning-bg text-status-warning-fg",
   risk: "bg-status-danger-bg text-status-danger-fg",
 };
-const TONE_LABEL: Record<HealthCardTone, string> = {
+const TONE_KEY: Record<HealthCardTone, string> = {
+  strong: "dashboard.tones.strong",
+  steady: "dashboard.tones.steady",
+  watch: "dashboard.tones.watch",
+  risk: "dashboard.tones.risk",
+};
+const TONE_FALLBACK: Record<HealthCardTone, string> = {
   strong: "Strong",
   steady: "Steady",
   watch: "Watch",
@@ -54,6 +61,7 @@ export function HealthCard({
   tone,
   insight,
 }: HealthCardProps) {
+  const { t } = useTranslation();
   return (
     <Link
       to={to}
@@ -75,7 +83,7 @@ export function HealthCard({
             TONE_ACCENT[tone],
           )}
         >
-          {TONE_LABEL[tone]}
+          {t(TONE_KEY[tone], TONE_FALLBACK[tone])}
         </span>
       </div>
 

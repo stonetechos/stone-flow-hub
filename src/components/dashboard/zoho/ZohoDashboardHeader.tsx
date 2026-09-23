@@ -1,4 +1,5 @@
 import { ChevronDown, RefreshCw, HelpCircle, CheckCircle2, Megaphone, Gauge } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ export function ZohoDashboardHeader({
   isRefreshing?: boolean;
   canViewFinancial?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="card-3d-milky mb-6 p-4 sm:px-6 sm:py-5">
       {/* Top row: Company name + actions */}
@@ -40,7 +42,7 @@ export function ZohoDashboardHeader({
               </span>
             </div>
             <p className="font-mono text-xs font-semibold text-engraved-kicker">
-              Executive &amp; Operational Hub
+              {t("dashboard.zoho.hubSubtitle", "Executive & Operational Hub")}
             </p>
           </div>
         </div>
@@ -52,12 +54,16 @@ export function ZohoDashboardHeader({
             onClick={onRefresh}
             disabled={isRefreshing}
             className="engraved-well h-9 gap-2 rounded-xl px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-cyan-400"
-            title="Refresh dashboard data"
+            title={t("common.refresh", "Refresh")}
           >
             <RefreshCw
               className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-cyan-600")}
             />
-            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            <span>
+              {isRefreshing
+                ? t("common.refreshing", "Refreshing...")
+                : t("common.refresh", "Refresh")}
+            </span>
           </Button>
         </div>
       </div>
@@ -76,7 +82,7 @@ export function ZohoDashboardHeader({
             )}
           >
             <CheckCircle2 className="h-4 w-4" />
-            <span>Financial Dashboard</span>
+            <span>{t("dashboard.zoho.financialTab", "Financial Dashboard")}</span>
           </button>
         )}
 
@@ -91,7 +97,7 @@ export function ZohoDashboardHeader({
           )}
         >
           <Gauge className="h-4 w-4" />
-          <span>Operations Cockpit</span>
+          <span>{t("dashboard.zoho.operationsTab", "Operations Cockpit")}</span>
         </button>
 
         <button
@@ -105,7 +111,7 @@ export function ZohoDashboardHeader({
           )}
         >
           <Megaphone className="h-4 w-4" />
-          <span>Announcements</span>
+          <span>{t("dashboard.zoho.announcementsTab", "Announcements")}</span>
           <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
         </button>
 
@@ -120,7 +126,7 @@ export function ZohoDashboardHeader({
           )}
         >
           <HelpCircle className="h-4 w-4" />
-          <span>Help</span>
+          <span>{t("dashboard.zoho.helpTab", "Help")}</span>
         </button>
       </div>
     </div>
