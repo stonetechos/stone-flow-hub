@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Save } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/_authenticated/message-templates")({
 });
 
 function TemplatesPage() {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: qk.messageTemplates.all,
     queryFn: () => listMessageTemplates(),
@@ -71,21 +73,21 @@ function TemplatesPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "code", label: "Code", required: true },
-      { key: "name", label: "Name" },
-      { key: "channel", label: "Channel" },
-      { key: "category", label: "Category" },
-      { key: "active", label: "Active" },
+      { key: "code", label: t("table.code", "Code"), required: true },
+      { key: "name", label: t("table.name", "Name") },
+      { key: "channel", label: t("table.channel", "Channel") },
+      { key: "category", label: t("table.category", "Category") },
+      { key: "active", label: t("table.active", "Active") },
     ],
-    [],
+    [t],
   );
 
   const filtered = useMemo(() => {
     const term = dq.trim().toLowerCase();
     const all = query.data ?? [];
     if (!term) return all;
-    return all.filter((t) =>
-      [t.code, t.name, t.channel, t.category].some((v) => v?.toLowerCase().includes(term)),
+    return all.filter((tpl) =>
+      [tpl.code, tpl.name, tpl.channel, tpl.category].some((v) => v?.toLowerCase().includes(term)),
     );
   }, [query.data, dq]);
   const pageRows = list.paginate(filtered);
@@ -93,31 +95,36 @@ function TemplatesPage() {
   return (
     <div>
       <PageHeader
-        title="Message Templates"
-        subtitle="Reusable Email / WhatsApp / SMS templates for Estimates, Receipts, Invoices and more. Placeholders like {{customer_name}} are replaced at send time."
+        title={t("messageTemplates.title", "Message Templates")}
+        subtitle={t(
+          "messageTemplates.subtitle",
+          "Reusable Email / WhatsApp / SMS templates for Estimates, Receipts, Invoices and more. Placeholders like {{customer_name}} are replaced at send time.",
+        )}
       />
 
       <DataToolbar
         count={filtered.length}
         search={list.query}
         onSearchChange={list.setQuery}
-        searchPlaceholder="Search code, name, category…"
+        searchPlaceholder={t("messageTemplates.searchPlaceholder", "Search code, name, category…")}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
           <Button variant="outline" size="sm" className="h-8" asChild>
             <Link to="/notification-settings">
-              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Providers
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />{" "}
+              {t("messageTemplates.providers", "Providers")}
             </Link>
           </Button>
         }
         action={
           canManage ? (
             <EditTemplateDialog
-              existingCodes={(query.data ?? []).map((t) => t.code)}
+              existingCodes={(query.data ?? []).map((tpl) => tpl.code)}
               trigger={
                 <Button size="sm" className="h-8">
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New template
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+                  {t("messageTemplates.newTemplate", "New template")}
                 </Button>
               }
             />
@@ -131,11 +138,14 @@ function TemplatesPage() {
         <ErrorBlock message={toUserMessage(query.error)} />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No templates"
+          title={t("messageTemplates.noTemplates", "No templates")}
           message={
             canManage
-              ? "Create your first template to reuse across the ERP."
-              : "Ask an admin to add templates."
+              ? t(
+                  "messageTemplates.emptyCanManage",
+                  "Create your first template to reuse across the ERP.",
+                )
+              : t("messageTemplates.emptyCannotManage", "Ask an admin to add templates.")
           }
         />
       ) : (
@@ -146,43 +156,47 @@ function TemplatesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("name") && <TableHead>Name</TableHead>}
-                {!isHidden("channel") && <TableHead>Channel</TableHead>}
-                {!isHidden("category") && <TableHead>Category</TableHead>}
-                {!isHidden("active") && <TableHead>Active</TableHead>}
-                {canManage && <TableHead className="text-right">Edit</TableHead>}
+                {!isHidden("code") && <TableHead>{t("table.code", "Code")}</TableHead>}
+                {!isHidden("name") && <TableHead>{t("table.name", "Name")}</TableHead>}
+                {!isHidden("channel") && <TableHead>{t("table.channel", "Channel")}</TableHead>}
+                {!isHidden("category") && <TableHead>{t("table.category", "Category")}</TableHead>}
+                {!isHidden("active") && <TableHead>{t("table.active", "Active")}</TableHead>}
+                {canManage && (
+                  <TableHead className="text-right">{t("table.edit", "Edit")}</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pageRows.map((t) => (
-                <TableRow key={t.id}>
+              {pageRows.map((tpl) => (
+                <TableRow key={tpl.id}>
                   {!isHidden("code") && (
-                    <TableCell className="font-mono text-xs">{t.code}</TableCell>
+                    <TableCell className="font-mono text-xs">{tpl.code}</TableCell>
                   )}
-                  {!isHidden("name") && <TableCell>{t.name}</TableCell>}
+                  {!isHidden("name") && <TableCell>{tpl.name}</TableCell>}
                   {!isHidden("channel") && (
                     <TableCell>
                       <Badge variant="outline" className="uppercase">
-                        {t.channel}
+                        {tpl.channel}
                       </Badge>
                     </TableCell>
                   )}
-                  {!isHidden("category") && <TableCell className="text-sm">{t.category}</TableCell>}
+                  {!isHidden("category") && (
+                    <TableCell className="text-sm">{tpl.category}</TableCell>
+                  )}
                   {!isHidden("active") && (
                     <TableCell>
-                      <Badge variant={t.is_active ? "default" : "outline"}>
-                        {t.is_active ? "Yes" : "No"}
+                      <Badge variant={tpl.is_active ? "default" : "outline"}>
+                        {tpl.is_active ? t("common.yes", "Yes") : t("common.no", "No")}
                       </Badge>
                     </TableCell>
                   )}
                   {canManage && (
                     <TableCell className="text-right">
                       <EditTemplateDialog
-                        template={{ ...t, channel: t.channel as "email" | "whatsapp" | "sms" }}
+                        template={{ ...tpl, channel: tpl.channel as "email" | "whatsapp" | "sms" }}
                         trigger={
                           <Button variant="ghost" size="sm">
-                            Edit
+                            {t("table.edit", "Edit")}
                           </Button>
                         }
                       />
@@ -216,6 +230,7 @@ function EditTemplateDialog({
   /** Codes already in use — guards the create path against a silent upsert overwrite. */
   existingCodes?: string[];
 }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(template?.code ?? "");
@@ -257,7 +272,7 @@ function EditTemplateDialog({
         is_active: active,
       }),
     onSuccess: () => {
-      toast.success("Template saved");
+      toast.success(t("messageTemplates.saved", "Template saved"));
       invalidateMessageTemplate(qc, code.trim());
       setOpen(false);
     },
@@ -269,7 +284,11 @@ function EditTemplateDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{template ? "Edit template" : "New template"}</DialogTitle>
+          <DialogTitle>
+            {template
+              ? t("messageTemplates.editTemplate", "Edit template")
+              : t("messageTemplates.newTemplate", "New template")}
+          </DialogTitle>
         </DialogHeader>
         <QuickForm
           onSubmit={(e) => {
@@ -281,9 +300,13 @@ function EditTemplateDialog({
         >
           <QuickForm.QuickFill>
             <Field
-              label="Code"
+              label={t("messageTemplates.code", "Code")}
               required
-              error={duplicateCode ? "A template with this code already exists." : undefined}
+              error={
+                duplicateCode
+                  ? t("messageTemplates.duplicateCode", "A template with this code already exists.")
+                  : undefined
+              }
             >
               <Input
                 value={code}
@@ -292,10 +315,10 @@ function EditTemplateDialog({
                 placeholder="e.g. estimate.email.v2"
               />
             </Field>
-            <Field label="Name" required>
+            <Field label={t("messageTemplates.name", "Name")} required>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
-            <Field label="Channel" required>
+            <Field label={t("messageTemplates.channel", "Channel")} required>
               <Select value={channel} onValueChange={(v) => setChannel(v as typeof channel)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -307,7 +330,7 @@ function EditTemplateDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Category">
+            <Field label={t("messageTemplates.category", "Category")}>
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -318,15 +341,15 @@ function EditTemplateDialog({
 
           <QuickForm.MoreDetails>
             {channel === "email" && (
-              <Field label="Subject" className="md:col-span-2">
+              <Field label={t("messageTemplates.subject", "Subject")} className="md:col-span-2">
                 <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
               </Field>
             )}
             <Field
-              label="Body"
+              label={t("messageTemplates.body", "Body")}
               required
               className="md:col-span-2"
-              hint={`Placeholders: ${
+              hint={`${t("messageTemplates.placeholders", "Placeholders")}: ${
                 extractPlaceholders(body + " " + subject)
                   .map((v) => `{{${v}}}`)
                   .join(", ") || "—"
@@ -338,13 +361,13 @@ function EditTemplateDialog({
 
           <QuickForm.Actions>
             <Button type="button" variant="outline" onClick={() => setActive(!active)}>
-              {active ? "Deactivate" : "Activate"}
+              {active ? t("common.deactivate", "Deactivate") : t("common.activate", "Activate")}
             </Button>
             <Button
               type="submit"
               disabled={!code || !name || !body || duplicateCode || save.isPending}
             >
-              <Save className="mr-2 h-4 w-4" /> Save
+              <Save className="mr-2 h-4 w-4" /> {t("common.save", "Save")}
             </Button>
           </QuickForm.Actions>
         </QuickForm>

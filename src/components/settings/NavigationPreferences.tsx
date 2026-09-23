@@ -5,6 +5,7 @@
  * side effects, no schema changes.
  */
 import { useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
   Download,
@@ -40,6 +41,7 @@ interface DragPayload {
 }
 
 export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
+  const { t } = useTranslation();
   const { prefs, update, replace, reset } = useNavPreferences();
   const [drag, setDrag] = useState<DragPayload | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -149,7 +151,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
     a.download = "navigation-preferences.json";
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Preferences exported");
+    toast.success(t("nav.preferences.exported", "Preferences exported"));
   };
 
   const onImportFile = async (file: File): Promise<void> => {
@@ -157,15 +159,15 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
       const text = await file.text();
       const parsed = JSON.parse(text) as Partial<NavPreferences>;
       replace({ ...defaultPreferences(), ...parsed, version: 1 });
-      toast.success("Preferences imported");
+      toast.success(t("nav.preferences.imported", "Preferences imported"));
     } catch {
-      toast.error("Could not read that file");
+      toast.error(t("nav.preferences.importError", "Could not read that file"));
     }
   };
 
   const onReset = (): void => {
     reset();
-    toast.success("Navigation reset to defaults");
+    toast.success(t("nav.preferences.resetSuccess", "Navigation reset to defaults"));
   };
 
   // ---------------- drag-and-drop handlers ----------------
@@ -188,57 +190,66 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
       setDrag(null);
     };
 
-  const renderItemRow = (item: NavItemDef, container: "starred" | NavGroupId, starred: boolean) => (
-    <li
-      key={`${container}-${item.id}`}
-      draggable
-      onDragStart={onRowDragStart({ itemId: item.id, from: container })}
-      onDragOver={onRowDragOver}
-      onDrop={onRowDrop({ to: container, beforeId: item.id })}
-      className="flex items-center gap-2 rounded-sm border border-border/50 bg-card px-2 py-1.5 text-sm shadow-sm hover:border-border"
-    >
-      <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" aria-hidden />
-      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-      <span className="flex-1 truncate">{item.label}</span>
-      <button
-        type="button"
-        onClick={() => toggleStar(item.id)}
-        aria-label={starred ? `Unpin ${item.label}` : `Pin ${item.label}`}
-        aria-pressed={starred}
-        className={cn(
-          "rounded-sm p-1 hover:bg-muted",
-          starred ? "text-amber-500" : "text-muted-foreground",
-        )}
+  const renderItemRow = (item: NavItemDef, container: "starred" | NavGroupId, starred: boolean) => {
+    const itemLabel = t(`nav.items.${item.id}`, item.label);
+    return (
+      <li
+        key={`${container}-${item.id}`}
+        draggable
+        onDragStart={onRowDragStart({ itemId: item.id, from: container })}
+        onDragOver={onRowDragOver}
+        onDrop={onRowDrop({ to: container, beforeId: item.id })}
+        className="flex items-center gap-2 rounded-sm border border-border/50 bg-card px-2 py-1.5 text-sm shadow-sm hover:border-border"
       >
-        <Star className={cn("h-3.5 w-3.5", starred && "fill-current")} aria-hidden />
-      </button>
-      <button
-        type="button"
-        onClick={() => toggleHidden(item.id)}
-        aria-label={`Hide ${item.label}`}
-        className="rounded-sm p-1 text-muted-foreground hover:bg-muted"
-      >
-        <EyeOff className="h-3.5 w-3.5" aria-hidden />
-      </button>
-    </li>
-  );
+        <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" aria-hidden />
+        <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="flex-1 truncate">{itemLabel}</span>
+        <button
+          type="button"
+          onClick={() => toggleStar(item.id)}
+          aria-label={
+            starred
+              ? t("nav.preferences.unpinItem", "Unpin {{label}}", { label: itemLabel })
+              : t("nav.preferences.pinItem", "Pin {{label}}", { label: itemLabel })
+          }
+          aria-pressed={starred}
+          className={cn(
+            "rounded-sm p-1 hover:bg-muted",
+            starred ? "text-amber-500" : "text-muted-foreground",
+          )}
+        >
+          <Star className={cn("h-3.5 w-3.5", starred && "fill-current")} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleHidden(item.id)}
+          aria-label={t("nav.preferences.hideItem", "Hide {{label}}", { label: itemLabel })}
+          className="rounded-sm p-1 text-muted-foreground hover:bg-muted"
+        >
+          <EyeOff className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </li>
+    );
+  };
 
   return (
     <Card className="shadow-1">
       <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
         <div>
-          <CardTitle className="text-sm">Navigation</CardTitle>
+          <CardTitle className="text-sm">{t("nav.preferences.title", "Navigation")}</CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            Drag to reorder. Star to pin at the top. Hide the modules you never use. Preferences are
-            saved only for you.
+            {t(
+              "nav.preferences.desc",
+              "Drag to reorder. Star to pin at the top. Hide the modules you never use. Preferences are saved only for you.",
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={onExport}>
-            <Download className="mr-1.5 h-3.5 w-3.5" /> Export
+            <Download className="mr-1.5 h-3.5 w-3.5" /> {t("common.export", "Export")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}>
-            <Upload className="mr-1.5 h-3.5 w-3.5" /> Import
+            <Upload className="mr-1.5 h-3.5 w-3.5" /> {t("common.import", "Import")}
           </Button>
           <input
             ref={fileRef}
@@ -252,7 +263,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
             }}
           />
           <Button size="sm" variant="outline" onClick={onReset}>
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Reset
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> {t("common.reset", "Reset")}
           </Button>
         </div>
       </CardHeader>
@@ -260,7 +271,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         {/* Pinned */}
         <section>
           <h4 className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            <Star className="h-3 w-3" /> Pinned
+            <Star className="h-3 w-3" /> {t("nav.preferences.pinned", "Pinned")}
           </h4>
           <ul
             className="min-h-[2.5rem] space-y-1 rounded-sm border border-dashed border-border/60 p-2"
@@ -270,7 +281,10 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
           >
             {resolved.starred.length === 0 ? (
               <li className="px-1 py-1 text-xs text-muted-foreground">
-                Drag modules here — or click the star — to pin them at the top of your sidebar.
+                {t(
+                  "nav.preferences.pinnedEmpty",
+                  "Drag modules here — or click the star — to pin them at the top of your sidebar.",
+                )}
               </li>
             ) : (
               resolved.starred.map((item) => renderItemRow(item, "starred", true))
@@ -283,6 +297,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         {/* Groups */}
         {resolved.groups.map((group) => {
           const collapsed = collapsedSet.has(group.id);
+          const groupTitle = t(`nav.groups.${group.id}`, group.label);
           return (
             <section
               key={group.id}
@@ -326,7 +341,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
                     className={cn("h-3 w-3 transition-transform", collapsed && "-rotate-90")}
                     aria-hidden
                   />
-                  {group.label}
+                  {groupTitle}
                 </button>
                 <span className="text-[10px] text-muted-foreground">({group.items.length})</span>
               </div>
@@ -334,7 +349,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
                 <ul className="ml-2 space-y-1">
                   {group.items.length === 0 ? (
                     <li className="px-1 py-1 text-xs text-muted-foreground">
-                      Empty. Drag modules here.
+                      {t("nav.preferences.groupEmpty", "Empty. Drag modules here.")}
                     </li>
                   ) : (
                     group.items.map((item) => renderItemRow(item, group.id, false))
@@ -351,26 +366,31 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
             <Separator />
             <section>
               <h4 className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <EyeOff className="h-3 w-3" /> Hidden
+                <EyeOff className="h-3 w-3" /> {t("nav.preferences.hidden", "Hidden")}
               </h4>
               <ul className="space-y-1">
-                {resolved.hidden.map((item) => (
-                  <li
-                    key={`hidden-${item.id}`}
-                    className="flex items-center gap-2 rounded-sm border border-border/50 bg-muted/30 px-2 py-1.5 text-sm"
-                  >
-                    <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                    <span className="flex-1 truncate text-muted-foreground">{item.label}</span>
-                    <button
-                      type="button"
-                      onClick={() => toggleHidden(item.id)}
-                      className="rounded-sm p-1 text-muted-foreground hover:bg-background hover:text-foreground"
-                      aria-label={`Show ${item.label}`}
+                {resolved.hidden.map((item) => {
+                  const itemLabel = t(`nav.items.${item.id}`, item.label);
+                  return (
+                    <li
+                      key={`hidden-${item.id}`}
+                      className="flex items-center gap-2 rounded-sm border border-border/50 bg-muted/30 px-2 py-1.5 text-sm"
                     >
-                      <Eye className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  </li>
-                ))}
+                      <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                      <span className="flex-1 truncate text-muted-foreground">{itemLabel}</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleHidden(item.id)}
+                        className="rounded-sm p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+                        aria-label={t("nav.preferences.showItem", "Show {{label}}", {
+                          label: itemLabel,
+                        })}
+                      >
+                        <Eye className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           </>
@@ -379,12 +399,14 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
         {/* Sanity fallback if all items got hidden */}
         {resolved.starred.length === 0 && resolved.groups.every((g) => g.items.length === 0) && (
           <p className="text-xs text-muted-foreground">
-            You've hidden every module. Click{" "}
+            {t("nav.preferences.allHiddenPrefix", "You've hidden every module. Click")}{" "}
             <button type="button" onClick={onReset} className="underline">
-              Reset
+              {t("common.reset", "Reset")}
             </button>{" "}
-            to bring the default navigation back — or reveal individual modules from the Hidden list
-            above.
+            {t(
+              "nav.preferences.allHiddenSuffix",
+              "to bring the default navigation back — or reveal individual modules from the Hidden list above.",
+            )}
           </p>
         )}
       </CardContent>

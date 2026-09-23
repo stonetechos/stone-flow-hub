@@ -45,6 +45,21 @@ const LABELS: Record<string, string> = {
   payroll: "Payroll",
   loans: "Loans & Claims",
 
+  admin: "Admin",
+  users: "Users",
+  "workforce-intelligence": "Workforce Intelligence",
+  employees: "Employees",
+  "vendor-payments": "Vendor Payments",
+  "money-flow": "Money Flow",
+  ledger: "Ledger",
+  receipts: "Receipts",
+  estimates: "Estimates",
+  "business-expenses": "Business Expenses",
+  liabilities: "Liabilities",
+  "installation-agencies": "Installation Agencies",
+  "installation-ledger": "Installation Ledger",
+  "agency-payments": "Agency Payments",
+
   new: "New",
   edit: "Edit",
 };

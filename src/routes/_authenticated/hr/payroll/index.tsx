@@ -5,6 +5,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -67,6 +68,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function PayrollRunsView() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const canRun = roles.hasAnyRole(["admin", "hr"]);
@@ -88,7 +90,9 @@ export function PayrollRunsView() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "payroll-runs"] });
-      toast.success("Payroll run created — process it to generate payslips");
+      toast.success(
+        t("payroll.createdNotification", "Payroll run created — process it to generate payslips"),
+      );
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -99,8 +103,14 @@ export function PayrollRunsView() {
       qc.invalidateQueries({ queryKey: ["hr", "payroll-runs"] });
       toast.success(
         res.skipped.length
-          ? `${res.processed} payslips generated · ${res.skipped.length} skipped without a salary structure`
-          : `${res.processed} payslips generated`,
+          ? t(
+              "payroll.processResultSkipped",
+              "{{processed}} payslips generated · {{skipped}} skipped without a salary structure",
+              { processed: res.processed, skipped: res.skipped.length },
+            )
+          : t("payroll.processResult", "{{processed}} payslips generated", {
+              processed: res.processed,
+            }),
       );
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -111,32 +121,35 @@ export function PayrollRunsView() {
   return (
     <>
       <PageHeader
-        title="Payroll"
-        subtitle="Create a monthly run, process it from attendance and salary structures, then approve."
-        eyebrow="Human Resources"
+        title={t("payroll.title", "Payroll")}
+        subtitle={t(
+          "payroll.subtitle",
+          "Create a monthly run, process it from attendance and salary structures, then approve.",
+        )}
+        eyebrow={t("payroll.eyebrow", "Human Resources")}
       />
 
       {canRun ? (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-base">New payroll run</CardTitle>
+            <CardTitle className="text-base">{t("payroll.newRun", "New payroll run")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Select value={month} onValueChange={setMonth}>
-              <SelectTrigger aria-label="Payroll month">
-                <SelectValue placeholder="Month" />
+              <SelectTrigger aria-label={t("payroll.month", "Month")}>
+                <SelectValue placeholder={t("payroll.month", "Month")} />
               </SelectTrigger>
               <SelectContent>
                 {MONTH_LABELS.map((m, i) => (
                   <SelectItem key={m} value={String(i + 1)}>
-                    {m}
+                    {t(`common.months.${m.toLowerCase()}`, m)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={year} onValueChange={setYear}>
-              <SelectTrigger aria-label="Payroll year">
-                <SelectValue placeholder="Year" />
+              <SelectTrigger aria-label={t("payroll.year", "Year")}>
+                <SelectValue placeholder={t("payroll.year", "Year")} />
               </SelectTrigger>
               <SelectContent>
                 {years.map((y) => (
@@ -147,11 +160,11 @@ export function PayrollRunsView() {
               </SelectContent>
             </Select>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger aria-label="Branch">
-                <SelectValue placeholder="All branches" />
+              <SelectTrigger aria-label={t("payroll.branch", "Branch")}>
+                <SelectValue placeholder={t("payroll.allBranches", "All branches")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All branches</SelectItem>
+                <SelectItem value="all">{t("payroll.allBranches", "All branches")}</SelectItem>
                 {(branches.data ?? []).map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
@@ -161,7 +174,9 @@ export function PayrollRunsView() {
             </Select>
             <Button onClick={() => create.mutate()} disabled={create.isPending}>
               <Plus className="mr-2 h-4 w-4" />
-              {create.isPending ? "Creating…" : "Create run"}
+              {create.isPending
+                ? t("common.creating", "Creating…")
+                : t("payroll.createRun", "Create run")}
             </Button>
           </CardContent>
         </Card>
@@ -174,20 +189,23 @@ export function PayrollRunsView() {
           <ErrorBlock message={toUserMessage(runs.error)} />
         ) : (runs.data ?? []).length === 0 ? (
           <EmptyState
-            title="No payroll runs yet"
-            message="Create a run for the current month to generate payslips from salary structures and attendance."
+            title={t("payroll.noRunsYet", "No payroll runs yet")}
+            message={t(
+              "payroll.noRunsYetDesc",
+              "Create a run for the current month to generate payslips from salary structures and attendance.",
+            )}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Period</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Employees</TableHead>
-                <TableHead className="text-right">Gross</TableHead>
-                <TableHead className="text-right">Deductions</TableHead>
-                <TableHead className="text-right">Net payout</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("table.period", "Period")}</TableHead>
+                <TableHead>{t("table.status", "Status")}</TableHead>
+                <TableHead className="text-right">{t("table.employees", "Employees")}</TableHead>
+                <TableHead className="text-right">{t("table.gross", "Gross")}</TableHead>
+                <TableHead className="text-right">{t("table.deductions", "Deductions")}</TableHead>
+                <TableHead className="text-right">{t("table.netPayout", "Net payout")}</TableHead>
+                <TableHead className="text-right">{t("table.actions", "Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -201,7 +219,7 @@ export function PayrollRunsView() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_TONE[r.status] ?? "outline"}>
-                      {STATUS_LABEL[r.status] ?? r.status}
+                      {t(`payroll.status.${r.status}`, STATUS_LABEL[r.status] ?? r.status)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">{r.employee_count}</TableCell>
@@ -222,12 +240,12 @@ export function PayrollRunsView() {
                           disabled={process.isPending}
                         >
                           <Play className="mr-1 h-3.5 w-3.5" />
-                          Process
+                          {t("payroll.process", "Process")}
                         </Button>
                       ) : null}
                       <Button size="sm" variant="ghost" asChild>
                         <Link to="/hr/payroll/$runId" params={{ runId: r.id }}>
-                          Open <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                          {t("common.open", "Open")} <ArrowRight className="ml-1 h-3.5 w-3.5" />
                         </Link>
                       </Button>
                     </div>
@@ -243,15 +261,18 @@ export function PayrollRunsView() {
 }
 
 export function PayrollHubPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("runs");
 
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-lg">
-          <TabsTrigger value="runs">Payroll Runs</TabsTrigger>
-          <TabsTrigger value="structures">Salary Structures</TabsTrigger>
-          <TabsTrigger value="loans">Loans & Claims</TabsTrigger>
+          <TabsTrigger value="runs">{t("payroll.tabs.runs", "Payroll Runs")}</TabsTrigger>
+          <TabsTrigger value="structures">
+            {t("payroll.tabs.structures", "Salary Structures")}
+          </TabsTrigger>
+          <TabsTrigger value="loans">{t("payroll.tabs.loans", "Loans & Claims")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs" className="mt-4 space-y-6">

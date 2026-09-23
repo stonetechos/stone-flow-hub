@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 });
 
 function NotificationsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const {
     data: items = [],
@@ -54,20 +56,25 @@ function NotificationsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Notifications"
-        subtitle="Realtime alerts across the ERP — Information, Important, and Critical. Delivery channels are configured in Settings."
+        title={t("notifications.title", "Notifications")}
+        subtitle={t(
+          "notifications.subtitle",
+          "Realtime alerts across the ERP — Information, Important, and Critical. Delivery channels are configured in Settings.",
+        )}
       />
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="px-4 py-12 text-center text-sm text-muted-foreground">Loading…</div>
+            <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+              {t("common.loading", "Loading…")}
+            </div>
           ) : error ? (
             <div className="p-4">
               <ErrorBlock message={toUserMessage(error)} onRetry={() => void refetch()} />
             </div>
           ) : items.length === 0 ? (
             <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-              You&rsquo;re all caught up.
+              {t("notifications.caughtUp", "You're all caught up.")}
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -89,7 +96,7 @@ function NotificationsPage() {
                           toneSurface(TIER_TONE[n.tier]),
                         )}
                       >
-                        {TIER_LABEL[n.tier]}
+                        {t(`notifications.tiers.${n.tier}`, TIER_LABEL[n.tier])}
                       </span>
                       <div className="truncate text-sm font-medium">{n.title}</div>
                     </div>
@@ -98,7 +105,9 @@ function NotificationsPage() {
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    {!n.readAt ? <Badge className="text-[10px]">New</Badge> : null}
+                    {!n.readAt ? (
+                      <Badge className="text-[10px]">{t("common.new", "New")}</Badge>
+                    ) : null}
                     <span className="text-xs text-muted-foreground">
                       {formatRelative(n.createdAt)}
                     </span>

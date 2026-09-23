@@ -6,6 +6,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PerformanceView } from "./performance";
@@ -51,6 +52,7 @@ function priorityColor(p: string) {
 }
 
 export function TodayView() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const me = useQuery({ queryKey: ["wf", "me"], queryFn: getCurrentEmployee });
   const employeeId = me.data?.id;
@@ -65,7 +67,7 @@ export function TodayView() {
       updateTask(v.id, { status: v.status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["wf", "tasks"] });
-      toast.success("Updated");
+      toast.success(t("common.updated", "Updated"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -74,18 +76,22 @@ export function TodayView() {
   if (!me.data) {
     return (
       <EmptyState
-        title="No employee record linked"
-        message="Ask an owner or HR manager to create your employee profile, or add an employee record to get started."
+        title={t("workforce.noEmployeeLinked", "No employee record linked")}
+        message={t(
+          "workforce.noEmployeeLinkedDesc",
+          "Ask an owner or HR manager to create your employee profile, or add an employee record to get started.",
+        )}
         action={
           <div className="flex items-center gap-2">
             <Button asChild size="sm">
               <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> Add employee
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("workforce.addEmployee", "Add employee")}
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
               <Link to="/workforce-intelligence/employees">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> View employees
+                <Users className="mr-1.5 h-3.5 w-3.5" />{" "}
+                {t("workforce.viewEmployees", "View employees")}
               </Link>
             </Button>
           </div>
@@ -103,10 +109,13 @@ export function TodayView() {
       <div className="flex items-center justify-between pb-2 border-b">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
-            Hello, {me.data.full_name.split(" ")[0]}
+            {t("workforce.hello", "Hello, {{name}}", { name: me.data.full_name.split(" ")[0] })}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {pending.length} pending • {done} completed
+            {t("workforce.pendingCompleted", "{{pending}} pending • {{done}} completed", {
+              pending: pending.length,
+              done,
+            })}
           </p>
         </div>
       </div>
@@ -116,64 +125,77 @@ export function TodayView() {
       ) : tasks.isError ? (
         <ErrorBlock message={toUserMessage(tasks.error)} />
       ) : rows.length === 0 ? (
-        <EmptyState title="Nothing on your plate" message="Enjoy a quiet moment." />
+        <EmptyState
+          title={t("workforce.nothingOnPlate", "Nothing on your plate")}
+          message={t("workforce.enjoyQuiet", "Enjoy a quiet moment.")}
+        />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Task</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Due</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead>{t("workforce.table.task", "Task")}</TableHead>
+              <TableHead>{t("workforce.table.priority", "Priority")}</TableHead>
+              <TableHead>{t("workforce.table.due", "Due")}</TableHead>
+              <TableHead>{t("workforce.table.status", "Status")}</TableHead>
+              <TableHead className="text-right">{t("workforce.table.action", "Action")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((t) => (
-              <TableRow key={t.id}>
+            {rows.map((tRow) => (
+              <TableRow key={tRow.id}>
                 <TableCell>
-                  <div className="font-medium">{t.title}</div>
-                  {t.source_deep_link && (
+                  <div className="font-medium">{tRow.title}</div>
+                  {tRow.source_deep_link && (
                     <a
-                      href={t.source_deep_link}
+                      href={tRow.source_deep_link}
                       className="text-xs text-muted-foreground hover:underline"
                     >
-                      Open source →
+                      {t("workforce.openSource", "Open source →")}
                     </a>
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={priorityColor(t.priority)}>{t.priority}</Badge>
+                  <Badge variant={priorityColor(tRow.priority)}>
+                    {t(`workforce.priority.${tRow.priority}`, tRow.priority)}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-xs">
-                  {t.due_at ? format(new Date(t.due_at), "d MMM, HH:mm") : "—"}
+                  {tRow.due_at ? format(new Date(tRow.due_at), "d MMM, HH:mm") : "—"}
                 </TableCell>
                 <TableCell>
                   <Select
-                    value={t.status}
+                    value={tRow.status}
                     onValueChange={(v) =>
-                      updateMut.mutate({ id: t.id, status: v as WorkforceTaskStatus })
+                      updateMut.mutate({ id: tRow.id, status: v as WorkforceTaskStatus })
                     }
                   >
                     <SelectTrigger className="h-8 w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in_progress">In progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="deferred">Deferred</SelectItem>
+                      <SelectItem value="pending">
+                        {t("workforce.status.pending", "Pending")}
+                      </SelectItem>
+                      <SelectItem value="in_progress">
+                        {t("workforce.status.in_progress", "In progress")}
+                      </SelectItem>
+                      <SelectItem value="completed">
+                        {t("workforce.status.completed", "Completed")}
+                      </SelectItem>
+                      <SelectItem value="deferred">
+                        {t("workforce.status.deferred", "Deferred")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>
                 <TableCell className="text-right">
-                  {t.status !== "completed" && (
+                  {tRow.status !== "completed" && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => updateMut.mutate({ id: t.id, status: "completed" })}
+                      onClick={() => updateMut.mutate({ id: tRow.id, status: "completed" })}
                     >
-                      <CheckCircle2 className="mr-1 h-4 w-4" /> Done
+                      <CheckCircle2 className="mr-1 h-4 w-4" /> {t("workforce.doneAction", "Done")}
                     </Button>
                   )}
                 </TableCell>
@@ -187,24 +209,29 @@ export function TodayView() {
 }
 
 export function WorkforceHubPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("today");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Workforce Intelligence"
-        subtitle="Today's operations, performance scorecards, and workload intelligence."
-        eyebrow="Operations"
+        title={t("workforce.title", "Workforce Intelligence")}
+        subtitle={t(
+          "workforce.subtitle",
+          "Today's operations, performance scorecards, and workload intelligence.",
+        )}
+        eyebrow={t("workforce.eyebrow", "Operations")}
         actions={
           <div className="flex items-center gap-2">
             <Button asChild size="sm">
               <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> New employee
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("workforce.newEmployee", "New employee")}
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
               <Link to="/workforce-intelligence/employees">
-                <Users className="mr-1.5 h-3.5 w-3.5" /> All employees
+                <Users className="mr-1.5 h-3.5 w-3.5" />{" "}
+                {t("workforce.allEmployees", "All employees")}
               </Link>
             </Button>
           </div>
@@ -213,9 +240,11 @@ export function WorkforceHubPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-lg">
-          <TabsTrigger value="today">Today's Work</TabsTrigger>
-          <TabsTrigger value="performance">Performance Board</TabsTrigger>
-          <TabsTrigger value="owner">Owner Intelligence</TabsTrigger>
+          <TabsTrigger value="today">{t("workforce.tabs.today", "Today's Work")}</TabsTrigger>
+          <TabsTrigger value="performance">
+            {t("workforce.tabs.performance", "Performance Board")}
+          </TabsTrigger>
+          <TabsTrigger value="owner">{t("workforce.tabs.owner", "Owner Intelligence")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="today" className="mt-4 space-y-6">

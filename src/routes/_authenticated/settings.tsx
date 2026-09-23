@@ -265,18 +265,21 @@ function SettingsPage() {
 
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Guided Workflow Assistant</CardTitle>
+              <CardTitle className="text-sm">
+                {t("settings.guided.title", "Guided Workflow Assistant")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <Label className="text-sm">Enable Guided Workflow Assistant</Label>
+                  <Label className="text-sm">
+                    {t("settings.guided.enable", "Enable Guided Workflow Assistant")}
+                  </Label>
                   <p className="max-w-prose text-xs text-muted-foreground">
-                    Suggests the next logical step in the business lifecycle (Customer → Enquiry →
-                    Project → Quotation → Sales Order → Procurement → Production → Dispatch →
-                    Installation → Invoice → Receipt → Follow-up) on each detail page.
-                    Recommendations only — nothing happens automatically, and you can always Skip
-                    for now. When disabled, STOS behaves exactly as before with no prompts.
+                    {t(
+                      "settings.guided.desc",
+                      "Suggests the next logical step in the business lifecycle (Customer → Enquiry → Project → Quotation → Sales Order → Procurement → Production → Dispatch → Installation → Invoice → Receipt → Follow-up) on each detail page. Recommendations only — nothing happens automatically, and you can always Skip for now. When disabled, STOS behaves exactly as before with no prompts.",
+                    )}
                   </p>
                 </div>
                 <Switch
@@ -285,11 +288,11 @@ function SettingsPage() {
                     setGuidedEnabled(v);
                     toast.success(
                       v
-                        ? "Guided Workflow Assistant enabled"
-                        : "Guided Workflow Assistant disabled",
+                        ? t("settings.guided.enabledToast", "Guided Workflow Assistant enabled")
+                        : t("settings.guided.disabledToast", "Guided Workflow Assistant disabled"),
                     );
                   }}
-                  aria-label="Enable Guided Workflow Assistant"
+                  aria-label={t("settings.guided.enable", "Enable Guided Workflow Assistant")}
                 />
               </div>
             </CardContent>
@@ -303,14 +306,19 @@ function SettingsPage() {
         <TabsContent value="appearance" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Appearance</CardTitle>
+              <CardTitle className="text-sm">
+                {t("settings.appearance.title", "Appearance")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <Label className="text-sm">Theme</Label>
+                  <Label className="text-sm">{t("settings.appearance.theme", "Theme")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Choose a STOS theme. The choice is saved in this browser.
+                    {t(
+                      "settings.appearance.themeDesc",
+                      "Choose a STOS theme. The choice is saved in this browser.",
+                    )}
                   </p>
                 </div>
                 <ThemeSwitcher />
@@ -322,16 +330,20 @@ function SettingsPage() {
         <TabsContent value="notifications" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Notifications</CardTitle>
+              <CardTitle className="text-sm">
+                {t("settings.notifications.title", "Notifications")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Channel preferences, digests, and delivery rules are managed on the Notification
-                Settings page.
+                {t(
+                  "settings.notifications.desc",
+                  "Channel preferences, digests, and delivery rules are managed on the Notification Settings page.",
+                )}
               </p>
               <Link to="/notification-settings">
                 <Button variant="outline" size="sm">
-                  Open notification settings
+                  {t("settings.notifications.openSettings", "Open notification settings")}
                 </Button>
               </Link>
             </CardContent>
@@ -341,7 +353,7 @@ function SettingsPage() {
         <TabsContent value="security" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Security</CardTitle>
+              <CardTitle className="text-sm">{t("settings.security.title", "Security")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-wrap gap-2">
@@ -350,17 +362,23 @@ function SettingsPage() {
                   onClick={async () => {
                     const { error } = await supabase.auth.resetPasswordForEmail(email);
                     if (error) toast.error(error.message);
-                    else toast.success("Password reset email sent");
+                    else
+                      toast.success(t("settings.security.resetSent", "Password reset email sent"));
                   }}
                 >
-                  Send password reset email
+                  {t("settings.security.sendReset", "Send password reset email")}
                 </Button>
                 <Link to="/activity">
-                  <Button variant="outline">View activity log</Button>
+                  <Button variant="outline">
+                    {t("settings.security.viewActivity", "View activity log")}
+                  </Button>
                 </Link>
               </div>
               <p className="text-xs text-muted-foreground">
-                Every sign-in, role change, and record update is recorded in the activity log.
+                {t(
+                  "settings.security.activityDesc",
+                  "Every sign-in, role change, and record update is recorded in the activity log.",
+                )}
               </p>
             </CardContent>
           </Card>
@@ -369,39 +387,66 @@ function SettingsPage() {
         <TabsContent value="about" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">About</CardTitle>
+              <CardTitle className="text-sm">{t("settings.about.title", "About")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               <p className="text-base font-medium">{APPLICATION_NAME}</p>
-              <p className="text-sm text-muted-foreground">{APPLICATION_CATEGORY}</p>
-              <p className="text-sm text-muted-foreground">{BUILT_BY_LINE}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.about.category", APPLICATION_CATEGORY)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.about.builtBy", BUILT_BY_LINE)}
+              </p>
               <p className="mt-4 text-xs text-muted-foreground">
                 {copyrightLine(new Date().getFullYear())}
               </p>
             </CardContent>
           </Card>
 
-          {/* Sprint 1.7.1, Part 5 — Platform Information. Every value here is
-              read from src/lib/platform/{platform,application}.ts; any field
-              this deployment genuinely doesn't have (e.g. no git repo at
-              build time) renders "Not available" rather than a fabricated
-              value — see those modules for exactly how each is sourced. */}
           <Card className="mt-4 shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Platform Information</CardTitle>
+              <CardTitle className="text-sm">
+                {t("settings.about.platformInfo", "Platform Information")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
-                <AboutRow label="Application Name" value={APPLICATION_NAME} />
-                <AboutRow label="Application Version" value={APPLICATION_VERSION} />
-                <AboutRow label="Build Version" value={BUILD_VERSION} />
-                <AboutRow label="Git Commit Hash" value={GIT_COMMIT_HASH} mono />
-                <AboutRow label="Platform Version" value={PLATFORM_VERSION} />
-                <AboutRow label="Database Schema Version" value={DB_SCHEMA_VERSION} mono />
-                <AboutRow label="Platform Owner" value={PLATFORM_NAME} />
-                <AboutRow label="Support Email" value={PLATFORM_SUPPORT_EMAIL} />
                 <AboutRow
-                  label="Copyright"
+                  label={t("settings.about.appName", "Application Name")}
+                  value={APPLICATION_NAME}
+                />
+                <AboutRow
+                  label={t("settings.about.appVersion", "Application Version")}
+                  value={APPLICATION_VERSION}
+                />
+                <AboutRow
+                  label={t("settings.about.buildVersion", "Build Version")}
+                  value={BUILD_VERSION}
+                />
+                <AboutRow
+                  label={t("settings.about.gitHash", "Git Commit Hash")}
+                  value={GIT_COMMIT_HASH}
+                  mono
+                />
+                <AboutRow
+                  label={t("settings.about.platformVersion", "Platform Version")}
+                  value={PLATFORM_VERSION}
+                />
+                <AboutRow
+                  label={t("settings.about.dbSchemaVersion", "Database Schema Version")}
+                  value={DB_SCHEMA_VERSION}
+                  mono
+                />
+                <AboutRow
+                  label={t("settings.about.platformOwner", "Platform Owner")}
+                  value={PLATFORM_NAME}
+                />
+                <AboutRow
+                  label={t("settings.about.supportEmail", "Support Email")}
+                  value={PLATFORM_SUPPORT_EMAIL}
+                />
+                <AboutRow
+                  label={t("settings.about.copyright", "Copyright")}
                   value={copyrightLine(new Date().getFullYear())}
                   className="sm:col-span-2"
                 />
@@ -414,13 +459,6 @@ function SettingsPage() {
   );
 }
 
-/**
- * One label/value row in the Platform Information
- * grid. `value` may be `null` for any field this deployment genuinely
- * couldn't determine (see src/lib/platform/application.ts) — rendered as
- * "Not available" rather than omitted, so it's visibly a known gap rather
- * than looking like the row was forgotten.
- */
 function AboutRow({
   label,
   value,
@@ -432,11 +470,18 @@ function AboutRow({
   mono?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={className}>
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className={`mt-0.5 ${mono ? "font-mono text-xs" : "text-sm"}`}>
-        {value ? value : <span className="text-muted-foreground">Not available</span>}
+        {value ? (
+          value
+        ) : (
+          <span className="text-muted-foreground">
+            {t("settings.about.notAvailable", "Not available")}
+          </span>
+        )}
       </dd>
     </div>
   );

@@ -17,6 +17,7 @@
  * this app (see the file header comment in hooks/use-roles.tsx).
  */
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Loader2,
   Image as ImageIcon,
@@ -103,6 +104,7 @@ const EMPTY_FORM: CompanyProfileFormValues = {
 };
 
 export function CompanyProfileTab() {
+  const { t } = useTranslation();
   const roles = useRoles();
   const isAdmin = roles.isAdmin;
   const q = useCompanyProfile();
@@ -182,7 +184,7 @@ export function CompanyProfileTab() {
         if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
       }
       setErrors(fieldErrors);
-      toast.error("Fix the highlighted fields before saving");
+      toast.error(t("companyProfile.fixErrors", "Fix the highlighted fields before saving"));
       return;
     }
     setErrors({});
@@ -193,7 +195,8 @@ export function CompanyProfileTab() {
     update.mutate({ id: q.data.id, patch: parsed.data });
   }
 
-  if (q.isLoading || !q.data) return <LoadingBlock label="Loading company profile…" />;
+  if (q.isLoading || !q.data)
+    return <LoadingBlock label={t("companyProfile.loading", "Loading company profile…")} />;
 
   const field = (
     key: keyof CompanyProfileFormValues,
@@ -201,7 +204,7 @@ export function CompanyProfileTab() {
   ) => (
     <div className="space-y-1.5">
       <Label>
-        {FIELD_LABELS[key]}
+        {t(`companyProfile.fields.${key}`, FIELD_LABELS[key])}
         {opts?.required && <span className="text-destructive"> *</span>}
       </Label>
       {(() => {
@@ -242,23 +245,25 @@ export function CompanyProfileTab() {
     <Card className="shadow-1">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
-          Company Profile
+          {t("companyProfile.title", "Company Profile")}
           {!isAdmin && (
             <Badge variant="outline" className="gap-1">
-              <ShieldCheck className="h-3 w-3" /> View only
+              <ShieldCheck className="h-3 w-3" /> {t("companyProfile.viewOnly", "View only")}
             </Badge>
           )}
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          These details appear on every quotation, estimate, invoice, purchase order, delivery
-          challan, report, PDF, and email sent from STOS.
-          {!isAdmin && " Only admins can make changes here."}
+          {t(
+            "companyProfile.description",
+            "These details appear on every quotation, estimate, invoice, purchase order, delivery challan, report, PDF, and email sent from STOS.",
+          )}
+          {!isAdmin && t("companyProfile.onlyAdmins", " Only admins can make changes here.")}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Basic Details
+            {t("companyProfile.basicDetails", "Basic Details")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("company_name", { required: true, placeholder: "Stone Tech" })}
@@ -272,7 +277,7 @@ export function CompanyProfileTab() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Address
+            {t("companyProfile.address", "Address")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("address_line1")}
@@ -288,7 +293,7 @@ export function CompanyProfileTab() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Contact
+            {t("companyProfile.contact", "Contact")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("phone")}
@@ -302,7 +307,7 @@ export function CompanyProfileTab() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Legal &amp; Tax IDs
+            {t("companyProfile.legalTaxIds", "Legal & Tax IDs")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("pan")}
@@ -314,7 +319,7 @@ export function CompanyProfileTab() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bank Details
+            {t("companyProfile.bankDetails", "Bank Details")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("bank_name")}
@@ -329,12 +334,12 @@ export function CompanyProfileTab() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Signatory &amp; Branding
+            {t("companyProfile.signatoryBranding", "Signatory & Branding")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">{field("authorized_signatory")}</div>
           <div className="grid gap-4 sm:grid-cols-3">
             <AssetUploadField
-              label="Logo"
+              label={t("companyProfile.fields.logo_url", "Logo")}
               icon={ImageIcon}
               url={form.logo_url}
               isAdmin={isAdmin}
@@ -342,7 +347,7 @@ export function CompanyProfileTab() {
               onUpload={(f) => handleUpload("logo", f)}
             />
             <AssetUploadField
-              label="Signature"
+              label={t("companyProfile.fields.signature_url", "Signature")}
               icon={PenTool}
               url={form.signature_url}
               isAdmin={isAdmin}
@@ -350,7 +355,7 @@ export function CompanyProfileTab() {
               onUpload={(f) => handleUpload("signature", f)}
             />
             <AssetUploadField
-              label="Company Stamp"
+              label={t("companyProfile.fields.stamp_url", "Company Stamp")}
               icon={StampIcon}
               url={form.stamp_url}
               isAdmin={isAdmin}
@@ -363,7 +368,7 @@ export function CompanyProfileTab() {
         {isAdmin && (
           <Button onClick={handleSave} disabled={update.isPending}>
             {update.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Save changes
+            {t("common.saveChanges", "Save changes")}
           </Button>
         )}
       </CardContent>
@@ -386,6 +391,7 @@ function AssetUploadField({
   uploading: boolean;
   onUpload: (file: File) => void;
 }) {
+  const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
   return (
     <div className="space-y-1.5">
@@ -419,7 +425,7 @@ function AssetUploadField({
               onClick={() => fileRef.current?.click()}
             >
               {uploading ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : null}
-              {url ? "Replace" : "Upload"}
+              {url ? t("common.replace", "Replace") : t("common.upload", "Upload")}
             </Button>
           </>
         )}

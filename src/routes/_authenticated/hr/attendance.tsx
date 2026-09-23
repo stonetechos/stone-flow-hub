@@ -7,6 +7,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LogIn, LogOut, Coffee, MapPin, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -99,6 +100,7 @@ async function captureContext(): Promise<Capture> {
 }
 
 export function AttendanceView() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const auth = useAuthReady();
   const roles = useRoles();
@@ -179,8 +181,13 @@ export function AttendanceView() {
       setReason("");
       toast.success(
         row.approval_status === "pending"
-          ? "Punch recorded — sent for manager approval"
-          : `${PUNCH_DIRECTION_LABEL[row.direction]} recorded`,
+          ? t("attendance.sentForApproval", "Punch recorded — sent for manager approval")
+          : t("attendance.punchRecorded", "{{direction}} recorded", {
+              direction: t(
+                `attendance.direction.${row.direction}`,
+                PUNCH_DIRECTION_LABEL[row.direction],
+              ),
+            }),
       );
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -191,7 +198,7 @@ export function AttendanceView() {
       setPunchApproval(v.id, v.status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "punches"] });
-      toast.success("Approval updated");
+      toast.success(t("attendance.approvalUpdated", "Approval updated"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -199,45 +206,53 @@ export function AttendanceView() {
   return (
     <>
       <PageHeader
-        title="Attendance"
-        subtitle="Mobile, biometric and manual punches in one register."
-        eyebrow="Human Resources"
+        title={t("attendance.title", "Attendance")}
+        subtitle={t("attendance.subtitle", "Mobile, biometric and manual punches in one register.")}
+        eyebrow={t("attendance.eyebrow", "Human Resources")}
       />
 
       <Card className="shadow-1">
         <CardHeader>
-          <CardTitle className="text-sm">My attendance today</CardTitle>
+          <CardTitle className="text-sm">
+            {t("attendance.myAttendanceToday", "My attendance today")}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {me.isLoading ? (
-            <p className="text-muted-foreground">Loading your employee record…</p>
+            <p className="text-muted-foreground">
+              {t("attendance.loadingEmployeeRecord", "Loading your employee record…")}
+            </p>
           ) : !me.data ? (
             <p className="text-muted-foreground">
-              Your login isn&apos;t linked to an employee record yet, so you can&apos;t clock in.
-              Ask HR to link your account from the Employees page.
+              {t(
+                "attendance.notLinkedMessage",
+                "Your login isn't linked to an employee record yet, so you can't clock in. Ask HR to link your account from the Employees page.",
+              )}
             </p>
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <span>
-                  Worked:{" "}
+                  {t("attendance.worked", "Worked:")}{" "}
                   <strong className="text-foreground">
                     {formatMinutes(summary.workingMinutes)}
                   </strong>
                 </span>
                 <span>
-                  Break:{" "}
+                  {t("attendance.break", "Break:")}{" "}
                   <strong className="text-foreground">{formatMinutes(summary.breakMinutes)}</strong>
                 </span>
                 <span>
-                  Next:{" "}
-                  <strong className="text-foreground">{PUNCH_DIRECTION_LABEL[expected]}</strong>
+                  {t("attendance.next", "Next:")}{" "}
+                  <strong className="text-foreground">
+                    {t(`attendance.direction.${expected}`, PUNCH_DIRECTION_LABEL[expected])}
+                  </strong>
                 </span>
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Select value={branchId} onValueChange={setBranchId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Office location" />
+                    <SelectValue placeholder={t("attendance.officeLocation", "Office location")} />
                   </SelectTrigger>
                   <SelectContent>
                     {(branches.data ?? []).map((b) => (
@@ -250,13 +265,16 @@ export function AttendanceView() {
                 <Textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Reason (required only when outside the office geofence)"
+                  placeholder={t(
+                    "attendance.reasonPlaceholder",
+                    "Reason (required only when outside the office geofence)",
+                  )}
                   rows={1}
                 />
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" disabled={punch.isPending} onClick={() => punch.mutate("in")}>
-                  <LogIn className="mr-1 h-4 w-4" /> Clock in
+                  <LogIn className="mr-1 h-4 w-4" /> {t("attendance.clockIn", "Clock in")}
                 </Button>
                 <Button
                   size="sm"
@@ -264,7 +282,7 @@ export function AttendanceView() {
                   disabled={punch.isPending}
                   onClick={() => punch.mutate("break_in")}
                 >
-                  <Coffee className="mr-1 h-4 w-4" /> Break start
+                  <Coffee className="mr-1 h-4 w-4" /> {t("attendance.breakStart", "Break start")}
                 </Button>
                 <Button
                   size="sm"
@@ -272,7 +290,7 @@ export function AttendanceView() {
                   disabled={punch.isPending}
                   onClick={() => punch.mutate("break_out")}
                 >
-                  <Coffee className="mr-1 h-4 w-4" /> Break end
+                  <Coffee className="mr-1 h-4 w-4" /> {t("attendance.breakEnd", "Break end")}
                 </Button>
                 <Button
                   size="sm"
@@ -280,7 +298,7 @@ export function AttendanceView() {
                   disabled={punch.isPending}
                   onClick={() => punch.mutate("out")}
                 >
-                  <LogOut className="mr-1 h-4 w-4" /> Clock out
+                  <LogOut className="mr-1 h-4 w-4" /> {t("attendance.clockOut", "Clock out")}
                 </Button>
               </div>
             </>
@@ -290,21 +308,25 @@ export function AttendanceView() {
 
       <div className="mt-6 flex flex-wrap items-end gap-2">
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">From</label>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            {t("common.from", "From")}
+          </label>
           <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-muted-foreground">To</label>
+          <label className="mb-1 block text-xs text-muted-foreground">{t("common.to", "To")}</label>
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
         <div className="min-w-48">
-          <label className="mb-1 block text-xs text-muted-foreground">Employee</label>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            {t("attendance.employee", "Employee")}
+          </label>
           <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All employees</SelectItem>
+              <SelectItem value="all">{t("attendance.allEmployees", "All employees")}</SelectItem>
               {(employees.data ?? []).map((e) => (
                 <SelectItem key={e.id} value={e.id}>
                   {e.full_name}
@@ -322,19 +344,22 @@ export function AttendanceView() {
           <ErrorBlock message={toUserMessage(punches.error)} />
         ) : (punches.data ?? []).length === 0 ? (
           <EmptyState
-            title="No punches in this range"
-            message="Mobile and biometric punches will appear here as they are recorded."
+            title={t("attendance.noPunches", "No punches in this range")}
+            message={t(
+              "attendance.noPunchesDesc",
+              "Mobile and biometric punches will appear here as they are recorded.",
+            )}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>When</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Approval</TableHead>
+                <TableHead>{t("table.employee", "Employee")}</TableHead>
+                <TableHead>{t("table.when", "When")}</TableHead>
+                <TableHead>{t("table.action", "Action")}</TableHead>
+                <TableHead>{t("table.source", "Source")}</TableHead>
+                <TableHead>{t("table.location", "Location")}</TableHead>
+                <TableHead>{t("table.approval", "Approval")}</TableHead>
                 {canApprove && <TableHead />}
               </TableRow>
             </TableHeader>
@@ -347,19 +372,25 @@ export function AttendanceView() {
                   <TableCell className="whitespace-nowrap text-xs">
                     {new Date(p.punch_at).toLocaleString()}
                   </TableCell>
-                  <TableCell>{PUNCH_DIRECTION_LABEL[p.direction]}</TableCell>
+                  <TableCell>
+                    {t(`attendance.direction.${p.direction}`, PUNCH_DIRECTION_LABEL[p.direction])}
+                  </TableCell>
                   <TableCell className="text-xs capitalize">{p.source}</TableCell>
                   <TableCell className="text-xs">
                     {p.within_geofence === null ? (
                       "—"
                     ) : p.within_geofence ? (
                       <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> In office
+                        <MapPin className="h-3 w-3" /> {t("attendance.inOffice", "In office")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-muted-foreground">
                         <MapPin className="h-3 w-3" />
-                        {p.distance_m ? `${Math.round(Number(p.distance_m))} m away` : "Outside"}
+                        {p.distance_m
+                          ? t("attendance.away", "{{distance}} m away", {
+                              distance: Math.round(Number(p.distance_m)),
+                            })
+                          : t("attendance.outside", "Outside")}
                       </span>
                     )}
                   </TableCell>
@@ -373,7 +404,10 @@ export function AttendanceView() {
                             : "outline"
                       }
                     >
-                      {p.approval_status.replace("_", " ")}
+                      {t(
+                        `attendance.approvalStatus.${p.approval_status}`,
+                        p.approval_status.replace("_", " "),
+                      )}
                     </Badge>
                   </TableCell>
                   {canApprove && (
@@ -411,14 +445,19 @@ export function AttendanceView() {
 }
 
 export function AttendanceAndLeavePage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("attendance");
 
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
-          <TabsTrigger value="leave">Leave Management</TabsTrigger>
+          <TabsTrigger value="attendance">
+            {t("attendance.tabs.dailyAttendance", "Daily Attendance")}
+          </TabsTrigger>
+          <TabsTrigger value="leave">
+            {t("attendance.tabs.leaveManagement", "Leave Management")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="attendance" className="mt-4 space-y-6">

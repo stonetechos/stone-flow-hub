@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/vendor-payments/")({
 });
 
 function VendorPaymentsPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -52,14 +54,14 @@ function VendorPaymentsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Payment #", required: true },
-      { key: "vendor", label: "Vendor" },
-      { key: "po", label: "PO" },
-      { key: "type", label: "Type" },
-      { key: "amount", label: "Amount" },
-      { key: "paid", label: "Paid on" },
+      { key: "no", label: t("table.paymentNo", "Payment #"), required: true },
+      { key: "vendor", label: t("table.vendor", "Vendor") },
+      { key: "po", label: t("table.po", "PO") },
+      { key: "type", label: t("table.type", "Type") },
+      { key: "amount", label: t("table.amount", "Amount") },
+      { key: "paid", label: t("table.paidOn", "Paid on") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -71,7 +73,7 @@ function VendorPaymentsPage() {
   const del = useMutation({
     mutationFn: (id: string) => deleteVendorPayment(id),
     onSuccess: (_void, id) => {
-      toast.success("Payment removed");
+      toast.success(t("vendorPayments.removed", "Payment removed"));
       invalidateVendorPayment(qc, toDelete?.vendor_id, id);
       setToDelete(null);
     },
@@ -84,21 +86,25 @@ function VendorPaymentsPage() {
   return (
     <div>
       <PageHeader
-        title="Vendor Payments"
-        subtitle="Advance, part, full, retention, credit / debit note and refund posts."
+        title={t("vendorPayments.title", "Vendor Payments")}
+        subtitle={t(
+          "vendorPayments.subtitle",
+          "Advance, part, full, retention, credit / debit note and refund posts.",
+        )}
       />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search payment no or reference…"
+        searchPlaceholder={t("vendorPayments.searchPlaceholder", "Search payment no or reference…")}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/vendor-payments/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> Record payment
+              <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+              {t("vendorPayments.recordPayment", "Record payment")}
             </Button>
           ) : null
         }
@@ -111,12 +117,16 @@ function VendorPaymentsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Banknote className="h-6 w-6" />}
-          title="No vendor payments yet"
-          message="Record an advance, part or full payment to a vendor."
+          title={t("vendorPayments.noPaymentsYet", "No vendor payments yet")}
+          message={t(
+            "vendorPayments.noPaymentsYetDesc",
+            "Record an advance, part or full payment to a vendor.",
+          )}
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/vendor-payments/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> Record payment
+                <Plus className="mr-2 h-4 w-4" />{" "}
+                {t("vendorPayments.recordPayment", "Record payment")}
               </Button>
             ) : undefined
           }
@@ -140,12 +150,14 @@ function VendorPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>Payment #</TableHead>}
-                {!isHidden("vendor") && <TableHead>Vendor</TableHead>}
-                {!isHidden("po") && <TableHead>PO</TableHead>}
-                {!isHidden("type") && <TableHead>Type</TableHead>}
-                {!isHidden("amount") && <TableHead className="text-right">Amount</TableHead>}
-                {!isHidden("paid") && <TableHead>Paid on</TableHead>}
+                {!isHidden("no") && <TableHead>{t("table.paymentNo", "Payment #")}</TableHead>}
+                {!isHidden("vendor") && <TableHead>{t("table.vendor", "Vendor")}</TableHead>}
+                {!isHidden("po") && <TableHead>{t("table.po", "PO")}</TableHead>}
+                {!isHidden("type") && <TableHead>{t("table.type", "Type")}</TableHead>}
+                {!isHidden("amount") && (
+                  <TableHead className="text-right">{t("table.amount", "Amount")}</TableHead>
+                )}
+                {!isHidden("paid") && <TableHead>{t("table.paidOn", "Paid on")}</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -219,9 +231,13 @@ function VendorPaymentsPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete vendor payment?"
+        title={t("vendorPayments.deleteTitle", "Delete vendor payment?")}
         description={
-          toDelete ? `${toDelete.payment_no} will be reversed from the vendor ledger.` : ""
+          toDelete
+            ? t("vendorPayments.deleteDesc", "{{no}} will be reversed from the vendor ledger.", {
+                no: toDelete.payment_no,
+              })
+            : ""
         }
         busy={del.isPending}
         onConfirm={() => toDelete && del.mutate(toDelete.id)}
