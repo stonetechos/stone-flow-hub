@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toUserMessage } from "@/lib/errors";
 import { dispatchQueueNow } from "@/lib/notifications/dispatch.functions";
 import { retryMessage, cancelMessage } from "@/lib/notifications/queue";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/communication")({
   ssr: false,
@@ -75,6 +76,7 @@ function statusVariant(s: string): "default" | "outline" | "destructive" | "seco
 }
 
 function CommunicationCentre() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { isAdmin } = useRoles();
   const [channel, setChannel] = useState<string>("all");
@@ -176,19 +178,25 @@ function CommunicationCentre() {
   return (
     <div>
       <PageHeader
-        title="Communication Centre"
-        subtitle="Every outbound email, WhatsApp and SMS with delivery status and retry history."
+        title={t("communication.title", "Communication Centre")}
+        subtitle={t(
+          "communication.subtitle",
+          "Every outbound email, WhatsApp and SMS with delivery status and retry history.",
+        )}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/notification-settings">Provider settings</Link>
+              <Link to="/notification-settings">
+                {t("communication.providerSettings", "Provider settings")}
+              </Link>
             </Button>
             {/* `dispatchQueueNow` is admin-gated server-side; without this
                 the button was offered to every staff user and failed with a
                 permission error. */}
             {isAdmin && (
               <Button size="sm" onClick={() => dispatch.mutate()} disabled={dispatch.isPending}>
-                <Play className="mr-2 h-4 w-4" /> Run dispatcher now
+                <Play className="mr-2 h-4 w-4" />{" "}
+                {t("communication.runDispatcher", "Run dispatcher now")}
               </Button>
             )}
           </div>
@@ -206,18 +214,18 @@ function CommunicationCentre() {
       <Card className="shadow-1 mb-4">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Filter className="h-4 w-4" /> Filters
+            <Filter className="h-4 w-4" /> {t("common.filters", "Filters")}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-6">
           <div className="space-y-1">
-            <Label className="text-xs">Channel</Label>
+            <Label className="text-xs">{t("communication.channel", "Channel")}</Label>
             <Select value={channel} onValueChange={setChannel}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
                 {CHANNELS.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
@@ -227,13 +235,13 @@ function CommunicationCentre() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Status</Label>
+            <Label className="text-xs">{t("common.status", "Status")}</Label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
@@ -243,13 +251,13 @@ function CommunicationCentre() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Related entity</Label>
+            <Label className="text-xs">{t("communication.relatedEntity", "Related entity")}</Label>
             <Select value={related} onValueChange={setRelated}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">{t("common.all", "All")}</SelectItem>
                 {RELATED.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
@@ -259,25 +267,25 @@ function CommunicationCentre() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">From</Label>
+            <Label className="text-xs">{t("common.from", "From")}</Label>
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">To</Label>
+            <Label className="text-xs">{t("common.to", "To")}</Label>
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Search</Label>
+            <Label className="text-xs">{t("common.search", "Search")}</Label>
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="No, address, subject"
+              placeholder={t("communication.searchPlaceholder", "No, address, subject")}
             />
           </div>
           {filtersActive && (
             <div className="md:col-span-6">
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="mr-1.5 h-3.5 w-3.5" /> Clear filters
+                <X className="mr-1.5 h-3.5 w-3.5" /> {t("common.clearFilters", "Clear filters")}
               </Button>
             </div>
           )}
@@ -286,7 +294,9 @@ function CommunicationCentre() {
 
       <Card className="shadow-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm">{rows.length} messages</CardTitle>
+          <CardTitle className="text-sm">
+            {rows.length} {t("communication.messages", "messages")}
+          </CardTitle>
           <Button
             variant="ghost"
             size="sm"
@@ -294,7 +304,7 @@ function CommunicationCentre() {
             disabled={query.isFetching}
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
-            Refresh
+            {t("common.refresh", "Refresh")}
           </Button>
         </CardHeader>
         <CardContent className="p-0">
@@ -310,14 +320,16 @@ function CommunicationCentre() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>No</TableHead>
-                  <TableHead>Channel</TableHead>
-                  <TableHead>To</TableHead>
-                  <TableHead>Subject / Entity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Attempts</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("common.no", "No")}</TableHead>
+                  <TableHead>{t("communication.columns.channel", "Channel")}</TableHead>
+                  <TableHead>{t("communication.columns.to", "To")}</TableHead>
+                  <TableHead>
+                    {t("communication.columns.subjectEntity", "Subject / Entity")}
+                  </TableHead>
+                  <TableHead>{t("common.status", "Status")}</TableHead>
+                  <TableHead>{t("communication.columns.attempts", "Attempts")}</TableHead>
+                  <TableHead>{t("communication.columns.created", "Created")}</TableHead>
+                  <TableHead className="text-right">{t("common.actions", "Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -363,7 +375,7 @@ function CommunicationCentre() {
                           disabled={busyId === r.id}
                           onClick={() => retry.mutate(r.id)}
                         >
-                          Retry
+                          {t("common.retry", "Retry")}
                         </Button>
                       )}
                       {/* `cancelMessage()` only transitions queued/failed rows,
@@ -376,7 +388,7 @@ function CommunicationCentre() {
                           disabled={busyId === r.id}
                           onClick={() => cancel.mutate(r.id)}
                         >
-                          Cancel
+                          {t("common.cancel", "Cancel")}
                         </Button>
                       )}
                     </TableCell>
@@ -389,8 +401,8 @@ function CommunicationCentre() {
                       className="py-10 text-center text-sm text-muted-foreground"
                     >
                       {filtersActive
-                        ? "No messages match the filters."
-                        : "No messages have been sent yet."}
+                        ? t("communication.noMatches", "No messages match the filters.")
+                        : t("communication.noMessages", "No messages have been sent yet.")}
                     </TableCell>
                   </TableRow>
                 )}

@@ -146,21 +146,37 @@ export async function hasTodaysBroadcast(entityType: string): Promise<boolean> {
 }
 
 const deliveredIds = new Set<string>();
+const listeners = new Set<(notification: CentreNotification) => void>();
+let activeChannel: RealtimeChannel | null = null;
 
-export function subscribeToNotifications(
-  onInsert: (notification: CentreNotification) => void,
-): () => void {
-  const deliverOnce = (n: CentreNotification) => {
-    if (!n.id || deliveredIds.has(n.id)) return;
-    deliveredIds.add(n.id);
-    if (deliveredIds.size > 200) {
-      const first = deliveredIds.values().next().value;
-      if (first) deliveredIds.delete(first);
+function deliverOnce(n: CentreNotification) {
+  if (!n.id || deliveredIds.has(n.id)) return;
+  deliveredIds.add(n.id);
+  if (deliveredIds.size > 200) {
+    const first = deliveredIds.values().next().value;
+    if (first) deliveredIds.delete(first);
+  }
+  for (const listener of Array.from(listeners)) {
+    try {
+      listener(n);
+    } catch (e) {
+      console.error("[notifications] listener error", e);
     }
-    onInsert(n);
-  };
+  }
+}
 
-  const channel: RealtimeChannel = supabase
+function ensureChannel() {
+  if (activeChannel) return;
+  try {
+    const existing = supabase.getChannels().find((c) => c.topic === "realtime:notifications_feed");
+    if (existing) {
+      void supabase.removeChannel(existing);
+    }
+  } catch {
+    // ignore
+  }
+
+  activeChannel = supabase
     .channel("notifications_feed")
     .on(
       "postgres_changes",
@@ -177,8 +193,20 @@ export function subscribeToNotifications(
       }
     })
     .subscribe();
+}
+
+export function subscribeToNotifications(
+  onInsert: (notification: CentreNotification) => void,
+): () => void {
+  listeners.add(onInsert);
+  ensureChannel();
 
   return () => {
-    void supabase.removeChannel(channel);
+    listeners.delete(onInsert);
+    if (listeners.size === 0 && activeChannel) {
+      const ch = activeChannel;
+      activeChannel = null;
+      void supabase.removeChannel(ch);
+    }
   };
 }

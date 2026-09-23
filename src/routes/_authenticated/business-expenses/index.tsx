@@ -42,6 +42,7 @@ import {
 import type { BusinessExpenseInput } from "@/lib/business-expenses/schema";
 import { useRoles } from "@/hooks/use-roles";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
+import { useTranslation } from "react-i18next";
 
 /**
  * Business Expenses (Task #45) — Rishi: "There should be Business Expense
@@ -74,6 +75,7 @@ const EMPTY_EDIT: BusinessExpenseInput = {
 };
 
 function BusinessExpensesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
 
@@ -140,8 +142,11 @@ function BusinessExpensesPage() {
     <AccountingGuard moduleName="Business Expenses">
       <div>
         <PageHeader
-          title="Business Expenses"
-          subtitle="Day-to-day office spend — stationery, tea, maid, donations, and the like."
+          title={t("businessExpenses.title", "Business Expenses")}
+          subtitle={t(
+            "businessExpenses.subtitle",
+            "Day-to-day office spend — stationery, tea, maid, donations, and the like.",
+          )}
         />
 
         {roles.canWrite && (
@@ -161,25 +166,29 @@ function BusinessExpensesPage() {
                 });
               }}
             >
-              <Field label="Date" required>
+              <Field label={t("common.date", "Date")} required>
                 <Input
                   type="date"
                   value={quickDate}
                   onChange={(e) => setQuickDate(e.target.value)}
                 />
               </Field>
-              <Field label="Description" required>
+              <Field label={t("common.description", "Description")} required>
                 <Input
                   value={quickDesc}
                   onChange={(e) => setQuickDesc(e.target.value)}
-                  placeholder="e.g. Stationery, Tea, Maid, Donation…"
+                  placeholder={t(
+                    "businessExpenses.descPlaceholder",
+                    "e.g. Stationery, Tea, Maid, Donation…",
+                  )}
                 />
               </Field>
-              <Field label="Amount" required>
+              <Field label={t("common.amount", "Amount")} required>
                 <CurrencyInput value={quickAmount} onChange={setQuickAmount} />
               </Field>
               <Button type="submit" disabled={createMut.isPending}>
-                <Plus className="mr-2 h-4 w-4" /> Add
+                <Plus className="mr-2 h-4 w-4" />
+                {t("common.add", "Add")}
               </Button>
             </form>
           </Card>
@@ -191,8 +200,11 @@ function BusinessExpensesPage() {
           <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
         ) : rows.length === 0 ? (
           <EmptyState
-            title="No expenses recorded yet"
-            message="Use the form above to log your first business expense."
+            title={t("businessExpenses.emptyTitle", "No expenses recorded yet")}
+            message={t(
+              "businessExpenses.emptyMessage",
+              "Use the form above to log your first business expense.",
+            )}
           />
         ) : (
           <>
@@ -200,10 +212,10 @@ function BusinessExpensesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>{t("common.date", "Date")}</TableHead>
+                    <TableHead>{t("common.description", "Description")}</TableHead>
+                    <TableHead>{t("common.amount", "Amount")}</TableHead>
+                    <TableHead>{t("common.notes", "Notes")}</TableHead>
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
@@ -225,7 +237,7 @@ function BusinessExpensesPage() {
               </Table>
             </div>
             <div className="mt-2 flex justify-end text-sm font-semibold">
-              Total: {formatInr(total)}
+              {t("common.total", "Total")}: {formatInr(total)}
             </div>
           </>
         )}
@@ -233,7 +245,7 @@ function BusinessExpensesPage() {
         <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit expense</DialogTitle>
+              <DialogTitle>{t("businessExpenses.editExpense", "Edit expense")}</DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {

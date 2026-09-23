@@ -5,6 +5,7 @@ import {
   redirect,
   useRouter,
 } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBlock } from "@/components/layout/States";
@@ -115,11 +116,15 @@ function AuthenticatedLayout() {
 
 function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const { t } = useTranslation();
   console.error("[RouteErrorFallback] Caught unhandled route render failure:", error);
   return (
     <div className="p-4 space-y-3">
       <ErrorBlock
-        message="This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page."
+        message={t(
+          "errors.routeFailure",
+          "This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page.",
+        )}
         onRetry={() => {
           router.invalidate();
           reset();
@@ -127,7 +132,7 @@ function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void 
       />
       {error?.message && (
         <div className="mx-auto max-w-2xl rounded-md border border-destructive/25 bg-destructive/5 p-3 text-xs text-destructive">
-          <p className="font-semibold mb-1">Error diagnostics:</p>
+          <p className="font-semibold mb-1">{t("errors.diagnostics", "Error diagnostics:")}</p>
           <pre className="whitespace-pre-wrap break-words font-mono">{error.message}</pre>
         </div>
       )}

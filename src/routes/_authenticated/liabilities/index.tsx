@@ -55,6 +55,7 @@ import {
 } from "@/lib/finance/annualGoal";
 import { useRoles } from "@/hooks/use-roles";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
+import { useTranslation } from "react-i18next";
 
 /**
  * Liabilities (Task #44) — Rishi: "The business liabilities are also
@@ -90,6 +91,7 @@ function ordinal(n: number): string {
 }
 
 function LiabilitiesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
 
@@ -191,12 +193,16 @@ function LiabilitiesPage() {
     <AccountingGuard moduleName="Liabilities & Debt Obligations">
       <div>
         <PageHeader
-          title="Liabilities"
-          subtitle="Business debts and recurring obligations, and the annual net-margin goal used to size the Growth Advisory."
+          title={t("liabilities.title", "Liabilities")}
+          subtitle={t(
+            "liabilities.subtitle",
+            "Business debts and recurring obligations, and the annual net-margin goal used to size the Growth Advisory.",
+          )}
           actions={
             roles.canWrite ? (
               <Button size="sm" onClick={openCreate}>
-                <Plus className="mr-2 h-4 w-4" /> Add liability
+                <Plus className="mr-2 h-4 w-4" />
+                {t("liabilities.addLiability", "Add liability")}
               </Button>
             ) : undefined
           }
@@ -208,9 +214,13 @@ function LiabilitiesPage() {
               <Target className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm text-muted-foreground">Annual net-margin goal</div>
+              <div className="text-sm text-muted-foreground">
+                {t("liabilities.annualGoal", "Annual net-margin goal")}
+              </div>
               {goalQuery.isLoading ? (
-                <div className="text-lg font-semibold text-muted-foreground">Loading…</div>
+                <div className="text-lg font-semibold text-muted-foreground">
+                  {t("common.loading", "Loading…")}
+                </div>
               ) : (
                 <div className="font-display text-xl font-semibold text-foreground">
                   {formatInr(goalAmount)}
@@ -221,7 +231,7 @@ function LiabilitiesPage() {
           {roles.isAdmin ? (
             goalDraft === null ? (
               <Button variant="outline" size="sm" onClick={() => setGoalDraft(String(goalAmount))}>
-                Edit goal
+                {t("liabilities.editGoal", "Edit goal")}
               </Button>
             ) : (
               <div className="flex items-center gap-2">
@@ -231,10 +241,10 @@ function LiabilitiesPage() {
                   disabled={goalMut.isPending}
                   onClick={() => goalMut.mutate(Number(goalDraft || 0))}
                 >
-                  Save
+                  {t("common.save", "Save")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setGoalDraft(null)}>
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </Button>
               </div>
             )
@@ -249,12 +259,16 @@ function LiabilitiesPage() {
           <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
         ) : rows.length === 0 ? (
           <EmptyState
-            title="No liabilities yet"
-            message="Add a business debt or recurring obligation to track it here."
+            title={t("liabilities.emptyTitle", "No liabilities yet")}
+            message={t(
+              "liabilities.emptyMessage",
+              "Add a business debt or recurring obligation to track it here.",
+            )}
             action={
               roles.canWrite ? (
                 <Button onClick={openCreate}>
-                  <Plus className="mr-2 h-4 w-4" /> Add liability
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("liabilities.addLiability", "Add liability")}
                 </Button>
               ) : undefined
             }
@@ -275,11 +289,11 @@ function LiabilitiesPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Recurring</TableHead>
-                          <TableHead>Active</TableHead>
-                          <TableHead>Notes</TableHead>
+                          <TableHead>{t("common.name", "Name")}</TableHead>
+                          <TableHead>{t("common.amount", "Amount")}</TableHead>
+                          <TableHead>{t("liabilities.columns.recurring", "Recurring")}</TableHead>
+                          <TableHead>{t("liabilities.columns.active", "Active")}</TableHead>
+                          <TableHead>{t("common.notes", "Notes")}</TableHead>
                           <TableHead className="w-12" />
                         </TableRow>
                       </TableHeader>
@@ -289,9 +303,11 @@ function LiabilitiesPage() {
                             <TableCell className="font-medium">{r.name}</TableCell>
                             <TableCell>{formatInr(r.amount)}</TableCell>
                             <TableCell className="text-sm">
-                              {r.is_recurring ? "Yes" : "No"}
+                              {r.is_recurring ? t("common.yes", "Yes") : t("common.no", "No")}
                             </TableCell>
-                            <TableCell className="text-sm">{r.is_active ? "Yes" : "No"}</TableCell>
+                            <TableCell className="text-sm">
+                              {r.is_active ? t("common.yes", "Yes") : t("common.no", "No")}
+                            </TableCell>
                             <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                               {r.notes ?? "—"}
                             </TableCell>
@@ -310,7 +326,7 @@ function LiabilitiesPage() {
               );
             })}
             <div className="flex justify-end text-sm font-semibold">
-              Total active liabilities: {formatInr(totalActive)}
+              {t("liabilities.totalActive", "Total active liabilities")}: {formatInr(totalActive)}
             </div>
           </div>
         )}
@@ -326,7 +342,11 @@ function LiabilitiesPage() {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit liability" : "Add liability"}</DialogTitle>
+              <DialogTitle>
+                {editing
+                  ? t("liabilities.editLiability", "Edit liability")
+                  : t("liabilities.addLiability", "Add liability")}
+              </DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {

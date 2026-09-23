@@ -69,7 +69,7 @@ export async function dispatchStosEvent(payload: BroadcastPayload): Promise<void
 
   // 2. Realtime broadcast over Supabase channel
   try {
-    const channel = supabase.channel("notifications_feed");
+    const channel = supabase.channel("notifications_banner_feed");
     channel.send({
       type: "broadcast",
       event: "stos_banner",

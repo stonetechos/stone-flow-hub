@@ -45,6 +45,7 @@ import {
 } from "@/lib/installation-ledger/api";
 import { listInstallationAgencies } from "@/lib/installation-agencies/api";
 import { useRoles } from "@/hooks/use-roles";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/agency-payments")({
   ssr: false,
@@ -56,6 +57,7 @@ function today() {
 }
 
 function AgencyPaymentsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const [q, setQ] = useState("");
@@ -147,12 +149,16 @@ function AgencyPaymentsPage() {
   return (
     <div>
       <PageHeader
-        title="Agency's Payments"
-        subtitle="Payment settlements, advances, and adjustments recorded for installation agencies."
+        title={t("agencyPayments.title", "Agency's Payments")}
+        subtitle={t(
+          "agencyPayments.subtitle",
+          "Payment settlements, advances, and adjustments recorded for installation agencies.",
+        )}
         actions={
           roles.canWrite ? (
             <Button size="sm" onClick={() => setOpenCreate(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Record agency payment
+              <Plus className="mr-2 h-4 w-4" />
+              {t("agencyPayments.recordPayment", "Record agency payment")}
             </Button>
           ) : undefined
         }
@@ -162,10 +168,13 @@ function AgencyPaymentsPage() {
         count={paymentRows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search agency, ref #, description…"
+        searchPlaceholder={t(
+          "agencyPayments.searchPlaceholder",
+          "Search agency, ref #, description…",
+        )}
         extra={
           <span className="hidden text-xs text-muted-foreground md:inline">
-            Total Paid: {formatInr(totalPaid)}
+            {t("agencyPayments.totalPaid", "Total Paid")}: {formatInr(totalPaid)}
           </span>
         }
       />
@@ -179,12 +188,16 @@ function AgencyPaymentsPage() {
         />
       ) : paymentRows.length === 0 ? (
         <EmptyState
-          title="No agency payments found"
-          message="Record a payment to an installation agency to track settlements."
+          title={t("agencyPayments.emptyTitle", "No agency payments found")}
+          message={t(
+            "agencyPayments.emptyMessage",
+            "Record a payment to an installation agency to track settlements.",
+          )}
           action={
             roles.canWrite ? (
               <Button size="sm" onClick={() => setOpenCreate(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Record agency payment
+                <Plus className="mr-2 h-4 w-4" />
+                {t("agencyPayments.recordPayment", "Record agency payment")}
               </Button>
             ) : undefined
           }
@@ -194,12 +207,14 @@ function AgencyPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Agency</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Reference #</TableHead>
-                <TableHead className="text-right">Amount Paid</TableHead>
-                <TableHead>Ledger</TableHead>
+                <TableHead>{t("agencyPayments.columns.date", "Date")}</TableHead>
+                <TableHead>{t("agencyPayments.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("agencyPayments.columns.description", "Description")}</TableHead>
+                <TableHead>{t("agencyPayments.columns.refNo", "Reference #")}</TableHead>
+                <TableHead className="text-right">
+                  {t("agencyPayments.columns.amountPaid", "Amount Paid")}
+                </TableHead>
+                <TableHead>{t("agencyPayments.columns.ledger", "Ledger")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,7 +228,9 @@ function AgencyPaymentsPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <HandCoins className="h-4 w-4 text-muted-foreground" />
-                        <span>{agency?.name ?? "Unknown agency"}</span>
+                        <span>
+                          {agency?.name ?? t("agencyPayments.unknownAgency", "Unknown agency")}
+                        </span>
                         {agency?.code && (
                           <span className="font-mono text-xs text-muted-foreground">
                             ({agency.code})
@@ -234,7 +251,7 @@ function AgencyPaymentsPage() {
                         params={{ agencyId: r.installation_agency_id }}
                         className="text-xs text-primary hover:underline"
                       >
-                        View ledger
+                        {t("agencyPayments.viewLedger", "View ledger")}
                       </Link>
                     </TableCell>
                   </TableRow>
@@ -255,7 +272,7 @@ function AgencyPaymentsPage() {
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Record agency payment</DialogTitle>
+            <DialogTitle>{t("agencyPayments.dialogTitle", "Record agency payment")}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -272,13 +289,13 @@ function AgencyPaymentsPage() {
             }}
           >
             <DialogBody className="space-y-4">
-              <Field label="Installation agency" required>
+              <Field label={t("agencyPayments.fieldAgency", "Installation agency")} required>
                 <Select
                   value={form.installation_agency_id}
                   onValueChange={(v) => setForm({ ...form, installation_agency_id: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select agency…" />
+                    <SelectValue placeholder={t("agencyPayments.selectAgency", "Select agency…")} />
                   </SelectTrigger>
                   <SelectContent>
                     {agencies.map((a) => (
@@ -291,7 +308,7 @@ function AgencyPaymentsPage() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Payment date" required>
+                <Field label={t("agencyPayments.fieldPaymentDate", "Payment date")} required>
                   <Input
                     type="date"
                     value={form.entry_date}
@@ -299,7 +316,7 @@ function AgencyPaymentsPage() {
                     required
                   />
                 </Field>
-                <Field label="Amount (₹)" required>
+                <Field label={t("agencyPayments.fieldAmount", "Amount (₹)")} required>
                   <Input
                     type="number"
                     min="0.01"
@@ -312,7 +329,7 @@ function AgencyPaymentsPage() {
                 </Field>
               </div>
 
-              <Field label="Description" required>
+              <Field label={t("agencyPayments.fieldDescription", "Description")} required>
                 <Input
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -321,7 +338,7 @@ function AgencyPaymentsPage() {
                 />
               </Field>
 
-              <Field label="Reference # / UTR">
+              <Field label={t("agencyPayments.fieldRefNo", "Reference # / UTR")}>
                 <Input
                   value={form.ref_no}
                   onChange={(e) => setForm({ ...form, ref_no: e.target.value })}
@@ -329,7 +346,7 @@ function AgencyPaymentsPage() {
                 />
               </Field>
 
-              <Field label="Notes">
+              <Field label={t("agencyPayments.fieldNotes", "Notes")}>
                 <Textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -339,10 +356,10 @@ function AgencyPaymentsPage() {
             </DialogBody>
             <DialogFooter className="mt-4">
               <Button type="button" variant="outline" onClick={() => setOpenCreate(false)}>
-                Cancel
+                {t("common.cancel", "Cancel")}
               </Button>
               <Button type="submit" disabled={recordMut.isPending}>
-                Record payment
+                {t("agencyPayments.recordPayment", "Record payment")}
               </Button>
             </DialogFooter>
           </form>

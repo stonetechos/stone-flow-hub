@@ -43,6 +43,7 @@ import {
 import { toUserMessage } from "@/lib/errors";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles } from "@/hooks/use-roles";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/")({
   head: () => ({ meta: [{ title: "Employees — Workforce Intelligence" }] }),
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/_authenticated/workforce-intelligence/emp
 });
 
 function EmployeesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const isSuperAdmin = roles.isSuperAdmin;
@@ -110,13 +112,17 @@ function EmployeesPage() {
   return (
     <>
       <PageHeader
-        title="Employees"
-        subtitle="Workforce master — add, edit, mark employment status, and manage team members."
-        eyebrow="Workforce Intelligence"
+        title={t("workforce.employees.title", "Employees")}
+        subtitle={t(
+          "workforce.employees.subtitle",
+          "Workforce master — add, edit, mark employment status, and manage team members.",
+        )}
+        eyebrow={t("workforce.eyebrow", "Workforce Intelligence")}
         actions={
           <Button asChild size="sm">
             <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-              <Plus className="mr-1 h-4 w-4" /> New employee
+              <Plus className="mr-1 h-4 w-4" />
+              {t("workforce.employees.newEmployee", "New employee")}
             </Link>
           </Button>
         }
@@ -127,18 +133,18 @@ function EmployeesPage() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name / code / phone…"
+            placeholder={t("workforce.employees.searchPlaceholder", "Search name / code / phone…")}
             className="max-w-xs"
           />
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-muted-foreground" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-9 w-[140px] text-xs">
-                <SelectValue placeholder="All statuses" />
+                <SelectValue placeholder={t("workforce.employees.allStatuses", "All statuses")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="text-xs">
-                  All Statuses
+                  {t("workforce.employees.allStatuses", "All statuses")}
                 </SelectItem>
                 {EMPLOYMENT_STATUSES.map((st) => (
                   <SelectItem key={st} value={st} className="text-xs">
@@ -157,20 +163,27 @@ function EmployeesPage() {
         <ErrorBlock message={toUserMessage(employees.error)} />
       ) : (employees.data ?? []).length === 0 ? (
         <EmptyState
-          title="No employees yet"
-          message="Add your team to unlock Today, KRA tracking, and workload planning."
+          title={t("workforce.employees.emptyTitle", "No employees yet")}
+          message={t(
+            "workforce.employees.emptyMessage",
+            "Add your team to unlock Today, KRA tracking, and workload planning.",
+          )}
           action={
             <Button asChild size="sm">
               <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-                <Plus className="mr-1.5 h-4 w-4" /> Add employee
+                <Plus className="mr-1.5 h-4 w-4" />
+                {t("workforce.employees.addEmployee", "Add employee")}
               </Link>
             </Button>
           }
         />
       ) : filteredRows.length === 0 ? (
         <EmptyState
-          title="No matching employees"
-          message="Try adjusting your search query or status filter."
+          title={t("workforce.employees.noMatchTitle", "No matching employees")}
+          message={t(
+            "workforce.employees.noMatchMessage",
+            "Try adjusting your search query or status filter.",
+          )}
           action={
             <Button
               variant="outline"
@@ -180,7 +193,7 @@ function EmployeesPage() {
                 setStatusFilter("all");
               }}
             >
-              Clear filters
+              {t("common.clearFilters", "Clear filters")}
             </Button>
           }
         />
@@ -189,14 +202,18 @@ function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Registered Email</TableHead>
-                <TableHead>Designation</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Employment Status</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead className="w-28 text-right">Actions</TableHead>
+                <TableHead>{t("workforce.employees.columns.code", "Code")}</TableHead>
+                <TableHead>{t("workforce.employees.columns.name", "Name")}</TableHead>
+                <TableHead>
+                  {t("workforce.employees.columns.registeredEmail", "Registered Email")}
+                </TableHead>
+                <TableHead>{t("workforce.employees.columns.designation", "Designation")}</TableHead>
+                <TableHead>{t("workforce.employees.columns.department", "Department")}</TableHead>
+                <TableHead>
+                  {t("workforce.employees.columns.employmentStatus", "Employment Status")}
+                </TableHead>
+                <TableHead>{t("workforce.employees.columns.phone", "Phone")}</TableHead>
+                <TableHead className="w-28 text-right">{t("common.actions", "Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -327,9 +344,9 @@ function EmployeesPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title="Remove Employee"
+        title={t("workforce.employees.removeTitle", "Remove Employee")}
         description={`Are you sure you want to remove ${toDelete?.full_name}? This action cannot be undone.`}
-        confirmLabel="Remove"
+        confirmLabel={t("common.remove", "Remove")}
         tone="danger"
         onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
         busy={deleteMut.isPending}

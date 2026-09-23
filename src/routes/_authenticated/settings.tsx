@@ -120,45 +120,48 @@ function SettingsPage() {
 
   return (
     <div>
-      <PageHeader title="Settings" subtitle="Manage your profile, workspace, and preferences." />
+      <PageHeader
+        title={t("settings.title", "Settings")}
+        subtitle={t("settings.subtitle", "Manage your profile, workspace, and preferences.")}
+      />
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList>
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
-            Profile
+            {t("settings.tabs.profile", "Profile")}
           </TabsTrigger>
           <TabsTrigger value="preferences">
             <Compass className="mr-2 h-4 w-4" />
-            Preferences
+            {t("settings.tabs.preferences", "Preferences")}
           </TabsTrigger>
 
           <TabsTrigger value="company">
             <Building2 className="mr-2 h-4 w-4" />
-            Company
+            {t("settings.tabs.company", "Company")}
           </TabsTrigger>
           <TabsTrigger value="appearance">
             <Palette className="mr-2 h-4 w-4" />
-            Appearance
+            {t("settings.tabs.appearance", "Appearance")}
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="mr-2 h-4 w-4" />
-            Notifications
+            {t("settings.tabs.notifications", "Notifications")}
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="mr-2 h-4 w-4" />
-            Security
+            {t("settings.tabs.security", "Security")}
           </TabsTrigger>
           <TabsTrigger value="about">
             <Info className="mr-2 h-4 w-4" />
-            About
+            {t("settings.tabs.about", "About")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Profile</CardTitle>
+              <CardTitle className="text-sm">{t("settings.tabs.profile", "Profile")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="flex items-center gap-4">
@@ -169,7 +172,9 @@ function SettingsPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">{fullName || "Unnamed user"}</p>
+                  <p className="text-sm font-medium">
+                    {fullName || t("settings.unnamedUser", "Unnamed user")}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {jobTitle || department
                       ? [jobTitle, department].filter(Boolean).join(" · ")
@@ -181,12 +186,13 @@ function SettingsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>
-                    Display name <span className="text-destructive">*</span>
+                    {t("settings.displayName", "Display name")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Harsh Pupneja"
+                    placeholder={t("settings.placeholders.fullName", "e.g. Harsh Pupneja")}
                   />
                   <p className="text-xs text-muted-foreground">
                     {t(
@@ -196,7 +202,7 @@ function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Initials</Label>
+                  <Label>{t("settings.initials", "Initials")}</Label>
                   <Input
                     value={initials}
                     maxLength={4}
@@ -215,23 +221,23 @@ function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Job title</Label>
+                  <Label>{t("settings.jobTitle", "Job title")}</Label>
                   <Input
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder="e.g. Sales Manager"
+                    placeholder={t("settings.placeholders.jobTitle", "e.g. Sales Manager")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Department</Label>
+                  <Label>{t("settings.department", "Department")}</Label>
                   <Input
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="e.g. Sales"
+                    placeholder={t("settings.placeholders.department", "e.g. Sales")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Phone number</Label>
+                  <Label>{t("settings.phoneNumber", "Phone number")}</Label>
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -239,11 +245,11 @@ function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Email</Label>
+                  <Label>{t("settings.email", "Email")}</Label>
                   <Input value={email} readOnly disabled />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label>User ID</Label>
+                  <Label>{t("settings.userId", "User ID")}</Label>
                   <Input value={userId} readOnly disabled className="font-mono text-xs" />
                 </div>
               </div>

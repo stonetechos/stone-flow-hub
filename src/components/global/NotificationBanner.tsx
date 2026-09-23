@@ -40,7 +40,7 @@ export function NotificationBanner() {
 
     // 2. Listen to Supabase Realtime broadcast (for other team members' devices)
     const channel = supabase
-      .channel("notifications_feed")
+      .channel("notifications_banner_feed")
       .on("broadcast", { event: "stos_banner" }, (evt: { payload: ActiveBanner }) => {
         if (!evt?.payload) return;
         if (evt.payload.targetRole === "admin" && !isAdmin && !isSuperAdmin) {

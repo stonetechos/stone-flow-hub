@@ -59,6 +59,7 @@ import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 import { format } from "date-fns";
 import type { EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/$id")({
   head: () => ({ meta: [{ title: "Employee — Workforce Intelligence" }] }),
@@ -111,6 +112,7 @@ function safeParseArray<T>(val: unknown): T[] {
 }
 
 function EmployeeProfile() {
+  const { t } = useTranslation();
   const { id } = Route.useParams();
   const roles = useRoles();
   const isOwner = roles.isAdmin || roles.isSalesManager;
@@ -233,7 +235,7 @@ function EmployeeProfile() {
       <PageHeader
         title={e.full_name}
         subtitle={`${e.employee_code || "No code"} • ${designationSubtitle}`}
-        eyebrow="Workforce Intelligence"
+        eyebrow={t("workforce.eyebrow", "Workforce Intelligence")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -266,7 +268,8 @@ function EmployeeProfile() {
 
             <Button asChild size="sm" variant="outline">
               <Link to="/workforce-intelligence/employees/new" search={{ id }}>
-                <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                {t("common.edit", "Edit")}
               </Link>
             </Button>
 
@@ -277,7 +280,8 @@ function EmployeeProfile() {
                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => setShowDelete(true)}
               >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                {t("common.remove", "Remove")}
               </Button>
             )}
           </div>
@@ -286,30 +290,40 @@ function EmployeeProfile() {
 
       <Tabs defaultValue="overview">
         <TabsList className="flex flex-wrap">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="kras">KRAs</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          {isOwner && <TabsTrigger value="notes">Owner Notes</TabsTrigger>}
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="overview">
+            {t("workforce.employee.tabs.overview", "Overview")}
+          </TabsTrigger>
+          <TabsTrigger value="kras">{t("workforce.employee.tabs.kras", "KRAs")}</TabsTrigger>
+          <TabsTrigger value="tasks">{t("workforce.employee.tabs.tasks", "Tasks")}</TabsTrigger>
+          <TabsTrigger value="performance">
+            {t("workforce.employee.tabs.performance", "Performance")}
+          </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger value="notes">
+              {t("workforce.employee.tabs.ownerNotes", "Owner Notes")}
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="documents">
+            {t("workforce.employee.tabs.documents", "Documents")}
+          </TabsTrigger>
           <TabsTrigger value="attendance" disabled>
-            Attendance
+            {t("workforce.employee.tabs.attendance", "Attendance")}
           </TabsTrigger>
           <TabsTrigger value="leave" disabled>
-            Leave
+            {t("workforce.employee.tabs.leave", "Leave")}
           </TabsTrigger>
           <TabsTrigger value="payroll" disabled>
-            Payroll
+            {t("workforce.employee.tabs.payroll", "Payroll")}
           </TabsTrigger>
           <TabsTrigger value="training" disabled>
-            Training
+            {t("workforce.employee.tabs.training", "Training")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <InfoRow
-              label="Designation(s)"
+              label={t("workforce.employee.labels.designations", "Designation(s)")}
               value={
                 empDesignations.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
@@ -325,7 +339,9 @@ function EmployeeProfile() {
                       >
                         {d.name}
                         {index === 0 && empDesignations.length > 1 && (
-                          <span className="ml-1 text-[10px] opacity-80">(Primary)</span>
+                          <span className="ml-1 text-[10px] opacity-80">
+                            ({t("common.primary", "Primary")})
+                          </span>
                         )}
                       </Badge>
                     ))}
@@ -335,12 +351,21 @@ function EmployeeProfile() {
                 )
               }
             />
-            <InfoRow label="Employment type" value={e.employment_type} />
-            <InfoRow label="Status" value={<Badge>{e.employment_status}</Badge>} />
-            <InfoRow label="Joining date" value={e.joining_date ?? "—"} />
-            <InfoRow label="Phone" value={e.phone ?? "—"} />
             <InfoRow
-              label="Registered Email"
+              label={t("workforce.employee.labels.employmentType", "Employment type")}
+              value={e.employment_type}
+            />
+            <InfoRow
+              label={t("workforce.employee.labels.status", "Status")}
+              value={<Badge>{e.employment_status}</Badge>}
+            />
+            <InfoRow
+              label={t("workforce.employee.labels.joiningDate", "Joining date")}
+              value={e.joining_date ?? "—"}
+            />
+            <InfoRow label={t("workforce.employee.labels.phone", "Phone")} value={e.phone ?? "—"} />
+            <InfoRow
+              label={t("workforce.employee.labels.registeredEmail", "Registered Email")}
               value={
                 e.email ? (
                   <a
@@ -355,11 +380,20 @@ function EmployeeProfile() {
                 )
               }
             />
-            <InfoRow label="Department" value={e.department ?? "—"} />
-            <InfoRow label="Address" value={e.address ?? "—"} />
-            <InfoRow label="Emergency contact" value={e.emergency_contact ?? "—"} />
             <InfoRow
-              label="Skills"
+              label={t("workforce.employee.labels.department", "Department")}
+              value={e.department ?? "—"}
+            />
+            <InfoRow
+              label={t("workforce.employee.labels.address", "Address")}
+              value={e.address ?? "—"}
+            />
+            <InfoRow
+              label={t("workforce.employee.labels.emergencyContact", "Emergency contact")}
+              value={e.emergency_contact ?? "—"}
+            />
+            <InfoRow
+              label={t("workforce.employee.labels.skills", "Skills")}
               value={
                 skillsList.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
@@ -380,10 +414,13 @@ function EmployeeProfile() {
             />
             {isOwner && (
               <>
-                <InfoRow label="Aadhaar" value={e.aadhaar ?? "—"} />
-                <InfoRow label="PAN" value={e.pan ?? "—"} />
                 <InfoRow
-                  label="Salary CTC"
+                  label={t("workforce.employee.labels.aadhaar", "Aadhaar")}
+                  value={e.aadhaar ?? "—"}
+                />
+                <InfoRow label={t("workforce.employee.labels.pan", "PAN")} value={e.pan ?? "—"} />
+                <InfoRow
+                  label={t("workforce.employee.labels.salaryCtc", "Salary CTC")}
                   value={e.salary_ctc != null ? `₹${e.salary_ctc}` : "—"}
                 />
               </>
@@ -398,11 +435,19 @@ function EmployeeProfile() {
                   <Fingerprint className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold">Phone Fingerprint Authentication</h4>
+                  <h4 className="text-sm font-semibold">
+                    {t("workforce.employee.bioTitle", "Phone Fingerprint Authentication")}
+                  </h4>
                   <p className="text-xs text-muted-foreground">
                     {hasFingerprint
-                      ? "Device fingerprint is linked. This employee can log in using biometric verification."
-                      : "No fingerprint linked on this device yet. Tap to link this phone's biometric."}
+                      ? t(
+                          "workforce.employee.bioLinkedDesc",
+                          "Device fingerprint is linked. This employee can log in using biometric verification.",
+                        )
+                      : t(
+                          "workforce.employee.bioUnlinkedDesc",
+                          "No fingerprint linked on this device yet. Tap to link this phone's biometric.",
+                        )}
                   </p>
                 </div>
               </div>
@@ -414,7 +459,9 @@ function EmployeeProfile() {
                 disabled={linkingBio || !e.email}
               >
                 <Fingerprint className="h-3.5 w-3.5" />
-                {hasFingerprint ? "Re-link Fingerprint" : "Link Device Fingerprint"}
+                {hasFingerprint
+                  ? t("workforce.employee.relinkBio", "Re-link Fingerprint")
+                  : t("workforce.employee.linkBio", "Link Device Fingerprint")}
               </Button>
             </div>
           </div>

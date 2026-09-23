@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { BookOpen, Users, Factory, HandCoins, ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable, EmptyState } from "@/components/layout/States";
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/ledger/")({
 });
 
 function UnifiedLedgersPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const [activeTab, setActiveTab] = useState<"sales" | "purchase" | "agency">(
     search.tab === "sales" || search.tab === "purchase" || search.tab === "agency"
@@ -55,8 +57,11 @@ function UnifiedLedgersPage() {
     <AccountingGuard moduleName="Financial Ledgers">
       <div className="space-y-6">
         <PageHeader
-          title="Ledgers"
-          subtitle="Unified financial ledger statements and running balances across Customers, Vendors, and Agencies."
+          title={t("ledgers.title", "Ledgers")}
+          subtitle={t(
+            "ledgers.subtitle",
+            "Unified financial ledger statements and running balances across Customers, Vendors, and Agencies.",
+          )}
         />
 
         <Tabs
@@ -67,15 +72,15 @@ function UnifiedLedgersPage() {
           <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
             <TabsTrigger value="sales" className="gap-2">
               <Users className="h-4 w-4" />
-              <span>Sales Ledger (Customers)</span>
+              <span>{t("ledgers.tabs.sales", "Sales Ledger (Customers)")}</span>
             </TabsTrigger>
             <TabsTrigger value="purchase" className="gap-2">
               <Factory className="h-4 w-4" />
-              <span>Purchase Ledger (Vendors)</span>
+              <span>{t("ledgers.tabs.purchase", "Purchase Ledger (Vendors)")}</span>
             </TabsTrigger>
             <TabsTrigger value="agency" className="gap-2">
               <HandCoins className="h-4 w-4" />
-              <span>Agency Ledger (Agencies)</span>
+              <span>{t("ledgers.tabs.agency", "Agency Ledger (Agencies)")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -100,6 +105,7 @@ function UnifiedLedgersPage() {
 // Sales Ledger View (Customers)
 // ----------------------------------------------------------------------
 function SalesLedgerView() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -138,19 +144,25 @@ function SalesLedgerView() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Invoiced</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.sales.totalInvoiced", "Total Invoiced")}
+            </div>
             <div className="text-xl font-bold">{formatInr(totalInvoiced)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Collected</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.sales.totalCollected", "Total Collected")}
+            </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalReceived)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Net Receivables Due</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.sales.netReceivablesDue", "Net Receivables Due")}
+            </div>
             <div className="text-xl font-bold text-amber-600">{formatInr(totalOutstanding)}</div>
           </CardContent>
         </Card>
@@ -163,7 +175,7 @@ function SalesLedgerView() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder="Search customer, phone, code…"
+        searchPlaceholder={t("ledgers.sales.searchPlaceholder", "Search customer, phone, code…")}
       />
 
       {isLoading ? (
@@ -179,20 +191,29 @@ function SalesLedgerView() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<BookOpen className="h-6 w-6" />}
-          title="No customer transactions yet"
-          message="Customer balances and ledger transactions will appear here once orders or receipts are recorded."
+          title={t("ledgers.sales.emptyTitle", "No customer transactions yet")}
+          message={t(
+            "ledgers.sales.emptyMessage",
+            "Customer balances and ledger transactions will appear here once orders or receipts are recorded.",
+          )}
         />
       ) : (
         <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead className="text-right">Invoiced</TableHead>
-                <TableHead className="text-right">Collected</TableHead>
-                <TableHead className="text-right">Balance Due</TableHead>
-                <TableHead className="w-24 text-right">Action</TableHead>
+                <TableHead>{t("ledgers.sales.columns.customer", "Customer")}</TableHead>
+                <TableHead>{t("ledgers.sales.columns.contact", "Contact")}</TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.sales.columns.invoiced", "Invoiced")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.sales.columns.collected", "Collected")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.sales.columns.balanceDue", "Balance Due")}
+                </TableHead>
+                <TableHead className="w-24 text-right">{t("common.actions", "Action")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -221,7 +242,7 @@ function SalesLedgerView() {
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" className="h-8 gap-1 px-2 text-xs" asChild>
                         <Link to="/ledger/$customerId" params={{ customerId: c.id }}>
-                          <span>Statement</span>
+                          <span>{t("ledgers.statement", "Statement")}</span>
                           <ArrowUpRight className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
@@ -248,6 +269,7 @@ function SalesLedgerView() {
 // Purchase Ledger View (Vendors)
 // ----------------------------------------------------------------------
 function PurchaseLedgerView() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -286,19 +308,25 @@ function PurchaseLedgerView() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Vendor Bills</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.purchase.totalBilled", "Total Vendor Bills")}
+            </div>
             <div className="text-xl font-bold">{formatInr(totalBilled)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Paid to Vendors</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.purchase.totalPaid", "Total Paid to Vendors")}
+            </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalPaid)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Net Payables Due</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.purchase.netPayablesDue", "Net Payables Due")}
+            </div>
             <div className="text-xl font-bold text-amber-600">{formatInr(totalOutstanding)}</div>
           </CardContent>
         </Card>
@@ -311,7 +339,7 @@ function PurchaseLedgerView() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder="Search vendor, code, GST…"
+        searchPlaceholder={t("ledgers.purchase.searchPlaceholder", "Search vendor, code, GST…")}
       />
 
       {isLoading ? (
@@ -327,20 +355,29 @@ function PurchaseLedgerView() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Factory className="h-6 w-6" />}
-          title="No vendor transactions yet"
-          message="Vendor ledger balances will appear here as purchase orders and payments are recorded."
+          title={t("ledgers.purchase.emptyTitle", "No vendor transactions yet")}
+          message={t(
+            "ledgers.purchase.emptyMessage",
+            "Vendor ledger balances will appear here as purchase orders and payments are recorded.",
+          )}
         />
       ) : (
         <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vendor</TableHead>
-                <TableHead>GST / Code</TableHead>
-                <TableHead className="text-right">Billed</TableHead>
-                <TableHead className="text-right">Paid</TableHead>
-                <TableHead className="text-right">Balance Due</TableHead>
-                <TableHead className="w-24 text-right">Action</TableHead>
+                <TableHead>{t("ledgers.purchase.columns.vendor", "Vendor")}</TableHead>
+                <TableHead>{t("ledgers.purchase.columns.gstCode", "GST / Code")}</TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.purchase.columns.billed", "Billed")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.purchase.columns.paid", "Paid")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.purchase.columns.balanceDue", "Balance Due")}
+                </TableHead>
+                <TableHead className="w-24 text-right">{t("common.actions", "Action")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -367,7 +404,7 @@ function PurchaseLedgerView() {
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" className="h-8 gap-1 px-2 text-xs" asChild>
                         <Link to="/vendors/$vendorId/ledger" params={{ vendorId: v.id }}>
-                          <span>Statement</span>
+                          <span>{t("ledgers.statement", "Statement")}</span>
                           <ArrowUpRight className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
@@ -394,6 +431,7 @@ function PurchaseLedgerView() {
 // Agency Ledger View (Agencies)
 // ----------------------------------------------------------------------
 function AgencyLedgerView() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -427,19 +465,25 @@ function AgencyLedgerView() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Work Charged</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.agency.totalCharged", "Total Work Charged")}
+            </div>
             <div className="text-xl font-bold">{formatInr(totalCharged)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Total Paid to Agencies</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.agency.totalPaid", "Total Paid to Agencies")}
+            </div>
             <div className="text-xl font-bold text-emerald-600">{formatInr(totalPaid)}</div>
           </CardContent>
         </Card>
         <Card className="shadow-xs">
           <CardContent className="p-4">
-            <div className="text-xs font-medium text-muted-foreground">Agency Balance Due</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              {t("ledgers.agency.agencyBalanceDue", "Agency Balance Due")}
+            </div>
             <div className="text-xl font-bold text-amber-600">{formatInr(totalBalance)}</div>
           </CardContent>
         </Card>
@@ -452,7 +496,7 @@ function AgencyLedgerView() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder="Search agency, code…"
+        searchPlaceholder={t("ledgers.agency.searchPlaceholder", "Search agency, code…")}
       />
 
       {query.isLoading ? (
@@ -462,20 +506,29 @@ function AgencyLedgerView() {
       ) : filteredRows.length === 0 ? (
         <EmptyState
           icon={<HandCoins className="h-6 w-6" />}
-          title="No agency ledger entries"
-          message="Installation and carting agency balances will appear here as jobs are completed and payments recorded."
+          title={t("ledgers.agency.emptyTitle", "No agency ledger entries")}
+          message={t(
+            "ledgers.agency.emptyMessage",
+            "Installation and carting agency balances will appear here as jobs are completed and payments recorded.",
+          )}
         />
       ) : (
         <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Agency</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead className="text-right">Charged</TableHead>
-                <TableHead className="text-right">Paid</TableHead>
-                <TableHead className="text-right">Balance Due</TableHead>
-                <TableHead className="w-24 text-right">Action</TableHead>
+                <TableHead>{t("ledgers.agency.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("ledgers.agency.columns.code", "Code")}</TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.agency.columns.charged", "Charged")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.agency.columns.paid", "Paid")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("ledgers.agency.columns.balanceDue", "Balance Due")}
+                </TableHead>
+                <TableHead className="w-24 text-right">{t("common.actions", "Action")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -500,7 +553,7 @@ function AgencyLedgerView() {
                         to="/installation-ledger/$agencyId"
                         params={{ agencyId: r.installation_agency_id }}
                       >
-                        <span>Statement</span>
+                        <span>{t("ledgers.statement", "Statement")}</span>
                         <ArrowUpRight className="h-3.5 w-3.5" />
                       </Link>
                     </Button>

@@ -14,6 +14,7 @@ import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
+import { useTranslation } from "react-i18next";
 
 /**
  * Installation Agency Ledger — index (Task #48). Manual entries only
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/installation-ledger/")({
 });
 
 function InstallationLedgerIndex() {
+  const { t } = useTranslation();
   const query = useQuery({
     queryKey: qk.installationLedger.summaries(),
     queryFn: listInstallationLedgerSummaries,
@@ -38,8 +40,11 @@ function InstallationLedgerIndex() {
   return (
     <div>
       <PageHeader
-        title="Installation Agency Ledger"
-        subtitle="Manual charge/payment entries for installation agencies — recorded by hand, same as vendor payments."
+        title={t("installationLedger.title", "Installation Agency Ledger")}
+        subtitle={t(
+          "installationLedger.subtitle",
+          "Manual charge/payment entries for installation agencies — recorded by hand, same as vendor payments.",
+        )}
       />
 
       {query.isLoading ? (
@@ -48,18 +53,23 @@ function InstallationLedgerIndex() {
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
-          title="No installation agencies yet"
-          message="Add an installation agency under Masters, then record entries against it here."
+          title={t("installationLedger.emptyTitle", "No installation agencies yet")}
+          message={t(
+            "installationLedger.emptyMessage",
+            "Add an installation agency under Masters, then record entries against it here.",
+          )}
         />
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Agency</TableHead>
-                <TableHead>Total charged</TableHead>
-                <TableHead>Total paid</TableHead>
-                <TableHead>Balance due</TableHead>
+                <TableHead>{t("installationLedger.columns.agency", "Agency")}</TableHead>
+                <TableHead>
+                  {t("installationLedger.columns.totalCharged", "Total charged")}
+                </TableHead>
+                <TableHead>{t("installationLedger.columns.totalPaid", "Total paid")}</TableHead>
+                <TableHead>{t("installationLedger.columns.balanceDue", "Balance due")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

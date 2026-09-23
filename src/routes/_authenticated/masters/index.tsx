@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/card";
 import { MASTER_CONFIGS } from "@/lib/masters/config";
 import { Layers, Truck, HardHat } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Carting Agencies (Task #40) and Installation Agencies (Task #47) are
 // bespoke pages, not driven by MASTER_CONFIGS — see the note in
@@ -29,11 +30,16 @@ export const Route = createFileRoute("/_authenticated/masters/")({
 });
 
 function MastersIndex() {
+  const { t } = useTranslation();
+
   return (
     <div>
       <PageHeader
-        title="Masters"
-        subtitle="Stone-industry reference data used everywhere in the ERP."
+        title={t("masters.title", "Masters")}
+        subtitle={t(
+          "masters.subtitle",
+          "Stone-industry reference data used everywhere in the ERP.",
+        )}
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {MASTER_CONFIGS.map((m) => (
@@ -44,9 +50,11 @@ function MastersIndex() {
               </div>
               <div className="min-w-0">
                 <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary">
-                  {m.title}
+                  {t(`masters.catalog.${m.route}.title`, m.title)}
                 </h3>
-                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{m.description}</p>
+                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+                  {t(`masters.catalog.${m.route}.desc`, m.description)}
+                </p>
               </div>
             </Card>
           </Link>
@@ -59,9 +67,11 @@ function MastersIndex() {
               </div>
               <div className="min-w-0">
                 <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary">
-                  {m.title}
+                  {t(`masters.catalog.${m.route}.title`, m.title)}
                 </h3>
-                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{m.description}</p>
+                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+                  {t(`masters.catalog.${m.route}.desc`, m.description)}
+                </p>
               </div>
             </Card>
           </Link>

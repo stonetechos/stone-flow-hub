@@ -20,6 +20,7 @@ import {
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/dashboards/")({
   ssr: false,
@@ -271,27 +272,35 @@ const SECTIONED = new Set(SECTIONS.flatMap((s) => s.tos));
 const UNSECTIONED = ROLES.filter((r) => !SECTIONED.has(r.to));
 
 function DashboardTile({ role }: { role: RoleTile }) {
+  const { t } = useTranslation();
   const Icon = role.icon;
+  const slug = role.to.replace(/^\/dashboards\//, "").replace(/-/g, "_");
+
   return (
     <Link to={role.to} className="block">
       <Card className="h-full transition-shadow hover:shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Icon className="h-4 w-4 text-primary" /> {role.title}
+            <Icon className="h-4 w-4 text-primary" />
+            {t(`dashboards.roles.${slug}.title`, role.title)}
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-xs text-muted-foreground">{role.desc}</CardContent>
+        <CardContent className="text-xs text-muted-foreground">
+          {t(`dashboards.roles.${slug}.desc`, role.desc)}
+        </CardContent>
       </Card>
     </Link>
   );
 }
 
 function DashboardsIndex() {
+  const { t } = useTranslation();
+
   return (
     <div>
       <PageHeader
-        title="Role Dashboards"
-        subtitle="Focused KPI views per role — pick a workspace."
+        title={t("dashboards.index.title", "Role Dashboards")}
+        subtitle={t("dashboards.index.subtitle", "Focused KPI views per role — pick a workspace.")}
       />
       <div className="space-y-8">
         {SECTIONS.map((section) => {
@@ -299,9 +308,14 @@ function DashboardsIndex() {
             .map((to) => ROLE_BY_TO.get(to))
             .filter((r): r is RoleTile => Boolean(r));
           if (tiles.length === 0) return null;
+          const sectionKey = section.label.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
           return (
             <section key={section.label}>
-              <SectionHeader title={section.label} description={section.desc} />
+              <SectionHeader
+                title={t(`dashboards.sections.${sectionKey}.title`, section.label)}
+                description={t(`dashboards.sections.${sectionKey}.desc`, section.desc)}
+              />
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {tiles.map((r) => (
                   <DashboardTile key={r.to} role={r} />
@@ -313,7 +327,7 @@ function DashboardsIndex() {
 
         {UNSECTIONED.length > 0 && (
           <section>
-            <SectionHeader title="More dashboards" />
+            <SectionHeader title={t("dashboards.index.moreDashboards", "More dashboards")} />
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {UNSECTIONED.map((r) => (
                 <DashboardTile key={r.to} role={r} />

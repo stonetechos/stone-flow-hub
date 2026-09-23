@@ -63,6 +63,7 @@ import { invalidatePayment, invalidateVendorPayment } from "@/lib/query-invalida
 import { useRoles } from "@/hooks/use-roles";
 import { formatInr, formatDate } from "@/lib/format";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
   ssr: false,
@@ -74,6 +75,7 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 });
 
 function UnifiedPaymentsPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const [activeTab, setActiveTab] = useState<"customer" | "vendor" | "agency">(
     (search.tab as "customer" | "vendor" | "agency") || "customer",
@@ -89,18 +91,23 @@ function UnifiedPaymentsPage() {
     <AccountingGuard moduleName="Payments & Disbursements">
       <div className="space-y-6">
         <PageHeader
-          title="Payments & Disbursements"
-          subtitle="Customer receipts, vendor bill payments, and installation agency disbursements under Money Flow."
+          title={t("payments.unified.title", "Payments & Disbursements")}
+          subtitle={t(
+            "payments.unified.subtitle",
+            "Customer receipts, vendor bill payments, and installation agency disbursements under Money Flow.",
+          )}
           actions={
             <div className="flex items-center gap-2">
               <Button asChild size="sm">
                 <Link to="/receipts/new">
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {t("payments.recordCustomer", "Record Customer Payment")}
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline">
                 <Link to="/vendor-payments/new">
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Vendor Payment
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {t("payments.recordVendor", "Record Vendor Payment")}
                 </Link>
               </Button>
             </div>
@@ -115,15 +122,15 @@ function UnifiedPaymentsPage() {
           <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
             <TabsTrigger value="customer" className="gap-2">
               <Wallet className="h-4 w-4" />
-              <span>Customer Payments</span>
+              <span>{t("payments.tabs.customer", "Customer Payments")}</span>
             </TabsTrigger>
             <TabsTrigger value="vendor" className="gap-2">
               <Banknote className="h-4 w-4" />
-              <span>Vendor Payments</span>
+              <span>{t("payments.tabs.vendor", "Vendor Payments")}</span>
             </TabsTrigger>
             <TabsTrigger value="agency" className="gap-2">
               <HandCoins className="h-4 w-4" />
-              <span>Agency Payments</span>
+              <span>{t("payments.tabs.agency", "Agency Payments")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -148,6 +155,7 @@ function UnifiedPaymentsPage() {
 // 1. Customer Payments Tab
 // ======================================================================
 function CustomerPaymentsTab() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -160,14 +168,14 @@ function CustomerPaymentsTab() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
-      { key: "invoice", label: "Invoice" },
-      { key: "method", label: "Method" },
-      { key: "reference", label: "Reference" },
-      { key: "date", label: "Date" },
-      { key: "amount", label: "Amount" },
+      { key: "no", label: t("common.no", "No."), required: true },
+      { key: "invoice", label: t("payments.columns.invoice", "Invoice") },
+      { key: "method", label: t("payments.columns.method", "Method") },
+      { key: "reference", label: t("payments.columns.reference", "Reference") },
+      { key: "date", label: t("payments.columns.date", "Date") },
+      { key: "amount", label: t("payments.columns.amount", "Amount") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -178,7 +186,7 @@ function CustomerPaymentsTab() {
   const del = useMutation({
     mutationFn: (id: string) => deletePayment(id),
     onSuccess: () => {
-      toast.success("Payment deleted");
+      toast.success(t("payments.customer.deletedToast", "Payment deleted"));
       invalidatePayment(qc);
       setToDelete(null);
     },
@@ -196,13 +204,17 @@ function CustomerPaymentsTab() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search customer payment or reference…"
+        searchPlaceholder={t(
+          "payments.customer.searchPlaceholder",
+          "Search customer payment or reference…",
+        )}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/receipts/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> Record Customer Payment
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              {t("payments.recordCustomer", "Record Customer Payment")}
             </Button>
           ) : null
         }
@@ -215,12 +227,16 @@ function CustomerPaymentsTab() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Wallet className="h-6 w-6" />}
-          title="No customer payments yet"
-          message="Record a payment or advance received from a customer."
+          title={t("payments.customer.emptyTitle", "No customer payments yet")}
+          message={t(
+            "payments.customer.emptyMessage",
+            "Record a payment or advance received from a customer.",
+          )}
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/receipts/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> Record Customer Payment
+                <Plus className="mr-2 h-4 w-4" />
+                {t("payments.recordCustomer", "Record Customer Payment")}
               </Button>
             ) : undefined
           }
@@ -244,12 +260,22 @@ function CustomerPaymentsTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
-                {!isHidden("invoice") && <TableHead>Invoice</TableHead>}
-                {!isHidden("method") && <TableHead>Method</TableHead>}
-                {!isHidden("reference") && <TableHead>Reference</TableHead>}
-                {!isHidden("date") && <TableHead>Date</TableHead>}
-                {!isHidden("amount") && <TableHead className="text-right">Amount</TableHead>}
+                {!isHidden("no") && <TableHead>{t("common.no", "No.")}</TableHead>}
+                {!isHidden("invoice") && (
+                  <TableHead>{t("payments.columns.invoice", "Invoice")}</TableHead>
+                )}
+                {!isHidden("method") && (
+                  <TableHead>{t("payments.columns.method", "Method")}</TableHead>
+                )}
+                {!isHidden("reference") && (
+                  <TableHead>{t("payments.columns.reference", "Reference")}</TableHead>
+                )}
+                {!isHidden("date") && <TableHead>{t("payments.columns.date", "Date")}</TableHead>}
+                {!isHidden("amount") && (
+                  <TableHead className="text-right">
+                    {t("payments.columns.amount", "Amount")}
+                  </TableHead>
+                )}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -314,7 +340,7 @@ function CustomerPaymentsTab() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete payment?"
+        title={t("payments.customer.deleteTitle", "Delete payment?")}
         description={toDelete ? `${toDelete.doc_no} will be removed.` : ""}
         busy={del.isPending}
         tone="danger"
@@ -328,6 +354,7 @@ function CustomerPaymentsTab() {
 // 2. Vendor Payments Tab
 // ======================================================================
 function VendorPaymentsTab() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -340,14 +367,14 @@ function VendorPaymentsTab() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Payment #", required: true },
-      { key: "vendor", label: "Vendor" },
-      { key: "po", label: "PO" },
-      { key: "type", label: "Type" },
-      { key: "amount", label: "Amount" },
-      { key: "paid", label: "Paid on" },
+      { key: "no", label: t("payments.vendor.columns.paymentNo", "Payment #"), required: true },
+      { key: "vendor", label: t("payments.vendor.columns.vendor", "Vendor") },
+      { key: "po", label: t("payments.vendor.columns.po", "PO") },
+      { key: "type", label: t("payments.vendor.columns.type", "Type") },
+      { key: "amount", label: t("payments.vendor.columns.amount", "Amount") },
+      { key: "paid", label: t("payments.vendor.columns.paidOn", "Paid on") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -359,7 +386,7 @@ function VendorPaymentsTab() {
   const del = useMutation({
     mutationFn: (id: string) => deleteVendorPayment(id),
     onSuccess: (_void, id) => {
-      toast.success("Payment removed");
+      toast.success(t("payments.vendor.removedToast", "Payment removed"));
       invalidateVendorPayment(qc, toDelete?.vendor_id, id);
       setToDelete(null);
     },
@@ -375,13 +402,17 @@ function VendorPaymentsTab() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search payment no or reference…"
+        searchPlaceholder={t(
+          "payments.vendor.searchPlaceholder",
+          "Search payment no or reference…",
+        )}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/vendor-payments/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> Record payment
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              {t("payments.vendor.recordPayment", "Record payment")}
             </Button>
           ) : null
         }
@@ -394,12 +425,16 @@ function VendorPaymentsTab() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Banknote className="h-6 w-6" />}
-          title="No vendor payments yet"
-          message="Record an advance, part or full payment to a vendor."
+          title={t("payments.vendor.emptyTitle", "No vendor payments yet")}
+          message={t(
+            "payments.vendor.emptyMessage",
+            "Record an advance, part or full payment to a vendor.",
+          )}
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/vendor-payments/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> Record payment
+                <Plus className="mr-2 h-4 w-4" />
+                {t("payments.vendor.recordPayment", "Record payment")}
               </Button>
             ) : undefined
           }
@@ -423,12 +458,24 @@ function VendorPaymentsTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>Payment #</TableHead>}
-                {!isHidden("vendor") && <TableHead>Vendor</TableHead>}
-                {!isHidden("po") && <TableHead>PO</TableHead>}
-                {!isHidden("type") && <TableHead>Type</TableHead>}
-                {!isHidden("amount") && <TableHead className="text-right">Amount</TableHead>}
-                {!isHidden("paid") && <TableHead>Paid on</TableHead>}
+                {!isHidden("no") && (
+                  <TableHead>{t("payments.vendor.columns.paymentNo", "Payment #")}</TableHead>
+                )}
+                {!isHidden("vendor") && (
+                  <TableHead>{t("payments.vendor.columns.vendor", "Vendor")}</TableHead>
+                )}
+                {!isHidden("po") && <TableHead>{t("payments.vendor.columns.po", "PO")}</TableHead>}
+                {!isHidden("type") && (
+                  <TableHead>{t("payments.vendor.columns.type", "Type")}</TableHead>
+                )}
+                {!isHidden("amount") && (
+                  <TableHead className="text-right">
+                    {t("payments.vendor.columns.amount", "Amount")}
+                  </TableHead>
+                )}
+                {!isHidden("paid") && (
+                  <TableHead>{t("payments.vendor.columns.paidOn", "Paid on")}</TableHead>
+                )}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -506,7 +553,7 @@ function VendorPaymentsTab() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete vendor payment?"
+        title={t("payments.vendor.deleteTitle", "Delete vendor payment?")}
         description={
           toDelete
             ? `Payment ${toDelete.payment_no} (${formatInr(toDelete.amount)}) will be removed.`
@@ -524,6 +571,7 @@ function VendorPaymentsTab() {
 // 3. Agency Payments Tab
 // ======================================================================
 function AgencyPaymentsTab() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
@@ -588,7 +636,7 @@ function AgencyPaymentsTab() {
         notes: form.notes || null,
       }),
     onSuccess: () => {
-      toast.success("Agency payment recorded");
+      toast.success(t("payments.agency.recordedToast", "Agency payment recorded"));
       qc.invalidateQueries({ queryKey: qk.installationLedger.all() });
       qc.invalidateQueries({ queryKey: qk.installationLedger.summaries() });
       setOpenCreate(false);
@@ -613,10 +661,14 @@ function AgencyPaymentsTab() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder="Search agency, ref no, description…"
+        searchPlaceholder={t(
+          "payments.agency.searchPlaceholder",
+          "Search agency, ref no, description…",
+        )}
         action={
           <Button size="sm" className="h-8" onClick={() => setOpenCreate(true)}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> Record payment
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            {t("payments.agency.recordPayment", "Record payment")}
           </Button>
         }
       />
@@ -631,11 +683,15 @@ function AgencyPaymentsTab() {
       ) : paymentRows.length === 0 ? (
         <EmptyState
           icon={<HandCoins className="h-6 w-6" />}
-          title="No agency payments recorded"
-          message="Record payments made to installation and carting agencies."
+          title={t("payments.agency.emptyTitle", "No agency payments recorded")}
+          message={t(
+            "payments.agency.emptyMessage",
+            "Record payments made to installation and carting agencies.",
+          )}
           action={
             <Button onClick={() => setOpenCreate(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Record payment
+              <Plus className="mr-2 h-4 w-4" />
+              {t("payments.agency.recordPayment", "Record payment")}
             </Button>
           }
         />
@@ -644,12 +700,16 @@ function AgencyPaymentsTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Agency</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Ref / UTR</TableHead>
-                <TableHead className="text-right">Amount Paid</TableHead>
-                <TableHead className="w-20 text-right">Statement</TableHead>
+                <TableHead>{t("payments.agency.columns.date", "Date")}</TableHead>
+                <TableHead>{t("payments.agency.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("payments.agency.columns.description", "Description")}</TableHead>
+                <TableHead>{t("payments.agency.columns.refNo", "Ref / UTR")}</TableHead>
+                <TableHead className="text-right">
+                  {t("payments.agency.columns.amountPaid", "Amount Paid")}
+                </TableHead>
+                <TableHead className="w-20 text-right">
+                  {t("payments.agency.columns.statement", "Statement")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -679,7 +739,7 @@ function AgencyPaymentsTab() {
                           to="/installation-ledger/$agencyId"
                           params={{ agencyId: p.installation_agency_id }}
                         >
-                          View
+                          {t("common.view", "View")}
                         </Link>
                       </Button>
                     </TableCell>
@@ -701,7 +761,7 @@ function AgencyPaymentsTab() {
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Record agency payment</DialogTitle>
+            <DialogTitle>{t("payments.agency.dialogTitle", "Record agency payment")}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -718,13 +778,15 @@ function AgencyPaymentsTab() {
             }}
           >
             <DialogBody className="space-y-4">
-              <Field label="Installation agency" required>
+              <Field label={t("payments.agency.fieldAgency", "Installation agency")} required>
                 <Select
                   value={form.installation_agency_id}
                   onValueChange={(v) => setForm({ ...form, installation_agency_id: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select agency…" />
+                    <SelectValue
+                      placeholder={t("payments.agency.selectAgency", "Select agency…")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {agencies.map((a: InstallationAgencyRow) => (
@@ -737,7 +799,7 @@ function AgencyPaymentsTab() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Payment date" required>
+                <Field label={t("payments.agency.fieldPaymentDate", "Payment date")} required>
                   <Input
                     type="date"
                     value={form.entry_date}
@@ -745,7 +807,7 @@ function AgencyPaymentsTab() {
                     required
                   />
                 </Field>
-                <Field label="Amount (₹)" required>
+                <Field label={t("payments.agency.fieldAmount", "Amount (₹)")} required>
                   <Input
                     type="number"
                     min="0.01"
@@ -758,7 +820,7 @@ function AgencyPaymentsTab() {
                 </Field>
               </div>
 
-              <Field label="Description" required>
+              <Field label={t("payments.agency.fieldDescription", "Description")} required>
                 <Input
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -767,7 +829,7 @@ function AgencyPaymentsTab() {
                 />
               </Field>
 
-              <Field label="Payment reference (UTR / Cheque)">
+              <Field label={t("payments.agency.fieldRefNo", "Payment reference (UTR / Cheque)")}>
                 <Input
                   value={form.ref_no}
                   onChange={(e) => setForm({ ...form, ref_no: e.target.value })}
@@ -775,21 +837,23 @@ function AgencyPaymentsTab() {
                 />
               </Field>
 
-              <Field label="Internal notes">
+              <Field label={t("payments.agency.fieldNotes", "Internal notes")}>
                 <Textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   rows={2}
-                  placeholder="Optional remarks…"
+                  placeholder={t("common.optionalRemarks", "Optional remarks…")}
                 />
               </Field>
             </DialogBody>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpenCreate(false)}>
-                Cancel
+                {t("common.cancel", "Cancel")}
               </Button>
               <Button type="submit" disabled={recordMut.isPending}>
-                {recordMut.isPending ? "Recording…" : "Save payment"}
+                {recordMut.isPending
+                  ? t("payments.agency.recording", "Recording…")
+                  : t("payments.agency.savePayment", "Save payment")}
               </Button>
             </DialogFooter>
           </form>

@@ -16,6 +16,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Wallet } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/_authenticated/purchase-ledger/")({
 });
 
 function PurchaseLedgerIndexPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -77,8 +79,11 @@ function PurchaseLedgerIndexPage() {
   return (
     <div>
       <PageHeader
-        title="Purchase Ledger"
-        subtitle="Running balance per vendor — purchase orders, material received, payments and debit/credit notes."
+        title={t("purchaseLedger.title", "Purchase Ledger")}
+        subtitle={t(
+          "purchaseLedger.subtitle",
+          "Running balance per vendor — purchase orders, material received, payments and debit/credit notes.",
+        )}
       />
 
       <DataToolbar
@@ -88,10 +93,11 @@ function PurchaseLedgerIndexPage() {
           setQ(v);
           setPage(1);
         }}
-        searchPlaceholder="Search vendor, code, GST…"
+        searchPlaceholder={t("purchaseLedger.searchPlaceholder", "Search vendor, code, GST…")}
         extra={
           <span className="hidden text-xs text-muted-foreground md:inline">
-            Total outstanding {formatInr(totalOutstanding)}
+            {t("purchaseLedger.totalOutstanding", "Total outstanding")}{" "}
+            {formatInr(totalOutstanding)}
           </span>
         }
       />
@@ -109,8 +115,11 @@ function PurchaseLedgerIndexPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Wallet className="h-6 w-6" />}
-          title="No ledger activity yet"
-          message="Purchase orders, material received (GRN), vendor payments and debit/credit notes will populate vendor ledgers as they're posted."
+          title={t("purchaseLedger.empty.title", "No ledger activity yet")}
+          message={t(
+            "purchaseLedger.empty.message",
+            "Purchase orders, material received (GRN), vendor payments and debit/credit notes will populate vendor ledgers as they're posted.",
+          )}
         />
       ) : (
         <DataTableShell
@@ -130,11 +139,17 @@ function PurchaseLedgerIndexPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Last activity</TableHead>
-                <TableHead className="text-right">Total Debit</TableHead>
-                <TableHead className="text-right">Total Credit</TableHead>
-                <TableHead className="text-right">Outstanding</TableHead>
+                <TableHead>{t("purchaseLedger.columns.vendor", "Vendor")}</TableHead>
+                <TableHead>{t("purchaseLedger.columns.lastActivity", "Last activity")}</TableHead>
+                <TableHead className="text-right">
+                  {t("purchaseLedger.columns.totalDebit", "Total Debit")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("purchaseLedger.columns.totalCredit", "Total Credit")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("purchaseLedger.columns.outstanding", "Outstanding")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
