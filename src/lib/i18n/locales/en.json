@@ -49,7 +49,11 @@
       "documents": "Documents",
       "reports": "Reports",
       "settings": "Settings",
-      "admin-users": "Users & Roles"
+      "admin-users": "Users & Roles",
+      "attendance": "Attendance",
+      "payroll": "Payroll",
+      "hr": "Human Resources",
+      "workforce-intelligence": "Workforce Intelligence"
     },
     "pinned": "Pinned",
     "preferences": {
@@ -178,7 +182,22 @@
     "directCustomer": "Direct Customer",
     "saveChanges": "Save changes",
     "replace": "Replace",
-    "upload": "Upload"
+    "upload": "Upload",
+    "configure": "Configure",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
   },
   "theme": {
     "quarry": "Quarry",
@@ -445,7 +464,7 @@
     "employees": "Employees",
     "gross": "Gross",
     "deductions": "Deductions",
-    "netPayout": "Net Payout",
+    "netPayout": "Net payout",
     "code": "Code",
     "channel": "Channel",
     "category": "Category",
@@ -477,7 +496,9 @@
     "geofence": "Geofence",
     "task": "Task",
     "priority": "Priority",
-    "assignedTo": "Assigned To"
+    "assignedTo": "Assigned To",
+    "action": "Action",
+    "source": "Source"
   },
   "field": {
     "Customer": "Customer",
@@ -911,7 +932,13 @@
     "liabilities": "Liabilities",
     "installation-agencies": "Installation Agencies",
     "installation-ledger": "Installation Ledger",
-    "agency-payments": "Agency Payments"
+    "agency-payments": "Agency Payments",
+    "attendance": "Attendance",
+    "payroll": "Payroll",
+    "hr": "Human Resources",
+    "products": "Products",
+    "message-templates": "Message Templates",
+    "notifications": "Notifications"
   },
   "Sales Invoices": "Sales Invoices",
   "Collect payments — Razorpay links or manual entries.": "Collect payments — Razorpay links or manual entries.",
@@ -1344,7 +1371,7 @@
     }
   },
   "workforce": {
-    "eyebrow": "Workforce Operations",
+    "eyebrow": "Operations",
     "employees": {
       "title": "Employees",
       "subtitle": "Workforce master — add, edit, mark employment status, and manage team members.",
@@ -1402,7 +1429,7 @@
       "linkBio": "Link Device Fingerprint"
     },
     "title": "Workforce Intelligence",
-    "subtitle": "Real-time task tracking, daily work board, performance metrics, and actionable workforce insights.",
+    "subtitle": "Today's operations, performance scorecards, and workload intelligence.",
     "newEmployee": "New employee",
     "allEmployees": "All employees",
     "todaysWork": "Today's Work",
@@ -1413,7 +1440,25 @@
     "goodEvening": "Good evening, {{name}} 👋",
     "tasksCounter": "You have {{pending}} pending tasks and {{completed}} completed today.",
     "noTasksTitle": "No tasks scheduled for today",
-    "noTasksDesc": "Tasks assigned to team members will appear here."
+    "noTasksDesc": "Tasks assigned to team members will appear here.",
+    "addEmployee": "Add employee",
+    "viewEmployees": "View employees",
+    "noEmployeeLinked": "No employee record linked",
+    "noEmployeeLinkedDesc": "Ask an owner or HR manager to create your employee profile, or add an employee record to get started.",
+    "hello": "Hello, {{name}}",
+    "pendingCompleted": "{{pending}} pending • {{done}} completed",
+    "doneAction": "Done",
+    "tabs": {
+      "today": "Today's Work",
+      "performance": "Performance Board",
+      "owner": "Owner Intelligence"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "deferred": "Deferred"
+    }
   },
   "liabilities": {
     "title": "Liabilities",
@@ -1748,7 +1793,8 @@
     "subtitle": "Stay updated on orders, dispatches, tasks, and system events.",
     "allCaughtUp": "You're all caught up.",
     "markAllRead": "Mark all read",
-    "badgeNew": "New"
+    "badgeNew": "New",
+    "caughtUp": "You're all caught up."
   },
   "messageTemplates": {
     "title": "Message Templates",
@@ -1758,7 +1804,10 @@
     "newTemplate": "New template",
     "emptyTitle": "No message templates",
     "emptySearch": "Try adjusting your search filters.",
-    "emptyCreate": "Create your first template to start automating communications."
+    "emptyCreate": "Create your first template to start automating communications.",
+    "noTemplates": "No templates",
+    "emptyCanManage": "Create your first template to reuse across the ERP.",
+    "emptyCannotManage": "Ask an admin to add templates."
   },
   "vendorPayments": {
     "title": "Vendor Payments",
@@ -1774,34 +1823,57 @@
     "subtitle": "Track employee attendance, shift schedules, geo-fenced check-ins, and daily work hours.",
     "eyebrow": "Workforce Operations",
     "myAttendance": "My attendance today",
-    "worked": "Worked",
+    "worked": "Worked:",
     "onBreak": "On break",
     "nextShift": "Next shift",
     "clockIn": "Clock In",
     "takeBreak": "Take Break",
     "resumeWork": "Resume Work",
-    "clockOut": "Clock Out",
+    "clockOut": "Clock out",
     "tabs": {
       "dailyAttendance": "Daily Attendance",
       "leaveManagement": "Leave Management"
     },
     "searchPlaceholder": "Search by employee name...",
     "emptyTitle": "No attendance records found",
-    "emptyDesc": "No check-ins recorded for this date."
+    "emptyDesc": "No check-ins recorded for this date.",
+    "myAttendanceToday": "My attendance today",
+    "notLinkedMessage": "Your login isn't linked to an employee record yet, so you can't clock in. Ask HR to link your account from the Employees page.",
+    "loadingEmployeeRecord": "Loading your employee record…",
+    "break": "Break:",
+    "next": "Next:",
+    "officeLocation": "Office location",
+    "breakEnd": "Break end",
+    "employee": "Employee",
+    "allEmployees": "All employees",
+    "noPunches": "No punches in this range",
+    "noPunchesDesc": "Mobile and biometric punches will appear here as they are recorded.",
+    "sentForApproval": "Punch recorded — sent for manager approval",
+    "punchRecorded": "{{direction}} recorded",
+    "approvalUpdated": "Approval updated"
   },
   "payroll": {
     "title": "Payroll Management",
     "subtitle": "Process monthly salaries, manage salary structures, employee advances, and statutory deductions.",
     "eyebrow": "Human Resources",
     "newRun": "New payroll run",
-    "createRun": "Create Run",
+    "createRun": "Create run",
     "tabs": {
       "payrollRuns": "Payroll Runs",
       "salaryStructures": "Salary Structures",
-      "loansClaims": "Loans & Claims"
+      "loansClaims": "Loans & Claims",
+      "runs": "Payroll Runs",
+      "structures": "Salary Structures",
+      "loans": "Loans & Claims"
     },
     "emptyTitle": "No payroll runs found",
-    "emptyDesc": "Create a payroll run to start processing employee salaries."
+    "emptyDesc": "Create a payroll run to start processing employee salaries.",
+    "allBranches": "All branches",
+    "month": "Month",
+    "year": "Year",
+    "branch": "Branch",
+    "noRunsYet": "No payroll runs yet",
+    "noRunsYetDesc": "Create a run for the current month to generate payslips from salary structures and attendance."
   },
   "moneyFlow": {
     "title": "Money Flow",
@@ -1889,6 +1961,31 @@
       "disbursePayment": "Disburse Payment",
       "emptyTitle": "No installation agencies found",
       "emptyDesc": "No agency ledger activity recorded."
+    }
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Your natural-stone catalogue.",
+    "searchPlaceholder": "Search by name or code…",
+    "newProduct": "New product",
+    "noProductsYet": "No products yet",
+    "emptyMessage": "Add stones you deal with to reuse them in enquiries and RFQs.",
+    "productDeleted": "Product deleted",
+    "productCreated": "Product {{code}} created",
+    "productUpdated": "Product updated",
+    "editTitle": "Edit {{name}}",
+    "fields": {
+      "code": "Code",
+      "name": "Name",
+      "stone": "Stone",
+      "finish": "Finish",
+      "unit": "Unit",
+      "thickness": "Thickness (mm)",
+      "stoneType": "Stone type",
+      "category": "Category",
+      "originCountry": "Origin country",
+      "hsnCode": "HSN code",
+      "description": "Description"
     }
   }
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Loader2, PackageSearch, ExternalLink } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/_authenticated/products/")({
 });
 
 function ProductsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
@@ -78,14 +80,14 @@ function ProductsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "code", label: "Code", required: true },
-      { key: "name", label: "Name", required: true },
-      { key: "stone", label: "Stone" },
-      { key: "finish", label: "Finish" },
-      { key: "unit", label: "Unit" },
-      { key: "thickness", label: "Thickness (mm)" },
+      { key: "code", label: t("products.fields.code", "Code"), required: true },
+      { key: "name", label: t("products.fields.name", "Name"), required: true },
+      { key: "stone", label: t("products.fields.stone", "Stone") },
+      { key: "finish", label: t("products.fields.finish", "Finish") },
+      { key: "unit", label: t("products.fields.unit", "Unit") },
+      { key: "thickness", label: t("products.fields.thickness", "Thickness (mm)") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({ queryKey: qk.products.list(dq), queryFn: () => listProducts(dq) });
@@ -103,7 +105,7 @@ function ProductsPage() {
   const delMut = useMutation({
     mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
-      toast.success("Product deleted");
+      toast.success(t("products.productDeleted", "Product deleted"));
       invalidateProduct(qc);
       setToDelete(null);
     },
@@ -119,23 +121,26 @@ function ProductsPage() {
 
   return (
     <div>
-      <PageHeader title="Products" subtitle="Your natural-stone catalogue." />
+      <PageHeader
+        title={t("products.title", "Products")}
+        subtitle={t("products.subtitle", "Your natural-stone catalogue.")}
+      />
 
       <DataToolbar
         count={rows.length}
         search={list.query}
         onSearchChange={list.setQuery}
-        searchPlaceholder="Search by name or code…"
+        searchPlaceholder={t("products.searchPlaceholder", "Search by name or code…")}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
           <Button asChild variant="outline" size="sm" className="h-8">
-            <Link to="/products/configure">Configure</Link>
+            <Link to="/products/configure">{t("common.configure", "Configure")}</Link>
           </Button>
         }
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New product
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("products.newProduct", "New product")}
           </Button>
         }
       />
@@ -147,11 +152,14 @@ function ProductsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<PackageSearch className="h-6 w-6" />}
-          title="No products yet"
-          message="Add stones you deal with to reuse them in enquiries and RFQs."
+          title={t("products.noProductsYet", "No products yet")}
+          message={t(
+            "products.emptyMessage",
+            "Add stones you deal with to reuse them in enquiries and RFQs.",
+          )}
           action={
             <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> New product
+              <Plus className="mr-2 h-4 w-4" /> {t("products.newProduct", "New product")}
             </Button>
           }
         />
@@ -163,12 +171,16 @@ function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("name") && <TableHead>Name</TableHead>}
-                {!isHidden("stone") && <TableHead>Stone</TableHead>}
-                {!isHidden("finish") && <TableHead>Finish</TableHead>}
-                {!isHidden("unit") && <TableHead>Unit</TableHead>}
-                {!isHidden("thickness") && <TableHead>Thickness (mm)</TableHead>}
+                {!isHidden("code") && <TableHead>{t("products.fields.code", "Code")}</TableHead>}
+                {!isHidden("name") && <TableHead>{t("products.fields.name", "Name")}</TableHead>}
+                {!isHidden("stone") && <TableHead>{t("products.fields.stone", "Stone")}</TableHead>}
+                {!isHidden("finish") && (
+                  <TableHead>{t("products.fields.finish", "Finish")}</TableHead>
+                )}
+                {!isHidden("unit") && <TableHead>{t("products.fields.unit", "Unit")}</TableHead>}
+                {!isHidden("thickness") && (
+                  <TableHead>{t("products.fields.thickness", "Thickness (mm)")}</TableHead>
+                )}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -216,7 +228,7 @@ function ProductsPage() {
                       extra={
                         <DropdownMenuItem asChild>
                           <Link to="/products/$productId" params={{ productId: p.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> Open
+                            <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
                           </Link>
                         </DropdownMenuItem>
                       }
@@ -284,6 +296,7 @@ function ProductFormDialog({
   onOpenChange: (o: boolean) => void;
   editing: ProductRow | null;
 }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const cats = useQuery({ queryKey: qk.productCategories, queryFn: listProductCategories });
   const [form, setForm] = useState<ProductCreateInput>(emptyForm);
@@ -296,7 +309,13 @@ function ProductFormDialog({
     mutationFn: (input: ProductCreateInput) =>
       editing ? updateProduct(editing.id, input) : createProduct(input),
     onSuccess: (row) => {
-      toast.success(editing ? "Product updated" : `Product ${row.product_code} created`);
+      toast.success(
+        editing
+          ? t("products.productUpdated", "Product updated")
+          : t("products.productCreated", "Product {{code}} created", {
+              code: row.product_code,
+            }),
+      );
       if (!editing) seedPickerCache(qc, "product", row);
       invalidateProduct(qc, row.id);
       onOpenChange(false);
@@ -317,14 +336,18 @@ function ProductFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.name}` : "New product"}</DialogTitle>
+          <DialogTitle>
+            {editing
+              ? t("products.editTitle", "Edit {{name}}", { name: editing.name })
+              : t("products.newProduct", "New product")}
+          </DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
           <QuickForm.QuickFill>
-            <Field label="Product name" required>
+            <Field label={t("products.fields.name", "Product name")} required>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
-            <Field label="Stone type" required>
+            <Field label={t("products.fields.stoneType", "Stone type")} required>
               <Select
                 value={form.stone_type}
                 onValueChange={(v) => set("stone_type", v as ProductCreateInput["stone_type"])}
@@ -344,7 +367,7 @@ function ProductFormDialog({
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>
-            <Field label="Unit">
+            <Field label={t("products.fields.unit", "Unit")}>
               <Select
                 value={form.default_unit}
                 onValueChange={(v) => set("default_unit", v as ProductCreateInput["default_unit"])}
@@ -361,7 +384,7 @@ function ProductFormDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Finish">
+            <Field label={t("products.fields.finish", "Finish")}>
               <Select
                 value={form.finish ?? "none"}
                 onValueChange={(v) =>
@@ -381,7 +404,7 @@ function ProductFormDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Category">
+            <Field label={t("products.fields.category", "Category")}>
               <Select
                 value={form.category_id ?? "none"}
                 onValueChange={(v) => set("category_id", v === "none" ? null : v)}
@@ -399,7 +422,7 @@ function ProductFormDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Thickness (mm)">
+            <Field label={t("products.fields.thickness", "Thickness (mm)")}>
               <Input
                 type="number"
                 value={form.thickness_mm ?? ""}
@@ -411,19 +434,22 @@ function ProductFormDialog({
           </QuickForm.MoreDetails>
 
           <QuickForm.Advanced>
-            <Field label="Origin country">
+            <Field label={t("products.fields.originCountry", "Origin country")}>
               <Input
                 value={form.origin_country ?? ""}
                 onChange={(e) => set("origin_country", e.target.value)}
               />
             </Field>
-            <Field label="HSN code">
+            <Field label={t("products.fields.hsnCode", "HSN code")}>
               <Input
                 value={form.hsn_code ?? ""}
                 onChange={(e) => set("hsn_code", e.target.value)}
               />
             </Field>
-            <Field label="Description" className="md:col-span-2">
+            <Field
+              label={t("products.fields.description", "Description")}
+              className="md:col-span-2"
+            >
               <Textarea
                 rows={2}
                 value={form.description ?? ""}
@@ -434,11 +460,11 @@ function ProductFormDialog({
 
           <QuickForm.Actions>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editing ? "Save" : "Create"}
+              {editing ? t("common.save", "Save") : t("common.create", "Create")}
             </Button>
           </QuickForm.Actions>
         </QuickForm>
