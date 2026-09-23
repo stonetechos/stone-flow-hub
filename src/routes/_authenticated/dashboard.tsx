@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 /**
  * STOS — Executive Command Centre
  *
@@ -29,6 +29,7 @@ import { createFileRoute } from '@tanstack/react-router'
  * buildSuggestions); left untouched.
  */
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
@@ -90,7 +91,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardPage() {
   const { t } = useTranslation();
-const { user } = useAuthReady();
+  const { user } = useAuthReady();
   const qc = useQueryClient();
   const roles = useRoles();
   const canViewFinancial = roles.isSuperAdmin;
@@ -279,7 +280,7 @@ function ExecutiveHero({
   brief: string[];
 }) {
   const { t } = useTranslation();
-return (
+  return (
     <section className="card-3d-milky relative overflow-hidden" aria-label="Executive briefing">
       <div className="relative z-10 p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4">
@@ -390,7 +391,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
   const { t } = useTranslation();
-const salesTone: HealthCardTone = kpis.salesTodayInr > 0 ? "strong" : "steady";
+  const salesTone: HealthCardTone = kpis.salesTodayInr > 0 ? "strong" : "steady";
   const opsTone: HealthCardTone = kpis.ordersToStart > 5 ? "watch" : "steady";
   const financeTone: HealthCardTone =
     kpis.outstandingInr > 5_000_000 ? "risk" : kpis.outstandingInr > 1_000_000 ? "watch" : "strong";
@@ -481,7 +482,7 @@ function OperationalRadar({
   followups: FollowupWithEnquiry[];
 }) {
   const { t } = useTranslation();
-const critical: RadarItem[] = [];
+  const critical: RadarItem[] = [];
   if (kpis.overdueFollowups)
     critical.push({
       label: `${kpis.overdueFollowups} overdue follow-up${kpis.overdueFollowups === 1 ? "" : "s"}`,
@@ -495,7 +496,8 @@ const critical: RadarItem[] = [];
       sub: "Exceeds ₹50L threshold",
     });
   const urgentTasks = tasks.filter((t) => t.priority === "urgent").slice(0, 3);
-  for (const task of urgentTasks) critical.push({ label: task.title, to: "/tasks", sub: t("dashboard.radar.urgentTask") });
+  for (const task of urgentTasks)
+    critical.push({ label: task.title, to: "/tasks", sub: t("dashboard.radar.urgentTask") });
 
   const attention: RadarItem[] = [];
   if (kpis.pendingQuotes)
@@ -812,11 +814,24 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
     kpis.quotesAwaitingApproval > 0 ? kpis.revenuePipelineInr / kpis.quotesAwaitingApproval : 0;
   const cells = [
     { label: t("dashboard.grid.activeEnquiries"), value: kpis.activeEnquiries, to: "/enquiries" },
-    { label: t("dashboard.grid.quotesToApprove"), value: kpis.pendingQuotes, to: "/quotes", tone: "warn" as const },
+    {
+      label: t("dashboard.grid.quotesToApprove"),
+      value: kpis.pendingQuotes,
+      to: "/quotes",
+      tone: "warn" as const,
+    },
     { label: t("dashboard.grid.ordersToStart"), value: kpis.ordersToStart, to: "/sales-orders" },
-    { label: t("dashboard.grid.enquiryToQuote"), value: `${conversion}%`, to: "/dashboards/sales-funnel" },
+    {
+      label: t("dashboard.grid.enquiryToQuote"),
+      value: `${conversion}%`,
+      to: "/dashboards/sales-funnel",
+    },
     { label: t("dashboard.grid.avgQuoteValue"), value: "₹" + formatMoney(aov), to: "/quotes" },
-    { label: t("dashboard.grid.pipelineValue"), value: "₹" + formatMoney(kpis.revenuePipelineInr), to: "/quotes" },
+    {
+      label: t("dashboard.grid.pipelineValue"),
+      value: "₹" + formatMoney(kpis.revenuePipelineInr),
+      to: "/quotes",
+    },
   ];
   return (
     <SurfaceCard
@@ -882,7 +897,7 @@ function CopilotDock({
   activityLoading: boolean;
 }) {
   const { t } = useTranslation();
-const suggestions = buildSuggestions(topInsights);
+  const suggestions = buildSuggestions(topInsights);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
       {/* Contextual summary in 3D Milky White Box */}
@@ -892,10 +907,17 @@ const suggestions = buildSuggestions(topInsights);
           {t("dashboard.aiCopilot")}
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
-          {health.band === "strong" ? t("dashboard.aiCopilotDescStrong") : health.band === "steady" ? t("dashboard.aiCopilotDescSteady") : t("dashboard.aiCopilotDescWeak")}
+          {health.band === "strong"
+            ? t("dashboard.aiCopilotDescStrong")
+            : health.band === "steady"
+              ? t("dashboard.aiCopilotDescSteady")
+              : t("dashboard.aiCopilotDescWeak")}
         </div>
         <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-blue-50 pt-3">
-          <MiniStat label={t("dashboard.cashToday")} value={"₹" + formatMoney(kpis.collectionsTodayInr)} />
+          <MiniStat
+            label={t("dashboard.cashToday")}
+            value={"₹" + formatMoney(kpis.collectionsTodayInr)}
+          />
           <MiniStat label={t("dashboard.toApprove")} value={String(kpis.pendingQuotes)} />
           <MiniStat label={t("dashboard.overdue")} value={String(kpis.overdueFollowups)} />
         </div>
@@ -999,7 +1021,7 @@ function TodayTimeline({
   onToggleTask: (id: string, done: boolean) => void;
 }) {
   const { t } = useTranslation();
-const events = useMemo<TimelineEvent[]>(() => {
+  const events = useMemo<TimelineEvent[]>(() => {
     const list: TimelineEvent[] = [];
     for (const f of followups.slice(0, 8)) {
       list.push({
@@ -1118,17 +1140,41 @@ function QuickActionsDock() {
   const { t } = useTranslation();
 
   const actions: Array<{ to: string; label: string; icon: React.ReactNode }> = [
-    { to: "/customers", label: t("dashboard.actions.customer"), icon: <Users className="h-3.5 w-3.5" /> },
-    { to: "/enquiries", label: t("dashboard.actions.enquiry"), icon: <FileText className="h-3.5 w-3.5" /> },
-    { to: "/quotes/new", label: t("dashboard.actions.quote"), icon: <FileText className="h-3.5 w-3.5" /> },
-    { to: "/sales-orders/new", label: t("dashboard.actions.salesOrder"), icon: <Package className="h-3.5 w-3.5" /> },
+    {
+      to: "/customers",
+      label: t("dashboard.actions.customer"),
+      icon: <Users className="h-3.5 w-3.5" />,
+    },
+    {
+      to: "/enquiries",
+      label: t("dashboard.actions.enquiry"),
+      icon: <FileText className="h-3.5 w-3.5" />,
+    },
+    {
+      to: "/quotes/new",
+      label: t("dashboard.actions.quote"),
+      icon: <FileText className="h-3.5 w-3.5" />,
+    },
+    {
+      to: "/sales-orders/new",
+      label: t("dashboard.actions.salesOrder"),
+      icon: <Package className="h-3.5 w-3.5" />,
+    },
     {
       to: "/purchase-orders/new",
       label: t("dashboard.actions.purchaseOrder"),
       icon: <ClipboardCheck className="h-3.5 w-3.5" />,
     },
-    { to: "/receipts/new", label: t("dashboard.actions.receipt"), icon: <Wallet className="h-3.5 w-3.5" /> },
-    { to: "/dispatch/new", label: t("dashboard.actions.dispatch"), icon: <Truck className="h-3.5 w-3.5" /> },
+    {
+      to: "/receipts/new",
+      label: t("dashboard.actions.receipt"),
+      icon: <Wallet className="h-3.5 w-3.5" />,
+    },
+    {
+      to: "/dispatch/new",
+      label: t("dashboard.actions.dispatch"),
+      icon: <Truck className="h-3.5 w-3.5" />,
+    },
   ];
   return (
     <div
@@ -1277,7 +1323,7 @@ function computeHealth(k: DashboardKpis): HealthScore {
 
 type HeadlineMetric = { label: string; value: string; context: string; to: string };
 
-function pickHeadline(k: DashboardKpis, t: any): HeadlineMetric {
+function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
   // Cash first when receivables are heavy; then production; then sales.
   if (k.outstandingInr > 1_000_000)
     return {
@@ -1327,7 +1373,7 @@ function buildSuggestions(topInsights: ProcessedInsight[]): Array<{ label: strin
   return topInsights.slice(0, 5).map((i) => ({ label: i.action.label, to: i.action.href }));
 }
 
-function greetingFor(d: Date, t: any): string {
+function greetingFor(d: Date, t: TFunction): string {
   const h = d.getHours();
   if (h < 12) return t("dashboard.greeting.morning", "Good morning");
   if (h < 17) return t("dashboard.greeting.afternoon", "Good afternoon");

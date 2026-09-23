@@ -347,7 +347,9 @@ export function WebsiteLeadsDashboardCard() {
                         {lead.required_delivery_date && (
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-slate-400" />
-                            {t("crm.target", { date: new Date(lead.required_delivery_date).toLocaleDateString() })}
+                            {t("crm.target", {
+                              date: new Date(lead.required_delivery_date).toLocaleDateString(),
+                            })}
                           </span>
                         )}
 

@@ -190,9 +190,11 @@ function EmployeeFormPage() {
               v.user_id = prof.id;
             }
           } else {
-             // Profile doesn't exist, invite them!
-             const res = await inviteUser({ data: { email: v.email.trim().toLowerCase(), full_name: v.full_name } });
-             v.user_id = res.id ?? undefined;
+            // Profile doesn't exist, invite them!
+            const res = await inviteUser({
+              data: { email: v.email.trim().toLowerCase(), full_name: v.full_name },
+            });
+            v.user_id = res.id ?? undefined;
           }
         } catch (e) {
           console.error("Failed to link or invite user", e);

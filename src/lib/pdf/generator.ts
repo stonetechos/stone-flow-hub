@@ -152,10 +152,13 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const hasBankDetails =
     brand.bank_name || brand.bank_account_number || brand.bank_ifsc || brand.upi_id;
   const qrAmount = doc.balanceDue ?? 0;
-  const qrString = brand.upi_id ? `upi://pay?pa=${brand.upi_id}&pn=${encodeURIComponent(brand.company_name)}&am=${qrAmount}&cu=INR` : "";
-  const qrImg = qrString && qrAmount > 0
-    ? `<img src="https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent(qrString)}" alt="UPI QR Code" style="margin-top:8px;border-radius:4px;border:1px solid ${border}" />`
+  const qrString = brand.upi_id
+    ? `upi://pay?pa=${brand.upi_id}&pn=${encodeURIComponent(brand.company_name)}&am=${qrAmount}&cu=INR`
     : "";
+  const qrImg =
+    qrString && qrAmount > 0
+      ? `<img src="https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent(qrString)}" alt="UPI QR Code" style="margin-top:8px;border-radius:4px;border:1px solid ${border}" />`
+      : "";
 
   const bankBlock = hasBankDetails
     ? `<div style="flex:1;min-width:220px;border:1px solid ${border};border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between">
@@ -167,10 +170,14 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
           ${brand.bank_ifsc ? `<div style="font-size:12px"><b>IFSC:</b> ${esc(brand.bank_ifsc)}</div>` : ""}
           ${brand.upi_id ? `<div style="font-size:12px"><b>UPI:</b> ${esc(brand.upi_id)}</div>` : ""}
         </div>
-        ${qrImg ? `<div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end">
-            <div style="font-size:10px;color:${muted};margin-bottom:4px;font-weight:600">Scan to pay ${doc.balanceDue ? '₹' + doc.balanceDue : ''}</div>
+        ${
+          qrImg
+            ? `<div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end">
+            <div style="font-size:10px;color:${muted};margin-bottom:4px;font-weight:600">Scan to pay ${doc.balanceDue ? "₹" + doc.balanceDue : ""}</div>
             ${qrImg}
-        </div>` : ""}
+        </div>`
+            : ""
+        }
       </div>`
     : "";
 

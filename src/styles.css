@@ -41,7 +41,9 @@
   --radius-xl: 10px;
   --radius-2xl: 14px;
 
-  --font-sans: "Inter", "Roboto", "Noto Sans Gujarati", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans:
+    "Inter", "Roboto", "Noto Sans Gujarati", "Noto Sans Devanagari", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
   --font-display: "Inter", "Roboto Slab", Georgia, serif;
   --font-mono: "JetBrains Mono", "Söhne Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;

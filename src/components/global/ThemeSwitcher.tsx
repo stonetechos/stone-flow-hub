@@ -32,32 +32,28 @@ const THEMES: ReadonlyArray<{
     id: "monochrome",
     label: "Monochrome",
     description: "White, grey, and black",
-    swatch:
-      "linear-gradient(135deg, #ffffff 0%, #a3a3a3 55%, #171717 100%)",
+    swatch: "linear-gradient(135deg, #ffffff 0%, #a3a3a3 55%, #171717 100%)",
     dark: false,
   },
   {
     id: "batman",
     label: "Batman",
     description: "Dark knight theme",
-    swatch:
-      "linear-gradient(135deg, #09090b 0%, #27272a 55%, #fde047 100%)",
+    swatch: "linear-gradient(135deg, #09090b 0%, #27272a 55%, #fde047 100%)",
     dark: true,
   },
   {
     id: "pink",
     label: "Soft Pink",
     description: "Girly soft pink surfaces",
-    swatch:
-      "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 55%, #ec4899 100%)",
+    swatch: "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 55%, #ec4899 100%)",
     dark: false,
   },
   {
     id: "pop",
     label: "Pop Colored",
     description: "Vibrant and punchy",
-    swatch:
-      "linear-gradient(135deg, #fcd34d 0%, #3b82f6 55%, #ef4444 100%)",
+    swatch: "linear-gradient(135deg, #fcd34d 0%, #3b82f6 55%, #ef4444 100%)",
     dark: false,
   },
 ];

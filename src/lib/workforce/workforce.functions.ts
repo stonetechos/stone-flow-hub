@@ -85,7 +85,10 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
             targetUserId = result.user.id;
             await supabaseAdmin
               .from("profiles")
-              .upsert({ id: targetUserId, email: emailClean, full_name: input.full_name }, { onConflict: "id" });
+              .upsert(
+                { id: targetUserId, email: emailClean, full_name: input.full_name },
+                { onConflict: "id" },
+              );
           }
         }
       } catch {

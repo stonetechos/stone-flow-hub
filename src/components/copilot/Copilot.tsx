@@ -665,7 +665,11 @@ function Bubble({ role, content }: ChatMsg) {
   }
   return (
     <div className="flex items-start gap-2 max-w-[90%]">
-      <img src="/stoneman.png" alt="Stoneman" className="h-7 w-7 shrink-0 mt-0.5 object-contain drop-shadow-sm" />
+      <img
+        src="/stoneman.png"
+        alt="Stoneman"
+        className="h-7 w-7 shrink-0 mt-0.5 object-contain drop-shadow-sm"
+      />
       <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-foreground shadow-sm">
         {content}
       </div>

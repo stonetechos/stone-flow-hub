@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InquiryRouteImport } from './routes/inquiry'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as VendorRouteRouteImport } from './routes/vendor/route'
@@ -36,8 +35,6 @@ import { Route as AuthenticatedCommunicationRouteImport } from './routes/_authen
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAgencyPaymentsRouteImport } from './routes/_authenticated/agency-payments'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as VendorRfqsIndexRouteImport } from './routes/vendor/rfqs/index'
 import { Route as VendorOrdersIndexRouteImport } from './routes/vendor/orders/index'
 import { Route as AuthenticatedWorkforceIntelligenceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/index'
@@ -158,7 +155,6 @@ import { Route as AuthenticatedDashboardsBusinessHealthRouteImport } from './rou
 import { Route as AuthenticatedDashboardsAnalyticsRouteImport } from './routes/_authenticated/dashboards/analytics'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedWorkforceIntelligenceRolesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/roles/index'
 import { Route as AuthenticatedWorkforceIntelligencePerformanceIndexRouteImport } from './routes/_authenticated/workforce-intelligence/performance/index'
 import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from './routes/_authenticated/workforce-intelligence/owner/index'
@@ -194,11 +190,6 @@ import { Route as AuthenticatedDispatchIdPrintRouteImport } from './routes/_auth
 import { Route as AuthenticatedDispatchIdEditRouteImport } from './routes/_authenticated/dispatch/$id.edit'
 import { Route as AuthenticatedCustomersCustomerIdTimelineRouteImport } from './routes/_authenticated/customers/$customerId.timeline'
 
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InquiryRoute = InquiryRouteImport.update({
   id: '/inquiry',
   path: '/inquiry',
@@ -334,18 +325,6 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const VendorRfqsIndexRoute = VendorRfqsIndexRouteImport.update({
   id: '/rfqs/',
   path: '/rfqs/',
@@ -1047,12 +1026,6 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedWorkforceIntelligenceRolesIndexRoute =
   AuthenticatedWorkforceIntelligenceRolesIndexRouteImport.update({
     id: '/workforce-intelligence/roles/',
@@ -1262,9 +1235,6 @@ export interface FileRoutesByFullPath {
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inquiry': typeof InquiryRoute
-  '/mcp': typeof McpRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -1285,7 +1255,6 @@ export interface FileRoutesByFullPath {
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend/': typeof BackendIndexRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1446,9 +1415,6 @@ export interface FileRoutesByTo {
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inquiry': typeof InquiryRoute
-  '/mcp': typeof McpRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -1469,7 +1435,6 @@ export interface FileRoutesByTo {
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend': typeof BackendIndexRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1633,9 +1598,6 @@ export interface FileRoutesById {
   '/vendor': typeof VendorRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inquiry': typeof InquiryRoute
-  '/mcp': typeof McpRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
@@ -1656,7 +1618,6 @@ export interface FileRoutesById {
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend/': typeof BackendIndexRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1820,9 +1781,6 @@ export interface FileRouteTypes {
     | '/vendor'
     | '/auth'
     | '/inquiry'
-    | '/mcp'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/activity'
     | '/agency-payments'
     | '/calendar'
@@ -1843,7 +1801,6 @@ export interface FileRouteTypes {
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend/'
-    | '/.mcp/invoke-tool/$tool'
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
@@ -2004,9 +1961,6 @@ export interface FileRouteTypes {
     | '/vendor'
     | '/auth'
     | '/inquiry'
-    | '/mcp'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/activity'
     | '/agency-payments'
     | '/calendar'
@@ -2027,7 +1981,6 @@ export interface FileRouteTypes {
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend'
-    | '/.mcp/invoke-tool/$tool'
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
@@ -2190,9 +2143,6 @@ export interface FileRouteTypes {
     | '/vendor'
     | '/auth'
     | '/inquiry'
-    | '/mcp'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/activity'
     | '/_authenticated/agency-payments'
     | '/_authenticated/calendar'
@@ -2213,7 +2163,6 @@ export interface FileRouteTypes {
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend/'
-    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/analytics'
@@ -2377,11 +2326,7 @@ export interface RootRouteChildren {
   VendorRouteRoute: typeof VendorRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   InquiryRoute: typeof InquiryRoute
-  McpRoute: typeof McpRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
   ApiPublicHooksAuthEmailRoute: typeof ApiPublicHooksAuthEmailRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
@@ -2396,13 +2341,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/inquiry': {
       id: '/inquiry'
       path: '/inquiry'
@@ -2584,20 +2522,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/activity'
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/vendor/rfqs/': {
       id: '/vendor/rfqs/'
@@ -3439,13 +3363,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/workforce-intelligence/roles/': {
       id: '/_authenticated/workforce-intelligence/roles/'
       path: '/workforce-intelligence/roles'
@@ -4226,12 +4143,7 @@ const rootRouteChildren: RootRouteChildren = {
   VendorRouteRoute: VendorRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   InquiryRoute: InquiryRoute,
-  McpRoute: McpRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PayLinkIdRoute: PayLinkIdRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
   ApiPublicHooksAuthEmailRoute: ApiPublicHooksAuthEmailRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:

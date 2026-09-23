@@ -78,7 +78,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 
 function CustomersPage() {
   const { t } = useTranslation();
-const qc = useQueryClient();
+  const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
   const [q, setQ] = useState("");
@@ -127,7 +127,10 @@ const qc = useQueryClient();
 
   return (
     <div>
-      <PageHeader title={t("customers.title", "Customers")} subtitle={t("customers.subtitle", "Master list of everyone you sell to.")} />
+      <PageHeader
+        title={t("customers.title", "Customers")}
+        subtitle={t("customers.subtitle", "Master list of everyone you sell to.")}
+      />
 
       <DataToolbar
         count={rows.length}
@@ -302,7 +305,7 @@ function CustomerFormDialog({
   editing: CustomerRow | null;
 }) {
   const { t } = useTranslation();
-const qc = useQueryClient();
+  const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
   const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyForm()));
   const dirty = JSON.stringify(form) !== baseline;
@@ -366,7 +369,9 @@ const qc = useQueryClient();
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.name}` : t("customers.newCustomer", "New customer")}</DialogTitle>
+          <DialogTitle>
+            {editing ? `Edit ${editing.name}` : t("customers.newCustomer", "New customer")}
+          </DialogTitle>
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
@@ -520,7 +525,10 @@ const qc = useQueryClient();
           </QuickForm.MoreDetails>
 
           <QuickForm.Advanced>
-            <Field label={t("customers.billingAddress", "Billing address")} className="md:col-span-2">
+            <Field
+              label={t("customers.billingAddress", "Billing address")}
+              className="md:col-span-2"
+            >
               <Textarea
                 rows={2}
                 value={form.billing_address ?? ""}

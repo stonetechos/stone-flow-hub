@@ -407,7 +407,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
     // 11. Dispatch automated WhatsApp to admins via message_queue
     try {
       const msgBody = `🚨 *New Website Lead: ${createdEnquiry.enquiry_no}*\n\n*Name:* ${input.name.trim()}\n*Products:* ${formattedProducts}\n*Required by:* ${input.required_date}\n*City:* ${input.city.trim()}`;
-      
+
       const { error: mqErr } = await supabaseAdmin.from("message_queue").insert({
         channel: "whatsapp",
         to_address: "917742090866",
@@ -415,11 +415,13 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         customer_id: customerId,
         related_type: "enquiry",
         related_id: createdEnquiry.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       if (!mqErr) {
         // Force immediate dispatch so it arrives instantly, without waiting for the CRON schedule
         const { dispatchQueueBatch } = await import("@/lib/notifications/dispatch.server");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await dispatchQueueBatch(supabaseAdmin as any, 10);
       }
     } catch (waErr) {
