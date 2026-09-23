@@ -369,15 +369,22 @@ function EnquiriesPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<ClipboardList className="h-6 w-6" />}
-          title={umbrella ? "No enquiries in this stage" : "No enquiries yet"}
+          title={
+            umbrella
+              ? t("enquiries.noInStage", "No enquiries in this stage")
+              : t("enquiries.noYet", "No enquiries yet")
+          }
           message={
             umbrella
-              ? "Try a different stage or clear the filter."
-              : "Log your first lead — you can convert it into a project later."
+              ? t("enquiries.tryDifferent", "Try a different stage or clear the filter.")
+              : t(
+                  "enquiries.logFirstLead",
+                  "Log your first lead — you can convert it into a project later.",
+                )
           }
           action={
             <Button onClick={() => setNewOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> New enquiry
+              <Plus className="mr-2 h-4 w-4" /> {t("enquiries.newEnquiry", "New enquiry")}
             </Button>
           }
         />

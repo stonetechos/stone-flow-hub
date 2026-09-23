@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -44,8 +45,43 @@ const badgeVariants = cva(
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, size, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant, size }), className)} {...props} />;
+function Badge({ className, variant, size, children, ...props }: BadgeProps) {
+  const { t } = useTranslation();
+
+  const translateChild = (child: React.ReactNode): React.ReactNode => {
+    if (typeof child === "string") {
+      const trimmed = child.trim();
+      if (!trimmed) return child;
+      const translated = t(trimmed, trimmed);
+      if (translated !== trimmed) {
+        return child.replace(trimmed, translated);
+      }
+      return child;
+    }
+    if (
+      React.isValidElement(child) &&
+      child.props &&
+      (child.props as Record<string, unknown>).children
+    ) {
+      return React.cloneElement(
+        child as React.ReactElement<{ children?: React.ReactNode }>,
+        undefined,
+        React.Children.map(
+          (child.props as { children?: React.ReactNode }).children,
+          translateChild,
+        ),
+      );
+    }
+    return child;
+  };
+
+  const renderedChildren = React.Children.map(children, translateChild);
+
+  return (
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      {renderedChildren}
+    </div>
+  );
 }
 
 export { Badge, badgeVariants };

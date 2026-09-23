@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/_authenticated/dispatch/")({
 });
 
 function DispatchPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -65,14 +67,14 @@ function DispatchPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
-      { key: "so", label: "Sales Order" },
-      { key: "carrier", label: "Carrier" },
-      { key: "tracking", label: "Tracking" },
-      { key: "date", label: "Date" },
-      { key: "status", label: "Status" },
+      { key: "no", label: t("common.noNum", "No."), required: true },
+      { key: "so", label: t("dispatch.columns.so", "Sales Order") },
+      { key: "carrier", label: t("dispatch.columns.carrier", "Carrier") },
+      { key: "tracking", label: t("dispatch.columns.tracking", "Tracking") },
+      { key: "date", label: t("common.date", "Date") },
+      { key: "status", label: t("common.status", "Status") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -104,19 +106,22 @@ function DispatchPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dispatches & Carting"
-        subtitle="Outbound deliveries, vehicle tracking, delivery paperwork, and local carting agencies."
+        title={t("dispatch.title", "Dispatches & Carting")}
+        subtitle={t(
+          "dispatch.subtitle",
+          "Outbound deliveries, vehicle tracking, delivery paperwork, and local carting agencies.",
+        )}
       />
 
       <Tabs defaultValue="dispatches" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:inline-flex">
           <TabsTrigger value="dispatches" className="gap-2">
             <Truck className="h-4 w-4" />
-            <span>Dispatches</span>
+            <span>{t("dispatch.tabs.dispatches", "Dispatches")}</span>
           </TabsTrigger>
           <TabsTrigger value="carting" className="gap-2">
             <Navigation className="h-4 w-4" />
-            <span>Local Carting</span>
+            <span>{t("dispatch.tabs.localCarting", "Local Carting")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -125,17 +130,20 @@ function DispatchPage() {
             count={rows.length}
             search={q}
             onSearchChange={commitSearch}
-            searchPlaceholder="Search dispatch, carrier, tracking…"
+            searchPlaceholder={t(
+              "dispatch.searchPlaceholder",
+              "Search dispatch, carrier, tracking…",
+            )}
             primaryFilter={
               <Select
                 value={status || "all"}
                 onValueChange={(v) => setStatus(v === "all" ? "" : v)}
               >
                 <SelectTrigger className="h-8 w-44 text-sm">
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder={t("common.allStatuses", "All statuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="all">{t("common.allStatuses", "All statuses")}</SelectItem>
                   {DISPATCH_STATUSES.map((s) => (
                     <SelectItem key={s} value={s} className="capitalize">
                       {s.replace(/_/g, " ")}
@@ -151,7 +159,8 @@ function DispatchPage() {
             action={
               roles.canWrite ? (
                 <Button size="sm" className="h-8" onClick={() => nav({ to: "/dispatch/new" })}>
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New delivery challan
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+                  {t("dispatch.actions.newDeliveryChallan", "New delivery challan")}
                 </Button>
               ) : null
             }
@@ -164,12 +173,16 @@ function DispatchPage() {
           ) : rows.length === 0 ? (
             <EmptyState
               icon={<Truck className="h-6 w-6" />}
-              title="No dispatches yet"
-              message="Create a dispatch to plan an outbound shipment."
+              title={t("dispatch.empty.title", "No dispatches yet")}
+              message={t(
+                "dispatch.empty.message",
+                "Create a dispatch to plan an outbound shipment.",
+              )}
               action={
                 roles.canWrite ? (
                   <Button onClick={() => nav({ to: "/dispatch/new" })}>
-                    <Plus className="mr-2 h-4 w-4" /> New dispatch
+                    <Plus className="mr-2 h-4 w-4" />{" "}
+                    {t("dispatch.actions.newDispatch", "New dispatch")}
                   </Button>
                 ) : undefined
               }
@@ -193,12 +206,18 @@ function DispatchPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {!isHidden("no") && <TableHead>No.</TableHead>}
-                    {!isHidden("so") && <TableHead>Sales Order</TableHead>}
-                    {!isHidden("carrier") && <TableHead>Carrier</TableHead>}
-                    {!isHidden("tracking") && <TableHead>Tracking</TableHead>}
-                    {!isHidden("date") && <TableHead>Date</TableHead>}
-                    {!isHidden("status") && <TableHead>Status</TableHead>}
+                    {!isHidden("no") && <TableHead>{t("common.noNum", "No.")}</TableHead>}
+                    {!isHidden("so") && (
+                      <TableHead>{t("dispatch.columns.so", "Sales Order")}</TableHead>
+                    )}
+                    {!isHidden("carrier") && (
+                      <TableHead>{t("dispatch.columns.carrier", "Carrier")}</TableHead>
+                    )}
+                    {!isHidden("tracking") && (
+                      <TableHead>{t("dispatch.columns.tracking", "Tracking")}</TableHead>
+                    )}
+                    {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
+                    {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>

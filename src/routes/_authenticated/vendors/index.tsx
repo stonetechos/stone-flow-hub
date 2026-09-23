@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Loader2, Factory, ExternalLink } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
@@ -61,6 +62,7 @@ export const Route = createFileRoute("/_authenticated/vendors/")({
 });
 
 function VendorsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const { edit } = Route.useSearch();
@@ -75,14 +77,14 @@ function VendorsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "code", label: "Code", required: true },
-      { key: "company", label: "Company", required: true },
-      { key: "city", label: "City" },
-      { key: "gst", label: "GST" },
-      { key: "terms", label: "Payment terms" },
-      { key: "status", label: "Status" },
+      { key: "code", label: t("vendors.columns.code", "Code"), required: true },
+      { key: "company", label: t("vendors.columns.company", "Company"), required: true },
+      { key: "city", label: t("vendors.columns.city", "City") },
+      { key: "gst", label: t("vendors.columns.gst", "GST") },
+      { key: "terms", label: t("vendors.columns.terms", "Payment terms") },
+      { key: "status", label: t("common.status", "Status") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({ queryKey: qk.vendors.list(dq), queryFn: () => listVendors(dq) });
@@ -117,18 +119,21 @@ function VendorsPage() {
 
   return (
     <div>
-      <PageHeader title="Vendors" subtitle="Suppliers you send RFQs to." />
+      <PageHeader
+        title={t("vendors.title", "Vendors")}
+        subtitle={t("vendors.subtitle", "Suppliers you send RFQs to.")}
+      />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search by company, code, city…"
+        searchPlaceholder={t("vendors.searchPlaceholder", "Search by company, code, city…")}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> New vendor
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("vendors.actions.newVendor", "New vendor")}
           </Button>
         }
       />
@@ -140,11 +145,11 @@ function VendorsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Factory className="h-6 w-6" />}
-          title="No vendors yet"
-          message="Add your first vendor to start sending RFQs."
+          title={t("vendors.empty.title", "No vendors yet")}
+          message={t("vendors.empty.message", "Add your first vendor to start sending RFQs.")}
           action={
             <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> New vendor
+              <Plus className="mr-2 h-4 w-4" /> {t("vendors.actions.newVendor", "New vendor")}
             </Button>
           }
         />
@@ -167,12 +172,16 @@ function VendorsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("company") && <TableHead>Company</TableHead>}
-                {!isHidden("city") && <TableHead>City</TableHead>}
-                {!isHidden("gst") && <TableHead>GST</TableHead>}
-                {!isHidden("terms") && <TableHead>Payment terms</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("code") && <TableHead>{t("vendors.columns.code", "Code")}</TableHead>}
+                {!isHidden("company") && (
+                  <TableHead>{t("vendors.columns.company", "Company")}</TableHead>
+                )}
+                {!isHidden("city") && <TableHead>{t("vendors.columns.city", "City")}</TableHead>}
+                {!isHidden("gst") && <TableHead>{t("vendors.columns.gst", "GST")}</TableHead>}
+                {!isHidden("terms") && (
+                  <TableHead>{t("vendors.columns.terms", "Payment terms")}</TableHead>
+                )}
+                {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>

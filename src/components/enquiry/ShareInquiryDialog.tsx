@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 
 interface ShareInquiryDialogProps {
@@ -30,6 +31,7 @@ interface ShareInquiryDialogProps {
 }
 
 export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const siteSettings = useSiteSettingsValue();
@@ -65,7 +67,7 @@ export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
         {trigger || (
           <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold">
             <Share2 className="h-3.5 w-3.5 text-primary" />
-            <span>Share Inquiry Link</span>
+            <span>{t("enquiries.shareInquiryLink", "Share Inquiry Link")}</span>
           </Button>
         )}
       </DialogTrigger>
@@ -75,11 +77,15 @@ export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Share2 className="h-4 w-4" />
             </div>
-            <DialogTitle className="text-base font-bold">Customer Lead Generation Link</DialogTitle>
+            <DialogTitle className="text-base font-bold">
+              {t("enquiries.shareTitle", "Customer Lead Generation Link")}
+            </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
-            Share this link via WhatsApp, SMS, or social media. Customers can select materials,
-            upload up to 10 photos, and pick their required date from a live calendar.
+            {t(
+              "enquiries.shareDesc",
+              "Share this link via WhatsApp, SMS, or social media. Customers can select materials, upload up to 10 photos, and pick their required date from a live calendar.",
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +93,7 @@ export function ShareInquiryDialog({ trigger }: ShareInquiryDialogProps) {
           {/* Link Copy Box */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Public Inquiry URL
+              {t("enquiries.publicInquiryUrl", "Public Inquiry URL")}
             </label>
             <div className="flex items-center gap-2">
               <Input

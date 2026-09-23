@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Truck } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -43,7 +44,6 @@ import { invalidatePurchaseInvoice } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 import { useRoles } from "@/hooks/use-roles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Truck } from "lucide-react";
 import { PurchaseTransportView } from "../purchase-transport";
 
 export const Route = createFileRoute("/_authenticated/purchase-invoices/")({
@@ -56,6 +56,7 @@ export const Route = createFileRoute("/_authenticated/purchase-invoices/")({
 });
 
 function PurchaseInvoicesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -114,19 +115,22 @@ function PurchaseInvoicesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Purchase Invoices & Logistics"
-        subtitle="Vendor bills recorded against purchase orders, attachments, and inbound freight transportation."
+        title={t("Purchase Invoices & Logistics", "Purchase Invoices & Logistics")}
+        subtitle={t(
+          "Vendor bills recorded against purchase orders, attachments, and inbound freight transportation.",
+          "Vendor bills recorded against purchase orders, attachments, and inbound freight transportation.",
+        )}
       />
 
       <Tabs defaultValue="invoices" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:inline-flex">
           <TabsTrigger value="invoices" className="gap-2">
             <Receipt className="h-4 w-4" />
-            <span>Purchase Invoices</span>
+            <span>{t("Purchase Invoices", "Purchase Invoices")}</span>
           </TabsTrigger>
           <TabsTrigger value="transport" className="gap-2">
             <Truck className="h-4 w-4" />
-            <span>Inward Transportation</span>
+            <span>{t("Inward Transportation", "Inward Transportation")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -135,20 +139,20 @@ function PurchaseInvoicesPage() {
             count={rows.length}
             search={q}
             onSearchChange={commitSearch}
-            searchPlaceholder="Search invoice #, vendor's #…"
+            searchPlaceholder={t("Search invoice #, vendor's #…", "Search invoice #, vendor's #…")}
             primaryFilter={
               <Select
                 value={status || "all"}
                 onValueChange={(v) => setStatus(v === "all" ? "" : v)}
               >
                 <SelectTrigger className="h-8 w-40 text-sm">
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder={t("All statuses", "All statuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="all">{t("All statuses", "All statuses")}</SelectItem>
                   {PURCHASE_INVOICE_STATUSES.map((s) => (
                     <SelectItem key={s} value={s} className="capitalize">
-                      {s.replace(/_/g, " ")}
+                      {t(s.replace(/_/g, " "), s.replace(/_/g, " "))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -156,7 +160,7 @@ function PurchaseInvoicesPage() {
             }
             extra={
               <span className="hidden text-xs text-muted-foreground md:inline">
-                Total {formatInr(totalOutstanding)}
+                {t("common.total", "Total")} {formatInr(totalOutstanding)}
               </span>
             }
             columns={
@@ -170,7 +174,7 @@ function PurchaseInvoicesPage() {
                   className="h-8"
                   onClick={() => nav({ to: "/purchase-invoices/new" })}
                 >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record invoice
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("Record invoice", "Record invoice")}
                 </Button>
               ) : null
             }
@@ -183,12 +187,15 @@ function PurchaseInvoicesPage() {
           ) : rows.length === 0 ? (
             <EmptyState
               icon={<Receipt className="h-6 w-6" />}
-              title="No purchase invoices yet"
-              message="Record a vendor's invoice to start tracking what's billed against each purchase order."
+              title={t("No purchase invoices yet", "No purchase invoices yet")}
+              message={t(
+                "Record a vendor's invoice to start tracking what's billed against each purchase order.",
+                "Record a vendor's invoice to start tracking what's billed against each purchase order.",
+              )}
               action={
                 roles.canWrite ? (
                   <Button onClick={() => nav({ to: "/purchase-invoices/new" })}>
-                    <Plus className="mr-2 h-4 w-4" /> Record invoice
+                    <Plus className="mr-2 h-4 w-4" /> {t("Record invoice", "Record invoice")}
                   </Button>
                 ) : undefined
               }

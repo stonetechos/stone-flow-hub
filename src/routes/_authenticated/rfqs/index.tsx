@@ -2,6 +2,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Send, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/_authenticated/rfqs/")({
 });
 
 function RfqsPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const search = Route.useSearch();
   const [q, setQ] = useState(search.q ?? "");
@@ -62,14 +64,14 @@ function RfqsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "RFQ No.", required: true },
-      { key: "enquiry", label: "Enquiry" },
-      { key: "project", label: "Project" },
-      { key: "status", label: "Status" },
-      { key: "responses", label: "Responses" },
-      { key: "due", label: "Due" },
+      { key: "no", label: t("rfqs.columns.no", "RFQ No."), required: true },
+      { key: "enquiry", label: t("rfqs.columns.enquiry", "Enquiry") },
+      { key: "project", label: t("rfqs.columns.project", "Project") },
+      { key: "status", label: t("common.status", "Status") },
+      { key: "responses", label: t("rfqs.columns.responses", "Responses") },
+      { key: "due", label: t("rfqs.columns.due", "Due") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({
@@ -92,22 +94,25 @@ function RfqsPage() {
   return (
     <div>
       <PageHeader
-        title="RFQs"
-        subtitle="Every request-for-quote sent to vendors, across all enquiries."
+        title={t("rfqs.title", "RFQs")}
+        subtitle={t(
+          "rfqs.subtitle",
+          "Every request-for-quote sent to vendors, across all enquiries.",
+        )}
       />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={commitSearch}
-        searchPlaceholder="Search RFQ no…"
+        searchPlaceholder={t("rfqs.searchPlaceholder", "Search RFQ no…")}
         primaryFilter={
           <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 w-48 text-sm">
-              <SelectValue placeholder="All statuses" />
+              <SelectValue placeholder={t("common.allStatuses", "All statuses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="all">{t("common.allStatuses", "All statuses")}</SelectItem>
               {STATUSES.map((s) => (
                 <SelectItem key={s} value={s} className="capitalize">
                   {s.replace(/_/g, " ")}
@@ -127,8 +132,11 @@ function RfqsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Send className="h-6 w-6" />}
-          title="No RFQs match"
-          message="RFQs are created from an enquiry. Open an enquiry and click Send RFQ."
+          title={t("rfqs.empty.title", "No RFQs match")}
+          message={t(
+            "rfqs.empty.message",
+            "RFQs are created from an enquiry. Open an enquiry and click Send RFQ.",
+          )}
         />
       ) : (
         <DataTableShell
@@ -149,12 +157,18 @@ function RfqsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>RFQ No.</TableHead>}
-                {!isHidden("enquiry") && <TableHead>Enquiry</TableHead>}
-                {!isHidden("project") && <TableHead>Project</TableHead>}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
-                {!isHidden("responses") && <TableHead>Responses</TableHead>}
-                {!isHidden("due") && <TableHead>Due</TableHead>}
+                {!isHidden("no") && <TableHead>{t("rfqs.columns.no", "RFQ No.")}</TableHead>}
+                {!isHidden("enquiry") && (
+                  <TableHead>{t("rfqs.columns.enquiry", "Enquiry")}</TableHead>
+                )}
+                {!isHidden("project") && (
+                  <TableHead>{t("rfqs.columns.project", "Project")}</TableHead>
+                )}
+                {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
+                {!isHidden("responses") && (
+                  <TableHead>{t("rfqs.columns.responses", "Responses")}</TableHead>
+                )}
+                {!isHidden("due") && <TableHead>{t("rfqs.columns.due", "Due")}</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>

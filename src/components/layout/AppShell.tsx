@@ -634,10 +634,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             {!collapsed && (
               <div className="flex min-w-0 flex-col justify-center leading-tight">
                 <span className="font-display text-[15px] font-bold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                  STOS
+                  {t("brand.name", "STOS")}
                 </span>
                 <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-200 font-semibold">
-                  By Vedora Vision
+                  {t("brand.byline", "By Vedora Vision")}
                 </span>
               </div>
             )}
@@ -749,7 +749,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       className="h-7 w-7 shrink-0 rounded-md ring-1 ring-white/25 shadow-md shadow-teal-950/40"
                     />
                     <SheetTitle className="font-display text-[15px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                      STOS
+                      {t("brand.name", "STOS")}
                     </SheetTitle>
                   </SheetHeader>
 
@@ -769,7 +769,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-2 md:hidden">
               <AppMark size={20} className="h-5 w-5 rounded" />
-              <span className="font-display text-sm font-semibold">STOS</span>
+              <span className="font-display text-sm font-semibold">{t("brand.name", "STOS")}</span>
             </div>
 
             {/* Search — the visual focus of the topbar. min-w-0 lets this

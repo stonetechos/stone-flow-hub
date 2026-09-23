@@ -43,12 +43,23 @@ const TabsTrigger = React.forwardRef<
       if (!trimmed) return node;
       const translated = t(
         `tab.${trimmed}`,
-        t(`nav.items.${trimmed.toLowerCase()}`, t(`field.${trimmed}`, trimmed)),
+        t(`nav.items.${trimmed.toLowerCase()}`, t(`field.${trimmed}`, t(trimmed, trimmed))),
       );
       if (translated !== trimmed) {
         return node.replace(trimmed, translated);
       }
       return node;
+    }
+    if (
+      React.isValidElement(node) &&
+      node.props &&
+      (node.props as Record<string, unknown>).children
+    ) {
+      return React.cloneElement(
+        node as React.ReactElement<{ children?: React.ReactNode }>,
+        undefined,
+        React.Children.map((node.props as { children?: React.ReactNode }).children, translateNode),
+      );
     }
     return node;
   };

@@ -35,10 +35,10 @@ export function ZohoDashboardHeader({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-display text-lg font-black tracking-tight text-engraved-title sm:text-xl">
-                STONE TECH
+                {t("brand.companyName", "STONE TECH")}
               </span>
               <span className="engraved-well-glow rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black tracking-wide uppercase text-engraved-blue">
-                Live ERP
+                {t("brand.liveErp", "Live ERP")}
               </span>
             </div>
             <p className="font-mono text-xs font-semibold text-engraved-kicker">

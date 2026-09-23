@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -68,10 +69,43 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+    const { t } = useTranslation();
     const Comp = asChild ? Slot : "button";
+
+    const translateChild = (child: React.ReactNode): React.ReactNode => {
+      if (typeof child === "string") {
+        const trimmed = child.trim();
+        if (!trimmed) return child;
+        const translated = t(trimmed, trimmed);
+        if (translated !== trimmed) {
+          return child.replace(trimmed, translated);
+        }
+        return child;
+      }
+      if (
+        React.isValidElement(child) &&
+        child.props &&
+        (child.props as Record<string, unknown>).children
+      ) {
+        return React.cloneElement(
+          child as React.ReactElement<{ children?: React.ReactNode }>,
+          undefined,
+          React.Children.map(
+            (child.props as { children?: React.ReactNode }).children,
+            translateChild,
+          ),
+        );
+      }
+      return child;
+    };
+
+    const renderedChildren = asChild ? children : React.Children.map(children, translateChild);
+
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>
+        {renderedChildren}
+      </Comp>
     );
   },
 );

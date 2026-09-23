@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { installCapacitorServerFnFetchPatch } from "@/lib/capacitor/install-fetch-patch";
 import { configureStatusBarForEdgeToEdge } from "@/lib/capacitor/status-bar";
@@ -167,8 +168,14 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+  const { t, i18n } = useTranslation();
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+
+  useEffect(() => {
+    document.title = t("brand.fullTitle", "STOS — Professional ERP for the Natural Stone Industry");
+    document.documentElement.lang = i18n.language || "en";
+  }, [t, i18n.language]);
   // Computed once (module-level memoized in
   // config-status.ts), checked here before any child route mounts. When
   // misconfigured, the effects below skip touching `supabase` entirely and
