@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, FileText, Trash2, Scale } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -71,6 +72,7 @@ export const Route = createFileRoute("/_authenticated/quotes/")({
 });
 
 function QuotesPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const params = Route.useSearch();
@@ -172,11 +174,12 @@ function QuotesPage() {
                 className="h-8"
                 onClick={() => setCompareOpen(true)}
               >
-                <Scale className="mr-1.5 h-3.5 w-3.5" /> Compare ({compareIds.size})
+                <Scale className="mr-1.5 h-3.5 w-3.5" /> {t("quotes.compare", "Compare")} (
+                {compareIds.size})
               </Button>
             )}
             <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New quote
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("quotes.newQuote", "New quote")}
             </Button>
           </div>
         }
@@ -193,7 +196,7 @@ function QuotesPage() {
           message="Create your first quote from a project."
           action={
             <Button onClick={() => setOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> New quote
+              <Plus className="mr-2 h-4 w-4" /> {t("quotes.newQuote", "New quote")}
             </Button>
           }
         />

@@ -22,8 +22,8 @@ export function Field({
   className?: string;
 }) {
   const { t } = useTranslation();
-  const displayLabel = t(`field.${label}`, label);
-  const displayHint = hint ? t(`hint.${hint}`, hint) : null;
+  const displayLabel = t(`field.${label}`, t(`label.${label}`, t(label, label)));
+  const displayHint = hint ? t(`hint.${hint}`, t(hint, hint)) : null;
 
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -33,7 +33,7 @@ export function Field({
       </Label>
       {children}
       {error ? (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-destructive">{t(error, error)}</p>
       ) : displayHint ? (
         <p className="text-xs text-muted-foreground">{displayHint}</p>
       ) : null}

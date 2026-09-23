@@ -389,9 +389,9 @@ function CustomerFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CUSTOMER_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {CUSTOMER_TYPES.map((tItem) => (
+                    <SelectItem key={tItem.value} value={tItem.value}>
+                      {t(`customer.type.${tItem.value}`, t(tItem.label, tItem.label))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -403,7 +403,10 @@ function CustomerFormDialog({
                 <Input
                   value={form.referred_by ?? ""}
                   onChange={(e) => set("referred_by", e.target.value)}
-                  placeholder="Name of the person who referred them"
+                  placeholder={t(
+                    "customers.referredByPlaceholder",
+                    "Name of the person who referred them",
+                  )}
                 />
               </Field>
             )}
@@ -423,7 +426,11 @@ function CustomerFormDialog({
             </Field>
             <Field
               label="WhatsApp"
-              hint={form.mobile ? "Dropdown defaults to Phone Number" : "10 digits"}
+              hint={
+                form.mobile
+                  ? t("customers.whatsappHintMobile", "Dropdown defaults to Phone Number")
+                  : t("customers.whatsappHintDigits", "10 digits")
+              }
             >
               <div className="space-y-1.5">
                 {form.mobile ? (
@@ -442,18 +449,24 @@ function CustomerFormDialog({
                     }}
                   >
                     <SelectTrigger className="h-8 text-xs bg-muted/30">
-                      <SelectValue placeholder="Select WhatsApp..." />
+                      <SelectValue
+                        placeholder={t("customers.selectWhatsapp", "Select WhatsApp...")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="same_as_phone">Same as Phone ({form.mobile})</SelectItem>
-                      <SelectItem value="custom">Enter Different Number</SelectItem>
+                      <SelectItem value="same_as_phone">
+                        {t("customers.sameAsPhone", "Same as Phone")} ({form.mobile})
+                      </SelectItem>
+                      <SelectItem value="custom">
+                        {t("customers.differentNumber", "Enter Different Number")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 ) : null}
                 <PhoneInput
                   value={form.whatsapp ?? ""}
                   onChange={(v) => set("whatsapp", v)}
-                  placeholder="WhatsApp number"
+                  placeholder={t("customers.whatsappNumber", "WhatsApp number")}
                 />
               </div>
             </Field>
@@ -470,12 +483,12 @@ function CustomerFormDialog({
                 onValueChange={(v) => set("space_type", v as CustomerCreateInput["space_type"])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select…" />
+                  <SelectValue placeholder={t("common.select", "Select…")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {SPACE_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {SPACE_TYPES.map((sItem) => (
+                    <SelectItem key={sItem.value} value={sItem.value}>
+                      {t(`space.${sItem.value}`, t(sItem.label, sItem.label))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -499,7 +512,7 @@ function CustomerFormDialog({
                         checked={checked}
                         onCheckedChange={(v) => toggleMaterial(m.value, v === true)}
                       />
-                      {m.label}
+                      {t(`materials.${m.value}`, t(m.label, m.label))}
                     </label>
                   );
                 })}

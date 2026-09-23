@@ -114,8 +114,8 @@ export function EmptyState({
   className?: string;
 }) {
   const { t } = useTranslation();
-  const displayTitle = t(`empty.${title}`, title);
-  const displayMessage = message ? t(`empty.${message}`, message) : undefined;
+  const displayTitle = t(`empty.${title}`, t(title, title));
+  const displayMessage = message ? t(`empty.${message}`, t(message, message)) : undefined;
 
   return (
     <div
@@ -139,16 +139,17 @@ export function EmptyState({
 }
 
 export function ErrorBlock({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useTranslation();
   return (
     <div
       role="alert"
       className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-6 py-10 text-center"
     >
       <AlertCircle className="h-5 w-5 text-destructive" aria-hidden />
-      <p className="max-w-md text-sm text-destructive">{message}</p>
+      <p className="max-w-md text-sm text-destructive">{t(message, message)}</p>
       {onRetry && (
         <Button size="sm" variant="outline" onClick={onRetry}>
-          Try again
+          {t("common.tryAgain", "Try again")}
         </Button>
       )}
     </div>

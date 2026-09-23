@@ -1,4 +1,5 @@
 import { Columns3 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,17 +33,19 @@ export function ColumnsMenu({
   isHidden: (key: string) => boolean;
   onToggle: (key: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2.5">
           <Columns3 className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Columns</span>
+          <span className="hidden sm:inline">{t("common.columns", "Columns")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground">
-          Show columns
+          {t("common.showColumns", "Show columns")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {columns.map((c) => (
@@ -53,9 +56,11 @@ export function ColumnsMenu({
             onCheckedChange={() => onToggle(c.key)}
             onSelect={(e) => e.preventDefault()}
           >
-            {c.label}
+            {t(`table.columns.${c.key}`, t(c.label, c.label))}
             {c.required && (
-              <span className="ml-auto text-[10px] uppercase text-muted-foreground">req</span>
+              <span className="ml-auto text-[10px] uppercase text-muted-foreground">
+                {t("common.required_short", "req")}
+              </span>
             )}
           </DropdownMenuCheckboxItem>
         ))}

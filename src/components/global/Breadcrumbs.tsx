@@ -1,6 +1,9 @@
 /** Route-derived breadcrumbs. Progressive: hidden on short paths. */
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronRight, Home } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+type TFunc = ReturnType<typeof useTranslation>["t"];
 
 const LABELS: Record<string, string> = {
   dashboard: "Dashboard",
@@ -48,20 +51,27 @@ const LABELS: Record<string, string> = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function label(seg: string): string {
-  if (LABELS[seg]) return LABELS[seg];
+function label(seg: string, t: TFunc): string {
+  if (LABELS[seg]) {
+    const raw = LABELS[seg];
+    return String(t(`nav.items.${seg}`, String(t(`breadcrumb.${seg}`, String(t(raw, raw))))));
+  }
   if (UUID.test(seg)) return seg.slice(0, 8) + "…";
-  return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatted = seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return String(
+    t(`nav.items.${seg}`, String(t(`breadcrumb.${seg}`, String(t(formatted, formatted))))),
+  );
 }
 
 export function Breadcrumbs() {
+  const { t } = useTranslation();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const parts = path.split("/").filter(Boolean);
   if (parts.length === 0) return null;
 
   const crumbs = parts.map((seg, i) => ({
     href: "/" + parts.slice(0, i + 1).join("/"),
-    label: label(seg),
+    label: label(seg, t),
     last: i === parts.length - 1,
   }));
 

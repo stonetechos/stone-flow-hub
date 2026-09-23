@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Receipt } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/_authenticated/invoices/")({
 });
 
 function InvoicesPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -138,7 +140,7 @@ function InvoicesPage() {
         action={
           roles.canWrite && (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/invoices/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New invoice
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("invoices.newInvoice", "New invoice")}
             </Button>
           )
         }
@@ -155,7 +157,7 @@ function InvoicesPage() {
           message="Convert an accepted quote to create your first invoice."
           action={
             <Button onClick={() => nav({ to: "/invoices/new" })}>
-              <Plus className="mr-2 h-4 w-4" /> New invoice
+              <Plus className="mr-2 h-4 w-4" /> {t("invoices.newInvoice", "New invoice")}
             </Button>
           }
         />

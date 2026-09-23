@@ -94,7 +94,10 @@ const TableHead = React.forwardRef<
       if (!trimmed) return node;
       const translated = t(
         `table.${trimmed}`,
-        t(`table.${trimmed.toUpperCase()}`, t(`field.${trimmed}`, t(`label.${trimmed}`, trimmed))),
+        t(
+          `table.${trimmed.toUpperCase()}`,
+          t(`field.${trimmed}`, t(`label.${trimmed}`, t(trimmed, trimmed))),
+        ),
       );
       if (translated !== trimmed) {
         return node.replace(trimmed, translated);
