@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -176,6 +177,7 @@ function statusVariant(s: AdminUserStatus): "default" | "outline" | "secondary" 
 }
 
 function UsersAdminPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const listAuthUsersFn = useServerFn(listAuthUsers);
   const inviteFn = useServerFn(inviteUser);
@@ -439,7 +441,7 @@ function UsersAdminPage() {
         subtitle="Invite users, assign roles, and manage the full user lifecycle. Email remains the login identity."
         actions={
           <Button onClick={() => setInviteOpen(true)} size="sm">
-            <UserPlus className="mr-1.5 h-4 w-4" /> Add user
+            <UserPlus className="mr-1.5 h-4 w-4" /> {t("actions.addUser", "Add user")}
           </Button>
         }
       />
@@ -449,7 +451,7 @@ function UsersAdminPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by display name or email…"
+            placeholder={t("field.searchByDisplayNameOrEmail", "Search by display name or email…")}
             className="pl-8"
           />
         </div>
@@ -461,11 +463,11 @@ function UsersAdminPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="invited">Invited</SelectItem>
-            <SelectItem value="expired">Invite expired</SelectItem>
-            <SelectItem value="deactivated">Deactivated</SelectItem>
+            <SelectItem value="all">{t("status.all", "All statuses")}</SelectItem>
+            <SelectItem value="active">{t("status.active", "Active")}</SelectItem>
+            <SelectItem value="invited">{t("status.invited", "Invited")}</SelectItem>
+            <SelectItem value="expired">{t("status.expired", "Invite expired")}</SelectItem>
+            <SelectItem value="deactivated">{t("status.deactivated", "Deactivated")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -479,22 +481,26 @@ function UsersAdminPage() {
             <div className="p-6 text-sm text-destructive">{toUserMessage(error)}</div>
           ) : filtered.length === 0 ? (
             <EmptyState
-              title={combined.length === 0 ? "No users yet." : "No users match your filters."}
+              title={
+                combined.length === 0
+                  ? t("admin.noUsersYet", "No users yet.")
+                  : t("admin.noUsersMatch", "No users match your filters.")
+              }
             />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3">Display Name</th>
-                    <th className="px-4 py-3">Job Title</th>
-                    <th className="px-4 py-3">Department</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Roles</th>
-                    <th className="px-4 py-3">Last Login</th>
-                    <th className="px-4 py-3">Created</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3">{t("table.displayName", "Display Name")}</th>
+                    <th className="px-4 py-3">{t("table.jobTitle", "Job Title")}</th>
+                    <th className="px-4 py-3">{t("table.department", "Department")}</th>
+                    <th className="px-4 py-3">{t("table.email", "Email")}</th>
+                    <th className="px-4 py-3">{t("table.status", "Status")}</th>
+                    <th className="px-4 py-3">{t("table.roles", "Roles")}</th>
+                    <th className="px-4 py-3">{t("table.lastLogin", "Last Login")}</th>
+                    <th className="px-4 py-3">{t("table.created", "Created")}</th>
+                    <th className="px-4 py-3 text-right">{t("table.actions", "Actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -548,9 +554,10 @@ function UsersAdminPage() {
       </Card>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Display name is shown throughout the app (greetings, activity log, comments, assignments).
-        Deactivating a user preserves all historical records; deletion is blocked for yourself and
-        for the last remaining active administrator.
+        {t(
+          "admin.footnote",
+          "Display name is shown throughout the app (greetings, activity log, comments, assignments). Deactivating a user preserves all historical records; deletion is blocked for yourself and for the last remaining active administrator.",
+        )}
       </p>
 
       <CreateUserDialog
@@ -1120,6 +1127,7 @@ function UserRowView({
   lifecycleBusy: boolean;
   renaming: boolean;
 }) {
+  const { t } = useTranslation();
   const rolePool = actor.isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
   const available = rolePool.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
@@ -1204,11 +1212,15 @@ function UserRowView({
       <td className="px-4 py-3 text-muted-foreground">{user.department ?? "—"}</td>
       <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
       <td className="px-4 py-3">
-        <Badge variant={statusVariant(user.status)}>{STATUS_LABEL[user.status]}</Badge>
+        <Badge variant={statusVariant(user.status)}>
+          {t(`status.${user.status}`, STATUS_LABEL[user.status])}
+        </Badge>
       </td>
       <td className="px-4 py-3">
         {user.roles.length === 0 ? (
-          <span className="text-xs text-muted-foreground">No application roles assigned.</span>
+          <span className="text-xs text-muted-foreground">
+            {t("admin.noRoles", "No application roles assigned.")}
+          </span>
         ) : (
           <div className="flex flex-wrap items-center gap-1.5">
             {user.roles.map((r) =>
@@ -1226,14 +1238,14 @@ function UserRowView({
                   }
                 >
                   <ShieldAlert className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                  {ROLE_LABEL[r]}
+                  {t(`roles.${r}`, ROLE_LABEL[r])}
                   {actor.isSuperAdmin && !isSelf && (
                     <button
                       type="button"
                       onClick={() => onRevoke(r)}
                       disabled={busy}
                       className="ml-0.5 rounded hover:bg-blue-200/60 dark:hover:bg-blue-900"
-                      aria-label="Remove Super Admin"
+                      aria-label={`Remove ${t(`roles.${r}`, ROLE_LABEL[r])}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1241,7 +1253,7 @@ function UserRowView({
                 </Badge>
               ) : (
                 <Badge key={r} variant="secondary" className="gap-1">
-                  {ROLE_LABEL[r]}
+                  {t(`roles.${r}`, ROLE_LABEL[r])}
                   <button
                     type="button"
                     onClick={() => onRevoke(r)}
@@ -1255,7 +1267,7 @@ function UserRowView({
                         : undefined
                     }
                     className="ml-0.5 rounded hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label={`Remove ${ROLE_LABEL[r]}`}
+                    aria-label={`Remove ${t(`roles.${r}`, ROLE_LABEL[r])}`}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -1285,7 +1297,7 @@ function UserRowView({
                 disabled={busy}
                 onClick={() => onAssign(r)}
               >
-                + {ROLE_LABEL[r]}
+                + {t(`roles.${r}`, ROLE_LABEL[r])}
               </Button>
             ))}
           <DropdownMenu>

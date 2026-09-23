@@ -1316,3 +1316,52 @@ body[data-scroll-locked] {
   --intent-primary-hover: #dc2626;
   --text-on-material: #ffffff;
 }
+
+/* ==============================================================
+ * Stoneman Mascot — Animation & Glow Engine
+ * ============================================================== */
+@keyframes stoneman-float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
+}
+
+@keyframes stoneman-pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 16px rgba(13, 148, 136, 0.4),
+      0 8px 24px rgba(8, 59, 67, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgba(20, 184, 166, 0.7),
+      0 12px 32px rgba(8, 59, 67, 0.5);
+  }
+}
+
+@keyframes stoneman-eye-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.95));
+  }
+}
+
+.animate-stoneman-float {
+  animation: stoneman-float 4s ease-in-out infinite;
+}
+
+.animate-stoneman-glow {
+  animation: stoneman-pulse-glow 3.5s ease-in-out infinite;
+}
+
+.animate-stoneman-eyes {
+  animation: stoneman-eye-glow 2.5s ease-in-out infinite;
+}

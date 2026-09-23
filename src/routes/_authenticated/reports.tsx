@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   BarChart3,
@@ -85,13 +86,14 @@ const REPORTS: ReportCard[] = [
 ];
 
 function ReportsPage() {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState<ReportKey | null>(null);
 
   async function run(key: ReportKey) {
     setBusy(key);
     try {
       await downloadReport(key);
-      toast.success("Downloaded");
+      toast.success(t("reports.downloaded", "Downloaded"));
     } catch (e) {
       toast.error(toUserMessage(e));
     } finally {
@@ -107,16 +109,19 @@ function ReportsPage() {
           <Card key={r.key} className="h-full shadow-1">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <r.icon className="h-4 w-4 text-primary" /> {r.title}
+                <r.icon className="h-4 w-4 text-primary" /> {t(`reports.${r.key}`, r.title)}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{r.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {t(`reports.${r.key}Desc`, r.description)}
+              </p>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy === r.key}
                 onClick={() => run(r.key)}
+                aria-label={t(`reports.${r.key}`, r.title)}
               >
                 {busy === r.key ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -131,13 +136,15 @@ function ReportsPage() {
       <Card className="mt-6 shadow-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <ShieldCheck className="h-4 w-4 text-primary" /> Also available
+            <ShieldCheck className="h-4 w-4 text-primary" />{" "}
+            {t("reports.alsoAvailable", "Also available")}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Every entity page has "Export CSV" and a print-to-PDF option for its detail view. Vendor
-          scorecard, QC results, and installation status are available inline on the relevant
-          record.
+          {t(
+            "reports.alsoAvailableDesc",
+            'Every entity page has "Export CSV" and a print-to-PDF option for its detail view. Vendor scorecard, QC results, and installation status are available inline on the relevant record.',
+          )}
         </CardContent>
       </Card>
     </div>

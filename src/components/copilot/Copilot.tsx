@@ -40,6 +40,7 @@ import { useInsightLifecycle } from "@/lib/insights/state/hooks";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieActionCard";
 import { useSpeechCapture } from "@/lib/voice/useSpeechCapture";
+import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
@@ -423,25 +424,33 @@ export function Copilot() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          type="button"
-          aria-label="Open Stoneman AI (⌘J)"
-          className={cn(
-            "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex h-12 w-12 items-center justify-center rounded-full",
-            "bg-gradient-to-tr from-stone-200 via-stone-100 to-white text-stone-900 shadow-lg shadow-stone-400/35 border border-stone-200 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500",
-          )}
-        >
-          <img src="/stoneman.png" alt="Stoneman AI" className="h-6 w-6 object-contain" />
-        </button>
+        <StonemanMascot onClick={() => setOpen(true)} />
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2 px-1">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-stone-900/10 text-stone-900 shadow-xs dark:bg-stone-100/10 dark:text-stone-100">
-              <img src="/stoneman.png" alt="Stoneman AI" className="h-5 w-5 object-contain" />
+          <div className="flex items-center gap-2.5 px-1">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-600 p-0.5 shadow-md">
+              <img
+                src="/stoneman-avatar.png"
+                alt="Stoneman AI"
+                className="h-full w-full rounded-[10px] object-cover"
+              />
             </div>
-            <SheetTitle className="font-display text-sm tracking-tight">Stoneman AI</SheetTitle>
-            <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <SheetTitle className="font-display text-sm font-bold tracking-tight">
+                  Stoneman AI
+                </SheetTitle>
+                <span className="flex h-2 w-2 rounded-full bg-teal-500 ring-2 ring-teal-300/40 animate-pulse" />
+              </div>
+              <span className="text-[10px] font-medium text-teal-700 dark:text-teal-300">
+                Intelligent Mascot & Assistant
+              </span>
+            </div>
+            <Badge
+              variant="secondary"
+              className="ml-auto text-[10px] uppercase font-mono tracking-wider"
+            >
               {ctx.entity}
             </Badge>
           </div>
@@ -666,9 +675,9 @@ function Bubble({ role, content }: ChatMsg) {
   return (
     <div className="flex items-start gap-2 max-w-[90%]">
       <img
-        src="/stoneman.png"
+        src="/stoneman-avatar.png"
         alt="Stoneman"
-        className="h-7 w-7 shrink-0 mt-0.5 object-contain drop-shadow-sm"
+        className="h-7 w-7 shrink-0 mt-0.5 rounded-full object-cover ring-1 ring-teal-500/40 drop-shadow-xs"
       />
       <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-foreground shadow-sm">
         {content}

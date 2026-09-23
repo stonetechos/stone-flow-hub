@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -84,16 +85,40 @@ TableRow.displayName = "TableRow";
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <th
-    ref={ref}
-    className={cn(
-      "h-9 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, children, ...props }, ref) => {
+  const { t } = useTranslation();
+
+  const translateNode = (node: React.ReactNode): React.ReactNode => {
+    if (typeof node === "string") {
+      const trimmed = node.trim();
+      if (!trimmed) return node;
+      const translated = t(
+        `table.${trimmed}`,
+        t(`table.${trimmed.toUpperCase()}`, t(`field.${trimmed}`, t(`label.${trimmed}`, trimmed))),
+      );
+      if (translated !== trimmed) {
+        return node.replace(trimmed, translated);
+      }
+      return node;
+    }
+    return node;
+  };
+
+  const translatedChildren = React.Children.map(children, translateNode);
+
+  return (
+    <th
+      ref={ref}
+      className={cn(
+        "h-9 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        className,
+      )}
+      {...props}
+    >
+      {translatedChildren}
+    </th>
+  );
+});
 TableHead.displayName = "TableHead";
 
 const TableCell = React.forwardRef<

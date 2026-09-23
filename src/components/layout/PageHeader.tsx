@@ -26,10 +26,16 @@ export function PageHeader({
   const { t } = useTranslation();
   const displayTitle =
     typeof title === "string"
-      ? t(`page.${title}`, t(`nav.items.${title.toLowerCase()}`, title))
+      ? t(
+          `page.${title}`,
+          t(
+            `nav.items.${title.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+            t(`nav.items.${title.toLowerCase().replace(/\s+/g, "")}`, t(title, title)),
+          ),
+        )
       : title;
   const displaySubtitle =
-    typeof subtitle === "string" ? t(`subtitle.${subtitle}`, subtitle) : subtitle;
+    typeof subtitle === "string" ? t(`subtitle.${subtitle}`, t(subtitle, subtitle)) : subtitle;
 
   return (
     <div

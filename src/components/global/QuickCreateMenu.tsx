@@ -1,5 +1,6 @@
 /** Universal '+' menu for creating any entity from anywhere. */
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   Users,
@@ -75,6 +76,7 @@ export function QuickCreateMenu({
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 } = {}) {
+  const { t } = useTranslation();
   const groups: ReadonlyArray<MenuCategory> = [
     "Sales",
     "Purchase",
@@ -85,9 +87,13 @@ export function QuickCreateMenu({
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" className="h-8 gap-1.5 px-2.5" aria-label="Create new record (press C)">
-          <Plus className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Create</span>
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 px-3 bg-[#083b43] hover:bg-[#0c4e58] text-white font-semibold border border-teal-900/40 shadow-xs transition-all active:scale-95"
+          aria-label={t("nav.items.create", "Create new record (press C)")}
+        >
+          <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+          <span className="hidden sm:inline">{t("actions.create", "Create")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -95,7 +101,7 @@ export function QuickCreateMenu({
           <div key={g}>
             {gi > 0 && <DropdownMenuSeparator />}
             <DropdownMenuLabel className="text-xs uppercase tracking-wide text-muted-foreground">
-              {g}
+              {t(`nav.groups.${g.toLowerCase()}`, g)}
             </DropdownMenuLabel>
             {ITEMS.filter((i) => i.group === g).map((i) => {
               const Icon = i.icon;
@@ -103,7 +109,7 @@ export function QuickCreateMenu({
                 <DropdownMenuItem key={i.to} asChild>
                   <Link to={i.to} className="flex items-center gap-2">
                     <Icon className="h-4 w-4" />
-                    {i.label}
+                    {t(`field.${i.label}`, t(`quickCreate.${i.label}`, i.label))}
                   </Link>
                 </DropdownMenuItem>
               );

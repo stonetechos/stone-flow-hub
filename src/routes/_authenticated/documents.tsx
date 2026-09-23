@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/documents")({
 });
 
 function DocumentsPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const [entityType, setEntityType] = useState("");
   const [folder, setFolder] = useState("");
@@ -77,7 +79,7 @@ function DocumentsPage() {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="File name…"
+              placeholder={t("documents.searchPlaceholder", "File name…")}
               className="h-9"
             />
           </div>
@@ -91,10 +93,10 @@ function DocumentsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All entities</SelectItem>
+                <SelectItem value="all">{t("documents.allEntities", "All entities")}</SelectItem>
                 {GROUPS.map((g) => (
                   <SelectItem key={g.value} value={g.value}>
-                    {g.label}
+                    {t(`field.${g.label}`, g.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -107,19 +109,29 @@ function DocumentsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All folders</SelectItem>
-                <SelectItem value="quotation">Quotation</SelectItem>
-                <SelectItem value="invoice">Invoice</SelectItem>
-                <SelectItem value="purchase_order">Purchase Order</SelectItem>
-                <SelectItem value="delivery_challan">Delivery Challan</SelectItem>
-                <SelectItem value="drawing">Drawing</SelectItem>
-                <SelectItem value="site_image">Site Image</SelectItem>
-                <SelectItem value="sample_photo">Sample Photo</SelectItem>
-                <SelectItem value="product_image">Product Image</SelectItem>
-                <SelectItem value="transport_document">Transport Document</SelectItem>
-                <SelectItem value="boq">BOQ</SelectItem>
-                <SelectItem value="reference">Reference</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="all">{t("documents.allFolders", "All folders")}</SelectItem>
+                <SelectItem value="quotation">{t("field.Quotation", "Quotation")}</SelectItem>
+                <SelectItem value="invoice">{t("field.Invoice", "Invoice")}</SelectItem>
+                <SelectItem value="purchase_order">
+                  {t("field.Purchase Order", "Purchase Order")}
+                </SelectItem>
+                <SelectItem value="delivery_challan">
+                  {t("field.Delivery Challan", "Delivery Challan")}
+                </SelectItem>
+                <SelectItem value="drawing">{t("field.Drawing", "Drawing")}</SelectItem>
+                <SelectItem value="site_image">{t("field.Site Image", "Site Image")}</SelectItem>
+                <SelectItem value="sample_photo">
+                  {t("field.Sample Photo", "Sample Photo")}
+                </SelectItem>
+                <SelectItem value="product_image">
+                  {t("field.Product Image", "Product Image")}
+                </SelectItem>
+                <SelectItem value="transport_document">
+                  {t("field.Transport Document", "Transport Document")}
+                </SelectItem>
+                <SelectItem value="boq">{t("field.BOQ", "BOQ")}</SelectItem>
+                <SelectItem value="reference">{t("field.Reference", "Reference")}</SelectItem>
+                <SelectItem value="other">{t("field.Other", "Other")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -127,11 +139,11 @@ function DocumentsPage() {
       </Card>
 
       {isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">Loading…</div>
+        <div className="p-6 text-sm text-muted-foreground">{t("common.loading", "Loading…")}</div>
       ) : rows.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">
-            No documents match your filters.
+            {t("documents.noDocumentsMatch", "No documents match your filters.")}
           </CardContent>
         </Card>
       ) : (
