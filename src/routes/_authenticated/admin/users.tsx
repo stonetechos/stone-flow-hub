@@ -150,11 +150,12 @@ interface CombinedUser extends AdminUserRow {
   department: string | null;
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, lang?: string): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString(undefined, {
+  const locale = lang?.startsWith("gu") ? "gu-IN" : lang?.startsWith("hi") ? "hi-IN" : "en-IN";
+  return d.toLocaleString(locale, {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -249,7 +250,11 @@ function UsersAdminPage() {
       targetRoles: AppRole[];
     }) => assignRoleGuarded(actor, { id: userId, roles: targetRoles }, role),
     onSuccess: (_d, v) => {
-      toast.success(`Granted ${ROLE_LABEL[v.role]}`);
+      toast.success(
+        t("admin.grantedRole", "Granted {{role}}", {
+          role: t(`roles.${v.role}`, ROLE_LABEL[v.role]),
+        }),
+      );
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -280,7 +285,11 @@ function UsersAdminPage() {
       return revokeRoleGuarded(actor, { id: userId, roles: targetRoles }, role);
     },
     onSuccess: (_d, v) => {
-      toast.success(`Removed ${ROLE_LABEL[v.role]}`);
+      toast.success(
+        t("admin.removedRole", "Removed {{role}}", {
+          role: t(`roles.${v.role}`, ROLE_LABEL[v.role]),
+        }),
+      );
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -288,14 +297,14 @@ function UsersAdminPage() {
 
   const reset = useMutation({
     mutationFn: (email: string) => sendPasswordReset(email),
-    onSuccess: () => toast.success("Password reset email sent"),
+    onSuccess: () => toast.success(t("settings.security.resetSent", "Password reset email sent")),
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
   const resetPassword = useMutation({
     mutationFn: ({ userId, password }: { userId: string; password: string }) =>
       resetPasswordFn({ data: { user_id: userId, password } }),
-    onSuccess: () => toast.success("Password reset"),
+    onSuccess: () => toast.success(t("settings.security.resetSent", "Password reset")),
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
@@ -303,7 +312,7 @@ function UsersAdminPage() {
     mutationFn: ({ userId, fullName }: { userId: string; fullName: string }) =>
       updateDisplayName(userId, fullName),
     onSuccess: () => {
-      toast.success("Display name updated");
+      toast.success(t("admin.displayNameUpdated", "Display name updated"));
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -327,7 +336,7 @@ function UsersAdminPage() {
         return res;
       }),
     onSuccess: () => {
-      toast.success("Invitation sent");
+      toast.success(t("admin.invitationSent", "Invitation sent"));
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -353,7 +362,7 @@ function UsersAdminPage() {
         return res;
       }),
     onSuccess: () => {
-      toast.success("User created");
+      toast.success(t("admin.userCreated", "User created"));
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -367,7 +376,7 @@ function UsersAdminPage() {
           redirect_to: typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
         },
       }),
-    onSuccess: () => toast.success("Invitation resent"),
+    onSuccess: () => toast.success(t("admin.invitationResent", "Invitation resent")),
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
@@ -375,7 +384,11 @@ function UsersAdminPage() {
     mutationFn: ({ userId }: { userId: string; pendingInvite: boolean }) =>
       deleteFn({ data: { user_id: userId } }),
     onSuccess: (_d, v) => {
-      toast.success(v.pendingInvite ? "Invitation cancelled" : "User deleted");
+      toast.success(
+        v.pendingInvite
+          ? t("admin.invitationCancelled", "Invitation cancelled")
+          : t("admin.userDeleted", "User deleted"),
+      );
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -385,7 +398,11 @@ function UsersAdminPage() {
     mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
       setActiveFn({ data: { user_id: userId, is_active: isActive } }),
     onSuccess: (_d, v) => {
-      toast.success(v.isActive ? "User reactivated" : "User deactivated");
+      toast.success(
+        v.isActive
+          ? t("admin.userReactivated", "User reactivated")
+          : t("admin.userDeactivated", "User deactivated"),
+      );
       invalidate();
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -573,11 +590,14 @@ function UsersAdminPage() {
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this user permanently?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("admin.deleteConfirmTitle", "Delete this user permanently?")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This removes their sign-in access and profile. Historical records (activity log,
-              comments, assignments) are preserved and continue to show the user's previous display
-              name. For most cases, deactivating instead is safer.
+              {t(
+                "admin.deleteConfirmDesc",
+                "This removes their sign-in access and profile. Historical records (activity log, comments, assignments) are preserved and continue to show the user's previous display name. For most cases, deactivating instead is safer.",
+              )}
               {confirmDelete?.email ? (
                 <span className="mt-2 block font-medium text-foreground">
                   {confirmDelete.full_name?.trim() || fallbackName(confirmDelete.email)} —{" "}
@@ -587,7 +607,9 @@ function UsersAdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={del.isPending}>
+              {t("common.cancel", "Cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={del.isPending}
               onClick={(e) => {
@@ -609,8 +631,8 @@ function UsersAdminPage() {
             >
               {del.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
               {confirmDelete?.status === "invited" || confirmDelete?.status === "expired"
-                ? "Cancel invitation"
-                : "Delete user"}
+                ? t("admin.cancelInvite", "Cancel invitation")
+                : t("admin.deleteUser", "Delete user")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -658,6 +680,7 @@ function CreateUserDialog({
     role?: AppRole | null;
   }) => Promise<unknown>;
 }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"invite" | "password">("invite");
   // Dirty-tracking (and the close-confirmation guard
   // below) only covers the "Set password now" tab: it's the one tab that
@@ -670,15 +693,20 @@ function CreateUserDialog({
     <Dialog open={open} onOpenChange={(o) => confirmCloseIfDirty(o, dirty) && onOpenChange(o)}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add user</DialogTitle>
+          <DialogTitle>{t("admin.addUser", "Add user")}</DialogTitle>
           <DialogDescription>
-            Send an email invitation, or set a password directly and skip the invite step.
+            {t(
+              "admin.addUserDesc",
+              "Send an email invitation, or set a password directly and skip the invite step.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
           <TabsList>
-            <TabsTrigger value="invite">Send invite</TabsTrigger>
-            <TabsTrigger value="password">Set password now</TabsTrigger>
+            <TabsTrigger value="invite">{t("admin.sendInviteTab", "Send invite")}</TabsTrigger>
+            <TabsTrigger value="password">
+              {t("admin.setPasswordTab", "Set password now")}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="invite">
             <InviteForm
@@ -714,6 +742,7 @@ function InviteForm({
   onSubmit: (v: { email: string; full_name?: string | null; role?: AppRole | null }) => void;
   isSuperAdmin?: boolean;
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AppRole | "none">("none");
@@ -733,10 +762,18 @@ function InviteForm({
       busy={busy}
     >
       <p className="text-xs text-muted-foreground">
-        Sends a sign-in invitation. The recipient sets their own password on first visit.
+        {t(
+          "admin.inviteDesc",
+          "Sends a sign-in invitation. The recipient sets their own password on first visit.",
+        )}
       </p>
       <QuickForm.QuickFill>
-        <Field label="Email" required htmlFor="invite-email" className="md:col-span-2">
+        <Field
+          label={t("field.email", "Email")}
+          required
+          htmlFor="invite-email"
+          className="md:col-span-2"
+        >
           <Input
             id="invite-email"
             type="email"
@@ -746,7 +783,11 @@ function InviteForm({
             placeholder="user@company.com"
           />
         </Field>
-        <Field label="Display name (optional)" htmlFor="invite-name" className="md:col-span-2">
+        <Field
+          label={t("admin.displayNameOptional", "Display name (optional)")}
+          htmlFor="invite-name"
+          className="md:col-span-2"
+        >
           <Input
             id="invite-name"
             value={fullName}
@@ -754,16 +795,21 @@ function InviteForm({
             placeholder="e.g. Harsh Pupneja"
           />
         </Field>
-        <Field label="Initial role (optional)" className="md:col-span-2">
+        <Field
+          label={t("admin.initialRoleOptional", "Initial role (optional)")}
+          className="md:col-span-2"
+        >
           <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No role (assign later)</SelectItem>
+              <SelectItem value="none">
+                {t("admin.noRoleLater", "No role (assign later)")}
+              </SelectItem>
               {availableRoles.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {ROLE_LABEL[r]}
+                  {t(`roles.${r}`, ROLE_LABEL[r])}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -773,7 +819,7 @@ function InviteForm({
 
       <QuickForm.Actions>
         <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
-          Cancel
+          {t("common.cancel", "Cancel")}
         </Button>
         <Button type="submit" disabled={busy || !email.trim()}>
           {busy ? (
@@ -781,7 +827,7 @@ function InviteForm({
           ) : (
             <Send className="mr-1.5 h-4 w-4" />
           )}
-          Send invitation
+          {t("admin.sendInvitation", "Send invitation")}
         </Button>
       </QuickForm.Actions>
     </QuickForm>
@@ -806,6 +852,7 @@ function PasswordCreateForm({
   onDirtyChange?: (dirty: boolean) => void;
   isSuperAdmin?: boolean;
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AppRole | "none">("none");
@@ -858,12 +905,13 @@ function PasswordCreateForm({
       }}
     >
       <p className="text-xs text-muted-foreground">
-        Creates the account with this password immediately — no invitation email is sent, and the
-        email address is not independently verified. Share the password with the user yourself.
-        They'll be required to set their own password the first time they sign in.
+        {t(
+          "admin.passwordCreateDesc",
+          "Creates the account with this password immediately — no invitation email is sent, and the email address is not independently verified. Share the password with the user yourself. They'll be required to set their own password the first time they sign in.",
+        )}
       </p>
       <div className="space-y-1.5">
-        <Label htmlFor="pw-email">Email</Label>
+        <Label htmlFor="pw-email">{t("field.email", "Email")}</Label>
         <Input
           id="pw-email"
           type="email"
@@ -875,7 +923,7 @@ function PasswordCreateForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="pw-name">Display name (optional)</Label>
+        <Label htmlFor="pw-name">{t("admin.displayNameOptional", "Display name (optional)")}</Label>
         <Input
           id="pw-name"
           value={fullName}
@@ -884,16 +932,16 @@ function PasswordCreateForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label>Initial role (optional)</Label>
+        <Label>{t("admin.initialRoleOptional", "Initial role (optional)")}</Label>
         <Select value={role} onValueChange={(v) => setRole(v as AppRole | "none")}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">No role (assign later)</SelectItem>
+            <SelectItem value="none">{t("admin.noRoleLater", "No role (assign later)")}</SelectItem>
             {availableRoles.map((r) => (
               <SelectItem key={r} value={r}>
-                {ROLE_LABEL[r]}
+                {t(`roles.${r}`, ROLE_LABEL[r])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -901,13 +949,13 @@ function PasswordCreateForm({
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <Label htmlFor="pw-password">Password</Label>
+          <Label htmlFor="pw-password">{t("admin.password", "Password")}</Label>
           <button
             type="button"
             onClick={() => setPassword(generatePassword())}
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
-            <RefreshCw className="h-3 w-3" /> Generate
+            <RefreshCw className="h-3 w-3" /> {t("admin.generate", "Generate")}
           </button>
         </div>
         <div className="relative">
@@ -950,7 +998,7 @@ function PasswordCreateForm({
           <Progress value={strength.percent} className="h-1" />
           <div className="flex items-center justify-between text-xs">
             <span className={password ? toneText(strength.tone) : "text-muted-foreground"}>
-              {password ? strength.label : "Minimum 8 characters"}
+              {password ? strength.label : t("admin.min8Chars", "Minimum 8 characters")}
             </span>
             {tooShort && (
               <span className="text-status-danger-fg">
@@ -963,7 +1011,7 @@ function PasswordCreateForm({
       </div>
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
-          Cancel
+          {t("common.cancel", "Cancel")}
         </Button>
         <Button
           type="submit"
@@ -974,7 +1022,7 @@ function PasswordCreateForm({
           ) : (
             <KeyRound className="mr-1.5 h-4 w-4" />
           )}
-          Create user
+          {t("admin.createUser", "Create user")}
         </Button>
       </DialogFooter>
     </form>
@@ -1001,6 +1049,7 @@ function SetPasswordDialog({
   onOpenChange: (o: boolean) => void;
   onSubmit: (password: string) => void;
 }) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const strength = scorePasswordStrength(password);
@@ -1014,10 +1063,13 @@ function SetPasswordDialog({
     <Dialog open={!!user} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Set a new password</DialogTitle>
+          <DialogTitle>{t("admin.setNewPasswordTitle", "Set a new password")}</DialogTitle>
           <DialogDescription>
-            {user?.full_name?.trim() || fallbackName(user?.email)} — {user?.email ?? ""}. Takes
-            effect immediately; they'll be required to set their own password on next sign-in.
+            {user?.full_name?.trim() || fallbackName(user?.email)} — {user?.email ?? ""}.{" "}
+            {t(
+              "admin.setNewPasswordDesc",
+              "Takes effect immediately; they'll be required to set their own password on next sign-in.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -1029,7 +1081,7 @@ function SetPasswordDialog({
           }}
         >
           <div className="space-y-1.5">
-            <Label htmlFor="reset-pw-password">New password</Label>
+            <Label htmlFor="reset-pw-password">{t("admin.password", "New password")}</Label>
             <div className="relative">
               <Input
                 id="reset-pw-password"
@@ -1061,7 +1113,7 @@ function SetPasswordDialog({
               <Progress value={strength.percent} className="h-1" />
               <div className="flex items-center justify-between text-xs">
                 <span className={password ? toneText(strength.tone) : "text-muted-foreground"}>
-                  {password ? strength.label : "Minimum 8 characters"}
+                  {password ? strength.label : t("admin.min8Chars", "Minimum 8 characters")}
                 </span>
                 {tooShort && (
                   <span className="text-status-danger-fg">
@@ -1079,7 +1131,7 @@ function SetPasswordDialog({
               onClick={() => onOpenChange(false)}
               disabled={busy}
             >
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={busy || password.length < MIN_PASSWORD_LENGTH}>
               {busy ? (
@@ -1087,7 +1139,7 @@ function SetPasswordDialog({
               ) : (
                 <KeyRound className="mr-1.5 h-4 w-4" />
               )}
-              Set password
+              {t("admin.setNewPassword", "Set new password")}
             </Button>
           </DialogFooter>
         </form>
@@ -1127,7 +1179,7 @@ function UserRowView({
   lifecycleBusy: boolean;
   renaming: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const rolePool = actor.isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
   const available = rolePool.filter((r) => !user.roles.includes(r));
   const [editing, setEditing] = useState(false);
@@ -1181,7 +1233,7 @@ function UserRowView({
               className="h-8 w-8"
               onClick={commit}
               disabled={renaming}
-              aria-label="Save display name"
+              aria-label={t("admin.saveDisplayName", "Save display name")}
             >
               <Check className="h-4 w-4" />
             </Button>
@@ -1191,7 +1243,7 @@ function UserRowView({
               className="h-8 w-8"
               onClick={() => setEditing(false)}
               disabled={renaming}
-              aria-label="Cancel"
+              aria-label={t("common.cancel", "Cancel")}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -1201,7 +1253,7 @@ function UserRowView({
             type="button"
             onClick={startEdit}
             className="group inline-flex items-center gap-1.5 text-left hover:text-primary"
-            title="Click to edit display name"
+            title={t("admin.clickToEdit", "Click to edit display name")}
           >
             <span>{user.full_name?.trim() || fallbackName(user.email)}</span>
             <Pencil className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
@@ -1278,9 +1330,11 @@ function UserRowView({
         )}
       </td>
       <td className="px-4 py-3 text-xs text-muted-foreground">
-        {formatDate(user.last_sign_in_at)}
+        {formatDate(user.last_sign_in_at, i18n.language)}
       </td>
-      <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(user.created_at)}</td>
+      <td className="px-4 py-3 text-xs text-muted-foreground">
+        {formatDate(user.created_at, i18n.language)}
+      </td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-end gap-1.5">
           {!isProtected &&
@@ -1307,21 +1361,23 @@ function UserRowView({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Lifecycle</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("admin.lifecycle", "Lifecycle")}</DropdownMenuLabel>
               {pendingInvite ? (
                 <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
-                  <Send className="mr-2 h-4 w-4" /> Resend invitation
+                  <Send className="mr-2 h-4 w-4" /> {t("admin.resendInvite", "Resend invitation")}
                 </DropdownMenuItem>
               ) : null}
               <DropdownMenuItem onClick={onReset} disabled={!user.email || lifecycleBusy}>
-                <KeyRound className="mr-2 h-4 w-4" /> Send password reset
+                <KeyRound className="mr-2 h-4 w-4" />{" "}
+                {t("admin.sendPasswordReset", "Send password reset")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onSetNewPassword}
                 disabled={!canSetPassword}
                 title={!canSetPassword ? "This account is protected." : undefined}
               >
-                <KeyRound className="mr-2 h-4 w-4" /> Set new password
+                <KeyRound className="mr-2 h-4 w-4" />{" "}
+                {t("admin.setNewPassword", "Set new password")}
               </DropdownMenuItem>
               {user.is_active ? (
                 <DropdownMenuItem
@@ -1335,11 +1391,12 @@ function UserRowView({
                         : undefined
                   }
                 >
-                  <UserX className="mr-2 h-4 w-4" /> Deactivate user
+                  <UserX className="mr-2 h-4 w-4" /> {t("admin.deactivateUser", "Deactivate user")}
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem onClick={() => onSetActive(true)} disabled={lifecycleBusy}>
-                  <UserCheck className="mr-2 h-4 w-4" /> Reactivate user
+                  <UserCheck className="mr-2 h-4 w-4" />{" "}
+                  {t("admin.reactivateUser", "Reactivate user")}
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
@@ -1356,7 +1413,9 @@ function UserRowView({
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                {pendingInvite ? "Cancel invitation" : "Delete user"}
+                {pendingInvite
+                  ? t("admin.cancelInvite", "Cancel invitation")
+                  : t("admin.deleteUser", "Delete user")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
