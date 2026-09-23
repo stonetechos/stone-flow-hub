@@ -175,10 +175,34 @@
     "optionalRemarks": "Optional remarks",
     "primary": "Primary",
     "retry": "Retry",
-    "directCustomer": "Direct Customer"
+    "directCustomer": "Direct Customer",
+    "saveChanges": "Save changes",
+    "replace": "Replace",
+    "upload": "Upload"
   },
   "theme": {
-    "quarry": "Quarry"
+    "quarry": "Quarry",
+    "stoneTheme": "Stone theme",
+    "themeLabel": "Theme",
+    "changeTheme": "Change theme",
+    "items": {
+      "monochrome": {
+        "label": "Monochrome",
+        "desc": "White, grey, and black"
+      },
+      "batman": {
+        "label": "Batman",
+        "desc": "Dark knight theme"
+      },
+      "pink": {
+        "label": "Soft Pink",
+        "desc": "Girly soft pink surfaces"
+      },
+      "pop": {
+        "label": "Pop Colored",
+        "desc": "Vibrant and punchy"
+      }
+    }
   },
   "dashboard": {
     "pillarsTitle": "Four pillars, one heartbeat",
@@ -498,7 +522,14 @@
     "Transport Document": "Transport Document",
     "BOQ": "BOQ",
     "Reference": "Reference",
-    "Other": "Other"
+    "Other": "Other",
+    "placeholders": {
+      "mobile": "10-digit mobile",
+      "gstin": "15-character GSTIN",
+      "pan": "10-character PAN",
+      "pincode": "6-digit pincode",
+      "email": "name@company.com"
+    }
   },
   "hint": {
     "Pick an existing customer or create a new one.": "Pick an existing customer or create a new one.",
@@ -675,7 +706,47 @@
     "appearanceDesc": "Customize visual theme, scale, and layout density",
     "notificationsDesc": "Manage alert preferences, channels, and delivery times",
     "securityDesc": "Manage password, sessions, and two-factor authentication",
-    "aboutDesc": "Version, build information, and release notes"
+    "aboutDesc": "Version, build information, and release notes",
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "themeDesc": "Choose a STOS theme. The choice is saved in this browser."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "desc": "Channel preferences, digests, and delivery rules are managed on the Notification Settings page.",
+      "openSettings": "Open notification settings"
+    },
+    "security": {
+      "title": "Security",
+      "sendReset": "Send password reset email",
+      "viewActivity": "View activity log",
+      "resetSent": "Password reset email sent",
+      "activityDesc": "Every sign-in, role change, and record update is recorded in the activity log."
+    },
+    "about": {
+      "title": "About",
+      "category": "Enterprise ERP Platform",
+      "builtBy": "Built by Vedora Vision",
+      "platformInfo": "Platform Information",
+      "appName": "Application Name",
+      "appVersion": "Application Version",
+      "buildVersion": "Build Version",
+      "gitHash": "Git Commit Hash",
+      "platformVersion": "Platform Version",
+      "dbSchemaVersion": "Database Schema Version",
+      "platformOwner": "Platform Owner",
+      "supportEmail": "Support Email",
+      "copyright": "Copyright",
+      "notAvailable": "Not available"
+    },
+    "guided": {
+      "title": "Guided Workflow Assistant",
+      "enable": "Enable Guided Workflow Assistant",
+      "desc": "Suggests the next logical step in the business lifecycle (Customer → Enquiry → Project → Quotation → Sales Order → Procurement → Production → Dispatch → Installation → Invoice → Receipt → Follow-up) on each detail page. Recommendations only — nothing happens automatically, and you can always Skip for now. When disabled, STOS behaves exactly as before with no prompts.",
+      "enabledToast": "Guided Workflow Assistant enabled",
+      "disabledToast": "Guided Workflow Assistant disabled"
+    }
   },
   "documents": {
     "searchPlaceholder": "File name…",
@@ -1572,7 +1643,7 @@
     "signatory": "Signatory & Branding",
     "fields": {
       "legal_name": "Legal Entity Name",
-      "trade_name": "Trade Name / Brand",
+      "trade_name": "Trade Name",
       "tagline": "Tagline / Slogan",
       "website": "Website",
       "address_line1": "Address Line 1",
@@ -1583,7 +1654,7 @@
       "country": "Country",
       "primary_phone": "Primary Phone",
       "secondary_phone": "Secondary Phone",
-      "email": "Official Email",
+      "email": "Email",
       "support_email": "Support Email",
       "gstin": "GSTIN",
       "pan": "PAN",
@@ -1598,7 +1669,18 @@
       "bank_swift": "SWIFT / BIC",
       "bank_upi_id": "UPI ID",
       "authorised_signatory_name": "Authorised Signatory",
-      "authorised_signatory_designation": "Designation"
+      "authorised_signatory_designation": "Designation",
+      "company_name": "Company Name",
+      "legal_business_name": "Legal Business Name",
+      "pincode": "PIN Code",
+      "phone": "Phone Number",
+      "mobile": "Mobile Number",
+      "logo_url": "Logo",
+      "bank_account_number": "Account Number",
+      "upi_id": "UPI ID",
+      "authorized_signatory": "Authorized Signatory",
+      "signature_url": "Signature",
+      "stamp_url": "Company Stamp"
     },
     "assets": {
       "primaryLogo": "Primary Logo",
@@ -1614,6 +1696,13 @@
       "upload": "Upload",
       "replace": "Replace",
       "remove": "Remove"
+    },
+    "legalTaxIds": "Legal & Tax IDs",
+    "bankDetails": "Bank Details",
+    "signatoryBranding": "Signatory & Branding",
+    "placeholders": {
+      "legalBusinessName": "As per incorporation documents",
+      "tradeName": "As shown to customers"
     }
   },
   "notifications": {

@@ -12,6 +12,7 @@
  *   • never throw — invalid keystrokes are simply dropped
  */
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -22,16 +23,17 @@ type BaseProps = Omit<React.ComponentProps<typeof Input>, "onChange" | "value" |
 
 /** Digits-only input. Strips +91, spaces, dashes. Caps at 10 characters. */
 export const PhoneInput = React.forwardRef<HTMLInputElement, BaseProps>(function PhoneInput(
-  { value, onChange, maxLength = 10, ...rest },
+  { value, onChange, maxLength = 10, placeholder, ...rest },
   ref,
 ) {
+  const { t } = useTranslation();
   return (
     <Input
       ref={ref}
       type="tel"
       inputMode="numeric"
       autoComplete="tel-national"
-      placeholder="10-digit mobile"
+      placeholder={placeholder ?? t("field.placeholders.mobile", "10-digit mobile")}
       maxLength={maxLength}
       value={value ?? ""}
       onChange={(e) => {
@@ -45,16 +47,17 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, BaseProps>(function
 
 /** GSTIN: uppercase, alphanumeric only, capped at 15 chars. */
 export const GstInput = React.forwardRef<HTMLInputElement, BaseProps>(function GstInput(
-  { value, onChange, ...rest },
+  { value, onChange, placeholder, ...rest },
   ref,
 ) {
+  const { t } = useTranslation();
   return (
     <Input
       ref={ref}
       inputMode="text"
       autoCapitalize="characters"
       spellCheck={false}
-      placeholder="15-character GSTIN"
+      placeholder={placeholder ?? t("field.placeholders.gstin", "15-character GSTIN")}
       maxLength={15}
       value={value ?? ""}
       onChange={(e) =>
@@ -72,15 +75,16 @@ export const GstInput = React.forwardRef<HTMLInputElement, BaseProps>(function G
 
 /** PAN: uppercase, alphanumeric only, capped at 10 chars. */
 export const PanInput = React.forwardRef<HTMLInputElement, BaseProps>(function PanInput(
-  { value, onChange, ...rest },
+  { value, onChange, placeholder, ...rest },
   ref,
 ) {
+  const { t } = useTranslation();
   return (
     <Input
       ref={ref}
       autoCapitalize="characters"
       spellCheck={false}
-      placeholder="10-character PAN"
+      placeholder={placeholder ?? t("field.placeholders.pan", "10-character PAN")}
       maxLength={10}
       value={value ?? ""}
       onChange={(e) =>
@@ -98,15 +102,16 @@ export const PanInput = React.forwardRef<HTMLInputElement, BaseProps>(function P
 
 /** Indian pincode: digits only, 6 characters. */
 export const PincodeInput = React.forwardRef<HTMLInputElement, BaseProps>(function PincodeInput(
-  { value, onChange, ...rest },
+  { value, onChange, placeholder, ...rest },
   ref,
 ) {
+  const { t } = useTranslation();
   return (
     <Input
       ref={ref}
       inputMode="numeric"
       autoComplete="postal-code"
-      placeholder="6-digit pincode"
+      placeholder={placeholder ?? t("field.placeholders.pincode", "6-digit pincode")}
       maxLength={6}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value.replace(/\D+/g, "").slice(0, 6))}
@@ -117,9 +122,10 @@ export const PincodeInput = React.forwardRef<HTMLInputElement, BaseProps>(functi
 
 /** Email: trims spaces and lowercases silently. */
 export const EmailInput = React.forwardRef<HTMLInputElement, BaseProps>(function EmailInput(
-  { value, onChange, ...rest },
+  { value, onChange, placeholder, ...rest },
   ref,
 ) {
+  const { t } = useTranslation();
   return (
     <Input
       ref={ref}
@@ -127,7 +133,7 @@ export const EmailInput = React.forwardRef<HTMLInputElement, BaseProps>(function
       inputMode="email"
       autoComplete="email"
       spellCheck={false}
-      placeholder="name@company.com"
+      placeholder={placeholder ?? t("field.placeholders.email", "name@company.com")}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value.replace(/\s+/g, "").toLowerCase())}
       {...rest}

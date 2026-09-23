@@ -268,8 +268,15 @@ export function CompanyProfileTab() {
           <div className="grid gap-4 md:grid-cols-2">
             {field("company_name", { required: true, placeholder: "Stone Tech" })}
             {field("gstin", { placeholder: "24BJEPR8383P1ZB" })}
-            {field("legal_business_name", { placeholder: "As per incorporation documents" })}
-            {field("trade_name", { placeholder: "As shown to customers" })}
+            {field("legal_business_name", {
+              placeholder: t(
+                "companyProfile.placeholders.legalBusinessName",
+                "As per incorporation documents",
+              ),
+            })}
+            {field("trade_name", {
+              placeholder: t("companyProfile.placeholders.tradeName", "As shown to customers"),
+            })}
           </div>
         </section>
 
@@ -311,7 +318,7 @@ export function CompanyProfileTab() {
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {field("pan")}
-            {field("cin", { placeholder: "Optional" })}
+            {field("cin", { placeholder: t("field.Optional", "Optional") })}
           </div>
         </section>
 

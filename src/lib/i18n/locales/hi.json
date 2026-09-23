@@ -175,10 +175,34 @@
     "optionalRemarks": "वैकल्पिक टिप्पणियां",
     "primary": "प्राथमिक",
     "retry": "पुन: प्रयास करें",
-    "directCustomer": "प्रत्यक्ष ग्राहक"
+    "directCustomer": "प्रत्यक्ष ग्राहक",
+    "saveChanges": "परिवर्तन सहेजें",
+    "replace": "बदलें",
+    "upload": "अपलोड करें"
   },
   "theme": {
-    "quarry": "क्वारी"
+    "quarry": "क्वारी",
+    "stoneTheme": "स्टोन थीम",
+    "themeLabel": "थीम",
+    "changeTheme": "थीम बदलें",
+    "items": {
+      "monochrome": {
+        "label": "मोनोक्रोम",
+        "desc": "सफेद, धूसर और काला"
+      },
+      "batman": {
+        "label": "बैटमैन",
+        "desc": "डार्क नाइट थीम"
+      },
+      "pink": {
+        "label": "सॉफ्ट पिंक",
+        "desc": "गुलाबी थीम"
+      },
+      "pop": {
+        "label": "पॉप कलर्ड",
+        "desc": "जीवंत और आकर्षक"
+      }
+    }
   },
   "dashboard": {
     "pillarsTitle": "चार स्तंभ, एक धड़कन",
@@ -498,7 +522,14 @@
     "Transport Document": "परिवहन दस्तावेज़",
     "BOQ": "बीओक्यू (BOQ)",
     "Reference": "संदर्भ",
-    "Other": "अन्य"
+    "Other": "अन्य",
+    "placeholders": {
+      "mobile": "10-अंकीय मोबाइल",
+      "gstin": "15-वर्ण का GSTIN",
+      "pan": "10-वर्ण का PAN",
+      "pincode": "6-अंकीय पिन कोड",
+      "email": "name@company.com"
+    }
   },
   "hint": {
     "Pick an existing customer or create a new one.": "मौजूदा ग्राहक चुनें या नया बनाएं।",
@@ -610,8 +641,8 @@
     "create": "बनाएं",
     "add": "जोड़ें",
     "save": "सहेजें",
-    "saveChanges": "बदलाव सहेजें",
-    "saving": "सहेज रहे हैं…",
+    "saveChanges": "परिवर्तन सहेजें",
+    "saving": "सहेज रहा है…",
     "cancel": "रद्द करें",
     "delete": "हटाएं",
     "edit": "संपादित करें",
@@ -675,7 +706,47 @@
     "appearanceDesc": "दृश्य थीम, स्केल और लेआउट घनत्व को कस्टमाइज़ करें",
     "notificationsDesc": "अलर्ट प्राथमिकताएं, चैनल और समय प्रबंधित करें",
     "securityDesc": "पासवर्ड, सत्र और 2FA प्रबंधित करें",
-    "aboutDesc": "संस्करण, बिल्ड जानकारी और रिलीज नोट्स"
+    "aboutDesc": "संस्करण, बिल्ड जानकारी और रिलीज नोट्स",
+    "appearance": {
+      "title": "दिखावट",
+      "theme": "थीम",
+      "themeDesc": "STOS थीम चुनें। यह विकल्प इस ब्राउज़र में सहेजा गया है।"
+    },
+    "notifications": {
+      "title": "सूचनाएं",
+      "desc": "चैनल प्राथमिकताएं, डाइजेस्ट और वितरण नियम अधिसूचना सेटिंग्स पृष्ठ पर प्रबंधित किए जाते हैं।",
+      "openSettings": "अधिसूचना सेटिंग्स खोलें"
+    },
+    "security": {
+      "title": "सुरक्षा",
+      "sendReset": "पासवर्ड रीसेट ईमेल भेजें",
+      "viewActivity": "गतिविधि लॉग देखें",
+      "resetSent": "पासवर्ड रीसेट ईमेल भेजा गया",
+      "activityDesc": "प्रत्येक साइन-इन, भूमिका परिवर्तन और रिकॉर्ड अपडेट गतिविधि लॉग में दर्ज किया जाता है।"
+    },
+    "about": {
+      "title": "के बारे में",
+      "category": "एंटरप्राइज ईआरपी प्लेटफॉर्म",
+      "builtBy": "वेदोरा विजन द्वारा निर्मित",
+      "platformInfo": "प्लेटफ़ॉर्म जानकारी",
+      "appName": "एप्लिकेशन का नाम",
+      "appVersion": "एप्लिकेशन संस्करण",
+      "buildVersion": "बिल्ड संस्करण",
+      "gitHash": "गिट कमिट हैश",
+      "platformVersion": "प्लेटफ़ॉर्म संस्करण",
+      "dbSchemaVersion": "डेटाबेस स्कीमा संस्करण",
+      "platformOwner": "प्लेटफ़ॉर्म स्वामी",
+      "supportEmail": "सहायता ईमेल",
+      "copyright": "कॉपीराइट",
+      "notAvailable": "उपलब्ध नहीं"
+    },
+    "guided": {
+      "title": "निर्देशित वर्कफ़्लो सहायक",
+      "enable": "निर्देशित वर्कफ़्लो सहायक सक्षम करें",
+      "desc": "प्रत्येक विवरण पृष्ठ पर व्यावसायिक जीवन चक्र के अगले तार्किक कदम का सुझाव देता है। केवल सिफारिशें — स्वचालित रूप से कुछ नहीं होता।",
+      "enabledToast": "निर्देशित वर्कफ़्लो सहायक सक्षम किया गया",
+      "disabledToast": "निर्देशित वर्कफ़्लो सहायक अक्षम किया गया"
+    }
   },
   "documents": {
     "searchPlaceholder": "फ़ाइल का नाम…",
@@ -1583,7 +1654,7 @@
       "country": "देश",
       "primary_phone": "प्राथमिक फ़ोन",
       "secondary_phone": "द्वितीयक फ़ोन",
-      "email": "आधिकारिक ईमेल",
+      "email": "ईमेल",
       "support_email": "सहायता ईमेल",
       "gstin": "GSTIN",
       "pan": "PAN",
@@ -1598,7 +1669,18 @@
       "bank_swift": "SWIFT / BIC",
       "bank_upi_id": "UPI ID",
       "authorised_signatory_name": "अधिकृत हस्ताक्षरकर्ता",
-      "authorised_signatory_designation": "पद"
+      "authorised_signatory_designation": "पद",
+      "company_name": "कंपनी का नाम",
+      "legal_business_name": "कानूनी व्यापार का नाम",
+      "pincode": "पिन कोड",
+      "phone": "फ़ोन नंबर",
+      "mobile": "मोबाइल नंबर",
+      "logo_url": "लोगो",
+      "bank_account_number": "खाता संख्या",
+      "upi_id": "UPI ID",
+      "authorized_signatory": "अधिकृत हस्ताक्षरकर्ता",
+      "signature_url": "हस्ताक्षर",
+      "stamp_url": "कंपनी स्टाम्प"
     },
     "assets": {
       "primaryLogo": "प्राथमिक लोगो",
@@ -1614,6 +1696,13 @@
       "upload": "अपलोड करें",
       "replace": "बदलें",
       "remove": "हटाएं"
+    },
+    "legalTaxIds": "कानूनी और कर पहचान",
+    "bankDetails": "बैंक विवरण",
+    "signatoryBranding": "हस्ताक्षरकर्ता और ब्रांडिंग",
+    "placeholders": {
+      "legalBusinessName": "निगमन दस्तावेजों के अनुसार",
+      "tradeName": "ग्राहकों को दिखाए अनुसार"
     }
   },
   "notifications": {

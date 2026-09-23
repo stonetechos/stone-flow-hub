@@ -176,10 +176,34 @@
     "optionalRemarks": "વૈકલ્પિક નોંધો",
     "primary": "મુખ્ય",
     "retry": "ફરી પ્રયાસ કરો",
-    "directCustomer": "સીધો ગ્રાહક"
+    "directCustomer": "સીધો ગ્રાહક",
+    "saveChanges": "ફેરફારો સાચવો",
+    "replace": "બદલો",
+    "upload": "અપલોડ કરો"
   },
   "theme": {
-    "quarry": "ક્વોરી"
+    "quarry": "ક્વોરી",
+    "stoneTheme": "સ્ટોન થીમ",
+    "themeLabel": "થીમ",
+    "changeTheme": "થીમ બદલો",
+    "items": {
+      "monochrome": {
+        "label": "મોનોક્રોમ",
+        "desc": "સફેદ, રાખોડી અને કાળો"
+      },
+      "batman": {
+        "label": "બેટમેન",
+        "desc": "ડાર્ક નાઈટ થીમ"
+      },
+      "pink": {
+        "label": "સોફ્ટ પિંક",
+        "desc": "ગુલાબી થીમ"
+      },
+      "pop": {
+        "label": "પોપ કલર્ડ",
+        "desc": "તેજસ્વી અને આકર્ષક"
+      }
+    }
   },
   "dashboard": {
     "pillarsTitle": "ચાર આધારસ્તંભ, એક ધબકાર",
@@ -485,7 +509,7 @@
     "Search": "શોધો",
     "Entity": "એન્ટિટી",
     "Folder": "ફોલ્ડર",
-    "Auto": "આપોઆપ",
+    "Auto": "આપમેળે",
     "Optional": "વૈકલ્પિક",
     "searchByDisplayNameOrEmail": "દર્શાવેલ નામ અથવા ઇમેઇલ દ્વારા શોધો…",
     "Quotation": "ક્વોટેશન",
@@ -499,7 +523,14 @@
     "Transport Document": "ટ્રાન્સપોર્ટ દસ્તાવેજ",
     "BOQ": "BOQ",
     "Reference": "સંદર્ભ",
-    "Other": "અન્ય"
+    "Other": "અન્ય",
+    "placeholders": {
+      "mobile": "૧૦-અંકનો મોબાઇલ",
+      "gstin": "૧૫-અક્ષરનો GSTIN",
+      "pan": "૧૦-અક્ષરનો PAN",
+      "pincode": "૬-અંકનો પિનકોડ",
+      "email": "name@company.com"
+    }
   },
   "hint": {
     "Pick an existing customer or create a new one.": "હયાત ગ્રાહક પસંદ કરો અથવા નવો બનાવો.",
@@ -612,7 +643,7 @@
     "add": "ઉમેરો",
     "save": "સાચવો",
     "saveChanges": "ફેરફારો સાચવો",
-    "saving": "સાચવી રહ્યાં છીએ…",
+    "saving": "સાચવી રહ્યું છે…",
     "cancel": "રદ કરો",
     "delete": "કાઢી નાખો",
     "edit": "સંપાદિત કરો",
@@ -676,7 +707,47 @@
     "appearanceDesc": "વિઝ્યુઅલ થીમ, સ્કેલ અને લેઆઉટ ઘનતા કસ્ટમાઇઝ કરો",
     "notificationsDesc": "ચેતવણી પસંદગીઓ, ચેનલો અને સમયનું સંચાલન કરો",
     "securityDesc": "પાસવર્ડ, સત્રો અને સુરક્ષાનું સંચાલન કરો",
-    "aboutDesc": "આવૃત્તિ, બિલ્ડ માહિતી અને રિલીઝ નોંધો"
+    "aboutDesc": "આવૃત્તિ, બિલ્ડ માહિતી અને રિલીઝ નોંધો",
+    "appearance": {
+      "title": "દેખાવ",
+      "theme": "થીમ",
+      "themeDesc": "STOS થીમ પસંદ કરો. આ પસંદગી આ બ્રાઉઝરમાં સાચવવામાં આવશે."
+    },
+    "notifications": {
+      "title": "સૂચનાઓ",
+      "desc": "ચેનલ પસંદગીઓ, ડાયજેસ્ટ અને ડિલિવરી નિયમો સૂચના સેટિંગ્સ પૃષ્ઠ પર સંચાલિત થાય છે.",
+      "openSettings": "સૂચના સેટિંગ્સ ખોલો"
+    },
+    "security": {
+      "title": "સુરક્ષા",
+      "sendReset": "પાસવર્ડ રીસેટ ઇમેઇલ મોકલો",
+      "viewActivity": "પ્રવૃત્તિ લૉગ જુઓ",
+      "resetSent": "પાસવર્ડ રીસેટ ઇમેઇલ મોકલ્યો",
+      "activityDesc": "દરેક સાઇન-ઇન, ભૂમિકા પરિવર્તન અને રેકોર્ડ અપડેટ પ્રવૃત્તિ લૉગમાં નોંધાયેલ છે."
+    },
+    "about": {
+      "title": "વિશે",
+      "category": "એન્ટરપ્રાઇઝ ERP પ્લેટફોર્મ",
+      "builtBy": "વેદોરા વિઝન દ્વારા નિર્મિત",
+      "platformInfo": "પ્લેટફોર્મ માહિતી",
+      "appName": "એપ્લિકેશનનું નામ",
+      "appVersion": "એપ્લિકેશન આવૃત્તિ",
+      "buildVersion": "બિલ્ડ આવૃત્તિ",
+      "gitHash": "ગિટ કમિટ હેશ",
+      "platformVersion": "પ્લેટફોર્મ આવૃત્તિ",
+      "dbSchemaVersion": "ડેટાબેઝ સ્કીમા આવૃત્તિ",
+      "platformOwner": "પ્લેટફોર્મ માલિક",
+      "supportEmail": "સહાયતા ઇમેઇલ",
+      "copyright": "કૉપિરાઇટ",
+      "notAvailable": "ઉપલબ્ધ નથી"
+    },
+    "guided": {
+      "title": "માર્ગદર્શિત કાર્યપ્રવાહ સહાયક",
+      "enable": "માર્ગદર્શિત કાર્યપ્રવાહ સહાયક સક્ષમ કરો",
+      "desc": "દરેક વિગતવાર પૃષ્ઠ પર વ્યવસાયિક જીવનચક્રના આગળના તાર્કિક પગલાંનું સૂચન કરે છે. ફક્ત ભલામણો — આપમેળે કંઈ થતું નથી.",
+      "enabledToast": "માર્ગદર્શિત કાર્યપ્રવાહ સહાયક સક્ષમ કર્યું",
+      "disabledToast": "માર્ગદર્શિત કાર્યપ્રવાહ સહાયક અક્ષમ કર્યું"
+    }
   },
   "documents": {
     "searchPlaceholder": "ફાઇલનું નામ…",
@@ -1584,7 +1655,7 @@
       "country": "દેશ",
       "primary_phone": "મુખ્ય ફોન",
       "secondary_phone": "ગૌણ ફોન",
-      "email": "સત્તાવાર ઇમેઇલ",
+      "email": "ઇમેઇલ",
       "support_email": "સહાયતા ઇમેઇલ",
       "gstin": "GSTIN",
       "pan": "PAN",
@@ -1599,7 +1670,18 @@
       "bank_swift": "SWIFT / BIC",
       "bank_upi_id": "UPI ID",
       "authorised_signatory_name": "અધિકૃત હસ્તાક્ષરકર્તા",
-      "authorised_signatory_designation": "હોદ્દો"
+      "authorised_signatory_designation": "હોદ્દો",
+      "company_name": "કંપનીનું નામ",
+      "legal_business_name": "કાનૂની વ્યવસાયનું નામ",
+      "pincode": "પિનકોડ",
+      "phone": "ફોન નંબર",
+      "mobile": "મોબાઇલ નંબર",
+      "logo_url": "લોગો",
+      "bank_account_number": "ખાતા નંબર",
+      "upi_id": "UPI ID",
+      "authorized_signatory": "અધિકૃત હસ્તાક્ષરકર્તા",
+      "signature_url": "હસ્તાક્ષર",
+      "stamp_url": "કંપની સ્ટેમ્પ / સિક્કો"
     },
     "assets": {
       "primaryLogo": "મુખ્ય લોગો",
@@ -1615,6 +1697,13 @@
       "upload": "અપલોડ કરો",
       "replace": "બદલો",
       "remove": "દૂર કરો"
+    },
+    "legalTaxIds": "કાનૂની અને કર ઓળખ",
+    "bankDetails": "બેંક વિગતો",
+    "signatoryBranding": "હસ્તાક્ષરકર્તા અને બ્રાન્ડિંગ",
+    "placeholders": {
+      "legalBusinessName": "સમાવેશ દસ્તાવેજો મુજબ",
+      "tradeName": "ગ્રાહકોને દર્શાવ્યા મુજબ"
     }
   },
   "notifications": {

@@ -6,6 +6,7 @@
  * logic and no impact on routing or Supabase.
  */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,6 +84,7 @@ function readInitialTheme(): ThemeId {
 }
 
 export function ThemeSwitcher() {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<ThemeId>("monochrome");
 
   // Hydrate from storage and apply, avoiding SSR mismatch.
@@ -103,6 +105,7 @@ export function ThemeSwitcher() {
   };
 
   const current = THEMES.find((t) => t.id === theme) ?? THEMES[0];
+  const currentLabel = t(`theme.items.${current.id}.label`, current.label);
 
   return (
     <DropdownMenu>
@@ -114,7 +117,7 @@ export function ThemeSwitcher() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                aria-label={`Theme: ${current.label}. Change theme`}
+                aria-label={`${t("theme.themeLabel", "Theme")}: ${currentLabel}. ${t("theme.changeTheme", "Change theme")}`}
               >
                 <span
                   aria-hidden
@@ -125,7 +128,7 @@ export function ThemeSwitcher() {
             </DropdownMenuTrigger>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            Theme · {current.label}
+            {t("theme.themeLabel", "Theme")} · {currentLabel}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -133,17 +136,19 @@ export function ThemeSwitcher() {
       <DropdownMenuContent align="end" className="w-64 p-1">
         <DropdownMenuLabel className="flex items-center gap-2 px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
           <Palette className="h-3 w-3" aria-hidden />
-          Stone theme
+          {t("theme.stoneTheme", "Stone theme")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {THEMES.map((t) => {
-          const active = t.id === theme;
+        {THEMES.map((themeItem) => {
+          const active = themeItem.id === theme;
+          const label = t(`theme.items.${themeItem.id}.label`, themeItem.label);
+          const desc = t(`theme.items.${themeItem.id}.desc`, themeItem.description);
           return (
             <DropdownMenuItem
-              key={t.id}
+              key={themeItem.id}
               onSelect={(e) => {
                 e.preventDefault();
-                select(t.id);
+                select(themeItem.id);
               }}
               className={cn(
                 "flex items-start gap-3 rounded-sm px-2 py-2 focus:bg-accent",
@@ -153,14 +158,14 @@ export function ThemeSwitcher() {
               <span
                 aria-hidden
                 className="mt-0.5 h-8 w-8 shrink-0 rounded-md border border-border-default shadow-e1"
-                style={{ background: t.swatch }}
+                style={{ background: themeItem.swatch }}
               />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="flex items-center justify-between gap-2">
-                  <span className="text-[13px] font-medium text-foreground">{t.label}</span>
+                  <span className="text-[13px] font-medium text-foreground">{label}</span>
                   {active && <Check className="h-3.5 w-3.5 text-primary" aria-hidden />}
                 </span>
-                <span className="truncate text-[11px] text-muted-foreground">{t.description}</span>
+                <span className="truncate text-[11px] text-muted-foreground">{desc}</span>
               </span>
             </DropdownMenuItem>
           );
