@@ -1987,5 +1987,36 @@
       "hsnCode": "HSN code",
       "description": "Description"
     }
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Track stock positions across locations.",
+    "searchPlaceholder": "Search stock code, location…",
+    "newStockItem": "New stock item",
+    "noStockItemsYet": "No stock items yet",
+    "emptyMessage": "Add a stock item to start tracking inventory.",
+    "itemDeleted": "Stock item deleted",
+    "itemUpdated": "Stock item updated",
+    "itemCreated": "Stock {{code}} created",
+    "deleteTitle": "Delete stock item?",
+    "deleteDescription": "{{code}} will be removed.",
+    "newTitle": "New stock item",
+    "newSubtitle": "Add a product-location stock line.",
+    "editTitle": "Edit {{code}}",
+    "selectProduct": "Select product",
+    "locationPlaceholder": "Warehouse / Bay",
+    "unitPlaceholder": "sqft, slab…",
+    "notFound": "Stock item not found.",
+    "unassignedProduct": "Unassigned product",
+    "fields": {
+      "code": "Code",
+      "product": "Product",
+      "location": "Location",
+      "unit": "Unit",
+      "onHand": "On hand",
+      "reorder": "Reorder",
+      "reorderLevel": "Reorder level",
+      "notes": "Notes"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/inventory/new")({
 });
 
 function NewInventoryPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const products = useQuery({ queryKey: qk.products.list(""), queryFn: () => listProducts() });
 
@@ -45,7 +47,7 @@ function NewInventoryPage() {
   const mut = useMutation({
     mutationFn: createInventoryItem,
     onSuccess: (row) => {
-      toast.success(`Stock ${row.stock_code} created`);
+      toast.success(t("inventory.itemCreated", "Stock {{code}} created", { code: row.stock_code }));
       nav({ to: "/inventory/$id", params: { id: row.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -53,7 +55,10 @@ function NewInventoryPage() {
 
   return (
     <div>
-      <PageHeader title="New stock item" subtitle="Add a product-location stock line." />
+      <PageHeader
+        title={t("inventory.newTitle", "New stock item")}
+        subtitle={t("inventory.newSubtitle", "Add a product-location stock line.")}
+      />
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -62,13 +67,13 @@ function NewInventoryPage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
-          <Field label="Product">
+          <Field label={t("inventory.fields.product", "Product")}>
             <Select
               value={form.product_id ?? ""}
               onValueChange={(v) => set("product_id", v || null)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select product" />
+                <SelectValue placeholder={t("inventory.selectProduct", "Select product")} />
               </SelectTrigger>
               <SelectContent>
                 {(products.data ?? []).map((p) => (
@@ -79,24 +84,24 @@ function NewInventoryPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Location">
+          <Field label={t("inventory.fields.location", "Location")}>
             <Input
               value={form.location ?? ""}
               onChange={(e) => set("location", e.target.value || null)}
-              placeholder="Warehouse / Bay"
+              placeholder={t("inventory.locationPlaceholder", "Warehouse / Bay")}
             />
           </Field>
         </QuickForm.QuickFill>
 
         <QuickForm.MoreDetails>
-          <Field label="Unit">
+          <Field label={t("inventory.fields.unit", "Unit")}>
             <Input
               value={form.unit ?? ""}
               onChange={(e) => set("unit", e.target.value || null)}
-              placeholder="sqft, slab…"
+              placeholder={t("inventory.unitPlaceholder", "sqft, slab…")}
             />
           </Field>
-          <Field label="On hand">
+          <Field label={t("inventory.fields.onHand", "On hand")}>
             <Input
               type="number"
               min={0}
@@ -104,7 +109,7 @@ function NewInventoryPage() {
               onChange={(e) => set("quantity_on_hand", Number(e.target.value))}
             />
           </Field>
-          <Field label="Reorder level">
+          <Field label={t("inventory.fields.reorderLevel", "Reorder level")}>
             <Input
               type="number"
               min={0}
@@ -115,7 +120,7 @@ function NewInventoryPage() {
         </QuickForm.MoreDetails>
 
         <QuickForm.Advanced>
-          <Field label="Notes" className="md:col-span-2">
+          <Field label={t("inventory.fields.notes", "Notes")} className="md:col-span-2">
             <Textarea
               rows={3}
               value={form.notes ?? ""}
@@ -126,10 +131,11 @@ function NewInventoryPage() {
 
         <QuickForm.Actions>
           <Button type="button" variant="ghost" onClick={() => nav({ to: "/inventory" })}>
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
           <Button type="submit" disabled={mut.isPending}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{" "}
+            {t("common.create", "Create")}
           </Button>
         </QuickForm.Actions>
       </QuickForm>

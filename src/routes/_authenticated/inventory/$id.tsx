@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/inventory/$id")({
 });
 
 function InventoryDetailPage() {
+  const { t } = useTranslation();
   const { id } = Route.useParams();
   const nav = useNavigate();
   const query = useQuery({ queryKey: qk.inventory.byId(id), queryFn: () => getInventoryItem(id) });
@@ -23,21 +25,21 @@ function InventoryDetailPage() {
   if (query.isLoading) return <LoadingBlock />;
   if (query.error)
     return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
-  if (!query.data) return <ErrorBlock message="Stock item not found." />;
+  if (!query.data) return <ErrorBlock message={t("inventory.notFound", "Stock item not found.")} />;
   const r = query.data;
 
   return (
     <div>
       <PageHeader
         title={r.stock_code}
-        subtitle={r.product?.name ?? "Unassigned product"}
+        subtitle={r.product?.name ?? t("inventory.unassignedProduct", "Unassigned product")}
         actions={
           <>
             <Button variant="ghost" onClick={() => nav({ to: "/inventory" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t("common.back", "Back")}
             </Button>
             <Button onClick={() => nav({ to: "/inventory/$id/edit", params: { id } })}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
+              <Pencil className="mr-2 h-4 w-4" /> {t("common.edit", "Edit")}
             </Button>
           </>
         }
@@ -46,14 +48,16 @@ function InventoryDetailPage() {
         <div className="space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Overview</CardTitle>
+              <CardTitle className="text-sm">{t("common.overview", "Overview")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
-              <Row label="Product">{r.product?.name ?? "—"}</Row>
-              <Row label="Location">{r.location ?? "—"}</Row>
-              <Row label="Unit">{r.unit ?? "—"}</Row>
-              <Row label="On hand">{r.quantity_on_hand}</Row>
-              <Row label="Reorder level">{r.reorder_level}</Row>
+              <Row label={t("inventory.fields.product", "Product")}>{r.product?.name ?? "—"}</Row>
+              <Row label={t("inventory.fields.location", "Location")}>{r.location ?? "—"}</Row>
+              <Row label={t("inventory.fields.unit", "Unit")}>{r.unit ?? "—"}</Row>
+              <Row label={t("inventory.fields.onHand", "On hand")}>{r.quantity_on_hand}</Row>
+              <Row label={t("inventory.fields.reorderLevel", "Reorder level")}>
+                {r.reorder_level}
+              </Row>
             </CardContent>
           </Card>
           <NotesPanel

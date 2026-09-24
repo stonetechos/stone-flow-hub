@@ -1988,5 +1988,36 @@
       "hsnCode": "HSN કોડ",
       "description": "વર્ણન"
     }
+  },
+  "inventory": {
+    "title": "ઇન્વેન્ટરી",
+    "subtitle": "વિવિધ સ્થળોએ સ્ટોકની સ્થિતિ ટ્રૅક કરો.",
+    "searchPlaceholder": "સ્ટોક કોડ, સ્થાન દ્વારા શોધો…",
+    "newStockItem": "નવી સ્ટોક આઇટમ",
+    "noStockItemsYet": "હજુ સુધી કોઈ સ્ટોક આઇટમ નથી",
+    "emptyMessage": "ઇન્વેન્ટરી ટ્રૅક કરવાનું શરૂ કરવા માટે સ્ટોક આઇટમ ઉમેરો.",
+    "itemDeleted": "સ્ટોક આઇટમ કાઢી નાખવામાં આવી",
+    "itemUpdated": "સ્ટોક આઇટમ અપડેટ થઈ",
+    "itemCreated": "સ્ટોક {{code}} બનાવવામાં આવ્યો",
+    "deleteTitle": "શું સ્ટોક આઇટમ કાઢી નાખવી છે?",
+    "deleteDescription": "{{code}} દૂર કરવામાં આવશે.",
+    "newTitle": "નવી સ્ટોક આઇટમ",
+    "newSubtitle": "ઉત્પાદન-સ્થાન સ્ટોક લાઇન ઉમેરો.",
+    "editTitle": "{{code}} સંપાદિત કરો",
+    "selectProduct": "ઉત્પાદન પસંદ કરો",
+    "locationPlaceholder": "ગોડાઉન / બે",
+    "unitPlaceholder": "ચો.ફૂટ, સ્લેબ…",
+    "notFound": "સ્ટોક આઇટમ મળી નથી.",
+    "unassignedProduct": "અસાઇન ન કરેલ ઉત્પાદન",
+    "fields": {
+      "code": "કોડ",
+      "product": "ઉત્પાદન",
+      "location": "સ્થાન",
+      "unit": "એકમ",
+      "onHand": "હાજર સ્ટોક",
+      "reorder": "પુનઃઓર્ડર",
+      "reorderLevel": "પુનઃઓર્ડર સ્તર",
+      "notes": "નોંધ"
+    }
   }
 }

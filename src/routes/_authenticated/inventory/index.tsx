@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Warehouse } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/inventory/")({
 });
 
 function InventoryPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const roles = useRoles();
@@ -51,14 +53,14 @@ function InventoryPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "code", label: "Code", required: true },
-      { key: "product", label: "Product" },
-      { key: "location", label: "Location" },
-      { key: "unit", label: "Unit" },
-      { key: "onHand", label: "On hand" },
-      { key: "reorder", label: "Reorder" },
+      { key: "code", label: t("inventory.fields.code", "Code"), required: true },
+      { key: "product", label: t("inventory.fields.product", "Product") },
+      { key: "location", label: t("inventory.fields.location", "Location") },
+      { key: "unit", label: t("inventory.fields.unit", "Unit") },
+      { key: "onHand", label: t("inventory.fields.onHand", "On hand") },
+      { key: "reorder", label: t("inventory.fields.reorder", "Reorder") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({ queryKey: qk.inventory.list(dq), queryFn: () => listInventory(dq) });
@@ -67,7 +69,7 @@ function InventoryPage() {
   const del = useMutation({
     mutationFn: (id: string) => deleteInventoryItem(id),
     onSuccess: () => {
-      toast.success("Stock item deleted");
+      toast.success(t("inventory.itemDeleted", "Stock item deleted"));
       invalidateInventory(qc);
       setToDelete(null);
     },
@@ -83,19 +85,23 @@ function InventoryPage() {
 
   return (
     <div>
-      <PageHeader title="Inventory" subtitle="Track stock positions across locations." />
+      <PageHeader
+        title={t("inventory.title", "Inventory")}
+        subtitle={t("inventory.subtitle", "Track stock positions across locations.")}
+      />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={commitSearch}
-        searchPlaceholder="Search stock code, location…"
+        searchPlaceholder={t("inventory.searchPlaceholder", "Search stock code, location…")}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           roles.canWrite ? (
             <Button size="sm" className="h-8" onClick={() => nav({ to: "/inventory/new" })}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New stock item
+              <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
+              {t("inventory.newStockItem", "New stock item")}
             </Button>
           ) : null
         }
@@ -108,12 +114,12 @@ function InventoryPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Warehouse className="h-6 w-6" />}
-          title="No stock items yet"
-          message="Add a stock item to start tracking inventory."
+          title={t("inventory.noStockItemsYet", "No stock items yet")}
+          message={t("inventory.emptyMessage", "Add a stock item to start tracking inventory.")}
           action={
             roles.canWrite ? (
               <Button onClick={() => nav({ to: "/inventory/new" })}>
-                <Plus className="mr-2 h-4 w-4" /> New stock item
+                <Plus className="mr-2 h-4 w-4" /> {t("inventory.newStockItem", "New stock item")}
               </Button>
             ) : undefined
           }
@@ -137,12 +143,24 @@ function InventoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("code") && <TableHead>Code</TableHead>}
-                {!isHidden("product") && <TableHead>Product</TableHead>}
-                {!isHidden("location") && <TableHead>Location</TableHead>}
-                {!isHidden("unit") && <TableHead>Unit</TableHead>}
-                {!isHidden("onHand") && <TableHead className="text-right">On hand</TableHead>}
-                {!isHidden("reorder") && <TableHead className="text-right">Reorder</TableHead>}
+                {!isHidden("code") && <TableHead>{t("inventory.fields.code", "Code")}</TableHead>}
+                {!isHidden("product") && (
+                  <TableHead>{t("inventory.fields.product", "Product")}</TableHead>
+                )}
+                {!isHidden("location") && (
+                  <TableHead>{t("inventory.fields.location", "Location")}</TableHead>
+                )}
+                {!isHidden("unit") && <TableHead>{t("inventory.fields.unit", "Unit")}</TableHead>}
+                {!isHidden("onHand") && (
+                  <TableHead className="text-right">
+                    {t("inventory.fields.onHand", "On hand")}
+                  </TableHead>
+                )}
+                {!isHidden("reorder") && (
+                  <TableHead className="text-right">
+                    {t("inventory.fields.reorder", "Reorder")}
+                  </TableHead>
+                )}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -185,8 +203,14 @@ function InventoryPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title="Delete stock item?"
-        description={toDelete ? `${toDelete.stock_code} will be removed.` : ""}
+        title={t("inventory.deleteTitle", "Delete stock item?")}
+        description={
+          toDelete
+            ? t("inventory.deleteDescription", "{{code}} will be removed.", {
+                code: toDelete.stock_code,
+              })
+            : ""
+        }
         busy={del.isPending}
         onConfirm={() => toDelete && del.mutate(toDelete.id)}
       />

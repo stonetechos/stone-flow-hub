@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_authenticated/inventory/$id/edit")({
 });
 
 function EditInventoryPage() {
+  const { t } = useTranslation();
   const { id } = Route.useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -54,7 +56,7 @@ function EditInventoryPage() {
   const mut = useMutation({
     mutationFn: (input: InventoryCreateInput) => updateInventoryItem(id, input),
     onSuccess: () => {
-      toast.success("Stock item updated");
+      toast.success(t("inventory.itemUpdated", "Stock item updated"));
       invalidateInventory(qc, id);
       nav({ to: "/inventory/$id", params: { id } });
     },
@@ -69,7 +71,11 @@ function EditInventoryPage() {
 
   return (
     <div>
-      <PageHeader title={`Edit ${query.data?.stock_code ?? ""}`} />
+      <PageHeader
+        title={t("inventory.editTitle", "Edit {{code}}", {
+          code: query.data?.stock_code ?? "",
+        })}
+      />
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -78,7 +84,7 @@ function EditInventoryPage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
-          <Field label="Product">
+          <Field label={t("inventory.fields.product", "Product")}>
             <Select
               value={form.product_id ?? ""}
               onValueChange={(v) => set("product_id", v || null)}
@@ -95,7 +101,7 @@ function EditInventoryPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Location">
+          <Field label={t("inventory.fields.location", "Location")}>
             <Input
               value={form.location ?? ""}
               onChange={(e) => set("location", e.target.value || null)}
@@ -103,10 +109,10 @@ function EditInventoryPage() {
           </Field>
         </QuickForm.QuickFill>
         <QuickForm.MoreDetails>
-          <Field label="Unit">
+          <Field label={t("inventory.fields.unit", "Unit")}>
             <Input value={form.unit ?? ""} onChange={(e) => set("unit", e.target.value || null)} />
           </Field>
-          <Field label="On hand">
+          <Field label={t("inventory.fields.onHand", "On hand")}>
             <Input
               type="number"
               min={0}
@@ -114,7 +120,7 @@ function EditInventoryPage() {
               onChange={(e) => set("quantity_on_hand", Number(e.target.value))}
             />
           </Field>
-          <Field label="Reorder level">
+          <Field label={t("inventory.fields.reorderLevel", "Reorder level")}>
             <Input
               type="number"
               min={0}
@@ -124,7 +130,7 @@ function EditInventoryPage() {
           </Field>
         </QuickForm.MoreDetails>
         <QuickForm.Advanced>
-          <Field label="Notes" className="md:col-span-2">
+          <Field label={t("inventory.fields.notes", "Notes")} className="md:col-span-2">
             <Textarea
               rows={3}
               value={form.notes ?? ""}
@@ -138,10 +144,11 @@ function EditInventoryPage() {
             variant="ghost"
             onClick={() => nav({ to: "/inventory/$id", params: { id } })}
           >
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
           <Button type="submit" disabled={mut.isPending}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
+            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{" "}
+            {t("common.save", "Save")}
           </Button>
         </QuickForm.Actions>
       </QuickForm>

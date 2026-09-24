@@ -1986,5 +1986,36 @@
       "hsnCode": "HSN कोड",
       "description": "विवरण"
     }
+  },
+  "inventory": {
+    "title": "इन्वेंटरी",
+    "subtitle": "विभिन्न स्थानों पर स्टॉक की स्थिति ट्रैक करें।",
+    "searchPlaceholder": "स्टॉक कोड, स्थान द्वारा खोजें…",
+    "newStockItem": "नई स्टॉक आइटम",
+    "noStockItemsYet": "अभी तक कोई स्टॉक आइटम नहीं है",
+    "emptyMessage": "इन्वेंटरी ट्रैक करना शुरू करने के लिए एक स्टॉक आइटम जोड़ें।",
+    "itemDeleted": "स्टॉक आइटम हटा दिया गया",
+    "itemUpdated": "स्टॉक आइटम अपडेट किया गया",
+    "itemCreated": "स्टॉक {{code}} बनाया गया",
+    "deleteTitle": "क्या स्टॉक आइटम हटाना चाहते हैं?",
+    "deleteDescription": "{{code}} हटा दिया जाएगा।",
+    "newTitle": "नई स्टॉक आइटम",
+    "newSubtitle": "उत्पाद-स्थान स्टॉक लाइन जोड़ें।",
+    "editTitle": "{{code}} संपादित करें",
+    "selectProduct": "उत्पाद चुनें",
+    "locationPlaceholder": "गोदाम / बे",
+    "unitPlaceholder": "वर्ग फुट, स्लैब…",
+    "notFound": "स्टॉक आइटम नहीं मिला।",
+    "unassignedProduct": "असाइन नहीं किया गया उत्पाद",
+    "fields": {
+      "code": "कोड",
+      "product": "उत्पाद",
+      "location": "स्थान",
+      "unit": "इकाई",
+      "onHand": "उपलब्ध स्टॉक",
+      "reorder": "पुनःऑर्डर",
+      "reorderLevel": "पुनःऑर्डर स्तर",
+      "notes": "नोट्स"
+    }
   }
 }
