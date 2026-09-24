@@ -54,6 +54,7 @@ import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
 import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
+import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { ContactCenter } from "@/components/landing/ContactCenter";
 import { JobOpeningsDialog } from "@/components/landing/JobOpeningsDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -664,6 +665,9 @@ function HomePage() {
               <div id="gallery-feed">
                 <StoneGalleryFeed onSelectProduct={scrollToForm} />
               </div>
+
+              {/* Curated Luxury Architectural Products Showcase */}
+              <LuxuryProductShowcase onSelectProduct={scrollToForm} />
             </div>
 
             {/* RIGHT COLUMN: Floating Request for Estimate Card */}
