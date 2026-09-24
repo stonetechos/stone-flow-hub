@@ -35,6 +35,7 @@ import type { WorkforceTaskStatus } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { format } from "date-fns";
 import { CheckCircle2, Plus, Users } from "lucide-react";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/")({
   head: () => ({ meta: [{ title: "Workforce Intelligence — Today" }] }),
@@ -52,7 +53,7 @@ function priorityColor(p: string) {
 }
 
 export function TodayView() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const me = useQuery({ queryKey: ["wf", "me"], queryFn: getCurrentEmployee });
   const employeeId = me.data?.id;
@@ -109,7 +110,9 @@ export function TodayView() {
       <div className="flex items-center justify-between pb-2 border-b">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
-            {t("workforce.hello", "Hello, {{name}}", { name: me.data.full_name.split(" ")[0] })}
+            {t("workforce.hello", "Hello, {{name}}", {
+              name: transliterateName(me.data.full_name.split(" ")[0], i18n.language),
+            })}
           </h2>
           <p className="text-sm text-muted-foreground">
             {t("workforce.pendingCompleted", "{{pending}} pending • {{done}} completed", {

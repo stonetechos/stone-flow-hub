@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown, X, Star, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +30,10 @@ export function DesignationMultiSelect({
   disabled = false,
   placeholder = "Select designations…",
 }: DesignationMultiSelectProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  const getDesigName = (name: string) => t(name, name);
 
   // Map for fast designation lookup
   const designationMap = useMemo(() => {
@@ -83,8 +87,10 @@ export function DesignationMultiSelect({
               ) : (
                 <span className="text-sm font-medium text-foreground">
                   {selectedDesignations.length === 1
-                    ? selectedDesignations[0].name
-                    : `${selectedDesignations.length} designations selected`}
+                    ? getDesigName(selectedDesignations[0].name)
+                    : t("workforce.designationsCount", "{{count}} designations selected", {
+                        count: selectedDesignations.length,
+                      })}
                 </span>
               )}
             </div>
@@ -94,7 +100,10 @@ export function DesignationMultiSelect({
 
         <PopoverContent className="w-[320px] sm:w-[400px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search designation..." className="h-9" />
+            <CommandInput
+              placeholder={t("workforce.searchDesignation", "Search designation...")}
+              className="h-9"
+            />
             <div className="flex items-center justify-between border-b px-3 py-1.5 text-xs text-muted-foreground bg-muted/30">
               <span>{selectedIds.length} selected</span>
               <div className="flex items-center gap-2">
@@ -104,7 +113,7 @@ export function DesignationMultiSelect({
                     onClick={() => onChange([])}
                     className="text-muted-foreground hover:text-destructive text-xs transition-colors"
                   >
-                    Clear all
+                    {t("common.clearAll", "Clear all")}
                   </button>
                 )}
                 {selectedIds.length < designations.length && (
@@ -113,14 +122,18 @@ export function DesignationMultiSelect({
                     onClick={() => onChange(designations.map((d) => d.id))}
                     className="text-primary hover:underline text-xs transition-colors"
                   >
-                    Select all
+                    {t("common.selectAll", "Select all")}
                   </button>
                 )}
               </div>
             </div>
             <CommandList className="max-h-64">
-              <CommandEmpty>No designation found.</CommandEmpty>
-              <CommandGroup heading="Available Designations">
+              <CommandEmpty>
+                {t("workforce.noDesignationFound", "No designation found.")}
+              </CommandEmpty>
+              <CommandGroup
+                heading={t("workforce.availableDesignations", "Available Designations")}
+              >
                 {designations.map((d) => {
                   const isSelected = selectedIds.includes(d.id);
                   const isPrimary = selectedIds[0] === d.id;
@@ -144,7 +157,7 @@ export function DesignationMultiSelect({
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className={cn("text-sm truncate", isSelected && "font-medium")}>
-                            {d.name}
+                            {getDesigName(d.name)}
                           </span>
                           {d.purpose && (
                             <span className="text-[11px] text-muted-foreground truncate">
@@ -159,7 +172,7 @@ export function DesignationMultiSelect({
                           variant="secondary"
                           className="shrink-0 text-[10px] bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300"
                         >
-                          Primary
+                          {t("workforce.primary", "Primary")}
                         </Badge>
                       )}
                     </CommandItem>
@@ -187,24 +200,27 @@ export function DesignationMultiSelect({
                     : "bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-800",
                 )}
               >
-                <span className="font-medium">{d.name}</span>
+                <span className="font-medium">{getDesigName(d.name)}</span>
                 {isPrimary ? (
                   <span
                     className="flex items-center gap-0.5 text-[10px] bg-primary-foreground/20 px-1 py-0.5 rounded font-semibold"
-                    title="Primary designation used for permissions and reports"
+                    title={t(
+                      "workforce.primaryTitle",
+                      "Primary designation used for permissions and reports",
+                    )}
                   >
                     <Star className="h-2.5 w-2.5 fill-current" />
-                    Primary
+                    {t("workforce.primary", "Primary")}
                   </span>
                 ) : (
                   !disabled && (
                     <button
                       type="button"
                       onClick={(e) => setAsPrimary(d.id, e)}
-                      title="Set as primary designation"
+                      title={t("workforce.setAsPrimary", "Set as primary designation")}
                       className="text-[10px] opacity-70 hover:opacity-100 underline hover:text-blue-700 transition-opacity ml-0.5"
                     >
-                      Make primary
+                      {t("workforce.makePrimary", "Make primary")}
                     </button>
                   )
                 )}

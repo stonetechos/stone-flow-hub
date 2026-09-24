@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LogIn, LogOut, Coffee, MapPin, Check, X } from "lucide-react";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -100,7 +101,7 @@ async function captureContext(): Promise<Capture> {
 }
 
 export function AttendanceView() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const auth = useAuthReady();
   const roles = useRoles();
@@ -129,8 +130,11 @@ export function AttendanceView() {
   });
 
   const employeeName = useMemo(
-    () => new Map((employees.data ?? []).map((e) => [e.id, e.full_name])),
-    [employees.data],
+    () =>
+      new Map(
+        (employees.data ?? []).map((e) => [e.id, transliterateName(e.full_name, i18n.language)]),
+      ),
+    [employees.data, i18n.language],
   );
 
   const myPunchesToday = useMemo(() => {
@@ -329,7 +333,7 @@ export function AttendanceView() {
               <SelectItem value="all">{t("attendance.allEmployees", "All employees")}</SelectItem>
               {(employees.data ?? []).map((e) => (
                 <SelectItem key={e.id} value={e.id}>
-                  {e.full_name}
+                  {transliterateName(e.full_name, i18n.language)}
                 </SelectItem>
               ))}
             </SelectContent>

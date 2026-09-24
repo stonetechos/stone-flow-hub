@@ -5,10 +5,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +63,7 @@ function daysBetween(from: string, to: string): number {
 }
 
 export function LeaveView() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const auth = useAuthReady();
   const roles = useRoles();
@@ -93,8 +96,11 @@ export function LeaveView() {
   });
 
   const employeeName = useMemo(
-    () => new Map((employees.data ?? []).map((e) => [e.id, e.full_name])),
-    [employees.data],
+    () =>
+      new Map(
+        (employees.data ?? []).map((e) => [e.id, transliterateName(e.full_name, i18n.language)]),
+      ),
+    [employees.data, i18n.language],
   );
   const typeName = useMemo(
     () => new Map((types.data ?? []).map((t) => [t.id, t.name])),

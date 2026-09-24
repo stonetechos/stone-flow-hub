@@ -5,10 +5,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +68,7 @@ const STATUS_TONE: Record<string, "default" | "secondary" | "outline" | "destruc
 };
 
 export function LoansView() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const canWrite = roles.hasAnyRole(["admin", "hr"]);
@@ -96,8 +99,11 @@ export function LoansView() {
   });
 
   const nameOf = useMemo(
-    () => new Map((employees.data ?? []).map((e) => [e.id, e.full_name])),
-    [employees.data],
+    () =>
+      new Map(
+        (employees.data ?? []).map((e) => [e.id, transliterateName(e.full_name, i18n.language)]),
+      ),
+    [employees.data, i18n.language],
   );
 
   const addLoan = useMutation({
@@ -162,7 +168,7 @@ export function LoansView() {
         <SelectContent>
           {(employees.data ?? []).map((e) => (
             <SelectItem key={e.id} value={e.id}>
-              {e.full_name}
+              {transliterateName(e.full_name, i18n.language)}
             </SelectItem>
           ))}
         </SelectContent>

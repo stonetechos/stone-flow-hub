@@ -44,6 +44,7 @@ import { toUserMessage } from "@/lib/errors";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles } from "@/hooks/use-roles";
 import { useTranslation } from "react-i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/")({
   head: () => ({ meta: [{ title: "Employees — Workforce Intelligence" }] }),
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/workforce-intelligence/emp
 });
 
 function EmployeesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const roles = useRoles();
   const isSuperAdmin = roles.isSuperAdmin;
@@ -228,7 +229,7 @@ function EmployeesPage() {
                       params={{ id: e.id }}
                       className="font-medium text-primary hover:underline"
                     >
-                      {e.full_name}
+                      {transliterateName(e.full_name, i18n.language)}
                     </Link>
                   </TableCell>
                   <TableCell className="text-xs">
@@ -259,23 +260,28 @@ function EmployeesPage() {
                       if (names.length === 0) {
                         return <span className="text-muted-foreground">—</span>;
                       }
-                      if (names.length === 1) {
-                        return <span className="text-foreground">{names[0]}</span>;
+                      const localized = names.map((n) => t(`workforce.designations.${n}`, t(n, n)));
+                      if (localized.length === 1) {
+                        return <span className="text-foreground">{localized[0]}</span>;
                       }
                       return (
                         <div
                           className="flex items-center gap-1.5 flex-wrap"
-                          title={names.join(", ")}
+                          title={localized.join(", ")}
                         >
-                          <span className="font-medium text-foreground">{names[0]}</span>
+                          <span className="font-medium text-foreground">{localized[0]}</span>
                           <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
-                            +{names.length - 1} more
+                            +{localized.length - 1} {t("common.more", "more")}
                           </span>
                         </div>
                       );
                     })()}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{e.department ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {e.department
+                      ? t(`workforce.departments.${e.department}`, t(e.department, e.department))
+                      : "—"}
+                  </TableCell>
                   <TableCell>
                     <Select
                       value={e.employment_status}

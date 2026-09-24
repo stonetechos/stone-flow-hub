@@ -42,6 +42,8 @@ import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { assignRole, type AppRole } from "@/lib/admin/users";
+import { useTranslation } from "react-i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/new")({
   head: () => ({ meta: [{ title: "New employee" }] }),
@@ -82,6 +84,7 @@ function EmployeeFormPage() {
   const { id } = Route.useSearch();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const { t, i18n } = useTranslation();
   const roles = useRoles();
   const canWrite =
     roles.isAdmin ||
@@ -330,7 +333,7 @@ function EmployeeFormPage() {
                     .filter((m) => m.id !== id)
                     .map((m) => (
                       <SelectItem key={m.id} value={m.id}>
-                        {m.full_name}
+                        {transliterateName(m.full_name, i18n.language)}
                       </SelectItem>
                     ))}
                 </SelectContent>

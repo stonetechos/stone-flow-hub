@@ -60,6 +60,7 @@ import { useRoles } from "@/hooks/use-roles";
 import { format } from "date-fns";
 import type { EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
 import { useTranslation } from "react-i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 
 export const Route = createFileRoute("/_authenticated/workforce-intelligence/employees/$id")({
   head: () => ({ meta: [{ title: "Employee — Workforce Intelligence" }] }),
@@ -112,7 +113,7 @@ function safeParseArray<T>(val: unknown): T[] {
 }
 
 function EmployeeProfile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = Route.useParams();
   const roles = useRoles();
   const isOwner = roles.isAdmin || roles.isSalesManager;
@@ -227,13 +228,17 @@ function EmployeeProfile() {
 
   const designationSubtitle =
     empDesignations.length > 0
-      ? empDesignations.map((d) => d.name).join(" • ")
-      : (designation?.name ?? "No designation");
+      ? empDesignations
+          .map((d) => t(`workforce.designations.${d.name}`, t(d.name, d.name)))
+          .join(" • ")
+      : designation
+        ? t(`workforce.designations.${designation.name}`, t(designation.name, designation.name))
+        : t("workforce.noDesignation", "No designation");
 
   return (
     <>
       <PageHeader
-        title={e.full_name}
+        title={transliterateName(e.full_name, i18n.language)}
         subtitle={`${e.employee_code || "No code"} • ${designationSubtitle}`}
         eyebrow={t("workforce.eyebrow", "Workforce Intelligence")}
         actions={
@@ -337,7 +342,7 @@ function EmployeeProfile() {
                             : "text-xs font-medium bg-blue-50 text-blue-900 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
                         }
                       >
-                        {d.name}
+                        {t(`workforce.designations.${d.name}`, t(d.name, d.name))}
                         {index === 0 && empDesignations.length > 1 && (
                           <span className="ml-1 text-[10px] opacity-80">
                             ({t("common.primary", "Primary")})
@@ -346,8 +351,13 @@ function EmployeeProfile() {
                       </Badge>
                     ))}
                   </div>
+                ) : designation?.name ? (
+                  t(
+                    `workforce.designations.${designation.name}`,
+                    t(designation.name, designation.name),
+                  )
                 ) : (
-                  (designation?.name ?? "—")
+                  "—"
                 )
               }
             />
@@ -382,7 +392,11 @@ function EmployeeProfile() {
             />
             <InfoRow
               label={t("workforce.employee.labels.department", "Department")}
-              value={e.department ?? "—"}
+              value={
+                e.department
+                  ? t(`workforce.departments.${e.department}`, t(e.department, e.department))
+                  : "—"
+              }
             />
             <InfoRow
               label={t("workforce.employee.labels.address", "Address")}
