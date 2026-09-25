@@ -255,6 +255,36 @@ export const listAuthUsers = createServerFn({ method: "GET" })
     return all;
   });
 
+function formatAppInviteLink(
+  properties:
+    | { hashed_token?: string; verification_type?: string; action_link?: string }
+    | null
+    | undefined,
+  appOrigin: string,
+  defaultType: string = "invite",
+): string | null {
+  if (!properties) return null;
+  const token = properties.hashed_token;
+  const type = properties.verification_type || defaultType;
+  if (token) {
+    return `${appOrigin}/auth?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`;
+  }
+  if (properties.action_link) {
+    try {
+      const u = new URL(properties.action_link);
+      const tokenParam = u.searchParams.get("token");
+      const typeParam = u.searchParams.get("type") || type;
+      if (tokenParam) {
+        return `${appOrigin}/auth?token_hash=${encodeURIComponent(tokenParam)}&type=${encodeURIComponent(typeParam)}`;
+      }
+    } catch {
+      // ignore
+    }
+    return properties.action_link;
+  }
+  return null;
+}
+
 const inviteInput = z.object({
   email: z.string().email("Enter a valid email address"),
   full_name: z.string().trim().max(200).optional().nullable(),
@@ -271,6 +301,15 @@ export const inviteUser = createServerFn({ method: "POST" })
     const fullName = data.full_name?.trim() || null;
 
     const redirectTo = data.redirect_to ?? "https://stonetech.in/auth";
+    const appOrigin = (() => {
+      try {
+        if (data.redirect_to) return new URL(data.redirect_to).origin;
+      } catch {
+        /* fallback */
+      }
+      return process.env.VITE_APP_URL || "https://stonetech.in";
+    })();
+
     let userId: string | null = null;
     let actionLink: string | null = null;
     let emailSent = false;
@@ -288,7 +327,7 @@ export const inviteUser = createServerFn({ method: "POST" })
 
     if (!linkErr && linkRes?.user?.id) {
       userId = linkRes.user.id;
-      actionLink = linkRes.properties?.action_link ?? null;
+      actionLink = formatAppInviteLink(linkRes.properties, appOrigin, "invite");
     } else {
       // If generateLink indicated user already exists or failed, find existing user in auth
       const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
@@ -302,7 +341,7 @@ export const inviteUser = createServerFn({ method: "POST" })
           email,
           options: { redirectTo },
         });
-        actionLink = magicRes?.properties?.action_link ?? null;
+        actionLink = formatAppInviteLink(magicRes?.properties, appOrigin, "magiclink");
       } else {
         // Fallback to inviteUserByEmail if generateLink could not handle it
         const { data: inviteRes, error: inviteErr } =
@@ -442,6 +481,14 @@ export const resendInvite = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.trim().toLowerCase();
     const redirectTo = data.redirect_to ?? "https://stonetech.in/auth";
+    const appOrigin = (() => {
+      try {
+        if (data.redirect_to) return new URL(data.redirect_to).origin;
+      } catch {
+        /* fallback */
+      }
+      return process.env.VITE_APP_URL || "https://stonetech.in";
+    })();
 
     let actionLink: string | null = null;
     let emailSent = false;
@@ -453,7 +500,7 @@ export const resendInvite = createServerFn({ method: "POST" })
       options: { redirectTo },
     });
 
-    actionLink = linkRes?.properties?.action_link ?? null;
+    actionLink = formatAppInviteLink(linkRes?.properties, appOrigin, "invite");
 
     if (!actionLink) {
       const { data: magicRes } = await supabaseAdmin.auth.admin.generateLink({
@@ -461,7 +508,7 @@ export const resendInvite = createServerFn({ method: "POST" })
         email,
         options: { redirectTo },
       });
-      actionLink = magicRes?.properties?.action_link ?? null;
+      actionLink = formatAppInviteLink(magicRes?.properties, appOrigin, "magiclink");
     }
 
     if (actionLink && process.env.RESEND_API_KEY) {

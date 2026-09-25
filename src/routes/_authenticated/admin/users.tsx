@@ -321,6 +321,26 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  function toDirectAppInviteLink(rawLink: string | null | undefined): string {
+    if (!rawLink) return "";
+    try {
+      const url = new URL(rawLink);
+      const token = url.searchParams.get("token");
+      const type = url.searchParams.get("type") || "invite";
+      if (
+        token &&
+        (url.hostname.includes("supabase.co") || url.pathname.includes("/auth/v1/verify"))
+      ) {
+        const origin =
+          typeof window !== "undefined" ? window.location.origin : "https://stonetech.in";
+        return `${origin}/auth?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`;
+      }
+    } catch {
+      // fallback
+    }
+    return rawLink;
+  }
+
   const [inviteSuccess, setInviteSuccess] = useState<{
     email: string;
     actionLink: string;
@@ -350,7 +370,7 @@ function UsersAdminPage() {
       if (res?.action_link) {
         setInviteSuccess({
           email: res.email,
-          actionLink: res.action_link,
+          actionLink: toDirectAppInviteLink(res.action_link),
           emailSent: !!res.email_sent,
         });
       }
@@ -397,7 +417,7 @@ function UsersAdminPage() {
       if (res?.action_link) {
         setInviteSuccess({
           email: res.email,
-          actionLink: res.action_link,
+          actionLink: toDirectAppInviteLink(res.action_link),
           emailSent: !!res.email_sent,
         });
       }
@@ -409,11 +429,12 @@ function UsersAdminPage() {
     try {
       const res = await resend.mutateAsync(email);
       if (res?.action_link) {
-        await navigator.clipboard.writeText(res.action_link);
+        const link = toDirectAppInviteLink(res.action_link);
+        await navigator.clipboard.writeText(link);
         toast.success(t("admin.inviteLinkCopied", "Invite link copied to clipboard!"));
         setInviteSuccess({
           email: res.email,
-          actionLink: res.action_link,
+          actionLink: link,
           emailSent: !!res.email_sent,
         });
       }

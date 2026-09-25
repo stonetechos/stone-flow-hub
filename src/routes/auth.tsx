@@ -62,6 +62,9 @@ const flowSchema = z.object({
     .default("signin")
     .catch("signin"),
   redirect: z.string().optional().catch(undefined),
+  token_hash: z.string().optional().catch(undefined),
+  token: z.string().optional().catch(undefined),
+  type: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -79,6 +82,9 @@ export const Route = createFileRoute("/auth")({
     // entire app with the configuration screen when misconfigured, so this
     // only needs to avoid throwing.
     if (!getSupabaseConfigStatus().ok) return;
+    // When an invitation token or recovery token is present in the URL,
+    // let AuthPage mount so it can execute verifyOtp without auto-redirecting.
+    if (search.token_hash || search.token) return;
     // Only bounce authenticated users away from the sign-in surface.
     if (search.flow && search.flow !== "signin") return;
     // supabase-js serialises every auth call behind a `navigator.locks`
@@ -104,6 +110,8 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const search = Route.useSearch();
   const flow = search.flow ?? "signin";
+  const tokenHash = search.token_hash || search.token;
+  const tokenType = search.type || "invite";
 
   // The server HTML for this `ssr: false` route is the router's pending
   // fallback. Rendering the identical fallback on the first client pass makes
@@ -122,7 +130,11 @@ function AuthPage() {
         {/* Form panel — always visible */}
         <section className="flex items-center justify-center px-4 py-10 sm:px-8 lg:px-12">
           <div className="w-full max-w-[440px]">
-            <FormArea flow={flow} />
+            {tokenHash ? (
+              <VerifyTokenCard tokenHash={tokenHash} type={tokenType} />
+            ) : (
+              <FormArea flow={flow} />
+            )}
           </div>
         </section>
       </div>
@@ -965,6 +977,64 @@ function NoticeCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function VerifyTokenCard({ tokenHash, type }: { tokenHash: string; type: string }) {
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { error: verifyErr } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: (type as "invite" | "recovery" | "magiclink" | "signup" | "email") || "invite",
+        });
+        if (verifyErr) throw verifyErr;
+        if (mounted) {
+          toast.success("Account verified! Please set your permanent password.");
+          await navigate({
+            to: "/auth",
+            search: { flow: type === "recovery" ? "update" : "invite" },
+            replace: true,
+          });
+        }
+      } catch (err: unknown) {
+        if (mounted) {
+          setError(toUserMessage(err) || "Invalid or expired invitation link.");
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [tokenHash, type, navigate]);
+
+  if (error) {
+    return (
+      <NoticeCard
+        tone="danger"
+        icon={ShieldAlert}
+        title="Invalid or Expired Link"
+        body={error}
+        primary={{ label: "Back to sign in", to: "/auth" }}
+      />
+    );
+  }
+
+  return (
+    <AuthCard
+      eyebrow="Accept Invitation"
+      title="Verifying your account"
+      description="Please wait a moment while we verify your invitation token..."
+    >
+      <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-text-secondary">Authenticating with Stone Tech OS...</p>
+      </div>
+    </AuthCard>
   );
 }
 
