@@ -741,9 +741,6 @@ function HomePage() {
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
                       Request for estimate
                     </h2>
-                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/30 text-teal-200 border border-primary/40">
-                      Direct Quarry Pricing
-                    </span>
                   </div>
                 </div>
 

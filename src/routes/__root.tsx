@@ -187,6 +187,14 @@ function RootComponent() {
   useEffect(() => {
     void installToastDiagnostics();
     registerServiceWorker();
+
+    // Ensure the original STOS Quarry theme is active: clear any legacy theme classes or overrides
+    try {
+      localStorage.removeItem("st.stdl.theme");
+      document.documentElement.classList.remove("dark", "theme-batman", "theme-pink", "theme-pop");
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {

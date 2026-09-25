@@ -41,7 +41,6 @@ import { cn } from "@/lib/utils";
 import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
 import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
-import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
 import { useTranslation } from "react-i18next";
@@ -825,7 +824,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <SyncStatusIndicator />
               <LanguageToggle />
               <NotificationsBell />
-              <ThemeSwitcher />
               <div className="ml-1">
                 <UserMenu
                   onSignOut={onSignOut}

@@ -14,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGuidedEnabled } from "@/hooks/use-guided-enabled";
 import { NavigationPreferences } from "@/components/settings/NavigationPreferences";
-import { ThemeSwitcher } from "@/components/global/ThemeSwitcher";
 import { CompanyProfileTab } from "@/components/settings/CompanyProfileTab";
 import { deriveInitials, updateProfileFields } from "@/lib/admin/users";
 import { toUserMessage } from "@/lib/errors";
@@ -316,12 +315,17 @@ function SettingsPage() {
                   <Label className="text-sm">{t("settings.appearance.theme", "Theme")}</Label>
                   <p className="text-xs text-muted-foreground">
                     {t(
-                      "settings.appearance.themeDesc",
-                      "Choose a STOS theme. The choice is saved in this browser.",
+                      "settings.appearance.themeFixed",
+                      "STOS original Quarry theme is active by default.",
                     )}
                   </p>
                 </div>
-                <ThemeSwitcher />
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary border-primary/20 font-medium"
+                >
+                  {t("theme.quarry", "Original Quarry Theme")}
+                </Badge>
               </div>
             </CardContent>
           </Card>
