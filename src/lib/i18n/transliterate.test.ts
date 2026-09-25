@@ -26,6 +26,15 @@ describe("transliterateName", () => {
     expect(transliterateName("Ramesh Patel", "hi")).toBe("रमेश पटेल");
   });
 
+  it("transliterates admin, roles, and common Indian first names in Hindi and Gujarati", () => {
+    expect(transliterateName("Admin", "hi")).toBe("एडमिन");
+    expect(transliterateName("Admin", "gu")).toBe("એડમિન");
+    expect(transliterateName("Kavita", "hi")).toBe("कविता");
+    expect(transliterateName("Kavita", "gu")).toBe("કવિતા");
+    expect(transliterateName("Anand", "hi")).toBe("आनंद");
+    expect(transliterateName("Anand", "gu")).toBe("આનંદ");
+  });
+
   it("handles null, undefined, empty strings cleanly", () => {
     expect(transliterateName("", "gu")).toBe("");
     expect(transliterateName(null, "gu")).toBe("");

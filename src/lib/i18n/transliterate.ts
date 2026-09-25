@@ -92,6 +92,73 @@ const GUJARATI_DICT: Record<string, string> = {
   sheetal: "શીતલ",
   meena: "મીના",
   urvashi: "ઉર્વશી",
+  admin: "એડમિન",
+  administrator: "વહીવટકર્તા",
+  user: "વપરાશકર્તા",
+  stone: "સ્ટોન",
+  tech: "ટેક",
+  stonetech: "સ્ટોન ટેક",
+  there: "મિત્ર",
+  owner: "માલિક",
+  guest: "અતિથિ",
+  member: "સભ્ય",
+  anand: "આનંદ",
+  kavita: "કવિતા",
+  harsh: "હર્ષ",
+  bhavik: "ભાવિક",
+  ketan: "કેતન",
+  darshan: "દર્શન",
+  piyush: "પીયૂષ",
+  mayur: "મયૂર",
+  jayesh: "જયેશ",
+  kamal: "કમલ",
+  vishal: "વિશાલ",
+  gaurav: "ગૌરવ",
+  saurabh: "સૌરભ",
+  tanvi: "તન્વી",
+  mansi: "માનસી",
+  dhwani: "ધ્વનિ",
+  drashti: "દ્રષ્ટિ",
+  kinjal: "કિંજલ",
+  bhumika: "ભૂમિકા",
+  ankita: "અંકિતા",
+  shweta: "શ્વેતા",
+  sneha: "સ્નેહા",
+  riddhi: "ઋદ્ધિ",
+  siddhi: "સિદ્ધિ",
+  krishna: "કૃષ્ણ",
+  radha: "રાધા",
+  shyam: "શ્યામ",
+  shiva: "શિવ",
+  ganesh: "ગણેશ",
+  kartik: "કાર્તિક",
+  kavya: "કાવ્યા",
+  diya: "દિયા",
+  riya: "રિયા",
+  siya: "સિયા",
+  akash: "આકાશ",
+  aakash: "આકાશ",
+  ayush: "આયુષ",
+  rohan: "રોહન",
+  sahil: "સાહિલ",
+  yash: "યશ",
+  dev: "દેવ",
+  shivam: "શિવમ",
+  aditya: "આદિત્ય",
+  abhishek: "અભિષેક",
+  vivek: "વિવેક",
+  aniket: "અનિકેત",
+  arjun: "અર્જુન",
+  karan: "કરણ",
+  dharmesh: "ધર્મેશ",
+  jitendra: "જિતેન્દ્ર",
+  narendra: "નરેન્દ્ર",
+  mahendra: "મહેન્દ્ર",
+  rajendra: "રાજેન્દ્ર",
+  bhupendra: "ભૂપેન્દ્ર",
+  kuldeep: "કુલદીપ",
+  pradeep: "પ્રદીપ",
+  sudeep: "સુદીપ",
 };
 
 const GUJARATI_SUFFIXES: Record<string, string> = {
@@ -196,6 +263,73 @@ const HINDI_DICT: Record<string, string> = {
   sheetal: "शीतल",
   meena: "मीना",
   urvashi: "उर्वशी",
+  admin: "एडमिन",
+  administrator: "प्रशासक",
+  user: "उपयोगकर्ता",
+  stone: "स्टोन",
+  tech: "टेक",
+  stonetech: "स्टोन टेक",
+  there: "मित्र",
+  owner: "मालिक",
+  guest: "अतिथि",
+  member: "सदस्य",
+  anand: "आनंद",
+  kavita: "कविता",
+  harsh: "हर्ष",
+  bhavik: "भाविक",
+  ketan: "केतन",
+  darshan: "दर्शन",
+  piyush: "पीयूष",
+  mayur: "मयूर",
+  jayesh: "जयेश",
+  kamal: "कमल",
+  vishal: "विशाल",
+  gaurav: "गौरव",
+  saurabh: "सौरभ",
+  tanvi: "तन्वी",
+  mansi: "मानसी",
+  dhwani: "ध्वनि",
+  drashti: "दृष्टि",
+  kinjal: "किंजल",
+  bhumika: "भूमिका",
+  ankita: "अंकिता",
+  shweta: "श्वेता",
+  sneha: "स्नेहा",
+  riddhi: "ऋद्धि",
+  siddhi: "सिद्धि",
+  krishna: "कृष्ण",
+  radha: "राधा",
+  shyam: "श्याम",
+  shiva: "शिव",
+  ganesh: "गणेश",
+  kartik: "कार्तिक",
+  kavya: "काव्या",
+  diya: "दिया",
+  riya: "रिया",
+  siya: "सिया",
+  akash: "आकाश",
+  aakash: "आकाश",
+  ayush: "आयुष",
+  rohan: "रोहन",
+  sahil: "साहिल",
+  yash: "यश",
+  dev: "देव",
+  shivam: "शिवम",
+  aditya: "आदित्य",
+  abhishek: "अभिषेक",
+  vivek: "विवेक",
+  aniket: "अनिकेत",
+  arjun: "अर्जुन",
+  karan: "करण",
+  dharmesh: "धर्मेश",
+  jitendra: "जितेंद्र",
+  narendra: "नरेंद्र",
+  mahendra: "महेंद्र",
+  rajendra: "राजेन्द्र",
+  bhupendra: "भूपेंद्र",
+  kuldeep: "कुलदीप",
+  pradeep: "प्रदीप",
+  sudeep: "सुदीप",
 };
 
 const HINDI_SUFFIXES: Record<string, string> = {
@@ -344,7 +478,11 @@ function transliteratePhoneticGu(word: string): string {
         }
       }
       if (vMatch) {
-        res += cChar + vMatra[vMatch];
+        if (vMatch === "a" && i + 1 === word.length) {
+          res += cChar + "ા";
+        } else {
+          res += cChar + vMatra[vMatch];
+        }
         i += vMatch.length;
       } else {
         if (i < word.length && /[a-z]/i.test(word[i])) {
@@ -491,7 +629,11 @@ function transliteratePhoneticHi(word: string): string {
         }
       }
       if (vMatch) {
-        res += cChar + vMatra[vMatch];
+        if (vMatch === "a" && i + 1 === word.length) {
+          res += cChar + "ा";
+        } else {
+          res += cChar + vMatra[vMatch];
+        }
         i += vMatch.length;
       } else {
         if (i < word.length && /[a-z]/i.test(word[i])) {

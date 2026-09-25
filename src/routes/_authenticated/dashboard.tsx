@@ -30,6 +30,7 @@ import { createFileRoute } from "@tanstack/react-router";
  */
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
+import { transliterateName } from "@/lib/i18n/transliterate";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
@@ -90,7 +91,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 /* -------------------------------------------------------------------------- */
 
 function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuthReady();
   const qc = useQueryClient();
   const roles = useRoles();
@@ -150,15 +151,19 @@ function DashboardPage() {
   });
 
   const profileName = profileQ.data?.full_name?.trim();
-  const name = profileName ? profileName.split(" ")[0] : displayName(user);
+  const rawName = profileName ? profileName.split(" ")[0] : displayName(user);
+  const name = transliterateName(rawName, i18n.language);
   const now = new Date();
   const greeting = greetingFor(now, t);
-  const today = now.toLocaleDateString(undefined, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const today = now.toLocaleDateString(
+    i18n.language === "hi" ? "hi-IN" : i18n.language === "gu" ? "gu-IN" : "en-IN",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  );
 
   const kpis = kpisQ.data;
   const tasks = tasksQ.data ?? [];
@@ -1510,7 +1515,10 @@ function displayName(
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
   if (full && typeof full === "string" && full.trim()) return full.trim().split(" ")[0];
-  if (user.email) return user.email.split("@")[0];
+  if (user.email) {
+    const raw = user.email.split("@")[0].split(/[._\-\s]+/)[0];
+    return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "there";
+  }
   return "there";
 }
 

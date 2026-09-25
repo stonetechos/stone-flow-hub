@@ -36,7 +36,8 @@ export function registerServiceWorker(): void {
           key.startsWith("stos-pages-") ||
           key === "stos-static-stos-5" ||
           key === "stos-static-stos-7" ||
-          key === "stos-static-stos-8"
+          key === "stos-static-stos-8" ||
+          key === "stos-static-stos-9"
         ) {
           void caches.delete(key);
         }
