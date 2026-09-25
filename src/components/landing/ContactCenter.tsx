@@ -36,7 +36,7 @@ export function ContactCenter({ className }: { className?: string }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border/70 pb-6">
           <div className="space-y-2">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-400 shadow-2xs">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-2xs">
                 <MapPin className="h-5 w-5" />
               </span>
               <span>How to reach Us?</span>
@@ -52,7 +52,7 @@ export function ContactCenter({ className }: { className?: string }) {
             href={GOOGLE_BUSINESS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 transition-all shadow-xs self-start md:self-auto group"
+            className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-foreground transition-all shadow-xs self-start md:self-auto group cursor-pointer"
             title="View Stone Tech on Google Business"
           >
             <div className="flex items-center gap-1.5 font-black text-sm">
@@ -63,7 +63,7 @@ export function ContactCenter({ className }: { className?: string }) {
                 ))}
               </div>
             </div>
-            <span className="text-xs text-muted-foreground font-semibold border-l border-amber-300/40 pl-3">
+            <span className="text-xs text-muted-foreground font-semibold border-l border-primary/30 pl-3">
               Google Verified Business
             </span>
             <ExternalLink className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -170,7 +170,7 @@ export function ContactCenter({ className }: { className?: string }) {
           <div className="p-6 rounded-3xl border border-border/80 bg-card space-y-4 shadow-xs flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 shadow-2xs">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-2xs">
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
@@ -189,7 +189,7 @@ export function ContactCenter({ className }: { className?: string }) {
                   href="mailto:info@stonetech.in"
                   className="text-xs font-bold text-primary hover:underline font-mono inline-flex items-center gap-1.5"
                 >
-                  <Mail className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                  <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span>info@stonetech.in</span>
                 </a>
               </div>
@@ -205,10 +205,10 @@ export function ContactCenter({ className }: { className?: string }) {
                 asChild
                 variant="outline"
                 size="default"
-                className="w-full gap-2 text-xs font-semibold h-10"
+                className="w-full gap-2 text-xs font-semibold h-10 border-border/80 hover:border-primary/60 hover:text-primary"
               >
                 <a href="mailto:info@stonetech.in">
-                  <Mail className="h-3.5 w-3.5 text-amber-600" />
+                  <Mail className="h-3.5 w-3.5 text-primary" />
                   <span>Send Architectural RFQ via Email</span>
                 </a>
               </Button>
@@ -225,7 +225,7 @@ export function ContactCenter({ className }: { className?: string }) {
             </span>
             <Badge
               variant="outline"
-              className="text-[11px] text-amber-700 dark:text-amber-400 border-amber-400/40"
+              className="text-[11px] text-primary border-primary/40 bg-primary/5"
             >
               5.0 ★ Top Rated Atelier
             </Badge>
@@ -235,7 +235,7 @@ export function ContactCenter({ className }: { className?: string }) {
             {REVIEWS.map((rev, idx) => (
               <div
                 key={idx}
-                className="p-5 rounded-2xl border border-border/70 bg-card space-y-2.5 shadow-2xs hover:border-amber-400/50 hover:shadow-xs transition-all"
+                className="p-5 rounded-2xl border border-border/70 bg-card space-y-2.5 shadow-2xs hover:border-primary/50 hover:shadow-xs transition-all"
               >
                 <div className="flex items-center gap-1">
                   {[...Array(rev.rating)].map((_, i) => (

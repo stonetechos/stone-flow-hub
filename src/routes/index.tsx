@@ -545,61 +545,68 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-clip">
-      {/* 1. LIVSPACE LUXURY NAVBAR */}
+      {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-11 sm:h-12 md:h-14 lg:h-16 flex items-center justify-between gap-2 sm:gap-4 md:gap-6 py-1 sm:py-1.5 md:py-2">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Brand Logo & Tagline */}
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-3.5 min-w-0 shrink">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 items-center justify-center rounded-lg sm:rounded-xl bg-white/95 p-1 sm:p-1.5 shadow-2xs border border-border/80 ring-1 ring-black/5 shrink-0">
-              <img
-                src="/branding/stone-tech-icon.png"
-                alt="Stone Tech"
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div className="min-w-0">
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-black tracking-tight sm:tracking-wider uppercase text-foreground leading-none truncate">
+          <div className="flex items-center gap-3 shrink-0">
+            <img
+              src="/branding/stone-tech-icon.png"
+              alt="Stone Tech"
+              className="h-9 w-9 sm:h-10 sm:w-10 object-contain drop-shadow-2xs shrink-0"
+            />
+            <div className="flex flex-col">
+              <span className="text-lg sm:text-xl font-black tracking-tight uppercase text-foreground leading-none">
                 STONE TECH
-              </div>
-              <div className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-muted-foreground uppercase font-bold tracking-wider sm:tracking-widest mt-0.5 sm:mt-1 truncate">
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 whitespace-nowrap">
                 Architectural Stone Atelier
-              </div>
+              </span>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm xl:text-base font-bold text-foreground/85">
-            <a href="#gallery-feed" className="hover:text-primary transition-colors py-1">
+          <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
+            <a
+              href="#gallery-feed"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+            >
               Our Work
             </a>
-            <a href="#why-us" className="hover:text-primary transition-colors py-1">
+            <a
+              href="#why-us"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+            >
               Why Us
             </a>
             <JobOpeningsDialog
               trigger={
-                <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm xl:text-base font-bold text-foreground/85 py-1">
-                  <Briefcase className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 py-1 whitespace-nowrap">
+                  <Briefcase className="h-4 w-4 text-primary" />
                   <span>Job Openings</span>
                 </button>
               }
             />
-            <a href="#contact-us" className="hover:text-primary transition-colors py-1">
+            <a
+              href="#contact-us"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+            >
               Contact
             </a>
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog
               trigger={
                 <Button
                   variant="outline"
                   size="default"
-                  className="h-7.5 sm:h-8 md:h-9 lg:h-10 px-2 sm:px-3 md:px-3.5 gap-1.5 text-xs font-bold shadow-2xs border-border/90 shrink-0 rounded-lg sm:rounded-xl"
+                  className="h-9 px-3 sm:px-3.5 gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
                 >
-                  <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
-                  <span className="hidden sm:inline">Track My Inquiry</span>
+                  <Search className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Track My Inquiry</span>
                   <span className="sm:hidden text-xs">Track</span>
                 </Button>
               }
@@ -609,26 +616,15 @@ function HomePage() {
             <Button
               asChild
               size="default"
-              variant={isAuthenticatedStaff ? "default" : "outline"}
-              className={cn(
-                "h-7.5 sm:h-8 md:h-9 lg:h-10 px-2 sm:px-3 md:px-3.5 gap-1.5 text-xs font-bold shadow-2xs border transition-colors shrink-0 rounded-lg sm:rounded-xl",
-                isAuthenticatedStaff
-                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
-                  : "border-border/90 bg-background/90 text-foreground hover:bg-muted/80 hover:text-foreground",
-              )}
+              className="h-9 px-3 sm:px-3.5 gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
             >
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
-                className="inline-flex items-center gap-1.5"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap"
               >
                 <Lock
-                  className={cn(
-                    "h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 stroke-[2.25]",
-                    isAuthenticatedStaff
-                      ? "text-primary-foreground"
-                      : "text-amber-600 dark:text-amber-400",
-                  )}
+                  className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
                 <span className="hidden sm:inline">Employees Login</span>
@@ -648,7 +644,7 @@ function HomePage() {
               {/* Bold Architectural Headline */}
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                 Bespoke Natural Stone &amp; Architectural Finishes for{" "}
-                <span className="bg-gradient-to-r from-amber-600 via-amber-700 to-stone-800 bg-clip-text text-transparent dark:from-amber-400 dark:to-stone-200">
+                <span className="bg-gradient-to-r from-teal-700 via-cyan-700 to-slate-900 dark:from-teal-400 dark:via-cyan-300 dark:to-slate-100 bg-clip-text text-transparent">
                   Luxury Living
                 </span>
               </h1>
@@ -673,8 +669,8 @@ function HomePage() {
                     Middleman Markup
                   </div>
                 </div>
-                <div className="p-3 rounded-xl border border-amber-300/80 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20 shadow-2xs">
-                  <div className="text-2xl font-black text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 shadow-2xs">
+                  <div className="text-2xl font-black text-primary flex items-center gap-1">
                     {siteSettings.google_rating}{" "}
                     <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
                   </div>
@@ -714,7 +710,7 @@ function HomePage() {
                 <div className="pt-2">
                   <a
                     href="#gallery-feed"
-                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                   >
                     <span>View 300+ Live Executed Works Below</span>
                     <ArrowDown className="h-3.5 w-3.5 animate-bounce" />
@@ -725,31 +721,38 @@ function HomePage() {
 
             {/* RIGHT COLUMN: Floating Request for Estimate Card */}
             <div id="lead-form" className="lg:col-span-6 scroll-mt-24">
-              <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+              <Card className="border-border/90 shadow-xl bg-card rounded-2xl overflow-hidden ring-1 ring-border/50">
                 {/* Card Top Title Banner */}
-                <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 text-white p-5 sm:p-6">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                    Request for estimate
-                  </h2>
+                <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white p-5 sm:p-6 border-b border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                      Request for estimate
+                    </h2>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/30 text-teal-200 border border-primary/40">
+                      Direct Quarry Pricing
+                    </span>
+                  </div>
                 </div>
 
                 {/* Step Progress Continuation Bar (1/2 and 2/2) */}
-                <div className="border-b border-amber-900/40 bg-stone-900/95 px-3.5 sm:px-5 py-2.5 sm:py-3 text-xs">
+                <div className="border-b border-border/60 bg-slate-900/95 px-3.5 sm:px-5 py-2.5 sm:py-3 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => setFormStep(1)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0",
-                        formStep === 1 ? "text-amber-400" : "text-stone-400 hover:text-stone-200",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer",
+                        formStep === 1
+                          ? "text-teal-300 font-extrabold"
+                          : "text-slate-400 hover:text-slate-200",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
                           formStep === 1
-                            ? "bg-amber-500 text-stone-950 shadow-xs"
-                            : "border border-stone-600 bg-stone-800 text-stone-300",
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "border border-slate-700 bg-slate-800 text-slate-400",
                         )}
                       >
                         1
@@ -774,16 +777,18 @@ function HomePage() {
                         setFormStep(2);
                       }}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0",
-                        formStep === 2 ? "text-amber-400" : "text-stone-400 hover:text-stone-200",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer",
+                        formStep === 2
+                          ? "text-teal-300 font-extrabold"
+                          : "text-slate-400 hover:text-slate-200",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 transition-colors",
                           formStep === 2
-                            ? "bg-amber-500 text-stone-950 shadow-xs"
-                            : "border border-stone-600 bg-stone-800 text-stone-300",
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "border border-slate-700 bg-slate-800 text-slate-400",
                         )}
                       >
                         2
@@ -794,9 +799,9 @@ function HomePage() {
                   </div>
 
                   {/* Visual Progress Bar Track */}
-                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-800">
+                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                     <div
-                      className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-300 ease-out"
+                      className="h-full bg-gradient-to-r from-teal-500 via-primary to-cyan-400 transition-all duration-300 ease-out"
                       style={{ width: formStep === 1 ? "50%" : "100%" }}
                     />
                   </div>
@@ -831,15 +836,15 @@ function HomePage() {
                                   key={prod.id}
                                   type="button"
                                   onClick={() => toggleProduct(prod.name)}
-                                  className={`p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 ${
+                                  className={`p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer ${
                                     isSelected
-                                      ? "border-amber-600 bg-amber-500/10 text-foreground font-semibold ring-1 ring-amber-500/30"
+                                      ? "border-primary bg-primary/10 text-foreground font-semibold ring-1 ring-primary/30"
                                       : "border-border bg-background hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                                   }`}
                                 >
                                   <span className="truncate">{prod.name}</span>
                                   {isSelected ? (
-                                    <Check className="h-3.5 w-3.5 text-amber-600 shrink-0 stroke-[3]" />
+                                    <Check className="h-3.5 w-3.5 text-primary shrink-0 stroke-[3]" />
                                   ) : (
                                     <div className="h-3 w-3 rounded-full border border-muted-foreground/30 shrink-0" />
                                   )}
@@ -869,9 +874,9 @@ function HomePage() {
                                 key={st}
                                 type="button"
                                 onClick={() => setSpaceType(st)}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                                   spaceType === st
-                                    ? "border-primary bg-primary text-primary-foreground shadow-2xs"
+                                    ? "border-primary bg-primary text-primary-foreground shadow-2xs font-semibold"
                                     : "border-border bg-background text-muted-foreground hover:bg-muted"
                                 }`}
                               >
@@ -891,7 +896,7 @@ function HomePage() {
                             />
                             <div className="flex flex-wrap items-center gap-1">
                               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                <Sparkles className="h-3 w-3 text-amber-500" /> Ideas:
+                                <Sparkles className="h-3 w-3 text-primary" /> Ideas:
                               </span>
                               {QUICK_IDEA_SUGGESTIONS.slice(0, 4).map((tag) => (
                                 <button
@@ -996,7 +1001,7 @@ function HomePage() {
                               }
                               setFormStep(2);
                             }}
-                            className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md"
+                            className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
                           >
                             <span className="hidden sm:inline">
                               Continue to Step 2/2: Delivery &amp; Contact Details
@@ -1024,7 +1029,7 @@ function HomePage() {
                           <button
                             type="button"
                             onClick={() => setFormStep(1)}
-                            className="text-[11px] font-bold text-amber-600 hover:underline shrink-0"
+                            className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
                           >
                             Edit (1/2)
                           </button>
@@ -1057,15 +1062,15 @@ function HomePage() {
                                     key={role.value}
                                     type="button"
                                     onClick={() => setCustomerRole(role.value)}
-                                    className={`p-2 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1 ${
+                                    className={`p-2 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1 cursor-pointer ${
                                       isSelected
-                                        ? "border-amber-600 bg-amber-500/10 text-foreground font-bold ring-1 ring-amber-500/30 shadow-2xs"
+                                        ? "border-primary bg-primary/10 text-foreground font-bold ring-1 ring-primary/30 shadow-2xs"
                                         : "border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground"
                                     }`}
                                   >
                                     <span className="truncate">{role.label}</span>
                                     {isSelected && (
-                                      <Check className="h-3.5 w-3.5 text-amber-600 shrink-0 stroke-[3]" />
+                                      <Check className="h-3.5 w-3.5 text-primary shrink-0 stroke-[3]" />
                                     )}
                                   </button>
                                 );
@@ -1176,7 +1181,7 @@ function HomePage() {
                                       onClick={() => setQuickDays(q.days)}
                                       className={
                                         isActive
-                                          ? "text-[10px] px-2 py-1 rounded border border-amber-600/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
+                                          ? "text-[10px] px-2 py-1 rounded border border-primary/40 bg-primary/10 text-primary font-bold"
                                           : "text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
                                       }
                                     >
@@ -1195,7 +1200,7 @@ function HomePage() {
                             type="button"
                             variant="outline"
                             onClick={() => setFormStep(1)}
-                            className="h-11 sm:h-12 px-3 sm:px-4 text-xs font-bold gap-1.5 border-border shrink-0"
+                            className="h-11 sm:h-12 px-3 sm:px-4 text-xs font-bold gap-1.5 border-border shrink-0 cursor-pointer"
                           >
                             <ArrowLeft className="h-4 w-4" />
                             <span className="hidden sm:inline">Back (1/2)</span>
@@ -1205,7 +1210,7 @@ function HomePage() {
                           <Button
                             type="submit"
                             disabled={isSubmitting || isProcessingPhotos}
-                            className="flex-1 h-11 sm:h-12 text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md min-w-0"
+                            className="flex-1 h-11 sm:h-12 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md min-w-0 cursor-pointer"
                           >
                             {isSubmitting ? (
                               <>
@@ -1259,7 +1264,7 @@ function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Gem className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold">Quarry Direct Sourcing</h3>
@@ -1328,7 +1333,7 @@ function HomePage() {
         <Button
           onClick={() => scrollToForm()}
           size="sm"
-          className="flex-1 h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold gap-1.5 text-xs"
+          className="flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 text-xs cursor-pointer shadow-md"
         >
           <span>Get Free Estimate</span>
           <ArrowRight className="h-3.5 w-3.5" />
