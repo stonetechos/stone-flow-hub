@@ -163,14 +163,21 @@ function DashboardPage() {
   const kpis = kpisQ.data;
   const tasks = tasksQ.data ?? [];
   const followups = followupsQ.data ?? [];
-  const health = kpis ? computeHealth(kpis) : { score: 100, band: "strong" as HealthBand };
+  const health = kpis
+    ? computeHealth(kpis)
+    : { score: 0, band: "idle" as HealthBand, isUninitialized: true };
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
   const brief = buildBrief(topInsights, tasks, t);
   const headline = kpis
     ? pickHeadline(kpis, t)
-    : { label: "Revenue", value: "₹0", context: "tracking", to: "/invoices" };
+    : {
+        label: "System Status",
+        value: "Ready",
+        context: "Awaiting operational data",
+        to: "/enquiries",
+      };
 
   return (
     <div className="relative pb-24 -mt-2">
@@ -337,17 +344,20 @@ function ExecutiveHero({
 
 function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
   const { t } = useTranslation();
+  const isIdle = band === "idle" || score === 0;
   const size = 88;
   const stroke = 8;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const offset = c - (Math.max(0, Math.min(100, score)) / 100) * c;
+  const offset = isIdle ? c : c - (Math.max(0, Math.min(100, score)) / 100) * c;
   const ringColor =
     band === "strong"
       ? "text-orange-600"
       : band === "steady"
         ? "text-orange-500"
-        : "text-amber-500";
+        : isIdle
+          ? "text-slate-300 dark:text-slate-700"
+          : "text-amber-500";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
@@ -358,7 +368,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
           stroke="currentColor"
           strokeWidth={stroke}
           fill="none"
-          className="text-slate-100"
+          className="text-slate-100 dark:text-slate-800"
         />
         <circle
           cx={size / 2}
@@ -375,11 +385,16 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-2xl font-black tabular-nums text-orange-700">
-          {score}
+        <span
+          className={cn(
+            "font-display text-2xl font-black tabular-nums",
+            isIdle ? "text-slate-400 dark:text-slate-500" : "text-orange-700 dark:text-orange-400",
+          )}
+        >
+          {isIdle ? "—" : score}
         </span>
         <span className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-engraved-kicker">
-          {t("dashboard.health", "Health")}
+          {isIdle ? "No Data" : t("dashboard.health", "Health")}
         </span>
       </div>
     </div>
@@ -392,10 +407,21 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
 
 function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
   const { t } = useTranslation();
+  const totalVolume =
+    (kpis.customers ?? 0) +
+    (kpis.activeEnquiries ?? 0) +
+    (kpis.pendingQuotes ?? 0) +
+    (kpis.ordersToStart ?? 0);
   const salesTone: HealthCardTone = kpis.salesTodayInr > 0 ? "strong" : "steady";
   const opsTone: HealthCardTone = kpis.ordersToStart > 5 ? "watch" : "steady";
   const financeTone: HealthCardTone =
-    kpis.outstandingInr > 5_000_000 ? "risk" : kpis.outstandingInr > 1_000_000 ? "watch" : "strong";
+    kpis.outstandingInr > 5_000_000
+      ? "risk"
+      : kpis.outstandingInr > 1_000_000
+        ? "watch"
+        : totalVolume === 0
+          ? "steady"
+          : "strong";
   const peopleTone: HealthCardTone = kpis.overdueFollowups > 3 ? "watch" : "steady";
 
   return (
@@ -959,11 +985,13 @@ function CopilotDock({
           {t("dashboard.aiCopilot")}
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
-          {health.band === "strong"
-            ? t("dashboard.aiCopilotDescStrong")
-            : health.band === "steady"
-              ? t("dashboard.aiCopilotDescSteady")
-              : t("dashboard.aiCopilotDescWeak")}
+          {health.band === "idle"
+            ? "Awaiting operational records. Enter incoming leads, customers, or quotations to begin health telemetry."
+            : health.band === "strong"
+              ? t("dashboard.aiCopilotDescStrong")
+              : health.band === "steady"
+                ? t("dashboard.aiCopilotDescSteady")
+                : t("dashboard.aiCopilotDescWeak")}
         </div>
         <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-blue-50 pt-3">
           <MiniStat
@@ -1369,10 +1397,24 @@ function ShellLoading({
 /* Helpers                                                                     */
 /* -------------------------------------------------------------------------- */
 
-type HealthBand = "strong" | "steady" | "risk";
-type HealthScore = { score: number; band: HealthBand };
+type HealthBand = "strong" | "steady" | "risk" | "idle";
+type HealthScore = { score: number; band: HealthBand; isUninitialized?: boolean };
 
 function computeHealth(k: DashboardKpis): HealthScore {
+  const totalVolume =
+    (k.customers ?? 0) +
+    (k.activeEnquiries ?? 0) +
+    (k.pendingQuotes ?? 0) +
+    (k.ordersToStart ?? 0) +
+    (k.revenuePipelineInr ?? 0) +
+    (k.outstandingInr ?? 0) +
+    (k.collectionsTodayInr ?? 0) +
+    (k.salesTodayInr ?? 0);
+
+  if (totalVolume === 0) {
+    return { score: 0, band: "idle", isUninitialized: true };
+  }
+
   let score = 90;
   score -= Math.min(k.overdueFollowups * 4, 25);
   score -= k.pendingQuotes > 10 ? 10 : k.pendingQuotes > 5 ? 5 : 0;
@@ -1381,12 +1423,29 @@ function computeHealth(k: DashboardKpis): HealthScore {
   score += k.salesTodayInr > 0 ? 4 : 0;
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
   const band: HealthBand = clamped >= 80 ? "strong" : clamped >= 60 ? "steady" : "risk";
-  return { score: clamped, band };
+  return { score: clamped, band, isUninitialized: false };
 }
 
 type HeadlineMetric = { label: string; value: string; context: string; to: string };
 
 function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
+  const totalVolume =
+    (k.customers ?? 0) +
+    (k.activeEnquiries ?? 0) +
+    (k.pendingQuotes ?? 0) +
+    (k.ordersToStart ?? 0) +
+    (k.revenuePipelineInr ?? 0) +
+    (k.outstandingInr ?? 0);
+
+  if (totalVolume === 0) {
+    return {
+      label: "System Status",
+      value: "Ready",
+      context: "Awaiting operational records",
+      to: "/enquiries",
+    };
+  }
+
   // Cash first when receivables are heavy; then production; then sales.
   if (k.outstandingInr > 1_000_000)
     return {

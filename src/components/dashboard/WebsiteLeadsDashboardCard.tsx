@@ -8,9 +8,9 @@
  * - Selected stone materials, city, and required timeline countdown
  * - Direct deep-link into CRM Enquiry detail view (/enquiries/$enquiryId)
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   Globe,
@@ -72,6 +72,7 @@ const STAGE_CONFIG: Record<string, { label: string; tone: string }> = {
 
 export function WebsiteLeadsDashboardCard() {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const [copiedLink, setCopiedLink] = useState(false);
 
   const { data: leads = [], isLoading } = useQuery<WebLead[]>({
@@ -90,8 +91,22 @@ export function WebsiteLeadsDashboardCard() {
       if (error) throw error;
       return (data ?? []) as unknown as WebLead[];
     },
-    staleTime: 30_000,
+    staleTime: 10_000,
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
   });
+
+  useEffect(() => {
+    const sub = supabase
+      .channel("public:website-leads-card")
+      .on("postgres_changes", { event: "*", schema: "public", table: "enquiries" }, () => {
+        void qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(sub);
+    };
+  }, [qc]);
 
   // Calculate high-level pipeline KPIs
   const totalCount = leads.length;

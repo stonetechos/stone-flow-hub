@@ -33,6 +33,7 @@ import {
   Building,
   ArrowRight,
   ArrowLeft,
+  ArrowDown,
   ShieldCheck,
   Star,
   ExternalLink,
@@ -661,13 +662,43 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Embedded Stone Gallery Feed in a rounded container without sharp edges */}
-              <div id="gallery-feed">
-                <StoneGalleryFeed onSelectProduct={scrollToForm} />
-              </div>
+              {/* Value Proposition & Brand Commitments */}
+              <div className="space-y-4 pt-2">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  Quarry-direct Italian marble, granite, engineered quartz, bespoke 3D stone murals,
+                  and CNC-crafted architectural surfaces engineered with millimeter laser templating
+                  and installed turnkey across India.
+                </p>
 
-              {/* Curated Luxury Architectural Products Showcase */}
-              <LuxuryProductShowcase onSelectProduct={scrollToForm} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Direct Quarry Sourcing (0% Markup)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>CNC &amp; Waterjet Precision Fabrication</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Pan-India Turnkey Installation Teams</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Instant WhatsApp Quotations</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <a
+                    href="#gallery-feed"
+                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+                  >
+                    <span>View 300+ Live Executed Works Below</span>
+                    <ArrowDown className="h-3.5 w-3.5 animate-bounce" />
+                  </a>
+                </div>
+              </div>
             </div>
 
             {/* RIGHT COLUMN: Floating Request for Estimate Card */}
@@ -1173,6 +1204,19 @@ function HomePage() {
               </Card>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
+      <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Embedded Stone Gallery Feed in rounded container */}
+          <div id="gallery-feed" className="scroll-mt-24">
+            <StoneGalleryFeed onSelectProduct={scrollToForm} />
+          </div>
+
+          {/* Curated Luxury Architectural Products Showcase */}
+          <LuxuryProductShowcase onSelectProduct={scrollToForm} />
         </div>
       </section>
 

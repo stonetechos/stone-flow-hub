@@ -91,7 +91,26 @@ function CustomersPage() {
 
   const { prefs, setDensity } = useTablePrefs("customers");
 
-  const query = useQuery({ queryKey: qk.customers.list(dq), queryFn: () => listCustomers(dq) });
+  const query = useQuery({
+    queryKey: qk.customers.list(dq),
+    queryFn: () => listCustomers(dq),
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      const sub = supabase
+        .channel("public:customers:list")
+        .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => {
+          void qc.invalidateQueries({ queryKey: qk.customers.all });
+        })
+        .subscribe();
+      return () => {
+        supabase.removeChannel(sub);
+      };
+    });
+  }, [qc]);
 
   useEffect(() => {
     setPage(1);

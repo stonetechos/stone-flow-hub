@@ -136,7 +136,12 @@ function EnquiriesPage() {
     [],
   );
 
-  const query = useQuery({ queryKey: qk.enquiries.list(dq), queryFn: () => listEnquiries(dq) });
+  const query = useQuery({
+    queryKey: qk.enquiries.list(dq),
+    queryFn: () => listEnquiries(dq),
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
+  });
   useEffect(() => setPage(1), [dq, umbrella, web_only]);
 
   useEffect(() => {

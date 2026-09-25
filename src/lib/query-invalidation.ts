@@ -131,6 +131,7 @@ export function invalidateEnquiry(qc: QueryClient, id?: string): void {
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
   bump(qc, qk.followups.all);
+  qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
 }
 
 export function invalidateRfq(qc: QueryClient, enquiryId?: string): void {

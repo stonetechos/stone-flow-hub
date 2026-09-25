@@ -26,8 +26,8 @@ export function computeHealth(counts: HealthCounts): ExecutiveHealth {
 
   if (total === 0) {
     return {
-      level: "Excellent",
-      reason: "No open insights.",
+      level: "Stable",
+      reason: "No active risks or insights flagged.",
       criticalCount: 0,
       warningCount: 0,
       healthyCount: 0,
