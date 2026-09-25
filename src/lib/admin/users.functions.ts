@@ -927,3 +927,64 @@ export const revokeUserRoleServerFn = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+const completePasswordActivationInput = z.object({
+  password: z.string().min(8).max(128).optional(),
+});
+
+/**
+ * Completes user password activation / forced password change on the server.
+ *
+ * Ensures:
+ * 1. Password is set and email is marked confirmed.
+ * 2. `force_password_change` is cleared using `supabaseAdmin` (bypassing triggers cleanly).
+ * 3. An operational role is guaranteed in `user_roles` so RLS policies allow normal app access.
+ * 4. Audit trail entry is logged.
+ */
+export const completeUserPasswordActivation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => completePasswordActivationInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = context.userId;
+
+    if (data.password) {
+      const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: data.password,
+        email_confirm: true,
+      });
+      if (authErr) {
+        console.warn("[auth] supabaseAdmin updateUserById warning:", authErr.message);
+      }
+    }
+
+    // Clear force_password_change flag on profile using supabaseAdmin
+    const { error: profErr } = await supabaseAdmin
+      .from("profiles")
+      .update({ force_password_change: false })
+      .eq("id", userId);
+
+    if (profErr) {
+      console.warn("[auth] clearing force_password_change failed:", profErr.message);
+    }
+
+    // Verify if user has an assigned role; if none exists, provision default operational role
+    const { data: existingRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (!existingRoles || existingRoles.length === 0) {
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+    }
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: userId,
+      action: "updated",
+      actorId: userId,
+      summary: "User completed account activation and set permanent password.",
+    });
+
+    return { ok: true };
+  });

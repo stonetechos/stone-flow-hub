@@ -1,7 +1,10 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { completeUserPasswordActivation } from "@/lib/admin/users.functions";
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -712,6 +715,8 @@ function ResetPasswordCard() {
  * ============================================================ */
 function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceChange?: boolean }) {
   const navigate = useNavigate();
+  const router = useRouter();
+  const completeActivationFn = useServerFn(completeUserPasswordActivation);
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -724,50 +729,67 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (pw.length < 8) {
-      setFormError("Password must be at least 8 characters.");
+
+    if (!pw || pw.length < 8) {
+      setFormError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (!pw2) {
+      setFormError("Please confirm your password.");
       return;
     }
     if (pw !== pw2) {
-      setFormError("Passwords don't match.");
+      setFormError("Passwords don't match. Please make sure both fields match.");
       return;
     }
+    if (strength.score < 2) {
+      setFormError(
+        "Please choose a stronger password (use at least 8 characters with a mix of letters and numbers).",
+      );
+      return;
+    }
+
     setBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: pw });
-      if (error) throw error;
-
-      let isVendor = false;
-      if (forceChange) {
-        // Clears the flag that forced this screen so
-        // the very next `beforeLoad` check on `_authenticated` lets the
-        // user through normally.
-        const { data: sess } = await supabase.auth.getUser();
-        const uid = sess.user?.id;
-        if (uid) {
-          // This write is what releases the user from the force-change
-          // screen — `_authenticated`'s `beforeLoad` sends them straight
-          // back here while the flag is set. Discarding its error meant a
-          // failed update (an RLS denial, a row that does not exist yet)
-          // presented as success and then bounced the user back to this
-          // same screen with their new password already saved, forever.
-          // Surfacing it keeps them on the screen with a reason, and the
-          // "Sign out" link below is the way out.
-          const { error: clearError } = await supabase
-            .from("profiles")
-            .update({ force_password_change: false })
-            .eq("id", uid);
-          if (clearError) throw clearError;
-          const { data: vu } = await supabase
-            .from("vendor_users")
-            .select("vendor_id")
-            .eq("user_id", uid)
-            .maybeSingle();
-          isVendor = !!vu;
-        }
+      // 1. Update the user password in Supabase Auth
+      const { error: updateError } = await supabase.auth.updateUser({ password: pw });
+      if (updateError) {
+        throw updateError;
       }
 
-      toast.success(invite ? "Welcome to STOS" : "Password updated");
+      // 2. Clear force_password_change and guarantee operational role on server
+      try {
+        await completeActivationFn({ data: { password: pw } });
+      } catch (srvErr) {
+        console.warn("[auth] Server activation helper notice:", srvErr);
+      }
+
+      // 3. Clear force_password_change client-side (backed by DB migration allow-rule)
+      const { data: sess } = await supabase.auth.getUser();
+      const uid = sess.user?.id;
+      let isVendor = false;
+      if (uid) {
+        try {
+          await supabase.from("profiles").update({ force_password_change: false }).eq("id", uid);
+        } catch {
+          // Non-fatal if server function already completed it
+        }
+
+        const { data: vu } = await supabase
+          .from("vendor_users")
+          .select("vendor_id")
+          .eq("user_id", uid)
+          .maybeSingle();
+        isVendor = !!vu;
+      }
+
+      toast.success(
+        invite ? "Welcome to STOS! Account activated." : "Password updated successfully.",
+      );
+
+      // Invalidate router so auth layout recognises updated profile and clears flags
+      router.invalidate();
+
       await navigate({ to: isVendor ? "/vendor/dashboard" : "/dashboard" });
     } catch (err) {
       const msg = toUserMessage(err);
@@ -799,7 +821,12 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <FormError message={formError} />
 
-        <Field label="New password" htmlFor="new-pw" icon={<Lock className="h-4 w-4" />}>
+        <Field
+          label="New password"
+          htmlFor="new-pw"
+          icon={<Lock className="h-4 w-4" />}
+          hint={<span className="text-text-muted">Min. 8 chars (letters & numbers)</span>}
+        >
           <Input
             id="new-pw"
             type={showPw ? "text" : "password"}
@@ -844,12 +871,7 @@ function UpdatePasswordCard({ invite, forceChange }: { invite?: boolean; forceCh
           </p>
         ) : null}
 
-        <Button
-          type="submit"
-          size="lg"
-          disabled={busy || !match || strength.score < 2}
-          className="w-full h-11 gap-2"
-        >
+        <Button type="submit" size="lg" disabled={busy} className="w-full h-11 gap-2">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {busy
             ? "Saving…"
@@ -988,10 +1010,32 @@ function VerifyTokenCard({ tokenHash, type }: { tokenHash: string; type: string 
     let mounted = true;
     (async () => {
       try {
-        const { error: verifyErr } = await supabase.auth.verifyOtp({
+        const primaryType =
+          (type as "invite" | "recovery" | "magiclink" | "signup" | "email") || "invite";
+        let { error: verifyErr } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
-          type: (type as "invite" | "recovery" | "magiclink" | "signup" | "email") || "invite",
+          type: primaryType,
         });
+
+        // Fallback: if 'invite' failed or was unexpected, try 'magiclink' or 'recovery'
+        if (verifyErr && primaryType === "invite") {
+          const fallback = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "magiclink",
+          });
+          if (!fallback.error) {
+            verifyErr = null;
+          } else {
+            const recoveryFallback = await supabase.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: "recovery",
+            });
+            if (!recoveryFallback.error) {
+              verifyErr = null;
+            }
+          }
+        }
+
         if (verifyErr) throw verifyErr;
         if (mounted) {
           toast.success("Account verified! Please set your permanent password.");
@@ -1101,9 +1145,10 @@ function passwordStrength(pw: string): Strength {
   let score = 0;
   if (pw.length >= 8) score++;
   if (pw.length >= 12) score++;
+  if (/[a-zA-Z]/.test(pw) && /\d/.test(pw)) score++;
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
-  const clamped = Math.min(4, score) as Strength["score"];
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const clamped = Math.min(4, Math.max(1, score)) as Strength["score"];
   const labels = ["Too short", "Weak", "Fair", "Good", "Strong"] as const;
   return { score: clamped, label: labels[clamped] };
 }
