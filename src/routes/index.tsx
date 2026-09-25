@@ -546,11 +546,11 @@ function HomePage() {
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12">
       {/* 1. LIVSPACE LUXURY NAVBAR */}
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-xs pt-[max(env(safe-area-inset-top),0px)] min-h-[12mm]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-[12mm] h-20 sm:h-[84px] md:h-[88px] flex items-center justify-between gap-4 py-2 sm:py-2.5">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-sm pt-[max(env(safe-area-inset-top),0px)] min-h-[12mm]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-[12mm] h-24 sm:h-28 md:h-32 flex items-center justify-between gap-4 sm:gap-6 py-3 sm:py-4">
           {/* Brand Logo & Tagline */}
-          <div className="flex items-center gap-3.5 sm:gap-4">
-            <div className="flex h-13 w-13 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-white/95 p-1.5 shadow-xs border border-border/80 ring-1 ring-black/5 shrink-0">
+          <div className="flex items-center gap-3.5 sm:gap-5">
+            <div className="flex h-16 w-16 sm:h-20 sm:w-20 md:h-22 md:w-22 items-center justify-center rounded-2xl bg-white/95 p-2 shadow-sm border border-border/80 ring-2 ring-black/5 shrink-0">
               <img
                 src="/branding/stone-tech-icon.png"
                 alt="Stone Tech"
@@ -558,17 +558,17 @@ function HomePage() {
               />
             </div>
             <div>
-              <div className="text-lg sm:text-2xl font-black tracking-wider uppercase text-foreground leading-none">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-black tracking-wider uppercase text-foreground leading-none">
                 STONE TECH
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground uppercase font-bold tracking-widest mt-1 sm:mt-1.5">
+              <div className="text-xs sm:text-sm md:text-base text-muted-foreground uppercase font-extrabold tracking-widest mt-1.5 sm:mt-2">
                 Architectural Stone Atelier
               </div>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 xl:gap-8 text-sm sm:text-base font-bold text-foreground/80">
+          <nav className="hidden lg:flex items-center gap-7 xl:gap-10 text-base sm:text-lg font-black text-foreground/85">
             <a href="#gallery-feed" className="hover:text-primary transition-colors py-1">
               Our Work
             </a>
@@ -577,8 +577,8 @@ function HomePage() {
             </a>
             <JobOpeningsDialog
               trigger={
-                <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm sm:text-base font-bold text-foreground/80 py-1">
-                  <Briefcase className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-2 text-base sm:text-lg font-black text-foreground/85 py-1">
+                  <Briefcase className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   <span>Job Openings</span>
                 </button>
               }
@@ -589,16 +589,16 @@ function HomePage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog
               trigger={
                 <Button
                   variant="outline"
                   size="default"
-                  className="h-10 sm:h-11 px-3 sm:px-4 gap-2 text-xs sm:text-sm font-bold shadow-2xs border-border/90 shrink-0"
+                  className="h-11 sm:h-12 md:h-13 px-4 sm:px-5 gap-2.5 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border-border/90 shrink-0 rounded-xl"
                 >
-                  <Search className="h-4 w-4 text-primary shrink-0" />
+                  <Search className="h-5 w-5 text-primary shrink-0" />
                   <span className="hidden sm:inline">Track My Inquiry</span>
                   <span className="sm:hidden">Track</span>
                 </Button>
@@ -611,7 +611,7 @@ function HomePage() {
               size="default"
               variant={isAuthenticatedStaff ? "default" : "outline"}
               className={cn(
-                "h-10 sm:h-11 px-3.5 sm:px-4 gap-2 text-xs sm:text-sm font-bold shadow-2xs border transition-colors shrink-0",
+                "h-11 sm:h-12 md:h-13 px-4 sm:px-5 gap-2.5 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border transition-colors shrink-0 rounded-xl",
                 isAuthenticatedStaff
                   ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
                   : "border-border/90 bg-background/90 text-foreground hover:bg-muted/80 hover:text-foreground",
@@ -620,11 +620,11 @@ function HomePage() {
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
-                className="inline-flex items-center gap-2"
+                className="inline-flex items-center gap-2.5"
               >
                 <Lock
                   className={cn(
-                    "h-4 w-4 shrink-0 stroke-[2.25]",
+                    "h-5 w-5 shrink-0 stroke-[2.25]",
                     isAuthenticatedStaff
                       ? "text-primary-foreground"
                       : "text-amber-600 dark:text-amber-400",
