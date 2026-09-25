@@ -110,21 +110,46 @@ export async function listAppUsers(): Promise<UserRow[]> {
 }
 
 export async function assignRole(userId: string, role: AppRole): Promise<void> {
-  const { error } = await supabase
-    .from("user_roles")
-    .insert({ user_id: userId, role })
-    .select("id")
-    .maybeSingle();
-  if (error && error.code !== "23505") throw new AppError(mapDbError(error));
+  try {
+    const { assignUserRoleServerFn } = await import("./users.functions");
+    await assignUserRoleServerFn({ data: { user_id: userId, role } });
+    return;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err ?? "");
+    if (msg && !msg.includes("is not a function")) {
+      // Propagate explicit server errors (e.g. "Only a Super Admin can grant...")
+      if (!msg.includes("row-level security")) {
+        throw new AppError(msg);
+      }
+    }
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: userId, role })
+      .select("id")
+      .maybeSingle();
+    if (error && error.code !== "23505") throw new AppError(mapDbError(error));
+  }
 }
 
 export async function revokeRole(userId: string, role: AppRole): Promise<void> {
-  const { error } = await supabase
-    .from("user_roles")
-    .delete()
-    .eq("user_id", userId)
-    .eq("role", role);
-  if (error) throw new AppError(mapDbError(error));
+  try {
+    const { revokeUserRoleServerFn } = await import("./users.functions");
+    await revokeUserRoleServerFn({ data: { user_id: userId, role } });
+    return;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err ?? "");
+    if (msg && !msg.includes("is not a function")) {
+      if (!msg.includes("row-level security")) {
+        throw new AppError(msg);
+      }
+    }
+    const { error } = await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", userId)
+      .eq("role", role);
+    if (error) throw new AppError(mapDbError(error));
+  }
 }
 
 /**

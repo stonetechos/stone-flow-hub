@@ -288,6 +288,7 @@ function formatAppInviteLink(
 const inviteInput = z.object({
   email: z.string().email("Enter a valid email address"),
   full_name: z.string().trim().max(200).optional().nullable(),
+  role: z.string().optional().nullable(),
   redirect_to: z.string().url().optional().nullable(),
 });
 
@@ -356,11 +357,22 @@ export const inviteUser = createServerFn({ method: "POST" })
       }
     }
 
-    if (userId && fullName) {
-      // Ensure profile row reflects display name immediately
-      await supabaseAdmin
-        .from("profiles")
-        .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+    if (userId) {
+      if (fullName) {
+        // Ensure profile row reflects display name immediately
+        await supabaseAdmin
+          .from("profiles")
+          .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
+      }
+      if (data.role) {
+        // Assign role on the server using service role client to bypass client RLS issues
+        await supabaseAdmin
+          .from("user_roles")
+          .upsert(
+            { user_id: userId, role: data.role as AppRole, granted_by: context.userId },
+            { onConflict: "user_id,role" },
+          );
+      }
     }
 
     // 2. If RESEND_API_KEY is configured in the environment, dispatch branded invite email
@@ -413,6 +425,7 @@ const createWithPasswordInput = z.object({
   email: z.string().email("Enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters").max(128),
   full_name: z.string().trim().max(200).optional().nullable(),
+  role: z.string().optional().nullable(),
 });
 
 /**
@@ -458,6 +471,14 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
         },
         { onConflict: "id" },
       );
+      if (data.role) {
+        await supabaseAdmin
+          .from("user_roles")
+          .upsert(
+            { user_id: userId, role: data.role as AppRole, granted_by: context.userId },
+            { onConflict: "user_id,role" },
+          );
+      }
       await logAuditEvent(supabaseAdmin, {
         entityId: userId,
         action: "user_created",
@@ -827,4 +848,82 @@ export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
     }
 
     return [defaultRole];
+  });
+
+const assignRoleInput = z.object({
+  user_id: z.string().uuid(),
+  role: z.string(),
+});
+
+export const assignUserRoleServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => assignRoleInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const actor = await requireAdminActor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const role = data.role as AppRole;
+
+    if (role === "super_admin" && !actor.isSuperAdmin) {
+      throw new Error("Only a Super Admin can grant the Super Admin role.");
+    }
+
+    const { error } = await supabaseAdmin.from("user_roles").upsert(
+      {
+        user_id: data.user_id,
+        role,
+        granted_by: context.userId,
+      },
+      { onConflict: "user_id,role" },
+    );
+    if (error && error.code !== "23505") throw new Error(error.message);
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: data.user_id,
+      action: "role_changed",
+      actorId: context.userId,
+      summary: `Granted role ${role} to user ${data.user_id}`,
+    });
+
+    return { ok: true };
+  });
+
+const revokeRoleInput = z.object({
+  user_id: z.string().uuid(),
+  role: z.string(),
+});
+
+export const revokeUserRoleServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => revokeRoleInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const actor = await requireAdminActor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const role = data.role as AppRole;
+
+    if (data.user_id === context.userId && (role === "admin" || role === "super_admin")) {
+      throw new Error(
+        "You cannot remove your own administrator role. Ask another administrator to do it.",
+      );
+    }
+
+    const isTargetSuperAdmin = await targetIsSuperAdmin(supabaseAdmin, data.user_id);
+    if (isTargetSuperAdmin && !actor.isSuperAdmin) {
+      throw new Error("Only a Super Admin can modify roles on a Super Admin account.");
+    }
+
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.user_id)
+      .eq("role", role);
+    if (error) throw new Error(error.message);
+
+    await logAuditEvent(supabaseAdmin, {
+      entityId: data.user_id,
+      action: "role_changed",
+      actorId: context.userId,
+      summary: `Revoked role ${role} from user ${data.user_id}`,
+    });
+
+    return { ok: true };
   });

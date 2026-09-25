@@ -348,22 +348,19 @@ function UsersAdminPage() {
   } | null>(null);
 
   const invite = useMutation({
-    mutationFn: (data: { email: string; full_name?: string | null; role?: AppRole | null }) =>
-      inviteFn({
+    mutationFn: (data: { email: string; full_name?: string | null; role?: AppRole | null }) => {
+      if (data.role === "super_admin" && !actor.isSuperAdmin) {
+        return Promise.reject(new Error("Only a Super Admin can grant the Super Admin role."));
+      }
+      return inviteFn({
         data: {
           email: data.email,
           full_name: data.full_name ?? null,
+          role: data.role ?? null,
           redirect_to: typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
         },
-      }).then(async (res) => {
-        if (res.id && data.role) {
-          // A newly invited user never already holds any role, so this is
-          // never a protected-target mutation — kept on the guarded path
-          // for consistency with every other role write in this file.
-          await assignRoleGuarded(actor, { id: res.id, roles: [] }, data.role);
-        }
-        return res;
-      }),
+      });
+    },
     onSuccess: (res) => {
       toast.success(t("admin.invitationSent", "Invitation sent"));
       invalidate();
@@ -384,19 +381,19 @@ function UsersAdminPage() {
       full_name?: string | null;
       password: string;
       role?: AppRole | null;
-    }) =>
-      createWithPasswordFn({
+    }) => {
+      if (data.role === "super_admin" && !actor.isSuperAdmin) {
+        return Promise.reject(new Error("Only a Super Admin can grant the Super Admin role."));
+      }
+      return createWithPasswordFn({
         data: {
           email: data.email,
           password: data.password,
           full_name: data.full_name ?? null,
+          role: data.role ?? null,
         },
-      }).then(async (res) => {
-        if (res.id && data.role) {
-          await assignRoleGuarded(actor, { id: res.id, roles: [] }, data.role);
-        }
-        return res;
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t("admin.userCreated", "User created"));
       invalidate();
