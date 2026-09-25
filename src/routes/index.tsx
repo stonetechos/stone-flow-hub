@@ -544,24 +544,24 @@ function HomePage() {
   // MAIN LIVSPACE-STYLE ARCHITECTURAL LANDING VIEW
   // -------------------------------------------------------------
   return (
-    <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12">
+    <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-clip">
       {/* 1. LIVSPACE LUXURY NAVBAR */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-sm pt-[max(env(safe-area-inset-top),0px)] min-h-[12mm]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-[12mm] h-24 sm:h-28 md:h-32 flex items-center justify-between gap-4 sm:gap-6 py-3 sm:py-4">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 min-h-[12mm] h-20 sm:h-24 md:h-28 lg:h-32 flex items-center justify-between gap-2 sm:gap-4 md:gap-6 py-2 sm:py-3 md:py-4">
           {/* Brand Logo & Tagline */}
-          <div className="flex items-center gap-3.5 sm:gap-5">
-            <div className="flex h-16 w-16 sm:h-20 sm:w-20 md:h-22 md:w-22 items-center justify-center rounded-2xl bg-white/95 p-2 shadow-sm border border-border/80 ring-2 ring-black/5 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 md:gap-5 min-w-0 shrink">
+            <div className="flex h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-22 lg:w-22 items-center justify-center rounded-xl sm:rounded-2xl bg-white/95 p-1.5 sm:p-2 shadow-sm border border-border/80 ring-2 ring-black/5 shrink-0">
               <img
                 src="/branding/stone-tech-icon.png"
                 alt="Stone Tech"
                 className="h-full w-full object-contain"
               />
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl md:text-4xl font-black tracking-wider uppercase text-foreground leading-none">
+            <div className="min-w-0">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight sm:tracking-wider uppercase text-foreground leading-none truncate">
                 STONE TECH
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground uppercase font-extrabold tracking-widest mt-1.5 sm:mt-2">
+              <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-muted-foreground uppercase font-extrabold tracking-wider sm:tracking-widest mt-1 sm:mt-1.5 md:mt-2 truncate">
                 Architectural Stone Atelier
               </div>
             </div>
@@ -589,18 +589,18 @@ function HomePage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog
               trigger={
                 <Button
                   variant="outline"
                   size="default"
-                  className="h-11 sm:h-12 md:h-13 px-4 sm:px-5 gap-2.5 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border-border/90 shrink-0 rounded-xl"
+                  className="h-9 sm:h-11 md:h-12 lg:h-13 px-2.5 sm:px-4 md:px-5 gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border-border/90 shrink-0 rounded-lg sm:rounded-xl"
                 >
-                  <Search className="h-5 w-5 text-primary shrink-0" />
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
                   <span className="hidden sm:inline">Track My Inquiry</span>
-                  <span className="sm:hidden">Track</span>
+                  <span className="sm:hidden text-xs">Track</span>
                 </Button>
               }
             />
@@ -611,7 +611,7 @@ function HomePage() {
               size="default"
               variant={isAuthenticatedStaff ? "default" : "outline"}
               className={cn(
-                "h-11 sm:h-12 md:h-13 px-4 sm:px-5 gap-2.5 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border transition-colors shrink-0 rounded-xl",
+                "h-9 sm:h-11 md:h-12 lg:h-13 px-2.5 sm:px-4 md:px-5 gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base font-extrabold shadow-2xs border transition-colors shrink-0 rounded-lg sm:rounded-xl",
                 isAuthenticatedStaff
                   ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
                   : "border-border/90 bg-background/90 text-foreground hover:bg-muted/80 hover:text-foreground",
@@ -620,18 +620,19 @@ function HomePage() {
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
-                className="inline-flex items-center gap-2.5"
+                className="inline-flex items-center gap-1.5 sm:gap-2"
               >
                 <Lock
                   className={cn(
-                    "h-5 w-5 shrink-0 stroke-[2.25]",
+                    "h-4 w-4 sm:h-5 sm:w-5 shrink-0 stroke-[2.25]",
                     isAuthenticatedStaff
                       ? "text-primary-foreground"
                       : "text-amber-600 dark:text-amber-400",
                   )}
                   aria-hidden="true"
                 />
-                <span>Employees Login</span>
+                <span className="hidden sm:inline">Employees Login</span>
+                <span className="sm:hidden text-xs">Login</span>
               </Link>
             </Button>
           </div>
@@ -645,7 +646,7 @@ function HomePage() {
             {/* LEFT COLUMN: Authority, Brand Prestige, Embedded Feed & Contact Center */}
             <div className="lg:col-span-6 space-y-6 pt-2">
               {/* Bold Architectural Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                 Bespoke Natural Stone &amp; Architectural Finishes for{" "}
                 <span className="bg-gradient-to-r from-amber-600 via-amber-700 to-stone-800 bg-clip-text text-transparent dark:from-amber-400 dark:to-stone-200">
                   Luxury Living
@@ -733,19 +734,19 @@ function HomePage() {
                 </div>
 
                 {/* Step Progress Continuation Bar (1/2 and 2/2) */}
-                <div className="border-b border-amber-900/40 bg-stone-900/95 px-5 py-3 text-xs">
-                  <div className="flex items-center justify-between">
+                <div className="border-b border-amber-900/40 bg-stone-900/95 px-3.5 sm:px-5 py-2.5 sm:py-3 text-xs">
+                  <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => setFormStep(1)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0",
                         formStep === 1 ? "text-amber-400" : "text-stone-400 hover:text-stone-200",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
                           formStep === 1
                             ? "bg-amber-500 text-stone-950 shadow-xs"
                             : "border border-stone-600 bg-stone-800 text-stone-300",
@@ -753,7 +754,8 @@ function HomePage() {
                       >
                         1
                       </span>
-                      <span>Part 1/2: Stone Requirements</span>
+                      <span className="hidden sm:inline">Part 1/2: Stone Requirements</span>
+                      <span className="sm:hidden text-[11px] truncate">1. Stone Needs</span>
                     </button>
 
                     <button
@@ -772,13 +774,13 @@ function HomePage() {
                         setFormStep(2);
                       }}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0",
                         formStep === 2 ? "text-amber-400" : "text-stone-400 hover:text-stone-200",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                          "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
                           formStep === 2
                             ? "bg-amber-500 text-stone-950 shadow-xs"
                             : "border border-stone-600 bg-stone-800 text-stone-300",
@@ -786,7 +788,8 @@ function HomePage() {
                       >
                         2
                       </span>
-                      <span>Part 2/2: Contact &amp; Timeline</span>
+                      <span className="hidden sm:inline">Part 2/2: Contact &amp; Timeline</span>
+                      <span className="sm:hidden text-[11px] truncate">2. Timeline &amp; Info</span>
                     </button>
                   </div>
 
@@ -993,9 +996,12 @@ function HomePage() {
                               }
                               setFormStep(2);
                             }}
-                            className="w-full h-12 text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md"
+                            className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md"
                           >
-                            <span>Continue to Step 2/2: Delivery &amp; Contact Details</span>
+                            <span className="hidden sm:inline">
+                              Continue to Step 2/2: Delivery &amp; Contact Details
+                            </span>
+                            <span className="sm:hidden">Continue to Step 2/2</span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         </div>
@@ -1184,31 +1190,32 @@ function HomePage() {
                         </div>
 
                         {/* SUBMIT / BACK BUTTONS */}
-                        <div className="pt-2 flex items-center gap-2.5">
+                        <div className="pt-2 flex items-center gap-2 sm:gap-2.5">
                           <Button
                             type="button"
                             variant="outline"
                             onClick={() => setFormStep(1)}
-                            className="h-12 px-4 text-xs font-bold gap-1.5 border-border"
+                            className="h-11 sm:h-12 px-3 sm:px-4 text-xs font-bold gap-1.5 border-border shrink-0"
                           >
                             <ArrowLeft className="h-4 w-4" />
-                            <span>Back (1/2)</span>
+                            <span className="hidden sm:inline">Back (1/2)</span>
+                            <span className="sm:hidden">Back</span>
                           </Button>
 
                           <Button
                             type="submit"
                             disabled={isSubmitting || isProcessingPhotos}
-                            className="flex-1 h-12 text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md"
+                            className="flex-1 h-11 sm:h-12 text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 shadow-md min-w-0"
                           >
                             {isSubmitting ? (
                               <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Submitting request &amp; photos...</span>
+                                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                                <span className="truncate">Submitting request...</span>
                               </>
                             ) : (
                               <>
-                                <span>Request for estimate</span>
-                                <ArrowRight className="h-4 w-4" />
+                                <span className="truncate">Request for estimate</span>
+                                <ArrowRight className="h-4 w-4 shrink-0" />
                               </>
                             )}
                           </Button>
@@ -1302,7 +1309,7 @@ function HomePage() {
       <ContactCenter />
 
       {/* 9. STICKY MOBILE ACTION BAR (LIVSPACE MOBILE PATTERN) */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-3 flex items-center gap-2.5 shadow-xl">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-2.5 sm:p-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] flex items-center gap-2 sm:gap-2.5 shadow-xl">
         <Button
           asChild
           size="sm"
