@@ -48,6 +48,20 @@ export async function createBusinessExpense(
   input: BusinessExpenseInput,
 ): Promise<BusinessExpenseRow> {
   const p = businessExpenseInputSchema.parse(input);
+
+  // 1. Primary path: Server function (authenticated & bypasses restrictive client RLS)
+  try {
+    const { saveBusinessExpenseServerFn } = await import("./business-expenses.functions");
+    const res = await saveBusinessExpenseServerFn({ data: { data: p } });
+    if (res) return res as unknown as BusinessExpenseRow;
+  } catch (serverErr) {
+    console.warn(
+      "[business-expenses.api] Server function failed, falling back to client-side insert:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { data, error } = await getDb()
     .from("business_expenses" as never)
     .insert(toPayload(p) as never)
@@ -62,6 +76,20 @@ export async function updateBusinessExpense(
   input: BusinessExpenseInput,
 ): Promise<BusinessExpenseRow> {
   const p = businessExpenseInputSchema.parse(input);
+
+  // 1. Primary path: Server function
+  try {
+    const { saveBusinessExpenseServerFn } = await import("./business-expenses.functions");
+    const res = await saveBusinessExpenseServerFn({ data: { id, data: p } });
+    if (res) return res as unknown as BusinessExpenseRow;
+  } catch (serverErr) {
+    console.warn(
+      "[business-expenses.api] Server function failed, falling back to client-side update:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { data, error } = await getDb()
     .from("business_expenses" as never)
     .update(toPayload(p) as never)
@@ -73,6 +101,19 @@ export async function updateBusinessExpense(
 }
 
 export async function deleteBusinessExpense(id: string): Promise<void> {
+  // 1. Primary path: Server function
+  try {
+    const { deleteBusinessExpenseServerFn } = await import("./business-expenses.functions");
+    await deleteBusinessExpenseServerFn({ data: { id } });
+    return;
+  } catch (serverErr) {
+    console.warn(
+      "[business-expenses.api] Server function failed, falling back to client-side delete:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { error } = await getDb()
     .from("business_expenses" as never)
     .delete()

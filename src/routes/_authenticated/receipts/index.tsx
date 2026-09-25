@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet, MessageSquareText } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listReceipts } from "@/lib/receipts/api";
 import { formatInr, formatDate } from "@/lib/format";
+import { TransactionMessageReaderModal } from "@/components/banking/TransactionMessageReaderModal";
 
 export const Route = createFileRoute("/_authenticated/receipts/")({
   ssr: false,
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/receipts/")({
 });
 
 function ReceiptsListPage() {
+  const [readerOpen, setReaderOpen] = useState(false);
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [page, setPage] = useState(1);
@@ -80,11 +82,23 @@ function ReceiptsListPage() {
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
-          <Button size="sm" className="h-8" asChild>
-            <Link to="/receipts/new">
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-semibold border-emerald-300 bg-emerald-50/50 text-emerald-800 hover:bg-emerald-100/60 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+              onClick={() => setReaderOpen(true)}
+            >
+              <MessageSquareText className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Read UPI / SMS</span>
+            </Button>
+            <Button size="sm" className="h-8" asChild>
+              <Link to="/receipts/new">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -190,6 +204,8 @@ function ReceiptsListPage() {
           </Table>
         </DataTableShell>
       )}
+
+      <TransactionMessageReaderModal open={readerOpen} onOpenChange={setReaderOpen} />
     </div>
   );
 }

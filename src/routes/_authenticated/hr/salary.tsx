@@ -66,11 +66,11 @@ export const Route = createFileRoute("/_authenticated/hr/salary")({
   component: SalaryView,
 });
 
-const CALC_LABEL: Record<string, string> = {
-  fixed: "Fixed amount",
-  percent_of_basic: "% of basic",
-  percent_of_ctc: "% of CTC",
-  balance: "Balance of CTC",
+const CALC_LABEL_KEYS: Record<string, string> = {
+  fixed: "payroll.salary.components.calcTypes.fixed",
+  percent_of_basic: "payroll.salary.components.calcTypes.percent_of_basic",
+  percent_of_ctc: "payroll.salary.components.calcTypes.percent_of_ctc",
+  balance: "payroll.salary.components.calcTypes.balance",
 };
 
 interface ComponentDraft {
@@ -160,7 +160,7 @@ export function SalaryView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "salary-components"] });
       setDraft(EMPTY_COMPONENT);
-      toast.success("Component saved");
+      toast.success(t("payroll.salary.toasts.componentAdded"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -170,7 +170,7 @@ export function SalaryView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "salary-components"] });
       setPendingDelete(null);
-      toast.success("Component removed");
+      toast.success(t("payroll.salary.toasts.componentRemoved"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -187,7 +187,7 @@ export function SalaryView() {
       qc.invalidateQueries({ queryKey: ["hr", "salary-structures"] });
       setCtc("");
       setEmployeeId("");
-      toast.success("Salary structure saved");
+      toast.success(t("payroll.salary.toasts.structureSaved"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -196,7 +196,7 @@ export function SalaryView() {
     mutationFn: (patch: Parameters<typeof savePayrollSettings>[0]) => savePayrollSettings(patch),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "payroll-settings"] });
-      toast.success("Payroll settings updated");
+      toast.success(t("payroll.salary.toasts.settingsUpdated"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -204,31 +204,31 @@ export function SalaryView() {
   return (
     <>
       <PageHeader
-        title="Salary structures"
-        subtitle="Define components once, then expand a CTC into a monthly package per employee."
-        eyebrow="Human Resources"
+        title={t("payroll.salary.title")}
+        subtitle={t("payroll.salary.subtitle")}
+        eyebrow={t("payroll.salary.eyebrow")}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ---------------- Component master ---------------- */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Salary components</CardTitle>
+            <CardTitle className="text-base">{t("payroll.salary.components.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {canWrite ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <Label htmlFor="component-name">Name</Label>
+                  <Label htmlFor="component-name">{t("payroll.salary.components.name")}</Label>
                   <Input
                     id="component-name"
                     value={draft.name}
-                    placeholder="Basic, HRA, Special allowance…"
+                    placeholder={t("payroll.salary.components.namePlaceholder")}
                     onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <Label>Type</Label>
+                  <Label>{t("payroll.salary.components.type")}</Label>
                   <Select
                     value={draft.kind}
                     onValueChange={(v) =>
@@ -239,13 +239,17 @@ export function SalaryView() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="earning">Earning</SelectItem>
-                      <SelectItem value="deduction">Deduction</SelectItem>
+                      <SelectItem value="earning">
+                        {t("payroll.salary.components.earning")}
+                      </SelectItem>
+                      <SelectItem value="deduction">
+                        {t("payroll.salary.components.deduction")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Calculation</Label>
+                  <Label>{t("payroll.salary.components.calculation")}</Label>
                   <Select
                     value={draft.calc_type}
                     onValueChange={(v) =>
@@ -256,16 +260,16 @@ export function SalaryView() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(CALC_LABEL).map(([k, label]) => (
+                      {Object.entries(CALC_LABEL_KEYS).map(([k, labelKey]) => (
                         <SelectItem key={k} value={k}>
-                          {label}
+                          {t(labelKey)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="component-value">Value</Label>
+                  <Label htmlFor="component-value">{t("payroll.salary.components.value")}</Label>
                   <Input
                     id="component-value"
                     inputMode="decimal"
@@ -280,14 +284,14 @@ export function SalaryView() {
                       checked={draft.pf_applicable}
                       onCheckedChange={(v) => setDraft((d) => ({ ...d, pf_applicable: v }))}
                     />
-                    PF
+                    {t("payroll.salary.components.pf")}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <Switch
                       checked={draft.is_taxable}
                       onCheckedChange={(v) => setDraft((d) => ({ ...d, is_taxable: v }))}
                     />
-                    Taxable
+                    {t("payroll.salary.components.taxable")}
                   </label>
                 </div>
                 <div className="sm:col-span-2">
@@ -296,7 +300,9 @@ export function SalaryView() {
                     disabled={addComponent.isPending || !draft.name.trim()}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    {addComponent.isPending ? "Saving…" : "Add component"}
+                    {addComponent.isPending
+                      ? t("payroll.salary.components.saving")
+                      : t("payroll.salary.components.addComponent")}
                   </Button>
                 </div>
               </div>
@@ -309,16 +315,18 @@ export function SalaryView() {
                 <ErrorBlock message={toUserMessage(components.error)} />
               ) : (components.data ?? []).length === 0 ? (
                 <EmptyState
-                  title="No components yet"
-                  message="Add Basic, HRA and a balance component to start building CTC packages."
+                  title={t("payroll.salary.components.empty.noComponents")}
+                  message={t("payroll.salary.components.empty.noComponentsDesc")}
                 />
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Component</TableHead>
-                      <TableHead>Calculation</TableHead>
-                      <TableHead className="text-right">Value</TableHead>
+                      <TableHead>{t("payroll.salary.components.table.component")}</TableHead>
+                      <TableHead>{t("payroll.salary.components.table.calculation")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("payroll.salary.components.table.value")}
+                      </TableHead>
                       <TableHead />
                     </TableRow>
                   </TableHeader>
@@ -328,10 +336,16 @@ export function SalaryView() {
                         <TableCell className="font-medium">
                           {c.name}
                           <Badge variant="outline" className="ml-2">
-                            {c.kind === "earning" ? "Earning" : "Deduction"}
+                            {c.kind === "earning"
+                              ? t("payroll.salary.components.earning")
+                              : t("payroll.salary.components.deduction")}
                           </Badge>
                         </TableCell>
-                        <TableCell>{CALC_LABEL[c.calc_type] ?? c.calc_type}</TableCell>
+                        <TableCell>
+                          {CALC_LABEL_KEYS[c.calc_type]
+                            ? t(CALC_LABEL_KEYS[c.calc_type])
+                            : c.calc_type}
+                        </TableCell>
                         <TableCell className="text-right">
                           {c.calc_type === "fixed"
                             ? formatInr(Number(c.value))
@@ -363,16 +377,16 @@ export function SalaryView() {
         {/* ---------------- Structure builder ---------------- */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Assign a package</CardTitle>
+            <CardTitle className="text-base">{t("payroll.salary.packages.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {canWrite ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <Label>Employee</Label>
+                  <Label>{t("payroll.salary.packages.employee")}</Label>
                   <Select value={employeeId} onValueChange={setEmployeeId}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select employee" />
+                      <SelectValue placeholder={t("payroll.salary.packages.selectEmployee")} />
                     </SelectTrigger>
                     <SelectContent>
                       {(employees.data ?? []).map((e) => (
@@ -384,7 +398,7 @@ export function SalaryView() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="ctc">Annual CTC</Label>
+                  <Label htmlFor="ctc">{t("payroll.salary.packages.annualCtc")}</Label>
                   <Input
                     id="ctc"
                     inputMode="numeric"
@@ -394,7 +408,9 @@ export function SalaryView() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="effective-from">Effective from</Label>
+                  <Label htmlFor="effective-from">
+                    {t("payroll.salary.packages.effectiveFrom")}
+                  </Label>
                   <Input
                     id="effective-from"
                     type="date"
@@ -415,7 +431,7 @@ export function SalaryView() {
                     </div>
                   ))}
                   <div className="flex justify-between px-3 py-1.5 font-medium">
-                    <span>Monthly gross</span>
+                    <span>{t("payroll.salary.packages.monthlyGross")}</span>
                     <span className="tabular-nums">{formatInr(grossFromLines(previewLines))}</span>
                   </div>
                 </div>
@@ -425,7 +441,9 @@ export function SalaryView() {
                     disabled={saveStructure.isPending || !employeeId}
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    {saveStructure.isPending ? "Saving…" : "Save structure"}
+                    {saveStructure.isPending
+                      ? t("payroll.salary.packages.saving")
+                      : t("payroll.salary.packages.saveStructure")}
                   </Button>
                 ) : null}
               </div>
@@ -436,17 +454,19 @@ export function SalaryView() {
                 <SkeletonTable />
               ) : (structures.data ?? []).length === 0 ? (
                 <EmptyState
-                  title="No salary structures"
-                  message="Assign a CTC package so payroll can generate payslips for this employee."
+                  title={t("payroll.salary.packages.empty.noStructures")}
+                  message={t("payroll.salary.packages.empty.noStructuresDesc")}
                 />
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Effective</TableHead>
-                      <TableHead className="text-right">Annual CTC</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("payroll.salary.packages.table.employee")}</TableHead>
+                      <TableHead>{t("payroll.salary.packages.table.effective")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("payroll.salary.packages.table.annualCtc")}
+                      </TableHead>
+                      <TableHead>{t("payroll.salary.packages.table.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -478,23 +498,29 @@ export function SalaryView() {
       {canWrite && settings.data ? (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-base">Statutory settings</CardTitle>
+            <CardTitle className="text-base">{t("payroll.salary.statutory.title")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {(
               [
-                { key: "pf_employee_pct", label: "PF employee %" },
-                { key: "pf_employer_pct", label: "PF employer %" },
-                { key: "pf_wage_ceiling", label: "PF wage ceiling" },
-                { key: "esi_employee_pct", label: "ESI employee %" },
-                { key: "esi_employer_pct", label: "ESI employer %" },
-                { key: "esi_wage_ceiling", label: "ESI wage ceiling" },
-                { key: "standard_deduction", label: "Standard deduction" },
-                { key: "overtime_multiplier", label: "Overtime multiplier" },
+                { key: "pf_employee_pct", labelKey: "payroll.salary.statutory.pfEmployeePct" },
+                { key: "pf_employer_pct", labelKey: "payroll.salary.statutory.pfEmployerPct" },
+                { key: "pf_wage_ceiling", labelKey: "payroll.salary.statutory.pfWageCeiling" },
+                { key: "esi_employee_pct", labelKey: "payroll.salary.statutory.esiEmployeePct" },
+                { key: "esi_employer_pct", labelKey: "payroll.salary.statutory.esiEmployerPct" },
+                { key: "esi_wage_ceiling", labelKey: "payroll.salary.statutory.esiWageCeiling" },
+                {
+                  key: "standard_deduction",
+                  labelKey: "payroll.salary.statutory.standardDeduction",
+                },
+                {
+                  key: "overtime_multiplier",
+                  labelKey: "payroll.salary.statutory.overtimeMultiplier",
+                },
               ] as const
-            ).map(({ key, label }) => (
+            ).map(({ key, labelKey }) => (
               <div key={key}>
-                <Label htmlFor={key}>{label}</Label>
+                <Label htmlFor={key}>{t(labelKey)}</Label>
                 <Input
                   id={key}
                   inputMode="decimal"
@@ -513,7 +539,7 @@ export function SalaryView() {
                   checked={settings.data.tds_enabled}
                   onCheckedChange={(v) => saveSettings.mutate({ tds_enabled: v })}
                 />
-                Deduct TDS
+                {t("payroll.salary.statutory.deductTds")}
               </label>
             </div>
             <div className="flex items-end gap-2">
@@ -522,7 +548,7 @@ export function SalaryView() {
                   checked={settings.data.pf_limit_to_ceiling}
                   onCheckedChange={(v) => saveSettings.mutate({ pf_limit_to_ceiling: v })}
                 />
-                Cap PF at ceiling
+                {t("payroll.salary.statutory.capPfCeiling")}
               </label>
             </div>
           </CardContent>
@@ -532,10 +558,10 @@ export function SalaryView() {
       <ConfirmDialog
         open={!!pendingDelete}
         onOpenChange={(o) => !o && setPendingDelete(null)}
-        title="Remove this salary component?"
-        description="Existing structures keep their saved lines; only new packages are affected."
+        title={t("payroll.salary.dialog.removeTitle")}
+        description={t("payroll.salary.dialog.removeDesc")}
         tone="danger"
-        confirmLabel="Remove"
+        confirmLabel={t("payroll.salary.dialog.remove")}
         busy={removeComponent.isPending}
         onConfirm={() => pendingDelete && removeComponent.mutate(pendingDelete)}
       />

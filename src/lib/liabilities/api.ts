@@ -51,6 +51,20 @@ export async function listLiabilities(activeOnly = false): Promise<LiabilityRow[
 
 export async function createLiability(input: LiabilityInput): Promise<LiabilityRow> {
   const p = liabilityInputSchema.parse(input);
+
+  // 1. Primary path: Server function (authenticated & bypasses restrictive client RLS)
+  try {
+    const { saveLiabilityServerFn } = await import("./liabilities.functions");
+    const res = await saveLiabilityServerFn({ data: { data: p } });
+    if (res) return res as unknown as LiabilityRow;
+  } catch (serverErr) {
+    console.warn(
+      "[liabilities.api] Server function failed, falling back to client-side insert:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { data, error } = await getDb()
     .from("liabilities" as never)
     .insert(toPayload(p) as never)
@@ -62,6 +76,20 @@ export async function createLiability(input: LiabilityInput): Promise<LiabilityR
 
 export async function updateLiability(id: string, input: LiabilityInput): Promise<LiabilityRow> {
   const p = liabilityInputSchema.parse(input);
+
+  // 1. Primary path: Server function
+  try {
+    const { saveLiabilityServerFn } = await import("./liabilities.functions");
+    const res = await saveLiabilityServerFn({ data: { id, data: p } });
+    if (res) return res as unknown as LiabilityRow;
+  } catch (serverErr) {
+    console.warn(
+      "[liabilities.api] Server function failed, falling back to client-side update:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { data, error } = await getDb()
     .from("liabilities" as never)
     .update(toPayload(p) as never)
@@ -73,6 +101,19 @@ export async function updateLiability(id: string, input: LiabilityInput): Promis
 }
 
 export async function deleteLiability(id: string): Promise<void> {
+  // 1. Primary path: Server function
+  try {
+    const { deleteLiabilityServerFn } = await import("./liabilities.functions");
+    await deleteLiabilityServerFn({ data: { id } });
+    return;
+  } catch (serverErr) {
+    console.warn(
+      "[liabilities.api] Server function failed, falling back to client-side delete:",
+      serverErr,
+    );
+  }
+
+  // 2. Client fallback
   const { error } = await getDb()
     .from("liabilities" as never)
     .delete()

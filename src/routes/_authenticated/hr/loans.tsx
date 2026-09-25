@@ -118,7 +118,7 @@ export function LoansView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "loans"] });
       setLoanForm((f) => ({ ...f, employee_id: "", principal: "" }));
-      toast.success("Advance recorded");
+      toast.success(t("payroll.loans.form.advanceRecorded", "Advance recorded"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -127,7 +127,7 @@ export function LoansView() {
     mutationFn: (id: string) => closeLoan(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "loans"] });
-      toast.success("Loan closed");
+      toast.success(t("payroll.loans.form.loanClosed", "Loan closed"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -143,7 +143,7 @@ export function LoansView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "reimbursements"] });
       setClaimForm((f) => ({ ...f, employee_id: "", amount: "" }));
-      toast.success("Claim submitted");
+      toast.success(t("payroll.loans.claims.claimSubmitted", "Claim submitted"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -153,17 +153,17 @@ export function LoansView() {
       setReimbursementStatus(v.id, v.status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr", "reimbursements"] });
-      toast.success("Claim updated");
+      toast.success(t("payroll.loans.claims.claimUpdated", "Claim updated"));
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
   const employeeSelect = (value: string, onChange: (v: string) => void, id: string) => (
     <div>
-      <Label htmlFor={id}>Employee</Label>
+      <Label htmlFor={id}>{t("payroll.loans.form.employee", "Employee")}</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger id={id}>
-          <SelectValue placeholder="Select employee" />
+          <SelectValue placeholder={t("payroll.loans.form.selectEmployee", "Select employee")} />
         </SelectTrigger>
         <SelectContent>
           {(employees.data ?? []).map((e) => (
@@ -179,22 +179,31 @@ export function LoansView() {
   return (
     <>
       <PageHeader
-        title="Loans & reimbursements"
-        subtitle="Advances recover automatically through payroll instalments; approved claims are paid with salary."
-        eyebrow="Human Resources"
+        title={t("payroll.loans.title", "Loans & reimbursements")}
+        subtitle={t(
+          "payroll.loans.subtitle",
+          "Advances recover automatically through payroll instalments; approved claims are paid with salary.",
+        )}
+        eyebrow={t("payroll.loans.eyebrow", "Human Resources")}
       />
 
       <Tabs defaultValue="loans">
         <TabsList>
-          <TabsTrigger value="loans">Loans & advances</TabsTrigger>
-          <TabsTrigger value="claims">Reimbursements</TabsTrigger>
+          <TabsTrigger value="loans">
+            {t("payroll.loans.tabs.loans", "Loans & advances")}
+          </TabsTrigger>
+          <TabsTrigger value="claims">
+            {t("payroll.loans.tabs.claims", "Reimbursements")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="loans" className="space-y-6">
           {canWrite ? (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">New advance or loan</CardTitle>
+                <CardTitle className="text-base">
+                  {t("payroll.loans.form.newAdvanceOrLoan", "New advance or loan")}
+                </CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 {employeeSelect(
@@ -203,7 +212,7 @@ export function LoansView() {
                   "loan-employee",
                 )}
                 <div>
-                  <Label htmlFor="loan-type">Type</Label>
+                  <Label htmlFor="loan-type">{t("payroll.loans.form.type", "Type")}</Label>
                   <Select
                     value={loanForm.loan_type}
                     onValueChange={(v) =>
@@ -214,13 +223,15 @@ export function LoansView() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="advance">Advance</SelectItem>
-                      <SelectItem value="loan">Loan</SelectItem>
+                      <SelectItem value="advance">
+                        {t("payroll.loans.form.advance", "Advance")}
+                      </SelectItem>
+                      <SelectItem value="loan">{t("payroll.loans.form.loan", "Loan")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="loan-principal">Amount</Label>
+                  <Label htmlFor="loan-principal">{t("payroll.loans.form.amount", "Amount")}</Label>
                   <Input
                     id="loan-principal"
                     inputMode="numeric"
@@ -229,7 +240,9 @@ export function LoansView() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="loan-installments">Instalments</Label>
+                  <Label htmlFor="loan-installments">
+                    {t("payroll.loans.form.instalments", "Instalments")}
+                  </Label>
                   <Input
                     id="loan-installments"
                     inputMode="numeric"
@@ -242,7 +255,9 @@ export function LoansView() {
                 <div className="flex items-end">
                   <Button onClick={() => addLoan.mutate()} disabled={addLoan.isPending}>
                     <Plus className="mr-2 h-4 w-4" />
-                    {addLoan.isPending ? "Saving…" : "Record"}
+                    {addLoan.isPending
+                      ? t("payroll.loans.form.saving", "Saving…")
+                      : t("payroll.loans.form.record", "Record")}
                   </Button>
                 </div>
               </CardContent>
@@ -256,19 +271,28 @@ export function LoansView() {
               <ErrorBlock message={toUserMessage(loans.error)} />
             ) : (loans.data ?? []).length === 0 ? (
               <EmptyState
-                title="No advances recorded"
-                message="Salary advances and loans appear here and recover automatically through payroll."
+                title={t("payroll.loans.empty.noAdvances", "No advances recorded")}
+                message={t(
+                  "payroll.loans.empty.noAdvancesDesc",
+                  "Salary advances and loans appear here and recover automatically through payroll.",
+                )}
               />
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Principal</TableHead>
-                    <TableHead className="text-right">Instalment</TableHead>
-                    <TableHead className="text-right">Outstanding</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("payroll.loans.table.employee", "Employee")}</TableHead>
+                    <TableHead>{t("payroll.loans.table.type", "Type")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("payroll.loans.table.principal", "Principal")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("payroll.loans.table.instalment", "Instalment")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("payroll.loans.table.outstanding", "Outstanding")}
+                    </TableHead>
+                    <TableHead>{t("payroll.loans.table.status", "Status")}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -297,7 +321,7 @@ export function LoansView() {
                             onClick={() => close.mutate(l.id)}
                             disabled={close.isPending}
                           >
-                            Close
+                            {t("payroll.loans.table.close", "Close")}
                           </Button>
                         ) : null}
                       </TableCell>
@@ -312,7 +336,9 @@ export function LoansView() {
         <TabsContent value="claims" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">New claim</CardTitle>
+              <CardTitle className="text-base">
+                {t("payroll.loans.claims.newClaim", "New claim")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {employeeSelect(
@@ -321,7 +347,9 @@ export function LoansView() {
                 "claim-employee",
               )}
               <div>
-                <Label htmlFor="claim-date">Claim date</Label>
+                <Label htmlFor="claim-date">
+                  {t("payroll.loans.claims.claimDate", "Claim date")}
+                </Label>
                 <Input
                   id="claim-date"
                   type="date"
@@ -330,7 +358,9 @@ export function LoansView() {
                 />
               </div>
               <div>
-                <Label htmlFor="claim-category">Category</Label>
+                <Label htmlFor="claim-category">
+                  {t("payroll.loans.claims.category", "Category")}
+                </Label>
                 <Select
                   value={claimForm.category}
                   onValueChange={(v) => setClaimForm((f) => ({ ...f, category: v }))}
@@ -341,14 +371,14 @@ export function LoansView() {
                   <SelectContent>
                     {["travel", "food", "fuel", "lodging", "site", "other"].map((c) => (
                       <SelectItem key={c} value={c} className="capitalize">
-                        {c}
+                        {t(`payroll.loans.claims.categories.${c}`, c)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="claim-amount">Amount</Label>
+                <Label htmlFor="claim-amount">{t("payroll.loans.claims.amount", "Amount")}</Label>
                 <Input
                   id="claim-amount"
                   inputMode="numeric"
@@ -359,7 +389,9 @@ export function LoansView() {
               <div className="flex items-end">
                 <Button onClick={() => addClaim.mutate()} disabled={addClaim.isPending}>
                   <Plus className="mr-2 h-4 w-4" />
-                  {addClaim.isPending ? "Submitting…" : "Submit"}
+                  {addClaim.isPending
+                    ? t("payroll.loans.claims.submitting", "Submitting…")
+                    : t("payroll.loans.claims.submit", "Submit")}
                 </Button>
               </div>
             </CardContent>
@@ -372,18 +404,23 @@ export function LoansView() {
               <ErrorBlock message={toUserMessage(claims.error)} />
             ) : (claims.data ?? []).length === 0 ? (
               <EmptyState
-                title="No claims yet"
-                message="Approved reimbursement claims are paid out with the next payroll run."
+                title={t("payroll.loans.claims.empty.noClaims", "No claims yet")}
+                message={t(
+                  "payroll.loans.claims.empty.noClaimsDesc",
+                  "Approved reimbursement claims are paid out with the next payroll run.",
+                )}
               />
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("payroll.loans.claims.table.employee", "Employee")}</TableHead>
+                    <TableHead>{t("payroll.loans.claims.table.date", "Date")}</TableHead>
+                    <TableHead>{t("payroll.loans.claims.table.category", "Category")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("payroll.loans.claims.table.amount", "Amount")}
+                    </TableHead>
+                    <TableHead>{t("payroll.loans.claims.table.status", "Status")}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -394,7 +431,9 @@ export function LoansView() {
                         {nameOf.get(c.employee_id) ?? "—"}
                       </TableCell>
                       <TableCell>{c.claim_date}</TableCell>
-                      <TableCell className="capitalize">{c.category}</TableCell>
+                      <TableCell className="capitalize">
+                        {t(`payroll.loans.claims.categories.${c.category}`, c.category)}
+                      </TableCell>
                       <TableCell className="text-right">{formatInr(Number(c.amount))}</TableCell>
                       <TableCell>
                         <Badge variant={STATUS_TONE[c.status] ?? "outline"}>{c.status}</Badge>

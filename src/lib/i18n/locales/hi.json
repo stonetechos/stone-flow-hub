@@ -1923,7 +1923,150 @@
     "year": "वर्ष",
     "branch": "शाखा",
     "noRunsYet": "अभी तक कोई पेरोल रन नहीं है",
-    "noRunsYetDesc": "वेतन संरचना और उपस्थिति से वेतन पर्ची उत्पन्न करने के लिए वर्तमान महीने के लिए एक रन बनाएं।"
+    "noRunsYetDesc": "वेतन संरचना और उपस्थिति से वेतन पर्ची उत्पन्न करने के लिए वर्तमान महीने के लिए एक रन बनाएं।",
+    "loans": {
+      "title": "ऋण और प्रतिपूर्ति",
+      "subtitle": "अग्रिम राशि पेरोल किस्तों के माध्यम से स्वतः कटती है; स्वीकृत दावों का भुगतान वेतन के साथ किया जाता है।",
+      "eyebrow": "मानव संसाधन (HR)",
+      "tabs": {
+        "loans": "ऋण और अग्रिम",
+        "claims": "दावे एवं प्रतिपूर्ति"
+      },
+      "form": {
+        "newAdvanceOrLoan": "नया अग्रिम या ऋण",
+        "employee": "कर्मचारी",
+        "selectEmployee": "कर्मचारी चुनें",
+        "type": "प्रकार",
+        "advance": "अग्रिम (Advance)",
+        "loan": "ऋण (Loan)",
+        "amount": "राशि",
+        "instalments": "किस्तें",
+        "record": "दर्ज करें",
+        "saving": "सहेज रहे हैं…",
+        "advanceRecorded": "अग्रिम दर्ज किया गया",
+        "loanClosed": "ऋण बंद किया गया"
+      },
+      "table": {
+        "employee": "कर्मचारी",
+        "type": "प्रकार",
+        "principal": "मूलधन",
+        "instalment": "मासिक किस्त",
+        "outstanding": "शेष राशि",
+        "status": "स्थिति",
+        "close": "बंद करें"
+      },
+      "empty": {
+        "noAdvances": "कोई अग्रिम दर्ज नहीं है",
+        "noAdvancesDesc": "वेतन अग्रिम और ऋण यहां दिखाई देते हैं और पेरोल के माध्यम से स्वतः कट जाते हैं।"
+      },
+      "claims": {
+        "newClaim": "नया प्रतिपूर्ति दावा",
+        "claimDate": "दावे की तारीख",
+        "category": "श्रेणी",
+        "amount": "राशि",
+        "submit": "जमा करें",
+        "submitting": "जमा कर रहे हैं…",
+        "claimSubmitted": "दावा प्रस्तुत किया गया",
+        "claimUpdated": "दावा अद्यतन किया गया",
+        "categories": {
+          "travel": "यात्रा (Travel)",
+          "food": "भोजन (Food)",
+          "fuel": "ईंधन (Fuel)",
+          "lodging": "आवास (Lodging)",
+          "site": "साइट व्यय (Site)",
+          "other": "अन्य (Other)"
+        },
+        "table": {
+          "employee": "कर्मचारी",
+          "date": "तारीख",
+          "category": "श्रेणी",
+          "amount": "राशि",
+          "status": "स्थिति"
+        },
+        "empty": {
+          "noClaims": "अभी तक कोई दावा नहीं है",
+          "noClaimsDesc": "स्वीकृत प्रतिपूर्ति दावों का भुगतान अगले पेरोल रन के साथ किया जाता है।"
+        }
+      }
+    },
+    "salary": {
+      "title": "वेतन संरचनाएं",
+      "subtitle": "एक बार घटक परिभाषित करें, फिर प्रति कर्मचारी सीटीसी को मासिक पैकेज में विस्तारित करें।",
+      "eyebrow": "मानव संसाधन (HR)",
+      "components": {
+        "title": "वेतन घटक",
+        "name": "घटक का नाम",
+        "namePlaceholder": "मूल वेतन (Basic), एचआरए, विशेष भत्ता…",
+        "type": "प्रकार",
+        "earning": "आय (Earning)",
+        "deduction": "कटौती (Deduction)",
+        "calculation": "गणना का प्रकार",
+        "calcTypes": {
+          "fixed": "निश्चित राशि",
+          "percent_of_basic": "मूल वेतन का %",
+          "percent_of_ctc": "सीटीसी का %",
+          "balance": "सीटीसी का शेष"
+        },
+        "value": "मूल्य / मान",
+        "pf": "पीएफ (PF)",
+        "taxable": "कर योग्य (Taxable)",
+        "addComponent": "घटक जोड़ें",
+        "saving": "सहेज रहे हैं…",
+        "empty": {
+          "noComponents": "अभी तक कोई घटक नहीं है",
+          "noComponentsDesc": "सीटीसी पैकेज बनाना शुरू करने के लिए मूल वेतन, एचआरए और शेष घटक जोड़ें।"
+        },
+        "table": {
+          "component": "घटक",
+          "calculation": "गणना",
+          "value": "मूल्य"
+        }
+      },
+      "packages": {
+        "title": "पैकेज सौंपें",
+        "employee": "कर्मचारी",
+        "selectEmployee": "कर्मचारी चुनें",
+        "annualCtc": "वार्षिक सीटीसी",
+        "effectiveFrom": "प्रभावी तिथि",
+        "monthlyGross": "मासिक सकल वेतन",
+        "saveStructure": "संरचना सहेजें",
+        "saving": "सहेज रहे हैं…",
+        "empty": {
+          "noStructures": "कोई वेतन संरचना नहीं है",
+          "noStructuresDesc": "एक सीटीसी पैकेज सौंपें ताकि पेरोल इस कर्मचारी के लिए पेस्लिप बना सके।"
+        },
+        "table": {
+          "employee": "कर्मचारी",
+          "effective": "प्रभावी",
+          "annualCtc": "वार्षिक सीटीसी",
+          "status": "स्थिति"
+        }
+      },
+      "statutory": {
+        "title": "वैधानिक सेटिंग्स",
+        "pfEmployeePct": "कर्मचारी पीएफ %",
+        "pfEmployerPct": "नियोक्ता पीएफ %",
+        "pfWageCeiling": "पीएफ वेतन सीमा",
+        "esiEmployeePct": "कर्मचारी ईएसआईसी %",
+        "esiEmployerPct": "नियोक्ता ईएसआईसी %",
+        "esiWageCeiling": "ईएसआईसी वेतन सीमा",
+        "standardDeduction": "मानक कटौती",
+        "overtimeMultiplier": "ओवरटाइम गुणक",
+        "deductTds": "टीडीएस काटें",
+        "capPfCeiling": "पीएफ को सीमा तक सीमित करें"
+      },
+      "dialog": {
+        "removeTitle": "क्या इस वेतन घटक को हटाना चाहते हैं?",
+        "removeDesc": "मौजूदा संरचनाएं अपनी सहेजी गई लाइनें रखेंगी; केवल नए पैकेज प्रभावित होंगे।",
+        "remove": "हटाएं"
+      },
+      "toasts": {
+        "componentAdded": "वेतन घटक जोड़ा गया",
+        "componentRemoved": "वेतन घटक हटा दिया गया",
+        "structureSaved": "वेतन संरचना सहेजी गई",
+        "settingsUpdated": "पेरोल सेटिंग्स अपडेट की गईं"
+      }
+    }
   },
   "moneyFlow": {
     "title": "धन प्रवाह",

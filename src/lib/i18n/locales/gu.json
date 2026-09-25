@@ -1925,7 +1925,150 @@
     "year": "વર્ષ",
     "branch": "શાખા",
     "noRunsYet": "હજી સુધી કોઈ પગાર રન નથી",
-    "noRunsYetDesc": "પગાર માળખું અને હાજરી પરથી પેસ્લિપ જનરેટ કરવા માટે વર્તમાન મહિના માટે રન બનાવો."
+    "noRunsYetDesc": "પગાર માળખું અને હાજરી પરથી પેસ્લિપ જનરેટ કરવા માટે વર્તમાન મહિના માટે રન બનાવો.",
+    "loans": {
+      "title": "લોન અને વળતર",
+      "subtitle": "એડવાન્સ આપમેળે પગારના હપ્તા દ્વારા વસૂલ થાય છે; મંજૂર થયેલા દાવાઓ પગાર સાથે ચૂકવાય છે.",
+      "eyebrow": "માનવ સંસાધન (HR)",
+      "tabs": {
+        "loans": "લોન અને એડવાન્સ",
+        "claims": "વળતર અને દાવા"
+      },
+      "form": {
+        "newAdvanceOrLoan": "નવો એડવાન્સ કે લોન",
+        "employee": "કર્મચારી",
+        "selectEmployee": "કર્મચારી પસંદ કરો",
+        "type": "પ્રકાર",
+        "advance": "એડવાન્સ (ઉપાડ)",
+        "loan": "લોન",
+        "amount": "રકમ",
+        "instalments": "હપ્તા",
+        "record": "નોંધ કરો",
+        "saving": "સાચવી રહ્યું છે…",
+        "advanceRecorded": "એડવાન્સ નોંધાઈ ગયું",
+        "loanClosed": "લોન બંધ થઈ ગઈ"
+      },
+      "table": {
+        "employee": "કર્મચારી",
+        "type": "પ્રકાર",
+        "principal": "મૂળ રકમ",
+        "instalment": "માસિક હપ્તો",
+        "outstanding": "બાકી રકમ",
+        "status": "સ્થિતિ",
+        "close": "બંધ કરો"
+      },
+      "empty": {
+        "noAdvances": "કોઈ એડવાન્સ નોંધાયેલ નથી",
+        "noAdvancesDesc": "પગાર એડવાન્સ અને લોન અહીં દેખાય છે અને પગારમાંથી આપમેળે કપાત થાય છે."
+      },
+      "claims": {
+        "newClaim": "નવો વળતર દાવો",
+        "claimDate": "દાવાની તારીખ",
+        "category": "શ્રેણી",
+        "amount": "રકમ",
+        "submit": "સબમિટ કરો",
+        "submitting": "સબમિટ કરી રહ્યું છે…",
+        "claimSubmitted": "દાવો સબમિટ થયો",
+        "claimUpdated": "દાવો અપડેટ થયો",
+        "categories": {
+          "travel": "મુસાફરી (Travel)",
+          "food": "ખોરાક (Food)",
+          "fuel": "ઈંધણ (Fuel)",
+          "lodging": "રોકાણ (Lodging)",
+          "site": "સાઇટ ખર્ચ (Site)",
+          "other": "અન્ય (Other)"
+        },
+        "table": {
+          "employee": "કર્મચારી",
+          "date": "તારીખ",
+          "category": "શ્રેણી",
+          "amount": "રકમ",
+          "status": "સ્થિતિ"
+        },
+        "empty": {
+          "noClaims": "હજુ સુધી કોઈ દાવો નથી",
+          "noClaimsDesc": "મંજૂર થયેલા વળતર દાવા આગામી પેરોલ સાથે ચૂકવવામાં આવશે."
+        }
+      }
+    },
+    "salary": {
+      "title": "પગાર માળખાં",
+      "subtitle": "એકવાર ઘટકો વ્યાખ્યાયિત કરો, પછી દરેક કર્મચારી માટે સીટીસીને માસિક પેકેજમાં વહેંચો.",
+      "eyebrow": "માનવ સંસાધન (HR)",
+      "components": {
+        "title": "પગાર ઘટકો",
+        "name": "ઘટકનું નામ",
+        "namePlaceholder": "મૂળ પગાર (Basic), HRA, વિશેષ ભથ્થું…",
+        "type": "પ્રકાર",
+        "earning": "આવક (Earning)",
+        "deduction": "કપાત (Deduction)",
+        "calculation": "ગણતરીનો પ્રકાર",
+        "calcTypes": {
+          "fixed": "નિશ્ચિત રકમ",
+          "percent_of_basic": "મૂળ પગારના %",
+          "percent_of_ctc": "સીટીસીના %",
+          "balance": "સીટીસીની બાકી રકમ"
+        },
+        "value": "મૂલ્ય / રકમ",
+        "pf": "પીએફ (PF)",
+        "taxable": "કરપાત્ર (Taxable)",
+        "addComponent": "ઘટક ઉમેરો",
+        "saving": "સાચવી રહ્યું છે…",
+        "empty": {
+          "noComponents": "હજુ સુધી કોઈ ઘટક નથી",
+          "noComponentsDesc": "સીટીસી પેકેજ બનાવવા માટે મૂળ પગાર, HRA અને બાકી ઘટક ઉમેરો."
+        },
+        "table": {
+          "component": "ઘટક",
+          "calculation": "ગણતરી",
+          "value": "મૂલ્ય"
+        }
+      },
+      "packages": {
+        "title": "પેકેજ સોંપો",
+        "employee": "કર્મચારી",
+        "selectEmployee": "કર્મચારી પસંદ કરો",
+        "annualCtc": "વાર્ષિક સીટીસી",
+        "effectiveFrom": "અમલીકરણ તારીખ",
+        "monthlyGross": "માસિક ગ્રોસ પગાર",
+        "saveStructure": "માળખું સાચવો",
+        "saving": "સાચવી રહ્યું છે…",
+        "empty": {
+          "noStructures": "કોઈ પગાર માળખું નથી",
+          "noStructuresDesc": "એક સીટીસી પેકેજ સોંપો જેથી પેરોલ આ કર્મચારી માટે પેસ્લિપ બનાવી શકે."
+        },
+        "table": {
+          "employee": "કર્મચારી",
+          "effective": "અમલી",
+          "annualCtc": "વાર્ષિક સીટીસી",
+          "status": "સ્થિતિ"
+        }
+      },
+      "statutory": {
+        "title": "કાનૂની સેટિંગ્સ",
+        "pfEmployeePct": "કર્મચારી પીએફ %",
+        "pfEmployerPct": "કંપની પીએફ %",
+        "pfWageCeiling": "પીએફ પગાર મર્યાદા",
+        "esiEmployeePct": "કર્મચારી ઈએસઆઈ %",
+        "esiEmployerPct": "કંપની ઈએસઆઈ %",
+        "esiWageCeiling": "ઈએસઆઈ પગાર મર્યાદા",
+        "standardDeduction": "સ્ટાન્ડર્ડ ડિડક્શન",
+        "overtimeMultiplier": "ઓવરટાઇમ ગુણક",
+        "deductTds": "ટીડીએસ કાપો",
+        "capPfCeiling": "પીએફ મર્યાદા સુધી સીમિત કરો"
+      },
+      "dialog": {
+        "removeTitle": "શું આ પગાર ઘટક દૂર કરવો છે?",
+        "removeDesc": "હાલના માળખા પોતાની સાચવેલી લાઈનો જાળવી રાખશે; માત્ર નવા પેકેજ પ્રભાવિત થશે.",
+        "remove": "દૂર કરો"
+      },
+      "toasts": {
+        "componentAdded": "પગાર ઘટક ઉમેરવામાં આવ્યો",
+        "componentRemoved": "પગાર ઘટક દૂર કરવામાં આવ્યો",
+        "structureSaved": "પગાર માળખું સાચવવામાં આવ્યું",
+        "settingsUpdated": "પેરોલ સેટિંગ્સ અપડેટ કરવામાં આવ્યા"
+      }
+    }
   },
   "moneyFlow": {
     "title": "નાણાં પ્રવાહ",

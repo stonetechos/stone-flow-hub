@@ -5,13 +5,15 @@ import {
   redirect,
   useRouter,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
-import { ErrorBlock } from "@/components/layout/States";
+import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { classifyFailure } from "@/lib/errors";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
+import { useAuthReady } from "@/hooks/use-auth-ready";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -98,6 +100,19 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const router = useRouter();
   const pathname = router.state.location.pathname;
+  const { isReady, user } = useAuthReady();
+
+  useEffect(() => {
+    if (isReady && !user) {
+      if (typeof window !== "undefined") {
+        window.location.replace("/auth?flow=signin");
+      }
+    }
+  }, [isReady, user]);
+
+  if (!isReady || !user) {
+    return <LoadingBlock />;
+  }
 
   return (
     <AppShell>

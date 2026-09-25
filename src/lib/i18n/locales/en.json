@@ -1924,7 +1924,150 @@
     "year": "Year",
     "branch": "Branch",
     "noRunsYet": "No payroll runs yet",
-    "noRunsYetDesc": "Create a run for the current month to generate payslips from salary structures and attendance."
+    "noRunsYetDesc": "Create a run for the current month to generate payslips from salary structures and attendance.",
+    "loans": {
+      "title": "Loans & reimbursements",
+      "subtitle": "Advances recover automatically through payroll instalments; approved claims are paid with salary.",
+      "eyebrow": "Human Resources",
+      "tabs": {
+        "loans": "Loans & advances",
+        "claims": "Reimbursements"
+      },
+      "form": {
+        "newAdvanceOrLoan": "New advance or loan",
+        "employee": "Employee",
+        "selectEmployee": "Select employee",
+        "type": "Type",
+        "advance": "Advance",
+        "loan": "Loan",
+        "amount": "Amount",
+        "instalments": "Instalments",
+        "record": "Record",
+        "saving": "Saving…",
+        "advanceRecorded": "Advance recorded",
+        "loanClosed": "Loan closed"
+      },
+      "table": {
+        "employee": "Employee",
+        "type": "Type",
+        "principal": "Principal",
+        "instalment": "Instalment",
+        "outstanding": "Outstanding",
+        "status": "Status",
+        "close": "Close"
+      },
+      "empty": {
+        "noAdvances": "No advances recorded",
+        "noAdvancesDesc": "Salary advances and loans appear here and recover automatically through payroll."
+      },
+      "claims": {
+        "newClaim": "New claim",
+        "claimDate": "Claim date",
+        "category": "Category",
+        "amount": "Amount",
+        "submit": "Submit",
+        "submitting": "Submitting…",
+        "claimSubmitted": "Claim submitted",
+        "claimUpdated": "Claim updated",
+        "categories": {
+          "travel": "Travel",
+          "food": "Food",
+          "fuel": "Fuel",
+          "lodging": "Lodging",
+          "site": "Site",
+          "other": "Other"
+        },
+        "table": {
+          "employee": "Employee",
+          "date": "Date",
+          "category": "Category",
+          "amount": "Amount",
+          "status": "Status"
+        },
+        "empty": {
+          "noClaims": "No claims yet",
+          "noClaimsDesc": "Approved reimbursement claims are paid out with the next payroll run."
+        }
+      }
+    },
+    "salary": {
+      "title": "Salary structures",
+      "subtitle": "Define components once, then expand a CTC into a monthly package per employee.",
+      "eyebrow": "Human Resources",
+      "components": {
+        "title": "Salary components",
+        "name": "Name",
+        "namePlaceholder": "Basic, HRA, Special allowance…",
+        "type": "Type",
+        "earning": "Earning",
+        "deduction": "Deduction",
+        "calculation": "Calculation",
+        "calcTypes": {
+          "fixed": "Fixed amount",
+          "percent_of_basic": "% of basic",
+          "percent_of_ctc": "% of CTC",
+          "balance": "Balance of CTC"
+        },
+        "value": "Value",
+        "pf": "PF",
+        "taxable": "Taxable",
+        "addComponent": "Add component",
+        "saving": "Saving…",
+        "empty": {
+          "noComponents": "No components yet",
+          "noComponentsDesc": "Add Basic, HRA and a balance component to start building CTC packages."
+        },
+        "table": {
+          "component": "Component",
+          "calculation": "Calculation",
+          "value": "Value"
+        }
+      },
+      "packages": {
+        "title": "Assign a package",
+        "employee": "Employee",
+        "selectEmployee": "Select employee",
+        "annualCtc": "Annual CTC",
+        "effectiveFrom": "Effective from",
+        "monthlyGross": "Monthly gross",
+        "saveStructure": "Save structure",
+        "saving": "Saving…",
+        "empty": {
+          "noStructures": "No salary structures",
+          "noStructuresDesc": "Assign a CTC package so payroll can generate payslips for this employee."
+        },
+        "table": {
+          "employee": "Employee",
+          "effective": "Effective",
+          "annualCtc": "Annual CTC",
+          "status": "Status"
+        }
+      },
+      "statutory": {
+        "title": "Statutory settings",
+        "pfEmployeePct": "PF employee %",
+        "pfEmployerPct": "PF employer %",
+        "pfWageCeiling": "PF wage ceiling",
+        "esiEmployeePct": "ESI employee %",
+        "esiEmployerPct": "ESI employer %",
+        "esiWageCeiling": "ESI wage ceiling",
+        "standardDeduction": "Standard deduction",
+        "overtimeMultiplier": "Overtime multiplier",
+        "deductTds": "Deduct TDS",
+        "capPfCeiling": "Cap PF at ceiling"
+      },
+      "dialog": {
+        "removeTitle": "Remove this salary component?",
+        "removeDesc": "Existing structures keep their saved lines; only new packages are affected.",
+        "remove": "Remove"
+      },
+      "toasts": {
+        "componentAdded": "Salary component added",
+        "componentRemoved": "Salary component removed",
+        "structureSaved": "Salary structure saved",
+        "settingsUpdated": "Payroll settings updated"
+      }
+    }
   },
   "moneyFlow": {
     "title": "Money Flow",
