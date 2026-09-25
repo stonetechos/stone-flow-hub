@@ -23,6 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalaryView } from "../salary";
 import { LoansView } from "../loans";
+import { TaxRegimeOptimizer } from "@/components/hr/TaxRegimeOptimizer";
 import {
   Table,
   TableBody,
@@ -39,6 +40,10 @@ import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/hr/payroll/")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    tab: typeof s.tab === "string" ? s.tab : undefined,
+    employee: typeof s.employee === "string" ? s.employee : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Payroll — Human Resources" },
@@ -262,17 +267,19 @@ export function PayrollRunsView() {
 
 export function PayrollHubPage() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("runs");
+  const search = Route.useSearch();
+  const [activeTab, setActiveTab] = useState(search.tab || "runs");
 
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-lg">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
           <TabsTrigger value="runs">{t("payroll.tabs.runs", "Payroll Runs")}</TabsTrigger>
           <TabsTrigger value="structures">
             {t("payroll.tabs.structures", "Salary Structures")}
           </TabsTrigger>
           <TabsTrigger value="loans">{t("payroll.tabs.loans", "Loans & Claims")}</TabsTrigger>
+          <TabsTrigger value="tax">{t("payroll.tabs.tax", "Tax & Regime Hub")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs" className="mt-4 space-y-6">
@@ -285,6 +292,10 @@ export function PayrollHubPage() {
 
         <TabsContent value="loans" className="mt-4 space-y-6">
           <LoansView />
+        </TabsContent>
+
+        <TabsContent value="tax" className="mt-4 space-y-6">
+          <TaxRegimeOptimizer initialEmployeeId={search.employee} />
         </TabsContent>
       </Tabs>
     </div>

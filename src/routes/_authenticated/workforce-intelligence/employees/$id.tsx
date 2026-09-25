@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TaxRegimeOptimizer } from "@/components/hr/TaxRegimeOptimizer";
 import {
   Select,
   SelectContent,
@@ -317,8 +318,8 @@ function EmployeeProfile() {
           <TabsTrigger value="leave" disabled>
             {t("workforce.employee.tabs.leave", "Leave")}
           </TabsTrigger>
-          <TabsTrigger value="payroll" disabled>
-            {t("workforce.employee.tabs.payroll", "Payroll")}
+          <TabsTrigger value="payroll">
+            {t("workforce.employee.tabs.payroll", "Payroll & Taxes")}
           </TabsTrigger>
           <TabsTrigger value="training" disabled>
             {t("workforce.employee.tabs.training", "Training")}
@@ -804,6 +805,10 @@ function EmployeeProfile() {
 
         <TabsContent value="documents" className="mt-4">
           <DocumentsTab employeeId={id} />
+        </TabsContent>
+
+        <TabsContent value="payroll" className="mt-4">
+          <TaxRegimeOptimizer initialEmployeeId={id} />
         </TabsContent>
       </Tabs>
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Landmark } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -112,6 +112,24 @@ function InvoicesPage() {
       <PageHeader
         title="Sales Invoices"
         subtitle="Collect payments — Razorpay links or manual entries."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild className="gap-1.5 h-8 text-xs">
+              <Link to="/gst">
+                <Landmark className="h-3.5 w-3.5 text-emerald-600" />
+                Pay GST & Filing
+              </Link>
+            </Button>
+            {roles.canWrite && (
+              <Button size="sm" asChild className="h-8 text-xs">
+                <Link to="/invoices/new">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {t("invoices.new", "New Invoice")}
+                </Link>
+              </Button>
+            )}
+          </div>
+        }
       />
 
       <DataToolbar

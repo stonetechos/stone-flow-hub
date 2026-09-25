@@ -105,6 +105,10 @@ export const qk = {
     byId: (id: string) => ["purchaseInvoices", "byId", id] as const,
     byVendor: (vendorId: string) => ["purchaseInvoices", "byVendor", vendorId] as const,
   },
+  gst: {
+    all: ["gst"] as const,
+    period: (year: number, month: number) => ["gst", "period", year, month] as const,
+  },
   inventory: {
     all: ["inventory"] as const,
     list: (q?: string) => ["inventory", "list", q ?? ""] as const,

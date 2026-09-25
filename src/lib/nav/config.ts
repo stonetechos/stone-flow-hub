@@ -242,6 +242,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
   },
+  {
+    id: "gst",
+    to: "/gst",
+    label: "Pay GST & Filing",
+    icon: Landmark,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
+  },
 
   // HR Operations (Merged HR Operations & Workforce Intelligence)
   // 1. Employees: Workforce master directory

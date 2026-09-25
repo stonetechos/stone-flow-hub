@@ -20,6 +20,7 @@ import {
   Building2,
   Receipt,
   FileText,
+  Landmark,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -445,6 +446,12 @@ function MoneyFlowCommandCenterPage() {
               <TabsTrigger value="agency-ledgers" className="gap-1.5 text-xs">
                 <Layers className="h-3.5 w-3.5" />
                 <span>{t("moneyFlow.tabs.agencyLedgers", "Agency Ledgers")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="gst" className="gap-1.5 text-xs" asChild>
+                <Link to="/gst">
+                  <Landmark className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Pay GST & Filing</span>
+                </Link>
               </TabsTrigger>
             </TabsList>
           </div>
