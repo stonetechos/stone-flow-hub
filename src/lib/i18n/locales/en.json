@@ -854,8 +854,14 @@
     "invitationCancelled": "Invitation cancelled",
     "userDeleted": "User deleted",
     "userReactivated": "User reactivated",
-    "userDeactivated": "User deactivated",
-    "displayNameUpdated": "Display name updated"
+    "displayNameUpdated": "Display name updated",
+    "inviteLinkReadyTitle": "User Invited Successfully",
+    "inviteLinkSentDesc": "An invitation email has been dispatched to {{email}}. You can also share the direct activation link below:",
+    "inviteLinkDirectDesc": "Account initialized for {{email}}. You can copy and share this direct activation link via WhatsApp or email:",
+    "shareWhatsApp": "Share via WhatsApp",
+    "copyInviteLink": "Copy invite link",
+    "inviteLinkCopied": "Invite link copied to clipboard!",
+    "inviteTip": "A direct activation link will be generated instantly. You can copy it or send it via WhatsApp, ensuring users can join without waiting for email delivery."
   },
   "invoices": {
     "newInvoice": "New invoice"

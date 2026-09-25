@@ -67,6 +67,9 @@ import {
   Copy,
   ShieldAlert,
   RefreshCw,
+  CheckCircle2,
+  MessageSquare,
+  Info,
 } from "lucide-react";
 import { toUserMessage, parseMissingSupabaseEnvError } from "@/lib/errors";
 import { cn } from "@/lib/utils";
@@ -318,6 +321,12 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const [inviteSuccess, setInviteSuccess] = useState<{
+    email: string;
+    actionLink: string;
+    emailSent: boolean;
+  } | null>(null);
+
   const invite = useMutation({
     mutationFn: (data: { email: string; full_name?: string | null; role?: AppRole | null }) =>
       inviteFn({
@@ -335,9 +344,16 @@ function UsersAdminPage() {
         }
         return res;
       }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(t("admin.invitationSent", "Invitation sent"));
       invalidate();
+      if (res?.action_link) {
+        setInviteSuccess({
+          email: res.email,
+          actionLink: res.action_link,
+          emailSent: !!res.email_sent,
+        });
+      }
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -376,9 +392,35 @@ function UsersAdminPage() {
           redirect_to: typeof window !== "undefined" ? `${window.location.origin}/auth` : null,
         },
       }),
-    onSuccess: () => toast.success(t("admin.invitationResent", "Invitation resent")),
+    onSuccess: (res) => {
+      toast.success(t("admin.invitationResent", "Invitation link generated"));
+      if (res?.action_link) {
+        setInviteSuccess({
+          email: res.email,
+          actionLink: res.action_link,
+          emailSent: !!res.email_sent,
+        });
+      }
+    },
     onError: (err) => toast.error(toUserMessage(err)),
   });
+
+  const handleCopyInviteLink = async (email: string) => {
+    try {
+      const res = await resend.mutateAsync(email);
+      if (res?.action_link) {
+        await navigator.clipboard.writeText(res.action_link);
+        toast.success(t("admin.inviteLinkCopied", "Invite link copied to clipboard!"));
+        setInviteSuccess({
+          email: res.email,
+          actionLink: res.action_link,
+          emailSent: !!res.email_sent,
+        });
+      }
+    } catch (e) {
+      toast.error(toUserMessage(e));
+    }
+  };
 
   const del = useMutation({
     mutationFn: ({ userId }: { userId: string; pendingInvite: boolean }) =>
@@ -536,6 +578,7 @@ function UsersAdminPage() {
                       onReset={() => u.email && reset.mutate(u.email)}
                       onRename={(fullName) => rename.mutate({ userId: u.id, fullName })}
                       onResend={() => u.email && resend.mutate(u.email)}
+                      onCopyInvite={() => u.email && handleCopyInviteLink(u.email)}
                       onSetActive={(isActive) => setActive.mutate({ userId: u.id, isActive })}
                       onDelete={() => setConfirmDelete(u)}
                       onSetNewPassword={() => setPasswordResetTarget(u)}
@@ -586,6 +629,74 @@ function UsersAdminPage() {
         onSubmitInvite={(v) => invite.mutateAsync(v).then(() => setInviteOpen(false))}
         onSubmitPassword={(v) => createWithPassword.mutateAsync(v).then(() => setInviteOpen(false))}
       />
+
+      <Dialog open={!!inviteSuccess} onOpenChange={(o) => !o && setInviteSuccess(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              {t("admin.inviteLinkReadyTitle", "User Invited Successfully")}
+            </DialogTitle>
+            <DialogDescription>
+              {inviteSuccess?.emailSent
+                ? t(
+                    "admin.inviteLinkSentDesc",
+                    "An invitation email has been dispatched to {{email}}. You can also share the direct activation link below:",
+                    { email: inviteSuccess?.email },
+                  )
+                : t(
+                    "admin.inviteLinkDirectDesc",
+                    "Account initialized for {{email}}. You can copy and share this direct activation link via WhatsApp or email:",
+                    { email: inviteSuccess?.email },
+                  )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-2">
+              <Input
+                readOnly
+                value={inviteSuccess?.actionLink || ""}
+                className="font-mono text-xs select-all bg-muted/50"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (inviteSuccess?.actionLink) {
+                    navigator.clipboard.writeText(inviteSuccess.actionLink);
+                    toast.success(t("common.copied", "Copied to clipboard"));
+                  }
+                }}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                {t("common.copy", "Copy")}
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => {
+                  if (inviteSuccess?.actionLink) {
+                    const msg = `Hello! You have been invited to join Stone Tech OS. Click here to set your password and access the ERP:\n\n${inviteSuccess.actionLink}`;
+                    window.open(
+                      `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`,
+                      "_blank",
+                    );
+                  }
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-1.5" />
+                {t("admin.shareWhatsApp", "Share via WhatsApp")}
+              </Button>
+              <Button variant="secondary" className="w-full" onClick={() => setInviteSuccess(null)}>
+                {t("common.done", "Done")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
@@ -767,6 +878,15 @@ function InviteForm({
           "Sends a sign-in invitation. The recipient sets their own password on first visit.",
         )}
       </p>
+      <div className="rounded-md bg-muted/60 p-2.5 text-xs text-muted-foreground flex items-start gap-2">
+        <Info className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+        <span>
+          {t(
+            "admin.inviteTip",
+            "A direct activation link will be generated instantly. You can copy it or send it via WhatsApp, ensuring users can join without waiting for email delivery.",
+          )}
+        </span>
+      </div>
       <QuickForm.QuickFill>
         <Field
           label={t("field.email", "Email")}
@@ -1157,6 +1277,7 @@ function UserRowView({
   onReset,
   onRename,
   onResend,
+  onCopyInvite,
   onSetActive,
   onDelete,
   onSetNewPassword,
@@ -1172,6 +1293,7 @@ function UserRowView({
   onReset: () => void;
   onRename: (fullName: string) => void;
   onResend: () => void;
+  onCopyInvite?: () => void;
   onSetActive: (isActive: boolean) => void;
   onDelete: () => void;
   onSetNewPassword: () => void;
@@ -1363,9 +1485,15 @@ function UserRowView({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>{t("admin.lifecycle", "Lifecycle")}</DropdownMenuLabel>
               {pendingInvite ? (
-                <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
-                  <Send className="mr-2 h-4 w-4" /> {t("admin.resendInvite", "Resend invitation")}
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={onCopyInvite} disabled={!user.email || lifecycleBusy}>
+                    <Copy className="mr-2 h-4 w-4" />{" "}
+                    {t("admin.copyInviteLink", "Copy invite link")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onResend} disabled={!user.email || lifecycleBusy}>
+                    <Send className="mr-2 h-4 w-4" /> {t("admin.resendInvite", "Resend invitation")}
+                  </DropdownMenuItem>
+                </>
               ) : null}
               <DropdownMenuItem onClick={onReset} disabled={!user.email || lifecycleBusy}>
                 <KeyRound className="mr-2 h-4 w-4" />{" "}

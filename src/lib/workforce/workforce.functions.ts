@@ -77,12 +77,25 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
             targetUserId = prof.id;
           }
         } else {
-          // Profile doesn't exist. Invite them automatically so they can sign in.
-          const { data: result } = await supabaseAdmin.auth.admin.inviteUserByEmail(emailClean, {
-            data: { full_name: input.full_name },
+          // Profile doesn't exist. Create user & invite them via generateLink to avoid rate limits
+          let newUserId: string | null = null;
+          const { data: linkRes } = await supabaseAdmin.auth.admin.generateLink({
+            type: "invite",
+            email: emailClean,
+            options: {
+              data: { full_name: input.full_name },
+            },
           });
-          if (result.user?.id) {
-            targetUserId = result.user.id;
+          if (linkRes?.user?.id) {
+            newUserId = linkRes.user.id;
+          } else {
+            const { data: result } = await supabaseAdmin.auth.admin.inviteUserByEmail(emailClean, {
+              data: { full_name: input.full_name },
+            });
+            if (result?.user?.id) newUserId = result.user.id;
+          }
+          if (newUserId) {
+            targetUserId = newUserId;
             await supabaseAdmin
               .from("profiles")
               .upsert(

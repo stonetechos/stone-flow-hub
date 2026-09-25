@@ -270,19 +270,90 @@ export const inviteUser = createServerFn({ method: "POST" })
     const email = data.email.trim().toLowerCase();
     const fullName = data.full_name?.trim() || null;
 
-    const { data: result, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: data.redirect_to ?? undefined,
-      data: fullName ? { full_name: fullName } : undefined,
+    const redirectTo = data.redirect_to ?? "https://stonetech.in/auth";
+    let userId: string | null = null;
+    let actionLink: string | null = null;
+    let emailSent = false;
+
+    // 1. Attempt generateLink first — creates the user in auth without triggering
+    // Supabase's rate-limited built-in email service (which caps at 3/hour on default projects).
+    const { data: linkRes, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: {
+        redirectTo,
+        data: fullName ? { full_name: fullName } : undefined,
+      },
     });
-    if (error) throw new Error(error.message);
-    const userId = result.user?.id;
+
+    if (!linkErr && linkRes?.user?.id) {
+      userId = linkRes.user.id;
+      actionLink = linkRes.properties?.action_link ?? null;
+    } else {
+      // If generateLink indicated user already exists or failed, find existing user in auth
+      const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
+      const existing = usersData?.users?.find((u) => u.email?.toLowerCase() === email);
+
+      if (existing) {
+        userId = existing.id;
+        // Generate recovery / magiclink for existing user so they can access their account
+        const { data: magicRes } = await supabaseAdmin.auth.admin.generateLink({
+          type: "magiclink",
+          email,
+          options: { redirectTo },
+        });
+        actionLink = magicRes?.properties?.action_link ?? null;
+      } else {
+        // Fallback to inviteUserByEmail if generateLink could not handle it
+        const { data: inviteRes, error: inviteErr } =
+          await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+            redirectTo,
+            data: fullName ? { full_name: fullName } : undefined,
+          });
+        if (inviteErr) {
+          throw new Error(linkErr?.message || inviteErr.message);
+        }
+        userId = inviteRes.user?.id ?? null;
+      }
+    }
+
     if (userId && fullName) {
-      // Ensure profile row reflects display name immediately (trigger normally
-      // creates the profile row; upsert covers any race).
+      // Ensure profile row reflects display name immediately
       await supabaseAdmin
         .from("profiles")
         .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
     }
+
+    // 2. If RESEND_API_KEY is configured in the environment, dispatch branded invite email
+    if (actionLink && process.env.RESEND_API_KEY) {
+      try {
+        const { sendResendEmail } = await import("@/lib/email/resend.server");
+        const { render } = await import("@react-email/render");
+        const { InviteEmail } = await import("@/lib/email-templates/invite");
+        const React = await import("react");
+
+        const html = await render(
+          React.createElement(InviteEmail, {
+            siteName: "Stone Tech OS",
+            siteUrl: "https://stonetech.in",
+            confirmationUrl: actionLink,
+          }),
+        );
+        const text = `You've been invited to join Stone Tech OS. Accept your invitation and set your password here:\n\n${actionLink}\n\nIf you weren't expecting this invitation, you can safely ignore this email.`;
+
+        await sendResendEmail({
+          to: email,
+          from: "Stone Tech OS <notifications@erp.stonetech.in>",
+          subject: "You've been invited to Stone Tech OS",
+          html,
+          text,
+        });
+        emailSent = true;
+      } catch (sendErr) {
+        console.warn("Resend email dispatch error (non-fatal):", sendErr);
+      }
+    }
+
     if (userId) {
       await logAuditEvent(supabaseAdmin, {
         entityId: userId,
@@ -291,7 +362,12 @@ export const inviteUser = createServerFn({ method: "POST" })
         summary: `User invited: ${email}`,
       });
     }
-    return { id: userId ?? null, email };
+    return {
+      id: userId ?? null,
+      email,
+      action_link: actionLink,
+      email_sent: emailSent,
+    };
   });
 
 const createWithPasswordInput = z.object({
@@ -364,11 +440,65 @@ export const resendInvite = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await requireAdminActor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
-      redirectTo: data.redirect_to ?? undefined,
+    const email = data.email.trim().toLowerCase();
+    const redirectTo = data.redirect_to ?? "https://stonetech.in/auth";
+
+    let actionLink: string | null = null;
+    let emailSent = false;
+
+    // Use generateLink to avoid rate limits
+    const { data: linkRes } = await supabaseAdmin.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: { redirectTo },
     });
-    if (error) throw new Error(error.message);
-    return { ok: true };
+
+    actionLink = linkRes?.properties?.action_link ?? null;
+
+    if (!actionLink) {
+      const { data: magicRes } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+        options: { redirectTo },
+      });
+      actionLink = magicRes?.properties?.action_link ?? null;
+    }
+
+    if (actionLink && process.env.RESEND_API_KEY) {
+      try {
+        const { sendResendEmail } = await import("@/lib/email/resend.server");
+        const { render } = await import("@react-email/render");
+        const { InviteEmail } = await import("@/lib/email-templates/invite");
+        const React = await import("react");
+
+        const html = await render(
+          React.createElement(InviteEmail, {
+            siteName: "Stone Tech OS",
+            siteUrl: "https://stonetech.in",
+            confirmationUrl: actionLink,
+          }),
+        );
+        const text = `You've been invited to join Stone Tech OS. Accept your invitation and set your password here:\n\n${actionLink}\n\nIf you weren't expecting this invitation, you can safely ignore this email.`;
+
+        await sendResendEmail({
+          to: email,
+          from: "Stone Tech OS <notifications@erp.stonetech.in>",
+          subject: "You've been invited to Stone Tech OS",
+          html,
+          text,
+        });
+        emailSent = true;
+      } catch (err) {
+        console.warn("Resend email dispatch error (non-fatal):", err);
+      }
+    }
+
+    return {
+      ok: true,
+      email,
+      action_link: actionLink,
+      email_sent: emailSent,
+    };
   });
 
 const userIdInput = z.object({ user_id: z.string().uuid() });
