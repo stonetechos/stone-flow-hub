@@ -635,85 +635,98 @@ function HomePage() {
         </div>
       </header>
 
-      {/* 2. LIVSPACE SPLIT-SCREEN HERO SECTION */}
-      <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 border-b border-border/60 bg-gradient-to-b from-stone-100/60 via-background to-stone-50/40 dark:from-slate-900/50 dark:via-background dark:to-slate-950">
+      {/* 2. ARCHITECTURAL HERO SECTION */}
+      <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20 border-b border-[#E9E6E1] dark:border-stone-800 bg-[#FAF8F4] dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* LEFT COLUMN: Authority, Brand Prestige, Embedded Feed & Contact Center */}
-            <div className="lg:col-span-6 space-y-6 pt-2">
-              {/* Bold Architectural Headline */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-                Bespoke Natural Stone &amp; Architectural Finishes for{" "}
-                <span className="bg-gradient-to-r from-teal-700 via-cyan-700 to-slate-900 dark:from-teal-400 dark:via-cyan-300 dark:to-slate-100 bg-clip-text text-transparent">
-                  Luxury Living
+            {/* LEFT COLUMN: Authority, Brand Prestige, Metrics & Value Checklist */}
+            <div className="lg:col-span-6 space-y-6 sm:space-y-7 pt-1 lg:pt-2 animate-in fade-in-50 duration-300">
+              {/* Main Heading */}
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
+                Architectural Stone, Crafted for{" "}
+                <span className="text-[#0D7A7B] dark:text-[#2dd4bf] font-semibold italic sm:not-italic">
+                  Extraordinary Spaces.
                 </span>
               </h1>
 
-              {/* 4 Trust Counters */}
+              {/* 4 Trust Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-1">
-                <div className="p-3 rounded-xl border border-border/80 bg-background/80 shadow-2xs">
-                  <div className="text-2xl font-black text-foreground">1500+</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-0.5">
-                    Customers Trust
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
+                  <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
+                    1500+
+                  </div>
+                  <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
+                    Customers Served
                   </div>
                 </div>
-                <div className="p-3 rounded-xl border border-border/80 bg-background/80 shadow-2xs">
-                  <div className="text-2xl font-black text-foreground">3 Years</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-0.5">
-                    Surface Warranty
+
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
+                  <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
+                    3 Years
+                  </div>
+                  <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
+                    Installation Warranty
                   </div>
                 </div>
-                <div className="p-3 rounded-xl border border-border/80 bg-background/80 shadow-2xs">
-                  <div className="text-2xl font-black text-foreground">0%</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-0.5">
-                    Middleman Markup
+
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
+                  <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
+                    Direct
+                  </div>
+                  <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
+                    Quarry Pricing
                   </div>
                 </div>
-                <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 shadow-2xs">
-                  <div className="text-2xl font-black text-primary flex items-center gap-1">
-                    {siteSettings.google_rating}{" "}
-                    <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
+                  <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100 flex items-center gap-1">
+                    <span>4.6</span>
+                    <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
                   </div>
-                  <div className="text-xs text-muted-foreground font-medium mt-0.5">
-                    Google Verified
+                  <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
+                    Google Rating
                   </div>
                 </div>
               </div>
 
-              {/* Value Proposition & Brand Commitments */}
-              <div className="space-y-4 pt-2">
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Quarry-direct Italian marble, granite, engineered quartz, bespoke 3D stone murals,
-                  and CNC-crafted architectural surfaces engineered with millimeter laser templating
-                  and installed turnkey across India.
+              {/* Supporting Copy */}
+              <div className="space-y-4 pt-1">
+                <p className="text-sm sm:text-[15px] text-[#5F6368] dark:text-stone-300 leading-relaxed max-w-xl font-normal">
+                  From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury
+                  facades—we transform natural stone into timeless architectural statements.
                 </p>
 
+                {/* Benefits Checklist */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Direct Quarry Sourcing (0% Markup)</span>
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
+                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <span>Direct Quarry Sourcing</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>CNC &amp; Waterjet Precision Fabrication</span>
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
+                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <span>CNC &amp; Waterjet Precision</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Pan-India Turnkey Installation Teams</span>
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
+                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <span>Pan India Installation</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground/90">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Instant WhatsApp Quotations</span>
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
+                    <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
+                    <span>Design-to-Installation Support</span>
                   </div>
                 </div>
 
+                {/* CTA */}
                 <div className="pt-2">
                   <a
                     href="#gallery-feed"
-                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+                    className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
                   >
-                    <span>View 300+ Live Executed Works Below</span>
-                    <ArrowDown className="h-3.5 w-3.5 animate-bounce" />
+                    <span className="relative pb-0.5">
+                      Explore 300+ Completed Projects
+                      <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
+                    </span>
+                    <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
                   </a>
                 </div>
               </div>
