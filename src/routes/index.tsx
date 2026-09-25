@@ -70,7 +70,7 @@ import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Stone Tech — Bespoke Natural Stone & Architectural Finishes" },
+      { title: "Stone Tech — Architectural Stone, Crafted for Extraordinary Spaces" },
       {
         name: "description",
         content:
