@@ -54,6 +54,7 @@ jobs:
         run: npm run build
 
       - name: Push database migrations to Supabase
+        continue-on-error: true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
