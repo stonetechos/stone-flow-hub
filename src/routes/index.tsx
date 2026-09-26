@@ -277,6 +277,79 @@ function HomePage() {
     }
   };
 
+  // Smart matching of external/gallery product names to master stone categories
+  const matchMasterProduct = (rawName: string): string => {
+    const trimmed = rawName.trim().toLowerCase();
+    const direct = MASTER_PRODUCT_OPTIONS.find((p) => p.name.toLowerCase() === trimmed);
+    if (direct) return direct.name;
+
+    if (trimmed.includes("veneer") || trimmed.includes("slim") || trimmed.includes("sheet")) {
+      return "Stone Veneer";
+    }
+    if (
+      trimmed.includes("cladding") ||
+      trimmed.includes("elevation") ||
+      trimmed.includes("facade") ||
+      trimmed.includes("sandstone")
+    ) {
+      return "Custom Stone Cladding";
+    }
+    if (trimmed.includes("interlock") || trimmed.includes("ledge") || trimmed.includes("panel")) {
+      return "Interlocking Panels";
+    }
+    if (
+      trimmed.includes("mosaic") ||
+      trimmed.includes("inlay") ||
+      trimmed.includes("brass") ||
+      trimmed.includes("waterjet")
+    ) {
+      return "Stone Mosaics & Inlay";
+    }
+    if (
+      trimmed.includes("mural") ||
+      trimmed.includes("carv") ||
+      trimmed.includes("mandir") ||
+      trimmed.includes("temple") ||
+      trimmed.includes("jaali")
+    ) {
+      return "Stone Murals & Carvings";
+    }
+    if (trimmed.includes("floor") || trimmed.includes("marble") || trimmed.includes("granite")) {
+      return "Custom Flooring";
+    }
+    if (
+      trimmed.includes("table") ||
+      trimmed.includes("counter") ||
+      trimmed.includes("island") ||
+      trimmed.includes("vanity")
+    ) {
+      return "Table Tops & Countertops";
+    }
+    if (trimmed.includes("pu ") || trimmed.includes("polyurethane") || trimmed.includes("lightweight")) {
+      return "PU Decorative Panels";
+    }
+    if (
+      trimmed.includes("step") ||
+      trimmed.includes("landscape") ||
+      trimmed.includes("garden") ||
+      trimmed.includes("pathway") ||
+      trimmed.includes("paver")
+    ) {
+      return "Stepping Stones & Landscape";
+    }
+    if (
+      trimmed.includes("agate") ||
+      trimmed.includes("onyx") ||
+      trimmed.includes("semi-precious") ||
+      trimmed.includes("backlit") ||
+      trimmed.includes("gem")
+    ) {
+      return "Agate & Semi-Precious Slabs";
+    }
+
+    return "Custom Stone Cladding";
+  };
+
   // Toggle product selection
   const toggleProduct = (productName: string) => {
     clearError("selectedProducts");
@@ -286,11 +359,20 @@ function HomePage() {
   };
 
   const scrollToForm = (productNameToSelect?: string) => {
+    // Crucial: ALWAYS bring the user to Step 1 so the product selection is in view!
+    setFormStep(1);
+    clearError("selectedProducts");
+
     if (productNameToSelect) {
-      setSelectedProducts((prev) =>
-        prev.includes(productNameToSelect) ? prev : [...prev, productNameToSelect],
-      );
-      toast.success(`Selected "${productNameToSelect}" for your estimate!`);
+      const matched = matchMasterProduct(productNameToSelect);
+      setSelectedProducts([matched]);
+      if (matched !== productNameToSelect && productNameToSelect.trim()) {
+        setPlanDescription((prev) => {
+          const ref = `Reference Project: ${productNameToSelect.trim()}`;
+          return prev.includes(productNameToSelect) ? prev : prev ? `${prev}\n${ref}` : ref;
+        });
+      }
+      toast.success(`Selected "${matched}" for your estimate!`);
     }
     const formEl = document.getElementById("lead-form");
     if (formEl) {
@@ -863,9 +945,32 @@ function HomePage() {
                                 Select Stone Products <span className="text-destructive">*</span>:
                               </span>
                             </label>
-                            <span className="text-[11px] text-muted-foreground">
-                              {selectedProducts.length} selected
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {selectedProducts.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedProducts([]);
+                                  }}
+                                  className="text-[11px] text-muted-foreground hover:text-destructive underline cursor-pointer"
+                                >
+                                  Clear
+                                </button>
+                              )}
+                              <Badge
+                                variant={selectedProducts.length > 0 ? "default" : "outline"}
+                                className={cn(
+                                  "text-[10px] font-bold h-5 px-1.5",
+                                  selectedProducts.length > 0
+                                    ? "bg-teal-600 text-white"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {selectedProducts.length} selected
+                              </Badge>
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2">
@@ -875,22 +980,47 @@ function HomePage() {
                                 <button
                                   key={prod.id}
                                   type="button"
-                                  onClick={() => toggleProduct(prod.name)}
-                                  className={`p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer ${
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    toggleProduct(prod.name);
+                                  }}
+                                  aria-pressed={isSelected}
+                                  className={cn(
+                                    "p-2.5 rounded-xl border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98]",
                                     isSelected
-                                      ? "border-primary bg-primary/10 text-foreground font-semibold ring-1 ring-primary/30"
-                                      : "border-border bg-background hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-                                  }`}
+                                      ? "border-teal-600 dark:border-teal-400 bg-teal-50 dark:bg-teal-950/70 text-teal-950 dark:text-teal-100 font-bold ring-2 ring-teal-500/40 shadow-xs"
+                                      : "border-stone-200 dark:border-stone-800 bg-background hover:bg-muted/70 text-stone-700 dark:text-stone-300 hover:text-foreground",
+                                  )}
                                 >
-                                  <span className="truncate">{prod.name}</span>
+                                  <span className="leading-snug line-clamp-2">{prod.name}</span>
                                   {isSelected ? (
-                                    <Check className="h-3.5 w-3.5 text-primary shrink-0 stroke-[3]" />
+                                    <div className="h-4 w-4 rounded bg-teal-600 dark:bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                      <Check className="h-3 w-3 stroke-[3]" />
+                                    </div>
                                   ) : (
-                                    <div className="h-3 w-3 rounded-full border border-muted-foreground/30 shrink-0" />
+                                    <div className="h-4 w-4 rounded border-2 border-stone-300 dark:border-stone-600 bg-background shrink-0" />
                                   )}
                                 </button>
                               );
                             })}
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+                            <span>Tap any product to select or deselect</span>
+                            {selectedProducts.length < MASTER_PRODUCT_OPTIONS.length && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setSelectedProducts(MASTER_PRODUCT_OPTIONS.map((p) => p.name));
+                                }}
+                                className="text-primary hover:underline font-medium cursor-pointer"
+                              >
+                                Select All (10)
+                              </button>
+                            )}
                           </div>
 
                           {formErrors.selectedProducts && (
