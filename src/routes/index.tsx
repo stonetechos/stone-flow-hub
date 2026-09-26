@@ -325,7 +325,11 @@ function HomePage() {
     ) {
       return "Table Tops & Countertops";
     }
-    if (trimmed.includes("pu ") || trimmed.includes("polyurethane") || trimmed.includes("lightweight")) {
+    if (
+      trimmed.includes("pu ") ||
+      trimmed.includes("polyurethane") ||
+      trimmed.includes("lightweight")
+    ) {
       return "PU Decorative Panels";
     }
     if (
