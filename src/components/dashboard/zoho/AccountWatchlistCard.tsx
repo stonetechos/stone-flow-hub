@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { formatInrFull } from "@/lib/dashboard/zoho-api";
 import { listBankAccounts, type BankAccountRow } from "@/lib/banking/banking";
+import { localizeBankAccount } from "@/lib/banking/banking-i18n";
 import { Button } from "@/components/ui/button";
 import { TransactionMessageReaderModal } from "@/components/banking/TransactionMessageReaderModal";
 
@@ -15,7 +16,7 @@ export function AccountWatchlistCard({
   pettyCash?: number;
   incomingToday?: number;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [readerOpen, setReaderOpen] = useState(false);
   const accountsQuery = useQuery({
     queryKey: ["banking", "accounts"],
@@ -70,15 +71,18 @@ export function AccountWatchlistCard({
                   ? incomingToday
                   : acc.current_balance;
 
+            const loc = localizeBankAccount(acc, i18n.language);
+
             return (
               <div
                 key={acc.id || acc.name}
                 className="engraved-well flex items-center justify-between rounded-xl p-3 text-xs transition-all hover:scale-[1.01]"
               >
                 <div className="space-y-0.5">
-                  <div className="font-bold text-slate-800 dark:text-slate-100">{acc.name}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-100">{loc.name}</div>
                   <div className="font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                    {acc.bank_name || acc.account_type.toUpperCase()} • {acc.account_number}
+                    {loc.bank_name ? `${loc.bank_name} • ` : ""}
+                    {loc.account_number}
                   </div>
                 </div>
 
@@ -89,9 +93,7 @@ export function AccountWatchlistCard({
                     </div>
                   </div>
                   <span className="engraved-well-glow rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-engraved-blue">
-                    {acc.is_active
-                      ? t("common.active", "Active")
-                      : t("common.archived", "Archived")}
+                    {loc.status_label}
                   </span>
                 </div>
               </div>

@@ -7,7 +7,9 @@
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { localizeBankAccount } from "@/lib/banking/banking-i18n";
 import {
   Landmark,
   MessageSquareText,
@@ -71,6 +73,7 @@ export function TransactionMessageReaderModal({
   defaultAccountId,
   onSuccess,
 }: Props) {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [inputText, setInputText] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState(defaultAccountId || "");
@@ -255,11 +258,13 @@ export function TransactionMessageReaderModal({
             </span>
             <div>
               <DialogTitle className="text-lg font-black tracking-tight text-foreground font-display">
-                Read Bank, Paytm &amp; UPI Message
+                {t("banking.readDialogTitle", "Read Bank, Paytm & UPI Message")}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Paste SMS, Paytm, Google Pay, PhonePe, or Bank transaction notifications to
-                auto-reconcile.
+                {t(
+                  "banking.readDialogDesc",
+                  "Paste SMS, Paytm, Google Pay, PhonePe, or Bank transaction notifications to auto-reconcile.",
+                )}
               </DialogDescription>
             </div>
           </div>
@@ -274,7 +279,7 @@ export function TransactionMessageReaderModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-xs text-foreground">
-                  BOB Current A/c &amp; GPay UPI
+                  {t("banking.bobGpayTitle", "BOB Current A/c & GPay UPI")}
                 </span>
                 <Badge
                   variant="outline"
@@ -298,7 +303,7 @@ export function TransactionMessageReaderModal({
               disabled={isFetchingDevice}
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isFetchingDevice ? "animate-spin" : ""}`} />
-              Fetch from Phone
+              {t("banking.fetchFromPhone", "Fetch from Phone")}
             </Button>
             <Button
               type="button"
@@ -308,7 +313,7 @@ export function TransactionMessageReaderModal({
               onClick={handleCheckBobBalance}
             >
               <Landmark className="h-3.5 w-3.5" />
-              Check Balance
+              {t("banking.checkBalance", "Check Balance")}
             </Button>
           </div>
         </div>
@@ -318,7 +323,7 @@ export function TransactionMessageReaderModal({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="sms-input" className="text-xs font-semibold text-foreground">
-                Transaction SMS / Notification Text
+                {t("banking.smsInputLabel", "Transaction SMS / Notification Text")}
               </Label>
               <Button
                 type="button"
@@ -328,7 +333,7 @@ export function TransactionMessageReaderModal({
                 onClick={handlePasteClipboard}
               >
                 <ClipboardPaste className="h-3.5 w-3.5" />
-                Paste from Clipboard
+                {t("banking.pasteClipboard", "Paste from Clipboard")}
               </Button>
             </div>
             <Textarea
@@ -423,26 +428,33 @@ export function TransactionMessageReaderModal({
               {/* Target Account & Linking Options */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Deposit into Bank Account</Label>
+                  <Label className="text-xs font-semibold">
+                    {t("banking.depositIntoAccount", "Deposit into Bank Account")}
+                  </Label>
                   <Select
                     value={selectedAccountId || currentAccount?.id || ""}
                     onValueChange={setSelectedAccountId}
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="Select account" />
+                      <SelectValue placeholder={t("banking.selectAccount", "Select account")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts.map((acc) => (
-                        <SelectItem key={acc.id} value={acc.id} className="text-xs">
-                          {acc.name} ({acc.account_number})
-                        </SelectItem>
-                      ))}
+                      {accounts.map((acc) => {
+                        const loc = localizeBankAccount(acc, i18n.language);
+                        return (
+                          <SelectItem key={acc.id} value={acc.id} className="text-xs">
+                            {loc.name} ({loc.account_number})
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Match to Customer (Optional)</Label>
+                  <Label className="text-xs font-semibold">
+                    {t("banking.matchToCustomer", "Match to Customer (Optional)")}
+                  </Label>
                   <Select
                     value={selectedCustomerId}
                     onValueChange={(val) => {
@@ -451,11 +463,11 @@ export function TransactionMessageReaderModal({
                     }}
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="Select customer" />
+                      <SelectValue placeholder={t("banking.selectCustomer", "Select customer")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none" className="text-xs text-muted-foreground">
-                        -- Direct Inflow (No customer link) --
+                        {t("banking.directInflow", "-- Direct Inflow (No customer link) --")}
                       </SelectItem>
                       {(customersQuery.data || []).map((c) => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">
@@ -467,14 +479,16 @@ export function TransactionMessageReaderModal({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Match to Confirmed Order</Label>
+                  <Label className="text-xs font-semibold">
+                    {t("banking.matchToOrder", "Match to Confirmed Order")}
+                  </Label>
                   <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="Select sales order" />
+                      <SelectValue placeholder={t("banking.selectOrder", "Select sales order")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none" className="text-xs text-muted-foreground">
-                        -- No specific order --
+                        {t("banking.noSpecificOrder", "-- No specific order --")}
                       </SelectItem>
                       {(salesOrdersQuery.data || [])
                         .filter(
@@ -500,23 +514,37 @@ export function TransactionMessageReaderModal({
                     <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <div className="space-y-1.5 flex-1">
                       <div className="font-semibold text-xs flex items-center justify-between">
-                        <span>Manufacturer Advance Pending — Delivery Delay Warning</span>
+                        <span>
+                          {t(
+                            "banking.deliveryDelayWarning",
+                            "Manufacturer Advance Pending — Delivery Delay Warning",
+                          )}
+                        </span>
                         <Badge
                           variant="destructive"
                           className="text-[10px] py-0 px-1.5 font-normal"
                         >
-                          {unpaidVendorItems.length} Item(s) at Risk
+                          {t("banking.itemsAtRisk", "{{count}} Item(s) at Risk", {
+                            count: unpaidVendorItems.length,
+                          })}
                         </Badge>
                       </div>
                       <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300">
-                        Payment received from client. However, this order has{" "}
-                        {unpaidVendorItems.length} product(s) assigned to manufacturers with pending
-                        advances ({formatInr(totalPendingVendorAdv)} total).
+                        {t(
+                          "banking.paymentReceivedDelayNote",
+                          "Payment received from client. However, this order has {{count}} product(s) assigned to manufacturers with pending advances ({{total}} total).",
+                          {
+                            count: unpaidVendorItems.length,
+                            total: formatInr(totalPendingVendorAdv),
+                          },
+                        )}
                       </p>
                       <div className="rounded-md border border-amber-500/30 bg-background/80 p-2 text-xs text-foreground space-y-1">
                         <p className="font-medium text-amber-700 dark:text-amber-400">
-                          ⚠️ Manufacturing has not started or delivery will be delayed because no
-                          advance has been paid against this order.
+                          {t(
+                            "banking.manufacturingNotStartedNotice",
+                            "⚠️ Manufacturing has not started or delivery will be delayed because no advance has been paid against this order.",
+                          )}
                         </p>
                         <div className="text-[11px] text-muted-foreground divide-y divide-border/40">
                           {unpaidVendorItems.map((iv, i) => (
@@ -527,7 +555,9 @@ export function TransactionMessageReaderModal({
                                 {iv.vendor?.vendor_phone && ` (${iv.vendor.vendor_phone})`}
                               </span>
                               <span className="font-mono text-destructive">
-                                Adv Due: {formatInr(iv.vendor?.advance_required_inr || 0)}
+                                {t("banking.advDue", "Adv Due: {{amount}}", {
+                                  amount: formatInr(iv.vendor?.advance_required_inr || 0),
+                                })}
                               </span>
                             </div>
                           ))}
@@ -540,7 +570,9 @@ export function TransactionMessageReaderModal({
                           variant="default"
                           className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white"
                         >
-                          <Link to="/vendor-payments/new">Disburse Vendor Advance Now</Link>
+                          <Link to="/vendor-payments/new">
+                            {t("banking.disburseVendorAdvanceNow", "Disburse Vendor Advance Now")}
+                          </Link>
                         </Button>
                       </div>
                     </div>
@@ -550,7 +582,7 @@ export function TransactionMessageReaderModal({
 
               <div className="space-y-1">
                 <Label htmlFor="tx-notes" className="text-xs font-semibold">
-                  Reference Note
+                  {t("banking.referenceNote", "Reference Note")}
                 </Label>
                 <Input
                   id="tx-notes"
@@ -572,7 +604,7 @@ export function TransactionMessageReaderModal({
             onClick={() => onOpenChange(false)}
             className="text-xs"
           >
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
 
           <Button
@@ -585,12 +617,12 @@ export function TransactionMessageReaderModal({
             {recordMutation.isPending ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Recording…
+                {t("common.saving", "Recording…")}
               </>
             ) : (
               <>
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Record &amp; Update Ledger
+                {t("banking.recordUpdateLedger", "Record & Update Ledger")}
               </>
             )}
           </Button>
