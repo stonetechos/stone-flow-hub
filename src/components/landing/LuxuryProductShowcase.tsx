@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export interface LuxuryProductItem {
   id: string;
@@ -344,9 +345,13 @@ const LUXURY_PRODUCTS: LuxuryProductItem[] = [
 
 interface LuxuryProductShowcaseProps {
   onSelectProduct?: (productName: string) => void;
+  selectedProducts?: string[];
 }
 
-export function LuxuryProductShowcase({ onSelectProduct }: LuxuryProductShowcaseProps) {
+export function LuxuryProductShowcase({
+  onSelectProduct,
+  selectedProducts = [],
+}: LuxuryProductShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "facade" | "sacred" | "surfaces" | "exotic"
   >("all");
@@ -438,11 +443,17 @@ export function LuxuryProductShowcase({ onSelectProduct }: LuxuryProductShowcase
       <div className="grid grid-cols-1 gap-4 sm:gap-5">
         {filteredProducts.map((product) => {
           const isExpanded = expandedId === product.id;
+          const isSelected = selectedProducts.includes(product.name);
 
           return (
             <div
               key={product.id}
-              className="group relative rounded-2xl border border-border/80 bg-card/90 backdrop-blur-xs p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-amber-500/50 transition-all duration-300 ring-1 ring-black/5 dark:ring-white/5 space-y-4"
+              className={cn(
+                "group relative rounded-2xl border bg-card/90 backdrop-blur-xs p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 ring-1 ring-black/5 dark:ring-white/5 space-y-4",
+                isSelected
+                  ? "border-emerald-500/80 ring-2 ring-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/10"
+                  : "border-border/80 hover:border-amber-500/50",
+              )}
             >
               {/* Top Row: Category Tag, Badge, and Action Link */}
               <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border/60 pb-3">
@@ -472,10 +483,24 @@ export function LuxuryProductShowcase({ onSelectProduct }: LuxuryProductShowcase
                     type="button"
                     size="sm"
                     onClick={() => onSelectProduct?.(product.name)}
-                    className="h-8 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1.5 px-3"
+                    className={cn(
+                      "h-8 text-xs font-bold shadow-2xs gap-1.5 px-3 cursor-pointer transition-all",
+                      isSelected
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-400/40"
+                        : "bg-amber-600 hover:bg-amber-700 text-white",
+                    )}
                   >
-                    <span>Select for Estimate</span>
-                    <ArrowRight className="h-3 w-3" />
+                    {isSelected ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 stroke-[3]" />
+                        <span>Selected for Estimate</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Select for Estimate</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -607,9 +632,14 @@ export function LuxuryProductShowcase({ onSelectProduct }: LuxuryProductShowcase
                     variant="ghost"
                     size="sm"
                     onClick={() => onSelectProduct?.(product.name)}
-                    className="h-7 text-xs font-bold text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 px-2"
+                    className={cn(
+                      "h-7 text-xs font-bold px-2 cursor-pointer transition-colors",
+                      isSelected
+                        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-extrabold"
+                        : "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10",
+                    )}
                   >
-                    Get Estimate →
+                    {isSelected ? "View in Estimate Form →" : "Get Estimate →"}
                   </Button>
                 </div>
               </div>

@@ -232,7 +232,7 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>(["Stone Veneer"]);
   const [spaceType, setSpaceType] = useState<string>("Bungalow / Villa");
   const [planDescription, setPlanDescription] = useState<string>("");
 
@@ -243,6 +243,10 @@ function HomePage() {
   const [whatsapp, setWhatsapp] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [city, setCity] = useState<string>("");
+
+  // Validation & Error states
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Live Calendar required date starting from today
   const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
@@ -262,21 +266,39 @@ function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedResult, setSubmittedResult] = useState<PublicInquiryResult | null>(null);
 
+  // Clear specific error on field change
+  const clearError = (field: string) => {
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   // Toggle product selection
   const toggleProduct = (productName: string) => {
+    clearError("selectedProducts");
     setSelectedProducts((prev) =>
       prev.includes(productName) ? prev.filter((p) => p !== productName) : [...prev, productName],
     );
   };
 
   const scrollToForm = (productNameToSelect?: string) => {
-    if (productNameToSelect && !selectedProducts.includes(productNameToSelect)) {
-      setSelectedProducts((prev) => [...prev, productNameToSelect]);
+    if (productNameToSelect) {
+      setSelectedProducts((prev) =>
+        prev.includes(productNameToSelect) ? prev : [...prev, productNameToSelect],
+      );
+      toast.success(`Selected "${productNameToSelect}" for your estimate!`);
     }
-    setFormStep(1);
     const formEl = document.getElementById("lead-form");
     if (formEl) {
       formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      formEl.classList.add("ring-4", "ring-primary/60", "transition-all", "duration-500");
+      setTimeout(() => {
+        formEl.classList.remove("ring-4", "ring-primary/60");
+      }, 2000);
     }
   };
 
@@ -285,10 +307,27 @@ function HomePage() {
   };
 
   const setQuickDays = (days: number) => {
+    clearError("requiredDate");
     const d = new Date();
     d.setDate(d.getDate() + days);
     setRequiredDate(d.toISOString().split("T")[0]);
   };
+
+  // Pre-calculated WhatsApp fallback URL in case of network timeout
+  const fallbackWhatsappUrl = useMemo(() => {
+    const prods = selectedProducts.length > 0 ? selectedProducts.join(", ") : "Architectural Stone";
+    const text = encodeURIComponent(
+      `Hello Stone Tech Team! I would like to request an estimate for:\n\n` +
+        `*Name:* ${name || "Client"}\n` +
+        `*WhatsApp:* ${whatsapp || "Not specified"}\n` +
+        `*Products:* ${prods}\n` +
+        `*Space:* ${spaceType}\n` +
+        `*City:* ${city || "Not specified"}\n` +
+        `*Required by:* ${requiredDate}\n` +
+        (planDescription ? `*Details:* ${planDescription}\n` : ""),
+    );
+    return `https://api.whatsapp.com/send?phone=917742090866&text=${text}`;
+  }, [name, whatsapp, selectedProducts, spaceType, city, requiredDate, planDescription]);
 
   const handlePhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -346,48 +385,45 @@ function HomePage() {
 
   const handleSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
+    setSubmitError(null);
 
     if (formStep === 1) {
       if (selectedProducts.length === 0) {
-        toast.error("Please select at least one stone product to proceed.");
-        return;
-      }
-      if (!spaceType.trim()) {
-        toast.error("Please select the project space type (e.g., Bungalow, Apartment, etc.).");
-        return;
+        setSelectedProducts(["Stone Veneer"]);
       }
       setFormStep(2);
       return;
     }
 
+    const errors: Record<string, string> = {};
     if (selectedProducts.length === 0) {
-      toast.error("Please select at least one stone product.");
-      setFormStep(1);
-      return;
-    }
-    if (!spaceType.trim()) {
-      toast.error("Please select the project space type.");
-      setFormStep(1);
-      return;
+      errors.selectedProducts = "Please select at least one stone product.";
     }
     if (!name.trim()) {
-      toast.error("Please enter your full name.");
-      return;
+      errors.name = "Please enter your full name.";
     }
     const cleanDigits = whatsapp.replace(/\D/g, "");
     if (cleanDigits.length < 7) {
-      toast.error("Please enter a valid WhatsApp phone number.");
-      return;
+      errors.whatsapp = "Please enter a valid WhatsApp phone number (at least 7 digits).";
     }
     if (!city.trim()) {
-      toast.error("Please enter your project city or location.");
-      return;
+      errors.city = "Please enter your project city or location.";
     }
     if (!requiredDate) {
-      toast.error("Please pick your required completion date from the calendar.");
+      errors.requiredDate = "Please pick your required completion date from the calendar.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError);
+      if (errors.selectedProducts) {
+        setFormStep(1);
+      }
       return;
     }
 
+    setFormErrors({});
     setIsSubmitting(true);
 
     try {
@@ -403,7 +439,7 @@ function HomePage() {
           customer_type: selectedRoleObj?.type || "individual",
           space_type: spaceType,
           required_date: requiredDate,
-          selected_products: selectedProducts,
+          selected_products: selectedProducts.length > 0 ? selectedProducts : ["Stone Veneer"],
           plan_description: planDescription.trim(),
           photos: photos.map((p) => ({
             name: p.name,
@@ -422,6 +458,7 @@ function HomePage() {
       console.error("Submission failed:", err);
       const msg =
         err instanceof Error ? err.message : "Failed to submit inquiry. Please try again.";
+      setSubmitError(msg);
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -751,7 +788,7 @@ function HomePage() {
                       type="button"
                       onClick={() => setFormStep(1)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
                         formStep === 1
                           ? "text-teal-300 font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
@@ -769,25 +806,18 @@ function HomePage() {
                       </span>
                       <span className="hidden sm:inline">Part 1/2: Stone Requirements</span>
                       <span className="sm:hidden text-[11px] truncate">1. Stone Needs</span>
+                      {selectedProducts.length > 0 && (
+                        <span className="ml-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] px-1.5 py-0.2 font-mono">
+                          {selectedProducts.length}
+                        </span>
+                      )}
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => {
-                        if (selectedProducts.length === 0) {
-                          toast.error("Please select at least one stone product to proceed.");
-                          return;
-                        }
-                        if (!spaceType.trim()) {
-                          toast.error(
-                            "Please select the project space type (e.g. Bungalow, Apartment, etc.).",
-                          );
-                          return;
-                        }
-                        setFormStep(2);
-                      }}
+                      onClick={() => setFormStep(2)}
                       className={cn(
-                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer",
+                        "flex items-center gap-1.5 font-bold transition-colors min-w-0 cursor-pointer py-1",
                         formStep === 2
                           ? "text-teal-300 font-extrabold"
                           : "text-slate-400 hover:text-slate-200",
@@ -834,12 +864,12 @@ function HomePage() {
                               </span>
                             </label>
                             <span className="text-[11px] text-muted-foreground">
-                              Select multiple
+                              {selectedProducts.length} selected
                             </span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2">
-                            {MASTER_PRODUCT_OPTIONS.slice(0, 8).map((prod) => {
+                            {MASTER_PRODUCT_OPTIONS.map((prod) => {
                               const isSelected = selectedProducts.includes(prod.name);
                               return (
                                 <button
@@ -862,6 +892,12 @@ function HomePage() {
                               );
                             })}
                           </div>
+
+                          {formErrors.selectedProducts && (
+                            <p className="text-[11px] text-destructive font-medium mt-1">
+                              {formErrors.selectedProducts}
+                            </p>
+                          )}
                         </div>
 
                         {/* STEP 2: SPACE TYPE & PLAN DESCRIPTION */}
@@ -1000,14 +1036,7 @@ function HomePage() {
                             type="button"
                             onClick={() => {
                               if (selectedProducts.length === 0) {
-                                toast.error("Please select at least one stone product to proceed.");
-                                return;
-                              }
-                              if (!spaceType.trim()) {
-                                toast.error(
-                                  "Please select the project space type (e.g. Bungalow, Apartment, etc.).",
-                                );
-                                return;
+                                setSelectedProducts(["Stone Veneer"]);
                               }
                               setFormStep(2);
                             }}
@@ -1033,7 +1062,7 @@ function HomePage() {
                               Selected:
                             </span>
                             <span className="font-bold text-foreground truncate">
-                              {selectedProducts.join(", ") || "Custom Stone"}
+                              {selectedProducts.join(", ") || "Stone Veneer"}
                             </span>
                           </div>
                           <button
@@ -1095,12 +1124,23 @@ function HomePage() {
                                 Your Full Name <span className="text-destructive">*</span>
                               </label>
                               <Input
-                                required
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e) => {
+                                  setName(e.target.value);
+                                  clearError("name");
+                                }}
                                 placeholder="Rajesh Sharma"
-                                className="h-9 text-xs bg-background"
+                                className={cn(
+                                  "h-9 text-xs bg-background transition-colors",
+                                  formErrors.name &&
+                                    "border-destructive focus-visible:ring-destructive",
+                                )}
                               />
+                              {formErrors.name && (
+                                <p className="text-[11px] text-destructive font-medium mt-1">
+                                  {formErrors.name}
+                                </p>
+                              )}
                             </div>
 
                             {/* WhatsApp Number with Country Code Dropdown */}
@@ -1112,14 +1152,25 @@ function HomePage() {
                               <div className="flex items-center">
                                 <CountryCodeSelect value={countryCode} onChange={setCountryCode} />
                                 <Input
-                                  required
                                   type="tel"
                                   value={whatsapp}
-                                  onChange={(e) => setWhatsapp(e.target.value)}
+                                  onChange={(e) => {
+                                    setWhatsapp(e.target.value);
+                                    clearError("whatsapp");
+                                  }}
                                   placeholder="98765 43210"
-                                  className="h-9 text-xs font-medium rounded-l-none border-l-0 border-emerald-300 focus-visible:ring-emerald-500 dark:border-emerald-800 bg-background"
+                                  className={cn(
+                                    "h-9 text-xs font-medium rounded-l-none border-l-0 border-emerald-300 focus-visible:ring-emerald-500 dark:border-emerald-800 bg-background transition-colors",
+                                    formErrors.whatsapp &&
+                                      "border-destructive focus-visible:ring-destructive",
+                                  )}
                                 />
                               </div>
+                              {formErrors.whatsapp && (
+                                <p className="text-[11px] text-destructive font-medium mt-1">
+                                  {formErrors.whatsapp}
+                                </p>
+                              )}
                             </div>
 
                             {/* City / Location */}
@@ -1128,12 +1179,23 @@ function HomePage() {
                                 Project City / Location <span className="text-destructive">*</span>
                               </label>
                               <Input
-                                required
                                 value={city}
-                                onChange={(e) => setCity(e.target.value)}
+                                onChange={(e) => {
+                                  setCity(e.target.value);
+                                  clearError("city");
+                                }}
                                 placeholder="e.g. Ahmedabad, Jaipur, Delhi"
-                                className="h-9 text-xs bg-background"
+                                className={cn(
+                                  "h-9 text-xs bg-background transition-colors",
+                                  formErrors.city &&
+                                    "border-destructive focus-visible:ring-destructive",
+                                )}
                               />
+                              {formErrors.city && (
+                                <p className="text-[11px] text-destructive font-medium mt-1">
+                                  {formErrors.city}
+                                </p>
+                              )}
                             </div>
 
                             {/* Email (Optional) */}
@@ -1163,12 +1225,18 @@ function HomePage() {
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                               <Input
-                                required
                                 type="date"
                                 min={todayStr}
                                 value={requiredDate}
-                                onChange={(e) => setRequiredDate(e.target.value)}
-                                className="h-9 text-xs font-medium cursor-pointer bg-background"
+                                onChange={(e) => {
+                                  setRequiredDate(e.target.value);
+                                  clearError("requiredDate");
+                                }}
+                                className={cn(
+                                  "h-9 text-xs font-medium cursor-pointer bg-background transition-colors",
+                                  formErrors.requiredDate &&
+                                    "border-destructive focus-visible:ring-destructive",
+                                )}
                               />
 
                               {/* Quick Jump Timeline Chips */}
@@ -1191,8 +1259,8 @@ function HomePage() {
                                       onClick={() => setQuickDays(q.days)}
                                       className={
                                         isActive
-                                          ? "text-[10px] px-2 py-1 rounded border border-primary/40 bg-primary/10 text-primary font-bold"
-                                          : "text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
+                                          ? "text-[10px] px-2 py-1 rounded border border-primary/40 bg-primary/10 text-primary font-bold cursor-pointer"
+                                          : "text-[10px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground cursor-pointer"
                                       }
                                     >
                                       {q.label}
@@ -1201,8 +1269,41 @@ function HomePage() {
                                 })}
                               </div>
                             </div>
+                            {formErrors.requiredDate && (
+                              <p className="text-[11px] text-destructive font-medium mt-1">
+                                {formErrors.requiredDate}
+                              </p>
+                            )}
                           </div>
                         </div>
+
+                        {/* Network/Timeout 1-Tap WhatsApp Fallback */}
+                        {submitError && (
+                          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 dark:border-amber-800 dark:bg-amber-950/40 text-xs space-y-2">
+                            <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
+                              <Phone className="h-4 w-4 text-emerald-600" />
+                              <span>Instant WhatsApp Estimate Option:</span>
+                            </div>
+                            <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                              Send your requirements directly to our Lead Architect on WhatsApp to
+                              receive rapid pricing & high-res slab photos:
+                            </p>
+                            <Button
+                              asChild
+                              size="sm"
+                              className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1.5 shadow-sm h-10"
+                            >
+                              <a
+                                href={fallbackWhatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Phone className="h-3.5 w-3.5 fill-current" />
+                                <span>Send on WhatsApp (+91 77420 90866)</span>
+                              </a>
+                            </Button>
+                          </div>
+                        )}
 
                         {/* SUBMIT / BACK BUTTONS */}
                         <div className="pt-2 flex items-center gap-2 sm:gap-2.5">
@@ -1238,7 +1339,9 @@ function HomePage() {
 
                         <div className="text-center text-[11px] text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                          <span>Direct quarry pricing sent to WhatsApp</span>
+                          <span>
+                            Instant estimate &amp; material specifications sent to WhatsApp
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1259,7 +1362,10 @@ function HomePage() {
           </div>
 
           {/* Curated Luxury Architectural Products Showcase */}
-          <LuxuryProductShowcase onSelectProduct={scrollToForm} />
+          <LuxuryProductShowcase
+            onSelectProduct={scrollToForm}
+            selectedProducts={selectedProducts}
+          />
         </div>
       </section>
 

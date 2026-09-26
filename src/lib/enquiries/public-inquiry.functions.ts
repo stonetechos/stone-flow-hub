@@ -75,6 +75,8 @@ const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["mate
   "custom flooring": "custom_flooring",
   "general flooring": "general_flooring",
   custom_flooring: "custom_flooring",
+  "marble & granite flooring": "custom_flooring",
+  marble_granite_flooring: "custom_flooring",
   "table tops & countertops": "table_top",
   "table top": "table_top",
   table_top: "table_top",
@@ -82,12 +84,14 @@ const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["mate
   "pu panels": "pu_panels",
   pu_panels: "pu_panels",
   "stepping stones & landscape": "stepping_stone",
+  "stepping stones & landscaping": "stepping_stone",
   "stepping stone": "stepping_stone",
   stepping_stone: "stepping_stone",
   "agate & semi-precious slabs": "agate_slabs",
   "agate slabs": "agate_slabs",
   agate_slabs: "agate_slabs",
   "natural stone mosaics": "natural_stone_mosaics",
+  "stone mosaics & inlay": "natural_stone_mosaics",
   natural_stone_mosaics: "natural_stone_mosaics",
   "inlay work": "inlay_work",
   inlay_work: "inlay_work",
@@ -99,6 +103,7 @@ const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["mate
   stone_veneer: "stone_veneer",
   "stone veneer artwork": "stone_veneer_artwork",
   stone_veneer_artwork: "stone_veneer_artwork",
+  "interlocking panels": "natural_stone_interlocking_panels",
   "natural stone interlocking panels": "natural_stone_interlocking_panels",
   natural_stone_interlocking_panels: "natural_stone_interlocking_panels",
 };
@@ -217,7 +222,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
     }
 
     if (!customerId) {
-      const fallbackCode = `CUST-${Date.now().toString().slice(-6)}`;
+      const fallbackCode = `CUST-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`;
       const { data: newCustomer, error: custErr } = await supabaseAdmin
         .from("customers")
         .insert({
@@ -258,9 +263,9 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
       customerCode = newCustomer.customer_code;
     }
 
-    // 3. Generate unique enquiry number (ENQ-YYYYMMDD-XXXX)
+    // 3. Generate unique enquiry number (ENQ-YYYYMMDD-XXXXXX)
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     const enquiryNo = `ENQ-${todayStr}-${randomSuffix}`;
 
     // 4. Calculate Priority based on required date (urgent if <= 7 days)
