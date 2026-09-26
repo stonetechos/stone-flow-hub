@@ -3,7 +3,7 @@
  */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SkeletonTable } from "@/components/layout/States";
@@ -86,8 +86,11 @@ function EmployeeFormPage() {
   const qc = useQueryClient();
   const { t, i18n } = useTranslation();
   const roles = useRoles();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [nameError, setNameError] = useState<string>("");
   const canWrite =
     roles.isAdmin ||
+    roles.isSuperAdmin ||
     roles.isSalesManager ||
     roles.isHr ||
     roles.canWrite ||
@@ -230,6 +233,11 @@ function EmployeeFormPage() {
   function submit(ev: FormEvent) {
     ev.preventDefault();
     if (!canWrite) return;
+    if (!form.full_name.trim()) {
+      setNameError("Full name is required");
+      return;
+    }
+    setNameError("");
     if (form.employment_status === "terminated" && !roles.isSuperAdmin) {
       toast.error(
         "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
@@ -237,6 +245,18 @@ function EmployeeFormPage() {
       return;
     }
     mut.mutate(form);
+  }
+
+  function handleSubmitClick() {
+    if (!canWrite || mut.isPending) return;
+    // Use requestSubmit() so the form's onSubmit fires reliably on all
+    // browsers/Android WebViews regardless of the fixed-position footer.
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    } else {
+      // Fallback: fire submit logic directly if ref isn't attached yet
+      submit({ preventDefault: () => {} } as FormEvent);
+    }
   }
 
   if (!roles.isReady) {
@@ -262,14 +282,20 @@ function EmployeeFormPage() {
   return (
     <>
       <PageHeader title={id ? "Edit employee" : "New employee"} eyebrow="Workforce Intelligence" />
-      <FormLayout onSubmit={submit} busy={mut.isPending} dirty={dirty}>
+      <FormLayout onSubmit={submit} formRef={formRef} busy={mut.isPending} dirty={dirty}>
         <FormSection title="Basic information">
           <FormGrid>
             <Field label="Full name" required>
               <Input
                 value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, full_name: e.target.value });
+                  if (e.target.value.trim()) setNameError("");
+                }}
               />
+              {nameError && (
+                <p className="mt-1 text-xs font-medium text-destructive">{nameError}</p>
+              )}
             </Field>
             <Field
               label="Designation(s)"
@@ -506,7 +532,7 @@ function EmployeeFormPage() {
             </Button>
           }
           primary={
-            <Button type="submit" disabled={mut.isPending}>
+            <Button type="button" disabled={mut.isPending} onClick={handleSubmitClick}>
               {id ? "Save changes" : "Create employee"}
             </Button>
           }

@@ -25,7 +25,7 @@
  */
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent, ReactNode, RefObject } from "react";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 /* -------------------------------------------------------------------- */
@@ -38,6 +38,7 @@ export function FormLayout({
   dirty,
   children,
   className,
+  formRef,
 }: {
   onSubmit?: (e: FormEvent) => void;
   busy?: boolean;
@@ -45,10 +46,13 @@ export function FormLayout({
   dirty?: boolean;
   children: ReactNode;
   className?: string;
+  /** Optional ref forwarded to the underlying <form> element. */
+  formRef?: RefObject<HTMLFormElement | null>;
 }) {
   useUnsavedChanges(Boolean(dirty) && !busy);
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       aria-busy={busy || undefined}
       onKeyDown={(e) => {
