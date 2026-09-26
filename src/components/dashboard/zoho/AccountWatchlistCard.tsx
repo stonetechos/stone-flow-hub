@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Landmark, ArrowUpRight, MessageSquareText, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { formatInrFull } from "@/lib/dashboard/zoho-api";
 import { listBankAccounts, type BankAccountRow } from "@/lib/banking/banking";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export function AccountWatchlistCard({
   pettyCash?: number;
   incomingToday?: number;
 }) {
+  const { t } = useTranslation();
   const [readerOpen, setReaderOpen] = useState(false);
   const accountsQuery = useQuery({
     queryKey: ["banking", "accounts"],
@@ -31,7 +33,7 @@ export function AccountWatchlistCard({
               <Landmark className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
-              Bank &amp; Cash Watchlist
+              {t("dashboard.zoho.bankWatchlist", "Bank & Cash Watchlist")}
             </span>
           </div>
 
@@ -44,14 +46,14 @@ export function AccountWatchlistCard({
               className="h-7 px-2.5 gap-1.5 text-xs font-semibold border-cyan-300 bg-cyan-50/50 text-cyan-800 hover:bg-cyan-100/60 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300"
             >
               <MessageSquareText className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
-              <span>Read UPI / SMS</span>
+              <span>{t("dashboard.zoho.readUpiSms", "Read UPI / SMS")}</span>
             </Button>
 
             <Link
               to="/receipts"
               className="flex items-center gap-1 text-xs font-bold text-engraved-blue transition-colors hover:scale-105"
             >
-              <span>Banking &amp; Ledgers</span>
+              <span>{t("dashboard.zoho.bankingLedgers", "Banking & Ledgers")}</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -87,7 +89,9 @@ export function AccountWatchlistCard({
                     </div>
                   </div>
                   <span className="engraved-well-glow rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-engraved-blue">
-                    {acc.is_active ? "Active" : "Archived"}
+                    {acc.is_active
+                      ? t("common.active", "Active")
+                      : t("common.archived", "Archived")}
                   </span>
                 </div>
               </div>

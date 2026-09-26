@@ -9,6 +9,7 @@ import {
   Legend,
 } from "recharts";
 import { PieChart, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,15 @@ import {
 } from "@/lib/dashboard/zoho-api";
 import { cn } from "@/lib/utils";
 
-const PERIOD_LABELS: Record<PeriodFilter, string> = {
+const PERIOD_KEYS: Record<PeriodFilter, string> = {
+  this_fiscal_year: "dashboard.periods.this_fiscal_year",
+  previous_fiscal_year: "dashboard.periods.previous_fiscal_year",
+  this_quarter: "dashboard.periods.this_quarter",
+  this_month: "dashboard.periods.this_month",
+  today: "dashboard.periods.today",
+};
+
+const PERIOD_DEFAULTS: Record<PeriodFilter, string> = {
   this_fiscal_year: "This Fiscal Year",
   previous_fiscal_year: "Previous Fiscal Year",
   this_quarter: "This Quarter",
@@ -46,6 +55,7 @@ export function SalesAndExpenseCard({
   onModeChange: (m: "accrual" | "cash") => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
   const monthlyData = summary?.monthlyData ?? [];
   const totalSales = summary?.totalSales ?? 0;
   const totalExpenses = summary?.totalExpenses ?? 0;
@@ -59,7 +69,7 @@ export function SalesAndExpenseCard({
               <PieChart className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
-              Sales &amp; Expenses
+              {t("dashboard.zoho.salesExpenses", "Sales & Expenses")}
             </span>
           </div>
 
@@ -69,18 +79,18 @@ export function SalesAndExpenseCard({
                 type="button"
                 className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
               >
-                <span>{PERIOD_LABELS[period]}</span>
+                <span>{t(PERIOD_KEYS[period], PERIOD_DEFAULTS[period])}</span>
                 <ChevronDown className="h-3 w-3" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 text-xs">
-              {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
+              {(Object.keys(PERIOD_KEYS) as PeriodFilter[]).map((pKey) => (
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
                   className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
-                  {PERIOD_LABELS[pKey]}
+                  {t(PERIOD_KEYS[pKey], PERIOD_DEFAULTS[pKey])}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -100,7 +110,7 @@ export function SalesAndExpenseCard({
                   : "text-slate-600 hover:text-cyan-800",
               )}
             >
-              Accrual
+              {t("dashboard.zoho.accrual", "Accrual")}
             </button>
             <button
               type="button"
@@ -112,7 +122,7 @@ export function SalesAndExpenseCard({
                   : "text-slate-600 hover:text-cyan-800",
               )}
             >
-              Cash
+              {t("dashboard.zoho.cash", "Cash")}
             </button>
           </div>
         </div>
@@ -150,7 +160,9 @@ export function SalesAndExpenseCard({
                 <Tooltip
                   formatter={(val: number, name: string) => [
                     formatInrFull(val),
-                    name === "sales" ? "Sales / Inflow" : "Expenses / Outflow",
+                    name === "sales"
+                      ? t("dashboard.zoho.salesInflow", "Sales / Inflow")
+                      : t("dashboard.zoho.expensesOutflow", "Expenses / Outflow"),
                   ]}
                   labelStyle={{ fontWeight: "bold", fontSize: "12px", color: "#0F172A" }}
                   contentStyle={{
@@ -163,14 +175,14 @@ export function SalesAndExpenseCard({
                 />
                 <Bar
                   dataKey="sales"
-                  name="Sales"
+                  name={t("dashboard.sales", "Sales")}
                   fill="#c2410c"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={18}
                 />
                 <Bar
                   dataKey="expenses"
-                  name="Expenses"
+                  name={t("dashboard.zoho.totalExpenses", "Expenses")}
                   fill="#f59e0b"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={18}
@@ -184,7 +196,7 @@ export function SalesAndExpenseCard({
         <div className="grid grid-cols-2 gap-3.5 border-t border-cyan-50 pt-4 text-center">
           <div className="engraved-well-glow rounded-xl p-3.5">
             <div className="font-mono text-xs font-bold uppercase tracking-wider text-engraved-kicker">
-              Total Income
+              {t("dashboard.zoho.totalIncome", "Total Income")}
             </div>
             <div className="mt-1 font-display text-base font-black text-engraved-blue-lg tabular-nums sm:text-lg">
               {formatInrFull(totalSales)}
@@ -193,7 +205,7 @@ export function SalesAndExpenseCard({
 
           <div className="engraved-well rounded-xl p-3.5">
             <div className="font-mono text-xs font-bold uppercase tracking-wider text-indigo-700">
-              Total Expenses
+              {t("dashboard.zoho.totalExpenses", "Total Expenses")}
             </div>
             <div className="mt-1 font-display text-base font-black text-indigo-900 tabular-nums sm:text-lg">
               {formatInrFull(totalExpenses)}
@@ -203,7 +215,10 @@ export function SalesAndExpenseCard({
 
         {/* Footnote */}
         <p className="text-[11px] text-muted-foreground italic text-center">
-          Income and expense values displayed are exclusive of taxes
+          {t(
+            "dashboard.zoho.incomeExpenseTaxExcl",
+            "Income and expense values displayed are exclusive of taxes",
+          )}
         </p>
       </div>
     </div>

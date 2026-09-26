@@ -1,5 +1,6 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { CircleDot, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,15 @@ import {
 } from "@/lib/dashboard/zoho-api";
 import { cn } from "@/lib/utils";
 
-const PERIOD_LABELS: Record<PeriodFilter, string> = {
+const PERIOD_KEYS: Record<PeriodFilter, string> = {
+  this_fiscal_year: "dashboard.periods.this_fiscal_year",
+  previous_fiscal_year: "dashboard.periods.previous_fiscal_year",
+  this_quarter: "dashboard.periods.this_quarter",
+  this_month: "dashboard.periods.this_month",
+  today: "dashboard.periods.today",
+};
+
+const PERIOD_DEFAULTS: Record<PeriodFilter, string> = {
   this_fiscal_year: "This Fiscal Year",
   previous_fiscal_year: "Previous Fiscal Year",
   this_quarter: "This Quarter",
@@ -34,6 +43,7 @@ export function TopExpensesCard({
   onPeriodChange: (p: PeriodFilter) => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
   const hasExpenses = expenses.length > 0;
   const total = expenses.reduce((acc, e) => acc + e.amount, 0);
 
@@ -52,7 +62,7 @@ export function TopExpensesCard({
               <CircleDot className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
-              Expense Distribution
+              {t("dashboard.zoho.expenseDistribution", "Expense Distribution")}
             </span>
           </div>
 
@@ -62,18 +72,18 @@ export function TopExpensesCard({
                 type="button"
                 className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-500"
               >
-                <span>{PERIOD_LABELS[period]}</span>
+                <span>{t(PERIOD_KEYS[period], PERIOD_DEFAULTS[period])}</span>
                 <ChevronDown className="h-3 w-3" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 text-xs">
-              {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
+              {(Object.keys(PERIOD_KEYS) as PeriodFilter[]).map((pKey) => (
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
                   className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
-                  {PERIOD_LABELS[pKey]}
+                  {t(PERIOD_KEYS[pKey], PERIOD_DEFAULTS[pKey])}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -89,7 +99,7 @@ export function TopExpensesCard({
         ) : !hasExpenses ? (
           <div className="flex h-56 flex-col items-center justify-center p-4 text-center text-xs text-slate-400">
             <CircleDot className="mb-2 h-8 w-8 stroke-1 text-slate-300" />
-            <p>No recorded expenses for this period.</p>
+            <p>{t("dashboard.zoho.noRecordedExpenses", "No recorded expenses for this period.")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-2">
@@ -152,7 +162,9 @@ export function TopExpensesCard({
         )}
 
         <div className="engraved-well flex items-center justify-between rounded-xl p-3 text-xs">
-          <span className="font-mono font-bold uppercase text-slate-500">Total Expenses:</span>
+          <span className="font-mono font-bold uppercase text-slate-500">
+            {t("dashboard.zoho.totalExpenses", "Total Expenses:")}
+          </span>
           <span className="font-display text-sm font-black text-engraved-blue-lg tabular-nums sm:text-base">
             {formatInrFull(total)}
           </span>

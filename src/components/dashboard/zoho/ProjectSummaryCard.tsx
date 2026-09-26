@@ -1,5 +1,6 @@
 import { FolderKanban, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { type ProjectSummaryData, formatInrFull } from "@/lib/dashboard/zoho-api";
 
 export function ProjectSummaryCard({
@@ -9,6 +10,7 @@ export function ProjectSummaryCard({
   summary?: ProjectSummaryData;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
   const total = summary?.totalProjects ?? 0;
   const active = summary?.activeProjects ?? 0;
   const completed = summary?.completedProjects ?? 0;
@@ -23,7 +25,7 @@ export function ProjectSummaryCard({
               <FolderKanban className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
-              Project Portfolio
+              {t("dashboard.zoho.projectPortfolio", "Project Portfolio")}
             </span>
           </div>
 
@@ -31,7 +33,7 @@ export function ProjectSummaryCard({
             to="/projects"
             className="flex items-center gap-1 text-xs font-bold text-engraved-blue transition-colors hover:scale-105"
           >
-            <span>View All Projects</span>
+            <span>{t("dashboard.zoho.viewAllProjects", "View All Projects")}</span>
             <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
@@ -51,7 +53,7 @@ export function ProjectSummaryCard({
                   {active}
                 </div>
                 <div className="mt-1 font-mono text-xs font-bold uppercase text-engraved-kicker">
-                  Active Sites
+                  {t("dashboard.zoho.activeSites", "Active Sites")}
                 </div>
               </div>
 
@@ -60,7 +62,7 @@ export function ProjectSummaryCard({
                   {completed}
                 </div>
                 <div className="mt-1 font-mono text-xs font-bold uppercase text-indigo-700">
-                  Completed
+                  {t("dashboard.zoho.completed", "Completed")}
                 </div>
               </div>
 
@@ -69,7 +71,7 @@ export function ProjectSummaryCard({
                   {total}
                 </div>
                 <div className="mt-1 font-mono text-xs font-bold uppercase text-slate-500">
-                  Total Logged
+                  {t("dashboard.zoho.totalLogged", "Total Logged")}
                 </div>
               </div>
             </div>
@@ -77,7 +79,7 @@ export function ProjectSummaryCard({
             {/* Total Budget Box in Glowing Recessed Well */}
             <div className="engraved-well-glow flex items-center justify-between rounded-xl p-3.5 text-xs">
               <span className="font-mono text-xs font-bold uppercase text-slate-600">
-                Combined Project Budget:
+                {t("dashboard.zoho.combinedProjectBudget", "Combined Project Budget:")}
               </span>
               <span className="font-display text-sm font-black text-engraved-blue-lg tabular-nums sm:text-base">
                 {formatInrFull(budget)}
@@ -85,8 +87,10 @@ export function ProjectSummaryCard({
             </div>
 
             <div className="text-[11px] text-slate-500 italic">
-              Tracks stone supply, architectural dry-lays, fabrication milestones, and on-site
-              handover.
+              {t(
+                "dashboard.zoho.projectPortfolioDesc",
+                "Tracks stone supply, architectural dry-lays, fabrication milestones, and on-site handover.",
+              )}
             </div>
           </>
         )}

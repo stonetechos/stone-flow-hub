@@ -8,6 +8,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +23,15 @@ import {
 } from "@/lib/dashboard/zoho-api";
 import { cn } from "@/lib/utils";
 
-const PERIOD_LABELS: Record<PeriodFilter, string> = {
+const PERIOD_KEYS: Record<PeriodFilter, string> = {
+  this_fiscal_year: "dashboard.periods.this_fiscal_year",
+  previous_fiscal_year: "dashboard.periods.previous_fiscal_year",
+  this_quarter: "dashboard.periods.this_quarter",
+  this_month: "dashboard.periods.this_month",
+  today: "dashboard.periods.today",
+};
+
+const PERIOD_DEFAULTS: Record<PeriodFilter, string> = {
   this_fiscal_year: "This Fiscal Year",
   previous_fiscal_year: "Previous Fiscal Year",
   this_quarter: "This Quarter",
@@ -41,6 +50,7 @@ export function CashFlowCard({
   onPeriodChange: (p: PeriodFilter) => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
   const monthlyData = summary?.monthlyData ?? [];
   const openingCash = summary?.openingCash ?? 0;
   const incoming = summary?.incoming ?? 0;
@@ -58,7 +68,7 @@ export function CashFlowCard({
               <ArrowUpRight className="h-4 w-4" />
             </span>
             <span className="font-display text-base font-black text-engraved-title">
-              Cash Flow Pulse
+              {t("dashboard.zoho.cashFlowPulse", "Cash Flow Pulse")}
             </span>
           </div>
 
@@ -68,18 +78,18 @@ export function CashFlowCard({
                 type="button"
                 className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
               >
-                <span>{PERIOD_LABELS[period]}</span>
+                <span>{t(PERIOD_KEYS[period], PERIOD_DEFAULTS[period])}</span>
                 <ChevronDown className="h-3 w-3" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 text-xs">
-              {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
+              {(Object.keys(PERIOD_KEYS) as PeriodFilter[]).map((pKey) => (
                 <DropdownMenuItem
                   key={pKey}
                   onClick={() => onPeriodChange(pKey)}
                   className={cn(period === pKey && "font-semibold text-cyan-700")}
                 >
-                  {PERIOD_LABELS[pKey]}
+                  {t(PERIOD_KEYS[pKey], PERIOD_DEFAULTS[pKey])}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -123,7 +133,10 @@ export function CashFlowCard({
                   tick={{ fontSize: 10, fill: "#64748B" }}
                 />
                 <Tooltip
-                  formatter={(val: number) => [formatInrFull(val), "Cumulative Cash"]}
+                  formatter={(val: number) => [
+                    formatInrFull(val),
+                    t("dashboard.zoho.cumulativeCash", "Cumulative Cash"),
+                  ]}
                   labelStyle={{ fontWeight: "bold", fontSize: "12px", color: "#0F172A" }}
                   contentStyle={{
                     backgroundColor: "#ffffff",
@@ -150,7 +163,7 @@ export function CashFlowCard({
         <div className="grid grid-cols-2 gap-2.5 border-t border-cyan-50 pt-4 text-xs sm:grid-cols-4">
           <div className="engraved-well rounded-xl p-2.5">
             <div className="truncate font-mono text-[10px] font-bold uppercase text-slate-500">
-              Opening ({startDate})
+              {t("dashboard.zoho.opening", "Opening")} ({startDate})
             </div>
             <div className="mt-0.5 font-display font-black text-engraved-title tabular-nums">
               {formatInrFull(openingCash)}
@@ -159,7 +172,7 @@ export function CashFlowCard({
 
           <div className="engraved-well rounded-xl p-2.5">
             <div className="truncate font-mono text-[10px] font-bold uppercase text-engraved-kicker">
-              + Inflow
+              + {t("dashboard.zoho.inflow", "Inflow")}
             </div>
             <div className="mt-0.5 font-display font-black text-engraved-blue tabular-nums">
               {formatInrFull(incoming)}
@@ -168,7 +181,7 @@ export function CashFlowCard({
 
           <div className="engraved-well rounded-xl p-2.5">
             <div className="truncate font-mono text-[10px] font-bold uppercase text-indigo-700">
-              - Outflow
+              - {t("dashboard.zoho.outflow", "Outflow")}
             </div>
             <div className="mt-0.5 font-display font-black text-indigo-900 tabular-nums">
               {formatInrFull(outgoing)}
@@ -177,7 +190,7 @@ export function CashFlowCard({
 
           <div className="engraved-well-glow rounded-xl p-2.5">
             <div className="truncate font-mono text-[10px] font-bold uppercase text-engraved-kicker">
-              Closing ({endDate})
+              {t("dashboard.zoho.closing", "Closing")} ({endDate})
             </div>
             <div className="mt-0.5 font-display font-black text-engraved-blue-lg text-sm sm:text-base tabular-nums">
               {formatInrFull(closingCash)}
