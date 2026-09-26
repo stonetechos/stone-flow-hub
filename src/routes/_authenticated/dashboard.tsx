@@ -178,9 +178,9 @@ function DashboardPage() {
   const headline = kpis
     ? pickHeadline(kpis, t)
     : {
-        label: "System Status",
-        value: "Ready",
-        context: "Awaiting operational data",
+        label: t("dashboard.systemStatus", "System Status"),
+        value: t("dashboard.ready", "Ready"),
+        context: t("dashboard.awaitingOperationalRecords", "Awaiting operational records"),
         to: "/enquiries",
       };
 
@@ -399,7 +399,7 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
           {isIdle ? "—" : score}
         </span>
         <span className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-engraved-kicker">
-          {isIdle ? "No Data" : t("dashboard.health", "Health")}
+          {isIdle ? t("dashboard.noData", "No Data") : t("dashboard.health", "Health")}
         </span>
       </div>
     </div>
@@ -991,7 +991,10 @@ function CopilotDock({
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
           {health.band === "idle"
-            ? "Awaiting operational records. Enter incoming leads, customers, or quotations to begin health telemetry."
+            ? t(
+                "dashboard.aiCopilotDescIdle",
+                "Awaiting operational records. Enter incoming leads, customers, or quotations to begin health telemetry.",
+              )
             : health.band === "strong"
               ? t("dashboard.aiCopilotDescStrong")
               : health.band === "steady"
@@ -1444,9 +1447,9 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
 
   if (totalVolume === 0) {
     return {
-      label: "System Status",
-      value: "Ready",
-      context: "Awaiting operational records",
+      label: t("dashboard.systemStatus", "System Status"),
+      value: t("dashboard.ready", "Ready"),
+      context: t("dashboard.awaitingOperationalRecords", "Awaiting operational records"),
       to: "/enquiries",
     };
   }
@@ -1456,7 +1459,10 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
     return {
       label: t("dashboard.outstandingReceivables"),
       value: "₹" + formatMoney(k.outstandingInr),
-      context: `₹${formatMoney(k.paymentsThisMonthInr)} collected this month`,
+      context: t("dashboard.collectedThisMonth", {
+        amount: formatMoney(k.paymentsThisMonthInr),
+        defaultValue: `₹${formatMoney(k.paymentsThisMonthInr)} collected this month`,
+      }),
       to: "/invoices",
     };
   if (k.ordersToStart > 3)
@@ -1486,7 +1492,7 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
 function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[], t: TFunction): string[] {
   const lines = topInsights.map((i) => i.title);
   const urgent = tasks.filter((t) => t.priority === "urgent").length;
-  if (urgent) lines.push(`${urgent} urgent task${urgent === 1 ? "" : "s"} on your list.`);
+  if (urgent) lines.push(t("dashboard.urgentTasks", { count: urgent }));
   if (lines.length === 0)
     lines.push(t("dashboard.briefQuiet", "Everything is quiet. Production is operating normally."));
   return lines.slice(0, 5);

@@ -1,4 +1,5 @@
-import { ChevronDown, AlertCircle } from "lucide-react";
+import { ChevronDown, AlertCircle, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +14,21 @@ import {
 } from "@/lib/dashboard/zoho-api";
 import { cn } from "@/lib/utils";
 
-const PERIOD_LABELS: Record<PeriodFilter, string> = {
+const PERIOD_KEYS: Record<PeriodFilter, string> = {
+  this_fiscal_year: "dashboard.periods.this_fiscal_year",
+  previous_fiscal_year: "dashboard.periods.previous_fiscal_year",
+  this_quarter: "dashboard.periods.this_quarter",
+  this_month: "dashboard.periods.this_month",
+  today: "dashboard.periods.today",
+};
+
+const PERIOD_DEFAULTS: Record<PeriodFilter, string> = {
   this_fiscal_year: "This Fiscal Year",
   previous_fiscal_year: "Previous Fiscal Year",
   this_quarter: "This Quarter",
   this_month: "This Month",
   today: "Today",
 };
-
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export function ReceivablesPayablesCards({
   receivables,
@@ -36,12 +43,14 @@ export function ReceivablesPayablesCards({
   onPeriodChange: (p: PeriodFilter) => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Total Receivables Card */}
       <MetricCard
         type="receivables"
-        title="Total Receivables"
+        title={t("dashboard.totalReceivables", "Total Receivables")}
         icon={<ArrowDownLeft className="h-4 w-4" />}
         accentBg="bg-cyan-50 text-cyan-700 border-cyan-100"
         titleColor="text-cyan-900"
@@ -54,7 +63,7 @@ export function ReceivablesPayablesCards({
       {/* Total Payables Card */}
       <MetricCard
         type="payables"
-        title="Total Payables"
+        title={t("dashboard.totalPayables", "Total Payables")}
         icon={<ArrowUpRight className="h-4 w-4" />}
         accentBg="bg-indigo-50 text-indigo-600 border-indigo-100"
         titleColor="text-indigo-800"
@@ -88,6 +97,7 @@ function MetricCard({
   onPeriodChange: (p: PeriodFilter) => void;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
   const total = summary?.total ?? 0;
   const current = summary?.current ?? 0;
   const overdue = summary?.overdue ?? 0;
@@ -120,18 +130,18 @@ function MetricCard({
               type="button"
               className="engraved-well flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold text-engraved-blue transition-colors hover:border-cyan-400"
             >
-              <span>{PERIOD_LABELS[period]}</span>
+              <span>{t(PERIOD_KEYS[period], PERIOD_DEFAULTS[period])}</span>
               <ChevronDown className="h-3 w-3" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44 text-xs">
-            {(Object.keys(PERIOD_LABELS) as PeriodFilter[]).map((pKey) => (
+            {(Object.keys(PERIOD_KEYS) as PeriodFilter[]).map((pKey) => (
               <DropdownMenuItem
                 key={pKey}
                 onClick={() => onPeriodChange(pKey)}
                 className={cn(period === pKey && "font-semibold text-cyan-700")}
               >
-                {PERIOD_LABELS[pKey]}
+                {t(PERIOD_KEYS[pKey], PERIOD_DEFAULTS[pKey])}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -141,10 +151,10 @@ function MetricCard({
       {/* Large Amount carved into an illuminated engraved stone well */}
       <div className="engraved-well-glow mt-5 rounded-2xl p-4 text-center">
         <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-engraved-kicker">
-          Total Balance
+          {t("dashboard.totalBalance", "Total Balance")}
         </div>
         <div className="mt-1 font-display text-3xl font-black tracking-tight text-engraved-blue-lg tabular-nums sm:text-4xl">
-          {isLoading ? "Loading…" : formatInrFull(total)}
+          {isLoading ? t("common.loading", "Loading…") : formatInrFull(total)}
         </div>
       </div>
 
@@ -165,7 +175,7 @@ function MetricCard({
       <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
         <div className="engraved-well rounded-xl p-3">
           <div className="font-mono text-[10px] font-bold uppercase text-slate-500">
-            Current Due
+            {t("dashboard.currentDue", "Current Due")}
           </div>
           <div className="mt-0.5 font-display text-sm font-black text-engraved-title tabular-nums">
             {isLoading ? "—" : formatInrFull(current)}
@@ -173,7 +183,9 @@ function MetricCard({
         </div>
 
         <div className="engraved-well rounded-xl p-3 text-right">
-          <div className="font-mono text-[10px] font-bold uppercase text-slate-500">Overdue</div>
+          <div className="font-mono text-[10px] font-bold uppercase text-slate-500">
+            {t("dashboard.overdue", "Overdue")}
+          </div>
 
           {/* Interactive Aging Popover */}
           <Popover>
@@ -189,7 +201,7 @@ function MetricCard({
             <PopoverContent align="end" className="card-3d-milky-sm w-64 p-3.5 text-xs shadow-xl">
               <div className="flex items-center gap-1.5 border-b border-cyan-100/80 pb-2 font-bold text-engraved-title">
                 <AlertCircle className="h-3.5 w-3.5 text-cyan-700" />
-                <span>Overdue Aging Breakdown</span>
+                <span>{t("dashboard.overdueAgingBreakdown", "Overdue Aging Breakdown")}</span>
               </div>
               <div className="mt-2.5 space-y-2">
                 {aging.map((bucket) => (
