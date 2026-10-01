@@ -867,6 +867,40 @@ body {
   color: #ffffff;
 }
 
+.btn-launch-cyan {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: var(--color-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.btn-launch-cyan:hover {
+  background-color: var(--color-cyan);
+  color: var(--color-dark);
+}
+
+.btn-launch-pink {
+  background-color: rgba(236, 72, 153, 0.15);
+  color: var(--color-pink);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.btn-launch-pink:hover {
+  background-color: var(--color-pink);
+  color: #ffffff;
+}
+
+.status-cyan {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: var(--color-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.status-pink {
+  background-color: rgba(236, 72, 153, 0.15);
+  color: var(--color-pink);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
 .target-date {
   font-size: 0.75rem;
   font-family: monospace;
