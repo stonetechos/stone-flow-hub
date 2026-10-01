@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,9 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Synchronous coordinate tracking to eliminate stale closure bugs
+  const currentPosRef = useRef<{ x: number; y: number } | null>(null);
+
   const dragStateRef = useRef<{
     isPointerDown: boolean;
     hasMoved: boolean;
@@ -39,13 +42,39 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     pointerId: -1,
   });
 
-  // Calculate default position: safely ~150px from bottom so it never covers bottom form tabs
-  const getDefaultPos = () => {
+  // Calculate default position: safely in bottom right (~150px from bottom so it never covers form tabs)
+  const getDefaultPos = useCallback(() => {
     if (typeof window === "undefined") return { x: 200, y: 200 };
     const defaultX = Math.max(MARGIN, window.innerWidth - MASCOT_SIZE - MARGIN);
     const defaultY = Math.max(MARGIN, window.innerHeight - MASCOT_SIZE - 150);
     return { x: defaultX, y: defaultY };
-  };
+  }, []);
+
+  const getSafeClampedPos = useCallback((x: number, y: number) => {
+    if (typeof window === "undefined") return { x, y };
+    const maxX = Math.max(MARGIN, window.innerWidth - MASCOT_SIZE - MARGIN);
+    const maxY = Math.max(MARGIN, window.innerHeight - MASCOT_SIZE - MARGIN);
+    return {
+      x: clamp(Number.isFinite(x) ? x : MARGIN, MARGIN, maxX),
+      y: clamp(Number.isFinite(y) ? y : MARGIN, MARGIN, maxY),
+    };
+  }, []);
+
+  const updatePosition = useCallback(
+    (nextPos: { x: number; y: number }, persist = false) => {
+      const clamped = getSafeClampedPos(nextPos.x, nextPos.y);
+      currentPosRef.current = clamped;
+      setPos(clamped);
+      if (persist) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
+        } catch {
+          // Ignore storage errors
+        }
+      }
+    },
+    [getSafeClampedPos],
+  );
 
   // Restore saved position on mount or compute safe default
   useEffect(() => {
@@ -53,13 +82,15 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
-          const maxX = Math.max(MARGIN, window.innerWidth - MASCOT_SIZE - MARGIN);
-          const maxY = Math.max(MARGIN, window.innerHeight - MASCOT_SIZE - MARGIN);
-          setPos({
-            x: clamp(parsed.x, MARGIN, maxX),
-            y: clamp(parsed.y, MARGIN, maxY),
-          });
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          typeof parsed.x === "number" &&
+          typeof parsed.y === "number" &&
+          Number.isFinite(parsed.x) &&
+          Number.isFinite(parsed.y)
+        ) {
+          updatePosition(parsed);
           return;
         }
       }
@@ -67,44 +98,40 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
       // Ignore storage errors
     }
 
-    setPos(getDefaultPos());
-  }, []);
+    const defaultPos = getDefaultPos();
+    updatePosition(defaultPos);
+  }, [getDefaultPos, updatePosition]);
 
-  // Keep mascot within viewport bounds on window resize
+  // Keep mascot strictly within visible viewport bounds on window resize or orientation change
   useEffect(() => {
     const handleResize = () => {
-      setPos((prev) => {
-        if (!prev) return null;
-        const maxX = Math.max(MARGIN, window.innerWidth - MASCOT_SIZE - MARGIN);
-        const maxY = Math.max(MARGIN, window.innerHeight - MASCOT_SIZE - MARGIN);
-        return {
-          x: clamp(prev.x, MARGIN, maxX),
-          y: clamp(prev.y, MARGIN, maxY),
-        };
-      });
+      if (currentPosRef.current) {
+        updatePosition(currentPosRef.current);
+      }
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [updatePosition]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     // Only primary button or touch
     if (e.button !== 0 && e.pointerType === "mouse") return;
 
+    // Capture pointer so movement outside the mascot element is tracked seamlessly
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
-      // Ignore pointer capture errors in older runtimes
+      // Fallback in older runtimes
     }
 
-    const currentPos = pos ?? getDefaultPos();
+    const startPos = currentPosRef.current ?? getDefaultPos();
     dragStateRef.current = {
       isPointerDown: true,
       hasMoved: false,
       startX: e.clientX,
       startY: e.clientY,
-      initX: currentPos.x,
-      initY: currentPos.y,
+      initX: startPos.x,
+      initY: startPos.y,
       pointerId: e.pointerId,
     };
   };
@@ -115,18 +142,16 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     const dx = e.clientX - dragStateRef.current.startX;
     const dy = e.clientY - dragStateRef.current.startY;
 
-    // Distinguish between simple click/tap and intentional drag (6px threshold)
-    if (!dragStateRef.current.hasMoved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+    // Distinguish between simple click/tap and intentional drag (5px threshold)
+    if (!dragStateRef.current.hasMoved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
       dragStateRef.current.hasMoved = true;
       setIsDragging(true);
     }
 
     if (dragStateRef.current.hasMoved) {
-      const maxX = Math.max(MARGIN, window.innerWidth - MASCOT_SIZE - MARGIN);
-      const maxY = Math.max(MARGIN, window.innerHeight - MASCOT_SIZE - MARGIN);
-      const nextX = clamp(dragStateRef.current.initX + dx, MARGIN, maxX);
-      const nextY = clamp(dragStateRef.current.initY + dy, MARGIN, maxY);
-      setPos({ x: nextX, y: nextY });
+      const nextX = dragStateRef.current.initX + dx;
+      const nextY = dragStateRef.current.initY + dy;
+      updatePosition({ x: nextX, y: nextY }, false);
     }
   };
 
@@ -144,27 +169,37 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     setIsDragging(false);
 
     if (wasMoved) {
-      // Persist chosen position across reloads
-      if (pos) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
-        } catch {
-          // Ignore storage quota errors
-        }
+      // Persist the final position via the synchronous ref so it's never lost or stale
+      if (currentPosRef.current) {
+        updatePosition(currentPosRef.current, true);
       }
     } else {
-      // Clean tap / click without drag: open Copilot
+      // Clean tap/click without drag opens Copilot
       onClick?.();
     }
   };
 
-  const handlePointerCancel = () => {
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStateRef.current.isPointerDown) return;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // Ignore
+    }
     dragStateRef.current.isPointerDown = false;
     setIsDragging(false);
   };
 
+  // Double click resets mascot to the default dock position in case user drags it somewhere unwanted
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const defaultPos = getDefaultPos();
+    updatePosition(defaultPos, true);
+  };
+
   // Determine if tooltip should show on left or right of mascot based on screen position
-  const tooltipOnRight = pos ? pos.x < 140 : false;
+  const activePos = pos ?? currentPosRef.current;
+  const tooltipOnRight = activePos ? activePos.x < 150 : false;
 
   return (
     <div
@@ -172,16 +207,20 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      onDoubleClick={handleDoubleClick}
       style={
-        pos
+        activePos
           ? {
               position: "fixed",
-              left: `${pos.x}px`,
-              top: `${pos.y}px`,
+              left: `${activePos.x}px`,
+              top: `${activePos.y}px`,
               touchAction: "none",
               userSelect: "none",
             }
           : {
+              position: "fixed",
+              bottom: "calc(9.5rem + env(safe-area-inset-bottom, 0px))",
+              right: "calc(1.25rem + env(safe-area-inset-right, 0px))",
               touchAction: "none",
               userSelect: "none",
             }
@@ -189,8 +228,6 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
       className={cn(
         "fixed z-50 flex items-center select-none",
         tooltipOnRight ? "flex-row-reverse gap-2" : "gap-2",
-        !pos &&
-          "bottom-[calc(9.5rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))]",
         className,
       )}
     >
