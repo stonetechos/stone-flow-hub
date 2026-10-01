@@ -170,7 +170,7 @@ export function FormActions({
           the md: override only ever touches the left side. */}
       <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-[var(--stos-shell-inset,0px)]">
         <div className="flex items-center gap-2">{extra}</div>
-        <div className="flex-1 truncate text-xs text-muted-foreground">
+        <div className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
           {busy ? (
             <span className="inline-flex items-center gap-1.5">
               <Loader2 className="h-3 w-3 animate-spin" /> Saving…
@@ -179,7 +179,7 @@ export function FormActions({
             hint
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {secondary}
           {primary}
         </div>

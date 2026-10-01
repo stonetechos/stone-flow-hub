@@ -4,20 +4,25 @@ import { zOptional, zRequired } from "@/lib/zod";
 export const employeeSchema = z.object({
   full_name: zRequired("Full name"),
   designation_id: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-    z.string().uuid().nullable().optional(),
+    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+    z.string().nullable().optional(),
   ),
   designation_ids: z.preprocess(
-    (v) => (Array.isArray(v) ? v.filter((id) => typeof id === "string" && id.trim() !== "") : []),
-    z.array(z.string().uuid()).default([]),
+    (v) =>
+      Array.isArray(v)
+        ? v
+            .filter((id) => typeof id === "string" && id.trim() !== "")
+            .map((id) => String(id).trim())
+        : [],
+    z.array(z.string()).default([]),
   ),
   department: zOptional(),
   employment_type: z
     .enum(["full_time", "part_time", "contract", "intern", "consultant"])
     .default("full_time"),
   reporting_manager_id: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-    z.string().uuid().nullable().optional(),
+    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+    z.string().nullable().optional(),
   ),
   joining_date: zOptional(),
   phone: zOptional(),
@@ -27,10 +32,13 @@ export const employeeSchema = z.object({
   aadhaar: zOptional(),
   pan: zOptional(),
   bank_details: z.record(z.string(), z.any()).default({}),
-  salary_ctc: z.preprocess(
-    (v) => (v === "" || v == null ? null : Number(v)),
-    z.number().nullable().optional(),
-  ),
+  salary_ctc: z.preprocess((v) => {
+    if (v === "" || v == null) return null;
+    if (typeof v === "number") return isNaN(v) ? null : v;
+    const cleaned = String(v).replace(/,/g, "").trim();
+    const num = Number(cleaned);
+    return isNaN(num) ? null : num;
+  }, z.number().nullable().optional()),
   skills: z.array(z.string()).default([]),
   kras: z
     .array(
@@ -56,8 +64,8 @@ export const employeeSchema = z.object({
   photo_url: zOptional(),
   remarks: zOptional(),
   user_id: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-    z.string().uuid().nullable().optional(),
+    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+    z.string().nullable().optional(),
   ),
 });
 export type EmployeeInput = z.infer<typeof employeeSchema>;

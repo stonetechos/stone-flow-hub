@@ -227,8 +227,11 @@ function EmployeeFormPage() {
       setNameError("Full name is required");
       const msg = "Please enter the employee's full name at the top of the form.";
       setFormError(msg);
-      toast.error(msg);
+      toast.error(msg, { duration: 5000 });
       window.scrollTo({ top: 0, behavior: "smooth" });
+      const nameInput =
+        document.querySelector('input[placeholder*="name" i]') || document.querySelector("input");
+      (nameInput as HTMLElement)?.focus();
       return;
     }
     setNameError("");
@@ -240,13 +243,60 @@ function EmployeeFormPage() {
       return;
     }
 
+    let sanitizedSalary: number | null = null;
+    if (
+      form.salary_ctc !== null &&
+      form.salary_ctc !== undefined &&
+      (form.salary_ctc as unknown) !== ""
+    ) {
+      const num =
+        typeof form.salary_ctc === "number"
+          ? form.salary_ctc
+          : Number(String(form.salary_ctc).replace(/,/g, "").trim());
+      if (!isNaN(num)) sanitizedSalary = num;
+    }
+
+    const sanitizedKras = (form.kras || [])
+      .filter((k) => k && (k.title?.trim() || k.description?.trim()))
+      .map((k) => ({
+        title: k.title?.trim() || "KRA Item",
+        description: k.description?.trim() || "",
+        weightage: isNaN(Number(k.weightage)) ? 0 : Math.min(100, Math.max(0, Number(k.weightage))),
+        target_period: k.target_period || "monthly",
+      }));
+
+    const sanitizedKpas = (form.kpas || [])
+      .filter((k) => k && (k.title?.trim() || k.metric?.trim()))
+      .map((k) => ({
+        title: k.title?.trim() || "KPA Item",
+        metric: k.metric?.trim() || "",
+      }));
+
     const payload: EmployeeInput = {
       ...form,
       full_name: form.full_name.trim(),
-      designation_id: form.designation_id || null,
-      designation_ids: (form.designation_ids || []).filter(Boolean),
-      reporting_manager_id: form.reporting_manager_id || null,
-      user_id: form.user_id || null,
+      designation_id: form.designation_id ? String(form.designation_id).trim() : null,
+      designation_ids: (form.designation_ids || [])
+        .map(String)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      reporting_manager_id: form.reporting_manager_id
+        ? String(form.reporting_manager_id).trim()
+        : null,
+      user_id: form.user_id ? String(form.user_id).trim() : null,
+      salary_ctc: sanitizedSalary,
+      kras: sanitizedKras,
+      kpas: sanitizedKpas,
+      joining_date: form.joining_date?.trim() || "",
+      phone: form.phone?.trim() || "",
+      email: form.email?.trim() || "",
+      department: form.department?.trim() || "",
+      address: form.address?.trim() || "",
+      aadhaar: form.aadhaar?.trim() || "",
+      pan: form.pan?.trim() ? form.pan.trim().toUpperCase() : "",
+      emergency_contact: form.emergency_contact?.trim() || "",
+      photo_url: form.photo_url?.trim() || "",
+      remarks: form.remarks?.trim() || "",
     };
 
     const parsed = employeeSchema.safeParse(payload);
@@ -256,7 +306,7 @@ function EmployeeFormPage() {
       const errMsg = `${errField}${firstIssue.message}`;
       console.warn("[EmployeeFormPage] Validation failure:", parsed.error.issues);
       setFormError(errMsg);
-      toast.error(errMsg);
+      toast.error(`Please check the form: ${errMsg}`, { duration: 6000 });
       return;
     }
 
@@ -528,6 +578,21 @@ function EmployeeFormPage() {
           />
         </FormSection>
 
+        {formError && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3.5 text-sm font-medium text-destructive flex items-center justify-between gap-3 shadow-xs">
+            <span className="flex-1">⚠️ {formError}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setFormError("")}
+              className="h-7 text-xs text-destructive hover:bg-destructive/20 shrink-0"
+            >
+              Dismiss
+            </Button>
+          </div>
+        )}
+
         <FormActions
           busy={mut.isPending}
           hint={
@@ -546,15 +611,15 @@ function EmployeeFormPage() {
           }
           primary={
             <Button
-              type="button"
+              type="submit"
               disabled={mut.isPending}
               onClick={handleSubmitClick}
-              className="relative z-10 cursor-pointer shadow-md min-w-[140px]"
+              className="relative z-10 cursor-pointer shadow-md min-w-[150px] min-h-[44px] px-6 text-sm font-semibold hover:brightness-105 active:scale-[0.98]"
             >
               {mut.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {id ? "Saving…" : "Creating…"}
+                  {id ? "Saving changes…" : "Creating employee…"}
                 </>
               ) : id ? (
                 "Save changes"

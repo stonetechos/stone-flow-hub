@@ -422,243 +422,249 @@ export function Copilot() {
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <StonemanMascot onClick={() => setOpen(true)} />
-      </SheetTrigger>
-      <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
-        <SheetHeader className="border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2.5 px-1">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-600 p-0.5 shadow-md">
-              <img
-                src="/stoneman-avatar.png"
-                alt="Stoneman AI"
-                className="h-full w-full rounded-[10px] object-cover"
-              />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <SheetTitle className="font-display text-sm font-bold tracking-tight">
-                  Stoneman AI
-                </SheetTitle>
-                <span className="flex h-2 w-2 rounded-full bg-teal-500 ring-2 ring-teal-300/40 animate-pulse" />
-              </div>
-              <span className="text-[10px] font-medium text-teal-700 dark:text-teal-300">
-                Intelligent Mascot & Assistant
-              </span>
-            </div>
-            <Badge
-              variant="secondary"
-              className="ml-auto text-[10px] uppercase font-mono tracking-wider"
-            >
-              {ctx.entity}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {mode === "do"
-              ? "Describe what you want to do. I'll show you exactly what I'm about to create — or ask for confirmation — before anything is written."
-              : "How-to guidance for the current page. The assistant does not read your database — for real customer, project, invoice or vendor data, open the relevant page or the Business Priorities card on the dashboard."}
-          </p>
-          {/* Sprint AI-1 — explicit Ask/Do toggle (see the `mode` state
-           * comment above for why this isn't an auto-router). */}
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "ask" | "do")}>
-            <TabsList className="h-7">
-              <TabsTrigger value="ask" className="h-5 text-xs">
-                Ask
-              </TabsTrigger>
-              <TabsTrigger value="do" className="h-5 text-xs">
-                Do
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </SheetHeader>
-
-        <div className="flex-shrink-0 border-b border-border">
-          <button
-            type="button"
-            onClick={() => setInsightsOpen((v) => !v)}
-            aria-expanded={insightsOpen}
-            className="flex w-full items-center justify-between px-4 py-3 text-left"
-          >
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Insights
-            </h3>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                insightsOpen && "rotate-180",
-              )}
-            />
-          </button>
-          {insightsOpen && (
-            <div className="max-h-[28dvh] overflow-y-auto px-4 pb-4">
-              {topInsights.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
-              ) : (
-                <div className="space-y-2">
-                  {topInsights.map((i) => (
-                    <InsightCard
-                      key={i.id}
-                      kind={i.kind}
-                      tone={i.tone}
-                      title={i.title}
-                      detail={i.why}
-                      to={i.action.href}
-                      onDismiss={() => setInsightStatus(i, "dismissed")}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <ScrollArea className="min-h-0 flex-1">
-          <div ref={scrollRef} className="space-y-3 p-4">
-            {messages.length === 0 && (
-              <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
-                <p className="mb-2 font-medium">Try one of these:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => submit(s)}
-                      className="rounded-full border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {messages.map((m, i) =>
-              m.kind === "nl-results" ? (
-                <NlResultsBubble
-                  key={i}
-                  interpretation={m.interpretation}
-                  results={m.results}
-                  onNavigate={() => setOpen(false)}
+    <>
+      <StonemanMascot
+        onClick={() => setOpen(true)}
+        className={open ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""}
+      />
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
+          <SheetHeader className="border-b border-border px-4 py-3">
+            <div className="flex items-center gap-2.5 px-1">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-600 p-0.5 shadow-md">
+                <img
+                  src="/stoneman-avatar.png"
+                  alt="Stoneman AI"
+                  className="h-full w-full rounded-[10px] object-cover"
                 />
-              ) : m.kind === "vie-action" ? (
-                <VieActionMessage
-                  key={i}
-                  row={m.row}
-                  onConfirm={(actionId) => confirmAction.mutate(actionId)}
-                  onCompleteDraft={(actionId, patch) => completeDraft.mutate({ actionId, patch })}
-                  confirmPending={confirmAction.isPending && confirmAction.variables === m.row.id}
-                  completePending={
-                    completeDraft.isPending && completeDraft.variables?.actionId === m.row.id
-                  }
-                />
-              ) : (
-                <Bubble key={i} role={m.role} content={m.content} />
-              ),
-            )}
-            {isPending && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
               </div>
-            )}
-
-            {bookmarks.length > 0 && (
-              <details className="mt-4 rounded-md border border-border bg-muted/30 p-2 text-sm">
-                <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Bookmarks ({bookmarks.length})
-                </summary>
-                <div className="mt-2 space-y-2">
-                  {bookmarks.map((b, i) => (
-                    <div key={i} className="rounded border border-border bg-background p-2 text-xs">
-                      {b.content.slice(0, 240)}
-                      {b.content.length > 240 ? "…" : ""}
-                    </div>
-                  ))}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <SheetTitle className="font-display text-sm font-bold tracking-tight">
+                    Stoneman AI
+                  </SheetTitle>
+                  <span className="flex h-2 w-2 rounded-full bg-teal-500 ring-2 ring-teal-300/40 animate-pulse" />
                 </div>
-              </details>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Permanently pinned composer - flex-shrink-0 keeps it the fixed
-         * last child of the drawer's flex column, always visible regardless
-         * of how long the conversation or Insights section grows. */}
-        <div className="flex-shrink-0 border-t border-border p-3">
-          <div className="mb-2 flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={bookmarkLast}
-              disabled={messages.length === 0}
-            >
-              <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMessages([])}
-              disabled={messages.length === 0}
-            >
-              <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
-            </Button>
-            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit();
-                }
-              }}
-              placeholder={
-                mode === "do"
-                  ? "Describe what you want to do… (Enter to send, Shift+Enter for newline)"
-                  : "Ask about this page… (Enter to send, Shift+Enter for newline)"
-              }
-              rows={2}
-              className="min-h-[56px] resize-none"
-            />
-            {speech.isSupported && (
-              <Button
-                type="button"
-                variant={speech.isListening ? "destructive" : "outline"}
-                size="icon"
-                onClick={() => (speech.isListening ? speech.stop() : speech.start())}
-                aria-label={speech.isListening ? "Stop voice input" : "Start voice input"}
-                aria-pressed={speech.isListening}
-                title={
-                  speech.isListening
-                    ? "Listening… tap to stop"
-                    : "Speak instead of typing (foundation — see docs for language limits)"
-                }
+                <span className="text-[10px] font-medium text-teal-700 dark:text-teal-300">
+                  Intelligent Mascot & Assistant
+                </span>
+              </div>
+              <Badge
+                variant="secondary"
+                className="ml-auto text-[10px] uppercase font-mono tracking-wider"
               >
-                {speech.isListening ? (
-                  <MicOff className="h-4 w-4 animate-pulse" />
+                {ctx.entity}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {mode === "do"
+                ? "Describe what you want to do. I'll show you exactly what I'm about to create — or ask for confirmation — before anything is written."
+                : "How-to guidance for the current page. The assistant does not read your database — for real customer, project, invoice or vendor data, open the relevant page or the Business Priorities card on the dashboard."}
+            </p>
+            {/* Sprint AI-1 — explicit Ask/Do toggle (see the `mode` state
+             * comment above for why this isn't an auto-router). */}
+            <Tabs value={mode} onValueChange={(v) => setMode(v as "ask" | "do")}>
+              <TabsList className="h-7">
+                <TabsTrigger value="ask" className="h-5 text-xs">
+                  Ask
+                </TabsTrigger>
+                <TabsTrigger value="do" className="h-5 text-xs">
+                  Do
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </SheetHeader>
+
+          <div className="flex-shrink-0 border-b border-border">
+            <button
+              type="button"
+              onClick={() => setInsightsOpen((v) => !v)}
+              aria-expanded={insightsOpen}
+              className="flex w-full items-center justify-between px-4 py-3 text-left"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Insights
+              </h3>
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+                  insightsOpen && "rotate-180",
+                )}
+              />
+            </button>
+            {insightsOpen && (
+              <div className="max-h-[28dvh] overflow-y-auto px-4 pb-4">
+                {topInsights.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
                 ) : (
-                  <Mic className="h-4 w-4" />
+                  <div className="space-y-2">
+                    {topInsights.map((i) => (
+                      <InsightCard
+                        key={i.id}
+                        kind={i.kind}
+                        tone={i.tone}
+                        title={i.title}
+                        detail={i.why}
+                        to={i.action.href}
+                        onDismiss={() => setInsightStatus(i, "dismissed")}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <ScrollArea className="min-h-0 flex-1">
+            <div ref={scrollRef} className="space-y-3 p-4">
+              {messages.length === 0 && (
+                <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
+                  <p className="mb-2 font-medium">Try one of these:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => submit(s)}
+                        className="rounded-full border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {messages.map((m, i) =>
+                m.kind === "nl-results" ? (
+                  <NlResultsBubble
+                    key={i}
+                    interpretation={m.interpretation}
+                    results={m.results}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ) : m.kind === "vie-action" ? (
+                  <VieActionMessage
+                    key={i}
+                    row={m.row}
+                    onConfirm={(actionId) => confirmAction.mutate(actionId)}
+                    onCompleteDraft={(actionId, patch) => completeDraft.mutate({ actionId, patch })}
+                    confirmPending={confirmAction.isPending && confirmAction.variables === m.row.id}
+                    completePending={
+                      completeDraft.isPending && completeDraft.variables?.actionId === m.row.id
+                    }
+                  />
+                ) : (
+                  <Bubble key={i} role={m.role} content={m.content} />
+                ),
+              )}
+              {isPending && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+                </div>
+              )}
+
+              {bookmarks.length > 0 && (
+                <details className="mt-4 rounded-md border border-border bg-muted/30 p-2 text-sm">
+                  <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Bookmarks ({bookmarks.length})
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    {bookmarks.map((b, i) => (
+                      <div
+                        key={i}
+                        className="rounded border border-border bg-background p-2 text-xs"
+                      >
+                        {b.content.slice(0, 240)}
+                        {b.content.length > 240 ? "…" : ""}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          </ScrollArea>
+
+          {/* Permanently pinned composer - flex-shrink-0 keeps it the fixed
+           * last child of the drawer's flex column, always visible regardless
+           * of how long the conversation or Insights section grows. */}
+          <div className="flex-shrink-0 border-t border-border p-3">
+            <div className="mb-2 flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={bookmarkLast}
+                disabled={messages.length === 0}
+              >
+                <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMessages([])}
+                disabled={messages.length === 0}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
+              </Button>
+              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-end gap-2">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submit();
+                  }
+                }}
+                placeholder={
+                  mode === "do"
+                    ? "Describe what you want to do… (Enter to send, Shift+Enter for newline)"
+                    : "Ask about this page… (Enter to send, Shift+Enter for newline)"
+                }
+                rows={2}
+                className="min-h-[56px] resize-none"
+              />
+              {speech.isSupported && (
+                <Button
+                  type="button"
+                  variant={speech.isListening ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={() => (speech.isListening ? speech.stop() : speech.start())}
+                  aria-label={speech.isListening ? "Stop voice input" : "Start voice input"}
+                  aria-pressed={speech.isListening}
+                  title={
+                    speech.isListening
+                      ? "Listening… tap to stop"
+                      : "Speak instead of typing (foundation — see docs for language limits)"
+                  }
+                >
+                  {speech.isListening ? (
+                    <MicOff className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              <Button
+                size="icon"
+                onClick={() => submit()}
+                disabled={isPending || !input.trim()}
+                aria-label="Send"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
                 )}
               </Button>
-            )}
-            <Button
-              size="icon"
-              onClick={() => submit()}
-              disabled={isPending || !input.trim()}
-              aria-label="Send"
-            >
-              {isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
 

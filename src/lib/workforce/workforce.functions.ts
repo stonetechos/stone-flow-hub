@@ -38,26 +38,32 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       }
     }
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     // 1. Resolve and sanitize user_id
     let targetUserId = input.user_id ?? null;
     if (targetUserId) {
-      try {
-        const { data: userRow } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
-        if (!userRow?.user) {
-          targetUserId = null;
-        } else {
-          // Check if already linked to a different employee
-          const { data: existingEmp } = await supabaseAdmin
-            .from("employees")
-            .select("id")
-            .eq("user_id", targetUserId)
-            .maybeSingle();
-          if (existingEmp && existingEmp.id !== id) {
-            targetUserId = null;
-          }
-        }
-      } catch {
+      if (!UUID_REGEX.test(targetUserId)) {
         targetUserId = null;
+      } else {
+        try {
+          const { data: userRow } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
+          if (!userRow?.user) {
+            targetUserId = null;
+          } else {
+            // Check if already linked to a different employee
+            const { data: existingEmp } = await supabaseAdmin
+              .from("employees")
+              .select("id")
+              .eq("user_id", targetUserId)
+              .maybeSingle();
+            if (existingEmp && existingEmp.id !== id) {
+              targetUserId = null;
+            }
+          }
+        } catch {
+          targetUserId = null;
+        }
       }
     } else if (input.email?.trim()) {
       const emailClean = input.email.trim().toLowerCase();
@@ -119,53 +125,63 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
 
     const validDesignationIds: string[] = [];
 
-    for (const dId of rawDesignationIds) {
+    for (const rawDId of rawDesignationIds) {
       try {
-        const { data: desigRow } = await supabaseAdmin
-          .from("designations")
-          .select("id")
-          .eq("id", dId)
-          .maybeSingle();
+        let dId = rawDId;
+        if (!UUID_REGEX.test(dId)) {
+          const fallback =
+            DEFAULT_DESIGNATION_IDS[dId] ?? DEFAULT_DESIGNATION_IDS[dId.toUpperCase()];
+          if (fallback) dId = fallback;
+        }
 
-        if (desigRow?.id) {
-          validDesignationIds.push(desigRow.id);
-        } else {
-          // Check fallback match by ID or index
-          const fallbackEntry = Object.entries(DEFAULT_DESIGNATION_IDS).find(
-            ([, idVal]) => idVal === dId,
-          );
-          const fallbackMatch = fallbackEntry
-            ? DEFAULT_DESIGNATIONS.find((d) => d.code === fallbackEntry[0])
-            : DEFAULT_DESIGNATIONS.find(
-                (d, idx) => `00000000-0000-0000-0000-${String(idx + 1).padStart(12, "0")}` === dId,
-              );
+        if (UUID_REGEX.test(dId)) {
+          const { data: desigRow } = await supabaseAdmin
+            .from("designations")
+            .select("id")
+            .eq("id", dId)
+            .maybeSingle();
 
-          if (fallbackMatch) {
-            const { data: upserted } = await supabaseAdmin
-              .from("designations")
-              .upsert(
-                {
-                  id: dId,
-                  code: fallbackMatch.code,
-                  name: fallbackMatch.name,
-                  purpose: fallbackMatch.purpose,
-                  responsibilities: fallbackMatch.responsibilities,
-                  expected_outcomes: fallbackMatch.expected_outcomes,
-                  level: fallbackMatch.level,
-                  active: fallbackMatch.active,
-                },
-                { onConflict: "code" },
-              )
-              .select("id")
-              .maybeSingle();
+          if (desigRow?.id) {
+            validDesignationIds.push(desigRow.id);
+          } else {
+            // Check fallback match by ID or index
+            const fallbackEntry = Object.entries(DEFAULT_DESIGNATION_IDS).find(
+              ([, idVal]) => idVal === dId,
+            );
+            const fallbackMatch = fallbackEntry
+              ? DEFAULT_DESIGNATIONS.find((d) => d.code === fallbackEntry[0])
+              : DEFAULT_DESIGNATIONS.find(
+                  (d, idx) =>
+                    `00000000-0000-0000-0000-${String(idx + 1).padStart(12, "0")}` === dId,
+                );
 
-            if (upserted?.id) {
-              validDesignationIds.push(upserted.id);
+            if (fallbackMatch) {
+              const { data: upserted } = await supabaseAdmin
+                .from("designations")
+                .upsert(
+                  {
+                    id: dId,
+                    code: fallbackMatch.code,
+                    name: fallbackMatch.name,
+                    purpose: fallbackMatch.purpose,
+                    responsibilities: fallbackMatch.responsibilities,
+                    expected_outcomes: fallbackMatch.expected_outcomes,
+                    level: fallbackMatch.level,
+                    active: fallbackMatch.active,
+                  },
+                  { onConflict: "code" },
+                )
+                .select("id")
+                .maybeSingle();
+
+              if (upserted?.id) {
+                validDesignationIds.push(upserted.id);
+              }
             }
           }
         }
       } catch (desigErr) {
-        console.warn("[workforce.functions] Designation check failed for ID:", dId, desigErr);
+        console.warn("[workforce.functions] Designation check failed for ID:", rawDId, desigErr);
       }
     }
 
@@ -173,7 +189,7 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
 
     // 3. Resolve reporting_manager_id
     let validManagerId: string | null = null;
-    if (input.reporting_manager_id) {
+    if (input.reporting_manager_id && UUID_REGEX.test(input.reporting_manager_id)) {
       try {
         const { data: mgrRow } = await supabaseAdmin
           .from("employees")
@@ -250,9 +266,34 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       let created = res1.data;
       let err = res1.error;
 
-      // If "" failed for trigger or sequence issue, generate a fallback unique code
-      if (err && (err.message?.includes("employee_code") || err.code === "23502")) {
-        const fallbackCode = `EMP-${Date.now().toString().slice(-5)}`;
+      // Handle user_id uniqueness conflict if linked user belongs to another row
+      if (
+        err &&
+        (err.message?.includes("employees_user_id_key") ||
+          (err.code === "23505" && err.message?.includes("user_id")))
+      ) {
+        console.warn(
+          "[workforce.functions] User ID uniqueness conflict, retrying with user_id: null",
+        );
+        rowPayload.user_id = null;
+        const resUserRetry = await supabaseAdmin
+          .from("employees")
+          .insert({
+            ...rowPayload,
+            employee_code: "",
+          } as unknown as Database["public"]["Tables"]["employees"]["Insert"])
+          .select("*")
+          .single();
+        created = resUserRetry.data;
+        err = resUserRetry.error;
+      }
+
+      // If "" failed for trigger, sequence issue, or duplicate employee_code, generate fallback unique code
+      if (
+        err &&
+        (err.message?.includes("employee_code") || err.code === "23502" || err.code === "23505")
+      ) {
+        const fallbackCode = `EMP-${Math.floor(10000 + Math.random() * 90000)}-${Date.now().toString().slice(-4)}`;
         const res2 = await supabaseAdmin
           .from("employees")
           .insert({
