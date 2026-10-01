@@ -13,7 +13,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex items-center gap-2",
+        "fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-30 flex items-center gap-2",
         className,
       )}
     >

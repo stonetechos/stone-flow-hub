@@ -37,7 +37,12 @@ import {
   listEmployees,
 } from "@/lib/workforce/api";
 import { inviteUser } from "@/lib/admin/users.functions";
-import type { EmployeeInput, EmployeeKra, EmployeeKpa } from "@/lib/workforce/schema";
+import {
+  employeeSchema,
+  type EmployeeInput,
+  type EmployeeKra,
+  type EmployeeKpa,
+} from "@/lib/workforce/schema";
 import { EMPLOYMENT_STATUSES, EMPLOYMENT_TYPES } from "@/lib/workforce/types";
 import { toUserMessage } from "@/lib/errors";
 import { useRoles } from "@/hooks/use-roles";
@@ -89,6 +94,7 @@ function EmployeeFormPage() {
   const roles = useRoles();
   const formRef = useRef<HTMLFormElement>(null);
   const [nameError, setNameError] = useState<string>("");
+  const [formError, setFormError] = useState<string>("");
   const canWrite =
     roles.isAdmin ||
     roles.isSuperAdmin ||
@@ -201,28 +207,36 @@ function EmployeeFormPage() {
     },
     onError: (e) => {
       console.error("[EmployeeFormPage] Submission error:", e);
-      toast.error(toUserMessage(e));
+      const msg = toUserMessage(e);
+      setFormError(msg);
+      toast.error(msg);
     },
   });
 
   function submit(ev?: FormEvent) {
     if (ev) ev.preventDefault();
     if (mut.isPending) return;
+    setFormError("");
     if (!canWrite) {
-      toast.error("You do not have permission to manage employees.");
+      const msg = "You do not have permission to manage employees.";
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
     if (!form.full_name || !form.full_name.trim()) {
       setNameError("Full name is required");
-      toast.error("Please enter the employee's full name at the top of the form.");
+      const msg = "Please enter the employee's full name at the top of the form.";
+      setFormError(msg);
+      toast.error(msg);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setNameError("");
     if (form.employment_status === "terminated" && !roles.isSuperAdmin) {
-      toast.error(
-        "Admins are not permitted to terminate employees. Only Super Admin can perform termination.",
-      );
+      const msg =
+        "Admins are not permitted to terminate employees. Only Super Admin can perform termination.";
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -235,7 +249,18 @@ function EmployeeFormPage() {
       user_id: form.user_id || null,
     };
 
-    mut.mutate(payload);
+    const parsed = employeeSchema.safeParse(payload);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      const errField = firstIssue.path.length ? `${firstIssue.path.join(".")}: ` : "";
+      const errMsg = `${errField}${firstIssue.message}`;
+      console.warn("[EmployeeFormPage] Validation failure:", parsed.error.issues);
+      setFormError(errMsg);
+      toast.error(errMsg);
+      return;
+    }
+
+    mut.mutate(parsed.data);
   }
 
   function handleSubmitClick() {
@@ -505,6 +530,11 @@ function EmployeeFormPage() {
 
         <FormActions
           busy={mut.isPending}
+          hint={
+            formError ? (
+              <span className="font-semibold text-destructive">{formError}</span>
+            ) : undefined
+          }
           secondary={
             <Button
               type="button"
@@ -515,7 +545,12 @@ function EmployeeFormPage() {
             </Button>
           }
           primary={
-            <Button type="button" disabled={mut.isPending} onClick={handleSubmitClick}>
+            <Button
+              type="button"
+              disabled={mut.isPending}
+              onClick={handleSubmitClick}
+              className="relative z-10 cursor-pointer shadow-md min-w-[140px]"
+            >
               {mut.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
