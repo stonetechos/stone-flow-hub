@@ -7,6 +7,19 @@ import { customerCreateSchema, type CustomerCreateInput } from "./schema";
 
 export type CustomerRow = DbTable<"customers">;
 
+function isMisplacedTestCustomer(name: string): boolean {
+  const n = (name ?? "").trim().toLowerCase();
+  return (
+    n.includes("dummy test client") ||
+    n === "ankur" ||
+    n.startsWith("ankur ") ||
+    n === "harash pupneja" ||
+    n.startsWith("harash pupneja") ||
+    n === "rishi rai" ||
+    n.startsWith("rishi rai")
+  );
+}
+
 export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   let q = getDb()
     .from("customers")
@@ -31,7 +44,17 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+  const rows = data ?? [];
+  return rows.filter((r) => !isMisplacedTestCustomer(r.name));
+}
+
+export async function purgeMisplacedCustomerEntries(): Promise<void> {
+  try {
+    const { purgeMisplacedCustomerEntriesServerFn } = await import("./customers.functions");
+    await purgeMisplacedCustomerEntriesServerFn();
+  } catch (err) {
+    console.warn("[customers.api] purgeMisplacedCustomerEntries failed:", err);
+  }
 }
 
 export async function getCustomer(id: string): Promise<CustomerRow | null> {
