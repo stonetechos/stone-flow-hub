@@ -3,13 +3,22 @@ import { zOptional, zRequired } from "@/lib/zod";
 
 export const employeeSchema = z.object({
   full_name: zRequired("Full name"),
-  designation_id: z.string().uuid().nullable().optional(),
-  designation_ids: z.array(z.string().uuid()).default([]),
+  designation_id: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().uuid().nullable().optional(),
+  ),
+  designation_ids: z.preprocess(
+    (v) => (Array.isArray(v) ? v.filter((id) => typeof id === "string" && id.trim() !== "") : []),
+    z.array(z.string().uuid()).default([]),
+  ),
   department: zOptional(),
   employment_type: z
     .enum(["full_time", "part_time", "contract", "intern", "consultant"])
     .default("full_time"),
-  reporting_manager_id: z.string().uuid().nullable().optional(),
+  reporting_manager_id: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().uuid().nullable().optional(),
+  ),
   joining_date: zOptional(),
   phone: zOptional(),
   email: zOptional(),
@@ -46,7 +55,10 @@ export const employeeSchema = z.object({
     .default("active"),
   photo_url: zOptional(),
   remarks: zOptional(),
-  user_id: z.string().uuid().nullable().optional(),
+  user_id: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().uuid().nullable().optional(),
+  ),
 });
 export type EmployeeInput = z.infer<typeof employeeSchema>;
 export type EmployeeKra = EmployeeInput["kras"][number];

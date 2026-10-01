@@ -4,6 +4,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, type FormEvent } from "react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SkeletonTable } from "@/components/layout/States";
@@ -178,35 +179,6 @@ function EmployeeFormPage() {
 
   const mut = useMutation({
     mutationFn: async (v: EmployeeInput) => {
-      // If email provided, link to user if auth profile exists, or invite them
-      if (v.email?.trim() && !v.user_id) {
-        try {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("email", v.email.trim().toLowerCase())
-            .maybeSingle();
-          if (prof?.id) {
-            const { data: existingEmp } = await supabase
-              .from("employees")
-              .select("id")
-              .eq("user_id", prof.id)
-              .maybeSingle();
-            if (!existingEmp || existingEmp.id === id) {
-              v.user_id = prof.id;
-            }
-          } else {
-            // Profile doesn't exist, invite them!
-            const res = await inviteUser({
-              data: { email: v.email.trim().toLowerCase(), full_name: v.full_name },
-            });
-            v.user_id = res.id ?? undefined;
-          }
-        } catch (e) {
-          console.error("Failed to link or invite user", e);
-        }
-      }
-
       const empRow = id
         ? await updateEmployee(id, v, systemRole)
         : await createEmployee(v, systemRole);
@@ -227,14 +199,23 @@ function EmployeeFormPage() {
       toast.success(id ? "Employee updated" : "Employee created");
       nav({ to: "/workforce-intelligence/employees/$id", params: { id: row.id } });
     },
-    onError: (e) => toast.error(toUserMessage(e)),
+    onError: (e) => {
+      console.error("[EmployeeFormPage] Submission error:", e);
+      toast.error(toUserMessage(e));
+    },
   });
 
-  function submit(ev: FormEvent) {
-    ev.preventDefault();
-    if (!canWrite) return;
-    if (!form.full_name.trim()) {
+  function submit(ev?: FormEvent) {
+    if (ev) ev.preventDefault();
+    if (mut.isPending) return;
+    if (!canWrite) {
+      toast.error("You do not have permission to manage employees.");
+      return;
+    }
+    if (!form.full_name || !form.full_name.trim()) {
       setNameError("Full name is required");
+      toast.error("Please enter the employee's full name at the top of the form.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setNameError("");
@@ -244,19 +225,21 @@ function EmployeeFormPage() {
       );
       return;
     }
-    mut.mutate(form);
+
+    const payload: EmployeeInput = {
+      ...form,
+      full_name: form.full_name.trim(),
+      designation_id: form.designation_id || null,
+      designation_ids: (form.designation_ids || []).filter(Boolean),
+      reporting_manager_id: form.reporting_manager_id || null,
+      user_id: form.user_id || null,
+    };
+
+    mut.mutate(payload);
   }
 
   function handleSubmitClick() {
-    if (!canWrite || mut.isPending) return;
-    // Use requestSubmit() so the form's onSubmit fires reliably on all
-    // browsers/Android WebViews regardless of the fixed-position footer.
-    if (formRef.current) {
-      formRef.current.requestSubmit();
-    } else {
-      // Fallback: fire submit logic directly if ref isn't attached yet
-      submit({ preventDefault: () => {} } as FormEvent);
-    }
+    submit();
   }
 
   if (!roles.isReady) {
@@ -533,7 +516,16 @@ function EmployeeFormPage() {
           }
           primary={
             <Button type="button" disabled={mut.isPending} onClick={handleSubmitClick}>
-              {id ? "Save changes" : "Create employee"}
+              {mut.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {id ? "Saving…" : "Creating…"}
+                </>
+              ) : id ? (
+                "Save changes"
+              ) : (
+                "Create employee"
+              )}
             </Button>
           }
         />
