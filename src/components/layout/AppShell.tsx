@@ -60,6 +60,7 @@ import {
   useCurrentUserId,
   useNavPreferences,
 } from "@/lib/nav/preferences";
+import { isNavItemActive, NAV_ITEMS_BY_ID, type NavItemDef } from "@/lib/nav/config";
 import { useRoles, type AppRole } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
@@ -216,7 +217,7 @@ function NavList({
     [prefs, isAdmin, isSuperAdmin, userRoles],
   );
 
-  const isActive = (to: string): boolean => path === to || path.startsWith(`${to}/`);
+  const checkActive = (item: NavItemDef): boolean => isNavItemActive(item, path);
   const collapsedSet = new Set(prefs.collapsedGroups);
 
   const toggleStar = (id: string): void =>
@@ -244,6 +245,14 @@ function NavList({
     [resolved.groups],
   );
 
+  const dashboardDef = NAV_ITEMS_BY_ID["dashboard"] ?? {
+    id: "dashboard",
+    to: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    group: "overview",
+  };
+
   return (
     <nav
       className={cn(
@@ -260,7 +269,7 @@ function NavList({
           to="/dashboard"
           label={t("nav.items.dashboard", "Dashboard")}
           Icon={LayoutDashboard}
-          active={isActive("/dashboard")}
+          active={checkActive(dashboardDef)}
           collapsed={collapsed}
           onNavigate={onNavigate}
           starred={false}
@@ -286,7 +295,7 @@ function NavList({
                 to={item.to}
                 label={t(`nav.items.${item.id}`, item.label)}
                 Icon={item.icon}
-                active={isActive(item.to)}
+                active={checkActive(item)}
                 collapsed={collapsed}
                 onNavigate={onNavigate}
                 starred
@@ -328,7 +337,7 @@ function NavList({
                     to={item.to}
                     label={t(`nav.items.${item.id}`, item.label)}
                     Icon={item.icon}
-                    active={isActive(item.to)}
+                    active={checkActive(item)}
                     collapsed={collapsed}
                     onNavigate={onNavigate}
                     starred={false}

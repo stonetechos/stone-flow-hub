@@ -358,12 +358,33 @@ export const NAV_ITEMS_BY_ID: Readonly<Record<string, NavItemDef>> = Object.from
 );
 
 export function findNavItemForPath(pathname: string): NavItemDef | undefined {
-  // Longest matching `to` prefix wins so `/inventory/slabs` beats `/inventory`.
+  // Longest matching `to` prefix wins so `/workforce-intelligence/employees` beats `/workforce-intelligence`.
+  // Strip query string for path matching if present.
+  const cleanPath = pathname.split("?")[0];
   let best: NavItemDef | undefined;
   for (const item of NAV_ITEMS) {
-    if (pathname === item.to || pathname.startsWith(`${item.to}/`)) {
-      if (!best || item.to.length > best.to.length) best = item;
+    const itemPath = item.to.split("?")[0];
+    if (cleanPath === itemPath || cleanPath.startsWith(`${itemPath}/`)) {
+      if (!best || itemPath.length > best.to.split("?")[0].length) {
+        best = item;
+      }
     }
   }
   return best;
+}
+
+/**
+ * Determine whether a nav item is active for the current path.
+ * When a more specific sibling nav item matches the current path
+ * (e.g. `/workforce-intelligence/employees` vs `/workforce-intelligence`),
+ * only the most specific nav item is active, preventing both tabs from highlighting together.
+ */
+export function isNavItemActive(item: NavItemDef, currentPath: string): boolean {
+  const activeDef = findNavItemForPath(currentPath);
+  if (activeDef) {
+    return activeDef.id === item.id;
+  }
+  const cleanCurrent = currentPath.split("?")[0];
+  const cleanItem = item.to.split("?")[0];
+  return cleanCurrent === cleanItem || cleanCurrent.startsWith(`${cleanItem}/`);
 }
