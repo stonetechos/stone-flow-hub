@@ -202,51 +202,63 @@ function EmployeesPage() {
         <div className="rounded-md border bg-card shadow-xs">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>{t("workforce.employees.columns.code", "Code")}</TableHead>
-                <TableHead>{t("workforce.employees.columns.name", "Name")}</TableHead>
-                <TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.code", "Code")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.name", "Name")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t("workforce.employees.columns.registeredEmail", "Registered Email")}
                 </TableHead>
-                <TableHead>{t("workforce.employees.columns.designation", "Designation")}</TableHead>
-                <TableHead>{t("workforce.employees.columns.department", "Department")}</TableHead>
-                <TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.designation", "Designation")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.department", "Department")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t("workforce.employees.columns.employmentStatus", "Employment Status")}
                 </TableHead>
-                <TableHead>{t("workforce.employees.columns.phone", "Phone")}</TableHead>
-                <TableHead className="w-28 text-right">{t("common.actions", "Actions")}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("workforce.employees.columns.phone", "Phone")}
+                </TableHead>
+                <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("common.actions", "Actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredRows.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
+                <TableRow key={e.id} className="transition-colors">
+                  <TableCell className="text-sm font-medium text-muted-foreground tabular-nums">
                     {e.employee_code || "—"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-sm font-medium">
                     <Link
                       to="/workforce-intelligence/employees/$id"
                       params={{ id: e.id }}
-                      className="font-medium text-primary hover:underline"
+                      className="text-foreground hover:text-primary hover:underline transition-colors"
                     >
                       {transliterateName(e.full_name, i18n.language)}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className="text-sm">
                     {e.email ? (
                       <a
                         href={`mailto:${e.email}`}
-                        className="text-primary hover:underline font-mono inline-flex items-center gap-1.5"
+                        className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 transition-colors"
                         title={e.email}
                       >
-                        <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
-                        <span className="truncate max-w-[170px]">{e.email}</span>
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                        <span className="truncate max-w-[190px]">{e.email}</span>
                       </a>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-sm">
                     {(() => {
                       const desigIds =
                         e.designation_ids && e.designation_ids.length > 0
@@ -269,20 +281,20 @@ function EmployeesPage() {
                           className="flex items-center gap-1.5 flex-wrap"
                           title={localized.join(", ")}
                         >
-                          <span className="font-medium text-foreground">{localized[0]}</span>
-                          <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
+                          <span className="text-foreground">{localized[0]}</span>
+                          <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
                             +{localized.length - 1} {t("common.more", "more")}
                           </span>
                         </div>
                       );
                     })()}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-sm text-muted-foreground">
                     {e.department
                       ? t(`workforce.departments.${e.department}`, t(e.department, e.department))
                       : "—"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-sm">
                     <Select
                       value={e.employment_status}
                       disabled={updateStatusMut.isPending}
@@ -313,8 +325,10 @@ function EmployeesPage() {
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{e.phone ?? "—"}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-sm text-muted-foreground tabular-nums">
+                    {e.phone ?? "—"}
+                  </TableCell>
+                  <TableCell className="w-28 text-right text-sm">
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         asChild

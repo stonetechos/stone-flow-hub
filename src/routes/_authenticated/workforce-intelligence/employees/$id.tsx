@@ -381,7 +381,7 @@ function EmployeeProfile() {
                 e.email ? (
                   <a
                     href={`mailto:${e.email}`}
-                    className="text-primary hover:underline font-mono inline-flex items-center gap-1.5"
+                    className="text-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 transition-colors"
                   >
                     <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span>{e.email}</span>
