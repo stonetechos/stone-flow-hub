@@ -1672,6 +1672,9 @@ body {
 .bg-cyan {
   background-color: var(--color-cyan);
 }
+.bg-pink {
+  background-color: var(--color-pink);
+}
 
 .bg-neon-mint\/20 {
   background-color: rgba(80, 200, 120, 0.2);
@@ -1681,6 +1684,9 @@ body {
 }
 .bg-cyan\/20 {
   background-color: rgba(6, 182, 212, 0.2);
+}
+.bg-pink\/20 {
+  background-color: rgba(236, 72, 153, 0.2);
 }
 .bg-amber\/20 {
   background-color: rgba(245, 158, 11, 0.2);
