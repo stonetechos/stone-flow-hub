@@ -123,6 +123,30 @@ export const deleteCustomerServerFn = createServerFn({ method: "POST" })
   .inputValidator((raw) => deleteCustomerInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Guard: Prevent deletion if financial or operational records exist
+    const [invoices, quotes, orders, projects] = await Promise.all([
+      supabaseAdmin.from("invoices").select("id").eq("customer_id", data.id).limit(1),
+      supabaseAdmin.from("quotes").select("id").eq("customer_id", data.id).limit(1),
+      supabaseAdmin.from("sales_orders").select("id").eq("customer_id", data.id).limit(1),
+      supabaseAdmin.from("projects").select("id").eq("customer_id", data.id).limit(1),
+    ]);
+
+    if (
+      (invoices.data && invoices.data.length > 0) ||
+      (quotes.data && quotes.data.length > 0) ||
+      (orders.data && orders.data.length > 0) ||
+      (projects.data && projects.data.length > 0)
+    ) {
+      throw new Error(
+        "Cannot delete customer with existing quotes, orders, invoices, or projects. Deactivate or archive the customer instead.",
+      );
+    }
+
+    // Clean up enquiries / contacts attached to this customer so foreign key RESTRICT doesn't block deletion
+    await supabaseAdmin.from("enquiries").delete().eq("customer_id", data.id);
+    await supabaseAdmin.from("customer_contacts").delete().eq("customer_id", data.id);
+
     const { error } = await supabaseAdmin.from("customers").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

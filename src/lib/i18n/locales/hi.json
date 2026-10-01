@@ -711,7 +711,19 @@
     "whatsappHintMobile": "ड्रॉपडाउन फ़ोन नंबर पर डिफ़ॉल्ट है",
     "whatsappHintDigits": "10 अंक",
     "billingAddress": "बिलिंग पता",
-    "gstNumber": "GST नंबर"
+    "gstNumber": "GST नंबर",
+    "searchPlaceholder": "नाम, फ़ोन, शहर द्वारा खोजें…",
+    "customerType": "ग्राहक का प्रकार",
+    "referredBy": "किसके द्वारा संदर्भित",
+    "phoneNumber": "फ़ोन नंबर",
+    "whatsapp": "WhatsApp",
+    "siteAddress": "साइट का क्षेत्र/पता",
+    "spaceType": "स्थान का प्रकार",
+    "materialsOfInterest": "रुचि की सामग्री",
+    "additionalDetails": "अतिरिक्त विवरण (वैकल्पिक)",
+    "deleted": "ग्राहक हटा दिया गया",
+    "updated": "ग्राहक अपडेट किया गया",
+    "created": "ग्राहक बनाया गया"
   },
   "enquiries": {
     "searchPlaceholder": "पूछताछ संख्या, आवश्यकता या नोट्स द्वारा खोजें…",
@@ -2325,5 +2337,7 @@
   "Accounts": "लेखा",
   "Logistics": "लॉजिस्टिक्स",
   "Production": "उत्पादन",
-  "Maintenance": "रखरखाव"
+  "Maintenance": "रखरखाव",
+  "Search by name, phone, city…": "नाम, फ़ोन, शहर द्वारा खोजें…",
+  "Search by name, phone, city...": "नाम, फ़ोन, शहर द्वारा खोजें…"
 }

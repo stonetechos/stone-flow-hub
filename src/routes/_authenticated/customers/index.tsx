@@ -230,7 +230,7 @@ function CustomersPage() {
                         <>
                           <DropdownMenuItem asChild>
                             <Link to="/customers/$customerId" params={{ customerId: c.id }}>
-                              <ExternalLink className="mr-2 h-4 w-4" /> Open
+                              <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -394,10 +394,10 @@ function CustomerFormDialog({
         </DialogHeader>
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
-            <Field label="Name" required>
+            <Field label={t("common.name", "Name")} required>
               <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
             </Field>
-            <Field label="Type of Customer" required>
+            <Field label={t("customers.customerType", "Type of Customer")} required>
               <Select
                 value={form.customer_type}
                 onValueChange={(v) =>
@@ -418,7 +418,11 @@ function CustomerFormDialog({
             </Field>
 
             {form.customer_type === "reference" && (
-              <Field label="Referred by" required className="md:col-span-2">
+              <Field
+                label={t("customers.referredBy", "Referred by")}
+                required
+                className="md:col-span-2"
+              >
                 <Input
                   value={form.referred_by ?? ""}
                   onChange={(e) => set("referred_by", e.target.value)}
@@ -430,7 +434,11 @@ function CustomerFormDialog({
               </Field>
             )}
 
-            <Field label="Phone Number" required hint="10 digits, +91 optional">
+            <Field
+              label={t("customers.phoneNumber", "Phone Number")}
+              required
+              hint={t("customers.phoneHint", "10 digits, +91 optional")}
+            >
               <PhoneInput
                 value={form.mobile}
                 onChange={(v) => {
@@ -444,7 +452,7 @@ function CustomerFormDialog({
               />
             </Field>
             <Field
-              label="WhatsApp"
+              label={t("customers.whatsapp", "WhatsApp")}
               hint={
                 form.mobile
                   ? t("customers.whatsappHintMobile", "Dropdown defaults to Phone Number")
@@ -489,14 +497,17 @@ function CustomerFormDialog({
                 />
               </div>
             </Field>
-            <Field label="Site's Area/Address" className="md:col-span-2">
+            <Field
+              label={t("customers.siteAddress", "Site's Area/Address")}
+              className="md:col-span-2"
+            >
               <Input
                 value={form.site_address ?? ""}
                 onChange={(e) => set("site_address", e.target.value)}
               />
             </Field>
 
-            <Field label="Type of space" className="md:col-span-2">
+            <Field label={t("customers.spaceType", "Type of space")} className="md:col-span-2">
               <Select
                 value={form.space_type ?? undefined}
                 onValueChange={(v) => set("space_type", v as CustomerCreateInput["space_type"])}
@@ -515,8 +526,8 @@ function CustomerFormDialog({
             </Field>
 
             <Field
-              label="Product of Interest"
-              hint="Select all that apply"
+              label={t("customers.materialsOfInterest", "Product of Interest")}
+              hint={t("common.selectAllThatApply", "Select all that apply")}
               className="md:col-span-2"
             >
               <div className="grid max-h-48 grid-cols-1 gap-x-4 gap-y-2 overflow-y-auto rounded-md border border-border p-3 sm:grid-cols-2">

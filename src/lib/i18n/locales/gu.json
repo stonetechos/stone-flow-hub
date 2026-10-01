@@ -712,7 +712,19 @@
     "whatsappHintMobile": "ડ્રોપડાઉન ફોન નંબર પર ડિફોલ્ટ છે",
     "whatsappHintDigits": "10 અંક",
     "billingAddress": "બિલિંગ સરનામું",
-    "gstNumber": "GST નંબર"
+    "gstNumber": "GST નંબર",
+    "searchPlaceholder": "નામ, ફોન, શહેર દ્વારા શોધો…",
+    "customerType": "ગ્રાહકનો પ્રકાર",
+    "referredBy": "કોના દ્વારા સંદર્ભિત",
+    "phoneNumber": "ફોન નંબર",
+    "whatsapp": "WhatsApp",
+    "siteAddress": "સાઇટનો વિસ્તાર/સરનામું",
+    "spaceType": "જગ્યાનો પ્રકાર",
+    "materialsOfInterest": "રસ ધરાવતી સામગ્રી",
+    "additionalDetails": "વધારાની વિગતો (વૈકલ્પિક)",
+    "deleted": "ગ્રાહક કાઢી નાખવામાં આવ્યો",
+    "updated": "ગ્રાહક અપડેટ થયો",
+    "created": "ગ્રાહક બનાવવામાં આવ્યો"
   },
   "enquiries": {
     "searchPlaceholder": "પૂછપરછ નં., જરૂરિયાત અથવા નોંધ દ્વારા શોધો…",
@@ -2327,5 +2339,7 @@
   "Accounts": "હિસાબ",
   "Logistics": "લોજિસ્ટિક્સ",
   "Production": "ઉત્પાદન",
-  "Maintenance": "જાળવણી"
+  "Maintenance": "જાળવણી",
+  "Search by name, phone, city…": "નામ, ફોન, શહેર દ્વારા શોધો…",
+  "Search by name, phone, city...": "નામ, ફોન, શહેર દ્વારા શોધો…"
 }

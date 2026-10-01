@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRoles } from "@/hooks/use-roles";
+import { useTranslation } from "react-i18next";
 
 export function RowActions({
   onEdit,
@@ -23,6 +24,7 @@ export function RowActions({
   /** Override default role check. Defaults to admin/sales_manager only. */
   canDelete?: boolean;
 }) {
+  const { t } = useTranslation();
   const roles = useRoles();
   const editVisible = onEdit && (canEdit ?? roles.canWrite);
   const deleteVisible = onDelete && (canDelete ?? roles.canDelete);
@@ -35,7 +37,7 @@ export function RowActions({
           size="icon"
           className="h-8 w-8"
           onClick={(e) => e.stopPropagation()}
-          aria-label="Row actions"
+          aria-label={t("common.actions", "Row actions")}
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -44,7 +46,7 @@ export function RowActions({
         {extra}
         {editVisible && (
           <DropdownMenuItem onSelect={() => onEdit!()}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit
+            <Pencil className="mr-2 h-4 w-4" /> {t("common.edit", "Edit")}
           </DropdownMenuItem>
         )}
         {deleteVisible && (
@@ -52,7 +54,7 @@ export function RowActions({
             className="text-destructive focus:text-destructive"
             onSelect={() => onDelete!()}
           >
-            <Trash2 className="mr-2 h-4 w-4" /> Delete
+            <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete", "Delete")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
