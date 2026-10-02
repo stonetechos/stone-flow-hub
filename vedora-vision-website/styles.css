@@ -980,6 +980,13 @@ body {
   border-radius: 0.75rem;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.pillar-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
 }
 
 .pillar-title {
