@@ -281,7 +281,7 @@ function NewEstimatePage() {
                     </SelectContent>
                   </Select>
                   <Input
-                    className="col-span-4"
+                    className="col-span-3"
                     placeholder="Description"
                     value={row.description}
                     onChange={(e) =>
@@ -291,7 +291,7 @@ function NewEstimatePage() {
                     }
                   />
                   <Input
-                    className="col-span-1"
+                    className="col-span-2"
                     type="number"
                     min={0}
                     step="0.01"

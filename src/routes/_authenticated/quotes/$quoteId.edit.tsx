@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumericInput, PercentInput } from "@/components/forms/inputs/SmartInputs";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -438,7 +439,7 @@ function LineItemsEditor({
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
-                    <div className="md:col-span-5">
+                    <div className="md:col-span-4">
                       <label className="text-xs text-muted-foreground">Description</label>
                       <Input
                         value={r.description}
@@ -446,15 +447,14 @@ function LineItemsEditor({
                         onBlur={() => commit(r.id, "description", original)}
                       />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-2">
                       <label className="text-xs text-muted-foreground">Qty</label>
-                      <Input
-                        type="number"
-                        step="any"
-                        min={0}
+                      <NumericInput
                         value={r.quantity}
-                        onChange={(e) => updateRow(r.id, "quantity", e.target.value)}
+                        onChange={(val) => updateRow(r.id, "quantity", val)}
                         onBlur={() => commit(r.id, "quantity", original)}
+                        min={0}
+                        allowDecimal
                       />
                     </div>
                     <div className="md:col-span-1">
@@ -467,24 +467,19 @@ function LineItemsEditor({
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs text-muted-foreground">Rate</label>
-                      <Input
-                        type="number"
-                        step="any"
-                        min={0}
+                      <NumericInput
                         value={r.unit_price}
-                        onChange={(e) => updateRow(r.id, "unit_price", e.target.value)}
+                        onChange={(val) => updateRow(r.id, "unit_price", val)}
                         onBlur={() => commit(r.id, "unit_price", original)}
+                        min={0}
+                        allowDecimal
                       />
                     </div>
                     <div className="md:col-span-1">
                       <label className="text-xs text-muted-foreground">GST %</label>
-                      <Input
-                        type="number"
-                        step="any"
-                        min={0}
-                        max={100}
+                      <PercentInput
                         value={r.tax_pct}
-                        onChange={(e) => updateRow(r.id, "tax_pct", e.target.value)}
+                        onChange={(val) => updateRow(r.id, "tax_pct", val)}
                         onBlur={() => commit(r.id, "tax_pct", original)}
                       />
                     </div>

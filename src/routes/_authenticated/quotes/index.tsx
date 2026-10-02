@@ -57,6 +57,7 @@ import {
   EstimateStudioCalculator,
   type EstimateStudioResult,
 } from "@/components/quotes/EstimateStudioCalculator";
+import { NumericInput, PercentInput } from "@/components/forms/inputs/SmartInputs";
 
 const search = z.object({
   new: z.string().optional(),
@@ -464,7 +465,7 @@ function CreateQuoteDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={mode === "calculator" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-3xl"}
+        className={mode === "calculator" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-4xl"}
       >
         <DialogHeader>
           <DialogTitle>New quote</DialogTitle>
@@ -554,22 +555,20 @@ function CreateQuoteDialog({
                       key={it.key}
                       className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
                     >
-                      <LineField label="Description" className="col-span-12 md:col-span-4">
+                      <LineField label="Description" className="col-span-12 md:col-span-3">
                         <Input
                           placeholder="e.g. Monsoon Black Crazy"
                           value={it.description}
                           onChange={(e) => updateItem(it.key, { description: e.target.value })}
                         />
                       </LineField>
-                      <LineField label="Quantity" className="col-span-6 md:col-span-1">
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.01"
-                          min="0"
+                      <LineField label="Quantity" className="col-span-6 md:col-span-2">
+                        <NumericInput
                           placeholder="0"
                           value={it.quantity}
-                          onChange={(e) => updateItem(it.key, { quantity: e.target.value })}
+                          onChange={(val) => updateItem(it.key, { quantity: val })}
+                          min={0}
+                          allowDecimal
                         />
                       </LineField>
                       <LineField label="Unit" className="col-span-6 md:col-span-1">
@@ -580,25 +579,19 @@ function CreateQuoteDialog({
                         />
                       </LineField>
                       <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.01"
-                          min="0"
+                        <NumericInput
                           placeholder="0"
                           value={it.unit_price}
-                          onChange={(e) => updateItem(it.key, { unit_price: e.target.value })}
+                          onChange={(val) => updateItem(it.key, { unit_price: val })}
+                          min={0}
+                          allowDecimal
                         />
                       </LineField>
                       <LineField label="GST %" className="col-span-6 md:col-span-1">
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.01"
-                          min="0"
+                        <PercentInput
                           placeholder="0"
                           value={it.tax_pct}
-                          onChange={(e) => updateItem(it.key, { tax_pct: e.target.value })}
+                          onChange={(val) => updateItem(it.key, { tax_pct: val })}
                         />
                       </LineField>
                       <LineField label="Fulfilment" className="col-span-10 md:col-span-2">

@@ -890,7 +890,7 @@ export function EstimateStudioCalculator({
                   onChange={(e) => setOtherAdhesive((prev) => ({ ...prev, name: e.target.value }))}
                 />
               </div>
-              <LineField label="Unit" className="col-span-3 md:col-span-2">
+              <LineField label="Unit" className="col-span-3 md:col-span-1">
                 <Input
                   className="h-8"
                   disabled={!otherAdhesive.enabled}
@@ -900,7 +900,7 @@ export function EstimateStudioCalculator({
                   }
                 />
               </LineField>
-              <LineField label="Qty" className="col-span-3 md:col-span-1">
+              <LineField label="Qty" className="col-span-3 md:col-span-2">
                 <Input
                   className="h-8"
                   type="number"

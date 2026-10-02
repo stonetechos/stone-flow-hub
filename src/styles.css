@@ -1367,3 +1367,14 @@ body[data-scroll-locked] {
 .animate-stoneman-eyes {
   animation: stoneman-eye-glow 2.5s ease-in-out infinite;
 }
+
+/* ERP Numeric input clarity: suppress browser spin-buttons from overlapping typed text */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
