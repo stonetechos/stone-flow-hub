@@ -1270,6 +1270,7 @@ body {
 }
 
 .subdomain-card {
+  width: 100%;
   padding: 0.625rem;
   border-radius: 0.75rem;
   background-color: rgba(255, 255, 255, 0.04);
@@ -1277,15 +1278,24 @@ body {
   text-decoration: none;
   text-align: center;
   cursor: pointer;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  color: inherit;
+  transition: all 0.2s ease;
 }
 
 .subdomain-card:hover {
   border-color: rgba(80, 200, 120, 0.5);
   background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .subdomain-title {
+  width: 100%;
+  text-align: center;
   font-size: 0.75rem;
   font-family: monospace;
   font-weight: 600;
@@ -1293,6 +1303,8 @@ body {
 }
 
 .subdomain-link {
+  width: 100%;
+  text-align: center;
   font-size: 0.6875rem;
   font-family: monospace;
   color: #94a3b8;
