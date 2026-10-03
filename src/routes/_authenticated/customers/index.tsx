@@ -227,9 +227,14 @@ function CustomersPage() {
                     <Link
                       to="/customers/$customerId"
                       params={{ customerId: c.id }}
-                      className="hover:underline"
+                      className="hover:underline flex flex-col"
                     >
-                      {c.name}
+                      <span>{c.name}</span>
+                      {c.customer_code && (
+                        <span className="font-mono text-xs font-normal text-muted-foreground">
+                          {c.customer_code}
+                        </span>
+                      )}
                     </Link>
                   </TableCell>
                   <TableCell>

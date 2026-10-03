@@ -22,11 +22,7 @@ function isMisplacedTestCustomer(name: string): boolean {
 }
 
 export async function listCustomers(query = ""): Promise<CustomerRow[]> {
-  let q = getDb()
-    .from("customers")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(200);
+  let q = getDb().from("customers").select("*").order("created_at", { ascending: true }).limit(200);
 
   const s = sanitizeSearch(query);
   if (s) {

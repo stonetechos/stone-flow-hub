@@ -47,6 +47,29 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
     }
 
     if (!id) {
+      // Ensure entity_sequences for CUS is at least the current customer count/highest sequential code
+      // so new customer codes are strictly subsequent to existing records.
+      try {
+        const { count } = await supabaseAdmin
+          .from("customers")
+          .select("*", { count: "exact", head: true });
+        if (count && count > 0) {
+          const { data: seq } = await supabaseAdmin
+            .from("entity_sequences")
+            .select("last_value")
+            .eq("prefix", "CUS")
+            .maybeSingle();
+          if (seq && seq.last_value < count) {
+            await supabaseAdmin
+              .from("entity_sequences")
+              .update({ last_value: count })
+              .eq("prefix", "CUS");
+          }
+        }
+      } catch (seqErr) {
+        console.warn("[customers.functions] CUS sequence alignment check skipped:", seqErr);
+      }
+
       const payload = {
         customer_code: "",
         name: input.name,
