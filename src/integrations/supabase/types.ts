@@ -10124,6 +10124,7 @@ export type Database = {
         | "pinterest"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
       material_interest:
+        | "natural_stone_cladding_tiles"
         | "natural_stone_interlocking_panels"
         | "natural_stone_mosaics"
         | "stone_murals"
@@ -10636,6 +10637,7 @@ export const Constants = {
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
       material_interest: [
+        "natural_stone_cladding_tiles",
         "natural_stone_interlocking_panels",
         "natural_stone_mosaics",
         "stone_murals",

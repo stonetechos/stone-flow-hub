@@ -47,6 +47,7 @@ export const MATERIAL_OPTIONS: ReadonlyArray<{
   value: DbEnum<"material_interest">;
   label: string;
 }> = [
+  { value: "natural_stone_cladding_tiles", label: "Natural Stone Cladding Tiles" },
   { value: "natural_stone_interlocking_panels", label: "Natural Stone Interlocking Panels" },
   { value: "natural_stone_mosaics", label: "Natural Stone Mosaics" },
   { value: "stone_murals", label: "Stone Murals" },
@@ -122,6 +123,7 @@ export const customerCreateSchema = z
     material_interests: z
       .array(
         z.enum([
+          "natural_stone_cladding_tiles",
           "natural_stone_interlocking_panels",
           "natural_stone_mosaics",
           "stone_murals",

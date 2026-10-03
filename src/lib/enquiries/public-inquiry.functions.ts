@@ -106,6 +106,10 @@ const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["mate
   "interlocking panels": "natural_stone_interlocking_panels",
   "natural stone interlocking panels": "natural_stone_interlocking_panels",
   natural_stone_interlocking_panels: "natural_stone_interlocking_panels",
+  "natural stone cladding tiles": "natural_stone_cladding_tiles",
+  "stone cladding tiles": "natural_stone_cladding_tiles",
+  "cladding tiles": "natural_stone_cladding_tiles",
+  natural_stone_cladding_tiles: "natural_stone_cladding_tiles",
 };
 
 export type PublicInquiryInput = z.infer<typeof publicInquiryInputSchema>;
