@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zRequired, zOptional, zMobile, zEmail, normalizeMobile } from "@/lib/zod";
+import { zRequired, zOptional, zOptionalMobile, zEmail, normalizeMobile } from "@/lib/zod";
 import type { DbEnum } from "@/lib/types";
 
 /** "Type of Customer" — Step 1 simplification (2026-09-03). This is the
@@ -95,7 +95,7 @@ export const customerCreateSchema = z
       .default("walk_in"),
     // Only meaningful (and required) when customer_type === "reference".
     referred_by: zOptional(),
-    mobile: zMobile,
+    mobile: zOptionalMobile,
     site_address: zOptional(),
     space_type: z
       .enum([

@@ -17,6 +17,18 @@ export const zMobile = zTrimmed
   .max(15, "Mobile number is too long")
   .regex(/^[+\d\s-]+$/, "Use digits only");
 
+export const zOptionalMobile = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z
+    .string()
+    .trim()
+    .min(10, "Enter a valid mobile number")
+    .max(15, "Mobile number is too long")
+    .regex(/^[+\d\s-]+$/, "Use digits only")
+    .nullable()
+    .optional(),
+);
+
 export const zEmail = z.preprocess(
   (v) => (typeof v === "string" && v.trim() === "" ? null : v),
   z.string().email("Enter a valid email").nullable().optional(),
@@ -56,7 +68,8 @@ export const zPan = zPattern(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Enter a valid 10-charac
 export const zIfsc = zPattern(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid 11-character IFSC code");
 
 /** Normalize mobile to digits only for duplicate detection. */
-export function normalizeMobile(v: string): string {
+export function normalizeMobile(v?: string | null): string {
+  if (!v) return "";
   return v.replace(/\D+/g, "").replace(/^0+/, "").slice(-10);
 }
 

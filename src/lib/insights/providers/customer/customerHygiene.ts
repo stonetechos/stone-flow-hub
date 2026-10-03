@@ -9,11 +9,10 @@
  *
  * This version only fires when a missing field is actively blocking a
  * real, open workflow step:
- *  1. A draft quote can't be emailed — customer has no primary_email.
- *  2. A draft invoice can't be finalized as a GST invoice — the
+ *  1. A draft invoice can't be finalized as a GST invoice — the
  *     customer's type normally carries a GSTIN and none is on file.
- *  3. A planned dispatch can't proceed — no site address recorded.
- *  4. An unpaid payment-schedule milestone's reminder can't be sent —
+ *  2. A planned dispatch can't proceed — no site address recorded.
+ *  3. An unpaid payment-schedule milestone's reminder can't be sent —
  *     the customer has no phone, email, or contact of any kind on file.
  *
  * The generic "customer X has N data gaps" completeness check this
@@ -29,7 +28,6 @@
  * dispatchRisk, the original hygiene provider, and collectionPriority
  * respectively). No new query shapes are introduced.
  */
-import { listQuotes } from "@/lib/quotes/api";
 import { listInvoices } from "@/lib/invoices/api";
 import { listDispatches } from "@/lib/dispatch/api";
 import { listCustomers, type CustomerRow } from "@/lib/customers/api";
@@ -54,8 +52,7 @@ export const CustomerHygieneProvider: InsightProvider = {
   id: CUSTOMER_HYGIENE_PROVIDER_ID,
   label: "Customer hygiene",
   fetch: async () => {
-    const [quotes, invoices, dispatches, customers, contacts, unpaidSchedules] = await Promise.all([
-      listQuotes(),
+    const [invoices, dispatches, customers, contacts, unpaidSchedules] = await Promise.all([
       listInvoices(),
       listDispatches(),
       listCustomers(),
@@ -75,30 +72,7 @@ export const CustomerHygieneProvider: InsightProvider = {
     const nowMs = Date.now();
     const insights: Insight[] = [];
 
-    // 1. Draft quotes that can't be emailed — no address to send them to.
-    for (const quote of quotes) {
-      if (quote.status !== "draft" || !quote.customer) continue;
-      const customer = customersById.get(quote.customer.id);
-      if (!customer || customer.primary_email) continue;
-
-      const ageDays = daysSince(quote.created_at, nowMs);
-      insights.push({
-        id: `${CUSTOMER_HYGIENE_PROVIDER_ID}:quote-email:${quote.id}`,
-        source: CUSTOMER_HYGIENE_PROVIDER_ID,
-        module: "Customer",
-        kind: "risk",
-        tone: "danger",
-        confidence: 1,
-        title: `${quote.quote_no} can't be emailed — customer has no email`,
-        why: `${customer.name} (${customer.customer_code}) has no email on file, so draft quote ${quote.quote_no} cannot be sent.`,
-        action: { label: "Open quote", href: `/quotes/${quote.id}` },
-        entity: { type: "quote", id: quote.id, label: quote.quote_no },
-        priority: computePriority({ urgencyDays: ageDays }),
-        generatedAt: now,
-      });
-    }
-
-    // 2. Draft invoices that can't be finalized as a GST invoice — no GSTIN.
+    // 1. Draft invoices that can't be finalized as a GST invoice — no GSTIN.
     for (const invoice of invoices) {
       if (invoice.status !== "draft" || !invoice.customer) continue;
       const customer = customersById.get(invoice.customer.id);

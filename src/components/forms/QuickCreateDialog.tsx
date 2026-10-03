@@ -144,7 +144,7 @@ function QuickCreateCustomer({
                 required
               />
             </Field>
-            <Field label="Mobile" required hint="10 digits, +91 optional">
+            <Field label="Mobile" hint="10 digits, +91 optional">
               <PhoneInput
                 value={form.mobile}
                 onChange={(v) =>
@@ -154,7 +154,6 @@ function QuickCreateCustomer({
                     whatsapp: !f.whatsapp || f.whatsapp === f.mobile ? v : f.whatsapp,
                   }))
                 }
-                required
               />
             </Field>
             <Field

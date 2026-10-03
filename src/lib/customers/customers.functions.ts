@@ -30,8 +30,8 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
 
     const normalizedPhone = normalizeMobile(input.mobile);
 
-    // If creating (no id), check duplicate phone
-    if (!id) {
+    // If creating (no id), check duplicate phone only when phone is provided
+    if (!id && normalizedPhone) {
       const { data: existing } = await supabaseAdmin
         .from("customers")
         .select("id, name, customer_code")
@@ -44,11 +44,13 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
           `A customer with this mobile already exists: ${existing.name} (${existing.customer_code})`,
         );
       }
+    }
 
+    if (!id) {
       const payload = {
         customer_code: "",
         name: input.name,
-        primary_phone: normalizedPhone,
+        primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
         whatsapp: input.whatsapp ?? null,
         city: input.city ?? null,
@@ -116,7 +118,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       // Update existing customer
       const updatePayload = {
         name: input.name,
-        primary_phone: normalizedPhone,
+        primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
         whatsapp: input.whatsapp ?? null,
         city: input.city ?? null,

@@ -447,11 +447,10 @@ function CustomerFormDialog({
 
             <Field
               label={t("customers.phoneNumber", "Phone Number")}
-              required
               hint={t("customers.phoneHint", "10 digits, +91 optional")}
             >
               <PhoneInput
-                value={form.mobile}
+                value={form.mobile ?? ""}
                 onChange={(v) => {
                   set("mobile", v);
                   // If whatsapp is currently matching or unset, keep it synced
@@ -459,7 +458,6 @@ function CustomerFormDialog({
                     set("whatsapp", v);
                   }
                 }}
-                required
               />
             </Field>
             <Field
