@@ -10,6 +10,10 @@ import { z } from "zod";
 import { normalizeMobile } from "@/lib/zod";
 import { FILES_BUCKET } from "@/lib/constants";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  isMaterialInterestEnumError,
+  sanitizeForPendingDbEnum,
+} from "@/lib/customers/material-interests";
 
 export const publicInquiryInputSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -227,37 +231,63 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
 
     if (!customerId) {
       const fallbackCode = `CUST-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 9000)}`;
-      const { data: newCustomer, error: custErr } = await supabaseAdmin
+      const customerInsertPayload = {
+        name: input.name.trim(),
+        customer_code: fallbackCode,
+        primary_phone: normalizedPhone,
+        whatsapp: normalizedPhone,
+        primary_email: input.email ? input.email.trim().toLowerCase() : null,
+        city: input.city.trim(),
+        customer_type: ([
+          "builder",
+          "architect",
+          "interior_designer",
+          "contractor",
+          "individual",
+          "company",
+          "other",
+        ].includes(input.customer_type)
+          ? input.customer_type
+          : "individual") as Database["public"]["Enums"]["customer_type"],
+        source: "Shareable Web Link",
+        space_type:
+          (input.space_type ? VALID_SPACE_TYPES[input.space_type.trim().toLowerCase()] : null) ||
+          null,
+        material_interests: (input.selected_products || [])
+          .map((p) => VALID_MATERIAL_INTERESTS[p.trim().toLowerCase()])
+          .filter((p): p is Database["public"]["Enums"]["material_interest"] => Boolean(p)),
+        notes: `Lead from public web form. Space: ${input.space_type}. Role: ${input.customer_role || "Owner / Homeowner"}. Required by: ${input.required_date}`,
+      };
+
+      let { data: newCustomer, error: custErr } = await supabaseAdmin
         .from("customers")
-        .insert({
-          name: input.name.trim(),
-          customer_code: fallbackCode,
-          primary_phone: normalizedPhone,
-          whatsapp: normalizedPhone,
-          primary_email: input.email ? input.email.trim().toLowerCase() : null,
-          city: input.city.trim(),
-          customer_type: ([
-            "builder",
-            "architect",
-            "interior_designer",
-            "contractor",
-            "individual",
-            "company",
-            "other",
-          ].includes(input.customer_type)
-            ? input.customer_type
-            : "individual") as Database["public"]["Enums"]["customer_type"],
-          source: "Shareable Web Link",
-          space_type:
-            (input.space_type ? VALID_SPACE_TYPES[input.space_type.trim().toLowerCase()] : null) ||
-            null,
-          material_interests: (input.selected_products || [])
-            .map((p) => VALID_MATERIAL_INTERESTS[p.trim().toLowerCase()])
-            .filter((p): p is Database["public"]["Enums"]["material_interest"] => Boolean(p)),
-          notes: `Lead from public web form. Space: ${input.space_type}. Role: ${input.customer_role || "Owner / Homeowner"}. Required by: ${input.required_date}`,
-        } as unknown as Database["public"]["Tables"]["customers"]["Insert"])
+        .insert(
+          customerInsertPayload as unknown as Database["public"]["Tables"]["customers"]["Insert"],
+        )
         .select("id, customer_code")
         .single();
+
+      if (custErr && isMaterialInterestEnumError(custErr)) {
+        console.warn(
+          "[public-inquiry] Enum fallback triggered on customer create:",
+          custErr.message,
+        );
+        const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+          customerInsertPayload.material_interests,
+          customerInsertPayload.notes,
+        );
+        const retry = await supabaseAdmin
+          .from("customers")
+          .insert({
+            ...customerInsertPayload,
+            material_interests: filteredInterests,
+            notes: sanitizedNotes,
+          } as unknown as Database["public"]["Tables"]["customers"]["Insert"])
+          .select("id, customer_code")
+          .single();
+        newCustomer = retry.data;
+        custErr = retry.error;
+      }
 
       if (custErr || !newCustomer) {
         console.error("[public-inquiry] Customer creation failed:", custErr);

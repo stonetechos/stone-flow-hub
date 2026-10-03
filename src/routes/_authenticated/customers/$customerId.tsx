@@ -37,6 +37,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
 import { SPACE_TYPES, MATERIAL_OPTIONS } from "@/lib/customers/schema";
+import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
@@ -441,12 +442,14 @@ function CustomerHub() {
                   },
                   {
                     label: "Product of Interest",
-                    value:
-                      (c.material_interests ?? []).length > 0
-                        ? (c.material_interests ?? [])
+                    value: (() => {
+                      const interests = hydrateMaterialInterests(c.material_interests, c.notes);
+                      return interests.length > 0
+                        ? interests
                             .map((m) => MATERIAL_OPTIONS.find((o) => o.value === m)?.label ?? m)
                             .join(", ")
-                        : "—",
+                        : "—";
+                    })(),
                   },
                   { label: "Email", value: c.primary_email },
                   { label: "WhatsApp", value: c.whatsapp },

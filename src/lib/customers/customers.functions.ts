@@ -11,6 +11,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { customerCreateSchema } from "./schema";
 import { normalizeMobile } from "@/lib/zod";
 import type { Database } from "@/integrations/supabase/types";
+import { isMaterialInterestEnumError, sanitizeForPendingDbEnum } from "./material-interests";
 
 export type CustomerRow = Database["public"]["Tables"]["customers"]["Row"];
 
@@ -64,13 +65,42 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         created_by: uid,
       };
 
-      const { data: row, error } = await supabaseAdmin
+      let row: CustomerRow | null = null;
+      const initialInsert = await supabaseAdmin
         .from("customers")
         .insert(payload)
         .select("*")
         .single();
 
-      if (error) throw new Error(error.message);
+      let insertData = initialInsert.data;
+      let insertError = initialInsert.error;
+
+      // Defensive resilience: If Postgres enum is missing 'natural_stone_cladding_tiles',
+      // sanitize the payload by stripping the un-migrated enum value and recording it in notes.
+      if (insertError && isMaterialInterestEnumError(insertError)) {
+        console.warn(
+          "[customers.functions] Enum fallback triggered on insert for material_interests:",
+          insertError.message,
+        );
+        const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+          payload.material_interests,
+          payload.notes,
+        );
+        const retryResult = await supabaseAdmin
+          .from("customers")
+          .insert({
+            ...payload,
+            material_interests: filteredInterests,
+            notes: sanitizedNotes,
+          })
+          .select("*")
+          .single();
+        insertData = retryResult.data;
+        insertError = retryResult.error;
+      }
+
+      if (insertError) throw new Error(insertError.message);
+      row = insertData as CustomerRow;
 
       if (row) {
         try {
@@ -102,15 +132,43 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         material_interests: input.material_interests ?? [],
       };
 
-      const { data: row, error } = await supabaseAdmin
+      const initialUpdate = await supabaseAdmin
         .from("customers")
         .update(updatePayload)
         .eq("id", id)
         .select("*")
         .single();
 
-      if (error) throw new Error(error.message);
-      return row as CustomerRow;
+      let updateData = initialUpdate.data;
+      let updateError = initialUpdate.error;
+
+      // Defensive resilience: If Postgres enum is missing 'natural_stone_cladding_tiles',
+      // sanitize the payload by stripping the un-migrated enum value and recording it in notes.
+      if (updateError && isMaterialInterestEnumError(updateError)) {
+        console.warn(
+          "[customers.functions] Enum fallback triggered on update for material_interests:",
+          updateError.message,
+        );
+        const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+          updatePayload.material_interests,
+          updatePayload.notes,
+        );
+        const retryResult = await supabaseAdmin
+          .from("customers")
+          .update({
+            ...updatePayload,
+            material_interests: filteredInterests,
+            notes: sanitizedNotes,
+          })
+          .eq("id", id)
+          .select("*")
+          .single();
+        updateData = retryResult.data;
+        updateError = retryResult.error;
+      }
+
+      if (updateError) throw new Error(updateError.message);
+      return updateData as CustomerRow;
     }
   });
 

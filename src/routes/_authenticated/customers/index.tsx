@@ -68,6 +68,7 @@ import {
   customerCreateSchema,
   type CustomerCreateInput,
 } from "@/lib/customers/schema";
+import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
 import type { DbEnum } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
@@ -311,7 +312,10 @@ function fromRow(c: CustomerRow): CustomerCreateInput {
     referred_by: c.referred_by,
     site_address: c.site_address,
     space_type: c.space_type as CustomerCreateInput["space_type"],
-    material_interests: (c.material_interests ?? []) as CustomerCreateInput["material_interests"],
+    material_interests: hydrateMaterialInterests(
+      c.material_interests as CustomerCreateInput["material_interests"],
+      c.notes,
+    ),
     whatsapp: c.whatsapp,
     billing_address: c.billing_address,
     state: c.state,

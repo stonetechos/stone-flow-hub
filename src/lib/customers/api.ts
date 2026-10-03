@@ -4,6 +4,7 @@ import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { customerCreateSchema, type CustomerCreateInput } from "./schema";
+import { isMaterialInterestEnumError, sanitizeForPendingDbEnum } from "./material-interests";
 
 export type CustomerRow = DbTable<"customers">;
 
@@ -113,29 +114,45 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     // ignore
   }
 
-  const { data, error } = await getDb()
-    .from("customers")
-    .insert({
-      customer_code: "",
-      name: parsed.name,
-      primary_phone: normalizeMobile(parsed.mobile),
-      primary_email: parsed.email ?? null,
-      whatsapp: parsed.whatsapp ?? null,
-      city: parsed.city ?? null,
-      state: parsed.state ?? null,
-      pincode: parsed.pincode ?? null,
-      billing_address: parsed.billing_address ?? null,
-      gst_number: parsed.gst_number ?? null,
-      notes: parsed.notes ?? null,
-      customer_type: parsed.customer_type,
-      referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
-      site_address: parsed.site_address ?? null,
-      space_type: parsed.space_type ?? null,
-      material_interests: parsed.material_interests ?? [],
-      created_by: uid,
-    })
-    .select("*")
-    .single();
+  const insertPayload = {
+    customer_code: "",
+    name: parsed.name,
+    primary_phone: normalizeMobile(parsed.mobile),
+    primary_email: parsed.email ?? null,
+    whatsapp: parsed.whatsapp ?? null,
+    city: parsed.city ?? null,
+    state: parsed.state ?? null,
+    pincode: parsed.pincode ?? null,
+    billing_address: parsed.billing_address ?? null,
+    gst_number: parsed.gst_number ?? null,
+    notes: parsed.notes ?? null,
+    customer_type: parsed.customer_type,
+    referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
+    site_address: parsed.site_address ?? null,
+    space_type: parsed.space_type ?? null,
+    material_interests: parsed.material_interests ?? [],
+    created_by: uid,
+  };
+
+  let { data, error } = await getDb().from("customers").insert(insertPayload).select("*").single();
+
+  if (error && isMaterialInterestEnumError(error)) {
+    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+      insertPayload.material_interests,
+      insertPayload.notes,
+    );
+    const retry = await getDb()
+      .from("customers")
+      .insert({
+        ...insertPayload,
+        material_interests: filteredInterests,
+        notes: sanitizedNotes,
+      })
+      .select("*")
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) throw new AppError(mapDbError(error));
 
@@ -148,6 +165,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     }
   }
 
+  if (!data) throw new AppError("Failed to save customer");
   return data;
 }
 
@@ -167,29 +185,52 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
   }
 
   // 2. Client fallback
-  const { data, error } = await getDb()
+  const updatePayload = {
+    name: parsed.name,
+    primary_phone: normalizeMobile(parsed.mobile),
+    primary_email: parsed.email ?? null,
+    whatsapp: parsed.whatsapp ?? null,
+    city: parsed.city ?? null,
+    state: parsed.state ?? null,
+    pincode: parsed.pincode ?? null,
+    billing_address: parsed.billing_address ?? null,
+    gst_number: parsed.gst_number ?? null,
+    notes: parsed.notes ?? null,
+    customer_type: parsed.customer_type,
+    referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
+    site_address: parsed.site_address ?? null,
+    space_type: parsed.space_type ?? null,
+    material_interests: parsed.material_interests ?? [],
+  };
+
+  let { data, error } = await getDb()
     .from("customers")
-    .update({
-      name: parsed.name,
-      primary_phone: normalizeMobile(parsed.mobile),
-      primary_email: parsed.email ?? null,
-      whatsapp: parsed.whatsapp ?? null,
-      city: parsed.city ?? null,
-      state: parsed.state ?? null,
-      pincode: parsed.pincode ?? null,
-      billing_address: parsed.billing_address ?? null,
-      gst_number: parsed.gst_number ?? null,
-      notes: parsed.notes ?? null,
-      customer_type: parsed.customer_type,
-      referred_by: parsed.customer_type === "reference" ? (parsed.referred_by ?? null) : null,
-      site_address: parsed.site_address ?? null,
-      space_type: parsed.space_type ?? null,
-      material_interests: parsed.material_interests ?? [],
-    })
+    .update(updatePayload)
     .eq("id", id)
     .select("*")
     .single();
+
+  if (error && isMaterialInterestEnumError(error)) {
+    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+      updatePayload.material_interests,
+      updatePayload.notes,
+    );
+    const retry = await getDb()
+      .from("customers")
+      .update({
+        ...updatePayload,
+        material_interests: filteredInterests,
+        notes: sanitizedNotes,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw new AppError(mapDbError(error));
+  if (!data) throw new AppError("Failed to update customer");
   return data;
 }
 
