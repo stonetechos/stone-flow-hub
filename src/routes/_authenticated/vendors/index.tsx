@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Loader2, Factory, ExternalLink } from "lucide-react";
+import { Plus, Loader2, Factory, ExternalLink, Check, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
@@ -50,9 +52,15 @@ import {
   getPrimaryContact,
   listVendors,
   updateVendor,
+  extractVendorMetadata,
   type VendorRow,
 } from "@/lib/vendors/api";
-import { vendorCreateSchema, type VendorCreateInput } from "@/lib/vendors/schema";
+import {
+  vendorCreateSchema,
+  VENDOR_WORK_TYPES,
+  type VendorCreateInput,
+} from "@/lib/vendors/schema";
+import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
 
 export const Route = createFileRoute("/_authenticated/vendors/")({
   ssr: false,
@@ -189,6 +197,7 @@ function VendorsPage() {
               {pageRows.map((v) => {
                 const status = ((v as unknown as { lifecycle_status?: LifecycleStatus })
                   .lifecycle_status ?? (v.is_active ? "active" : "inactive")) as LifecycleStatus;
+                const meta = extractVendorMetadata(v);
                 return (
                   <TableRow key={v.id}>
                     {!isHidden("code") && (
@@ -204,13 +213,37 @@ function VendorsPage() {
                     )}
                     {!isHidden("company") && (
                       <TableCell className="font-medium">
-                        <Link
-                          to="/vendors/$vendorId"
-                          params={{ vendorId: v.id }}
-                          className="hover:underline"
-                        >
-                          {v.company_name}
-                        </Link>
+                        <div className="flex flex-col gap-1">
+                          <Link
+                            to="/vendors/$vendorId"
+                            params={{ vendorId: v.id }}
+                            className="hover:underline font-medium text-foreground"
+                          >
+                            {v.company_name}
+                          </Link>
+                          {(meta.work_types.length > 0 || meta.products_dealt.length > 0) && (
+                            <div className="flex flex-wrap items-center gap-1">
+                              {meta.work_types.map((wt) => {
+                                const item = VENDOR_WORK_TYPES.find((w) => w.value === wt);
+                                return (
+                                  <Badge
+                                    key={wt}
+                                    variant="secondary"
+                                    className="px-1.5 py-0 text-[10px] font-normal"
+                                  >
+                                    {item?.label ?? wt}
+                                  </Badge>
+                                );
+                              })}
+                              {meta.products_dealt.length > 0 && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  {meta.products_dealt.length} product
+                                  {meta.products_dealt.length === 1 ? "" : "s"}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                     )}
                     {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}
@@ -272,6 +305,8 @@ function emptyForm(): VendorCreateInput {
     company_name: "",
     contact_name: "",
     mobile: "",
+    products_dealt: [],
+    work_types: [],
     email: null,
     city: null,
     address: null,
@@ -312,10 +347,13 @@ function VendorFormDialog({
       setBaseline(JSON.stringify(blank));
       return;
     }
+    const meta = extractVendorMetadata(editing);
     const next: VendorCreateInput = {
       company_name: editing.company_name,
       contact_name: contactQuery.data?.name ?? "",
       mobile: contactQuery.data?.phone ?? "",
+      products_dealt: meta.products_dealt,
+      work_types: meta.work_types,
       email: contactQuery.data?.email ?? null,
       city: editing.city,
       address: editing.address,
@@ -358,7 +396,7 @@ function VendorFormDialog({
         if (confirmCloseIfDirty(o, dirty)) onOpenChange(o);
       }}
     >
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.company_name}` : "New vendor"}</DialogTitle>
         </DialogHeader>
@@ -381,9 +419,115 @@ function VendorFormDialog({
             <Field label="Mobile" required>
               <PhoneInput value={form.mobile} onChange={(v) => set("mobile", v)} required />
             </Field>
-            <Field label="City">
-              <Input value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} />
+            <Field label="City / Location">
+              <Input
+                value={form.city ?? ""}
+                onChange={(e) => set("city", e.target.value)}
+                placeholder="e.g. Udaipur, Makrana, Bangalore"
+              />
             </Field>
+
+            {/* Specialized Work & Capabilities */}
+            <div className="md:col-span-2 space-y-2 rounded-lg border border-border/80 bg-muted/20 p-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Specialized Work & Capabilities
+                </label>
+                <span className="text-[11px] text-muted-foreground">
+                  Handcrafter, CNC, Polishing, Artwork
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {VENDOR_WORK_TYPES.map((wt) => {
+                  const active = form.work_types.includes(wt.value);
+                  return (
+                    <button
+                      key={wt.value}
+                      type="button"
+                      onClick={() => {
+                        const next = active
+                          ? form.work_types.filter((w) => w !== wt.value)
+                          : [...form.work_types, wt.value];
+                        set("work_types", next);
+                      }}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                        active
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {active && <Check className="h-3 w-3" />}
+                      {wt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Products Dealt In */}
+            <div className="md:col-span-2 space-y-2 rounded-lg border border-border/80 bg-muted/20 p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    Products Dealt In ({form.products_dealt.length} selected)
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Used to route RFQs automatically based on customer quote selections
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[11px]"
+                    onClick={() =>
+                      set(
+                        "products_dealt",
+                        MATERIAL_OPTIONS.map((m) => m.value),
+                      )
+                    }
+                  >
+                    Select all
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[11px]"
+                    onClick={() => set("products_dealt", [])}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+              <div className="grid max-h-48 grid-cols-1 gap-1.5 overflow-y-auto sm:grid-cols-2 rounded border border-border/50 bg-background/50 p-2">
+                {MATERIAL_OPTIONS.map((mat) => {
+                  const checked = form.products_dealt.includes(mat.value);
+                  return (
+                    <label
+                      key={mat.value}
+                      className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-xs transition-colors ${
+                        checked
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(c) => {
+                          const next = c
+                            ? [...form.products_dealt, mat.value]
+                            : form.products_dealt.filter((x) => x !== mat.value);
+                          set("products_dealt", next);
+                        }}
+                      />
+                      <span className="truncate">{mat.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </QuickForm.QuickFill>
 
           <QuickForm.MoreDetails>

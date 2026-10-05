@@ -19,8 +19,9 @@ const EXTRA_MASTERS = [
   },
   {
     route: "installation-agencies",
-    title: "Installation Agencies",
-    description: "Third-party crews who handle installation on approved quotations.",
+    title: "Agencies & Work Crews",
+    description:
+      "Third-party agencies for Installation, Handcrafter, CNC Works, Polishing Work, and Artwork.",
     icon: HardHat,
   },
 ];

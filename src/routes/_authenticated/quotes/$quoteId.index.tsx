@@ -16,10 +16,13 @@ import {
   UserCheck,
   Copy,
   CheckCircle2,
+  Truck,
+  Send,
 } from "lucide-react";
 
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
+import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { toast } from "sonner";
@@ -81,6 +84,7 @@ function QuoteDetailPage() {
   const [confirmDel, setConfirmDel] = useState(false);
   const [reassignOpen, setReassignOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [rfqOpen, setRfqOpen] = useState(false);
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
 
@@ -214,19 +218,49 @@ function QuoteDetailPage() {
                   </Button>
                 )}
                 {isAccepted && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => reviseMut.mutate()}
-                    disabled={reviseMut.isPending}
-                  >
-                    {reviseMut.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Copy className="mr-2 h-4 w-4" />
-                    )}
-                    Create revision
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                      onClick={() =>
+                        nav({
+                          to: "/dispatch/new",
+                          search: {
+                            quote: quoteId,
+                            customer: quote.customer_id,
+                            ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                          },
+                        })
+                      }
+                      title="Generate delivery challan before invoice (for cash transactions)"
+                    >
+                      <Truck className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      Delivery Challan (Cash Deal)
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setRfqOpen(true)}
+                      title="Send RFQ to vendors matching products in this approved quotation"
+                    >
+                      <Send className="mr-2 h-4 w-4 text-primary" />
+                      Send RFQ
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => reviseMut.mutate()}
+                      disabled={reviseMut.isPending}
+                    >
+                      {reviseMut.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Copy className="mr-2 h-4 w-4" />
+                      )}
+                      Create revision
+                    </Button>
+                  </>
                 )}
                 <Button
                   size="sm"
@@ -480,6 +514,25 @@ function QuoteDetailPage() {
           fromCustomerId={quote.customer_id}
         />
       )}
+
+      <QuoteSendRfqDialog
+        open={rfqOpen}
+        onOpenChange={setRfqOpen}
+        quoteId={quoteId}
+        quoteNo={quote.quote_no}
+        customerName={quote.customer?.name}
+        items={(items.data ?? []).map((it) => ({
+          id: it.id,
+          product_id: it.product_id,
+          product_name: it.description,
+          description: it.description,
+          quantity: it.quantity,
+          uom: it.unit,
+        }))}
+        enquiryId={quote.enquiry_id}
+        projectId={quote.project_id}
+        customerId={quote.customer_id}
+      />
     </div>
   );
 }

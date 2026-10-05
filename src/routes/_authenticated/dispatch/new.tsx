@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -26,6 +26,7 @@ import {
   type DispatchItemInput,
 } from "@/lib/dispatch/schema";
 import { getSalesOrder, listSalesOrdersForPicker } from "@/lib/sales-orders/api";
+import { getQuote, getQuoteItems } from "@/lib/quotes/api";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
 
@@ -34,6 +35,7 @@ import { EntityPicker } from "@/components/forms/EntityPicker";
 const search = z.object({
   so: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
+  quote: z.string().uuid().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/dispatch/new")({
@@ -100,6 +102,41 @@ function NewDispatchPage() {
     enabled: !!form.sales_order_id,
   });
 
+  // Preload customer/project/items when Quote chosen (Cash delivery challan before invoice)
+  const quoteQuery = useQuery({
+    queryKey: ["dispatch", "new", "quote-defaults", params.quote ?? ""],
+    queryFn: async () => {
+      if (!params.quote) return null;
+      const [quote, quoteItems] = await Promise.all([
+        getQuote(params.quote),
+        getQuoteItems(params.quote),
+      ]);
+      if (quote) {
+        setForm((f) => ({
+          ...f,
+          customer_id: f.customer_id ?? quote.customer_id,
+          project_id: f.project_id ?? quote.project_id,
+          notes:
+            f.notes ?? `Cash deal delivery challan before invoice for Quote #${quote.quote_no}`,
+        }));
+        if (quoteItems && quoteItems.length > 0) {
+          setItems(
+            quoteItems.map((qi, idx) => ({
+              product_id: qi.product_id,
+              product_name: qi.description || null,
+              description: qi.description || "Stone item",
+              unit: qi.unit || "sqft",
+              quantity: Number(qi.quantity) || 1,
+              sort_order: idx + 1,
+            })),
+          );
+        }
+      }
+      return { quote, quoteItems };
+    },
+    enabled: !!params.quote,
+  });
+
   const mut = useMutation({
     mutationFn: async (payload: { form: DispatchCreateInput; items: DispatchItemInput[] }) => {
       if (!payload.form.customer_id && !payload.form.sales_order_id) {
@@ -122,9 +159,30 @@ function NewDispatchPage() {
   return (
     <div>
       <PageHeader
-        title="New delivery challan"
-        subtitle="Record what is leaving the yard for delivery to the customer."
+        title={params.quote ? "Delivery Challan (Cash Deal)" : "New delivery challan"}
+        subtitle={
+          params.quote
+            ? "Issue delivery challan directly for approved quotation before invoice generation."
+            : "Record what is leaving the yard for delivery to the customer."
+        }
       />
+      {quoteQuery.data?.quote && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Truck className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <div className="font-semibold">
+                Cash Delivery Challan for Quote #{quoteQuery.data.quote.quote_no}
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Customer: <strong>{quoteQuery.data.quote.customer?.name}</strong> • Items have been
+                auto-populated from the approved quotation. You can deliver goods immediately before
+                raising invoices.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();

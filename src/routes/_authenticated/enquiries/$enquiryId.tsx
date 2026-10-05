@@ -50,7 +50,8 @@ import {
   updateEnquiryStage,
 } from "@/lib/enquiries/api";
 import { convertToProjectSchema, type ConvertToProjectInput } from "@/lib/enquiries/schema";
-import { listVendorsForPicker } from "@/lib/vendors/api";
+import { listVendorsForPicker, extractVendorMetadata } from "@/lib/vendors/api";
+import { VENDOR_WORK_TYPES } from "@/lib/vendors/schema";
 import {
   LEAD_STAGE_LABEL,
   LEAD_UMBRELLAS,
@@ -728,21 +729,59 @@ function SendRfqDialog({
                 ) : (vendors.data ?? []).length === 0 ? (
                   <p className="p-2 text-sm text-muted-foreground">No vendors — add one first.</p>
                 ) : (
-                  (vendors.data ?? []).map((v) => (
-                    <label
-                      key={v.id}
-                      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm hover:bg-accent"
-                    >
-                      <Checkbox
-                        checked={selected.includes(v.id)}
-                        onCheckedChange={() => toggle(v.id)}
-                      />
-                      <span className="flex-1">{v.company_name}</span>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {v.vendor_code}
-                      </span>
-                    </label>
-                  ))
+                  (vendors.data ?? []).map((v) => {
+                    const meta = extractVendorMetadata(v);
+                    return (
+                      <label
+                        key={v.id}
+                        className="flex cursor-pointer items-start gap-2.5 rounded-sm px-2 py-1.5 text-sm hover:bg-accent border-b border-border/40 last:border-0"
+                      >
+                        <Checkbox
+                          checked={selected.includes(v.id)}
+                          onCheckedChange={() => toggle(v.id)}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="font-medium text-foreground">{v.company_name}</span>
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {v.vendor_code}
+                            </span>
+                            {v.city && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] py-0 px-1 font-normal"
+                              >
+                                {v.city}
+                              </Badge>
+                            )}
+                          </div>
+                          {(meta.work_types.length > 0 || meta.products_dealt.length > 0) && (
+                            <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                              {meta.work_types.map((wt) => {
+                                const item = VENDOR_WORK_TYPES.find((w) => w.value === wt);
+                                return (
+                                  <Badge
+                                    key={wt}
+                                    variant="secondary"
+                                    className="text-[10px] py-0 px-1 font-normal"
+                                  >
+                                    {item?.label ?? wt}
+                                  </Badge>
+                                );
+                              })}
+                              {meta.products_dealt.length > 0 && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  {meta.products_dealt.length} product
+                                  {meta.products_dealt.length === 1 ? "" : "s"}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })
                 )}
               </div>
             </Field>

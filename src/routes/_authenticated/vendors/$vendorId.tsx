@@ -10,6 +10,7 @@ import {
   Mail,
   FolderOpen,
   History,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -19,7 +20,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getVendor, getPrimaryContact } from "@/lib/vendors/api";
+import { getVendor, getPrimaryContact, extractVendorMetadata } from "@/lib/vendors/api";
+import { VENDOR_WORK_TYPES } from "@/lib/vendors/schema";
+import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -163,6 +166,70 @@ function VendorHub() {
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <VendorScorecard vendorId={vendorId} />
+          {(() => {
+            const meta = extractVendorMetadata(v);
+            return (
+              <Card className="shadow-1">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" /> Products Dealt In & Work
+                      Specialization
+                    </span>
+                    <Link to="/vendors" search={{ edit: vendorId }}>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs">
+                        <Pencil className="mr-1 h-3 w-3" /> Edit
+                      </Button>
+                    </Link>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Specialized Work (Handcrafter, CNC, Polishing, Artwork)
+                    </div>
+                    {meta.work_types.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {meta.work_types.map((wt) => {
+                          const item = VENDOR_WORK_TYPES.find((w) => w.value === wt);
+                          return (
+                            <Badge key={wt} variant="default" className="text-xs">
+                              {item?.label ?? wt}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        No specific work specialization assigned.
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Products Dealt In ({meta.products_dealt.length} categories)
+                    </div>
+                    {meta.products_dealt.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {meta.products_dealt.map((prodKey) => {
+                          const mat = MATERIAL_OPTIONS.find((m) => m.value === prodKey);
+                          return (
+                            <Badge key={prodKey} variant="secondary" className="text-xs">
+                              {mat?.label ?? prodKey}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        No stone products configured yet. Edit vendor to set products dealt in.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
           <VendorCategoryPicker vendorId={vendorId} />
           <Card className="shadow-1">
             <CardHeader>

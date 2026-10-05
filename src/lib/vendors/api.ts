@@ -66,8 +66,25 @@ export async function getPrimaryContact(vendorId: string): Promise<VendorContact
   return data;
 }
 
+export function extractVendorMetadata(v: VendorRow | null | undefined): {
+  products_dealt: string[];
+  work_types: string[];
+} {
+  if (!v) return { products_dealt: [], work_types: [] };
+  const ref = (v.external_ref as Record<string, unknown> | null) ?? {};
+  return {
+    products_dealt: Array.isArray(ref.products_dealt) ? (ref.products_dealt as string[]) : [],
+    work_types: Array.isArray(ref.work_types) ? (ref.work_types as string[]) : [],
+  };
+}
+
 export async function createVendor(input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
+
+  const external_ref = {
+    products_dealt: parsed.products_dealt ?? [],
+    work_types: parsed.work_types ?? [],
+  };
 
   const { data: vendor, error } = await getDb()
     .from("vendors")
@@ -81,6 +98,7 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
       gst_number: parsed.gst_number ?? null,
       payment_terms: parsed.payment_terms ?? null,
       notes: parsed.notes ?? null,
+      external_ref,
     })
     .select("*")
     .single();
@@ -98,11 +116,48 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
     });
   if (cErr) throw new AppError(mapDbError(cErr));
 
+  // Sync matching work types into vendor_capabilities
+  const capMap: Record<string, string[]> = {
+    cnc_works: ["cnc"],
+    polishing_work: ["polishing"],
+    artwork: ["sculpture", "inlay"],
+  };
+  const capsToInsert = new Set<string>();
+  for (const wt of parsed.work_types ?? []) {
+    const mapped = capMap[wt];
+    if (mapped) mapped.forEach((c) => capsToInsert.add(c));
+  }
+  if (capsToInsert.size > 0) {
+    const rows = Array.from(capsToInsert).map((capability) => ({
+      vendor_id: vendor.id,
+      capability: capability as never,
+    }));
+    await getDb()
+      .from("vendor_capabilities")
+      .insert(rows)
+      .then(
+        () => {},
+        () => {},
+      );
+  }
+
   return vendor;
 }
 
 export async function updateVendor(id: string, input: VendorCreateInput): Promise<VendorRow> {
   const parsed = vendorCreateSchema.parse(input);
+  const existing = await getVendor(id);
+  const existingRef =
+    existing && typeof existing.external_ref === "object" && existing.external_ref !== null
+      ? (existing.external_ref as Record<string, unknown>)
+      : {};
+
+  const external_ref = {
+    ...existingRef,
+    products_dealt: parsed.products_dealt ?? [],
+    work_types: parsed.work_types ?? [],
+  };
+
   const { data: vendor, error } = await getDb()
     .from("vendors")
     .update({
@@ -114,6 +169,7 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       gst_number: parsed.gst_number ?? null,
       payment_terms: parsed.payment_terms ?? null,
       notes: parsed.notes ?? null,
+      external_ref,
     })
     .eq("id", id)
     .select("*")
@@ -121,12 +177,12 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
   if (error) throw new AppError(mapDbError(error));
 
   const phone = normalizeMobile(parsed.mobile);
-  const existing = await getPrimaryContact(id);
-  if (existing) {
+  const existingContact = await getPrimaryContact(id);
+  if (existingContact) {
     const { error: uErr } = await getDb()
       .from("vendor_contacts")
       .update({ name: parsed.contact_name, phone, email: parsed.email ?? null })
-      .eq("id", existing.id);
+      .eq("id", existingContact.id);
     if (uErr) throw new AppError(mapDbError(uErr));
   } else {
     const { error: iErr } = await getDb()
@@ -140,6 +196,32 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
       });
     if (iErr) throw new AppError(mapDbError(iErr));
   }
+
+  // Sync matching work types into vendor_capabilities
+  const capMap: Record<string, string[]> = {
+    cnc_works: ["cnc"],
+    polishing_work: ["polishing"],
+    artwork: ["sculpture", "inlay"],
+  };
+  const capsToInsert = new Set<string>();
+  for (const wt of parsed.work_types ?? []) {
+    const mapped = capMap[wt];
+    if (mapped) mapped.forEach((c) => capsToInsert.add(c));
+  }
+  if (capsToInsert.size > 0) {
+    const rows = Array.from(capsToInsert).map((capability) => ({
+      vendor_id: id,
+      capability: capability as never,
+    }));
+    await getDb()
+      .from("vendor_capabilities")
+      .insert(rows)
+      .then(
+        () => {},
+        () => {},
+      );
+  }
+
   return vendor;
 }
 

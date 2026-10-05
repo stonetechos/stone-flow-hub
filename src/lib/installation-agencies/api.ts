@@ -9,6 +9,17 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 
+export const AGENCY_WORK_TYPES = [
+  { value: "installation", label: "Installation" },
+  { value: "handcrafter", label: "Handcrafter" },
+  { value: "cnc_works", label: "CNC Works" },
+  { value: "polishing_work", label: "Polishing Work" },
+  { value: "artwork", label: "Artwork" },
+  { value: "carting", label: "Carting & Transport" },
+] as const;
+
+export type AgencyWorkType = (typeof AGENCY_WORK_TYPES)[number]["value"];
+
 export type InstallationAgencyRow = {
   id: string;
   code: string;
@@ -16,6 +27,8 @@ export type InstallationAgencyRow = {
   contact_person: string | null;
   phone: string | null;
   notes: string | null;
+  work_types?: AgencyWorkType[];
+  agency_type?: AgencyWorkType;
   is_active: boolean;
   sort_order: number;
 };
@@ -25,18 +38,64 @@ export interface InstallationAgencyInput {
   name: string;
   contact_person?: string | null;
   phone?: string | null;
+  work_types?: AgencyWorkType[];
+  agency_type?: AgencyWorkType | null;
   notes?: string | null;
   is_active?: boolean;
   sort_order?: number;
 }
 
+export function encodeAgencyNotes(
+  notes: string | null | undefined,
+  workTypes: AgencyWorkType[],
+): string | null {
+  const clean = (notes ?? "").replace(/\[WorkTypes:[^\]]+\]\s*/g, "").trim();
+  if (workTypes.length === 0) return clean || null;
+  const tag = `[WorkTypes:${workTypes.join(",")}]`;
+  return clean ? `${tag} ${clean}` : tag;
+}
+
+export function decodeAgencyWorkTypes(notes: string | null | undefined): {
+  cleanNotes: string;
+  workTypes: AgencyWorkType[];
+} {
+  if (!notes) return { cleanNotes: "", workTypes: ["installation"] };
+  const match = notes.match(/\[WorkTypes:([^\]]+)\]/);
+  if (!match) {
+    const lower = notes.toLowerCase();
+    const detected: AgencyWorkType[] = [];
+    if (lower.includes("handcraft") || lower.includes("carv")) detected.push("handcrafter");
+    if (lower.includes("cnc")) detected.push("cnc_works");
+    if (lower.includes("polish")) detected.push("polishing_work");
+    if (lower.includes("art")) detected.push("artwork");
+    if (lower.includes("carting") || lower.includes("transport")) detected.push("carting");
+    if (detected.length === 0) detected.push("installation");
+    return { cleanNotes: notes, workTypes: detected };
+  }
+  const types = match[1].split(",").map((s) => s.trim()) as AgencyWorkType[];
+  const cleanNotes = notes.replace(/\[WorkTypes:[^\]]+\]\s*/g, "").trim();
+  return { cleanNotes, workTypes: types.length > 0 ? types : ["installation"] };
+}
+
+function parseRow(r: Record<string, unknown>): InstallationAgencyRow {
+  const { cleanNotes, workTypes } = decodeAgencyWorkTypes(r.notes as string | null);
+  return {
+    ...(r as unknown as InstallationAgencyRow),
+    notes: cleanNotes,
+    work_types: workTypes,
+    agency_type: workTypes[0] ?? "installation",
+  };
+}
+
 function toPayload(input: InstallationAgencyInput) {
+  const workTypes =
+    input.work_types ?? (input.agency_type ? [input.agency_type] : ["installation"]);
   return {
     code: input.code,
     name: input.name,
     contact_person: input.contact_person ?? null,
     phone: input.phone ?? null,
-    notes: input.notes ?? null,
+    notes: encodeAgencyNotes(input.notes, workTypes),
     is_active: input.is_active ?? true,
     sort_order: input.sort_order ?? 100,
   };
@@ -54,7 +113,7 @@ export async function listInstallationAgencies(
   if (activeOnly) q = q.eq("is_active" as never, true as never);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return (data ?? []) as unknown as InstallationAgencyRow[];
+  return ((data ?? []) as Record<string, unknown>[]).map(parseRow);
 }
 
 export async function createInstallationAgency(
@@ -66,7 +125,7 @@ export async function createInstallationAgency(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data as unknown as InstallationAgencyRow;
+  return parseRow(data as Record<string, unknown>);
 }
 
 export async function updateInstallationAgency(
@@ -80,7 +139,7 @@ export async function updateInstallationAgency(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data as unknown as InstallationAgencyRow;
+  return parseRow(data as Record<string, unknown>);
 }
 
 export async function deleteInstallationAgency(id: string): Promise<void> {

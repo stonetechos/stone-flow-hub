@@ -40,6 +40,7 @@ import {
   Globe,
   ArrowLeftRight,
   Layers,
+  HardHat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -290,6 +291,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
 
   // Master Data
   { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
+  {
+    id: "agencies",
+    to: "/masters/installation-agencies",
+    label: "Agencies",
+    icon: HardHat,
+    group: "masterData",
+  },
   { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },
 
   // Communication
