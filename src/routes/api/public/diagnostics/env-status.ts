@@ -64,101 +64,107 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
           checked_at: new Date().toISOString(),
         };
 
-        if (shouldUnify) {
+        const action = url.searchParams.get("action");
+        const targetTable = url.searchParams.get("table");
+
+        if (shouldUnify || action) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-            // 1. Fetch all users from Supabase Auth
-            const { data: usersData, error: usersErr } = await supabaseAdmin.auth.admin.listUsers({
-              perPage: 1000,
-            });
+            if (action === "users" || (shouldUnify && !action)) {
+              // 1. Fetch all users from Supabase Auth
+              const { data: usersData, error: usersErr } = await supabaseAdmin.auth.admin.listUsers({
+                perPage: 1000,
+              });
 
-            if (usersErr) {
-              body.unify_users_error = usersErr.message;
-            }
-
-            const allUsers = usersData?.users ?? [];
-            const userSummaries = allUsers.map((u) => ({
-              id: u.id,
-              email: u.email,
-            }));
-
-            // 2. Ensure rp140528@gmail.com and all users have active profiles with is_demo_mode = false and admin roles
-            for (const u of allUsers) {
-              await supabaseAdmin.from("profiles").upsert(
-                {
-                  id: u.id,
-                  email: u.email,
-                  full_name:
-                    (u.user_metadata?.full_name as string) ||
-                    (u.user_metadata?.name as string) ||
-                    u.email?.split("@")[0] ||
-                    "User",
-                  is_active: true,
-                  is_demo_mode: false,
-                  force_password_change: false,
-                },
-                { onConflict: "id" },
-              );
-
-              await supabaseAdmin.from("user_roles").upsert(
-                {
-                  user_id: u.id,
-                  role: "admin",
-                },
-                { onConflict: "user_id,role" },
-              );
-            }
-
-            // 3. Promote all is_demo = true rows across all business tables to false
-            const tablePromotions: Record<string, { promoted: number; total: number }> = {};
-
-            for (const tbl of OPERATIONAL_TABLES) {
-              try {
-                const { count: totalCount } = await supabaseAdmin
-                  .from(tbl as never)
-                  .select("id", { count: "exact", head: true });
-
-                const { data: demoRows } = await supabaseAdmin
-                  .from(tbl as never)
-                  .select("id")
-                  .eq("is_demo", true);
-
-                const demoCount = demoRows?.length ?? 0;
-
-                if (demoCount > 0) {
-                  await supabaseAdmin
-                    .from(tbl as never)
-                    .update({ is_demo: false } as never)
-                    .eq("is_demo", true);
-                }
-
-                tablePromotions[tbl] = {
-                  promoted: demoCount,
-                  total: totalCount ?? 0,
-                };
-              } catch (tblErr: unknown) {
-                const err = tblErr as { message?: string };
-                tablePromotions[tbl] = {
-                  promoted: 0,
-                  total: 0,
-                };
-                console.warn(`[env-status unify] error on ${tbl}:`, err?.message);
+              if (usersErr) {
+                body.unify_users_error = usersErr.message;
               }
+
+              const allUsers = usersData?.users ?? [];
+              const userSummaries = allUsers.map((u) => ({
+                id: u.id,
+                email: u.email,
+              }));
+
+              // 2. Ensure rp140528@gmail.com and all users have active profiles with is_demo_mode = false and admin roles
+              for (const u of allUsers) {
+                await supabaseAdmin.from("profiles").upsert(
+                  {
+                    id: u.id,
+                    email: u.email,
+                    full_name:
+                      (u.user_metadata?.full_name as string) ||
+                      (u.user_metadata?.name as string) ||
+                      u.email?.split("@")[0] ||
+                      "User",
+                    is_active: true,
+                    is_demo_mode: false,
+                    force_password_change: false,
+                  },
+                  { onConflict: "id" },
+                );
+
+                await supabaseAdmin.from("user_roles").upsert(
+                  {
+                    user_id: u.id,
+                    role: "admin",
+                  },
+                  { onConflict: "user_id,role" },
+                );
+              }
+
+              body.users = {
+                count: allUsers.length,
+                list: userSummaries,
+              };
             }
 
-            body.unification = {
-              status: "completed",
-              users_count: allUsers.length,
-              users: userSummaries,
-              table_promotions: tablePromotions,
-            };
+            if (action === "promote" || targetTable || shouldUnify) {
+              const tablesToPromote = targetTable ? [targetTable] : OPERATIONAL_TABLES.slice(0, 10);
+              const tablePromotions: Record<string, { promoted: number; total: number }> = {};
+
+              for (const tbl of tablesToPromote) {
+                try {
+                  const { count: totalCount } = await supabaseAdmin
+                    .from(tbl as never)
+                    .select("id", { count: "exact", head: true });
+
+                  const { data: demoRows } = await supabaseAdmin
+                    .from(tbl as never)
+                    .select("id")
+                    .eq("is_demo", true);
+
+                  const demoCount = demoRows?.length ?? 0;
+
+                  if (demoCount > 0) {
+                    await supabaseAdmin
+                      .from(tbl as never)
+                      .update({ is_demo: false } as never)
+                      .eq("is_demo", true);
+                  }
+
+                  tablePromotions[tbl] = {
+                    promoted: demoCount,
+                    total: totalCount ?? 0,
+                  };
+                } catch (tblErr: unknown) {
+                  const err = tblErr as { message?: string };
+                  tablePromotions[tbl] = {
+                    promoted: 0,
+                    total: 0,
+                  };
+                  console.warn(`[env-status unify] error on ${tbl}:`, err?.message);
+                }
+              }
+
+              body.table_promotions = tablePromotions;
+            }
+
+            body.status = "ok";
           } catch (unifyErr: unknown) {
             const err = unifyErr as { message?: string };
-            body.unification = {
-              status: "error",
-              error: err?.message || String(unifyErr),
-            };
+            body.error = err?.message || String(unifyErr);
           }
         }
 
