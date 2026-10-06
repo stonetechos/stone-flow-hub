@@ -989,3 +989,79 @@ export const completeUserPasswordActivation = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+const OPERATIONAL_BUSINESS_TABLES = [
+  "customers",
+  "projects",
+  "products",
+  "vendors",
+  "enquiries",
+  "enquiry_items",
+  "followups",
+  "site_visits",
+  "project_notes",
+  "rfqs",
+  "rfq_items",
+  "vendor_requests",
+  "vendor_quotes",
+  "vendor_quote_items",
+  "quotes",
+  "quote_items",
+  "sales_orders",
+  "sales_order_items",
+  "purchase_orders",
+  "production_orders",
+  "production_pieces",
+  "production_stages",
+  "qc_results",
+  "inventory_items",
+  "dispatches",
+  "invoices",
+  "invoice_items",
+  "payments",
+  "payment_links",
+  "tasks",
+  "activity_log",
+  "artwork_approvals",
+  "file_objects",
+  "favorites",
+  "comments",
+] as const;
+
+export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = context.userId;
+
+    // 1. Ensure caller profile has is_demo_mode = false and active admin/staff role
+    await supabaseAdmin
+      .from("profiles")
+      .update({ is_demo_mode: false, is_active: true })
+      .eq("id", userId);
+
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (!roles || roles.length === 0) {
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+    }
+
+    // 2. Promote any is_demo = true records across all business tables to false
+    for (const table of OPERATIONAL_BUSINESS_TABLES) {
+      try {
+        await supabaseAdmin
+          .from(table as never)
+          .update({ is_demo: false } as never)
+          .eq("is_demo", true);
+      } catch {
+        // non-fatal
+      }
+    }
+
+    return { ok: true };
+  });

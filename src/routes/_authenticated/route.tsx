@@ -107,6 +107,12 @@ function AuthenticatedLayout() {
       if (typeof window !== "undefined") {
         window.location.replace("/auth?flow=signin");
       }
+    } else if (isReady && user) {
+      import("@/lib/admin/users.functions")
+        .then(({ syncOrganizationDataServerFn }) => {
+          void syncOrganizationDataServerFn().catch(() => {});
+        })
+        .catch(() => {});
     }
   }, [isReady, user]);
 
