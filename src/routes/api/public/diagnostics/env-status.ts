@@ -73,9 +73,11 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
 
             if (action === "users" || (shouldUnify && !action)) {
               // 1. Fetch all users from Supabase Auth
-              const { data: usersData, error: usersErr } = await supabaseAdmin.auth.admin.listUsers({
-                perPage: 1000,
-              });
+              const { data: usersData, error: usersErr } = await supabaseAdmin.auth.admin.listUsers(
+                {
+                  perPage: 1000,
+                },
+              );
 
               if (usersErr) {
                 body.unify_users_error = usersErr.message;
