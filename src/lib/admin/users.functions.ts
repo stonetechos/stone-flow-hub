@@ -839,6 +839,7 @@ export const ensureUserRoleServerFn = createServerFn({ method: "POST" })
             id: userId,
             email,
             full_name: (userData?.user?.user_metadata?.full_name as string) || email.split("@")[0],
+            is_demo_mode: false,
           },
           { onConflict: "id" },
         );

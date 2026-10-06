@@ -58,7 +58,6 @@ import {
   deleteCustomer,
   listCustomers,
   updateCustomer,
-  purgeMisplacedCustomerEntries,
   type CustomerRow,
 } from "@/lib/customers/api";
 import {
@@ -99,12 +98,6 @@ function CustomersPage() {
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
   });
-
-  useEffect(() => {
-    void purgeMisplacedCustomerEntries().then(() => {
-      void qc.invalidateQueries({ queryKey: qk.customers.all });
-    });
-  }, [qc]);
 
   useEffect(() => {
     import("@/integrations/supabase/client").then(({ supabase }) => {

@@ -8,19 +8,6 @@ import { isMaterialInterestEnumError, sanitizeForPendingDbEnum } from "./materia
 
 export type CustomerRow = DbTable<"customers">;
 
-function isMisplacedTestCustomer(name: string): boolean {
-  const n = (name ?? "").trim().toLowerCase();
-  return (
-    n.includes("dummy test client") ||
-    n === "ankur" ||
-    n.startsWith("ankur ") ||
-    n === "harash pupneja" ||
-    n.startsWith("harash pupneja") ||
-    n === "rishi rai" ||
-    n.startsWith("rishi rai")
-  );
-}
-
 export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   let q = getDb().from("customers").select("*").order("created_at", { ascending: true }).limit(200);
 
@@ -41,17 +28,11 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  const rows = data ?? [];
-  return rows.filter((r) => !isMisplacedTestCustomer(r.name));
+  return data ?? [];
 }
 
 export async function purgeMisplacedCustomerEntries(): Promise<void> {
-  try {
-    const { purgeMisplacedCustomerEntriesServerFn } = await import("./customers.functions");
-    await purgeMisplacedCustomerEntriesServerFn();
-  } catch (err) {
-    console.warn("[customers.api] purgeMisplacedCustomerEntries failed:", err);
-  }
+  // Safe no-op: preserved for backwards-compatibility without deleting valid customer entries
 }
 
 export async function getCustomer(id: string): Promise<CustomerRow | null> {

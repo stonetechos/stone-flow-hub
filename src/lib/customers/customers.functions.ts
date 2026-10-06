@@ -238,22 +238,6 @@ export const deleteCustomerServerFn = createServerFn({ method: "POST" })
 export const purgeMisplacedCustomerEntriesServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: targets } = await supabaseAdmin
-      .from("customers")
-      .select("id, name")
-      .or(
-        "name.ilike.%Dummy Test Client%,name.ilike.Ankur%,name.ilike.Harash Pupneja%,name.ilike.Rishi rai%",
-      );
-
-    if (!targets || targets.length === 0) return { deleted: 0 };
-
-    for (const t of targets) {
-      await supabaseAdmin.from("enquiries").delete().eq("customer_id", t.id);
-      await supabaseAdmin.from("customer_contacts").delete().eq("customer_id", t.id);
-      await supabaseAdmin.from("projects").delete().eq("customer_id", t.id);
-      await supabaseAdmin.from("customers").delete().eq("id", t.id);
-    }
-
-    return { deleted: targets.length };
+    // Safe no-op: customer data is unified and preserved for all organization users
+    return { deleted: 0 };
   });
