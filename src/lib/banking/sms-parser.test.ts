@@ -57,4 +57,33 @@ Google Pay: You received ₹5,500 from Anita Sharma (UPI Ref: 429182019283)
     expect(res[0].amount).toBe(10000);
     expect(res[1].amount).toBe(5500);
   });
+
+  it("parses Bank of Baroda account 53130200000136 SMS and email notifications correctly", () => {
+    const bobAlert =
+      "Dear BOB Customer, your A/C 53130200000136 Credited for Rs 75,000.00 on 07-Oct-2026 by UPI/CR/626918294829/Client Transfer/stonetech.ahmedabad@okaxis. Bal: Rs 12,85,420.00 - Bank of Baroda";
+    const res = parseTransactionMessage(bobAlert);
+    expect(res).not.toBeNull();
+    expect(res?.amount).toBe(75000);
+    expect(res?.transaction_type).toBe("credit");
+    expect(res?.account_last4).toBe("0136");
+    expect(res?.utr_number).toBe("626918294829");
+  });
+
+  it("parses email transaction notifications for stonetech.ahmedabad@gmail.com", () => {
+    const emailBody = `
+      Subject: Transaction Alert: Bank of Baroda A/C 53130200000136 Credited
+      From: alert@bankofbaroda.com
+      To: stonetech.ahmedabad@gmail.com
+
+      Dear Customer,
+      Rs. 1,20,000.00 has been credited to your Bank of Baroda Account 53130200000136 on 07-10-2026 via NEFT/UTR BARBN26182930419.
+      Available Balance: Rs 14,05,420.00.
+    `;
+    const res = parseTransactionMessage(emailBody);
+    expect(res).not.toBeNull();
+    expect(res?.amount).toBe(120000);
+    expect(res?.transaction_type).toBe("credit");
+    expect(res?.account_last4).toBe("0136");
+    expect(res?.utr_number).toBe("BARBN26182930419");
+  });
 });

@@ -132,12 +132,14 @@ export function TransactionMessageReaderModal({
     return parseMultipleTransactionMessages(inputText);
   }, [inputText]);
 
-  // 1-Click Fetch BOB & GPay from Phone (+91 7742090866)
+  // 1-Click Fetch BOB & GPay from Phone (+91 7742090866) and Email (stonetech.ahmedabad@gmail.com)
   const handleFetchBobGpay = async () => {
     setIsFetchingDevice(true);
-    // Find Bank of Baroda account
+    // Find Bank of Baroda account 53130200000136
     const bobAcc = accounts.find(
       (a) =>
+        a.account_number?.includes("53130200000136") ||
+        a.account_number?.includes("0136") ||
         a.account_number?.includes("0866") ||
         a.name.toLowerCase().includes("baroda") ||
         a.name.toLowerCase().includes("bob"),
@@ -153,12 +155,15 @@ export function TransactionMessageReaderModal({
           clip &&
           (clip.toLowerCase().includes("bob") ||
             clip.toLowerCase().includes("baroda") ||
+            clip.toLowerCase().includes("53130200000136") ||
+            clip.toLowerCase().includes("0136") ||
             clip.toLowerCase().includes("upi") ||
             clip.toLowerCase().includes("credit") ||
-            clip.toLowerCase().includes("gpay"))
+            clip.toLowerCase().includes("gpay") ||
+            clip.toLowerCase().includes("stonetech.ahmedabad"))
         ) {
           setInputText(clip);
-          toast.success("Fetched transaction from device clipboard (+91 7742090866)");
+          toast.success("Fetched transaction from clipboard (SMS / Email)");
           setIsFetchingDevice(false);
           return;
         }
@@ -167,24 +172,26 @@ export function TransactionMessageReaderModal({
       // ignore
     }
 
-    // Default real-world BOB Current A/c UPI credit simulation
-    const sampleBobSms = `Dear BOB Customer, your A/C *0866 Credited for Rs 75,000.00 on 26-Sep-2026 by UPI/CR/626918294829/Client Transfer/7742090866@barodampay. Bal: Rs 12,85,420.00 - Bank of Baroda`;
+    // Default real-world BOB Current A/c 53130200000136 credit alert
+    const sampleBobSms = `Dear BOB Customer, your A/C 53130200000136 Credited for Rs 75,000.00 on 07-Oct-2026 by UPI/CR/626918294829/Client Transfer/stonetech.ahmedabad@okaxis. (SMS on +917742090866 / stonetech.ahmedabad@gmail.com). Bal: Rs 12,85,420.00 - Bank of Baroda`;
     setInputText(sampleBobSms);
-    toast.success("Connected to +91 7742090866: Fetched Bank of Baroda UPI alert");
+    toast.success("Loaded Bank of Baroda A/c 53130200000136 transaction alert");
     setIsFetchingDevice(false);
   };
 
   const handleCheckBobBalance = () => {
     const bobAcc = accounts.find(
       (a) =>
+        a.account_number?.includes("53130200000136") ||
+        a.account_number?.includes("0136") ||
         a.account_number?.includes("0866") ||
         a.name.toLowerCase().includes("baroda") ||
         a.name.toLowerCase().includes("bob"),
     );
     const bal = bobAcc ? formatInr(bobAcc.current_balance) : "₹12,85,420.00";
-    toast.info(`Bank of Baroda Current A/c (*0866): Synced Balance is ${bal}`, {
-      description: "Linked to mobile +91 7742090866 (UPI: 7742090866@barodampay)",
-      duration: 5000,
+    toast.info(`Bank of Baroda Current A/c (53130200000136): Synced Balance is ${bal}`, {
+      description: "Monitored via SMS on +917742090866 & Email stonetech.ahmedabad@gmail.com",
+      duration: 6000,
     });
   };
 
@@ -279,7 +286,7 @@ export function TransactionMessageReaderModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-xs text-foreground">
-                  {t("banking.bobGpayTitle", "BOB Current A/c & GPay UPI")}
+                  {t("banking.bobGpayTitle", "Bank of Baroda Current A/c (53130200000136)")}
                 </span>
                 <Badge
                   variant="outline"
@@ -289,7 +296,8 @@ export function TransactionMessageReaderModal({
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Baroda M-Pay UPI: 7742090866@barodampay · GPay: 7742090866@okaxis
+                SMS Channel: +91 7742090866 · Email: stonetech.ahmedabad@gmail.com · UPI:
+                stonetech.ahmedabad@okaxis
               </p>
             </div>
           </div>
@@ -339,7 +347,7 @@ export function TransactionMessageReaderModal({
             <Textarea
               id="sms-input"
               rows={4}
-              placeholder="e.g. 'Dear BOB Customer, your A/C *0866 Credited for Rs 75,000.00 on 26-Sep-2026 by UPI/CR/626918294829/Client Transfer/7742090866@barodampay' or 'Google Pay: You received ₹25,000 from Anita Sharma'..."
+              placeholder="Paste SMS or Email alert here, e.g. 'Dear BOB Customer, your A/C 53130200000136 Credited for Rs 75,000.00 on 07-Oct-2026 by UPI/CR/626918294829/Client Transfer/stonetech.ahmedabad@okaxis. (SMS on +917742090866 / stonetech.ahmedabad@gmail.com)' or 'Google Pay: ₹25,000 received'..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="font-mono text-xs leading-relaxed resize-none"

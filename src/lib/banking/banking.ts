@@ -49,7 +49,7 @@ export const FALLBACK_ACCOUNTS: BankAccountRow[] = [
     id: "default-current-ac",
     name: "Bank of Baroda Current A/c",
     bank_name: "Bank of Baroda",
-    account_number: "BOB Current A/c (Mob: +91 7742090866)",
+    account_number: "53130200000136 (+91 7742090866)",
     account_type: "current",
     upi_id: "7742090866@barodampay",
     opening_balance: 0,

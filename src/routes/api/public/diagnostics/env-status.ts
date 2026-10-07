@@ -122,6 +122,65 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
               };
             }
 
+            if (action === "seed_bank" || shouldUnify) {
+              const { data: existingAccounts } = await supabaseAdmin
+                .from("bank_accounts" as never)
+                .select("id, name, account_number")
+                .limit(10);
+
+              const hasBob = (
+                existingAccounts as Array<{ name?: string; account_number?: string }> | null
+              )?.some(
+                (a) =>
+                  a.account_number?.includes("53130200000136") ||
+                  a.name?.toLowerCase().includes("baroda"),
+              );
+
+              if (!hasBob) {
+                await supabaseAdmin.from("bank_accounts" as never).insert([
+                  {
+                    name: "Bank of Baroda Current A/c",
+                    bank_name: "Bank of Baroda",
+                    account_number: "53130200000136 (+91 7742090866)",
+                    account_type: "current",
+                    upi_id: "7742090866@barodampay",
+                    opening_balance: 0,
+                    current_balance: 0,
+                    is_active: true,
+                    is_primary: true,
+                    sort_order: 1,
+                  },
+                  {
+                    name: "Google Pay UPI (+91 7742090866)",
+                    bank_name: "GPay / NPCI UPI",
+                    account_number: "Linked: +91 7742090866",
+                    account_type: "clearing",
+                    upi_id: "stonetech.ahmedabad@okaxis",
+                    opening_balance: 0,
+                    current_balance: 0,
+                    is_active: true,
+                    is_primary: false,
+                    sort_order: 2,
+                  },
+                  {
+                    name: "Petty Cash & Site Float",
+                    bank_name: "Cash on Hand",
+                    account_number: "Cash Drawer",
+                    account_type: "cash",
+                    upi_id: null,
+                    opening_balance: 0,
+                    current_balance: 0,
+                    is_active: true,
+                    is_primary: false,
+                    sort_order: 3,
+                  },
+                ] as never);
+                body.bank_seeded = true;
+              } else {
+                body.bank_seeded = false;
+              }
+            }
+
             if (action === "promote" || targetTable || shouldUnify) {
               const tablesToPromote = targetTable ? [targetTable] : OPERATIONAL_TABLES.slice(0, 10);
               const tablePromotions: Record<string, { promoted: number; total: number }> = {};

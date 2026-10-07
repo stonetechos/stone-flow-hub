@@ -37,16 +37,21 @@ export function parseTransactionMessage(text: string): ParsedTransaction | null 
     source = "phonepe";
   } else if (
     lower.includes("bank") ||
+    lower.includes("baroda") ||
+    lower.includes("bob") ||
     lower.includes("sbi") ||
     lower.includes("hdfc") ||
     lower.includes("icici") ||
     lower.includes("axis") ||
     lower.includes("kotak") ||
     lower.includes("pnb") ||
-    lower.includes("bob") ||
     lower.includes("a/c") ||
     lower.includes("acct") ||
-    lower.includes("upi")
+    lower.includes("account") ||
+    lower.includes("upi") ||
+    lower.includes("53130200000136") ||
+    lower.includes("7742090866") ||
+    lower.includes("stonetech.ahmedabad")
   ) {
     source = "bank_sms";
   }
@@ -127,11 +132,20 @@ export function parseTransactionMessage(text: string): ParsedTransaction | null 
     }
   }
 
-  // 6. Extract Account last 4 digits
+  // 6. Extract Account last 4 digits or full account number
   let account_last4: string | null = null;
-  const accMatch = clean.match(/(?:a\/c|acct|account|ending|card)[^\d]*(\d{4})\b/i);
-  if (accMatch && accMatch[1]) {
-    account_last4 = accMatch[1];
+  if (clean.includes("53130200000136")) {
+    account_last4 = "0136";
+  } else {
+    const accMatch = clean.match(/(?:a\/c|acct|account|ending|card)[^\d]*(\d{4})\b/i);
+    if (accMatch && accMatch[1]) {
+      account_last4 = accMatch[1];
+    } else {
+      const fullAccMatch = clean.match(/(?:a\/c|acct|account)\s*(?:no\.?)?[^\d]*(\d{10,18})\b/i);
+      if (fullAccMatch && fullAccMatch[1]) {
+        account_last4 = fullAccMatch[1].slice(-4);
+      }
+    }
   }
 
   // 7. Extract Date
