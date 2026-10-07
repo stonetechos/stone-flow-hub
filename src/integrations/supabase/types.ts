@@ -10139,6 +10139,7 @@ export type Database = {
         | "pu_panels"
         | "stone_veneer_artwork"
         | "agate_slabs"
+        | "clay_veneers"
       space_type:
         | "bungalow"
         | "apartment"
@@ -10652,6 +10653,7 @@ export const Constants = {
         "pu_panels",
         "stone_veneer_artwork",
         "agate_slabs",
+        "clay_veneers",
       ],
       space_type: [
         "bungalow",

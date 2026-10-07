@@ -71,4 +71,18 @@ describe("material-interests fallback helpers", () => {
 
     expect(hydrated.filter((i) => i === "natural_stone_cladding_tiles").length).toBe(1);
   });
+
+  it("sanitizes and hydrates clay_veneers seamlessly", () => {
+    const sanitized = sanitizeForPendingDbEnum(
+      ["clay_veneers", "stone_veneer"],
+      "Discussed exterior facade",
+    );
+    expect(sanitized.filteredInterests).toEqual(["stone_veneer"]);
+    expect(sanitized.hasPending).toBe(true);
+    expect(sanitized.sanitizedNotes).toContain("[Products of Interest: Clay Veneers]");
+
+    const hydrated = hydrateMaterialInterests(["stone_veneer"], sanitized.sanitizedNotes);
+    expect(hydrated).toContain("stone_veneer");
+    expect(hydrated).toContain("clay_veneers");
+  });
 });

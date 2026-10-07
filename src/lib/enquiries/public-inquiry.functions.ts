@@ -114,6 +114,9 @@ const VALID_MATERIAL_INTERESTS: Record<string, Database["public"]["Enums"]["mate
   "stone cladding tiles": "natural_stone_cladding_tiles",
   "cladding tiles": "natural_stone_cladding_tiles",
   natural_stone_cladding_tiles: "natural_stone_cladding_tiles",
+  "clay veneers": "clay_veneers",
+  "clay veneer": "clay_veneers",
+  clay_veneers: "clay_veneers",
 };
 
 export type PublicInquiryInput = z.infer<typeof publicInquiryInputSchema>;

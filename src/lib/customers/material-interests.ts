@@ -4,9 +4,15 @@ export type MaterialInterest = Database["public"]["Enums"]["material_interest"];
 
 export const PENDING_MATERIAL_INTERESTS: readonly MaterialInterest[] = [
   "natural_stone_cladding_tiles",
+  "clay_veneers",
 ];
 
-export const PENDING_MATERIAL_NOTE_TAG = "[Products of Interest: Natural Stone Cladding Tiles]";
+export const PENDING_NOTE_TAGS: Record<MaterialInterest, string> = {
+  natural_stone_cladding_tiles: "[Products of Interest: Natural Stone Cladding Tiles]",
+  clay_veneers: "[Products of Interest: Clay Veneers]",
+} as Record<MaterialInterest, string>;
+
+export const PENDING_MATERIAL_NOTE_TAG = PENDING_NOTE_TAGS.natural_stone_cladding_tiles;
 
 /**
  * Checks whether a database error is due to Postgres rejecting an un-migrated
@@ -36,9 +42,9 @@ export function isMaterialInterestEnumError(err: unknown): boolean {
 
 /**
  * Normalizes material interests and notes when the database enum hasn't been migrated yet.
- * - If `natural_stone_cladding_tiles` is present, filters it out from the DB array and
- *   persists it safely into `notes` using a structured tag.
- * - If it is NOT present, any previous tag in `notes` is cleaned up so deselecting works.
+ * - If pending values like `clay_veneers` or `natural_stone_cladding_tiles` are present,
+ *   filters them out from the DB array and persists them safely into `notes` using structured tags.
+ * - If deselecting, any corresponding tags in `notes` are cleaned up.
  */
 export function sanitizeForPendingDbEnum(
   materialInterests: MaterialInterest[] | undefined | null,
@@ -49,22 +55,28 @@ export function sanitizeForPendingDbEnum(
   hasPending: boolean;
 } {
   const interests = (materialInterests ?? []) as MaterialInterest[];
-  const hasPending = interests.includes("natural_stone_cladding_tiles");
-  const filteredInterests = interests.filter((i) => i !== "natural_stone_cladding_tiles");
+  const pendingPresent = interests.filter((i) => PENDING_MATERIAL_INTERESTS.includes(i));
+  const filteredInterests = interests.filter((i) => !PENDING_MATERIAL_INTERESTS.includes(i));
+  const hasPending = pendingPresent.length > 0;
 
   let sanitizedNotes = notes ? notes.trim() : null;
 
-  if (hasPending) {
-    if (!sanitizedNotes) {
-      sanitizedNotes = PENDING_MATERIAL_NOTE_TAG;
-    } else if (!sanitizedNotes.includes(PENDING_MATERIAL_NOTE_TAG)) {
-      sanitizedNotes = `${sanitizedNotes}\n${PENDING_MATERIAL_NOTE_TAG}`;
+  for (const pendingKey of PENDING_MATERIAL_INTERESTS) {
+    const tag = PENDING_NOTE_TAGS[pendingKey];
+    if (!tag) continue;
+
+    if (interests.includes(pendingKey)) {
+      if (!sanitizedNotes) {
+        sanitizedNotes = tag;
+      } else if (!sanitizedNotes.includes(tag)) {
+        sanitizedNotes = `${sanitizedNotes}\n${tag}`;
+      }
+    } else if (sanitizedNotes && sanitizedNotes.includes(tag)) {
+      // User deselected it — strip the tag from notes
+      const escapedTag = tag.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      sanitizedNotes =
+        sanitizedNotes.replace(new RegExp(`(?:\\r?\\n)?${escapedTag}`, "g"), "").trim() || null;
     }
-  } else if (sanitizedNotes && sanitizedNotes.includes(PENDING_MATERIAL_NOTE_TAG)) {
-    // User deselected it — strip the tag from notes
-    const escapedTag = PENDING_MATERIAL_NOTE_TAG.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-    sanitizedNotes =
-      sanitizedNotes.replace(new RegExp(`(?:\\r?\\n)?${escapedTag}`, "g"), "").trim() || null;
   }
 
   return {
@@ -75,19 +87,22 @@ export function sanitizeForPendingDbEnum(
 }
 
 /**
- * Hydrates material interests from the notes tag if absent from the PostgreSQL column.
- * Ensures the UI accurately displays "Natural Stone Cladding Tiles" and preselects its checkbox.
+ * Hydrates material interests from the notes tags if absent from the PostgreSQL column.
+ * Ensures the UI accurately displays "Clay Veneers" & "Natural Stone Cladding Tiles" and preselects checkboxes.
  */
 export function hydrateMaterialInterests(
   materialInterests: (MaterialInterest | string)[] | undefined | null,
   notes: string | null | undefined,
 ): MaterialInterest[] {
   const result = [...((materialInterests ?? []) as MaterialInterest[])];
-  if (
-    notes?.includes(PENDING_MATERIAL_NOTE_TAG) &&
-    !result.includes("natural_stone_cladding_tiles")
-  ) {
-    result.push("natural_stone_cladding_tiles");
+  if (!notes) return result;
+
+  for (const pendingKey of PENDING_MATERIAL_INTERESTS) {
+    const tag = PENDING_NOTE_TAGS[pendingKey];
+    if (tag && notes.includes(tag) && !result.includes(pendingKey)) {
+      result.push(pendingKey);
+    }
   }
+
   return result;
 }
