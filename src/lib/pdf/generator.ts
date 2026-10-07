@@ -96,8 +96,8 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const border = "#E5E7EB";
 
   const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:52px;max-width:180px;object-fit:contain" />`
-    : `<div style="font-size:22px;font-weight:800;color:${accent};letter-spacing:-.01em">${esc(brand.company_name)}</div>`;
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:64px;max-width:220px;object-fit:contain;display:block" />`
+    : `<div style="font-size:24px;font-weight:800;color:${accent};letter-spacing:-.01em">${esc(brand.company_name)}</div>`;
 
   const showHsn = (doc.lines ?? []).some((l) => l.hsn);
   const rows = (doc.lines ?? [])
@@ -198,23 +198,27 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 
   return `<!doctype html><html><head><meta charset="utf-8" />
 <title>${esc(doc.title)} · ${esc(doc.number)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 16mm; }
   @media print { .no-print { display:none !important; } }
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:${ink}; margin:0; background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:${ink}; margin:0; background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; letter-spacing: -0.01em; }
   .sheet { max-width: 780px; margin: 0 auto; padding: 24px; }
   .toolbar { position: sticky; top:0; background:#f8fafc; border-bottom:1px solid ${border}; padding:8px 24px; display:flex; gap:8px; justify-content:flex-end; }
-  .toolbar button { font: inherit; padding:6px 12px; border-radius:6px; border:1px solid ${border}; background:#fff; cursor:pointer; }
+  .toolbar button { font-family: inherit; font-size:13px; font-weight:500; padding:6px 12px; border-radius:6px; border:1px solid ${border}; background:#fff; cursor:pointer; }
   header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; padding-bottom:16px; border-bottom:3px solid ${accent}; }
-  .doc-title { font-size:22px; margin:0; color:${accent}; letter-spacing:-.01em; font-weight:700; }
+  .doc-title { font-size:24px; margin:0; color:${accent}; letter-spacing:-0.02em; font-weight:800; text-transform: uppercase; }
   .doc-sub { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:${muted}; margin-top:4px; }
+  .brand-tagline { font-family: 'Caveat', cursive, 'Brush Script MT', sans-serif; font-size: 19px; font-weight: 700; color: ${accent}; margin-top: 3px; letter-spacing: 0.01em; line-height: 1.2; }
   .parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0 16px; }
   table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-  thead th { text-align:left; padding:8px; background:${accent}; color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+  thead th { text-align:left; padding:8px 10px; background:${accent}; color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
   thead th:last-child, thead th.right { text-align:right; }
   .totals { margin-top:20px; margin-left:auto; width:300px; }
-  .notes { margin-top:16px; padding:12px 14px; background:#F8FAFC; border-left:3px solid ${accent}; font-size:12px; color:#334155; }
+  .notes { margin-top:16px; padding:12px 14px; background:#F8FAFC; border-left:3px solid ${accent}; font-size:12px; color:#334155; border-radius: 0 4px 4px 0; }
   .terms { margin-top:14px; font-size:11px; color:${muted}; white-space:pre-line; line-height:1.55; }
   .footer { margin-top:28px; padding-top:12px; border-top:1px solid ${border}; font-size:10px; color:${muted}; text-align:center; }
   .footer a { color:${accent}; text-decoration:none; }
@@ -228,7 +232,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     <header>
       <div>
         ${logo}
-        <div class="doc-sub">${esc(brand.tagline || "")}</div>
+        <div class="brand-tagline">${esc(brand.tagline || "ever evolving!")}</div>
       </div>
       <div style="text-align:right">
         <div class="doc-title">${esc(doc.title)}</div>

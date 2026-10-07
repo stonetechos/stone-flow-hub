@@ -43,10 +43,10 @@ export interface BrandingConfig {
 
 export const DEFAULT_BRANDING: BrandingConfig = {
   company_name: "Stone Tech",
-  tagline: "Natural Stone Excellence",
+  tagline: "ever evolving!",
   primary: "#0d9488", // teal-600
   accent: "#334155", // granite slate-700
-  logo_url: "/logo.png", // Assuming logo is placed in public
+  logo_url: "/branding/stone-tech-logo.jpg",
   address: "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, 380060",
   phone: "+91 7742090866",
   email: "hello@stonetech.in",
@@ -79,24 +79,25 @@ export async function loadBranding(): Promise<BrandingConfig> {
   return {
     ...DEFAULT_BRANDING,
     company_name: c.company_name || DEFAULT_BRANDING.company_name,
-    logo_url: c.logo_url ?? "",
-    address,
-    phone: c.phone ?? "",
-    email: c.email ?? "",
-    gstin: c.gstin ?? "",
-    website: c.website ?? "",
+    tagline: (c as { tagline?: string }).tagline || DEFAULT_BRANDING.tagline,
+    logo_url: c.logo_url || DEFAULT_BRANDING.logo_url,
+    address: address || DEFAULT_BRANDING.address,
+    phone: c.phone || DEFAULT_BRANDING.phone,
+    email: c.email || DEFAULT_BRANDING.email,
+    gstin: c.gstin || DEFAULT_BRANDING.gstin,
+    website: c.website || DEFAULT_BRANDING.website,
     legal_business_name: c.legal_business_name ?? undefined,
     trade_name: c.trade_name ?? undefined,
     mobile: c.mobile ?? undefined,
     pan: c.pan ?? undefined,
     cin: c.cin ?? undefined,
-    bank_name: c.bank_name ?? undefined,
+    bank_name: c.bank_name ?? DEFAULT_BRANDING.bank_name,
     bank_branch: c.bank_branch ?? undefined,
-    bank_account_number: c.bank_account_number ?? undefined,
-    bank_ifsc: c.bank_ifsc ?? undefined,
-    upi_id: c.upi_id ?? undefined,
-    authorized_signatory: c.authorized_signatory ?? undefined,
-    signature_url: c.signature_url ?? undefined,
+    bank_account_number: c.bank_account_number ?? DEFAULT_BRANDING.bank_account_number,
+    bank_ifsc: c.bank_ifsc ?? DEFAULT_BRANDING.bank_ifsc,
+    upi_id: c.upi_id ?? DEFAULT_BRANDING.upi_id,
+    authorized_signatory: c.authorized_signatory ?? DEFAULT_BRANDING.authorized_signatory,
+    signature_url: c.signature_url || DEFAULT_BRANDING.signature_url,
     stamp_url: c.stamp_url ?? undefined,
   };
 }

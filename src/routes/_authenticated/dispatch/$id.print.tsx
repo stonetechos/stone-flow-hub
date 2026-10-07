@@ -70,7 +70,14 @@ function PrintDispatchPage() {
           )}
           <div>
             <div className="text-lg font-bold">{b.company_name}</div>
-            {b.tagline && <div className="text-xs text-slate-500">{b.tagline}</div>}
+            {b.tagline && (
+              <div
+                className="text-sm font-semibold tracking-wide text-teal-700 italic"
+                style={{ fontFamily: "'Caveat', cursive, 'Brush Script MT', sans-serif" }}
+              >
+                {b.tagline}
+              </div>
+            )}
             {b.address && <div className="mt-1 text-xs text-slate-600">{b.address}</div>}
             <div className="text-xs text-slate-600">
               {[b.phone, b.email, b.website].filter(Boolean).join(" · ")}

@@ -181,6 +181,28 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
               }
             }
 
+            // Sync company profile logo and branding
+            if (shouldUnify || action === "sync-branding") {
+              try {
+                const { data: prof } = await supabaseAdmin
+                  .from("company_profiles" as never)
+                  .select("id, logo_url")
+                  .eq("is_active", true)
+                  .limit(1)
+                  .maybeSingle();
+
+                if (prof && !(prof as { logo_url?: string }).logo_url) {
+                  await supabaseAdmin
+                    .from("company_profiles" as never)
+                    .update({ logo_url: "/branding/stone-tech-logo.jpg" } as never)
+                    .eq("id", (prof as { id: string }).id);
+                  body.company_profile_updated = true;
+                }
+              } catch (profErr: unknown) {
+                console.warn("[env-status] error updating company profile:", profErr);
+              }
+            }
+
             if (action === "promote" || targetTable || shouldUnify) {
               const tablesToPromote = targetTable ? [targetTable] : OPERATIONAL_TABLES.slice(0, 10);
               const tablePromotions: Record<string, { promoted: number; total: number }> = {};

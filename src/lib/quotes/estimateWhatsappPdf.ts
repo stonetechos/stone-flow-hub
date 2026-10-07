@@ -84,8 +84,8 @@ function renderEstimateHtml(
 ): string {
   const accent = brand.primary || "#0F766E";
   const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:48px;max-width:170px;object-fit:contain" />`
-    : `<div style="font-size:20px;font-weight:800;color:${accent}">${esc(brand.company_name)}</div>`;
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:64px;max-width:220px;object-fit:contain;display:block" />`
+    : `<div style="font-size:24px;font-weight:800;color:${accent}">${esc(brand.company_name)}</div>`;
   const photos = productImageDataUrls.length
     ? `<div style="margin-top:20px">
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:8px">Product photo(s) — sent as additional attachment(s)</div>
@@ -102,15 +102,19 @@ function renderEstimateHtml(
 
   return `<!doctype html><html><head><meta charset="utf-8" />
 <title>Estimate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 16mm; }
   @media print { .no-print { display:none !important; } }
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:#0F172A; margin:0; background:#fff; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:#0F172A; margin:0; background:#fff; letter-spacing: -0.01em; }
   .sheet { max-width: 680px; margin: 0 auto; padding: 24px; }
   .toolbar { position: sticky; top:0; background:#f8fafc; border-bottom:1px solid #E5E7EB; padding:8px 24px; display:flex; gap:8px; justify-content:flex-end; }
-  .toolbar button { font: inherit; padding:6px 12px; border-radius:6px; border:1px solid #E5E7EB; background:#fff; cursor:pointer; }
-  header { padding-bottom:14px; border-bottom:3px solid ${accent}; margin-bottom:18px; }
+  .toolbar button { font-family: inherit; font-size:13px; font-weight:500; padding:6px 12px; border-radius:6px; border:1px solid #E5E7EB; background:#fff; cursor:pointer; }
+  header { display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:14px; border-bottom:3px solid ${accent}; margin-bottom:18px; }
+  .brand-tagline { font-family: 'Caveat', cursive, 'Brush Script MT', sans-serif; font-size: 19px; font-weight: 700; color: ${accent}; margin-top: 3px; letter-spacing: 0.01em; line-height: 1.2; }
   .msg { white-space:pre-wrap; font-size:13.5px; line-height:1.65; color:#1E293B; }
   .footer { margin-top:24px; padding-top:10px; border-top:1px solid #E5E7EB; font-size:10px; color:#64748B; text-align:center; }
 </style>
@@ -120,7 +124,13 @@ function renderEstimateHtml(
     <button onclick="window.close()">Close</button>
   </div>
   <div class="sheet">
-    <header>${logo}</header>
+    <header>
+      <div>
+        ${logo}
+        <div class="brand-tagline">${esc(brand.tagline || "ever evolving!")}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${accent}">Project Estimate</div>
+    </header>
     <div class="msg">${esc(message)}</div>
     ${photos}
     <div class="footer">${esc(brand.company_name)} — This is a system-generated estimate.</div>
