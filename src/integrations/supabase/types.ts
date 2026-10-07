@@ -642,6 +642,8 @@ export type Database = {
           billing_address: string | null
           city: string | null
           company_id: string | null
+          company_name: string | null
+          contact_person: string | null
           country: string | null
           created_at: string
           created_by: string | null
@@ -680,6 +682,8 @@ export type Database = {
           billing_address?: string | null
           city?: string | null
           company_id?: string | null
+          company_name?: string | null
+          contact_person?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
@@ -718,6 +722,8 @@ export type Database = {
           billing_address?: string | null
           city?: string | null
           company_id?: string | null
+          company_name?: string | null
+          contact_person?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null

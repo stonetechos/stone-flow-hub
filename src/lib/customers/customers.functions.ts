@@ -73,6 +73,8 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       const payload = {
         customer_code: "",
         name: input.name,
+        contact_person: input.contact_person ?? null,
+        company_name: input.company_name ?? null,
         primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
         whatsapp: input.whatsapp ?? null,
@@ -93,7 +95,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       let row: CustomerRow | null = null;
       const initialInsert = await supabaseAdmin
         .from("customers")
-        .insert(payload)
+        .insert(payload as never)
         .select("*")
         .single();
 
@@ -117,7 +119,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
             ...payload,
             material_interests: filteredInterests,
             notes: sanitizedNotes,
-          })
+          } as never)
           .select("*")
           .single();
         insertData = retryResult.data;
@@ -141,6 +143,8 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       // Update existing customer
       const updatePayload = {
         name: input.name,
+        contact_person: input.contact_person ?? null,
+        company_name: input.company_name ?? null,
         primary_phone: normalizedPhone || null,
         primary_email: input.email ?? null,
         whatsapp: input.whatsapp ?? null,
@@ -159,7 +163,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
 
       const initialUpdate = await supabaseAdmin
         .from("customers")
-        .update(updatePayload)
+        .update(updatePayload as never)
         .eq("id", id)
         .select("*")
         .single();

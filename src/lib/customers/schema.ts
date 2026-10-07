@@ -69,6 +69,8 @@ export const customerCreateSchema = z
   .object({
     // Quick Fill — Step 1 simplified Customer Registration fields
     name: zRequired("Customer name"),
+    contact_person: zOptional(),
+    company_name: zOptional(),
     // Validation stays permissive across the FULL db enum (old values included)
     // because other create paths — the enquiry auto-create flow, the VIE
     // voice/AI planner — still legitimately pass legacy values like

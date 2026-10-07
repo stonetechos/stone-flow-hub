@@ -711,7 +711,11 @@
     "whatsappHintMobile": "Dropdown defaults to Phone Number",
     "whatsappHintDigits": "10 digits",
     "billingAddress": "Billing address",
-    "gstNumber": "GST number"
+    "gstNumber": "GST number",
+    "contactPerson": "Contact Person's Name",
+    "contactPersonHint": "Key person or representative",
+    "companyName": "Firm / Company Name",
+    "companyNameHint": "Business or enterprise name"
   },
   "enquiries": {
     "searchPlaceholder": "Search by enquiry no, requirement, or notes…",

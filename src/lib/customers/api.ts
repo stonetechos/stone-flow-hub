@@ -17,6 +17,8 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
     q = q.or(
       [
         `name.ilike.%${s}%`,
+        `company_name.ilike.%${s}%`,
+        `contact_person.ilike.%${s}%`,
         `customer_code.ilike.%${s}%`,
         `primary_phone.ilike.%${s}%`,
         `whatsapp.ilike.%${s}%`,
@@ -96,6 +98,8 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
   const insertPayload = {
     customer_code: "",
     name: parsed.name,
+    contact_person: parsed.contact_person ?? null,
+    company_name: parsed.company_name ?? null,
     primary_phone: normalizeMobile(parsed.mobile) || null,
     primary_email: parsed.email ?? null,
     whatsapp: parsed.whatsapp ?? null,
@@ -166,6 +170,8 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
   // 2. Client fallback
   const updatePayload = {
     name: parsed.name,
+    contact_person: parsed.contact_person ?? null,
+    company_name: parsed.company_name ?? null,
     primary_phone: normalizeMobile(parsed.mobile) || null,
     primary_email: parsed.email ?? null,
     whatsapp: parsed.whatsapp ?? null,

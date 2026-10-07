@@ -82,6 +82,8 @@ function QuickCreateCustomer({
   const qc = useQueryClient();
   const [form, setForm] = useState<{
     name: string;
+    contact_person: string;
+    company_name: string;
     mobile: string;
     whatsapp: string;
     email: string;
@@ -89,6 +91,8 @@ function QuickCreateCustomer({
     customer_type: DbEnum<"customer_type">;
   }>({
     name: initialName ?? "",
+    contact_person: "",
+    company_name: "",
     mobile: "",
     whatsapp: "",
     email: "",
@@ -141,7 +145,22 @@ function QuickCreateCustomer({
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Ramesh Patel or ABC Enterprises"
                 required
+              />
+            </Field>
+            <Field label="Contact Person's Name" hint="Key person or representative">
+              <Input
+                value={form.contact_person}
+                onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
+                placeholder="e.g. Ramesh Patel"
+              />
+            </Field>
+            <Field label="Firm / Company Name" hint="Business or enterprise name">
+              <Input
+                value={form.company_name}
+                onChange={(e) => setForm({ ...form, company_name: e.target.value })}
+                placeholder="e.g. ABC Developers LLP"
               />
             </Field>
             <Field label="Mobile" hint="10 digits, +91 optional">

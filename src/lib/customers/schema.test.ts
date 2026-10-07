@@ -42,4 +42,17 @@ describe("customerCreateSchema optional mobile & email", () => {
     expect(normalizeMobile(undefined)).toBe("");
     expect(normalizeMobile("+91 98765-43210")).toBe("9876543210");
   });
+
+  it("supports contact_person and company_name in customer creation", () => {
+    const parsed = customerCreateSchema.parse({
+      name: "ABC Enterprises",
+      contact_person: "Ramesh Patel",
+      company_name: "ABC Developers LLP",
+      mobile: "9876543210",
+    });
+
+    expect(parsed.name).toBe("ABC Enterprises");
+    expect(parsed.contact_person).toBe("Ramesh Patel");
+    expect(parsed.company_name).toBe("ABC Developers LLP");
+  });
 });

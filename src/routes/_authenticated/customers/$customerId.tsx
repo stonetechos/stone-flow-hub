@@ -277,11 +277,31 @@ function CustomerHub() {
       <PageHeader
         title={c.name}
         subtitle={
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs">{c.customer_code}</span>
             <Badge variant="secondary" className="capitalize">
               {c.customer_type.replace("_", " ")}
             </Badge>
+            {(() => {
+              const rowAny = c as unknown as {
+                company_name?: string | null;
+                contact_person?: string | null;
+              };
+              return (
+                <>
+                  {rowAny.company_name && (
+                    <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      Firm: {rowAny.company_name}
+                    </span>
+                  )}
+                  {rowAny.contact_person && (
+                    <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2 py-0.5 rounded">
+                      Contact: {rowAny.contact_person}
+                    </span>
+                  )}
+                </>
+              );
+            })()}
           </span>
         }
         actions={
@@ -429,6 +449,22 @@ function CustomerHub() {
               <InfoGrid
                 items={[
                   { label: "Name", value: c.name },
+                  ...((c as unknown as { contact_person?: string | null }).contact_person
+                    ? [
+                        {
+                          label: "Contact Person",
+                          value: (c as unknown as { contact_person: string }).contact_person,
+                        },
+                      ]
+                    : []),
+                  ...((c as unknown as { company_name?: string | null }).company_name
+                    ? [
+                        {
+                          label: "Firm / Company Name",
+                          value: (c as unknown as { company_name: string }).company_name,
+                        },
+                      ]
+                    : []),
                   { label: "Code", value: <span className="font-mono">{c.customer_code}</span> },
                   { label: "Type of Customer", value: c.customer_type.replace(/_/g, " ") },
                   ...(c.customer_type === "reference" && c.referred_by

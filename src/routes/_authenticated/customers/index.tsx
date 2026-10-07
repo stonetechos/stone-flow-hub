@@ -220,14 +220,25 @@ function CustomersPage() {
                     <Link
                       to="/customers/$customerId"
                       params={{ customerId: c.id }}
-                      className="hover:underline flex flex-col"
+                      className="hover:underline flex flex-col gap-0.5"
                     >
                       <span>{c.name}</span>
-                      {c.customer_code && (
-                        <span className="font-mono text-xs font-normal text-muted-foreground">
-                          {c.customer_code}
-                        </span>
-                      )}
+                      {(() => {
+                        const rowAny = c as unknown as {
+                          company_name?: string | null;
+                          contact_person?: string | null;
+                        };
+                        const badges = [
+                          rowAny.company_name ? `Firm: ${rowAny.company_name}` : null,
+                          rowAny.contact_person ? `Contact: ${rowAny.contact_person}` : null,
+                          c.customer_code,
+                        ].filter(Boolean);
+                        return badges.length > 0 ? (
+                          <span className="font-mono text-xs font-normal text-muted-foreground">
+                            {badges.join(" · ")}
+                          </span>
+                        ) : null;
+                      })()}
                     </Link>
                   </TableCell>
                   <TableCell>
@@ -283,6 +294,8 @@ function CustomersPage() {
 function emptyForm(): CustomerCreateInput {
   return {
     name: "",
+    contact_person: null,
+    company_name: null,
     mobile: "",
     email: null,
     city: null,
@@ -301,8 +314,11 @@ function emptyForm(): CustomerCreateInput {
 }
 
 function fromRow(c: CustomerRow): CustomerCreateInput {
+  const rowAny = c as unknown as { contact_person?: string | null; company_name?: string | null };
   return {
     name: c.name,
+    contact_person: rowAny.contact_person ?? null,
+    company_name: rowAny.company_name ?? null,
     mobile: c.primary_phone ?? "",
     email: c.primary_email,
     city: c.city,
@@ -404,7 +420,32 @@ function CustomerFormDialog({
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             <Field label={t("common.name", "Name")} required>
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
+              <Input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="e.g. Ramesh Patel or ABC Enterprises"
+                required
+              />
+            </Field>
+            <Field
+              label={t("customers.contactPerson", "Contact Person's Name")}
+              hint={t("customers.contactPersonHint", "Key person or representative")}
+            >
+              <Input
+                value={form.contact_person ?? ""}
+                onChange={(e) => set("contact_person", e.target.value)}
+                placeholder="e.g. Ramesh Patel"
+              />
+            </Field>
+            <Field
+              label={t("customers.companyName", "Firm / Company Name")}
+              hint={t("customers.companyNameHint", "Business or enterprise name")}
+            >
+              <Input
+                value={form.company_name ?? ""}
+                onChange={(e) => set("company_name", e.target.value)}
+                placeholder="e.g. ABC Developers LLP"
+              />
             </Field>
             <Field label={t("customers.customerType", "Type of Customer")} required>
               <Select
