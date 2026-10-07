@@ -56,6 +56,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CountryCodeSelect } from "@/components/forms/inputs/CountryCodeSelect";
 import { CustomerInquiryLookupDialog } from "@/components/enquiry/CustomerInquiryLookupDialog";
+import { CladdingShowcase } from "@/components/landing/CladdingShowcase";
 import { StoneGalleryFeed } from "@/components/landing/StoneGalleryFeed";
 import { LuxuryProductShowcase } from "@/components/landing/LuxuryProductShowcase";
 import { ContactCenter } from "@/components/landing/ContactCenter";
@@ -690,6 +691,12 @@ function HomePage() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-foreground/80">
+            <a
+              href="#cladding-showcase"
+              className="hover:text-primary transition-colors whitespace-nowrap py-1"
+            >
+              Cladding
+            </a>
             <a
               href="#gallery-feed"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
@@ -1487,9 +1494,12 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (GALLERY FEED & CURATED SHOWCASE) */}
+      {/* 2b. LIVE INSTALLATIONS & EXECUTED WORKS (CLADDING SHOWCASE, GALLERY FEED & CURATED SHOWCASE) */}
       <section className="py-12 sm:py-16 border-b border-border/60 bg-gradient-to-b from-stone-50/50 via-background to-stone-50/30 dark:from-stone-950/40 dark:via-background dark:to-stone-950/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
+          {/* Interactive Wall Cladding Showcase with Clickable Photos & Wall Viewer */}
+          <CladdingShowcase onSelectProduct={scrollToForm} />
+
           {/* Embedded Stone Gallery Feed in rounded container */}
           <div id="gallery-feed" className="scroll-mt-24">
             <StoneGalleryFeed onSelectProduct={scrollToForm} />

@@ -58,6 +58,11 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       "estimate_card_subtext",
       SITE_SETTINGS_DEFAULTS.estimate_card_subtext,
     ),
+    cladding_products: parseSetting(
+      rows,
+      "cladding_products",
+      SITE_SETTINGS_DEFAULTS.cladding_products,
+    ),
   };
 }
 
