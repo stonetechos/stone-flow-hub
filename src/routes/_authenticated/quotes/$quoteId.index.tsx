@@ -360,6 +360,7 @@ function QuoteDetailPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Description</TableHead>
+                  <TableHead>HSN</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Unit</TableHead>
                   <TableHead className="text-right">Rate</TableHead>
@@ -371,6 +372,9 @@ function QuoteDetailPage() {
                 {(items.data ?? []).map((it) => (
                   <TableRow key={it.id}>
                     <TableCell className="font-medium">{it.description}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                    </TableCell>
                     <TableCell className="text-right">{it.quantity}</TableCell>
                     <TableCell>{it.unit ?? "—"}</TableCell>
                     <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>

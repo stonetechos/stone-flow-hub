@@ -240,11 +240,12 @@ type DraftRow = {
   unit: string | null;
   unit_price: string;
   tax_pct: string;
+  hsn_sac: string;
   fulfilment: string | null;
 };
 
 function toDraft(row: QuoteItemRow): DraftRow {
-  const anyRow = row as unknown as { fulfilment?: string | null };
+  const anyRow = row as unknown as { fulfilment?: string | null; hsn_sac?: string | null };
   return {
     id: row.id,
     description: row.description ?? "",
@@ -252,6 +253,7 @@ function toDraft(row: QuoteItemRow): DraftRow {
     unit: row.unit ?? null,
     unit_price: String(row.unit_price ?? ""),
     tax_pct: String(row.tax_pct ?? ""),
+    hsn_sac: anyRow.hsn_sac ?? "",
     fulfilment: anyRow.fulfilment ?? null,
   };
 }
@@ -376,6 +378,17 @@ function LineItemsEditor({
     } else if (key === "unit") {
       const v = row.unit?.trim() || null;
       if (v !== (original.unit ?? null)) patchMut.mutate({ id, patch: { unit: v } });
+    } else if (key === "hsn_sac") {
+      const v = row.hsn_sac?.trim() || null;
+      const orig = (original as unknown as { hsn_sac?: string | null }).hsn_sac ?? null;
+      if (v !== orig) {
+        if (v && !/^[0-9]{4,8}$/.test(v)) {
+          toast.error("HSN must be 4 to 8 digits");
+          setRows((rs) => rs.map((r) => (r.id === id ? { ...r, hsn_sac: orig ?? "" } : r)));
+          return;
+        }
+        patchMut.mutate({ id, patch: { hsn_sac: v } });
+      }
     }
   };
 
@@ -439,7 +452,7 @@ function LineItemsEditor({
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
-                    <div className="md:col-span-4">
+                    <div className="md:col-span-3">
                       <label className="text-xs text-muted-foreground">Description</label>
                       <Input
                         value={r.description}
@@ -448,6 +461,17 @@ function LineItemsEditor({
                       />
                     </div>
                     <div className="md:col-span-2">
+                      <label className="text-xs text-muted-foreground">HSN Code</label>
+                      <Input
+                        placeholder="4-8 digits"
+                        value={r.hsn_sac}
+                        onChange={(e) =>
+                          updateRow(r.id, "hsn_sac", e.target.value.replace(/\D/g, "").slice(0, 8))
+                        }
+                        onBlur={() => commit(r.id, "hsn_sac", original)}
+                      />
+                    </div>
+                    <div className="md:col-span-1">
                       <label className="text-xs text-muted-foreground">Qty</label>
                       <NumericInput
                         value={r.quantity}

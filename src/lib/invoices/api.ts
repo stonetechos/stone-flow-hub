@@ -153,3 +153,66 @@ export async function deleteInvoice(id: string): Promise<void> {
   const { error } = await getDb().from("invoices").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
+
+/* ------------------------------------------------------------------ */
+/* Invoice Line Items                                                 */
+/* ------------------------------------------------------------------ */
+
+export type InvoiceItemPatch = {
+  description?: string;
+  quantity?: number;
+  unit?: string | null;
+  unit_price?: number;
+  tax_pct?: number;
+  hsn_sac?: string | null;
+  sort_order?: number;
+};
+
+export async function addInvoiceItem(
+  invoiceId: string,
+  patch: InvoiceItemPatch & { description: string; quantity: number; unit_price: number },
+): Promise<InvoiceItemRow> {
+  const { data: existing, error: exErr } = await getDb()
+    .from("invoice_items")
+    .select("sort_order")
+    .eq("invoice_id", invoiceId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  if (exErr) throw new AppError(mapDbError(exErr));
+  const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
+  const { data, error } = await getDb()
+    .from("invoice_items")
+    .insert({
+      invoice_id: invoiceId,
+      description: patch.description,
+      quantity: patch.quantity,
+      unit: patch.unit ?? null,
+      unit_price: patch.unit_price,
+      tax_pct: patch.tax_pct ?? 0,
+      hsn_sac: patch.hsn_sac ?? null,
+      sort_order: patch.sort_order ?? nextSort,
+    } as never)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function updateInvoiceItem(
+  itemId: string,
+  patch: InvoiceItemPatch,
+): Promise<InvoiceItemRow> {
+  const { data, error } = await getDb()
+    .from("invoice_items")
+    .update(patch as never)
+    .eq("id", itemId)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data;
+}
+
+export async function deleteInvoiceItem(itemId: string): Promise<void> {
+  const { error } = await getDb().from("invoice_items").delete().eq("id", itemId);
+  if (error) throw new AppError(mapDbError(error));
+}

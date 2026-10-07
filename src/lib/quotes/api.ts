@@ -119,6 +119,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     unit: it.unit ?? null,
     unit_price: it.unit_price,
     tax_pct: it.tax_pct,
+    hsn_sac: it.hsn_sac ?? null,
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
   }));
@@ -273,6 +274,7 @@ export type QuoteItemPatch = {
   unit?: string | null;
   unit_price?: number;
   tax_pct?: number;
+  hsn_sac?: string | null;
   fulfilment?: string | null;
   sort_order?: number;
 };
@@ -298,6 +300,7 @@ export async function addQuoteItem(
       unit: patch.unit ?? null,
       unit_price: patch.unit_price,
       tax_pct: patch.tax_pct ?? 0,
+      hsn_sac: patch.hsn_sac ?? null,
       sort_order: patch.sort_order ?? nextSort,
       ...(patch.fulfilment ? { fulfilment: patch.fulfilment } : {}),
     } as never)
@@ -373,7 +376,7 @@ export async function reviseQuote(quoteId: string): Promise<QuoteRow> {
       : `Revision of ${src.quote_no}`,
     terms: src.terms ?? null,
     items: items.map((it) => {
-      const anyIt = it as unknown as { fulfilment?: string | null };
+      const anyIt = it as unknown as { fulfilment?: string | null; hsn_sac?: string | null };
       return {
         product_id: it.product_id ?? null,
         description: it.description,
@@ -381,6 +384,7 @@ export async function reviseQuote(quoteId: string): Promise<QuoteRow> {
         unit: it.unit ?? null,
         unit_price: Number(it.unit_price),
         tax_pct: Number(it.tax_pct),
+        hsn_sac: anyIt.hsn_sac ?? null,
         fulfilment: (anyIt.fulfilment as never) ?? null,
       };
     }),

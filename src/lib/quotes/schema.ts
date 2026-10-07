@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zOptional, zUuid } from "@/lib/zod";
+import { zHsn, zOptional, zUuid } from "@/lib/zod";
 
 export const QUOTE_CATEGORIES = [
   "supply_only",
@@ -26,6 +26,7 @@ export const quoteItemInputSchema = z.object({
   unit: zOptional(),
   unit_price: z.coerce.number().nonnegative(),
   tax_pct: z.coerce.number().min(0).max(100).default(0),
+  hsn_sac: zHsn,
   fulfilment: z.preprocess(
     (v) => (typeof v === "string" && v.trim() === "" ? null : v),
     z.enum(QUOTE_CATEGORIES).nullable().optional(),

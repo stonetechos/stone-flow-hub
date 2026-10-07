@@ -322,6 +322,7 @@ type FormItem = {
   unit: string | null;
   unit_price: string;
   tax_pct: string;
+  hsn_sac: string;
   fulfilment: QuoteCategory | "";
 };
 
@@ -334,6 +335,7 @@ function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
     unit: "sqft",
     unit_price: "",
     tax_pct: "18",
+    hsn_sac: "",
     fulfilment: defaultFulfilment,
   };
 }
@@ -445,6 +447,7 @@ function CreateQuoteDialog({
         unit: it.unit,
         unit_price: it.unit_price === "" ? 0 : it.unit_price,
         tax_pct: it.tax_pct === "" ? 0 : it.tax_pct,
+        hsn_sac: it.hsn_sac || null,
         fulfilment: it.fulfilment || null,
       });
       if (!r.success) return toast.error(r.error.issues[0]?.message ?? "Invalid line item");
@@ -562,7 +565,18 @@ function CreateQuoteDialog({
                           onChange={(e) => updateItem(it.key, { description: e.target.value })}
                         />
                       </LineField>
-                      <LineField label="Quantity" className="col-span-6 md:col-span-2">
+                      <LineField label="HSN Code" className="col-span-6 md:col-span-2">
+                        <Input
+                          placeholder="4-8 digits"
+                          value={it.hsn_sac}
+                          onChange={(e) =>
+                            updateItem(it.key, {
+                              hsn_sac: e.target.value.replace(/\D/g, "").slice(0, 8),
+                            })
+                          }
+                        />
+                      </LineField>
+                      <LineField label="Quantity" className="col-span-6 md:col-span-1">
                         <NumericInput
                           placeholder="0"
                           value={it.quantity}

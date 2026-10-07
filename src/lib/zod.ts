@@ -67,6 +67,9 @@ export const zPan = zPattern(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Enter a valid 10-charac
 /** Indian bank IFSC: 4 letters (bank code) + '0' + 6 alphanumeric (branch code). */
 export const zIfsc = zPattern(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid 11-character IFSC code");
 
+/** Indian HSN code: 4 to 8 numeric digits (chapters, headings, sub-headings, tariffs). */
+export const zHsn = zPattern(/^[0-9]{4,8}$/, "Enter a valid 4 to 8 digit HSN code");
+
 /** Normalize mobile to digits only for duplicate detection. */
 export function normalizeMobile(v?: string | null): string {
   if (!v) return "";
