@@ -39,15 +39,57 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    // 1. Force HTTPS redirect if accessed over unencrypted HTTP (Cloudflare proxy or direct)
+    const proto =
+      request.headers.get("x-forwarded-proto") ||
+      (request.headers.get("cf-visitor")?.includes('"scheme":"http"')
+        ? "http"
+        : url.protocol.replace(":", ""));
+
+    if (proto === "http" && url.hostname !== "localhost" && url.hostname !== "127.0.0.1") {
+      const httpsUrl = new URL(request.url);
+      httpsUrl.protocol = "https:";
+      return new Response(null, {
+        status: 301,
+        headers: {
+          Location: httpsUrl.toString(),
+          "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        },
+      });
+    }
+
     try {
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const rawResponse = await handler.fetch(request, env, ctx);
+      const response = await normalizeCatastrophicSsrResponse(rawResponse);
+
+      // 2. Ensure HSTS and modern security headers
+      const headers = new Headers(response.headers);
+      if (url.protocol === "https:" || proto === "https") {
+        headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+      }
+      if (!headers.has("X-Content-Type-Options")) {
+        headers.set("X-Content-Type-Options", "nosniff");
+      }
+      if (!headers.has("Referrer-Policy")) {
+        headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+      }
+
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
         status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        },
       });
     }
   },

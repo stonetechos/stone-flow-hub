@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/pay/$linkId")({
+  ssr: false,
   component: PayPage,
 });
 
