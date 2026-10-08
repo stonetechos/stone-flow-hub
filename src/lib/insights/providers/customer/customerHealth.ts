@@ -130,6 +130,19 @@ export const CustomerHealthProvider: InsightProvider = {
         level === "Critical" ? "danger" : level === "Risk" ? "warning" : "info";
       const kind: InsightKind = level === "Watch" ? "warning" : "risk";
 
+      let title: string;
+      let actionLabel: string;
+      if (score.outstanding > 0) {
+        title = `${score.name} — ${formatInr(score.outstanding)} balance (${score.overdue_days > 0 ? `${score.overdue_days}d overdue · ` : ""}${level})`;
+        actionLabel = `Collect ${formatInr(score.outstanding)} · ${score.name}`;
+      } else if (score.orders_count > 0) {
+        title = `${score.name} — ${score.orders_count} orders (${formatInr(score.revenue)}), inactive ${daysSinceTouch ?? 0}d (${level})`;
+        actionLabel = `Follow up · ${score.name}`;
+      } else {
+        title = `${score.name} — 0 orders · Inactive client profile (${level})`;
+        actionLabel = `Review · ${score.name}`;
+      }
+
       insights.push({
         id: `${CUSTOMER_HEALTH_PROVIDER_ID}:${score.customer_id}`,
         source: CUSTOMER_HEALTH_PROVIDER_ID,
@@ -137,9 +150,9 @@ export const CustomerHealthProvider: InsightProvider = {
         kind,
         tone,
         confidence: computeConfidence(daysSinceTouch === null ? 1 : 0),
-        title: `${score.name} — ${level}`,
+        title,
         why: `${score.name} is classified "${level}": ${reasons.join("; ")}.`,
-        action: { label: "Open customer", href: `/customers/${score.customer_id}` },
+        action: { label: actionLabel, href: `/customers/${score.customer_id}` },
         entity: { type: "customer", id: score.customer_id, label: score.name },
         value: score.outstanding > 0 ? score.outstanding : undefined,
         priority: computePriority({ urgencyDays: points * 10, valueInr: score.outstanding }),

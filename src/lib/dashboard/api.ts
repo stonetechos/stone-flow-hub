@@ -1,7 +1,6 @@
 /** Dashboard aggregates — cheap parallel counts for KPI cards. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { TERMINAL_STAGES } from "@/lib/constants";
 
 export type DashboardKpis = {
   activeEnquiries: number;
@@ -51,11 +50,11 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     supabase
       .from("enquiries")
       .select("id", { count: "exact", head: true })
-      .not("stage", "in", `(${TERMINAL_STAGES.map((s) => `"${s}"`).join(",")})`),
+      .not("stage", "in", "(completed,lost,cancelled)"),
     supabase
       .from("rfqs")
       .select("id", { count: "exact", head: true })
-      .in("status", ["sent", "partially_received"]),
+      .in("status", ["draft", "sent", "partially_received"]),
     supabase
       .from("followups")
       .select("id", { count: "exact", head: true })
@@ -70,20 +69,16 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     supabase
       .from("quotes")
       .select("id", { count: "exact", head: true })
-      .in("status", ["draft", "sent"]),
+      .in("status", ["draft", "sent", "accepted"]),
     supabase
       .from("sales_orders")
       .select("id", { count: "exact", head: true })
-      .eq("status", "confirmed"),
-    supabase.from("quotes").select("total").in("status", ["draft", "sent"]),
+      .in("status", ["draft", "confirmed"]),
+    supabase.from("quotes").select("total").in("status", ["draft", "sent", "accepted"]),
     supabase.from("customers").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("invoices").select("balance_due").not("status", "in", '("cancelled","draft")'),
+    supabase.from("invoices").select("balance_due").neq("status", "cancelled"),
     supabase.from("payments").select("amount").gte("paid_at", monthStart.toISOString()),
-    supabase
-      .from("invoices")
-      .select("total")
-      .eq("issue_date", todayIso)
-      .not("status", "in", '("cancelled","draft")'),
+    supabase.from("invoices").select("total").eq("issue_date", todayIso).neq("status", "cancelled"),
     supabase.from("payments").select("amount").gte("paid_at", start.toISOString()),
     supabase
       .from("dispatches")
@@ -96,7 +91,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
       .from("installations")
       .select("id", { count: "exact", head: true })
       .in("status", ["scheduled", "in_progress"])
-      .eq("lifecycle_status", "active"),
+      .not("lifecycle_status", "in", "(archived,deleted)"),
   ]);
 
   for (const r of [

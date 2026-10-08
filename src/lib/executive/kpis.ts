@@ -6,7 +6,6 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { TERMINAL_STAGES } from "@/lib/constants";
 
 export interface ExecutiveKpis {
   // Pipeline
@@ -65,7 +64,7 @@ export async function getExecutiveKpis(): Promise<ExecutiveKpis> {
     inflow30,
     outflow30,
   ] = await Promise.all([
-    supabase.from("quotes").select("total").in("status", ["draft", "sent"]),
+    supabase.from("quotes").select("total").in("status", ["draft", "sent", "accepted"]),
     supabase
       .from("estimates")
       .select("id", { count: "exact", head: true })
@@ -73,16 +72,16 @@ export async function getExecutiveKpis(): Promise<ExecutiveKpis> {
     supabase
       .from("quotes")
       .select("id", { count: "exact", head: true })
-      .in("status", ["draft", "sent"]),
+      .in("status", ["draft", "sent", "accepted"]),
     supabase
       .from("sales_orders")
       .select("id", { count: "exact", head: true })
-      .eq("status", "confirmed"),
+      .in("status", ["draft", "confirmed"]),
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
       .not("lifecycle_status", "in", "(archived,deleted)")
-      .not("status", "in", `(${TERMINAL_STAGES.map((s) => `"${s}"`).join(",")})`),
+      .not("status", "in", "(completed,lost,cancelled)"),
     supabase
       .from("production_orders")
       .select("id", { count: "exact", head: true })
@@ -117,7 +116,7 @@ export async function getExecutiveKpis(): Promise<ExecutiveKpis> {
       .from("purchase_orders")
       .select("id,expected_date")
       .lte("expected_date", soon.slice(0, 10))
-      .not("status", "in", '("cancelled")'),
+      .neq("status", "cancelled"),
   ]);
 
   for (const r of [

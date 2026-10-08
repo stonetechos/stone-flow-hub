@@ -168,7 +168,7 @@ function DashboardPage() {
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
-  const brief = buildBrief(topInsights, tasks, t);
+  const brief = buildBrief(topInsights, tasks, t, kpis);
   const headline = kpis
     ? pickHeadline(kpis, t)
     : {
@@ -1010,8 +1010,8 @@ function CopilotDock({
           </div>
         ) : (
           <ul className="space-y-2">
-            {suggestions.map((s) => (
-              <li key={s.label}>
+            {suggestions.map((s, idx) => (
+              <li key={`${s.to}-${s.label}-${idx}`}>
                 <Link
                   to={s.to}
                   className="engraved-well flex items-center justify-between gap-2 rounded-xl p-2.5 text-[13px] font-bold text-slate-800 transition-all hover:scale-[1.02]"
@@ -1476,13 +1476,68 @@ function pickHeadline(k: DashboardKpis, t: TFunction): HeadlineMetric {
  * is kept as a direct, judgment-free count — Tasks aren't part of the
  * Insight registry and nothing else in the app computes this, so it
  * isn't duplicate logic, just a plain tally appended to the same list. */
-function buildBrief(topInsights: ProcessedInsight[], tasks: TaskRow[], t: TFunction): string[] {
-  const lines = topInsights.map((i) => i.title);
+function buildBrief(
+  topInsights: ProcessedInsight[],
+  tasks: TaskRow[],
+  t: TFunction,
+  kpis?: DashboardKpis,
+): string[] {
+  const lines: string[] = [];
+
+  // 1. High-level quantitative operational metrics from live database
+  if (kpis) {
+    if (kpis.revenuePipelineInr > 0 || kpis.pendingQuotes > 0) {
+      lines.push(
+        `Pipeline: ₹${formatMoney(kpis.revenuePipelineInr)} active across ${kpis.pendingQuotes} quote(s) in play.`,
+      );
+    }
+    if (kpis.outstandingInr > 0) {
+      lines.push(
+        `Receivables: ₹${formatMoney(kpis.outstandingInr)} outstanding balance pending customer collection.`,
+      );
+    }
+    if (kpis.activeEnquiries > 0) {
+      lines.push(`${kpis.activeEnquiries} active CRM inquiries currently in progress.`);
+    }
+    if (kpis.todayFollowups > 0 || kpis.overdueFollowups > 0) {
+      lines.push(
+        `${kpis.todayFollowups} client follow-up(s) scheduled today${kpis.overdueFollowups > 0 ? ` (${kpis.overdueFollowups} overdue)` : ""}.`,
+      );
+    }
+    if (kpis.ordersToStart > 0) {
+      lines.push(`${kpis.ordersToStart} sales order(s) confirmed and ready to start production.`);
+    }
+    if (kpis.deliveriesToday > 0) {
+      lines.push(`${kpis.deliveriesToday} dispatch delivery(ies) scheduled for today.`);
+    }
+  }
+
+  // 2. Add individual insight statements (which now feature real numbers)
+  for (const i of topInsights) {
+    if (lines.length >= 6) break;
+    if (!lines.includes(i.title)) {
+      lines.push(i.title);
+    }
+  }
+
   const urgent = tasks.filter((t) => t.priority === "urgent").length;
-  if (urgent) lines.push(t("dashboard.urgentTasks", { count: urgent }));
-  if (lines.length === 0)
+  if (urgent && lines.length < 6) {
+    lines.push(
+      t("dashboard.urgentTasks", {
+        count: urgent,
+        defaultValue: `${urgent} urgent task(s) requiring attention.`,
+      }),
+    );
+  }
+
+  if (lines.length === 0) {
+    if (kpis && kpis.customers > 0) {
+      lines.push(`${kpis.customers} registered active customer accounts in network directory.`);
+    }
     lines.push(t("dashboard.briefQuiet", "Everything is quiet. Production is operating normally."));
-  return lines.slice(0, 5);
+  }
+
+  return lines.slice(0, 6);
 }
 
 /**

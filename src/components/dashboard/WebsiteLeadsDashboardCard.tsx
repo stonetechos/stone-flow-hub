@@ -35,6 +35,7 @@ interface WebLead {
   enquiry_no: string;
   stage: string;
   priority: string;
+  source: string | null;
   requirement: string | null;
   required_delivery_date: string | null;
   notes: string | null;
@@ -63,9 +64,36 @@ const STAGE_CONFIG: Record<string, { label: string; tone: string }> = {
     label: "Site Visit",
     tone: "bg-indigo-50 text-indigo-800 border-indigo-200",
   },
+  site_visit_completed: {
+    label: "Site Visited",
+    tone: "bg-indigo-50 text-indigo-800 border-indigo-200",
+  },
+  sample_sent: { label: "Sample Sent", tone: "bg-blue-50 text-blue-800 border-blue-200" },
+  customer_quotation_sent: {
+    label: "Quote Shared",
+    tone: "bg-amber-50 text-amber-800 border-amber-200",
+  },
   quote_sent: { label: "Quote Shared", tone: "bg-amber-50 text-amber-800 border-amber-200" },
   negotiation: { label: "Negotiating", tone: "bg-purple-50 text-purple-800 border-purple-200" },
+  qualified: { label: "Qualified", tone: "bg-blue-50 text-blue-800 border-blue-200" },
+  rfq_sent: { label: "RFQ Sent", tone: "bg-amber-50 text-amber-800 border-amber-200" },
+  vendor_quote_received: {
+    label: "Vendor Quoted",
+    tone: "bg-amber-50 text-amber-800 border-amber-200",
+  },
+  vendor_approved: {
+    label: "Vendor Approved",
+    tone: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  },
+  customer_approved: {
+    label: "Order Confirmed",
+    tone: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  },
   won: { label: "Order Won", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  production: { label: "In Production", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  dispatch: { label: "Dispatched", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  completed: { label: "Completed", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  after_sales: { label: "After Sales", tone: "bg-teal-50 text-teal-800 border-teal-200" },
   lost: { label: "Closed", tone: "bg-slate-100 text-slate-700 border-slate-200" },
   cancelled: { label: "Cancelled", tone: "bg-rose-50 text-rose-700 border-rose-200" },
 };
@@ -74,6 +102,7 @@ export function WebsiteLeadsDashboardCard() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [copiedLink, setCopiedLink] = useState(false);
+  const [filterMode, setFilterMode] = useState<"all" | "web">("all");
 
   const { data: leads = [], isLoading } = useQuery<WebLead[]>({
     queryKey: ["website-leads-dashboard"],
@@ -81,12 +110,11 @@ export function WebsiteLeadsDashboardCard() {
       const { data, error } = await supabase
         .from("enquiries")
         .select(
-          `id, enquiry_no, stage, priority, requirement, required_delivery_date, notes, external_ref, created_at,
+          `id, enquiry_no, stage, priority, requirement, required_delivery_date, notes, source, external_ref, created_at,
            customer:customers!enquiries_customer_id_fkey(id, name, customer_code, primary_phone, whatsapp, city)`,
         )
-        .or("source.ilike.%web%,source.ilike.%stonetech%,notes.ilike.%whatsapp%")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(50);
 
       if (error) throw error;
       return (data ?? []) as unknown as WebLead[];
@@ -108,13 +136,38 @@ export function WebsiteLeadsDashboardCard() {
     };
   }, [qc]);
 
-  // Calculate high-level pipeline KPIs
+  const isWebLead = (l: WebLead) => {
+    const s = (l.source ?? "").toLowerCase();
+    const n = (l.notes ?? "").toLowerCase();
+    return s.includes("web") || s.includes("stonetech") || n.includes("whatsapp");
+  };
+
+  const webLeadsCount = leads.filter(isWebLead).length;
+  const displayedLeads = filterMode === "web" ? leads.filter(isWebLead) : leads;
+
+  // Calculate high-level pipeline KPIs across all inquiries
   const totalCount = leads.length;
   const newCount = leads.filter((l) => l.stage === "new_lead").length;
   const inDiscussionCount = leads.filter((l) =>
-    ["contacted", "site_visit_scheduled", "quote_sent", "negotiation"].includes(l.stage),
+    [
+      "contacted",
+      "site_visit_scheduled",
+      "site_visit_completed",
+      "sample_sent",
+      "customer_quotation_sent",
+      "quote_sent",
+      "negotiation",
+      "qualified",
+      "rfq_sent",
+      "vendor_quote_received",
+      "vendor_approved",
+    ].includes(l.stage),
   ).length;
-  const wonCount = leads.filter((l) => l.stage === "won").length;
+  const wonCount = leads.filter((l) =>
+    ["customer_approved", "production", "dispatch", "completed", "after_sales", "won"].includes(
+      l.stage,
+    ),
+  ).length;
 
   // Handle link copy
   const handleCopyLink = () => {
@@ -148,7 +201,35 @@ export function WebsiteLeadsDashboardCard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filter Mode Toggle */}
+          <div className="flex items-center rounded-lg border border-slate-200 bg-white/90 p-0.5 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setFilterMode("all")}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs font-bold transition-all",
+                filterMode === "all"
+                  ? "bg-cyan-700 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900",
+              )}
+            >
+              All Inquiries ({totalCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode("web")}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs font-bold transition-all",
+                filterMode === "web"
+                  ? "bg-cyan-700 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900",
+              )}
+            >
+              Website Leads ({webLeadsCount})
+            </button>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
@@ -172,7 +253,7 @@ export function WebsiteLeadsDashboardCard() {
             className="h-8 gap-1.5 rounded-lg bg-cyan-700 px-3 text-xs font-bold text-white shadow-xs hover:bg-cyan-800"
           >
             <Link to="/enquiries">
-              <span>{t("crm.viewFull")}</span>
+              <span>{t("crm.viewFull", "View All CRM")}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -183,13 +264,15 @@ export function WebsiteLeadsDashboardCard() {
       <div className="grid grid-cols-2 gap-2 border-b border-slate-200/80 bg-slate-50/50 p-3 sm:grid-cols-4 sm:gap-3 sm:p-4">
         <div className="engraved-well flex flex-col rounded-xl p-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            {t("crm.totalLeads", "Total Web Leads")}
+            {t("crm.totalLeads", "Total Inquiries")}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
               {totalCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">{t("crm.inquiries")}</span>
+            <span className="text-[11px] font-medium text-slate-500">
+              {t("crm.inquiries", "in pipeline")}
+            </span>
           </div>
         </div>
 
@@ -208,7 +291,9 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-cyan-800 sm:text-3xl">
               {newCount}
             </span>
-            <span className="text-[11px] font-medium text-cyan-700">{t("crm.awaitingReply")}</span>
+            <span className="text-[11px] font-medium text-cyan-700">
+              {t("crm.awaitingReply", "awaiting contact")}
+            </span>
           </div>
         </div>
 
@@ -220,19 +305,23 @@ export function WebsiteLeadsDashboardCard() {
             <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
               {inDiscussionCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">{t("crm.active")}</span>
+            <span className="text-[11px] font-medium text-slate-500">
+              {t("crm.active", "in discussion")}
+            </span>
           </div>
         </div>
 
         <div className="engraved-well flex flex-col rounded-xl p-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-            {t("crm.ordersWon", "Orders Won")}
+            {t("crm.ordersWon", "Orders Won / Approved")}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-black tabular-nums text-emerald-700 sm:text-3xl">
               {wonCount}
             </span>
-            <span className="text-[11px] font-medium text-emerald-600">{t("crm.converted")}</span>
+            <span className="text-[11px] font-medium text-emerald-600">
+              {t("crm.converted", "converted")}
+            </span>
           </div>
         </div>
       </div>
@@ -245,43 +334,61 @@ export function WebsiteLeadsDashboardCard() {
             <div className="h-14 animate-pulse rounded-xl bg-slate-100" />
             <div className="h-14 animate-pulse rounded-xl bg-slate-100" />
           </div>
-        ) : leads.length === 0 ? (
+        ) : displayedLeads.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 border border-cyan-200">
               <Globe className="h-6 w-6" />
             </div>
             <h4 className="mt-3 font-display text-base font-bold text-slate-800">
-              {t("crm.noLeadsYet", "No Website Leads Yet")}
+              {filterMode === "web" ? "No Website Leads Yet" : "No CRM Inquiries Yet"}
             </h4>
             <p className="mt-1 max-w-md text-xs text-slate-500">
-              {t(
-                "crm.noLeadsDesc",
-                "Share your landing page link www.stonetech.in with customers, on Instagram, or via WhatsApp. Submissions will instantly stream into this box and your CRM pipeline.",
-              )}
+              {filterMode === "web"
+                ? "Share your landing page link www.stonetech.in with customers, on Instagram, or via WhatsApp to capture online leads directly."
+                : "Enter customer inquiries directly in the CRM or share www.stonetech.in to capture leads automatically."}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyLink}
-              className="mt-4 gap-2 border-cyan-300 text-cyan-800 hover:bg-cyan-50"
-            >
-              <Copy className="h-3.5 w-3.5" />
-              {t("crm.copyLink")}
-            </Button>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                className="gap-1.5 bg-cyan-700 text-white hover:bg-cyan-800"
+              >
+                <Link to="/enquiries">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span>Create CRM Enquiry</span>
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyLink}
+                className="gap-2 border-cyan-300 text-cyan-800 hover:bg-cyan-50"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                {t("crm.copyLink", "Copy Website Link")}
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-2.5">
             <div className="flex items-center justify-between px-1 pb-1">
               <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                {t("crm.recentInquiries", { count: leads.slice(0, 5).length, total: leads.length })}
+                {t("crm.recentInquiries", {
+                  count: displayedLeads.slice(0, 6).length,
+                  total: displayedLeads.length,
+                  defaultValue: `Showing ${displayedLeads.slice(0, 6).length} of ${displayedLeads.length} inquiries`,
+                })}
               </span>
-              <span className="text-xs text-slate-500">{t("crm.whatsappAvailable")}</span>
+              <span className="text-xs text-slate-500">
+                {t("crm.whatsappAvailable", "WhatsApp messaging ready")}
+              </span>
             </div>
 
             <div className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white shadow-xs">
-              {leads.slice(0, 6).map((lead) => {
+              {displayedLeads.slice(0, 8).map((lead) => {
                 const ext = lead.external_ref || {};
-                const customerName = lead.customer?.name || t("crm.prospectiveClient");
+                const customerName =
+                  lead.customer?.name || t("crm.prospectiveClient", "Direct Client");
                 const rawPhone =
                   ext.client_whatsapp ||
                   lead.customer?.whatsapp ||
@@ -316,13 +423,13 @@ export function WebsiteLeadsDashboardCard() {
                   } else if (diffDays < 0) {
                     dateBadge = (
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                        {t("crm.pastDate")}
+                        {t("crm.pastDate", "Past Due")}
                       </span>
                     );
                   } else {
                     dateBadge = (
                       <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-700">
-                        {t("crm.neededIn", { days: diffDays })}
+                        {t("crm.neededIn", { days: diffDays, defaultValue: `Due in ${diffDays}d` })}
                       </span>
                     );
                   }
@@ -352,8 +459,25 @@ export function WebsiteLeadsDashboardCard() {
                         >
                           {stageInfo.label}
                         </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] font-semibold",
+                            isWebLead(lead)
+                              ? "bg-cyan-50 text-cyan-800 border-cyan-200"
+                              : "bg-slate-50 text-slate-700 border-slate-200",
+                          )}
+                        >
+                          {isWebLead(lead) ? "Website" : lead.source || "Direct CRM"}
+                        </Badge>
                         {dateBadge}
                       </div>
+
+                      {lead.requirement && products.length === 0 && (
+                        <p className="line-clamp-1 text-xs text-slate-600 font-normal">
+                          {lead.requirement}
+                        </p>
+                      )}
 
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
                         <span className="inline-flex items-center gap-1">
@@ -366,13 +490,17 @@ export function WebsiteLeadsDashboardCard() {
                             <Calendar className="h-3 w-3 text-slate-400" />
                             {t("crm.target", {
                               date: new Date(lead.required_delivery_date).toLocaleDateString(),
+                              defaultValue: `Target: ${new Date(lead.required_delivery_date).toLocaleDateString()}`,
                             })}
                           </span>
                         )}
 
                         {photoCount > 0 && (
                           <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
-                            {t("crm.photos", { count: photoCount })}
+                            {t("crm.photos", {
+                              count: photoCount,
+                              defaultValue: `${photoCount} photos`,
+                            })}
                           </span>
                         )}
                       </div>
@@ -403,10 +531,12 @@ export function WebsiteLeadsDashboardCard() {
                           className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
                         >
                           <MessageCircle className="h-3.5 w-3.5 fill-current" />
-                          <span>{t("crm.whatsapp")}</span>
+                          <span>{t("crm.whatsapp", "WhatsApp")}</span>
                         </a>
                       ) : (
-                        <span className="text-xs text-slate-400">{t("crm.noWhatsapp")}</span>
+                        <span className="text-xs text-slate-400">
+                          {t("crm.noWhatsapp", "No phone")}
+                        </span>
                       )}
 
                       <Button
@@ -416,7 +546,7 @@ export function WebsiteLeadsDashboardCard() {
                         className="h-8 gap-1 rounded-lg border-slate-200 text-xs font-semibold hover:border-cyan-400 hover:text-cyan-800"
                       >
                         <Link to="/enquiries/$enquiryId" params={{ enquiryId: lead.id }}>
-                          <span>{t("crm.details")}</span>
+                          <span>{t("crm.details", "Details")}</span>
                           <ArrowRight className="h-3 w-3" />
                         </Link>
                       </Button>
