@@ -68,7 +68,6 @@ import {
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 
 export const Route = createFileRoute("/")({
-  ssr: false,
   head: () => ({
     meta: [
       { title: "Stone Tech — Architectural Stone, Crafted for Extraordinary Spaces" },

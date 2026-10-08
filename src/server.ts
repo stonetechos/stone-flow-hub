@@ -77,7 +77,9 @@ export default {
         headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
       }
 
-      return new Response(response.body, {
+      // 204 No Content and 304 Not Modified responses MUST NOT have a body
+      const hasNullBody = response.status === 204 || response.status === 304 || !response.body;
+      return new Response(hasNullBody ? null : response.body, {
         status: response.status,
         statusText: response.statusText,
         headers,
