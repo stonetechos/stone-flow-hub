@@ -52,9 +52,18 @@ function Badge({ className, variant, size, children, ...props }: BadgeProps) {
     if (typeof child === "string") {
       const trimmed = child.trim();
       if (!trimmed) return child;
-      const translated = t(trimmed, trimmed);
-      if (translated !== trimmed) {
-        return child.replace(trimmed, translated);
+      try {
+        const translated = t(trimmed, { defaultValue: trimmed, returnObjects: false });
+        if (
+          typeof translated === "string" &&
+          !translated.toLowerCase().startsWith("key '") &&
+          !translated.toLowerCase().includes("returned an object") &&
+          translated !== trimmed
+        ) {
+          return child.replace(trimmed, translated);
+        }
+      } catch {
+        return child;
       }
       return child;
     }

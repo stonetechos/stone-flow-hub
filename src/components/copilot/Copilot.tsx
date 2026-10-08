@@ -20,9 +20,11 @@ import {
   SearchX,
   Mic,
   MicOff,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -205,6 +207,7 @@ function deriveContext(path: string) {
 
 export function Copilot() {
   const [open, setOpen] = useState(false);
+  const [isWideScreen, setIsWideScreen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [bookmarks, setBookmarks] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -427,243 +430,362 @@ export function Copilot() {
         onClick={() => setOpen(true)}
         className={open ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""}
       />
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
-          <SheetHeader className="border-b border-border px-4 py-3">
-            <div className="flex items-center gap-2.5 px-1">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-600 p-0.5 shadow-md">
-                <img
-                  src="/stoneman-avatar.png"
-                  alt="Stoneman AI"
-                  className="h-full w-full rounded-[10px] object-cover"
-                />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <SheetTitle className="font-display text-sm font-bold tracking-tight">
-                    Stoneman AI
-                  </SheetTitle>
-                  <span className="flex h-2 w-2 rounded-full bg-teal-500 ring-2 ring-teal-300/40 animate-pulse" />
-                </div>
-                <span className="text-[10px] font-medium text-teal-700 dark:text-teal-300">
-                  Intelligent Mascot & Assistant
-                </span>
-              </div>
-              <Badge
-                variant="secondary"
-                className="ml-auto text-[10px] uppercase font-mono tracking-wider"
-              >
-                {ctx.entity}
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {mode === "do"
-                ? "Describe what you want to do. I'll show you exactly what I'm about to create — or ask for confirmation — before anything is written."
-                : "How-to guidance for the current page. The assistant does not read your database — for real customer, project, invoice or vendor data, open the relevant page or the Business Priorities card on the dashboard."}
-            </p>
-            {/* Sprint AI-1 — explicit Ask/Do toggle (see the `mode` state
-             * comment above for why this isn't an auto-router). */}
-            <Tabs value={mode} onValueChange={(v) => setMode(v as "ask" | "do")}>
-              <TabsList className="h-7">
-                <TabsTrigger value="ask" className="h-5 text-xs">
-                  Ask
-                </TabsTrigger>
-                <TabsTrigger value="do" className="h-5 text-xs">
-                  Do
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </SheetHeader>
-
-          <div className="flex-shrink-0 border-b border-border">
-            <button
-              type="button"
-              onClick={() => setInsightsOpen((v) => !v)}
-              aria-expanded={insightsOpen}
-              className="flex w-full items-center justify-between px-4 py-3 text-left"
-            >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Insights
-              </h3>
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                  insightsOpen && "rotate-180",
-                )}
-              />
-            </button>
-            {insightsOpen && (
-              <div className="max-h-[28dvh] overflow-y-auto px-4 pb-4">
-                {topInsights.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Everything looks healthy.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {topInsights.map((i) => (
-                      <InsightCard
-                        key={i.id}
-                        kind={i.kind}
-                        tone={i.tone}
-                        title={i.title}
-                        detail={i.why}
-                        to={i.action.href}
-                        onDismiss={() => setInsightStatus(i, "dismissed")}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content
+            className={cn(
+              "fixed z-50 flex flex-col justify-end overflow-visible focus:outline-none transition-all duration-300",
+              isWideScreen
+                ? "inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 bottom-3 sm:bottom-6 top-28 sm:top-36 w-full sm:w-[780px] md:w-[860px] max-w-[calc(100vw-24px)] h-[calc(100dvh-130px)] max-h-[860px]"
+                : "right-2 sm:right-6 md:right-8 bottom-3 sm:bottom-6 top-28 sm:top-36 w-full sm:w-[500px] md:w-[540px] max-w-[calc(100vw-16px)] h-[calc(100dvh-130px)] max-h-[840px]",
             )}
-          </div>
+          >
+            <DialogPrimitive.Title className="sr-only">
+              Stoneman AI Cognitive Screen
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              Intelligent big screen held by StoneMan Mascot
+            </DialogPrimitive.Description>
 
-          <ScrollArea className="min-h-0 flex-1">
-            <div ref={scrollRef} className="space-y-3 p-4">
-              {messages.length === 0 && (
-                <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-sm">
-                  <p className="mb-2 font-medium">Try one of these:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => submit(s)}
-                        className="rounded-full border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {messages.map((m, i) =>
-                m.kind === "nl-results" ? (
-                  <NlResultsBubble
-                    key={i}
-                    interpretation={m.interpretation}
-                    results={m.results}
-                    onNavigate={() => setOpen(false)}
-                  />
-                ) : m.kind === "vie-action" ? (
-                  <VieActionMessage
-                    key={i}
-                    row={m.row}
-                    onConfirm={(actionId) => confirmAction.mutate(actionId)}
-                    onCompleteDraft={(actionId, patch) => completeDraft.mutate({ actionId, patch })}
-                    confirmPending={confirmAction.isPending && confirmAction.variables === m.row.id}
-                    completePending={
-                      completeDraft.isPending && completeDraft.variables?.actionId === m.row.id
-                    }
-                  />
-                ) : (
-                  <Bubble key={i} role={m.role} content={m.content} />
-                ),
-              )}
-              {isPending && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
-                </div>
-              )}
-
-              {bookmarks.length > 0 && (
-                <details className="mt-4 rounded-md border border-border bg-muted/30 p-2 text-sm">
-                  <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Bookmarks ({bookmarks.length})
-                  </summary>
-                  <div className="mt-2 space-y-2">
-                    {bookmarks.map((b, i) => (
-                      <div
-                        key={i}
-                        className="rounded border border-border bg-background p-2 text-xs"
-                      >
-                        {b.content.slice(0, 240)}
-                        {b.content.length > 240 ? "…" : ""}
-                      </div>
-                    ))}
-                  </div>
-                </details>
-              )}
-            </div>
-          </ScrollArea>
-
-          {/* Permanently pinned composer - flex-shrink-0 keeps it the fixed
-           * last child of the drawer's flex column, always visible regardless
-           * of how long the conversation or Insights section grows. */}
-          <div className="flex-shrink-0 border-t border-border p-3">
-            <div className="mb-2 flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={bookmarkLast}
-                disabled={messages.length === 0}
-              >
-                <Bookmark className="mr-1 h-3.5 w-3.5" /> Bookmark
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setMessages([])}
-                disabled={messages.length === 0}
-              >
-                <Trash2 className="mr-1 h-3.5 w-3.5" /> Clear
-              </Button>
-              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-end gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
-                }}
-                placeholder={
-                  mode === "do"
-                    ? "Describe what you want to do… (Enter to send, Shift+Enter for newline)"
-                    : "Ask about this page… (Enter to send, Shift+Enter for newline)"
-                }
-                rows={2}
-                className="min-h-[56px] resize-none"
+            {/* StoneMan Mascot Holding the Screen from the Top */}
+            <div className="pointer-events-none absolute -top-[135px] sm:-top-[160px] md:-top-[178px] left-1/2 -translate-x-1/2 w-[340px] sm:w-[420px] md:w-[460px] z-30 select-none flex flex-col items-center">
+              {/* Stone Energy Glow Aura */}
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full bg-teal-500/25 blur-3xl -z-10 animate-pulse" />
+              <img
+                src="/stoneman-peeking-top.png"
+                alt="StoneMan Mascot holding screen from top"
+                className="w-full h-auto drop-shadow-[0_14px_28px_rgba(0,0,0,0.65)] select-none pointer-events-none"
+                draggable={false}
               />
-              {speech.isSupported && (
-                <Button
-                  type="button"
-                  variant={speech.isListening ? "destructive" : "outline"}
-                  size="icon"
-                  onClick={() => (speech.isListening ? speech.stop() : speech.start())}
-                  aria-label={speech.isListening ? "Stop voice input" : "Start voice input"}
-                  aria-pressed={speech.isListening}
-                  title={
-                    speech.isListening
-                      ? "Listening… tap to stop"
-                      : "Speak instead of typing (foundation — see docs for language limits)"
-                  }
-                >
-                  {speech.isListening ? (
-                    <MicOff className="h-4 w-4 animate-pulse" />
-                  ) : (
-                    <Mic className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
-              <Button
-                size="icon"
-                onClick={() => submit()}
-                disabled={isPending || !input.trim()}
-                aria-label="Send"
-              >
-                {isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
             </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+
+            {/* Left Rock Arm Hugging the Window from Behind */}
+            <div className="pointer-events-none absolute -left-7 sm:-left-11 md:-left-13 top-16 bottom-16 w-14 sm:w-18 md:w-22 z-0 select-none overflow-visible flex items-center">
+              <img
+                src="/stoneman-left-arm.png"
+                alt=""
+                aria-hidden="true"
+                className="h-full w-auto max-w-none object-contain object-right opacity-95 drop-shadow-[0_10px_22px_rgba(0,0,0,0.55)] select-none pointer-events-none"
+                draggable={false}
+              />
+            </div>
+
+            {/* Right Rock Arm Hugging the Window from Behind */}
+            <div className="pointer-events-none absolute -right-7 sm:-right-11 md:-right-13 top-16 bottom-16 w-14 sm:w-18 md:w-22 z-0 select-none overflow-visible flex items-center">
+              <img
+                src="/stoneman-right-arm.png"
+                alt=""
+                aria-hidden="true"
+                className="h-full w-auto max-w-none object-contain object-left opacity-95 drop-shadow-[0_10px_22px_rgba(0,0,0,0.55)] select-none pointer-events-none"
+                draggable={false}
+              />
+            </div>
+
+            {/* The Big Screen Console Frame */}
+            <div className="relative z-10 flex h-full w-full flex-col overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-[3px] border-slate-700/80 bg-slate-950/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl ring-1 ring-teal-500/30 text-slate-100">
+              {/* Screen Top Bezel Notch */}
+              <div className="flex h-5 w-full items-center justify-center bg-slate-900/90 border-b border-slate-800/80 px-4 select-none">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-[9px] font-mono tracking-widest text-teal-400">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-500" />
+                  </span>
+                  STONEMAN SCREEN
+                </div>
+              </div>
+
+              {/* Console Header */}
+              <div className="flex flex-col border-b border-slate-800/90 bg-slate-900/70 px-3.5 sm:px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#083b43] to-teal-500 p-0.5 shadow-md">
+                    <img
+                      src="/stoneman-avatar.png"
+                      alt="Stoneman AI"
+                      className="h-full w-full rounded-[10px] object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-display text-sm font-bold tracking-tight text-white">
+                        Stoneman AI
+                      </span>
+                      <span className="text-[10px] font-semibold text-teal-400 uppercase tracking-wide">
+                        • LIVE
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">
+                      Intelligent Mascot & Operations Screen
+                    </span>
+                  </div>
+
+                  {/* Entity context chip */}
+                  <Badge
+                    variant="outline"
+                    className="ml-auto text-[10px] uppercase font-mono tracking-wider border-teal-500/30 bg-teal-950/40 text-teal-300"
+                  >
+                    {ctx.entity}
+                  </Badge>
+
+                  {/* Expand / Minimize toggle button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-800 hidden sm:inline-flex"
+                    onClick={() => setIsWideScreen((v) => !v)}
+                    title={isWideScreen ? "Dock to Side" : "Expand Big Screen"}
+                  >
+                    {isWideScreen ? (
+                      <Minimize2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+
+                  {/* Close button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-800"
+                    onClick={() => setOpen(false)}
+                    title="Close Screen"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Ask / Do Mode Tabs */}
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <Tabs
+                    value={mode}
+                    onValueChange={(v) => setMode(v as "ask" | "do")}
+                    className="w-auto"
+                  >
+                    <TabsList className="h-7 bg-slate-950/80 border border-slate-800 p-0.5">
+                      <TabsTrigger
+                        value="ask"
+                        className="h-6 px-3 text-xs data-[state=active]:bg-teal-600 data-[state=active]:text-white text-slate-400"
+                      >
+                        Ask Guidance
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="do"
+                        className="h-6 px-3 text-xs data-[state=active]:bg-teal-600 data-[state=active]:text-white text-slate-400"
+                      >
+                        Do Actions
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <p className="text-[11px] text-slate-400 truncate max-w-[240px] hidden md:block">
+                    {mode === "do"
+                      ? "Describe what to create or update"
+                      : "How-to guidance for this page"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Insights Accordion */}
+              <div className="flex-shrink-0 border-b border-slate-800 bg-slate-900/40">
+                <button
+                  type="button"
+                  onClick={() => setInsightsOpen((v) => !v)}
+                  aria-expanded={insightsOpen}
+                  className="flex w-full items-center justify-between px-4 py-2.5 text-left text-slate-300 hover:text-white transition-colors"
+                >
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Insights
+                  </h3>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 shrink-0 text-slate-400 transition-transform",
+                      insightsOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                {insightsOpen && (
+                  <div className="max-h-[26dvh] overflow-y-auto px-4 pb-3">
+                    {topInsights.length === 0 ? (
+                      <p className="text-xs text-slate-400">Everything looks healthy.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {topInsights.map((i) => (
+                          <InsightCard
+                            key={i.id}
+                            kind={i.kind}
+                            tone={i.tone}
+                            title={i.title}
+                            detail={i.why}
+                            to={i.action.href}
+                            onDismiss={() => setInsightStatus(i, "dismissed")}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Message Scroll Area */}
+              <ScrollArea className="min-h-0 flex-1 bg-slate-950/60">
+                <div ref={scrollRef} className="space-y-3 p-4">
+                  {messages.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-3.5 text-sm">
+                      <p className="mb-2 font-medium text-slate-200">Try one of these:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => submit(s)}
+                            className="rounded-full border border-slate-800 bg-slate-900/90 px-3 py-1 text-xs text-slate-300 hover:border-teal-500/50 hover:bg-slate-800 hover:text-white transition-colors"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {messages.map((m, i) =>
+                    m.kind === "nl-results" ? (
+                      <NlResultsBubble
+                        key={i}
+                        interpretation={m.interpretation}
+                        results={m.results}
+                        onNavigate={() => setOpen(false)}
+                      />
+                    ) : m.kind === "vie-action" ? (
+                      <VieActionMessage
+                        key={i}
+                        row={m.row}
+                        onConfirm={(actionId) => confirmAction.mutate(actionId)}
+                        onCompleteDraft={(actionId, patch) =>
+                          completeDraft.mutate({ actionId, patch })
+                        }
+                        confirmPending={
+                          confirmAction.isPending && confirmAction.variables === m.row.id
+                        }
+                        completePending={
+                          completeDraft.isPending && completeDraft.variables?.actionId === m.row.id
+                        }
+                      />
+                    ) : (
+                      <Bubble key={i} role={m.role} content={m.content} />
+                    ),
+                  )}
+                  {isPending && (
+                    <div className="flex items-center gap-2 text-sm text-teal-400">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+                    </div>
+                  )}
+
+                  {bookmarks.length > 0 && (
+                    <details className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 p-2.5 text-sm">
+                      <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Bookmarks ({bookmarks.length})
+                      </summary>
+                      <div className="mt-2 space-y-2">
+                        {bookmarks.map((b, i) => (
+                          <div
+                            key={i}
+                            className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300"
+                          >
+                            {b.content.slice(0, 240)}
+                            {b.content.length > 240 ? "…" : ""}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Bottom Pinned Composer */}
+              <div className="flex-shrink-0 border-t border-slate-800/90 bg-slate-900/80 p-3">
+                <div className="mb-2 flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={bookmarkLast}
+                    disabled={messages.length === 0}
+                    className="h-6 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-800"
+                  >
+                    <Bookmark className="mr-1 h-3 w-3" /> Bookmark
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMessages([])}
+                    disabled={messages.length === 0}
+                    className="h-6 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-800"
+                  >
+                    <Trash2 className="mr-1 h-3 w-3" /> Clear
+                  </Button>
+                  <span className="ml-auto text-[10px] text-slate-500 hidden sm:inline font-mono">
+                    Press ⌘J to toggle
+                  </span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        submit();
+                      }
+                    }}
+                    placeholder={
+                      mode === "do"
+                        ? "Describe what you want to do… (Enter to send, Shift+Enter for newline)"
+                        : "Ask about this page… (Enter to send, Shift+Enter for newline)"
+                    }
+                    rows={2}
+                    className="min-h-[56px] resize-none bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-teal-500/60 rounded-xl"
+                  />
+                  {speech.isSupported && (
+                    <Button
+                      type="button"
+                      variant={speech.isListening ? "destructive" : "outline"}
+                      size="icon"
+                      className={cn(
+                        "h-10 w-10 shrink-0 rounded-xl",
+                        !speech.isListening &&
+                          "border-slate-800 bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800",
+                      )}
+                      onClick={() => (speech.isListening ? speech.stop() : speech.start())}
+                      aria-label={speech.isListening ? "Stop voice input" : "Start voice input"}
+                      aria-pressed={speech.isListening}
+                      title={
+                        speech.isListening ? "Listening… tap to stop" : "Speak instead of typing"
+                      }
+                    >
+                      {speech.isListening ? (
+                        <MicOff className="h-4 w-4 animate-pulse" />
+                      ) : (
+                        <Mic className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    size="icon"
+                    onClick={() => submit()}
+                    disabled={isPending || !input.trim()}
+                    aria-label="Send"
+                    className="h-10 w-10 shrink-0 bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-md disabled:opacity-40"
+                  >
+                    {isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </>
   );
 }
@@ -672,20 +794,20 @@ function Bubble({ role, content }: ChatMsg) {
   if (role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-primary-foreground shadow-sm">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-xs bg-teal-600 px-3.5 py-2 text-sm text-white shadow-sm leading-relaxed">
           {content}
         </div>
       </div>
     );
   }
   return (
-    <div className="flex items-start gap-2 max-w-[90%]">
+    <div className="flex items-start gap-2.5 max-w-[90%]">
       <img
         src="/stoneman-avatar.png"
         alt="Stoneman"
-        className="h-7 w-7 shrink-0 mt-0.5 rounded-full object-cover ring-1 ring-teal-500/40 drop-shadow-xs"
+        className="h-7 w-7 shrink-0 mt-0.5 rounded-full object-cover ring-1 ring-teal-500/50 drop-shadow-xs"
       />
-      <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-foreground shadow-sm">
+      <div className="min-w-0 whitespace-pre-wrap rounded-2xl rounded-tl-xs bg-slate-900 border border-slate-800 px-3.5 py-2 text-sm text-slate-100 shadow-sm leading-relaxed">
         {content}
       </div>
     </div>
@@ -707,31 +829,31 @@ function NlResultsBubble({
   onNavigate: () => void;
 }) {
   return (
-    <div className="max-w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="max-w-full rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-200">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-teal-400">
         {interpretation}
       </p>
       {results.length === 0 ? (
-        <div className="flex items-center gap-2 py-1 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 py-1 text-sm text-slate-400">
           <SearchX className="h-3.5 w-3.5 shrink-0" />
           No matching records found.
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {results.map((r) => (
             <Link
               key={`${r.entityType}:${r.id}`}
               to={r.href as never}
               onClick={onNavigate}
-              className="flex items-center justify-between gap-2 rounded-md border border-transparent bg-background px-2.5 py-1.5 hover:border-border hover:bg-accent"
+              className="flex items-center justify-between gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 hover:border-teal-500/50 hover:bg-slate-900 text-slate-100 transition-colors"
             >
               <span className="min-w-0">
-                <span className="block truncate font-medium">{r.title}</span>
+                <span className="block truncate font-medium text-slate-100">{r.title}</span>
                 {r.subtitle && (
-                  <span className="block truncate text-xs text-muted-foreground">{r.subtitle}</span>
+                  <span className="block truncate text-xs text-slate-400">{r.subtitle}</span>
                 )}
               </span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-teal-400" />
             </Link>
           ))}
         </div>
