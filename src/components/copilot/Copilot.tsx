@@ -435,10 +435,10 @@ export function Copilot() {
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
             className={cn(
-              "fixed z-50 flex flex-col justify-end overflow-visible focus:outline-none transition-all duration-300",
+              "fixed z-50 flex flex-col items-center justify-end overflow-visible focus:outline-none transition-all duration-300",
               isWideScreen
-                ? "inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 bottom-3 sm:bottom-6 top-28 sm:top-36 w-full sm:w-[780px] md:w-[860px] max-w-[calc(100vw-24px)] h-[calc(100dvh-130px)] max-h-[860px]"
-                : "right-2 sm:right-6 md:right-8 bottom-3 sm:bottom-6 top-28 sm:top-36 w-full sm:w-[500px] md:w-[540px] max-w-[calc(100vw-16px)] h-[calc(100dvh-130px)] max-h-[840px]",
+                ? "inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 bottom-3 sm:bottom-4 w-full sm:w-[760px] md:w-[840px] max-w-[calc(100vw-24px)] h-[min(90dvh,820px)]"
+                : "right-2 sm:right-6 md:right-8 bottom-3 sm:bottom-4 w-full sm:w-[480px] md:w-[520px] max-w-[calc(100vw-16px)] h-[min(90dvh,780px)]",
             )}
           >
             <DialogPrimitive.Title className="sr-only">
@@ -448,44 +448,26 @@ export function Copilot() {
               Intelligent big screen held by StoneMan Mascot
             </DialogPrimitive.Description>
 
-            {/* StoneMan Mascot Holding the Screen from the Top */}
-            <div className="pointer-events-none absolute -top-[135px] sm:-top-[160px] md:-top-[178px] left-1/2 -translate-x-1/2 w-[340px] sm:w-[420px] md:w-[460px] z-30 select-none flex flex-col items-center">
-              {/* Stone Energy Glow Aura */}
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full bg-teal-500/25 blur-3xl -z-10 animate-pulse" />
+            {/* StoneMan Mascot Sitting on Top & Holding the Screen */}
+            <div className="relative z-20 flex w-full justify-center select-none pointer-events-none -mb-5 sm:-mb-6 shrink-0">
+              {/* Stone Energy Aura Glow */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-20 rounded-full bg-teal-500/25 blur-2xl -z-10 animate-pulse" />
               <img
                 src="/stoneman-peeking-top.png"
-                alt="StoneMan Mascot holding screen from top"
-                className="w-full h-auto drop-shadow-[0_14px_28px_rgba(0,0,0,0.65)] select-none pointer-events-none"
+                alt="StoneMan AI Mascot"
+                className="h-24 sm:h-32 md:h-36 w-auto max-w-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.65)] select-none pointer-events-none"
                 draggable={false}
               />
             </div>
 
-            {/* Left Rock Arm Hugging the Window from Behind */}
-            <div className="pointer-events-none absolute -left-7 sm:-left-11 md:-left-13 top-16 bottom-16 w-14 sm:w-18 md:w-22 z-0 select-none overflow-visible flex items-center">
-              <img
-                src="/stoneman-left-arm.png"
-                alt=""
-                aria-hidden="true"
-                className="h-full w-auto max-w-none object-contain object-right opacity-95 drop-shadow-[0_10px_22px_rgba(0,0,0,0.55)] select-none pointer-events-none"
-                draggable={false}
-              />
-            </div>
-
-            {/* Right Rock Arm Hugging the Window from Behind */}
-            <div className="pointer-events-none absolute -right-7 sm:-right-11 md:-right-13 top-16 bottom-16 w-14 sm:w-18 md:w-22 z-0 select-none overflow-visible flex items-center">
-              <img
-                src="/stoneman-right-arm.png"
-                alt=""
-                aria-hidden="true"
-                className="h-full w-auto max-w-none object-contain object-left opacity-95 drop-shadow-[0_10px_22px_rgba(0,0,0,0.55)] select-none pointer-events-none"
-                draggable={false}
-              />
-            </div>
+            {/* Stone Body Hugging the Window from the Back */}
+            <div className="pointer-events-none absolute -inset-1.5 sm:-inset-2.5 top-14 bottom-2 -z-10 rounded-[28px] sm:rounded-[36px] bg-gradient-to-b from-slate-700/50 via-slate-850/40 to-slate-900/60 border border-slate-700/50 shadow-2xl backdrop-blur-xs" />
+            <div className="pointer-events-none absolute -inset-3 sm:-inset-5 top-12 bottom-0 -z-20 rounded-[36px] bg-teal-500/10 blur-2xl" />
 
             {/* The Big Screen Console Frame */}
-            <div className="relative z-10 flex h-full w-full flex-col overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-[3px] border-slate-700/80 bg-slate-950/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl ring-1 ring-teal-500/30 text-slate-100">
-              {/* Screen Top Bezel Notch */}
-              <div className="flex h-5 w-full items-center justify-center bg-slate-900/90 border-b border-slate-800/80 px-4 select-none">
+            <div className="relative z-10 flex flex-1 min-h-0 w-full flex-col overflow-hidden rounded-2xl sm:rounded-3xl border-2 sm:border-[3px] border-slate-700/80 bg-slate-950/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl ring-1 ring-teal-500/30 text-slate-100">
+              {/* Screen Top Bezel Grip Notch (held by StoneMan's hands) */}
+              <div className="flex h-7 w-full items-center justify-center bg-slate-900/90 border-b border-slate-800/80 px-4 select-none shrink-0">
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-[9px] font-mono tracking-widest text-teal-400">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
