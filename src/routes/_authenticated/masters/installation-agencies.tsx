@@ -196,10 +196,9 @@ function InstallationAgenciesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
                 <TableHead>Agency Name</TableHead>
                 <TableHead>Specialization</TableHead>
-                <TableHead>Contact</TableHead>
+                <TableHead>Contact Person</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Active</TableHead>
                 <TableHead className="w-12" />
@@ -208,8 +207,9 @@ function InstallationAgenciesPage() {
             <TableBody>
               {filteredRows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">{r.code}</TableCell>
-                  <TableCell className="font-medium">{r.name}</TableCell>
+                  <TableCell className="font-medium text-foreground">
+                    <span className="font-semibold text-sm">{r.name}</span>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {(r.work_types && r.work_types.length > 0
@@ -230,7 +230,18 @@ function InstallationAgenciesPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">{r.contact_person ?? "—"}</TableCell>
-                  <TableCell className="text-sm">{r.phone ?? "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.phone ? (
+                      <a
+                        href={`tel:${r.phone}`}
+                        className="hover:underline text-primary font-mono text-xs"
+                      >
+                        {r.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm">{r.is_active ? "Yes" : "No"}</TableCell>
                   <TableCell>
                     <RowActions onEdit={() => openEdit(r)} onDelete={() => setToDelete(r)} />
@@ -263,19 +274,11 @@ function InstallationAgenciesPage() {
             }}
           >
             <DialogBody className="grid gap-3 sm:grid-cols-2">
-              <Field label="Code" required>
-                <Input
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                  placeholder="e.g. AG-001"
-                  required
-                />
-              </Field>
-              <Field label="Agency / Contractor Name" required>
+              <Field label="Agency / Contractor Name" required className="sm:col-span-2">
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="e.g. Royal Marble Crafters"
+                  placeholder="e.g. Royal Marble Crafters / Ramesh Sharma"
                   required
                 />
               </Field>

@@ -231,11 +231,6 @@ function AgencyPaymentsPage() {
                         <span>
                           {agency?.name ?? t("agencyPayments.unknownAgency", "Unknown agency")}
                         </span>
-                        {agency?.code && (
-                          <span className="font-mono text-xs text-muted-foreground">
-                            ({agency.code})
-                          </span>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>{r.description}</TableCell>
@@ -300,7 +295,7 @@ function AgencyPaymentsPage() {
                   <SelectContent>
                     {agencies.map((a) => (
                       <SelectItem key={a.id} value={a.id}>
-                        {a.name} ({a.code})
+                        {a.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

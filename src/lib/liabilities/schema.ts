@@ -17,3 +17,15 @@ export const liabilityInputSchema = z.object({
 });
 
 export type LiabilityInput = z.infer<typeof liabilityInputSchema>;
+
+export const liabilityPaymentInputSchema = z.object({
+  liability_id: z.string().uuid("Please select a liability"),
+  payment_date: z.string().min(1, "Payment date is required"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than zero"),
+  payment_mode: z.string().default("Bank Transfer"),
+  reference_no: z.string().max(200).nullable().optional(),
+  month_for: z.string().max(100).nullable().optional(),
+  notes: z.string().max(2000).nullable().optional(),
+});
+
+export type LiabilityPaymentInput = z.infer<typeof liabilityPaymentInputSchema>;

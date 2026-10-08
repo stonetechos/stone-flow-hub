@@ -158,8 +158,7 @@ export function LocalCartingView() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Agency name</TableHead>
+                <TableHead>Agency Name</TableHead>
                 <TableHead>Contact person</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Vehicle type</TableHead>
@@ -170,15 +169,25 @@ export function LocalCartingView() {
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs font-semibold">{r.code}</TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 text-muted-foreground" />
-                      <span>{r.name}</span>
+                      <span className="font-semibold text-sm">{r.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>{r.contact_person || "—"}</TableCell>
-                  <TableCell>{r.phone || "—"}</TableCell>
+                  <TableCell>
+                    {r.phone ? (
+                      <a
+                        href={`tel:${r.phone}`}
+                        className="hover:underline text-primary font-mono text-xs"
+                      >
+                        {r.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell>{r.vehicle_type || "—"}</TableCell>
                   <TableCell>
                     <span
@@ -226,24 +235,14 @@ export function LocalCartingView() {
             }}
           >
             <DialogBody className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Agency code" required>
-                  <Input
-                    value={form.code}
-                    onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    placeholder="e.g. CRT-001"
-                    required
-                  />
-                </Field>
-                <Field label="Agency name" required>
-                  <Input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Royal Roadways"
-                    required
-                  />
-                </Field>
-              </div>
+              <Field label="Agency / Carrier Name" required>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. Royal Roadways / Ramesh Bhai"
+                  required
+                />
+              </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Contact person">
                   <Input

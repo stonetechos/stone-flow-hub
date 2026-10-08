@@ -1146,11 +1146,6 @@ function AgencyPaymentsSection({
                     </TableCell>
                     <TableCell className="font-medium text-xs">
                       {agency?.name || "Agency"}
-                      {agency?.code && (
-                        <span className="ml-1.5 text-[10px] text-muted-foreground font-mono">
-                          ({agency.code})
-                        </span>
-                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{p.description}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">

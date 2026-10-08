@@ -257,7 +257,7 @@ export async function listCartingAgencies(activeOnly = true): Promise<CartingAge
 }
 
 export interface CartingAgencyInput {
-  code: string;
+  code?: string;
   name: string;
   contact_person?: string | null;
   phone?: string | null;
@@ -268,11 +268,19 @@ export interface CartingAgencyInput {
 }
 
 export async function createCartingAgency(input: CartingAgencyInput): Promise<CartingAgencyRow> {
+  const codeVal =
+    input.code && input.code.trim().length > 0
+      ? input.code.trim()
+      : input.name
+          .trim()
+          .replace(/[^a-zA-Z0-9]/g, "-")
+          .toUpperCase()
+          .slice(0, 30) || `CA-${Date.now()}`;
   const { data, error } = await getDb()
     .from("carting_agencies" as never)
     .insert({
-      code: input.code,
-      name: input.name,
+      code: codeVal,
+      name: input.name.trim(),
       contact_person: input.contact_person ?? null,
       phone: input.phone ?? null,
       vehicle_type: input.vehicle_type ?? null,

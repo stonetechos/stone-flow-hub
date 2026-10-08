@@ -791,7 +791,7 @@ function AgencyPaymentsTab() {
                   <SelectContent>
                     {agencies.map((a: InstallationAgencyRow) => (
                       <SelectItem key={a.id} value={a.id}>
-                        {a.name} ({a.code})
+                        {a.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

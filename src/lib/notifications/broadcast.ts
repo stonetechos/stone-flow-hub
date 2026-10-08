@@ -308,3 +308,24 @@ export function notifyAdminProjectCompleted(project: {
     },
   });
 }
+
+/**
+ * 7. Liability & Rent Payment Recorded Notification (Organization-wide & Mobile)
+ */
+export function notifyLiabilityPaymentRecorded(payment: {
+  liabilityName: string;
+  amount: number;
+  paymentMode: string;
+  monthFor?: string | null;
+  paymentDate: string;
+}): void {
+  const monthPart = payment.monthFor ? ` for ${payment.monthFor}` : "";
+  void dispatchStosEvent({
+    tier: "important",
+    title: "Liability Payment Recorded",
+    body: `${formatInr(payment.amount)} paid for ${payment.liabilityName}${monthPart} via ${payment.paymentMode}.`,
+    entityType: "liability",
+    linkPath: "/liabilities",
+    targetRole: "all",
+  });
+}

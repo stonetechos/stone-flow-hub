@@ -120,9 +120,7 @@ function InstallationLedgerDetail() {
     <div>
       <PageHeader
         title={agency ? agency.name : "Installation Agency Ledger"}
-        subtitle={
-          agency ? `Code ${agency.code} — running balance ${formatInr(balance)}` : undefined
-        }
+        subtitle={agency ? `Running balance ${formatInr(balance)}` : undefined}
         actions={
           roles.canWrite ? (
             <Button size="sm" onClick={() => setRecording(true)}>

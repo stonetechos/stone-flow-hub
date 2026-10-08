@@ -162,10 +162,10 @@ function CartingAgenciesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
+                <TableHead>Agency Name</TableHead>
+                <TableHead>Contact Person</TableHead>
                 <TableHead>Phone</TableHead>
+                <TableHead>Vehicle Type</TableHead>
                 <TableHead>Active</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
@@ -173,10 +173,23 @@ function CartingAgenciesPage() {
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">{r.code}</TableCell>
-                  <TableCell className="font-medium">{r.name}</TableCell>
+                  <TableCell className="font-medium text-foreground">
+                    <span className="font-semibold text-sm">{r.name}</span>
+                  </TableCell>
                   <TableCell className="text-sm">{r.contact_person ?? "—"}</TableCell>
-                  <TableCell className="text-sm">{r.phone ?? "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.phone ? (
+                      <a
+                        href={`tel:${r.phone}`}
+                        className="hover:underline text-primary font-mono text-xs"
+                      >
+                        {r.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">{r.vehicle_type ?? "—"}</TableCell>
                   <TableCell className="text-sm">{r.is_active ? "Yes" : "No"}</TableCell>
                   <TableCell>
                     <RowActions onEdit={() => openEdit(r)} onDelete={() => setToDelete(r)} />
@@ -199,7 +212,7 @@ function CartingAgenciesPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit carting agency" : "Add carting agency"}</DialogTitle>
+            <DialogTitle>{editing ? `Edit ${editing.name}` : "Add carting agency"}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -209,17 +222,11 @@ function CartingAgenciesPage() {
             }}
           >
             <DialogBody className="grid gap-3 sm:grid-cols-2">
-              <Field label="Code" required>
-                <Input
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                  required
-                />
-              </Field>
-              <Field label="Name" required>
+              <Field label="Agency / Carrier Name" required className="sm:col-span-2">
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="e.g. Gujarat Freight Carriers / Mukesh Bhai"
                   required
                 />
               </Field>

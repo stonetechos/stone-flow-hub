@@ -76,3 +76,55 @@ export const deleteLiabilityServerFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const recordLiabilityPaymentServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) =>
+    z
+      .object({
+        liability_id: z.string().uuid(),
+        payment_date: z.string(),
+        amount: z.coerce.number().min(0.01),
+        payment_mode: z.string().default("Bank Transfer"),
+        reference_no: z.string().nullable().optional(),
+        month_for: z.string().nullable().optional(),
+        notes: z.string().nullable().optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId;
+
+    const { data: inserted, error } = await supabaseAdmin
+      .from("liability_payments" as never)
+      .insert({
+        liability_id: data.liability_id,
+        payment_date: data.payment_date,
+        amount: Number(data.amount),
+        payment_mode: data.payment_mode || "Bank Transfer",
+        reference_no: data.reference_no ?? null,
+        month_for: data.month_for ?? null,
+        notes: data.notes ?? null,
+        paid_by: uid,
+      } as never)
+      .select("*")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return inserted;
+  });
+
+export const deleteLiabilityPaymentServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => z.object({ id: z.string().uuid() }).parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("liability_payments" as never)
+      .delete()
+      .eq("id" as never, data.id as never);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
