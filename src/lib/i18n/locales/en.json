@@ -341,6 +341,7 @@
     "productionWorkload": "Production workload",
     "orderBacklog": "Order backlog",
     "greeting": {
+      "nocturnal": "Yo, Nocturnal!!",
       "morning": "Good morning",
       "afternoon": "Good afternoon",
       "evening": "Good evening"

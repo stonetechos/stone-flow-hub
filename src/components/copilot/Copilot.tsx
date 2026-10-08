@@ -43,6 +43,7 @@ import { InsightCard } from "@/components/dashboard/InsightCard";
 import { VieActionMessage, type VieActionRow } from "@/components/copilot/VieActionCard";
 import { useSpeechCapture } from "@/lib/voice/useSpeechCapture";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
+import { isNocturnalHour, getNocturnalQuip } from "@/lib/dashboard/greeting";
 
 type ChatMsg = { role: "user" | "assistant"; kind?: "text"; content: string };
 /** Phase G.9B.1 — a data-lookup answer. Rendered as one-click result
@@ -253,6 +254,9 @@ export function Copilot() {
   const topInsights = [...activeInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
+
+  const isNocturnal = isNocturnalHour();
+  const nocturnalQuip = isNocturnal ? getNocturnalQuip() : "";
 
   // Phase G.9B.1: Natural Language Search. This mutation is the ONLY
   // caller of the NL Search server function — it runs one LLM
@@ -497,7 +501,13 @@ export function Copilot() {
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">
-                      Intelligent Mascot & Operations Screen
+                      {isNocturnal ? (
+                        <span className="text-amber-300 font-medium flex items-center gap-1">
+                          <span>🦉</span> Yo, Nocturnal!! StoneMan is wide awake
+                        </span>
+                      ) : (
+                        "Intelligent Mascot & Operations Screen"
+                      )}
                     </span>
                   </div>
 
@@ -613,6 +623,17 @@ export function Copilot() {
                 <div ref={scrollRef} className="space-y-3 p-4">
                   {messages.length === 0 && (
                     <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-3.5 text-sm">
+                      {isNocturnal && (
+                        <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-950/40 p-2.5 text-xs text-amber-200">
+                          <span className="text-base select-none shrink-0 leading-none">🦉</span>
+                          <div>
+                            <p className="font-bold text-amber-300">Yo, Nocturnal!!</p>
+                            <p className="text-[11px] text-amber-200/90 mt-0.5 leading-relaxed">
+                              {nocturnalQuip} What are we crafting tonight?
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <p className="mb-2 font-medium text-slate-200">Try one of these:</p>
                       <div className="flex flex-wrap gap-1.5">
                         {(mode === "do" ? DO_MODE_SUGGESTIONS : ctx.suggestions).map((s) => (

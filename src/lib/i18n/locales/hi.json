@@ -341,6 +341,7 @@
     "productionWorkload": "उत्पादन कार्यभार",
     "orderBacklog": "ऑर्डर बैकलॉग",
     "greeting": {
+      "nocturnal": "Yo, Nocturnal!!",
       "morning": "सुप्रभात",
       "afternoon": "शुभ दोपहर",
       "evening": "शुभ संध्या"

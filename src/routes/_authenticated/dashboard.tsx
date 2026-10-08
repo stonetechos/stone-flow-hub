@@ -31,6 +31,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { transliterateName } from "@/lib/i18n/transliterate";
+import { greetingFor, getNocturnalQuip } from "@/lib/dashboard/greeting";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useExecutiveInsights } from "@/hooks/useExecutiveInsights";
@@ -149,6 +150,7 @@ function DashboardPage() {
   const name = transliterateName(rawName, i18n.language);
   const now = new Date();
   const greeting = greetingFor(now, t);
+  const nocturnalQuip = getNocturnalQuip(now);
   const today = now.toLocaleDateString(
     i18n.language === "hi" ? "hi-IN" : i18n.language === "gu" ? "gu-IN" : "en-IN",
     {
@@ -206,6 +208,7 @@ function DashboardPage() {
                   health={computeHealth(kpisQ.data)}
                   headline={pickHeadline(kpisQ.data, t)}
                   brief={brief}
+                  nocturnalQuip={nocturnalQuip}
                 />
 
                 {/* Visitor Inquiries & CRM Leads */}
@@ -270,6 +273,7 @@ function ExecutiveHero({
   health,
   headline,
   brief,
+  nocturnalQuip,
 }: {
   greeting: string;
   name: string;
@@ -277,8 +281,11 @@ function ExecutiveHero({
   health: HealthScore;
   headline: HeadlineMetric;
   brief: string[];
+  nocturnalQuip?: string;
 }) {
   const { t } = useTranslation();
+  const isNocturnal = greeting.includes("Nocturnal");
+
   return (
     <section className="card-3d-milky relative overflow-hidden" aria-label="Executive briefing">
       <div className="relative z-10 p-6 sm:p-8">
@@ -288,8 +295,22 @@ function ExecutiveHero({
               {today}
             </div>
             <h1 className="mt-2 font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px]">
-              {greeting}, {name}.
+              {isNocturnal ? (
+                <>
+                  {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
+                </>
+              ) : (
+                <>
+                  {greeting}, {name}.
+                </>
+              )}
             </h1>
+            {isNocturnal && nocturnalQuip && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                <span>🌙</span>
+                <span>{nocturnalQuip}</span>
+              </p>
+            )}
           </div>
           <HealthGauge score={health.score} band={health.band} />
         </div>
@@ -1373,6 +1394,7 @@ function ShellLoading({
   name: string;
   today: string;
 }) {
+  const isNocturnal = greeting.includes("Nocturnal");
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border-subtle bg-surface-card p-6">
@@ -1380,7 +1402,15 @@ function ShellLoading({
           {today}
         </div>
         <h1 className="mt-2 font-display text-2xl font-semibold text-text-primary">
-          {greeting}, {name}.
+          {isNocturnal ? (
+            <>
+              {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
+            </>
+          ) : (
+            <>
+              {greeting}, {name}.
+            </>
+          )}
         </h1>
       </div>
       <LoadingBlock />
@@ -1547,13 +1577,6 @@ function buildBrief(
  * this is a straight map, not a second judgment about what to suggest. */
 function buildSuggestions(topInsights: ProcessedInsight[]): Array<{ label: string; to: string }> {
   return topInsights.slice(0, 5).map((i) => ({ label: i.action.label, to: i.action.href }));
-}
-
-function greetingFor(d: Date, t: TFunction): string {
-  const h = d.getHours();
-  if (h < 12) return t("dashboard.greeting.morning", "Good morning");
-  if (h < 17) return t("dashboard.greeting.afternoon", "Good afternoon");
-  return t("dashboard.greeting.evening", "Good evening");
 }
 
 function displayName(
