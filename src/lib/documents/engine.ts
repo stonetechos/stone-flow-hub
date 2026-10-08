@@ -89,7 +89,9 @@ async function fetchCustomer(id: string | null | undefined) {
   if (!id) return null;
   const { data } = await supabase
     .from("customers")
-    .select("id,name,primary_email,primary_phone,billing_address,city,state,pincode,gst_number")
+    .select(
+      "id,name,primary_email,primary_phone,whatsapp,billing_address,city,state,pincode,gst_number",
+    )
     .eq("id", id)
     .maybeSingle();
   return data ?? null;
@@ -128,6 +130,13 @@ function customerParty(
     phone: c.primary_phone ?? undefined,
   };
 }
+
+function customerPhone(
+  c: { primary_phone?: string | null; whatsapp?: string | null } | null,
+): string | null {
+  return c?.whatsapp?.trim() || c?.primary_phone?.trim() || null;
+}
+
 function vendorParty(
   v: {
     company_name: string;
@@ -204,7 +213,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: e.estimate_no,
           customerId: e.customer_id,
           vendorId: null,
@@ -251,7 +260,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: q.quote_no,
           customerId: q.customer_id,
           vendorId: null,
@@ -302,7 +311,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: so.so_no,
           customerId: so.customer_id,
           vendorId: null,
@@ -402,7 +411,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: i.invoice_no,
           customerId: i.customer_id,
           vendorId: null,
@@ -454,7 +463,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: r.receipt_no,
           customerId: r.customer_id,
           vendorId: null,
@@ -496,7 +505,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         meta: {
           toName: cust?.name ?? "—",
           toEmail: cust?.primary_email ?? null,
-          toPhone: cust?.primary_phone ?? null,
+          toPhone: customerPhone(cust),
           docNumber: d.dispatch_no,
           customerId: d.customer_id,
           vendorId: null,
@@ -532,6 +541,39 @@ export function relatedTypeFor(entity: DocumentEntity): string {
 export function renderDocWhatsAppText(built: BuiltDocument): string {
   const { doc } = built;
   const lines: string[] = [];
+
+  if (doc.kind === "receipt") {
+    lines.push(`*Payment Receipt — ${doc.number}*`);
+    lines.push(`Dear ${doc.to.name},`);
+    lines.push("");
+    lines.push("Thank you for your payment! Here are the receipt details:");
+    if (doc.date) lines.push(`• Date: ${doc.date}`);
+    for (const m of doc.meta ?? []) {
+      if (m.value && m.value !== "—" && m.value !== "₹0") {
+        lines.push(`• ${m.label}: ${m.value}`);
+      }
+    }
+    if (doc.totals?.length) {
+      for (const t of doc.totals) {
+        lines.push(`• ${t.label}: *${t.value}*`);
+      }
+    }
+    if (doc.lines?.length) {
+      lines.push("");
+      lines.push("*Invoices Settled:*");
+      for (const it of doc.lines) {
+        lines.push(`• ${it.label}: ${it.amount}`);
+      }
+    }
+    if (doc.notes) {
+      lines.push("");
+      lines.push(`Note: ${doc.notes}`);
+    }
+    lines.push("");
+    lines.push("Received with thanks,\n*Stone Tech*");
+    return lines.join("\n");
+  }
+
   lines.push(`*${doc.title} — ${doc.number}*`);
   lines.push(`To: ${doc.to.name}`);
   for (const m of doc.meta ?? []) {

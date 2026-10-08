@@ -67,7 +67,26 @@ function ReceiptDetailPage() {
     <div>
       <PageHeader
         title={`Receipt ${r.receipt_no}`}
-        subtitle={r.customer?.name ?? "—"}
+        subtitle={
+          r.customer?.name ? (
+            <span className="flex items-center gap-2">
+              <Link
+                to="/customers/$customerId"
+                params={{ customerId: r.customer_id }}
+                className="hover:underline font-medium text-foreground"
+              >
+                {r.customer.name}
+              </Link>
+              {(r.customer.whatsapp || r.customer.primary_phone) && (
+                <span className="text-muted-foreground text-xs font-mono">
+                  · {r.customer.whatsapp || r.customer.primary_phone}
+                </span>
+              )}
+            </span>
+          ) : (
+            "—"
+          )
+        }
         actions={
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>

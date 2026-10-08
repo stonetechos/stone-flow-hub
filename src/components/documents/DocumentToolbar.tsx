@@ -7,10 +7,17 @@
  */
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, Mail, MessageCircle, Printer } from "lucide-react";
+import { Download, Eye, Loader2, Mail, MessageCircle, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { buildDocument, type DocumentEntity } from "@/lib/documents/engine";
+import {
+  buildDocument,
+  relatedTypeFor,
+  renderDocWhatsAppText,
+  type DocumentEntity,
+} from "@/lib/documents/engine";
 import { downloadPdf, previewPdf, printPdf } from "@/lib/pdf/generator";
+import { openWhatsappToContact } from "@/lib/whatsapp";
+import { enqueueMessage } from "@/lib/notifications/queue";
 import { SendDocumentEmailDialog } from "./SendDocumentEmailDialog";
 
 interface Props {
@@ -26,7 +33,7 @@ interface Props {
 
 export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, compact }: Props) {
   const [sendOpen, setSendOpen] = useState<"email" | "whatsapp" | null>(null);
-  const [busy, setBusy] = useState<"preview" | "print" | "download" | null>(null);
+  const [busy, setBusy] = useState<"preview" | "print" | "download" | "whatsapp" | null>(null);
 
   const run = async (
     kind: "preview" | "print" | "download",
@@ -38,6 +45,47 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
       await fn(doc);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to render document");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleWhatsapp = async () => {
+    setBusy("whatsapp");
+    try {
+      const built = await buildDocument(entity, entityId);
+      const phone = built.meta.toPhone?.trim();
+      const text = renderDocWhatsAppText(built);
+
+      if (!phone) {
+        toast.info(
+          `No mobile number on file for ${built.meta.toName || "recipient"} — please enter WhatsApp number`,
+        );
+        setSendOpen("whatsapp");
+        return;
+      }
+
+      openWhatsappToContact(phone, text);
+      toast.success(
+        `Opening WhatsApp for ${built.meta.toName || "recipient"} — press Enter to send`,
+      );
+
+      // Record in background timeline/queue (fire-and-forget)
+      void enqueueMessage({
+        channel: "whatsapp",
+        to: phone,
+        body: text,
+        relatedType: relatedTypeFor(entity),
+        relatedId: entityId,
+        customerId: built.meta.customerId ?? undefined,
+        templateCode: `${entity}_whatsapp`,
+        variables: {
+          entity,
+          doc_number: built.meta.docNumber,
+        },
+      }).catch((e) => console.warn("Failed to log WhatsApp send:", e));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to prepare WhatsApp message");
     } finally {
       setBusy(null);
     }
@@ -89,11 +137,16 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
           <Button
             size={size}
             variant="outline"
-            onClick={() => setSendOpen("whatsapp")}
+            disabled={busy !== null}
+            onClick={handleWhatsapp}
             title="Send WhatsApp"
           >
-            <MessageCircle className="h-4 w-4" />
-            {label("WhatsApp")}
+            {busy === "whatsapp" ? (
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+            ) : (
+              <MessageCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            )}
+            {label(busy === "whatsapp" ? "Opening..." : "WhatsApp")}
           </Button>
         )}
       </div>

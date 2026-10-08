@@ -57,6 +57,7 @@ import {
 import { getQuoteForEstimate } from "@/lib/quotes/api";
 import { renderEmailHtml, renderWhatsappText } from "@/lib/estimates/render";
 import { enqueueMessage } from "@/lib/notifications/queue";
+import { openWhatsappToContact } from "@/lib/whatsapp";
 import { COST_COMPONENT_LABEL, ESTIMATE_TEMPLATES } from "@/lib/estimates/templates";
 import { formatInr } from "@/lib/format";
 import { ApproveEstimateDialog } from "@/components/customer-payments/ApproveEstimateDialog";
@@ -153,6 +154,7 @@ function EstimateDetailPage() {
   const sendWhatsappMut = useMutation({
     mutationFn: async () => {
       if (!draftTo.trim()) throw new Error("Recipient phone number is required");
+      openWhatsappToContact(draftTo.trim(), draftBody);
       await enqueueMessage({
         channel: "whatsapp",
         to: draftTo.trim(),
@@ -171,7 +173,7 @@ function EstimateDetailPage() {
       });
     },
     onSuccess: () => {
-      toast.success("Queued — dispatcher will send it shortly");
+      toast.success("Opening WhatsApp — press Enter to send");
       invalidateEstimate(qc, estimateId);
       qc.invalidateQueries({ queryKey: ["messages"] });
       qc.invalidateQueries({ queryKey: ["customer-timeline"] });

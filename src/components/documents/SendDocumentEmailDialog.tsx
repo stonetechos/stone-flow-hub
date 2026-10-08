@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { enqueueMessage } from "@/lib/notifications/queue";
 import { renderDocHtmlAsync } from "@/lib/pdf/generator";
+import { openWhatsappToContact } from "@/lib/whatsapp";
 import {
   buildDocument,
   DOC_ENTITY_LABEL,
@@ -120,6 +121,10 @@ export function SendDocumentEmailDialog({
     setSending(true);
     try {
       if (channel === "whatsapp") {
+        openWhatsappToContact(to.trim(), message);
+        toast.success("Opening WhatsApp — press Enter to send");
+
+        // Record in queue/timeline for historical tracking
         await enqueueMessage({
           channel: "whatsapp",
           to: to.trim(),
@@ -158,8 +163,8 @@ export function SendDocumentEmailDialog({
             doc_number: docNo,
           },
         });
+        toast.success("Queued — dispatcher will send it shortly");
       }
-      toast.success("Queued — dispatcher will send it shortly");
       qc.invalidateQueries({ queryKey: ["messages"] });
       qc.invalidateQueries({ queryKey: ["customer-timeline"] });
       onOpenChange(false);
@@ -179,7 +184,7 @@ export function SendDocumentEmailDialog({
           </DialogTitle>
           <DialogDescription>
             {channel === "whatsapp"
-              ? "A plain-text summary is generated from live ERP data. The send is logged in the Communication Timeline."
+              ? "Opens WhatsApp directly to the recipient's chat with the summary pre-filled. You just press Enter to send from your WhatsApp account."
               : "The branded PDF is generated from live ERP data and attached inline in the email body. The send is logged in the Communication Timeline."}
           </DialogDescription>
         </DialogHeader>
@@ -252,11 +257,11 @@ export function SendDocumentEmailDialog({
             {sending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : channel === "whatsapp" ? (
-              <MessageCircle className="mr-2 h-4 w-4" />
+              <MessageCircle className="mr-2 h-4 w-4 text-emerald-400" />
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            Send
+            {channel === "whatsapp" ? "Open in WhatsApp" : "Send Email"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -15,10 +15,18 @@ export type ReceiptRow = DbTable<"receipts">;
 export type ReceiptAllocationRow = DbTable<"receipt_allocations">;
 
 export type ReceiptListItem = ReceiptRow & {
-  customer: { id: string; name: string; customer_code: string } | null;
+  customer: {
+    id: string;
+    name: string;
+    customer_code: string;
+    primary_phone?: string | null;
+    whatsapp?: string | null;
+    primary_email?: string | null;
+  } | null;
 };
 
-const JOINS = "*, customer:customers!receipts_customer_id_fkey(id,name,customer_code)";
+const JOINS =
+  "*, customer:customers!receipts_customer_id_fkey(id,name,customer_code,primary_phone,whatsapp,primary_email)";
 
 export async function listReceipts(query = ""): Promise<ReceiptListItem[]> {
   let q = getDb()
