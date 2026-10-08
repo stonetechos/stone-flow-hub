@@ -163,6 +163,7 @@ function EstimateDetailPage() {
         relatedId: estimateId,
         customerId: estimate?.customer_id ?? undefined,
         templateCode: "estimate_whatsapp",
+        status: "sent",
       });
       await saveEstimateDocument({
         estimate_id: estimateId,

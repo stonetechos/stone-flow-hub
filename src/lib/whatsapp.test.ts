@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { buildWhatsappUrl, normalizeWhatsappPhone } from "./whatsapp";
+import { buildWhatsappUrl, normalizeWhatsappPhone, openWhatsappToContact } from "./whatsapp";
 
 describe("WhatsApp utilities", () => {
   it("normalizes 10-digit Indian mobile numbers with 91 prefix", () => {
@@ -38,5 +38,16 @@ describe("WhatsApp utilities", () => {
   it("falls back to api.whatsapp.com/send when phone is missing", () => {
     const url = buildWhatsappUrl("", "Receipt RCT-001");
     expect(url).toContain("https://api.whatsapp.com/send?text=Receipt%20RCT-001");
+  });
+
+  it("handles targetWindow in openWhatsappToContact", () => {
+    const mockWindow = {
+      closed: false,
+      location: { href: "" },
+      focus: () => {},
+    };
+    const res = openWhatsappToContact("9876543210", "Hello", mockWindow as never);
+    expect(res).toBe(true);
+    expect(mockWindow.location.href).toContain("https://wa.me/919876543210?text=Hello");
   });
 });

@@ -372,18 +372,19 @@ export async function sendTest(
 export async function dispatchQueueBatch(
   supabase: SupabaseClient,
   batchSize = 25,
+  force = false,
 ): Promise<{ attempted: number; sent: number; failed: number }> {
   const s = await getSettings(supabase);
   const isTest = (s.mode.mode ?? "test") === "test";
   const now = new Date().toISOString();
 
-  const { data: rows } = await supabase
-    .from("message_queue")
-    .select("*")
-    .in("status", ["queued", "retrying"])
-    .or(`next_retry_at.is.null,next_retry_at.lte.${now}`)
-    .order("created_at", { ascending: true })
-    .limit(batchSize);
+  let query = supabase.from("message_queue").select("*").in("status", ["queued", "retrying"]);
+
+  if (!force) {
+    query = query.or(`next_retry_at.is.null,next_retry_at.lte.${now}`);
+  }
+
+  const { data: rows } = await query.order("created_at", { ascending: true }).limit(batchSize);
 
   const list = (rows ?? []) as Array<{
     id: string;
@@ -414,7 +415,17 @@ export async function dispatchQueueBatch(
       if (m.channel === "email") {
         res = await sendEmailViaResend(s.email, redirectedTo, m.subject ?? "(no subject)", m.body);
       } else if (m.channel === "whatsapp") {
-        res = await sendWhatsappViaMeta(s.whatsapp, redirectedTo, m.body);
+        const c = resolveWaCfg(s.whatsapp);
+        const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+        if (!token) {
+          res = {
+            ok: false,
+            error:
+              "Meta Cloud API not configured. Use 'Open in WhatsApp' in Communication Centre to send from your WhatsApp account.",
+          };
+        } else {
+          res = await sendWhatsappViaMeta(s.whatsapp, redirectedTo, m.body);
+        }
       } else {
         res = { ok: false, error: `Channel ${m.channel} not implemented` };
       }
@@ -451,7 +462,9 @@ export async function dispatchQueueBatch(
       }
     } else {
       failed++;
-      const done = attempts >= m.max_attempts;
+      const isMissingConfig =
+        res.error?.includes("not configured") || res.error?.includes("secret not set");
+      const done = isMissingConfig || attempts >= m.max_attempts;
       const backoffMs = Math.min(60 * 60_000, 60_000 * 2 ** Math.min(attempts, 6)); // 1m, 2m, 4m, ...
       await supabase
         .from("message_queue")

@@ -28,9 +28,12 @@ export interface EnqueueInput {
   relatedId?: string;
   customerId?: string;
   maxAttempts?: number;
+  status?: "queued" | "sending" | "retrying" | "sent" | "failed" | "cancelled";
+  sentAt?: string | null;
 }
 
 export async function enqueueMessage(input: EnqueueInput): Promise<MessageQueueRow> {
+  const isSent = input.status === "sent";
   const { data, error } = await supabase
     .from("message_queue")
     .insert({
@@ -46,11 +49,32 @@ export async function enqueueMessage(input: EnqueueInput): Promise<MessageQueueR
       related_id: input.relatedId ?? null,
       customer_id: input.customerId ?? null,
       max_attempts: input.maxAttempts ?? 5,
-      status: "queued",
+      status: input.status ?? "queued",
+      sent_at: isSent ? (input.sentAt ?? new Date().toISOString()) : null,
+      provider_message_id: isSent
+        ? input.channel === "whatsapp"
+          ? "whatsapp_direct"
+          : "manual_send"
+        : null,
     })
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (isSent && data) {
+    try {
+      await supabase.from("message_delivery_events").insert({
+        message_id: data.id,
+        event: "sent",
+        provider: input.channel === "whatsapp" ? "whatsapp_direct" : "manual",
+        provider_ref: "client_send",
+        payload: { channel: input.channel, sent_via: "whatsapp_click_to_chat" } as never,
+      });
+    } catch {
+      // Event logging is non-blocking
+    }
+  }
+
   return data;
 }
 
@@ -99,7 +123,7 @@ export async function getMessageEvents(id: string): Promise<MessageDeliveryEvent
   return data ?? [];
 }
 
-/** Requeue a failed message. */
+/** Requeue a failed, retrying, or cancelled message. */
 export async function retryMessage(id: string) {
   const { error } = await supabase
     .from("message_queue")
@@ -108,12 +132,57 @@ export async function retryMessage(id: string) {
   if (error) throw new AppError(mapDbError(error));
 }
 
-/** Mark a queued message as cancelled. */
+/** Mark a queued, retrying, or failed message as cancelled. */
 export async function cancelMessage(id: string) {
   const { error } = await supabase
     .from("message_queue")
     .update({ status: "cancelled" })
     .eq("id", id)
-    .in("status", ["queued", "failed"]);
+    .in("status", ["queued", "retrying", "failed"]);
   if (error) throw new AppError(mapDbError(error));
+}
+
+/** Mark a message as sent (e.g. delivered directly via WhatsApp click-to-chat). */
+export async function markMessageSent(id: string, providerRef = "whatsapp_direct") {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("message_queue")
+    .update({
+      status: "sent",
+      sent_at: now,
+      last_error: null,
+      provider_message_id: providerRef,
+    })
+    .eq("id", id);
+  if (error) throw new AppError(mapDbError(error));
+
+  try {
+    await supabase.from("message_delivery_events").insert({
+      message_id: id,
+      event: "sent",
+      provider: "whatsapp_direct",
+      provider_ref: providerRef,
+      payload: { sent_via: "whatsapp_click_to_chat", timestamp: now } as never,
+    });
+  } catch {
+    // Non-blocking event emission
+  }
+}
+
+/** Mark all queued, retrying, or failed WhatsApp messages as sent. */
+export async function markAllWhatsappSent(): Promise<number> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("message_queue")
+    .update({
+      status: "sent",
+      sent_at: now,
+      last_error: null,
+      provider_message_id: "whatsapp_direct",
+    })
+    .eq("channel", "whatsapp")
+    .in("status", ["queued", "retrying", "failed"])
+    .select("id");
+  if (error) throw new AppError(mapDbError(error));
+  return data?.length ?? 0;
 }

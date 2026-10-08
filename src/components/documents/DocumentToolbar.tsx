@@ -52,12 +52,21 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
 
   const handleWhatsapp = async () => {
     setBusy("whatsapp");
+    // Pre-open popup tab synchronously to bypass Safari's async popup blocker
+    let popupWin: Window | null = null;
+    try {
+      popupWin = window.open("about:blank", "_blank");
+    } catch {
+      // Popup blocked or denied; will fall back to direct navigation inside openWhatsappToContact
+    }
+
     try {
       const built = await buildDocument(entity, entityId);
       const phone = built.meta.toPhone?.trim();
       const text = renderDocWhatsAppText(built);
 
       if (!phone) {
+        if (popupWin && !popupWin.closed) popupWin.close();
         toast.info(
           `No mobile number on file for ${built.meta.toName || "recipient"} — please enter WhatsApp number`,
         );
@@ -65,12 +74,12 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         return;
       }
 
-      openWhatsappToContact(phone, text);
+      openWhatsappToContact(phone, text, popupWin);
       toast.success(
         `Opening WhatsApp for ${built.meta.toName || "recipient"} — press Enter to send`,
       );
 
-      // Record in background timeline/queue (fire-and-forget)
+      // Record in queue/timeline as SENT so server dispatcher never attempts automated Meta API
       void enqueueMessage({
         channel: "whatsapp",
         to: phone,
@@ -79,12 +88,14 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         relatedId: entityId,
         customerId: built.meta.customerId ?? undefined,
         templateCode: `${entity}_whatsapp`,
+        status: "sent",
         variables: {
           entity,
           doc_number: built.meta.docNumber,
         },
       }).catch((e) => console.warn("Failed to log WhatsApp send:", e));
     } catch (err) {
+      if (popupWin && !popupWin.closed) popupWin.close();
       toast.error(err instanceof Error ? err.message : "Failed to prepare WhatsApp message");
     } finally {
       setBusy(null);

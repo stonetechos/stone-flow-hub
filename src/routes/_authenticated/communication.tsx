@@ -4,7 +4,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { RefreshCw, Play, Filter, X } from "lucide-react";
+import {
+  RefreshCw,
+  Play,
+  Filter,
+  X,
+  MessageCircle,
+  CheckCheck,
+  Eye,
+  AlertCircle,
+} from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,13 +35,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { toUserMessage } from "@/lib/errors";
 import { dispatchQueueNow } from "@/lib/notifications/dispatch.functions";
-import { retryMessage, cancelMessage } from "@/lib/notifications/queue";
+import {
+  retryMessage,
+  cancelMessage,
+  markMessageSent,
+  markAllWhatsappSent,
+} from "@/lib/notifications/queue";
+import { openWhatsappToContact } from "@/lib/whatsapp";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/communication")({
@@ -47,6 +70,7 @@ type Row = {
   status: string;
   to_address: string;
   subject: string | null;
+  body: string | null;
   related_type: string | null;
   related_id: string | null;
   attempts: number;
@@ -65,6 +89,7 @@ const RELATED = [
   "estimate",
   "quote",
   "invoice",
+  "receipt",
   "reminder",
 ] as const;
 
@@ -85,9 +110,8 @@ function CommunicationCentre() {
   const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [viewingMessage, setViewingMessage] = useState<Row | null>(null);
 
-  // Search is part of the query key, so an un-debounced value fired one
-  // network round trip per keystroke.
   const debouncedSearch = useDebouncedValue(search, 250);
 
   const filtersActive =
@@ -117,7 +141,7 @@ function CommunicationCentre() {
       let q = supabase
         .from("message_queue")
         .select(
-          "id,message_no,channel,status,to_address,subject,related_type,related_id,attempts,last_error,provider_message_id,created_at,sent_at",
+          "id,message_no,channel,status,to_address,subject,body,related_type,related_id,attempts,last_error,provider_message_id,created_at,sent_at",
         )
         .order("created_at", { ascending: false })
         .limit(500);
@@ -139,10 +163,28 @@ function CommunicationCentre() {
 
   const dispatchFn = useServerFn(dispatchQueueNow);
   const dispatch = useMutation({
-    mutationFn: () => dispatchFn({ data: { batchSize: 25 } }),
+    mutationFn: () => dispatchFn({ data: { batchSize: 25, force: true } }),
     onSuccess: (r) => {
       toast.success(`Dispatched ${r.attempted} · ${r.sent} sent · ${r.failed} failed`);
       void query.refetch();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const markSent = useMutation({
+    mutationFn: (id: string) => markMessageSent(id),
+    onSuccess: () => {
+      toast.success("Marked as sent");
+      void qc.invalidateQueries({ queryKey: ["messages"] });
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const markAllWhatsapp = useMutation({
+    mutationFn: () => markAllWhatsappSent(),
+    onSuccess: (count) => {
+      toast.success(`Marked ${count} WhatsApp message(s) as sent`);
+      void qc.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -155,6 +197,7 @@ function CommunicationCentre() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
+
   const cancel = useMutation({
     mutationFn: (id: string) => cancelMessage(id),
     onSuccess: () => {
@@ -163,10 +206,21 @@ function CommunicationCentre() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
-  // Per-row busy id so a second click can't fire the same mutation twice.
+
+  const handleOpenWhatsapp = (row: Row) => {
+    if (!row.to_address) {
+      toast.error("No phone number specified for this message");
+      return;
+    }
+    openWhatsappToContact(row.to_address, row.body ?? "");
+    markSent.mutate(row.id);
+    toast.success(`Opening WhatsApp for ${row.to_address} — marked as sent`);
+  };
+
   const busyId =
     (retry.isPending ? retry.variables : undefined) ??
-    (cancel.isPending ? cancel.variables : undefined);
+    (cancel.isPending ? cancel.variables : undefined) ??
+    (markSent.isPending ? markSent.variables : undefined);
 
   const rows = useMemo(() => query.data ?? [], [query.data]);
   const counts = useMemo(() => {
@@ -174,6 +228,16 @@ function CommunicationCentre() {
     for (const r of rows) m[r.status] = (m[r.status] ?? 0) + 1;
     return m;
   }, [rows]);
+
+  const hasPendingWhatsapp = useMemo(
+    () =>
+      rows.some(
+        (r) =>
+          r.channel === "whatsapp" &&
+          (r.status === "retrying" || r.status === "failed" || r.status === "queued"),
+      ),
+    [rows],
+  );
 
   return (
     <div>
@@ -184,15 +248,24 @@ function CommunicationCentre() {
           "Every outbound email, WhatsApp and SMS with delivery status and retry history.",
         )}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link to="/notification-settings">
                 {t("communication.providerSettings", "Provider settings")}
               </Link>
             </Button>
-            {/* `dispatchQueueNow` is admin-gated server-side; without this
-                the button was offered to every staff user and failed with a
-                permission error. */}
+            {hasPendingWhatsapp && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                onClick={() => markAllWhatsapp.mutate()}
+                disabled={markAllWhatsapp.isPending}
+              >
+                <CheckCheck className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                Mark all WhatsApp as sent
+              </Button>
+            )}
             {isAdmin && (
               <Button size="sm" onClick={() => dispatch.mutate()} disabled={dispatch.isPending}>
                 <Play className="mr-2 h-4 w-4" />{" "}
@@ -210,6 +283,31 @@ function CommunicationCentre() {
           </Badge>
         ))}
       </div>
+
+      {hasPendingWhatsapp && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-200">
+          <div className="flex items-center gap-2.5">
+            <MessageCircle className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <div>
+              <span className="font-semibold">Direct WhatsApp Dispatch:</span> Messages can be sent
+              directly from your WhatsApp account without requiring Meta Cloud API tokens. Click{" "}
+              <span className="font-medium underline">Open in WhatsApp</span> on any row below to
+              open that customer&apos;s chat with the matter pre-filled, or click{" "}
+              <span className="font-medium underline">Mark all WhatsApp as sent</span>.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0 border-emerald-600/40 bg-background text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
+            onClick={() => markAllWhatsapp.mutate()}
+            disabled={markAllWhatsapp.isPending}
+          >
+            <CheckCheck className="mr-1.5 h-3.5 w-3.5" />
+            Clear / Mark all sent
+          </Button>
+        </div>
+      )}
 
       <Card className="shadow-1 mb-4">
         <CardHeader className="pb-2">
@@ -339,7 +437,16 @@ function CommunicationCentre() {
                       {r.message_no ?? r.id.slice(0, 8)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{r.channel}</Badge>
+                      <Badge
+                        variant="outline"
+                        className={
+                          r.channel === "whatsapp"
+                            ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-400"
+                            : ""
+                        }
+                      >
+                        {r.channel}
+                      </Badge>
                     </TableCell>
                     <TableCell className="max-w-[220px] truncate" title={r.to_address}>
                       {r.to_address}
@@ -356,7 +463,7 @@ function CommunicationCentre() {
                       <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
                       {r.last_error && (
                         <div
-                          className="mt-1 text-xs text-destructive truncate max-w-[220px]"
+                          className="mt-1 max-w-[220px] truncate text-xs text-destructive"
                           title={r.last_error}
                         >
                           {r.last_error}
@@ -368,29 +475,68 @@ function CommunicationCentre() {
                       {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(r.status === "failed" || r.status === "cancelled") && (
+                      <div className="flex items-center justify-end gap-1.5">
+                        {r.channel === "whatsapp" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-emerald-500/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                            title="Open in WhatsApp and mark as sent"
+                            disabled={busyId === r.id}
+                            onClick={() => handleOpenWhatsapp(r)}
+                          >
+                            <MessageCircle className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            Open in WhatsApp
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
-                          disabled={busyId === r.id}
-                          onClick={() => retry.mutate(r.id)}
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          title="View message text"
+                          onClick={() => setViewingMessage(r)}
                         >
-                          {t("common.retry", "Retry")}
+                          <Eye className="h-4 w-4" />
                         </Button>
-                      )}
-                      {/* `cancelMessage()` only transitions queued/failed rows,
-                        so offering Cancel on a `retrying` row showed a
-                        "Cancelled" toast for a no-op update. */}
-                      {(r.status === "queued" || r.status === "failed") && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={busyId === r.id}
-                          onClick={() => cancel.mutate(r.id)}
-                        >
-                          {t("common.cancel", "Cancel")}
-                        </Button>
-                      )}
+                        {r.channel === "whatsapp" && r.status !== "sent" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2 text-xs text-muted-foreground hover:text-emerald-600"
+                            disabled={busyId === r.id}
+                            title="Mark as Sent"
+                            onClick={() => markSent.mutate(r.id)}
+                          >
+                            Mark sent
+                          </Button>
+                        )}
+                        {(r.status === "failed" ||
+                          r.status === "cancelled" ||
+                          r.status === "retrying") && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2 text-xs"
+                            disabled={busyId === r.id}
+                            onClick={() => retry.mutate(r.id)}
+                          >
+                            {t("common.retry", "Retry")}
+                          </Button>
+                        )}
+                        {(r.status === "queued" ||
+                          r.status === "retrying" ||
+                          r.status === "failed") && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
+                            disabled={busyId === r.id}
+                            onClick={() => cancel.mutate(r.id)}
+                          >
+                            {t("common.cancel", "Cancel")}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -411,6 +557,65 @@ function CommunicationCentre() {
           )}
         </CardContent>
       </Card>
+
+      {/* Message Content Viewer Modal */}
+      <Dialog open={!!viewingMessage} onOpenChange={(open) => !open && setViewingMessage(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span>
+                {viewingMessage?.message_no ?? viewingMessage?.id.slice(0, 8)} —{" "}
+                {viewingMessage?.channel}
+              </span>
+              {viewingMessage && (
+                <Badge variant={statusVariant(viewingMessage.status)}>
+                  {viewingMessage.status}
+                </Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              To: <span className="font-mono text-foreground">{viewingMessage?.to_address}</span>
+              {viewingMessage?.subject && (
+                <span className="block mt-1">Subject: {viewingMessage.subject}</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewingMessage?.last_error && (
+            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold">Last error:</span> {viewingMessage.last_error}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Message matter</Label>
+            <div className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-md border bg-muted/40 p-3 font-mono text-xs leading-relaxed text-foreground select-all">
+              {viewingMessage?.body || "(empty body)"}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setViewingMessage(null)}>
+              Close
+            </Button>
+            {viewingMessage?.channel === "whatsapp" && (
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => {
+                  if (viewingMessage) handleOpenWhatsapp(viewingMessage);
+                  setViewingMessage(null);
+                }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Open in WhatsApp
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

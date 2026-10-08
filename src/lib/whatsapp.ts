@@ -43,17 +43,52 @@ export function buildWhatsappUrl(phone: string, text: string): string {
 /**
  * Opens WhatsApp (web or app) to the recipient with the message pre-filled.
  * Works across desktop browsers (Safari, Chrome), mobile web, and Capacitor app.
+ *
+ * An optional pre-opened Window reference can be passed when preparing data asynchronously
+ * (e.g. fetching document PDF/details), which bypasses Safari's popup blocker.
  */
-export function openWhatsappToContact(phone: string, text: string): boolean {
+export function openWhatsappToContact(
+  phone: string,
+  text: string,
+  targetWindow?: Window | null,
+): boolean {
   const url = buildWhatsappUrl(phone, text);
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" && !targetWindow) return false;
+
+  // 1. If targetWindow was pre-opened in the synchronous click gesture:
+  if (targetWindow && !targetWindow.closed) {
+    try {
+      targetWindow.location.href = url;
+      targetWindow.focus?.();
+      return true;
+    } catch {
+      // Continue to fallback
+    }
+  }
+
+  // 2. Try window.open
   try {
     const win = window.open(url, "_blank", "noopener,noreferrer");
-    if (!win) {
-      window.location.assign(url);
+    if (win && !win.closed) {
+      win.focus?.();
+      return true;
     }
+  } catch {
+    // Popup blocked or denied
+  }
+
+  // 3. Fallback: create temporary DOM anchor and click it
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     return true;
   } catch {
+    // 4. Last resort: location.assign
     window.location.assign(url);
     return true;
   }

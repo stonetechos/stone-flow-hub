@@ -21,6 +21,7 @@ import {
   renderPaymentRequestWhatsApp,
   sendPaymentRequest,
 } from "@/lib/customer-payments/request";
+import { openWhatsappToContact } from "@/lib/whatsapp";
 import { toUserMessage } from "@/lib/errors";
 
 export interface PaymentRequestDialogProps {
@@ -69,6 +70,19 @@ export function PaymentRequestDialog(props: PaymentRequestDialogProps) {
       setBusy(true);
       const to = channel === "whatsapp" ? waTo : emailTo;
       if (!to.trim()) throw new Error("Recipient required");
+
+      if (channel === "whatsapp") {
+        openWhatsappToContact(waTo.trim(), waBody);
+        await sendPaymentRequest({
+          ctx: { row, org: orgQ.data ?? {} },
+          channel,
+          to: waTo.trim(),
+        });
+        toast.success("Opening WhatsApp — press Enter to send");
+        onOpenChange(false);
+        return;
+      }
+
       await sendPaymentRequest({
         ctx: { row, org: orgQ.data ?? {} },
         channel,

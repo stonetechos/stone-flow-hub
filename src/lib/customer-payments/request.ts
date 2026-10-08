@@ -125,6 +125,7 @@ export async function sendPaymentRequest(params: {
       relatedType: "customer_payment_schedule",
       relatedId: ctx.row.id,
       customerId: ctx.row.customer_id,
+      status: "sent",
     });
   }
   const { subject, html } = renderPaymentRequestEmail(ctx);

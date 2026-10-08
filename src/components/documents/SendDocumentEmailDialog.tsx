@@ -124,7 +124,7 @@ export function SendDocumentEmailDialog({
         openWhatsappToContact(to.trim(), message);
         toast.success("Opening WhatsApp — press Enter to send");
 
-        // Record in queue/timeline for historical tracking
+        // Record in queue/timeline as SENT so automated dispatcher does not attempt Meta API
         await enqueueMessage({
           channel: "whatsapp",
           to: to.trim(),
@@ -133,6 +133,7 @@ export function SendDocumentEmailDialog({
           relatedId: entityId,
           customerId,
           templateCode: `${entity}_whatsapp`,
+          status: "sent",
           variables: {
             entity,
             doc_number: docNo,

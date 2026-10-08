@@ -68,12 +68,17 @@ export const sendTestMessage = createServerFn({ method: "POST" })
 export const dispatchQueueNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ batchSize: z.number().int().min(1).max(100).default(25) }).parse(d),
+    z
+      .object({
+        batchSize: z.number().int().min(1).max(100).default(25),
+        force: z.boolean().default(false),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin({ supabase: context.supabase, userId: context.userId });
     const { dispatchQueueBatch } = await import("./dispatch.server");
-    return dispatchQueueBatch(context.supabase as never, data.batchSize);
+    return dispatchQueueBatch(context.supabase as never, data.batchSize, data.force);
   });
 
 export const sendWhatsappTestTemplate = createServerFn({ method: "POST" })
