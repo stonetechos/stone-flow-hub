@@ -1,14 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable, EmptyState } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -161,26 +163,41 @@ function CartingAgenciesPage() {
         <div className="overflow-x-auto rounded-md border border-border">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Agency Name</TableHead>
-                <TableHead>Contact Person</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Vehicle Type</TableHead>
-                <TableHead>Active</TableHead>
-                <TableHead className="w-12" />
+              <TableRow className="bg-muted/40">
+                <TableHead className="min-w-[180px]">Agency / Carrier Name</TableHead>
+                <TableHead className="min-w-[140px]">Contact Person</TableHead>
+                <TableHead className="min-w-[130px]">Phone</TableHead>
+                <TableHead className="min-w-[140px]">Vehicle Type</TableHead>
+                <TableHead className="w-20">Status</TableHead>
+                <TableHead className="w-36 text-right pr-4 sticky right-0 bg-background/95 backdrop-blur-xs">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium text-foreground">
-                    <span className="font-semibold text-sm">{r.name}</span>
+                <TableRow
+                  key={r.id}
+                  className="hover:bg-muted/40 transition-colors group cursor-pointer"
+                  onDoubleClick={() => openEdit(r)}
+                >
+                  <TableCell
+                    className="font-medium text-foreground py-3"
+                    onClick={() => openEdit(r)}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-sm text-foreground group-hover:text-primary group-hover:underline transition-colors">
+                        {r.name}
+                      </span>
+                      <Pencil className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </div>
                   </TableCell>
-                  <TableCell className="text-sm">{r.contact_person ?? "—"}</TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-sm py-3">{r.contact_person ?? "—"}</TableCell>
+                  <TableCell className="text-sm py-3">
                     {r.phone ? (
                       <a
                         href={`tel:${r.phone}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="hover:underline text-primary font-mono text-xs"
                       >
                         {r.phone}
@@ -189,10 +206,41 @@ function CartingAgenciesPage() {
                       "—"
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">{r.vehicle_type ?? "—"}</TableCell>
-                  <TableCell className="text-sm">{r.is_active ? "Yes" : "No"}</TableCell>
-                  <TableCell>
-                    <RowActions onEdit={() => openEdit(r)} onDelete={() => setToDelete(r)} />
+                  <TableCell className="text-sm py-3">{r.vehicle_type ?? "—"}</TableCell>
+                  <TableCell className="text-sm py-3">
+                    <Badge
+                      variant={r.is_active ? "outline" : "secondary"}
+                      className={cn(
+                        "text-[10px] font-medium",
+                        r.is_active
+                          ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {r.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell
+                    className="py-3 text-right pr-4 sticky right-0 bg-background/95 backdrop-blur-xs"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+                        onClick={() => openEdit(r)}
+                      >
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                      </Button>
+                      <RowActions
+                        onEdit={() => openEdit(r)}
+                        onDelete={() => setToDelete(r)}
+                        canEdit={true}
+                        canDelete={roles.canDelete}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

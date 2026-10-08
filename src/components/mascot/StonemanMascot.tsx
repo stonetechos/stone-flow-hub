@@ -113,9 +113,10 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, [updatePosition]);
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     // Only primary button or touch
     if (e.button !== 0 && e.pointerType === "mouse") return;
+    e.stopPropagation();
 
     // Capture pointer so movement outside the mascot element is tracked seamlessly
     try {
@@ -136,13 +137,14 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     };
   };
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragStateRef.current.isPointerDown) return;
+    e.stopPropagation();
 
     const dx = e.clientX - dragStateRef.current.startX;
     const dy = e.clientY - dragStateRef.current.startY;
 
-    // Distinguish between simple click/tap and intentional drag (5px threshold)
+    // Distinguish between simple click/tap and intentional drag (4px threshold)
     if (!dragStateRef.current.hasMoved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
       dragStateRef.current.hasMoved = true;
       setIsDragging(true);
@@ -155,8 +157,9 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragStateRef.current.isPointerDown) return;
+    e.stopPropagation();
 
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
@@ -179,8 +182,9 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
     }
   };
 
-  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerCancel = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragStateRef.current.isPointerDown) return;
+    e.stopPropagation();
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
@@ -199,42 +203,39 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
 
   // Determine if tooltip should show on left or right of mascot based on screen position
   const activePos = pos ?? currentPosRef.current;
-  const tooltipOnRight = activePos ? activePos.x < 150 : false;
+  const tooltipOnRight = activePos ? activePos.x < 180 : false;
 
   return (
     <div
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
-      onDoubleClick={handleDoubleClick}
       style={
         activePos
           ? {
               position: "fixed",
               left: `${activePos.x}px`,
               top: `${activePos.y}px`,
+              width: `${MASCOT_SIZE}px`,
+              height: `${MASCOT_SIZE}px`,
               touchAction: "none",
-              userSelect: "none",
             }
           : {
               position: "fixed",
               bottom: "calc(9.5rem + env(safe-area-inset-bottom, 0px))",
               right: "calc(1.25rem + env(safe-area-inset-right, 0px))",
+              width: `${MASCOT_SIZE}px`,
+              height: `${MASCOT_SIZE}px`,
               touchAction: "none",
-              userSelect: "none",
             }
       }
       className={cn(
-        "fixed z-50 flex items-center select-none",
-        tooltipOnRight ? "flex-row-reverse gap-2" : "gap-2",
+        "fixed z-50 pointer-events-none select-none flex items-center justify-center overflow-visible",
         className,
       )}
     >
-      {/* Speech tooltip — hidden during active dragging */}
+      {/* Speech tooltip — absolutely positioned outside the mascot, strictly pointer-events-none */}
       <div
         className={cn(
-          "pointer-events-none hidden sm:flex items-center gap-1.5 rounded-full border border-teal-800/40 bg-slate-900/90 px-3 py-1 text-xs font-semibold text-teal-100 shadow-xl backdrop-blur-md transition-all duration-200",
+          "pointer-events-none absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 rounded-full border border-teal-800/40 bg-slate-900/90 px-3 py-1 text-xs font-semibold text-teal-100 shadow-xl backdrop-blur-md transition-all duration-200 whitespace-nowrap",
+          tooltipOnRight ? "left-[calc(100%+10px)]" : "right-[calc(100%+10px)]",
           hovered && !isDragging ? "opacity-100 scale-100" : "opacity-0 scale-95",
         )}
       >
@@ -248,9 +249,14 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
         </kbd>
       </div>
 
-      {/* Animated Draggable Mascot Button */}
+      {/* Animated Draggable Mascot Button — strictly captures pointer events only on the mascot circle */}
       <button
         type="button"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onDoubleClick={handleDoubleClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onKeyDown={(e) => {
@@ -261,7 +267,7 @@ export function StonemanMascot({ onClick, className }: StonemanMascotProps) {
         }}
         aria-label="Open Stoneman AI (⌘J, draggable)"
         className={cn(
-          "group relative flex h-14 w-14 items-center justify-center rounded-full select-none",
+          "group relative flex h-14 w-14 items-center justify-center rounded-full select-none pointer-events-auto",
           isDragging
             ? "cursor-grabbing scale-105 shadow-2xl ring-4 ring-teal-400/50"
             : "cursor-grab",
