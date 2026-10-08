@@ -3,20 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type DashboardViewTab = "financial" | "operations" | "announcements" | "help";
+export type DashboardViewTab = "operations" | "announcements" | "help";
 
 export function ZohoDashboardHeader({
   activeTab,
   onTabChange,
   onRefresh,
   isRefreshing,
-  canViewFinancial = true,
 }: {
   activeTab: DashboardViewTab;
   onTabChange: (tab: DashboardViewTab) => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
-  canViewFinancial?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -70,22 +68,6 @@ export function ZohoDashboardHeader({
 
       {/* Tabs Row — 3D Engraved Recessed Pill Bar */}
       <div className="engraved-well flex items-center gap-1.5 overflow-x-auto rounded-xl p-1.5 text-xs sm:text-sm">
-        {canViewFinancial && (
-          <button
-            type="button"
-            onClick={() => onTabChange("financial")}
-            className={cn(
-              "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
-              activeTab === "financial"
-                ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
-                : "text-slate-600 hover:bg-white hover:text-cyan-800",
-            )}
-          >
-            <CheckCircle2 className="h-4 w-4" />
-            <span>{t("dashboard.zoho.financialTab", "Financial Dashboard")}</span>
-          </button>
-        )}
-
         <button
           type="button"
           onClick={() => onTabChange("operations")}

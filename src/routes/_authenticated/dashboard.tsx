@@ -70,14 +70,12 @@ import { listRecentActivity } from "@/lib/activity/api";
 import { listTasks, updateTaskStatus, type TaskRow } from "@/lib/tasks/api";
 import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
-import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   ZohoDashboardHeader,
   type DashboardViewTab,
 } from "@/components/dashboard/zoho/ZohoDashboardHeader";
-import { ZohoDashboardView } from "@/components/dashboard/zoho/ZohoDashboardView";
 import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAuxiliaryViews";
 import { WebsiteLeadsDashboardCard } from "@/components/dashboard/WebsiteLeadsDashboardCard";
 
@@ -94,13 +92,9 @@ function DashboardPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuthReady();
   const qc = useQueryClient();
-  const roles = useRoles();
-  const canViewFinancial = roles.isSuperAdmin;
   const { processedInsights } = useExecutiveInsights();
 
-  const [activeTab, setActiveTab] = useState<DashboardViewTab>(() =>
-    canViewFinancial ? "financial" : "operations",
-  );
+  const [activeTab, setActiveTab] = useState<DashboardViewTab>("operations");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -192,16 +186,9 @@ function DashboardPage() {
         onTabChange={setActiveTab}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
-        canViewFinancial={canViewFinancial}
       />
 
       {/* Main Tab Views */}
-      {canViewFinancial && activeTab === "financial" && (
-        <div className="px-2 sm:px-4">
-          <ZohoDashboardView />
-        </div>
-      )}
-
       {activeTab === "operations" && (
         <div className="px-2 sm:px-4">
           {kpisQ.isLoading || !kpisQ.data ? (
