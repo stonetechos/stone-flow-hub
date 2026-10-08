@@ -28,7 +28,9 @@ export const estimateProductSchema = z.object({
   productName: z.string(),
   priceUnit: z.enum(["sqft", "unit"]),
   pricePerUnit: z.number().nonnegative(),
-  /** Auto (sqft mode: wall sqft + 10%, rounded up) or manually entered (unit mode). */
+  /** Wastage percentage (e.g. 5 for 5%), used when priceUnit === "sqft". */
+  wastagePct: z.number().nonnegative().default(5).optional(),
+  /** Auto (sqft mode: wall sqft + wastage%, rounded up to next integer) or manually entered (unit mode). */
   quantityToOrder: z.number().nonnegative(),
   amount: z.number().nonnegative(),
   /** Data-URL thumbnail only — not persisted to storage, PDF-embed use only. */

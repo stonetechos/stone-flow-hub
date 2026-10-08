@@ -41,24 +41,35 @@ export function wallSqft(height: number, length: number, unit: LengthUnit): numb
 
 /**
  * Round a fractional quantity UP to the next whole unit, per the business
- * rule "a calculated 1.1–1.99 result becomes 2 — decimals never shown".
- * The small epsilon guards against an exact integer (e.g. 25/25 = 1.0)
- * being pushed up by floating-point error.
+ * rule: any fractional sq ft (e.g. 0.1, 0.9, or 101.0000001) is rounded UP
+ * to the next integer, because stone suppliers do not sell fractional sq ft.
+ * Only microscopic IEEE 754 precision noise (< 1e-12) is snapped to exact integer.
  */
 export function ceilWhole(value: number): number {
   if (!isFinite(value) || value <= 0) return 0;
-  return Math.ceil(value - 1e-9);
+  const rounded = Math.round(value);
+  if (Math.abs(value - rounded) < 1e-12) {
+    return rounded;
+  }
+  return Math.ceil(value);
 }
 
-export const MATERIAL_QUANTITY_BUFFER_PCT = 10;
+export const DEFAULT_WASTAGE_PCT = 5;
 
 /**
- * "The system adds 10% to the wall size and enters that directly as the
- * quantity to be ordered." Worked example: 108in × 48in → 36 sqft raw →
- * 39.6 → 40 sqft to order.
+ * Calculates material to order given wall coverage sqft and wastage percentage.
+ * Formula: wallSqft + wastage% = wallSqft * (1 + wastagePct / 100).
+ *
+ * The result is ALWAYS rounded up to the next integer sq ft
+ * (e.g. 101.0000001 -> 102 sqft), because you cannot buy 0.1 or 0.9 sq ft from suppliers.
  */
-export function materialQuantityToOrder(rawSqft: number): number {
-  return ceilWhole(rawSqft * (1 + MATERIAL_QUANTITY_BUFFER_PCT / 100));
+export function materialQuantityToOrder(
+  rawSqft: number,
+  wastagePct: number = DEFAULT_WASTAGE_PCT,
+): number {
+  if (!isFinite(rawSqft) || rawSqft <= 0) return 0;
+  const pct = isFinite(wastagePct) && wastagePct >= 0 ? wastagePct : 0;
+  return ceilWhole(rawSqft * (1 + pct / 100));
 }
 
 export type AdhesiveUnit = "bag" | "bucket";

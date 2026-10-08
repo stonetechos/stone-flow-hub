@@ -82,6 +82,7 @@ type ProductForm = {
   productName: string;
   priceUnit: "sqft" | "unit";
   pricePerUnit: string;
+  wastagePct: string; // e.g. "5"
   manualQty: string; // used only when priceUnit === "unit"
   imageDataUrl: string | null;
 };
@@ -200,6 +201,7 @@ export function EstimateStudioCalculator({
         productName: "",
         priceUnit: "sqft",
         pricePerUnit: "",
+        wastagePct: "5",
         manualQty: "",
         imageDataUrl: null,
       },
@@ -246,9 +248,11 @@ export function EstimateStudioCalculator({
       products.map((p) => {
         const wall = wallsComputed.find((w) => w.id === p.wallId);
         const price = Number(p.pricePerUnit) || 0;
+        const wastage =
+          p.wastagePct !== "" && !isNaN(Number(p.wastagePct)) ? Number(p.wastagePct) : 5;
         const qty =
           p.priceUnit === "sqft"
-            ? materialQuantityToOrder(wall?.sqft ?? 0)
+            ? materialQuantityToOrder(wall?.sqft ?? 0, wastage)
             : Number(p.manualQty) || 0;
         return {
           id: p.id,
@@ -257,6 +261,7 @@ export function EstimateStudioCalculator({
           productName: p.productName.trim(),
           priceUnit: p.priceUnit,
           pricePerUnit: price,
+          wastagePct: wastage,
           quantityToOrder: qty,
           amount: qty * price,
           imageDataUrl: p.imageDataUrl,
@@ -496,7 +501,9 @@ export function EstimateStudioCalculator({
         .filter((p) => p.productName)
         .map((p) => {
           const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
-          return `${p.quantityToOrder} ${p.priceUnit === "sqft" ? "sqft" : "unit(s)"}${wallName ? ` (${wallName})` : ""}`;
+          const wastageNote =
+            p.priceUnit === "sqft" ? ` (incl. ${p.wastagePct ?? 5}% wastage)` : "";
+          return `${p.quantityToOrder} ${p.priceUnit === "sqft" ? "sqft" : "unit(s)"}${wastageNote}${wallName ? ` (${wallName})` : ""}`;
         })
         .join("; ");
       const wallSizeSummary = wallsComputed
@@ -644,6 +651,7 @@ export function EstimateStudioCalculator({
         <div className="space-y-3">
           {products.map((p) => {
             const computed = productsComputed.find((c) => c.id === p.id);
+            const wall = wallsComputed.find((w) => w.id === p.wallId);
             return (
               <div
                 key={p.id}
@@ -714,7 +722,14 @@ export function EstimateStudioCalculator({
                   </div>
                 </div>
                 <div className="grid grid-cols-12 gap-2">
-                  <LineField label="Price basis" className="col-span-6 md:col-span-2">
+                  <LineField
+                    label="Price basis"
+                    className={
+                      p.priceUnit === "sqft"
+                        ? "col-span-6 md:col-span-2"
+                        : "col-span-6 md:col-span-3"
+                    }
+                  >
                     <Select
                       value={p.priceUnit}
                       onValueChange={(v) =>
@@ -730,7 +745,14 @@ export function EstimateStudioCalculator({
                       </SelectContent>
                     </Select>
                   </LineField>
-                  <LineField label="Price (₹)" className="col-span-6 md:col-span-2">
+                  <LineField
+                    label="Price (₹)"
+                    className={
+                      p.priceUnit === "sqft"
+                        ? "col-span-6 md:col-span-2"
+                        : "col-span-6 md:col-span-3"
+                    }
+                  >
                     <Input
                       type="number"
                       inputMode="decimal"
@@ -740,7 +762,7 @@ export function EstimateStudioCalculator({
                     />
                   </LineField>
                   {p.priceUnit === "unit" && (
-                    <LineField label="Quantity (units)" className="col-span-6 md:col-span-2">
+                    <LineField label="Quantity (units)" className="col-span-6 md:col-span-3">
                       <Input
                         type="number"
                         inputMode="decimal"
@@ -751,16 +773,50 @@ export function EstimateStudioCalculator({
                     </LineField>
                   )}
                   {p.priceUnit === "sqft" && (
-                    <LineField
-                      label="Qty to order (auto, +10%)"
-                      className="col-span-6 md:col-span-3"
-                    >
-                      <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-                        {(computed?.quantityToOrder ?? 0).toFixed(0)} sqft
-                      </div>
-                    </LineField>
+                    <>
+                      <LineField label="Wastage (%)" className="col-span-6 md:col-span-2">
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={p.wastagePct}
+                          placeholder="5"
+                          onChange={(e) => updateProduct(p.id, { wastagePct: e.target.value })}
+                        />
+                      </LineField>
+                      <LineField
+                        label={`Qty to order (+${p.wastagePct || "0"}% rounded up)`}
+                        className="col-span-6 md:col-span-3"
+                      >
+                        <div
+                          className="flex h-9 items-center justify-between rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums"
+                          title={`Wall area: ${(wall?.sqft ?? 0).toFixed(2)} sqft + ${p.wastagePct || "0"}% wastage = ${(
+                            (wall?.sqft ?? 0) *
+                            (1 + (Number(p.wastagePct) || 0) / 100)
+                          ).toFixed(
+                            4,
+                          )} sqft → rounded up to ${computed?.quantityToOrder ?? 0} sqft`}
+                        >
+                          <span>{computed?.quantityToOrder ?? 0} sqft</span>
+                          {wall && wall.sqft > 0 && (
+                            <span className="text-[11px] font-normal text-muted-foreground">
+                              ({wall.sqft.toFixed(1)} + {p.wastagePct || "0"}%)
+                            </span>
+                          )}
+                        </div>
+                      </LineField>
+                    </>
                   )}
-                  <LineField label="Amount" className="col-span-6 md:col-span-3">
+                  <LineField
+                    label="Amount"
+                    className={
+                      p.priceUnit === "sqft"
+                        ? "col-span-12 md:col-span-3"
+                        : "col-span-6 md:col-span-3"
+                    }
+                  >
                     <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-semibold tabular-nums">
                       {formatInr(computed?.amount ?? 0)}
                     </div>
