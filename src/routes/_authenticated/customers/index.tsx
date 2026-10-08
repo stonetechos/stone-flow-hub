@@ -3,10 +3,11 @@ import { dispatchSystemNotification } from "@/lib/notifications/systemNotificati
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Users, ExternalLink } from "lucide-react";
+import { Plus, Loader2, Users, ExternalLink, Phone, MessageSquare } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
+import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -201,77 +202,120 @@ function CustomersPage() {
               <TableRow>
                 <TableHead className="w-16">{t("common.srNo", "Sr. No.")}</TableHead>
                 <TableHead>{t("common.name", "Name")}</TableHead>
+                <TableHead className="w-56">CRM · Response Status</TableHead>
+                <TableHead className="w-48">Contact</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pageRows.map((c, i) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    <Link
-                      to="/customers/$customerId"
-                      params={{ customerId: c.id }}
-                      className="hover:underline"
-                    >
-                      {(page - 1) * pageSize + i + 1}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link
-                      to="/customers/$customerId"
-                      params={{ customerId: c.id }}
-                      className="hover:underline flex flex-col gap-0.5"
-                    >
-                      <span>{c.name}</span>
-                      {(() => {
-                        const rowAny = c as unknown as {
-                          company_name?: string | null;
-                          contact_person?: string | null;
-                        };
-                        const badges = [
-                          rowAny.company_name ? `Firm: ${rowAny.company_name}` : null,
-                          rowAny.contact_person ? `Contact: ${rowAny.contact_person}` : null,
-                          c.customer_code,
-                        ].filter(Boolean);
-                        return badges.length > 0 ? (
-                          <span className="font-mono text-xs font-normal text-muted-foreground">
-                            {badges.join(" · ")}
-                          </span>
-                        ) : null;
-                      })()}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <RowActions
-                      extra={
-                        <>
-                          <DropdownMenuItem asChild>
-                            <Link to="/customers/$customerId" params={{ customerId: c.id }}>
-                              <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <LifecycleMenuItems
-                            entityType="customer"
-                            entityId={c.id}
-                            currentStatus={
-                              ((c as unknown as { lifecycle_status?: LifecycleStatus })
-                                .lifecycle_status ??
-                                (c.is_active ? "active" : "inactive")) as LifecycleStatus
-                            }
-                            allowPurge={false}
-                          />
-                        </>
-                      }
-                      onEdit={() => {
-                        setEditing(c);
-                        setFormOpen(true);
-                      }}
-                      onDelete={() => setToDelete(c)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {pageRows.map((c, i) => {
+                const phone =
+                  c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
+                const cleanPhone = phone.replace(/[^0-9]/g, "");
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      <Link
+                        to="/customers/$customerId"
+                        params={{ customerId: c.id }}
+                        className="hover:underline"
+                      >
+                        {(page - 1) * pageSize + i + 1}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Link
+                        to="/customers/$customerId"
+                        params={{ customerId: c.id }}
+                        className="hover:underline flex flex-col gap-0.5"
+                      >
+                        <span>{c.name}</span>
+                        {(() => {
+                          const rowAny = c as unknown as {
+                            company_name?: string | null;
+                            contact_person?: string | null;
+                          };
+                          const badges = [
+                            rowAny.company_name ? `Firm: ${rowAny.company_name}` : null,
+                            rowAny.contact_person ? `Contact: ${rowAny.contact_person}` : null,
+                            c.customer_code,
+                          ].filter(Boolean);
+                          return badges.length > 0 ? (
+                            <span className="font-mono text-xs font-normal text-muted-foreground">
+                              {badges.join(" · ")}
+                            </span>
+                          ) : null;
+                        })()}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <CustomerResponseStatusSelect
+                        customerId={c.id}
+                        customerName={c.name}
+                        isActive={c.is_active}
+                        workflowState={c.workflow_state}
+                        externalRef={c.external_ref}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {phone ? (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <a
+                            href={`tel:${phone}`}
+                            title={`Call ${phone}`}
+                            className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors"
+                          >
+                            <Phone className="h-3 w-3 text-emerald-600" />
+                            <span>{phone}</span>
+                          </a>
+                          {cleanPhone && (
+                            <a
+                              href={`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Chat on WhatsApp"
+                              className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors"
+                            >
+                              <MessageSquare className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">No phone</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <RowActions
+                        extra={
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link to="/customers/$customerId" params={{ customerId: c.id }}>
+                                <ExternalLink className="mr-2 h-4 w-4" /> {t("common.open", "Open")}
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <LifecycleMenuItems
+                              entityType="customer"
+                              entityId={c.id}
+                              currentStatus={
+                                ((c as unknown as { lifecycle_status?: LifecycleStatus })
+                                  .lifecycle_status ??
+                                  (c.is_active ? "active" : "inactive")) as LifecycleStatus
+                              }
+                              allowPurge={false}
+                            />
+                          </>
+                        }
+                        onEdit={() => {
+                          setEditing(c);
+                          setFormOpen(true);
+                        }}
+                        onDelete={() => setToDelete(c)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </DataTableShell>

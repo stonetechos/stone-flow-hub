@@ -51,6 +51,8 @@ import { formatInr, formatDate } from "@/lib/format";
 import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPaymentCentre";
 import { listFollowups } from "@/lib/followups/api";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
+import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import { CustomerCrmFollowupCard } from "@/components/customers/CustomerCrmFollowupCard";
 
 /** Payment and dispatch due dates for this customer, glanceable right on
  *  Overview (Sales dashboard, 2026-09) — renders nothing when there's
@@ -302,6 +304,13 @@ function CustomerHub() {
                 </>
               );
             })()}
+            <CustomerResponseStatusSelect
+              customerId={customerId}
+              customerName={c.name}
+              isActive={c.is_active}
+              workflowState={c.workflow_state}
+              externalRef={c.external_ref}
+            />
           </span>
         }
         actions={
@@ -416,28 +425,7 @@ function CustomerHub() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
-          <Card className="shadow-1">
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-sm">Next Follow-up</CardTitle>
-              <Link to="/followups" className="text-xs text-primary hover:underline">
-                View all
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <NextFollowupChip
-                next={
-                  nextFupRow
-                    ? {
-                        id: nextFupRow.id,
-                        scheduled_at: nextFupRow.scheduled_at,
-                        assigned_to: nextFupRow.assigned_to ?? null,
-                        channel: nextFupRow.channel ?? null,
-                      }
-                    : null
-                }
-              />
-            </CardContent>
-          </Card>
+          <CustomerCrmFollowupCard customer={c} />
 
           <CustomerDuesCard customerId={customerId} />
 

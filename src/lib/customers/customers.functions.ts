@@ -245,3 +245,136 @@ export const purgeMisplacedCustomerEntriesServerFn = createServerFn({ method: "P
     // Safe no-op: customer data is unified and preserved for all organization users
     return { deleted: 0 };
   });
+
+const updateCustomerCrmStatusInput = z.object({
+  customerId: z.string().uuid(),
+  is_active: z.boolean().optional(),
+  response_status: z
+    .enum([
+      "active_responsive",
+      "followup_pending",
+      "awaiting_reply",
+      "inactive_no_response",
+      "do_not_contact",
+    ])
+    .optional(),
+  call_note: z.string().optional(),
+  call_outcome: z.string().optional(),
+  next_call_at: z.string().optional(),
+  next_call_channel: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]).optional(),
+  next_call_agenda: z.string().optional(),
+  complete_pending_followup_id: z.string().uuid().optional(),
+});
+
+export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => updateCustomerCrmStatusInput.parse(raw))
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId;
+
+    const { data: existing, error: fetchErr } = await supabaseAdmin
+      .from("customers")
+      .select("id, name, workflow_state, notes, is_active")
+      .eq("id", data.customerId)
+      .single();
+
+    if (fetchErr || !existing) {
+      throw new Error(fetchErr?.message || "Customer not found");
+    }
+
+    const currentWf = (existing.workflow_state as Record<string, unknown>) || {};
+    const updatedWf: Record<string, unknown> = {
+      ...currentWf,
+    };
+
+    if (data.response_status) {
+      updatedWf.response_status = data.response_status;
+    }
+
+    const nowIso = new Date().toISOString();
+
+    if (data.call_note || data.call_outcome) {
+      updatedWf.last_call_at = nowIso;
+      if (data.call_note) updatedWf.last_call_notes = data.call_note;
+      if (data.call_outcome) updatedWf.last_call_outcome = data.call_outcome;
+      updatedWf.call_count = Number(currentWf.call_count ?? 0) + 1;
+    }
+
+    if (data.next_call_at) {
+      updatedWf.next_call_at = data.next_call_at;
+      if (data.next_call_agenda) updatedWf.next_call_agenda = data.next_call_agenda;
+    }
+
+    // Determine is_active status
+    let targetIsActive = existing.is_active;
+    if (data.is_active !== undefined) {
+      targetIsActive = data.is_active;
+    } else if (
+      data.response_status === "inactive_no_response" ||
+      data.response_status === "do_not_contact"
+    ) {
+      targetIsActive = false;
+    } else if (
+      data.response_status === "active_responsive" ||
+      data.response_status === "followup_pending" ||
+      data.response_status === "awaiting_reply"
+    ) {
+      targetIsActive = true;
+    }
+
+    // Append to notes for audit trail if a call note was recorded
+    let updatedNotes = existing.notes;
+    if (data.call_note && data.call_note.trim()) {
+      const timestamp = new Date().toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const outcomeTag = data.call_outcome ? `[${data.call_outcome}] ` : "";
+      const logLine = `\n[Call · ${timestamp}] ${outcomeTag}${data.call_note.trim()}`;
+      updatedNotes = existing.notes ? `${existing.notes.trim()}${logLine}` : logLine.trim();
+    }
+
+    const { data: updatedCustomer, error: updateErr } = await supabaseAdmin
+      .from("customers")
+      .update({
+        workflow_state: updatedWf as unknown as import("@/integrations/supabase/types").Json,
+        is_active: targetIsActive,
+        notes: updatedNotes,
+      })
+      .eq("id", data.customerId)
+      .select("*")
+      .single();
+
+    if (updateErr) throw new Error(updateErr.message);
+
+    // If an existing pending follow-up was fulfilled by this call, mark it complete
+    if (data.complete_pending_followup_id) {
+      await supabaseAdmin
+        .from("followups")
+        .update({
+          status: "done",
+          completed_at: nowIso,
+          outcome_notes:
+            data.call_note || data.call_outcome || "Follow-up completed via call tracker",
+        })
+        .eq("id", data.complete_pending_followup_id);
+    }
+
+    // If a next call is scheduled, insert into followups table
+    if (data.next_call_at) {
+      await supabaseAdmin.from("followups").insert({
+        entity_type: "customer",
+        entity_id: data.customerId,
+        scheduled_at: data.next_call_at,
+        channel: data.next_call_channel || "call",
+        notes: data.next_call_agenda || data.call_note || "Scheduled customer follow-up call",
+        status: "pending",
+        created_by: uid,
+      });
+    }
+
+    return { customer: updatedCustomer as CustomerRow, ok: true };
+  });
