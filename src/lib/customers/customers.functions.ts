@@ -11,7 +11,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { customerCreateSchema } from "./schema";
 import { normalizeMobile } from "@/lib/zod";
 import type { Database } from "@/integrations/supabase/types";
-import { isMaterialInterestEnumError, sanitizeForPendingDbEnum } from "./material-interests";
+import {
+  isMaterialInterestEnumError,
+  sanitizeForPendingDbEnum,
+  type MaterialInterest,
+} from "./material-interests";
+import {
+  isMissingCustomerColumnError,
+  normalizeCustomerRow,
+  prepareCustomerExternalRef,
+  stripMissingCustomerColumns,
+} from "./normalize";
 
 export type CustomerRow = Database["public"]["Tables"]["customers"]["Row"];
 
@@ -70,7 +80,12 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         console.warn("[customers.functions] CUS sequence alignment check skipped:", seqErr);
       }
 
-      const payload = {
+      const extRef = prepareCustomerExternalRef(null, {
+        company_name: input.company_name,
+        contact_person: input.contact_person,
+      });
+
+      const payload: Record<string, unknown> = {
         customer_code: "",
         name: input.name,
         contact_person: input.contact_person ?? null,
@@ -90,6 +105,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         space_type: input.space_type ?? null,
         material_interests: input.material_interests ?? [],
         created_by: uid,
+        external_ref: extRef,
       };
 
       let row: CustomerRow | null = null;
@@ -102,7 +118,24 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       let insertData = initialInsert.data;
       let insertError = initialInsert.error;
 
-      // Defensive resilience: If Postgres enum is missing 'natural_stone_cladding_tiles',
+      // Defensive resilience 1: If Postgres is missing company_name or contact_person in schema cache,
+      // strip top-level un-migrated columns and preserve them inside external_ref JSONB.
+      if (insertError && isMissingCustomerColumnError(insertError)) {
+        console.warn(
+          "[customers.functions] Missing column fallback triggered on insert for company_name/contact_person:",
+          insertError.message,
+        );
+        const stripped = stripMissingCustomerColumns(payload);
+        const retryResult = await supabaseAdmin
+          .from("customers")
+          .insert(stripped as never)
+          .select("*")
+          .single();
+        insertData = retryResult.data;
+        insertError = retryResult.error;
+      }
+
+      // Defensive resilience 2: If Postgres enum is missing 'natural_stone_cladding_tiles',
       // sanitize the payload by stripping the un-migrated enum value and recording it in notes.
       if (insertError && isMaterialInterestEnumError(insertError)) {
         console.warn(
@@ -110,16 +143,17 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
           insertError.message,
         );
         const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
-          payload.material_interests,
-          payload.notes,
+          (payload.material_interests as MaterialInterest[]) ?? [],
+          (payload.notes as string) ?? null,
         );
+        const stripped = stripMissingCustomerColumns({
+          ...payload,
+          material_interests: filteredInterests,
+          notes: sanitizedNotes,
+        });
         const retryResult = await supabaseAdmin
           .from("customers")
-          .insert({
-            ...payload,
-            material_interests: filteredInterests,
-            notes: sanitizedNotes,
-          } as never)
+          .insert(stripped as never)
           .select("*")
           .single();
         insertData = retryResult.data;
@@ -127,7 +161,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       }
 
       if (insertError) throw new Error(insertError.message);
-      row = insertData as CustomerRow;
+      row = normalizeCustomerRow(insertData as CustomerRow);
 
       if (row) {
         try {
@@ -141,7 +175,18 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       return row as CustomerRow;
     } else {
       // Update existing customer
-      const updatePayload = {
+      const { data: existingCustomer } = await supabaseAdmin
+        .from("customers")
+        .select("external_ref")
+        .eq("id", id)
+        .maybeSingle();
+
+      const extRef = prepareCustomerExternalRef(existingCustomer?.external_ref, {
+        company_name: input.company_name,
+        contact_person: input.contact_person,
+      });
+
+      const updatePayload: Record<string, unknown> = {
         name: input.name,
         contact_person: input.contact_person ?? null,
         company_name: input.company_name ?? null,
@@ -159,6 +204,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
         site_address: input.site_address ?? null,
         space_type: input.space_type ?? null,
         material_interests: input.material_interests ?? [],
+        external_ref: extRef,
       };
 
       const initialUpdate = await supabaseAdmin
@@ -171,24 +217,41 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       let updateData = initialUpdate.data;
       let updateError = initialUpdate.error;
 
-      // Defensive resilience: If Postgres enum is missing 'natural_stone_cladding_tiles',
-      // sanitize the payload by stripping the un-migrated enum value and recording it in notes.
+      // Defensive resilience 1: Missing company_name/contact_person column in schema cache
+      if (updateError && isMissingCustomerColumnError(updateError)) {
+        console.warn(
+          "[customers.functions] Missing column fallback triggered on update for company_name/contact_person:",
+          updateError.message,
+        );
+        const stripped = stripMissingCustomerColumns(updatePayload);
+        const retryResult = await supabaseAdmin
+          .from("customers")
+          .update(stripped as never)
+          .eq("id", id)
+          .select("*")
+          .single();
+        updateData = retryResult.data;
+        updateError = retryResult.error;
+      }
+
+      // Defensive resilience 2: If Postgres enum is missing 'natural_stone_cladding_tiles'
       if (updateError && isMaterialInterestEnumError(updateError)) {
         console.warn(
           "[customers.functions] Enum fallback triggered on update for material_interests:",
           updateError.message,
         );
         const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
-          updatePayload.material_interests,
-          updatePayload.notes,
+          (updatePayload.material_interests as MaterialInterest[]) ?? [],
+          (updatePayload.notes as string) ?? null,
         );
+        const stripped = stripMissingCustomerColumns({
+          ...updatePayload,
+          material_interests: filteredInterests,
+          notes: sanitizedNotes,
+        });
         const retryResult = await supabaseAdmin
           .from("customers")
-          .update({
-            ...updatePayload,
-            material_interests: filteredInterests,
-            notes: sanitizedNotes,
-          })
+          .update(stripped as never)
           .eq("id", id)
           .select("*")
           .single();
@@ -197,7 +260,7 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       }
 
       if (updateError) throw new Error(updateError.message);
-      return updateData as CustomerRow;
+      return normalizeCustomerRow(updateData as CustomerRow);
     }
   });
 
@@ -393,5 +456,5 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       });
     }
 
-    return { customer: updatedCustomer as CustomerRow, ok: true };
+    return { customer: normalizeCustomerRow(updatedCustomer as CustomerRow), ok: true };
   });

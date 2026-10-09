@@ -4,7 +4,17 @@ import { AppError, mapDbError } from "@/lib/errors";
 import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { customerCreateSchema, type CustomerCreateInput } from "./schema";
-import { isMaterialInterestEnumError, sanitizeForPendingDbEnum } from "./material-interests";
+import {
+  isMaterialInterestEnumError,
+  sanitizeForPendingDbEnum,
+  type MaterialInterest,
+} from "./material-interests";
+import {
+  isMissingCustomerColumnError,
+  normalizeCustomerRow,
+  prepareCustomerExternalRef,
+  stripMissingCustomerColumns,
+} from "./normalize";
 
 export type CustomerRow = DbTable<"customers">;
 
@@ -14,11 +24,13 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   const s = sanitizeSearch(query);
   if (s) {
     // Search across every field a staff user reasonably types when looking up a customer.
+    // Query external_ref JSONB (for resilience if dedicated columns are not yet in Postgres)
+    // alongside top-level fields safely without throwing 42703 schema errors.
     q = q.or(
       [
         `name.ilike.%${s}%`,
-        `company_name.ilike.%${s}%`,
-        `contact_person.ilike.%${s}%`,
+        `external_ref->>company_name.ilike.%${s}%`,
+        `external_ref->>contact_person.ilike.%${s}%`,
         `customer_code.ilike.%${s}%`,
         `primary_phone.ilike.%${s}%`,
         `whatsapp.ilike.%${s}%`,
@@ -30,7 +42,7 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+  return (data ?? []).map((row) => normalizeCustomerRow(row));
 }
 
 export async function purgeMisplacedCustomerEntries(): Promise<void> {
@@ -40,7 +52,7 @@ export async function purgeMisplacedCustomerEntries(): Promise<void> {
 export async function getCustomer(id: string): Promise<CustomerRow | null> {
   const { data, error } = await getDb().from("customers").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return normalizeCustomerRow(data);
 }
 
 export async function findCustomerByPhone(mobile: string): Promise<CustomerRow | null> {
@@ -53,7 +65,7 @@ export async function findCustomerByPhone(mobile: string): Promise<CustomerRow |
     .limit(1)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return normalizeCustomerRow(data);
 }
 
 export async function createCustomer(input: CustomerCreateInput): Promise<CustomerRow> {
@@ -74,7 +86,7 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
   try {
     const { saveCustomerServerFn } = await import("./customers.functions");
     const res = await saveCustomerServerFn({ data: { data: parsed } });
-    if (res) return res as CustomerRow;
+    if (res) return normalizeCustomerRow(res as CustomerRow);
   } catch (serverErr: unknown) {
     const err = serverErr as { message?: string };
     if (err?.message?.includes("already exists")) {
@@ -95,7 +107,12 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     // ignore
   }
 
-  const insertPayload = {
+  const extRef = prepareCustomerExternalRef(null, {
+    company_name: parsed.company_name,
+    contact_person: parsed.contact_person,
+  });
+
+  const insertPayload: Record<string, unknown> = {
     customer_code: "",
     name: parsed.name,
     contact_person: parsed.contact_person ?? null,
@@ -115,22 +132,45 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
     space_type: parsed.space_type ?? null,
     material_interests: parsed.material_interests ?? [],
     created_by: uid,
+    external_ref: extRef,
   };
 
-  let { data, error } = await getDb().from("customers").insert(insertPayload).select("*").single();
+  let { data, error } = await getDb()
+    .from("customers")
+    .insert(insertPayload as never)
+    .select("*")
+    .single();
 
-  if (error && isMaterialInterestEnumError(error)) {
-    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
-      insertPayload.material_interests,
-      insertPayload.notes,
+  // Defensive resilience 1: Missing column in schema cache
+  if (error && isMissingCustomerColumnError(error)) {
+    console.warn(
+      "[customers.api] Missing column fallback triggered on client insert for company_name/contact_person:",
+      error.message,
     );
+    const stripped = stripMissingCustomerColumns(insertPayload);
     const retry = await getDb()
       .from("customers")
-      .insert({
-        ...insertPayload,
-        material_interests: filteredInterests,
-        notes: sanitizedNotes,
-      })
+      .insert(stripped as never)
+      .select("*")
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
+
+  // Defensive resilience 2: Missing enum value
+  if (error && isMaterialInterestEnumError(error)) {
+    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+      (insertPayload.material_interests as MaterialInterest[]) ?? [],
+      (insertPayload.notes as string) ?? null,
+    );
+    const stripped = stripMissingCustomerColumns({
+      ...insertPayload,
+      material_interests: filteredInterests,
+      notes: sanitizedNotes,
+    });
+    const retry = await getDb()
+      .from("customers")
+      .insert(stripped as never)
       .select("*")
       .single();
     data = retry.data;
@@ -139,17 +179,18 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
 
   if (error) throw new AppError(mapDbError(error));
 
-  if (data) {
+  const normalized = normalizeCustomerRow(data);
+  if (normalized) {
     try {
       const { broadcastCustomerCreated } = await import("@/lib/notifications/broadcast");
-      broadcastCustomerCreated(data);
+      broadcastCustomerCreated(normalized);
     } catch (e) {
       console.warn("[customers] notification dispatch skipped", e);
     }
   }
 
-  if (!data) throw new AppError("Failed to save customer");
-  return data;
+  if (!normalized) throw new AppError("Failed to save customer");
+  return normalized;
 }
 
 export async function updateCustomer(id: string, input: CustomerCreateInput): Promise<CustomerRow> {
@@ -159,7 +200,7 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
   try {
     const { saveCustomerServerFn } = await import("./customers.functions");
     const res = await saveCustomerServerFn({ data: { id, data: parsed } });
-    if (res) return res as CustomerRow;
+    if (res) return normalizeCustomerRow(res as CustomerRow);
   } catch (serverErr) {
     console.warn(
       "[customers.api] Server function failed, falling back to client-side update:",
@@ -168,7 +209,18 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
   }
 
   // 2. Client fallback
-  const updatePayload = {
+  const { data: existingCustomer } = await getDb()
+    .from("customers")
+    .select("external_ref")
+    .eq("id", id)
+    .maybeSingle();
+
+  const extRef = prepareCustomerExternalRef(existingCustomer?.external_ref, {
+    company_name: parsed.company_name,
+    contact_person: parsed.contact_person,
+  });
+
+  const updatePayload: Record<string, unknown> = {
     name: parsed.name,
     contact_person: parsed.contact_person ?? null,
     company_name: parsed.company_name ?? null,
@@ -186,27 +238,47 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
     site_address: parsed.site_address ?? null,
     space_type: parsed.space_type ?? null,
     material_interests: parsed.material_interests ?? [],
+    external_ref: extRef,
   };
 
   let { data, error } = await getDb()
     .from("customers")
-    .update(updatePayload)
+    .update(updatePayload as never)
     .eq("id", id)
     .select("*")
     .single();
 
-  if (error && isMaterialInterestEnumError(error)) {
-    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
-      updatePayload.material_interests,
-      updatePayload.notes,
+  // Defensive resilience 1: Missing column in schema cache
+  if (error && isMissingCustomerColumnError(error)) {
+    console.warn(
+      "[customers.api] Missing column fallback triggered on client update for company_name/contact_person:",
+      error.message,
     );
+    const stripped = stripMissingCustomerColumns(updatePayload);
     const retry = await getDb()
       .from("customers")
-      .update({
-        ...updatePayload,
-        material_interests: filteredInterests,
-        notes: sanitizedNotes,
-      })
+      .update(stripped as never)
+      .eq("id", id)
+      .select("*")
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
+
+  // Defensive resilience 2: Missing enum value
+  if (error && isMaterialInterestEnumError(error)) {
+    const { filteredInterests, sanitizedNotes } = sanitizeForPendingDbEnum(
+      (updatePayload.material_interests as MaterialInterest[]) ?? [],
+      (updatePayload.notes as string) ?? null,
+    );
+    const stripped = stripMissingCustomerColumns({
+      ...updatePayload,
+      material_interests: filteredInterests,
+      notes: sanitizedNotes,
+    });
+    const retry = await getDb()
+      .from("customers")
+      .update(stripped as never)
       .eq("id", id)
       .select("*")
       .single();
@@ -216,7 +288,7 @@ export async function updateCustomer(id: string, input: CustomerCreateInput): Pr
 
   if (error) throw new AppError(mapDbError(error));
   if (!data) throw new AppError("Failed to update customer");
-  return data;
+  return normalizeCustomerRow(data);
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
@@ -262,7 +334,7 @@ export async function updateCustomerCrmStatus(
   try {
     const { updateCustomerCrmStatusServerFn } = await import("./customers.functions");
     const res = await updateCustomerCrmStatusServerFn({ data: input });
-    if (res?.customer) return res.customer as CustomerRow;
+    if (res?.customer) return normalizeCustomerRow(res.customer as CustomerRow);
   } catch (serverErr) {
     console.warn(
       "[customers.api] Server function updateCustomerCrmStatus failed, falling back to client-side:",
@@ -382,5 +454,5 @@ export async function updateCustomerCrmStatus(
     });
   }
 
-  return updated as CustomerRow;
+  return normalizeCustomerRow(updated as CustomerRow);
 }

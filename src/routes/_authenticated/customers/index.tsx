@@ -77,6 +77,7 @@ import {
   type CustomerCreateInput,
 } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
+import { normalizeCustomerRow } from "@/lib/customers/normalize";
 import type { DbEnum } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
@@ -302,13 +303,10 @@ function CustomersPage() {
                       >
                         <span>{c.name}</span>
                         {(() => {
-                          const rowAny = c as unknown as {
-                            company_name?: string | null;
-                            contact_person?: string | null;
-                          };
+                          const norm = normalizeCustomerRow(c);
                           const badges = [
-                            rowAny.company_name ? `Firm: ${rowAny.company_name}` : null,
-                            rowAny.contact_person ? `Contact: ${rowAny.contact_person}` : null,
+                            norm.company_name ? `Firm: ${norm.company_name}` : null,
+                            norm.contact_person ? `Contact: ${norm.contact_person}` : null,
                             c.customer_code,
                           ].filter(Boolean);
                           return badges.length > 0 ? (
@@ -439,28 +437,28 @@ function emptyForm(): CustomerCreateInput {
 }
 
 function fromRow(c: CustomerRow): CustomerCreateInput {
-  const rowAny = c as unknown as { contact_person?: string | null; company_name?: string | null };
+  const norm = normalizeCustomerRow(c);
   return {
-    name: c.name,
-    contact_person: rowAny.contact_person ?? null,
-    company_name: rowAny.company_name ?? null,
-    mobile: c.primary_phone ?? "",
-    email: c.primary_email,
-    city: c.city,
-    customer_type: c.customer_type as CustomerCreateInput["customer_type"],
-    referred_by: c.referred_by,
-    site_address: c.site_address,
-    space_type: c.space_type as CustomerCreateInput["space_type"],
+    name: norm.name,
+    contact_person: norm.contact_person ?? null,
+    company_name: norm.company_name ?? null,
+    mobile: norm.primary_phone ?? "",
+    email: norm.primary_email,
+    city: norm.city,
+    customer_type: norm.customer_type as CustomerCreateInput["customer_type"],
+    referred_by: norm.referred_by,
+    site_address: norm.site_address,
+    space_type: norm.space_type as CustomerCreateInput["space_type"],
     material_interests: hydrateMaterialInterests(
-      c.material_interests as CustomerCreateInput["material_interests"],
-      c.notes,
+      norm.material_interests as CustomerCreateInput["material_interests"],
+      norm.notes,
     ),
-    whatsapp: c.whatsapp,
-    billing_address: c.billing_address,
-    state: c.state,
-    pincode: c.pincode,
-    gst_number: c.gst_number,
-    notes: c.notes,
+    whatsapp: norm.whatsapp,
+    billing_address: norm.billing_address,
+    state: norm.state,
+    pincode: norm.pincode,
+    gst_number: norm.gst_number,
+    notes: norm.notes,
   };
 }
 

@@ -38,6 +38,7 @@ import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
 import { SPACE_TYPES, MATERIAL_OPTIONS } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
+import { normalizeCustomerRow } from "@/lib/customers/normalize";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel } from "@/components/entity/DetailPanels";
@@ -259,7 +260,7 @@ function CustomerHub() {
   if (q.isLoading) return <LoadingBlock />;
   if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data) return <ErrorBlock message="Customer not found." />;
-  const c = q.data;
+  const c = normalizeCustomerRow(q.data);
 
   const phone = c.primary_phone ?? "";
   const wa = c.whatsapp ?? c.primary_phone ?? "";
@@ -284,26 +285,16 @@ function CustomerHub() {
             <Badge variant="secondary" className="capitalize">
               {c.customer_type.replace("_", " ")}
             </Badge>
-            {(() => {
-              const rowAny = c as unknown as {
-                company_name?: string | null;
-                contact_person?: string | null;
-              };
-              return (
-                <>
-                  {rowAny.company_name && (
-                    <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                      Firm: {rowAny.company_name}
-                    </span>
-                  )}
-                  {rowAny.contact_person && (
-                    <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2 py-0.5 rounded">
-                      Contact: {rowAny.contact_person}
-                    </span>
-                  )}
-                </>
-              );
-            })()}
+            {c.company_name && (
+              <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                Firm: {c.company_name}
+              </span>
+            )}
+            {c.contact_person && (
+              <span className="text-xs font-medium text-teal-800 bg-teal-50 px-2 py-0.5 rounded">
+                Contact: {c.contact_person}
+              </span>
+            )}
             <CustomerResponseStatusSelect
               customerId={customerId}
               customerName={c.name}
@@ -437,19 +428,19 @@ function CustomerHub() {
               <InfoGrid
                 items={[
                   { label: "Name", value: c.name },
-                  ...((c as unknown as { contact_person?: string | null }).contact_person
+                  ...(c.contact_person
                     ? [
                         {
                           label: "Contact Person",
-                          value: (c as unknown as { contact_person: string }).contact_person,
+                          value: c.contact_person,
                         },
                       ]
                     : []),
-                  ...((c as unknown as { company_name?: string | null }).company_name
+                  ...(c.company_name
                     ? [
                         {
                           label: "Firm / Company Name",
-                          value: (c as unknown as { company_name: string }).company_name,
+                          value: c.company_name,
                         },
                       ]
                     : []),
