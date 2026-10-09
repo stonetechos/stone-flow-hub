@@ -290,12 +290,13 @@ export async function renderDocHtmlAsync(doc: PdfDoc): Promise<string> {
   return renderDocHtml(doc, brand);
 }
 
-function openInNewTab(html: string, autoPrint: boolean) {
+function openInNewTab(html: string, autoPrint: boolean, targetWindow?: Window | null) {
   // NOTE: `noopener` makes window.open() return null, which historically
   // caused Download/Preview PDF to appear "blank" — the write never
   // happened. We deliberately open without noopener so we can populate
   // the new tab, then null out `opener` inside the tab as a safety net.
-  const w = window.open("about:blank", "_blank");
+  const w =
+    targetWindow && !targetWindow.closed ? targetWindow : window.open("about:blank", "_blank");
   if (!w) {
     // Popup blocked — fall back to a Blob URL download so the user still
     // gets the document instead of a silent failure.
@@ -351,13 +352,13 @@ function openInNewTab(html: string, autoPrint: boolean) {
 }
 
 /** Open the branded document in a new tab (no print dialog). */
-export async function previewPdf(doc: PdfDoc): Promise<void> {
-  openInNewTab(await renderDocHtmlAsync(doc), false);
+export async function previewPdf(doc: PdfDoc, targetWindow?: Window | null): Promise<void> {
+  openInNewTab(await renderDocHtmlAsync(doc), false, targetWindow);
 }
 
 /** Open the branded document and trigger the print dialog. */
-export async function printPdf(doc: PdfDoc): Promise<void> {
-  openInNewTab(await renderDocHtmlAsync(doc), true);
+export async function printPdf(doc: PdfDoc, targetWindow?: Window | null): Promise<void> {
+  openInNewTab(await renderDocHtmlAsync(doc), true, targetWindow);
 }
 
 /**
@@ -365,6 +366,6 @@ export async function printPdf(doc: PdfDoc): Promise<void> {
  * on every modern OS). The historical "blank tab" bug was caused by
  * `noopener` making `window.open` return null; fixed above.
  */
-export async function downloadPdf(doc: PdfDoc): Promise<void> {
-  return printPdf(doc);
+export async function downloadPdf(doc: PdfDoc, targetWindow?: Window | null): Promise<void> {
+  return printPdf(doc, targetWindow);
 }

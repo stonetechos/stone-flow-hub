@@ -188,6 +188,8 @@ function openInNewTab(html: string, autoPrint: boolean) {
   }
 }
 
+import { openWhatsappToContact } from "@/lib/whatsapp";
+
 /** Opens the estimate document in a new tab and triggers Print/Save-as-PDF. */
 export async function printEstimatePdf(
   message: string,
@@ -197,11 +199,7 @@ export async function printEstimatePdf(
   openInNewTab(renderEstimateHtml(message, brand, productImageDataUrls), true);
 }
 
-/** Opens WhatsApp (web or app) to the customer's number with the message pre-filled. */
+/** Opens WhatsApp (desktop app or web) to the customer's number with the message pre-filled. */
 export function openWhatsappWithMessage(customerMobile: string, message: string): void {
-  const digits = normalizeMobile(customerMobile);
-  if (!digits) return;
-  const withCountryCode = digits.length === 10 ? `91${digits}` : digits;
-  const url = `https://wa.me/${withCountryCode}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank", "noopener");
+  openWhatsappToContact(customerMobile, message);
 }

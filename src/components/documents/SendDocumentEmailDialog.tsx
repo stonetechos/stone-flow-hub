@@ -17,7 +17,7 @@
  */
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { Globe, Laptop, Loader2, MessageCircle, Send } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,9 +30,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { enqueueMessage } from "@/lib/notifications/queue";
-import { renderDocHtmlAsync } from "@/lib/pdf/generator";
-import { openWhatsappToContact } from "@/lib/whatsapp";
+import { printPdf, renderDocHtmlAsync } from "@/lib/pdf/generator";
+import {
+  getWhatsappModePreference,
+  openWhatsappToContact,
+  setWhatsappModePreference,
+  type WhatsappMode,
+} from "@/lib/whatsapp";
 import {
   buildDocument,
   DOC_ENTITY_LABEL,
@@ -62,6 +68,8 @@ export function SendDocumentEmailDialog({
 }: Props) {
   const qc = useQueryClient();
   const [channel, setChannel] = useState<SendChannel>(initialChannel);
+  const [waMode, setWaMode] = useState<WhatsappMode>(getWhatsappModePreference());
+  const [attachPdf, setAttachPdf] = useState(true);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [to, setTo] = useState("");
@@ -73,6 +81,7 @@ export function SendDocumentEmailDialog({
   useEffect(() => {
     if (!open) return;
     setChannel(initialChannel);
+    setWaMode(getWhatsappModePreference());
   }, [open, initialChannel]);
 
   useEffect(() => {
@@ -121,8 +130,37 @@ export function SendDocumentEmailDialog({
     setSending(true);
     try {
       if (channel === "whatsapp") {
-        openWhatsappToContact(to.trim(), message);
-        toast.success("Opening WhatsApp — press Enter to send");
+        setWhatsappModePreference(waMode);
+
+        if (attachPdf) {
+          try {
+            const { doc } = await buildDocument(entity, entityId);
+            await printPdf(doc);
+          } catch (e) {
+            console.warn("Could not auto-open PDF print dialog:", e);
+          }
+        }
+
+        try {
+          if (typeof navigator !== "undefined" && navigator.clipboard) {
+            await navigator.clipboard.writeText(message);
+          }
+        } catch {
+          /* ignore */
+        }
+
+        openWhatsappToContact(to.trim(), message, null, { mode: waMode });
+
+        const targetLabel =
+          waMode === "web"
+            ? "WhatsApp Web"
+            : waMode === "wa.me"
+              ? "WhatsApp"
+              : "WhatsApp for Business";
+
+        toast.success(
+          `Opening ${targetLabel} — ${attachPdf ? "PDF opened in adjacent tab to attach, " : ""}press Enter to send`,
+        );
 
         // Record in queue/timeline as SENT so automated dispatcher does not attempt Meta API
         await enqueueMessage({
@@ -185,7 +223,7 @@ export function SendDocumentEmailDialog({
           </DialogTitle>
           <DialogDescription>
             {channel === "whatsapp"
-              ? "Opens WhatsApp directly to the recipient's chat with the summary pre-filled. You just press Enter to send from your WhatsApp account."
+              ? "Opens your WhatsApp for Business account directly with the contact selected and message pre-filled. The PDF is also prepared ready to attach."
               : "The branded PDF is generated from live ERP data and attached inline in the email body. The send is logged in the Communication Timeline."}
           </DialogDescription>
         </DialogHeader>
@@ -219,6 +257,46 @@ export function SendDocumentEmailDialog({
           </div>
         ) : (
           <div className="space-y-3">
+            {channel === "whatsapp" && (
+              <div className="space-y-2 rounded-md border p-2.5 bg-muted/40 text-xs">
+                <div className="font-medium text-foreground">WhatsApp Destination:</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={waMode === "app" ? "default" : "outline"}
+                    className="h-8 justify-start text-xs"
+                    onClick={() => setWaMode("app")}
+                  >
+                    <Laptop className="mr-1.5 h-3.5 w-3.5" />
+                    WhatsApp Business (App)
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={waMode === "web" ? "default" : "outline"}
+                    className="h-8 justify-start text-xs"
+                    onClick={() => setWaMode("web")}
+                  >
+                    <Globe className="mr-1.5 h-3.5 w-3.5" />
+                    WhatsApp Web
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2 pt-1">
+                  <Checkbox
+                    id="attach-pdf"
+                    checked={attachPdf}
+                    onCheckedChange={(checked) => setAttachPdf(Boolean(checked))}
+                  />
+                  <label
+                    htmlFor="attach-pdf"
+                    className="text-xs text-muted-foreground cursor-pointer select-none"
+                  >
+                    Open branded PDF document in adjacent tab ready to drag & attach
+                  </label>
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="doc-to">{channel === "whatsapp" ? "To (phone)" : "To"}</Label>
               <Input
@@ -243,7 +321,7 @@ export function SendDocumentEmailDialog({
               <Label htmlFor="doc-message">Message</Label>
               <Textarea
                 id="doc-message"
-                rows={channel === "whatsapp" ? 12 : 5}
+                rows={channel === "whatsapp" ? 10 : 5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
@@ -262,7 +340,11 @@ export function SendDocumentEmailDialog({
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            {channel === "whatsapp" ? "Open in WhatsApp" : "Send Email"}
+            {channel === "whatsapp"
+              ? waMode === "web"
+                ? "Open in WhatsApp Web"
+                : "Open in WhatsApp Business"
+              : "Send Email"}
           </Button>
         </DialogFooter>
       </DialogContent>
