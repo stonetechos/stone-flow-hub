@@ -72,7 +72,9 @@ export function prepareCustomerExternalRef(
   return base;
 }
 
-export function stripMissingCustomerColumns<T extends Record<string, unknown>>(payload: T): T {
+export function stripMissingCustomerColumns<T extends Record<string, unknown>>(
+  payload: T,
+): Omit<T, "company_name" | "contact_person"> {
   const clone = { ...payload };
   delete clone.company_name;
   delete clone.contact_person;

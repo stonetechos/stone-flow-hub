@@ -8,7 +8,13 @@ import {
 
 describe("Customer normalization helpers", () => {
   it("extracts company_name and contact_person from external_ref when columns are null", () => {
-    const raw = {
+    const raw: {
+      id: string;
+      name: string;
+      company_name?: string | null;
+      contact_person?: string | null;
+      external_ref?: Record<string, unknown> | null;
+    } = {
       id: "cus-1",
       name: "Lokesh Kumawat",
       company_name: null,
@@ -25,7 +31,13 @@ describe("Customer normalization helpers", () => {
   });
 
   it("preserves dedicated column values if present", () => {
-    const raw = {
+    const raw: {
+      id: string;
+      name: string;
+      company_name?: string | null;
+      contact_person?: string | null;
+      external_ref?: Record<string, unknown> | null;
+    } = {
       id: "cus-2",
       name: "Lokesh Kumawat",
       company_name: "Prestige Stone LLP",
@@ -42,7 +54,13 @@ describe("Customer normalization helpers", () => {
   });
 
   it("handles null or missing external_ref gracefully", () => {
-    const raw = {
+    const raw: {
+      id: string;
+      name: string;
+      company_name?: string | null;
+      contact_person?: string | null;
+      external_ref?: Record<string, unknown> | null;
+    } = {
       id: "cus-3",
       name: "Individual Client",
       company_name: null,
