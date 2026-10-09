@@ -4,7 +4,7 @@
  * evaluates the branch geofence client-side so the employee sees why an
  * out-of-fence punch needs a reason and an approval.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -227,12 +227,26 @@ export function AttendanceView() {
               {t("attendance.loadingEmployeeRecord", "Loading your employee record…")}
             </p>
           ) : !me.data ? (
-            <p className="text-muted-foreground">
-              {t(
-                "attendance.notLinkedMessage",
-                "Your login isn't linked to an employee record yet, so you can't clock in. Ask HR to link your account from the Employees page.",
-              )}
-            </p>
+            <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-muted-foreground">
+                  {t(
+                    "attendance.notLinkedMessage",
+                    "Your login isn't linked to an employee record yet, so you can't clock in. Ask HR to link your account from the Employees page.",
+                  )}
+                </p>
+                {auth.user?.email && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Logged in as:{" "}
+                    <strong className="font-semibold text-foreground">{auth.user.email}</strong>.
+                    The employee record must have this email address to link automatically.
+                  </p>
+                )}
+              </div>
+              <Button size="sm" variant="outline" asChild className="shrink-0">
+                <Link to="/workforce-intelligence/employees">Go to Employees</Link>
+              </Button>
+            </div>
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

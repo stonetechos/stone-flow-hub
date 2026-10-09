@@ -2,7 +2,7 @@
  * Leave management — request, approve and track balances. Approval is a two
  * step flow (manager, then HR) so the same screen serves both audiences.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -157,10 +157,24 @@ export function LeaveView() {
           </CardHeader>
           <CardContent className="space-y-3">
             {!me.data && !me.isLoading ? (
-              <p className="text-sm text-muted-foreground">
-                Your login isn&apos;t linked to an employee record yet, so you can&apos;t apply. Ask
-                HR to link your account.
-              </p>
+              <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Your login isn&apos;t linked to an employee record yet, so you can&apos;t apply.
+                    Ask HR to link your account from the Employees page.
+                  </p>
+                  {auth.user?.email && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Logged in as:{" "}
+                      <strong className="font-semibold text-foreground">{auth.user.email}</strong>.
+                      The employee record must have this email address to link automatically.
+                    </p>
+                  )}
+                </div>
+                <Button size="sm" variant="outline" asChild className="shrink-0">
+                  <Link to="/workforce-intelligence/employees">Go to Employees</Link>
+                </Button>
+              </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
