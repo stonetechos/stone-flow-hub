@@ -362,7 +362,7 @@ export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const getEmployeeServerFn = createServerFn({ method: "GET" })
+export const getEmployeeServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => z.object({ id: z.string().uuid() }).parse(raw))
   .handler(async ({ data }) => {
@@ -402,7 +402,7 @@ export const getEmployeeServerFn = createServerFn({ method: "GET" })
     } as unknown as Employee;
   });
 
-export const listEmployeesServerFn = createServerFn({ method: "GET" })
+export const listEmployeesServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((raw) => z.object({ q: z.string().optional() }).parse(raw))
   .handler(async ({ data }) => {
@@ -448,7 +448,7 @@ export const listEmployeesServerFn = createServerFn({ method: "GET" })
     }) as unknown as Employee[];
   });
 
-export const listDesignationsServerFn = createServerFn({ method: "GET" })
+export const listDesignationsServerFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
