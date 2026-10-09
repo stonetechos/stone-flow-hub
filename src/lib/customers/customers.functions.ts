@@ -252,6 +252,7 @@ const updateCustomerCrmStatusInput = z.object({
   response_status: z
     .enum([
       "active_responsive",
+      "order_placed",
       "followup_pending",
       "awaiting_reply",
       "inactive_no_response",
@@ -317,6 +318,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       targetIsActive = false;
     } else if (
       data.response_status === "active_responsive" ||
+      data.response_status === "order_placed" ||
       data.response_status === "followup_pending" ||
       data.response_status === "awaiting_reply"
     ) {
@@ -349,6 +351,21 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       .single();
 
     if (updateErr) throw new Error(updateErr.message);
+
+    // If customer gave their order, automatically resolve any open pending followups
+    if (data.response_status === "order_placed") {
+      await supabaseAdmin
+        .from("followups")
+        .update({
+          status: "done",
+          completed_at: nowIso,
+          outcome_notes:
+            data.call_note || data.call_outcome || "Order placed — sales follow-up completed",
+        })
+        .eq("entity_type", "customer")
+        .eq("entity_id", data.customerId)
+        .eq("status", "pending");
+    }
 
     // If an existing pending follow-up was fulfilled by this call, mark it complete
     if (data.complete_pending_followup_id) {

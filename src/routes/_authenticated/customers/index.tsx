@@ -1,13 +1,19 @@
 import { useTranslation } from "react-i18next";
 import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2, Users, ExternalLink, Phone, MessageSquare } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import {
+  CUSTOMER_RESPONSE_STATUS_CONFIG,
+  getCustomerResponseStatus,
+  type CustomerResponseStatus,
+} from "@/lib/customers/crm-status";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -90,6 +96,7 @@ function CustomersPage() {
   const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { prefs, setDensity } = useTablePrefs("customers");
 
@@ -116,7 +123,7 @@ function CustomersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [dq]);
+  }, [dq, statusFilter]);
 
   useEffect(() => {
     if (!edit) return;
@@ -138,7 +145,14 @@ function CustomersPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => {
+    const list = query.data ?? [];
+    if (statusFilter === "all") return list;
+    return list.filter((c) => {
+      const st = getCustomerResponseStatus(c);
+      return st === statusFilter;
+    });
+  }, [query.data, statusFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   const openCreate = () => {
@@ -158,6 +172,35 @@ function CustomersPage() {
         search={q}
         onSearchChange={setQ}
         searchPlaceholder={t("customers.searchPlaceholder", "Search by name, phone, city…")}
+        filters={
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => {
+              setStatusFilter(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-8 w-44 text-xs bg-white">
+              <SelectValue placeholder="All response statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
+                (key) => {
+                  const cfg = CUSTOMER_RESPONSE_STATUS_CONFIG[key];
+                  return (
+                    <SelectItem key={key} value={key}>
+                      <span className="flex items-center gap-1.5">
+                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)} />
+                        <span>{cfg.shortLabel}</span>
+                      </span>
+                    </SelectItem>
+                  );
+                },
+              )}
+            </SelectContent>
+          </Select>
+        }
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>

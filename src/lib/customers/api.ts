@@ -242,6 +242,7 @@ export interface UpdateCustomerCrmStatusOptions {
   is_active?: boolean;
   response_status?:
     | "active_responsive"
+    | "order_placed"
     | "followup_pending"
     | "awaiting_reply"
     | "inactive_no_response"
@@ -311,6 +312,7 @@ export async function updateCustomerCrmStatus(
     targetIsActive = false;
   } else if (
     input.response_status === "active_responsive" ||
+    input.response_status === "order_placed" ||
     input.response_status === "followup_pending" ||
     input.response_status === "awaiting_reply"
   ) {
@@ -342,6 +344,21 @@ export async function updateCustomerCrmStatus(
     .single();
 
   if (updateErr) throw new AppError(mapDbError(updateErr));
+
+  // If customer gave their order, automatically resolve any open pending followups
+  if (input.response_status === "order_placed") {
+    await db
+      .from("followups")
+      .update({
+        status: "done",
+        completed_at: nowIso,
+        outcome_notes:
+          input.call_note || input.call_outcome || "Order placed — sales follow-up completed",
+      })
+      .eq("entity_type", "customer")
+      .eq("entity_id", input.customerId)
+      .eq("status", "pending");
+  }
 
   if (input.complete_pending_followup_id) {
     await db

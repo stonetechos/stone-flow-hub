@@ -68,6 +68,9 @@ export function CustomerResponseStatusSelect({
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
       void qc.invalidateQueries({ queryKey: qk.customers.all });
       void qc.invalidateQueries({ queryKey: ["hub", "customer", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-pending-followups", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-followups-history", customerId] });
+      void qc.invalidateQueries({ queryKey: ["followups"] });
       setOpen(false);
     },
     onError: (err) => {

@@ -41,6 +41,7 @@ import { Field } from "@/components/forms/Field";
 import { CustomerResponseStatusSelect } from "./CustomerResponseStatusSelect";
 import {
   CALL_OUTCOMES,
+  CUSTOMER_RESPONSE_STATUS_CONFIG,
   getCustomerCrmState,
   getCustomerResponseStatus,
   type CustomerResponseStatus,
@@ -402,17 +403,33 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
               <Field label="Update Client Response Status">
                 <Select
                   value={responseStatus}
-                  onValueChange={(val) => setResponseStatus(val as CustomerResponseStatus)}
+                  onValueChange={(val) => {
+                    const nextVal = val as CustomerResponseStatus;
+                    setResponseStatus(nextVal);
+                    if (nextVal === "order_placed" || nextVal === "do_not_contact") {
+                      setScheduleNextCall(false);
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active_responsive">🟢 Active · Responding</SelectItem>
-                    <SelectItem value="followup_pending">🟡 Follow-up Pending</SelectItem>
-                    <SelectItem value="awaiting_reply">🔵 Awaiting Client Reply</SelectItem>
-                    <SelectItem value="inactive_no_response">🟠 Inactive · No Response</SelectItem>
-                    <SelectItem value="do_not_contact">⚪ Closed · Not Interested</SelectItem>
+                    {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
+                      (statusKey) => {
+                        const item = CUSTOMER_RESPONSE_STATUS_CONFIG[statusKey];
+                        return (
+                          <SelectItem key={statusKey} value={statusKey}>
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={cn("h-2 w-2 rounded-full shrink-0", item.dotColor)}
+                              />
+                              <span>{item.label}</span>
+                            </span>
+                          </SelectItem>
+                        );
+                      },
+                    )}
                   </SelectContent>
                 </Select>
               </Field>
