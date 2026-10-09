@@ -40,7 +40,8 @@ export function registerServiceWorker(): void {
           key === "stos-static-stos-9" ||
           key === "stos-static-stos-10" ||
           key === "stos-static-stos-11" ||
-          key === "stos-static-stos-12"
+          key === "stos-static-stos-12" ||
+          key === "stos-static-stos-13"
         ) {
           void caches.delete(key);
         }

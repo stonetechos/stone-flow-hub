@@ -25,6 +25,7 @@ import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { ConfigurationRequiredScreen } from "@/components/global/ConfigurationRequiredScreen";
 import { consumeManagedSignOut } from "@/lib/auth/managed-sign-out";
 import "@/lib/i18n";
+import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
 
 // Installs the Capacitor server-fn fetch patch (no-op outside the
 // Capacitor build — see that file for why this exists). Called at
@@ -64,25 +65,38 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const isChunkError = isChunkLoadError(error);
+
+  useEffect(() => {
+    if (isChunkError) {
+      recoverFromChunkError();
+    }
+  }, [isChunkError]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {isChunkError ? "New version of STOS available" : "This page didn't load"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. Try again, or head back home.
+          {isChunkError
+            ? "A newer version of STOS was just published. Please reload the page to load the latest release."
+            : "Something went wrong on our end. Try again, or head back home."}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
+              if (isChunkError) {
+                recoverFromChunkError(true);
+                return;
+              }
               router.invalidate();
               reset();
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {isChunkError ? "Reload" : "Try again"}
           </button>
           <a
             href="/"
@@ -195,6 +209,24 @@ function RootComponent() {
     } catch {
       /* ignore */
     }
+
+    // Auto-recover from chunk load errors when a new deployment is shipped
+    const onPreloadError = (e: Event) => {
+      e.preventDefault();
+      recoverFromChunkError();
+    };
+    const onUnhandledRejection = (e: PromiseRejectionEvent) => {
+      if (isChunkLoadError(e.reason)) {
+        e.preventDefault();
+        recoverFromChunkError();
+      }
+    };
+    window.addEventListener("vite:preloadError", onPreloadError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    return () => {
+      window.removeEventListener("vite:preloadError", onPreloadError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
   }, []);
 
   useEffect(() => {

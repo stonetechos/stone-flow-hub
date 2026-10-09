@@ -14,6 +14,8 @@ import { classifyFailure } from "@/lib/errors";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
 import { beginManagedSignOut } from "@/lib/auth/managed-sign-out";
 import { useAuthReady } from "@/hooks/use-auth-ready";
+import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -138,15 +140,34 @@ function AuthenticatedLayout() {
 function RouteErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   const { t } = useTranslation();
+  const isChunkError = isChunkLoadError(error);
+
+  useEffect(() => {
+    if (isChunkError) {
+      const recovered = recoverFromChunkError();
+      if (recovered) {
+        toast.info("A new STOS update was published. Refreshing...", { duration: 3000 });
+      }
+    }
+  }, [isChunkError]);
+
   console.error("[RouteErrorFallback] Caught unhandled route render failure:", error);
   return (
     <div className="p-4 space-y-3">
       <ErrorBlock
-        message={t(
-          "errors.routeFailure",
-          "This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page.",
-        )}
+        message={
+          isChunkError
+            ? "A newer version of STOS was just published. Please refresh the page to load the latest release."
+            : t(
+                "errors.routeFailure",
+                "This page ran into a problem loading its data. The rest of STOS is still available — use the sidebar to navigate, or retry this page.",
+              )
+        }
         onRetry={() => {
+          if (isChunkError) {
+            recoverFromChunkError(true);
+            return;
+          }
           router.invalidate();
           reset();
         }}

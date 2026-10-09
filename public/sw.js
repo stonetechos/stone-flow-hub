@@ -16,7 +16,7 @@
  * are swept in `activate`.
  */
 
-const CACHE_VERSION = "stos-13";
+const CACHE_VERSION = "stos-14";
 const STATIC_CACHE = `stos-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -137,11 +137,9 @@ async function staleWhileRevalidate(request, cacheName) {
   if (cached) return cached;
   const net = await network;
   if (net) return net;
-  return new Response("Asset unavailable offline", {
-    status: 503,
-    statusText: "Service Unavailable",
-    headers: { "Content-Type": "text/plain" },
-  });
+  // Fall back to direct network fetch rather than synthesizing a text/plain response
+  // which causes WebKit module scripts to fail with MIME type mismatch errors
+  return fetch(request);
 }
 
 self.addEventListener("fetch", (event) => {
