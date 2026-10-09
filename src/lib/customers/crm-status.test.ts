@@ -10,7 +10,7 @@ import {
 describe("Customer CRM Status", () => {
   it("includes order_placed in CUSTOMER_RESPONSE_STATUS_CONFIG", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed).toBeDefined();
-    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.label).toBe("Order Placed · Converted");
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.label).toBe("Order Placed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.shortLabel).toBe("Order Placed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_placed.dotColor).toContain("purple");
   });

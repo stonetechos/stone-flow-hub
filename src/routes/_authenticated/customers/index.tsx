@@ -72,6 +72,8 @@ import {
   SPACE_TYPES,
   MATERIAL_OPTIONS,
   customerCreateSchema,
+  getCustomerTypeLabel,
+  getCustomerTypeBadgeTone,
   type CustomerCreateInput,
 } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
@@ -97,6 +99,7 @@ function CustomersPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const { prefs, setDensity } = useTablePrefs("customers");
 
@@ -123,7 +126,7 @@ function CustomersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [dq, statusFilter]);
+  }, [dq, statusFilter, typeFilter]);
 
   useEffect(() => {
     if (!edit) return;
@@ -146,13 +149,15 @@ function CustomersPage() {
   });
 
   const rows = useMemo(() => {
-    const list = query.data ?? [];
-    if (statusFilter === "all") return list;
-    return list.filter((c) => {
-      const st = getCustomerResponseStatus(c);
-      return st === statusFilter;
-    });
-  }, [query.data, statusFilter]);
+    let list = query.data ?? [];
+    if (statusFilter !== "all") {
+      list = list.filter((c) => getCustomerResponseStatus(c) === statusFilter);
+    }
+    if (typeFilter !== "all") {
+      list = list.filter((c) => c.customer_type === typeFilter);
+    }
+    return list;
+  }, [query.data, statusFilter, typeFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   const openCreate = () => {
@@ -173,33 +178,55 @@ function CustomersPage() {
         onSearchChange={setQ}
         searchPlaceholder={t("customers.searchPlaceholder", "Search by name, phone, city…")}
         filters={
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => {
-              setStatusFilter(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="h-8 w-44 text-xs bg-white">
-              <SelectValue placeholder="All response statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
-                (key) => {
-                  const cfg = CUSTOMER_RESPONSE_STATUS_CONFIG[key];
-                  return (
-                    <SelectItem key={key} value={key}>
-                      <span className="flex items-center gap-1.5">
-                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)} />
-                        <span>{cfg.shortLabel}</span>
-                      </span>
-                    </SelectItem>
-                  );
-                },
-              )}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-8 w-40 text-xs bg-white">
+                <SelectValue placeholder="Response status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {(Object.keys(CUSTOMER_RESPONSE_STATUS_CONFIG) as CustomerResponseStatus[]).map(
+                  (key) => {
+                    const cfg = CUSTOMER_RESPONSE_STATUS_CONFIG[key];
+                    return (
+                      <SelectItem key={key} value={key}>
+                        <span className="flex items-center gap-1.5">
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)} />
+                          <span>{cfg.shortLabel}</span>
+                        </span>
+                      </SelectItem>
+                    );
+                  },
+                )}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => {
+                setTypeFilter(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-8 w-36 text-xs bg-white">
+                <SelectValue placeholder="All customer types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All customer types</SelectItem>
+                {CUSTOMER_TYPES.map((tItem) => (
+                  <SelectItem key={tItem.value} value={tItem.value}>
+                    {tItem.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         }
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
@@ -210,7 +237,7 @@ function CustomersPage() {
       />
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={2} />
+        <SkeletonTable rows={6} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -245,7 +272,8 @@ function CustomersPage() {
               <TableRow>
                 <TableHead className="w-16">{t("common.srNo", "Sr. No.")}</TableHead>
                 <TableHead>{t("common.name", "Name")}</TableHead>
-                <TableHead className="w-56">CRM · Response Status</TableHead>
+                <TableHead className="w-40">Customer Type</TableHead>
+                <TableHead className="w-52">CRM · Response Status</TableHead>
                 <TableHead className="w-48">Contact</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
@@ -290,6 +318,16 @@ function CustomersPage() {
                           ) : null;
                         })()}
                       </Link>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide whitespace-nowrap",
+                          getCustomerTypeBadgeTone(c.customer_type),
+                        )}
+                      >
+                        {getCustomerTypeLabel(c.customer_type)}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <CustomerResponseStatusSelect

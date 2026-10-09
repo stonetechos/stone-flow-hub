@@ -47,7 +47,7 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
   },
   order_placed: {
     value: "order_placed",
-    label: "Order Placed · Converted",
+    label: "Order Placed",
     shortLabel: "Order Placed",
     tone: "bg-purple-50 text-purple-800 border-purple-200",
     badgeTone: "bg-purple-100/80 text-purple-900 border-purple-300",

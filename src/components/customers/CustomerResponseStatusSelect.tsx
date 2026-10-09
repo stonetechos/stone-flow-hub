@@ -108,7 +108,7 @@ export function CustomerResponseStatusSelect({
             type="button"
             disabled={mutation.isPending || toggleActiveMutation.isPending}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden",
+              "inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden",
               config.badgeTone,
               size === "sm" ? "h-6 text-[11px]" : "h-7 text-xs",
             )}

@@ -20,6 +20,37 @@ export const CUSTOMER_TYPES: ReadonlyArray<{ value: DbEnum<"customer_type">; lab
   { value: "pinterest", label: "Pinterest" },
 ];
 
+export function getCustomerTypeLabel(type?: string | null): string {
+  if (!type) return "—";
+  const item = CUSTOMER_TYPES.find((t) => t.value === type);
+  if (item) return item.label;
+  return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+export function getCustomerTypeBadgeTone(type?: string | null): string {
+  switch (type) {
+    case "walk_in":
+      return "border-sky-200 bg-sky-50 text-sky-800";
+    case "architect":
+      return "border-purple-200 bg-purple-50 text-purple-800";
+    case "interior_designer":
+      return "border-pink-200 bg-pink-50 text-pink-800";
+    case "contractor":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "b2b":
+      return "border-indigo-200 bg-indigo-50 text-indigo-800";
+    case "reference":
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    case "google_search":
+    case "instagram":
+    case "indiamart":
+    case "pinterest":
+      return "border-teal-200 bg-teal-50 text-teal-800";
+    default:
+      return "border-slate-200 bg-slate-50 text-slate-700";
+  }
+}
+
 /** "Type of space" at the customer's site. */
 export const SPACE_TYPES: ReadonlyArray<{ value: DbEnum<"space_type">; label: string }> = [
   { value: "bungalow", label: "Bungalow" },
