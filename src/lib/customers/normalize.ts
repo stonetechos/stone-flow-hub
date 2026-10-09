@@ -36,19 +36,21 @@ export function isMissingCustomerColumnError(err: unknown): boolean {
   );
 }
 
-export function normalizeCustomerRow<
-  T extends {
-    external_ref?: unknown;
-    company_name?: string | null;
-    contact_person?: string | null;
-  },
->(row: T | null | undefined): T {
-  if (!row) return row as unknown as T;
+export function normalizeCustomerRow<T extends { external_ref?: unknown }>(
+  row: T | null | undefined,
+): T & { company_name: string | null; contact_person: string | null } {
+  if (!row) {
+    return {
+      company_name: null,
+      contact_person: null,
+    } as unknown as T & { company_name: string | null; contact_person: string | null };
+  }
   const ext = (row.external_ref as Record<string, unknown> | null) ?? {};
+  const withCols = row as { company_name?: string | null; contact_person?: string | null };
   return {
     ...row,
-    company_name: row.company_name ?? (ext.company_name as string) ?? null,
-    contact_person: row.contact_person ?? (ext.contact_person as string) ?? null,
+    company_name: withCols.company_name ?? ((ext.company_name as string) || null),
+    contact_person: withCols.contact_person ?? ((ext.contact_person as string) || null),
   };
 }
 
