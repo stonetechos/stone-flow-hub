@@ -20,17 +20,20 @@ import { DispatchRiskProvider } from "./dispatchRisk";
 import { InstallationDelayProvider } from "./installationDelay";
 import { InventoryShortageProvider } from "./inventoryShortage";
 import { VendorDeliveryRiskProvider } from "./vendorDeliveryRisk";
+import { OrderVendorAssignmentProvider } from "./orderVendorAssignment";
 
 export { DispatchRiskProvider } from "./dispatchRisk";
 export { InstallationDelayProvider } from "./installationDelay";
 export { InventoryShortageProvider } from "./inventoryShortage";
 export { VendorDeliveryRiskProvider } from "./vendorDeliveryRisk";
+export { OrderVendorAssignmentProvider } from "./orderVendorAssignment";
 
 const OPERATIONS_INSIGHT_PROVIDERS = [
   DispatchRiskProvider,
   InstallationDelayProvider,
   InventoryShortageProvider,
   VendorDeliveryRiskProvider,
+  OrderVendorAssignmentProvider,
 ];
 
 /**

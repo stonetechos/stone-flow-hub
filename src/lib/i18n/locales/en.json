@@ -2429,6 +2429,8 @@
     "actionReview": "Review",
     "actionFollowUp": "Follow up",
     "actionCollect": "Collect",
+    "actionAssignVendor": "Assign vendor",
+    "redFlag": "Red Flag",
     "levels": {
       "watch": "Watch",
       "risk": "Risk",

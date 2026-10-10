@@ -1,6 +1,7 @@
 /** Customer intelligence — rankings, outstanding, delayed, inactive. */
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
+import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 
 export interface CustomerScore {
   customer_id: string;
@@ -35,9 +36,13 @@ export interface CustomerIntel {
 
 async function computeCustomerScores(): Promise<CustomerScore[]> {
   const now = Date.now();
-  const [custs, invs] = await Promise.all([
+  const [custs, invs, ledgerSummaries] = await Promise.all([
     supabase.from("customers").select("id,name,created_at").eq("is_active", true).limit(2000),
-    supabase.from("invoices").select("customer_id,total,balance_due,issue_date,due_date"),
+    supabase
+      .from("invoices")
+      .select("customer_id,total,balance_due,issue_date,due_date")
+      .neq("status", "cancelled"),
+    listCustomerLedgerSummaries(),
   ]);
   for (const r of [custs, invs]) if (r.error) throw new AppError(mapDbError(r.error));
 
@@ -62,13 +67,20 @@ async function computeCustomerScores(): Promise<CustomerScore[]> {
   for (const c of (custs.data ?? []) as Array<{ id: string; name: string; created_at: string }>) {
     const rows = invByCust.get(c.id) ?? [];
     const revenue = rows.reduce((s, r) => s + Number(r.total ?? 0), 0);
-    const outstanding = rows.reduce((s, r) => s + Number(r.balance_due ?? 0), 0);
-    const overdueDays = rows.reduce((max, r) => {
-      const ref = r.due_date ?? r.issue_date;
-      if (!ref || Number(r.balance_due ?? 0) <= 0) return max;
-      const d = Math.floor((now - new Date(ref).getTime()) / 86_400_000);
-      return d > max ? d : max;
-    }, 0);
+    const invoiceOutstanding = rows.reduce((s, r) => s + Number(r.balance_due ?? 0), 0);
+    const ledger = ledgerSummaries.get(c.id);
+    // Real customer net balance: customer ledger accounts for all customer payments,
+    // receipts, advance payments, and credit/debit notes.
+    const outstanding = ledger ? Math.max(0, ledger.balance) : invoiceOutstanding;
+    const overdueDays =
+      outstanding <= 0
+        ? 0
+        : rows.reduce((max, r) => {
+            const ref = r.due_date ?? r.issue_date;
+            if (!ref || Number(r.balance_due ?? 0) <= 0) return max;
+            const d = Math.floor((now - new Date(ref).getTime()) / 86_400_000);
+            return d > max ? d : max;
+          }, 0);
     const lastOrder = rows.reduce<string | null>(
       (acc, r) => (!acc || r.issue_date > acc ? r.issue_date : acc),
       null,

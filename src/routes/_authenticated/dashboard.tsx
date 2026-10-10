@@ -216,7 +216,12 @@ function DashboardPage() {
 
                 <BusinessHealthGrid kpis={kpisQ.data} />
 
-                <OperationalRadar kpis={kpisQ.data} tasks={tasks} followups={followups} />
+                <OperationalRadar
+                  kpis={kpisQ.data}
+                  tasks={tasks}
+                  followups={followups}
+                  topInsights={topInsights}
+                />
 
                 <div className="grid gap-6 lg:grid-cols-2">
                   <CashFlowSnapshot kpis={kpisQ.data} />
@@ -531,13 +536,27 @@ function OperationalRadar({
   kpis,
   tasks,
   followups,
+  topInsights,
 }: {
   kpis: DashboardKpis;
   tasks: TaskRow[];
   followups: FollowupWithEnquiry[];
+  topInsights?: ProcessedInsight[];
 }) {
   const { t } = useTranslation();
   const critical: RadarItem[] = [];
+
+  const redFlags = (topInsights || []).filter(
+    (i) => i.title.includes("Red Flag") || i.normalizedPriority >= 95,
+  );
+  for (const rf of redFlags) {
+    critical.push({
+      label: rf.title,
+      to: rf.action.href,
+      sub: "🚩 Red Flag · Pending Vendor",
+    });
+  }
+
   if (kpis.overdueFollowups)
     critical.push({
       label: t("dashboard.radar.overdueFollowups", {
@@ -1035,10 +1054,27 @@ function CopilotDock({
               <li key={`${s.to}-${s.label}-${idx}`}>
                 <Link
                   to={s.to}
-                  className="engraved-well flex items-center justify-between gap-2 rounded-xl p-2.5 text-[13px] font-bold text-slate-800 transition-all hover:scale-[1.02]"
+                  className={cn(
+                    "engraved-well flex items-center justify-between gap-2 rounded-xl p-2.5 text-[13px] font-bold text-slate-800 transition-all hover:scale-[1.02]",
+                    s.isRedFlag &&
+                      "border border-red-300/80 bg-red-50/60 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200",
+                  )}
                 >
-                  <span className="min-w-0 truncate">{s.label}</span>
-                  <ArrowRight className="h-3 w-3 shrink-0 text-blue-500" aria-hidden />
+                  <div className="flex min-w-0 items-center gap-2">
+                    {s.isRedFlag && (
+                      <span className="shrink-0 rounded-full border border-red-200 bg-red-600 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
+                        {t("insights.redFlag", "Red Flag")}
+                      </span>
+                    )}
+                    <span className="truncate">{s.label}</span>
+                  </div>
+                  <ArrowRight
+                    className={cn(
+                      "h-3 w-3 shrink-0",
+                      s.isRedFlag ? "text-red-600 dark:text-red-400" : "text-blue-500",
+                    )}
+                    aria-hidden
+                  />
                 </Link>
               </li>
             ))}
@@ -1521,7 +1557,19 @@ function buildBrief(
 ): string[] {
   const lines: string[] = [];
 
-  // 1. High-level quantitative operational metrics from live database
+  // 1. Critical operational alerts & Red Flags lead the executive briefing
+  const criticalAlerts = topInsights.filter(
+    (i) => i.normalizedPriority >= 85 || i.tone === "danger" || i.title.includes("Red Flag"),
+  );
+  for (const i of criticalAlerts) {
+    if (lines.length >= 3) break;
+    const localizedTitle = localizeInsightTitle(i.title, t);
+    if (!lines.includes(localizedTitle)) {
+      lines.push(localizedTitle);
+    }
+  }
+
+  // 2. High-level quantitative operational metrics from live database
   if (kpis) {
     if (kpis.revenuePipelineInr > 0 || kpis.pendingQuotes > 0) {
       lines.push(
@@ -1588,7 +1636,7 @@ function buildBrief(
     }
   }
 
-  // 2. Add individual insight statements (which now feature real numbers)
+  // 3. Add remaining individual insight statements (up to 6 total lines)
   for (const i of topInsights) {
     if (lines.length >= 6) break;
     const localizedTitle = localizeInsightTitle(i.title, t);
@@ -1692,6 +1740,10 @@ function localizeInsightAction(label: string, t: TFunction): string {
   if (label.startsWith("Collect ")) {
     return label.replace(/^Collect /, `${t("insights.actionCollect", "Collect")} `);
   }
+  if (label.startsWith("Assign vendor · ")) {
+    const name = label.replace(/^Assign vendor · /, "");
+    return `${t("insights.actionAssignVendor", "Assign vendor")} · ${name}`;
+  }
   return label;
 }
 
@@ -1727,10 +1779,17 @@ function formatActivitySummary(summary: string, _entityType: string | null, t: T
 function buildSuggestions(
   topInsights: ProcessedInsight[],
   t: TFunction,
-): Array<{ label: string; to: string }> {
-  return topInsights
-    .slice(0, 5)
-    .map((i) => ({ label: localizeInsightAction(i.action.label, t), to: i.action.href }));
+): Array<{ label: string; to: string; isRedFlag?: boolean; priority?: number }> {
+  return topInsights.slice(0, 5).map((i) => {
+    const isRedFlag =
+      i.title.includes("Red Flag") || i.tone === "danger" || i.normalizedPriority >= 95;
+    return {
+      label: localizeInsightAction(i.action.label, t),
+      to: i.action.href,
+      isRedFlag,
+      priority: i.normalizedPriority,
+    };
+  });
 }
 
 function displayName(

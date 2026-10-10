@@ -2415,6 +2415,8 @@
     "actionReview": "समीक्षा करें",
     "actionFollowUp": "फॉलो-अप",
     "actionCollect": "वसूली करें",
+    "actionAssignVendor": "विक्रेता असाइन करें",
+    "redFlag": "रेड फ्लैग",
     "levels": {
       "watch": "निगरानी",
       "risk": "जोखिम",

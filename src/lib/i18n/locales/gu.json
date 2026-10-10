@@ -2417,6 +2417,8 @@
     "actionReview": "સમીક્ષા કરો",
     "actionFollowUp": "ફોલો-અપ",
     "actionCollect": "વસૂલાત કરો",
+    "actionAssignVendor": "વિક્રેતા સોંપો",
+    "redFlag": "રેડ ફ્લેગ",
     "levels": {
       "watch": "દેખરેખ",
       "risk": "જોખમ",

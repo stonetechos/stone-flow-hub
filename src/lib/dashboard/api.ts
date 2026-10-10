@@ -76,7 +76,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
       .in("status", ["draft", "confirmed"]),
     supabase.from("quotes").select("total").in("status", ["draft", "sent", "accepted"]),
     supabase.from("customers").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("invoices").select("balance_due").neq("status", "cancelled"),
+    supabase.from("customer_ledger").select("debit,credit"),
     supabase.from("payments").select("amount").gte("paid_at", monthStart.toISOString()),
     supabase.from("invoices").select("total").eq("issue_date", todayIso).neq("status", "cancelled"),
     supabase.from("payments").select("amount").gte("paid_at", start.toISOString()),
@@ -118,6 +118,9 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     key: K,
   ) => (rows ?? []).reduce((acc, r) => acc + Number(r[key] ?? 0), 0);
 
+  const custDebit = sumField(outstanding.data as Array<{ debit: number }>, "debit");
+  const custCredit = sumField(outstanding.data as Array<{ credit: number }>, "credit");
+
   return {
     activeEnquiries: activeEnq.count ?? 0,
     pendingRfqs: pendingRfq.count ?? 0,
@@ -127,7 +130,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     ordersToStart: ordersToStart.count ?? 0,
     revenuePipelineInr: sumField(revenuePipeline.data as Array<{ total: number }>, "total"),
     customers: cust.count ?? 0,
-    outstandingInr: sumField(outstanding.data as Array<{ balance_due: number }>, "balance_due"),
+    outstandingInr: Math.max(0, custDebit - custCredit),
     paymentsThisMonthInr: sumField(monthPay.data as Array<{ amount: number }>, "amount"),
     salesTodayInr: sumField(salesToday.data as Array<{ total: number }>, "total"),
     collectionsTodayInr: sumField(collectionsToday.data as Array<{ amount: number }>, "amount"),
