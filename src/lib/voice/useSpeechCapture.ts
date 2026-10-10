@@ -53,6 +53,8 @@ export interface UseSpeechCaptureResult {
   setLanguage: (lang: SpeechCaptureLanguage) => void;
   start: () => void;
   stop: () => void;
+  toggle: () => void;
+  reset: () => void;
 }
 
 // The Web Speech API has no first-party TypeScript lib types (it's
@@ -60,6 +62,7 @@ export interface UseSpeechCaptureResult {
 // actually uses, not a claim of the full spec.
 interface MinimalSpeechRecognitionResult {
   0: { transcript: string };
+  isFinal?: boolean;
 }
 interface MinimalSpeechRecognitionEvent {
   results: ArrayLike<MinimalSpeechRecognitionResult>;
@@ -73,6 +76,7 @@ interface MinimalSpeechRecognition extends EventTarget {
   interimResults: boolean;
   start(): void;
   stop(): void;
+  abort(): void;
   onresult: ((event: MinimalSpeechRecognitionEvent) => void) | null;
   onerror: ((event: MinimalSpeechRecognitionErrorEvent) => void) | null;
   onend: (() => void) | null;
@@ -91,11 +95,18 @@ export function useSpeechCapture(): UseSpeechCaptureResult {
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<SpeechCaptureLanguage>("en-IN");
   const recognitionRef = useRef<MinimalSpeechRecognition | null>(null);
+  const shouldListenRef = useRef(false);
 
   const isSupported = getSpeechRecognitionCtor() !== null;
 
   const stop = useCallback(() => {
-    recognitionRef.current?.stop();
+    shouldListenRef.current = false;
+    setIsListening(false);
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* ignore already stopped */
+    }
   }, []);
 
   const start = useCallback(() => {
@@ -106,46 +117,93 @@ export function useSpeechCapture(): UseSpeechCaptureResult {
     }
     setError(null);
     setTranscript("");
+    shouldListenRef.current = true;
 
-    const recognition = new Ctor();
-    recognition.lang = language;
-    recognition.continuous = false;
-    recognition.interimResults = true;
+    try {
+      const recognition = new Ctor();
+      recognition.lang = language;
+      // Continuous = true ensures the engine does not stop during brief speech pauses.
+      // It will continue listening until the user clicks stop.
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-    recognition.onresult = (event) => {
-      // Concatenate every result segment recognized so far in this
-      // session — interimResults means this fires repeatedly as the
-      // transcript firms up, not just once at the end.
-      let combined = "";
-      for (let i = 0; i < event.results.length; i++) {
-        combined += event.results[i][0].transcript;
-      }
-      setTranscript(combined);
-    };
-    recognition.onerror = (event) => {
-      // "no-speech" and "aborted" are routine (user paused or hit stop
-      // manually) — surfacing those as an error message would be noise,
-      // not a real failure worth showing.
-      const code = event?.error;
-      if (code && code !== "no-speech" && code !== "aborted") {
-        setError(`Voice input error: ${code}`);
-      }
+      recognition.onresult = (event) => {
+        let combined = "";
+        for (let i = 0; i < event.results.length; i++) {
+          const part = event.results[i][0]?.transcript ?? "";
+          combined += (combined && !combined.endsWith(" ") ? " " : "") + part.trim();
+        }
+        setTranscript(combined.trim());
+      };
+
+      recognition.onerror = (event) => {
+        const code = event?.error;
+        if (code && code !== "no-speech" && code !== "aborted") {
+          setError(`Voice input error: ${code}`);
+          shouldListenRef.current = false;
+          setIsListening(false);
+        }
+      };
+
+      recognition.onend = () => {
+        // If the browser ends prematurely (e.g. network hiccup or silence pause)
+        // while the user hasn't explicitly clicked stop, seamlessly reconnect.
+        if (shouldListenRef.current) {
+          try {
+            recognition.start();
+            return;
+          } catch {
+            /* fall through to stop */
+          }
+        }
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsListening(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not start microphone.");
+      shouldListenRef.current = false;
       setIsListening(false);
-    };
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
+    }
   }, [language]);
+
+  const toggle = useCallback(() => {
+    if (shouldListenRef.current || isListening) {
+      stop();
+    } else {
+      start();
+    }
+  }, [isListening, start, stop]);
+
+  const reset = useCallback(() => {
+    stop();
+    setTranscript("");
+    setError(null);
+  }, [stop]);
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop();
+      shouldListenRef.current = false;
+      try {
+        recognitionRef.current?.abort();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
-  return { isSupported, isListening, transcript, error, language, setLanguage, start, stop };
+  return {
+    isSupported,
+    isListening,
+    transcript,
+    error,
+    language,
+    setLanguage,
+    start,
+    stop,
+    toggle,
+    reset,
+  };
 }

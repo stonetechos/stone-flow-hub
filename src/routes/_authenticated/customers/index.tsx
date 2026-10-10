@@ -13,8 +13,11 @@ import {
   Workflow,
   Building2,
   User,
+  Sparkles,
 } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
+import type { ParsedVoiceCustomer } from "@/lib/customers/voice-parser";
 
 import { toast } from "sonner";
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
@@ -112,6 +115,7 @@ function CustomersPage() {
   const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CustomerRow | null>(null);
+  const [voiceData, setVoiceData] = useState<ParsedVoiceCustomer | null>(null);
   const [toDelete, setToDelete] = useState<CustomerRow | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -185,6 +189,7 @@ function CustomersPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setVoiceData(null);
     setFormOpen(true);
   };
 
@@ -197,6 +202,17 @@ function CustomersPage() {
           "Master list of everyone you sell to and active order delivery commitments.",
         )}
       />
+
+      {/* One-Tap Store Voice Assistant — Metallic Tab with Pulsating Turquoise Aura */}
+      <div className="mb-4">
+        <StoreVoiceAssistantTab
+          onCustomerExtracted={(parsed) => {
+            setVoiceData(parsed);
+            setEditing(null);
+            setFormOpen(true);
+          }}
+        />
+      </div>
 
       {/* Dual View Tabs: All Customers directory vs. Order Pipeline */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 mb-4">
@@ -509,7 +525,16 @@ function CustomersPage() {
         </>
       )}
 
-      <CustomerFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <CustomerFormDialog
+        open={formOpen}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) setVoiceData(null);
+        }}
+        editing={editing}
+        voiceExtractedData={voiceData}
+        onClearVoiceExtracted={() => setVoiceData(null)}
+      />
       <SafeDeleteDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
@@ -600,10 +625,14 @@ function CustomerFormDialog({
   open,
   onOpenChange,
   editing,
+  voiceExtractedData,
+  onClearVoiceExtracted,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   editing: CustomerRow | null;
+  voiceExtractedData?: ParsedVoiceCustomer | null;
+  onClearVoiceExtracted?: () => void;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -614,11 +643,11 @@ function CustomerFormDialog({
 
   useEffect(() => {
     if (!open) return;
-    const next = editing ? fromRow(editing) : emptyForm();
-    setForm(next);
-    setBaseline(JSON.stringify(next));
-
     if (editing) {
+      const next = fromRow(editing);
+      setForm(next);
+      setBaseline(JSON.stringify(next));
+
       const f = (next.company_name ?? "").trim();
       const c = (next.contact_person ?? "").trim();
       const n = (next.name ?? "").trim();
@@ -631,10 +660,33 @@ function CustomerFormDialog({
       } else {
         setNameReflectionMode("smart");
       }
+    } else if (voiceExtractedData) {
+      const next: CustomerCreateInput = {
+        ...emptyForm(),
+        contact_person: voiceExtractedData.contact_person,
+        company_name: voiceExtractedData.company_name,
+        name: voiceExtractedData.name,
+        mobile: voiceExtractedData.mobile ?? "",
+        whatsapp: voiceExtractedData.mobile ?? "",
+        email: voiceExtractedData.email,
+        city: voiceExtractedData.city,
+        customer_type:
+          (voiceExtractedData.customer_type as CustomerCreateInput["customer_type"]) || "walk_in",
+        material_interests:
+          (voiceExtractedData.material_interests as CustomerCreateInput["material_interests"]) ||
+          [],
+        notes: voiceExtractedData.notes,
+      };
+      setForm(next);
+      setBaseline(JSON.stringify(emptyForm()));
+      setNameReflectionMode(voiceExtractedData.recommendedReflectionMode);
     } else {
+      const next = emptyForm();
+      setForm(next);
+      setBaseline(JSON.stringify(next));
       setNameReflectionMode("smart");
     }
-  }, [open, editing]);
+  }, [open, editing, voiceExtractedData]);
 
   const mutation = useMutation({
     mutationFn: (input: CustomerCreateInput) =>
@@ -711,6 +763,33 @@ function CustomerFormDialog({
     }
   };
 
+  const handleInDialogVoice = (parsed: ParsedVoiceCustomer) => {
+    setForm((prev) => ({
+      ...prev,
+      contact_person: parsed.contact_person ?? prev.contact_person,
+      company_name: parsed.company_name ?? prev.company_name,
+      name: parsed.name || prev.name,
+      mobile: parsed.mobile || prev.mobile,
+      whatsapp: parsed.mobile || prev.whatsapp,
+      email: parsed.email || prev.email,
+      city: parsed.city || prev.city,
+      customer_type:
+        (parsed.customer_type as CustomerCreateInput["customer_type"]) || prev.customer_type,
+      material_interests:
+        parsed.material_interests.length > 0
+          ? (parsed.material_interests as CustomerCreateInput["material_interests"])
+          : prev.material_interests,
+      notes: parsed.notes
+        ? prev.notes
+          ? `${prev.notes}\n${parsed.notes}`
+          : parsed.notes
+        : prev.notes,
+    }));
+    if (parsed.recommendedReflectionMode) {
+      setNameReflectionMode(parsed.recommendedReflectionMode);
+    }
+  };
+
   const toggleMaterial = (value: DbEnum<"material_interest">, checked: boolean) =>
     setForm((f) => {
       const current = f.material_interests ?? [];
@@ -732,6 +811,47 @@ function CustomerFormDialog({
             {editing ? `Edit ${editing.name}` : t("customers.newCustomer", "New customer")}
           </DialogTitle>
         </DialogHeader>
+
+        {/* In-dialog One-Tap Store Voice Assistant option */}
+        {!editing && (
+          <StoreVoiceAssistantTab
+            compact
+            className="my-1"
+            onCustomerExtracted={handleInDialogVoice}
+          />
+        )}
+
+        {/* If voice data was populated, show noticeable banner asking employee to review & edit before saving */}
+        {voiceExtractedData && (
+          <div className="rounded-lg border border-teal-200/90 bg-gradient-to-r from-teal-50 via-cyan-50 to-emerald-50 p-3 text-xs text-teal-950 flex items-start gap-2.5 shadow-xs">
+            <Sparkles className="h-4 w-4 text-teal-600 shrink-0 mt-0.5 animate-pulse" />
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-teal-900">
+                  ✨ Voice Data Auto-Filled — Review &amp; Edit Before Saving
+                </span>
+                {onClearVoiceExtracted && (
+                  <button
+                    type="button"
+                    onClick={onClearVoiceExtracted}
+                    className="text-[11px] text-teal-700 hover:text-teal-900 underline font-medium cursor-pointer"
+                  >
+                    Clear Voice Data
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-teal-850/90 leading-relaxed">
+                Spoken details have been populated below. Please review the contact person, firm
+                name, phone number, and product interests. Make any edits before saving.
+              </p>
+              {voiceExtractedData.rawTranscript && (
+                <div className="mt-1 text-[10px] text-teal-800/80 italic line-clamp-2 bg-white/70 rounded px-2 py-1 border border-teal-100">
+                  &ldquo;{voiceExtractedData.rawTranscript}&rdquo;
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <QuickForm onSubmit={onSubmit} busy={mutation.isPending} dirty={dirty}>
           <QuickForm.QuickFill>
             {/* 1. Contact Person's Name: representative & point of communication */}
