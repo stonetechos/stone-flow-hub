@@ -15,27 +15,51 @@ const Tabs = TabsPrimitive.Root;
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      // Phase G.11, Section 5: several detail pages register 10-15 tabs —
-      // more than fits at any viewport width, including desktop. tabstrip-scroll
-      // (styles.css) makes the strip horizontally scrollable with hidden
-      // scrollbar chrome instead of silently overflowing the container.
-      "relative flex h-10 items-center gap-1 border-b border-border text-muted-foreground w-full tabstrip-scroll",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const isWrap = Boolean(className && className.includes("flex-wrap"));
+  const innerRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Chrome on desktop does not convert vertical wheel to horizontal scroll by default.
+  // Add a listener so users can scroll long tab strips with normal mouse wheels.
+  React.useEffect(() => {
+    const el = innerRef.current;
+    if (!el || isWrap) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [isWrap]);
+
+  return (
+    <TabsPrimitive.List
+      ref={(node) => {
+        innerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
+      className={cn(
+        "relative flex items-center gap-1 border-b border-border text-muted-foreground w-full",
+        isWrap ? "h-auto flex-wrap overflow-visible" : "h-10 tabstrip-scroll scroll-smooth",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, children, ...props }, ref) => {
+>(({ className, children, onClick, ...props }, ref) => {
   const { t } = useTranslation();
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   const translateNode = (node: React.ReactNode): React.ReactNode => {
     if (typeof node === "string") {
@@ -66,9 +90,23 @@ const TabsTrigger = React.forwardRef<
 
   const translatedChildren = React.Children.map(children, translateNode);
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    triggerRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+    onClick?.(e);
+  };
+
   return (
     <TabsPrimitive.Trigger
-      ref={ref}
+      ref={(node) => {
+        triggerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+      }}
+      onClick={handleClick}
       className={cn(
         "relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-3.5 text-xs sm:text-sm font-semibold cursor-pointer transition-all",
         "text-slate-600 hover:text-cyan-800",

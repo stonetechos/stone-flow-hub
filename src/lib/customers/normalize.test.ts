@@ -73,6 +73,11 @@ describe("Customer normalization helpers", () => {
     expect(normalized.contact_person).toBe(null);
   });
 
+  it("returns null when passed null or undefined row", () => {
+    expect(normalizeCustomerRow(null)).toBe(null);
+    expect(normalizeCustomerRow(undefined)).toBe(null);
+  });
+
   it("detects schema cache missing column error messages", () => {
     const err = {
       message: "Could not find the 'company_name' column of 'customers' in the schema cache",

@@ -42,16 +42,17 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
 
     // If creating (no id), check duplicate phone only when phone is provided
     if (!id && normalizedPhone) {
+      const digits10 = normalizedPhone.slice(-10);
       const { data: existing } = await supabaseAdmin
         .from("customers")
         .select("id, name, customer_code")
-        .eq("primary_phone", normalizedPhone)
+        .or(`primary_phone.eq.${normalizedPhone},primary_phone.ilike.%${digits10}%`)
         .limit(1)
         .maybeSingle();
 
-      if (existing) {
+      if (existing && existing.id) {
         throw new Error(
-          `A customer with this mobile already exists: ${existing.name} (${existing.customer_code})`,
+          `A customer with this mobile already exists: ${existing.name || "Customer"} (${existing.customer_code || "Existing"})`,
         );
       }
     }

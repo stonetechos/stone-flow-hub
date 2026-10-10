@@ -241,17 +241,6 @@ function CustomersPage() {
         )}
       />
 
-      {/* One-Tap Store Voice Assistant — Metallic Tab with Pulsating Turquoise Aura */}
-      <div className="mb-4">
-        <StoreVoiceAssistantTab
-          onCustomerExtracted={(parsed) => {
-            setVoiceData(parsed);
-            setEditing(null);
-            setFormOpen(true);
-          }}
-        />
-      </div>
-
       {/* Dual View Tabs: All Customers directory vs. Order Pipeline */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 mb-4">
         <div className="inline-flex items-center rounded-lg bg-slate-100 p-1 text-slate-600">
@@ -303,9 +292,18 @@ function CustomersPage() {
         </div>
 
         {activeTab === "directory" && (
-          <Button size="sm" className="h-8" onClick={openCreate}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
-          </Button>
+          <div className="flex items-center gap-3">
+            <StoreVoiceAssistantTab
+              onCustomerExtracted={(parsed) => {
+                setVoiceData(parsed);
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            />
+            <Button size="sm" className="h-8" onClick={openCreate}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -970,20 +968,19 @@ function CustomerFormDialog({
       }}
     >
       <DialogContent className="max-w-2xl">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-8">
           <DialogTitle>
             {editing ? `Edit ${editing.name}` : t("customers.newCustomer", "New customer")}
           </DialogTitle>
+          {!editing && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                Voice fill:
+              </span>
+              <StoreVoiceAssistantTab compact onCustomerExtracted={handleInDialogVoice} />
+            </div>
+          )}
         </DialogHeader>
-
-        {/* In-dialog One-Tap Store Voice Assistant option */}
-        {!editing && (
-          <StoreVoiceAssistantTab
-            compact
-            className="my-1"
-            onCustomerExtracted={handleInDialogVoice}
-          />
-        )}
 
         {/* If voice data was populated, show noticeable banner asking employee to review & edit before saving */}
         {voiceExtractedData && (

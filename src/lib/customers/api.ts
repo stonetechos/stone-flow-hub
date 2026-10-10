@@ -110,13 +110,15 @@ export async function getCustomer(id: string): Promise<CustomerRow | null> {
 export async function findCustomerByPhone(mobile: string): Promise<CustomerRow | null> {
   const normalized = normalizeMobile(mobile);
   if (!normalized) return null;
+  const digits10 = normalized.slice(-10);
   const { data, error } = await getDb()
     .from("customers")
     .select("*")
-    .ilike("primary_phone", `%${normalized}%`)
+    .or(`primary_phone.eq.${normalized},primary_phone.ilike.%${digits10}%`)
     .limit(1)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
+  if (!data) return null;
   return normalizeCustomerRow(data);
 }
 
@@ -125,9 +127,9 @@ export async function createCustomer(input: CustomerCreateInput): Promise<Custom
 
   if (parsed.mobile) {
     const existing = await findCustomerByPhone(parsed.mobile);
-    if (existing) {
+    if (existing && existing.id) {
       throw new AppError(
-        `A customer with this mobile already exists: ${existing.name} (${existing.customer_code})`,
+        `A customer with this mobile already exists: ${existing.name || "Customer"} (${existing.customer_code || "Existing"})`,
         "DUPLICATE_CUSTOMER",
         409,
       );
