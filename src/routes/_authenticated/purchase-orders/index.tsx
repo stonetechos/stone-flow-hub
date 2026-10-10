@@ -66,7 +66,7 @@ function PurchaseOrdersPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
+      { key: "no", label: "PO / Vendor", required: true },
       { key: "vendor", label: "Vendor" },
       { key: "project", label: "Project" },
       { key: "date", label: "Order date" },
@@ -173,7 +173,7 @@ function PurchaseOrdersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("no") && <TableHead>PO / Vendor</TableHead>}
                 {!isHidden("vendor") && <TableHead>Vendor</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("date") && <TableHead>Order date</TableHead>}
@@ -186,14 +186,19 @@ function PurchaseOrdersPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/purchase-orders/$id"
-                        params={{ id: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.po_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.vendor?.company_name ?? "—"}
+                        </span>
+                        <Link
+                          to="/purchase-orders/$id"
+                          params={{ id: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.po_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("vendor") && <TableCell>{r.vendor?.company_name ?? "—"}</TableCell>}

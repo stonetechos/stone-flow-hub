@@ -47,7 +47,7 @@ function EstimatesListPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Estimate #", required: true },
+      { key: "no", label: "Estimate / Customer", required: true },
       { key: "template", label: "Template" },
       { key: "customer", label: "Customer / Project" },
       { key: "status", label: "Status" },
@@ -137,7 +137,7 @@ function EstimatesListPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>Estimate #</TableHead>}
+                {!isHidden("no") && <TableHead>Estimate / Customer</TableHead>}
                 {!isHidden("template") && <TableHead>Template</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer / Project</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
@@ -148,14 +148,19 @@ function EstimatesListPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell>
-                      <Link
-                        to="/estimates/$estimateId"
-                        params={{ estimateId: r.id }}
-                        className="font-medium hover:underline"
-                      >
-                        {r.estimate_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer?.name ?? "—"}
+                        </span>
+                        <Link
+                          to="/estimates/$estimateId"
+                          params={{ estimateId: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.estimate_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("template") && (

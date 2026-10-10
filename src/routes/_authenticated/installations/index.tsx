@@ -48,7 +48,7 @@ function InstallationsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Installation", required: true },
+      { key: "no", label: "Installation / Customer", required: true },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
       { key: "so", label: "Sales order" },
@@ -149,7 +149,7 @@ function InstallationsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>Installation</TableHead>}
+                {!isHidden("no") && <TableHead>Installation / Customer</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("so") && <TableHead>Sales order</TableHead>}
@@ -167,7 +167,16 @@ function InstallationsPage() {
                   onClick={() => nav({ to: "/installations/$id", params: { id: r.id } })}
                 >
                   {!isHidden("no") && (
-                    <TableCell className="font-medium">{r.installation_no}</TableCell>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer?.name ?? "—"}
+                        </span>
+                        <span className="font-mono text-[11px] text-primary truncate font-medium">
+                          {r.installation_no}
+                        </span>
+                      </div>
+                    </TableCell>
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}

@@ -109,7 +109,7 @@ function QuotesPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
+      { key: "no", label: "Quote / Customer", required: true },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
       { key: "status", label: "Status" },
@@ -349,7 +349,7 @@ function QuotesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
-                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
@@ -375,14 +375,19 @@ function QuotesPage() {
                       />
                     </TableCell>
                     {!isHidden("no") && (
-                      <TableCell className="font-mono text-xs">
-                        <Link
-                          to="/quotes/$quoteId"
-                          params={{ quoteId: r.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {r.quote_no}
-                        </Link>
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                            {r.customer?.name ?? "—"}
+                          </span>
+                          <Link
+                            to="/quotes/$quoteId"
+                            params={{ quoteId: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.quote_no}
+                          </Link>
+                        </div>
                       </TableCell>
                     )}
                     {!isHidden("project") && (

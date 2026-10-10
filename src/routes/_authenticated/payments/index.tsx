@@ -171,7 +171,8 @@ function CustomerPaymentsTab() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("payments.columns.receiptNo", "Receipt #"), required: true },
+      { key: "no", label: t("payments.columns.receiptNo", "Receipt / Customer"), required: true },
+      { key: "customer", label: t("common.customer", "Customer") },
       { key: "invoice", label: t("payments.columns.invoice", "Invoice") },
       { key: "method", label: t("payments.columns.method", "Method") },
       { key: "reference", label: t("payments.columns.reference", "Reference") },
@@ -273,8 +274,9 @@ function CustomerPaymentsTab() {
             <TableHeader>
               <TableRow>
                 {!isHidden("no") && (
-                  <TableHead>{t("payments.columns.receiptNo", "Receipt #")}</TableHead>
+                  <TableHead>{t("payments.columns.receiptNo", "Receipt / Customer")}</TableHead>
                 )}
+                {!isHidden("customer") && <TableHead>{t("common.customer", "Customer")}</TableHead>}
                 {!isHidden("invoice") && (
                   <TableHead>{t("payments.columns.invoice", "Invoice")}</TableHead>
                 )}
@@ -297,25 +299,33 @@ function CustomerPaymentsTab() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      {r.source === "receipt" ? (
-                        <Link
-                          to="/receipts/$receiptId"
-                          params={{ receiptId: r.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {r.doc_no}
-                        </Link>
-                      ) : (
-                        <Link
-                          to="/payments/$id"
-                          params={{ id: r.id }}
-                          className="text-primary hover:underline"
-                        >
-                          {r.doc_no}
-                        </Link>
-                      )}
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer_name || "—"}
+                        </span>
+                        {r.source === "receipt" ? (
+                          <Link
+                            to="/receipts/$receiptId"
+                            params={{ receiptId: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.doc_no}
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/payments/$id"
+                            params={{ id: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.doc_no}
+                          </Link>
+                        )}
+                      </div>
                     </TableCell>
+                  )}
+                  {!isHidden("customer") && (
+                    <TableCell className="text-xs font-medium">{r.customer_name ?? "—"}</TableCell>
                   )}
                   {!isHidden("invoice") && (
                     <TableCell className="font-mono text-xs">{r.invoice_no ?? "—"}</TableCell>
@@ -414,7 +424,11 @@ function VendorPaymentsTab() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("payments.vendor.columns.paymentNo", "Payment #"), required: true },
+      {
+        key: "no",
+        label: t("payments.vendor.columns.paymentNo", "Payment / Vendor"),
+        required: true,
+      },
       { key: "vendor", label: t("payments.vendor.columns.vendor", "Vendor") },
       { key: "po", label: t("payments.vendor.columns.po", "PO") },
       { key: "type", label: t("payments.vendor.columns.type", "Type") },
@@ -506,7 +520,9 @@ function VendorPaymentsTab() {
             <TableHeader>
               <TableRow>
                 {!isHidden("no") && (
-                  <TableHead>{t("payments.vendor.columns.paymentNo", "Payment #")}</TableHead>
+                  <TableHead>
+                    {t("payments.vendor.columns.paymentNo", "Payment / Vendor")}
+                  </TableHead>
                 )}
                 {!isHidden("vendor") && (
                   <TableHead>{t("payments.vendor.columns.vendor", "Vendor")}</TableHead>
@@ -530,14 +546,19 @@ function VendorPaymentsTab() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/vendor-payments/$id"
-                        params={{ id: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.payment_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.vendor?.company_name || "—"}
+                        </span>
+                        <Link
+                          to="/vendor-payments/$id"
+                          params={{ id: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.payment_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("vendor") && (
@@ -747,8 +768,7 @@ function AgencyPaymentsTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("payments.agency.columns.date", "Date")}</TableHead>
-                <TableHead>{t("payments.agency.columns.agency", "Agency")}</TableHead>
+                <TableHead>{t("payments.agency.columns.agency", "Agency / Date")}</TableHead>
                 <TableHead>{t("payments.agency.columns.description", "Description")}</TableHead>
                 <TableHead>{t("payments.agency.columns.refNo", "Ref / UTR")}</TableHead>
                 <TableHead className="text-right">
@@ -764,13 +784,14 @@ function AgencyPaymentsTab() {
                 const agency = agencyMap.get(p.installation_agency_id);
                 return (
                   <TableRow key={p.id}>
-                    <TableCell className="whitespace-nowrap font-mono text-xs">
-                      {formatDate(p.entry_date)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-foreground">{agency?.name ?? "Agency"}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {agency?.code ?? ""}
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {agency?.name ?? "Agency"}
+                        </span>
+                        <span className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                          {formatDate(p.entry_date)}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{p.description}</TableCell>

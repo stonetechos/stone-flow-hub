@@ -54,7 +54,7 @@ function VendorPaymentsPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("table.paymentNo", "Payment #"), required: true },
+      { key: "no", label: t("table.paymentNo", "Payment / Vendor"), required: true },
       { key: "vendor", label: t("table.vendor", "Vendor") },
       { key: "po", label: t("table.po", "PO") },
       { key: "type", label: t("table.type", "Type") },
@@ -150,7 +150,9 @@ function VendorPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>{t("table.paymentNo", "Payment #")}</TableHead>}
+                {!isHidden("no") && (
+                  <TableHead>{t("table.paymentNo", "Payment / Vendor")}</TableHead>
+                )}
                 {!isHidden("vendor") && <TableHead>{t("table.vendor", "Vendor")}</TableHead>}
                 {!isHidden("po") && <TableHead>{t("table.po", "PO")}</TableHead>}
                 {!isHidden("type") && <TableHead>{t("table.type", "Type")}</TableHead>}
@@ -165,14 +167,19 @@ function VendorPaymentsPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/vendor-payments/$id"
-                        params={{ id: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.payment_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.vendor?.company_name ?? "—"}
+                        </span>
+                        <Link
+                          to="/vendor-payments/$id"
+                          params={{ id: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.payment_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("vendor") && (

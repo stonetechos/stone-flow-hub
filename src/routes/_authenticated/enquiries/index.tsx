@@ -123,7 +123,7 @@ function EnquiriesPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
+      { key: "no", label: "Enquiry / Customer", required: true },
       { key: "customer", label: "Customer" },
       { key: "requirement", label: "Requirement" },
       { key: "project", label: "Project" },
@@ -412,7 +412,7 @@ function EnquiriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("no") && <TableHead>Enquiry / Customer</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("requirement") && <TableHead>Requirement</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
@@ -449,12 +449,15 @@ function EnquiriesPage() {
                 return (
                   <TableRow key={e.id}>
                     {!isHidden("no") && (
-                      <TableCell className="font-mono text-xs">
-                        <div className="flex flex-col gap-1">
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                            {e.customer?.name ?? "—"}
+                          </span>
                           <Link
                             to="/enquiries/$enquiryId"
                             params={{ enquiryId: e.id }}
-                            className="text-primary hover:underline font-bold"
+                            className="text-primary hover:underline font-mono text-[11px] font-bold truncate"
                           >
                             {e.enquiry_no}
                           </Link>

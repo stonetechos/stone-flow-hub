@@ -58,7 +58,7 @@ function SalesOrdersPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
+      { key: "no", label: "SO / Customer", required: true },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
       { key: "quote", label: "Quote" },
@@ -158,7 +158,7 @@ function SalesOrdersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("no") && <TableHead>SO / Customer</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("quote") && <TableHead>Quote</TableHead>}
@@ -174,14 +174,19 @@ function SalesOrdersPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/sales-orders/$id"
-                        params={{ id: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.so_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer?.name ?? "—"}
+                        </span>
+                        <Link
+                          to="/sales-orders/$id"
+                          params={{ id: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.so_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}

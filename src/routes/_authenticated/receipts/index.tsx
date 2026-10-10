@@ -52,7 +52,7 @@ function ReceiptsListPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("receipts.receiptNo", "Receipt #"), required: true },
+      { key: "no", label: t("receipts.receiptNo", "Receipt / Customer"), required: true },
       { key: "date", label: t("common.date", "Date") },
       { key: "customer", label: t("common.customer", "Customer") },
       { key: "method", label: t("receipts.method", "Method") },
@@ -169,7 +169,9 @@ function ReceiptsListPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>{t("receipts.receiptNo", "Receipt #")}</TableHead>}
+                {!isHidden("no") && (
+                  <TableHead>{t("receipts.receiptNo", "Receipt / Customer")}</TableHead>
+                )}
                 {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
                 {!isHidden("customer") && <TableHead>{t("common.customer", "Customer")}</TableHead>}
                 {!isHidden("method") && <TableHead>{t("receipts.method", "Method")}</TableHead>}
@@ -192,14 +194,19 @@ function ReceiptsListPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell>
-                      <Link
-                        to="/receipts/$receiptId"
-                        params={{ receiptId: r.id }}
-                        className="font-medium hover:underline"
-                      >
-                        {r.receipt_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer?.name ?? "—"}
+                        </span>
+                        <Link
+                          to="/receipts/$receiptId"
+                          params={{ receiptId: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.receipt_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("date") && (

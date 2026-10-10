@@ -74,7 +74,7 @@ function InvoicesPage() {
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("invoices");
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Invoice no.", required: true },
+      { key: "no", label: "Invoice / Customer", required: true },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
       { key: "status", label: "Status" },
@@ -198,7 +198,7 @@ function InvoicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>No.</TableHead>}
+                {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
@@ -212,14 +212,19 @@ function InvoicesPage() {
               {pageRows.map((r) => (
                 <TableRow key={r.id}>
                   {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/invoices/$invoiceId"
-                        params={{ invoiceId: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.invoice_no}
-                      </Link>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                          {r.customer?.name ?? "—"}
+                        </span>
+                        <Link
+                          to="/invoices/$invoiceId"
+                          params={{ invoiceId: r.id }}
+                          className="font-mono text-[11px] text-primary hover:underline truncate"
+                        >
+                          {r.invoice_no}
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}

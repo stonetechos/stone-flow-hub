@@ -71,7 +71,7 @@ function PurchaseInvoicesPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "No.", required: true },
+      { key: "no", label: "Invoice / Vendor", required: true },
       { key: "vendorInvoiceNo", label: "Vendor's #" },
       { key: "vendor", label: "Vendor" },
       { key: "po", label: "Purchase order" },
@@ -219,7 +219,7 @@ function PurchaseInvoicesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {!isHidden("no") && <TableHead>No.</TableHead>}
+                    {!isHidden("no") && <TableHead>Invoice / Vendor</TableHead>}
                     {!isHidden("vendorInvoiceNo") && <TableHead>Vendor's #</TableHead>}
                     {!isHidden("vendor") && <TableHead>Vendor</TableHead>}
                     {!isHidden("po") && <TableHead>Purchase order</TableHead>}
@@ -234,14 +234,19 @@ function PurchaseInvoicesPage() {
                   {pageRows.map((r) => (
                     <TableRow key={r.id}>
                       {!isHidden("no") && (
-                        <TableCell className="font-mono text-xs">
-                          <Link
-                            to="/purchase-invoices/$id"
-                            params={{ id: r.id }}
-                            className="text-primary hover:underline"
-                          >
-                            {r.invoice_no}
-                          </Link>
+                        <TableCell className="text-xs">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                              {r.vendor?.company_name ?? "—"}
+                            </span>
+                            <Link
+                              to="/purchase-invoices/$id"
+                              params={{ id: r.id }}
+                              className="font-mono text-[11px] text-primary hover:underline truncate"
+                            >
+                              {r.invoice_no}
+                            </Link>
+                          </div>
                         </TableCell>
                       )}
                       {!isHidden("vendorInvoiceNo") && (

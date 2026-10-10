@@ -67,7 +67,8 @@ function DispatchPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("common.noNum", "No."), required: true },
+      { key: "no", label: t("dispatch.columns.dispatchNo", "Dispatch / Customer"), required: true },
+      { key: "customer", label: t("common.customer", "Customer") },
       { key: "so", label: t("dispatch.columns.so", "Sales Order") },
       { key: "carrier", label: t("dispatch.columns.carrier", "Carrier") },
       { key: "tracking", label: t("dispatch.columns.tracking", "Tracking") },
@@ -206,7 +207,14 @@ function DispatchPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {!isHidden("no") && <TableHead>{t("common.noNum", "No.")}</TableHead>}
+                    {!isHidden("no") && (
+                      <TableHead>
+                        {t("dispatch.columns.dispatchNo", "Dispatch / Customer")}
+                      </TableHead>
+                    )}
+                    {!isHidden("customer") && (
+                      <TableHead>{t("common.customer", "Customer")}</TableHead>
+                    )}
                     {!isHidden("so") && (
                       <TableHead>{t("dispatch.columns.so", "Sales Order")}</TableHead>
                     )}
@@ -225,14 +233,24 @@ function DispatchPage() {
                   {pageRows.map((r) => (
                     <TableRow key={r.id}>
                       {!isHidden("no") && (
-                        <TableCell className="font-mono text-xs">
-                          <Link
-                            to="/dispatch/$id"
-                            params={{ id: r.id }}
-                            className="text-primary hover:underline"
-                          >
-                            {r.dispatch_no}
-                          </Link>
+                        <TableCell className="text-xs">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                              {r.customer?.name ?? "—"}
+                            </span>
+                            <Link
+                              to="/dispatch/$id"
+                              params={{ id: r.id }}
+                              className="font-mono text-[11px] text-primary hover:underline truncate"
+                            >
+                              {r.dispatch_no}
+                            </Link>
+                          </div>
+                        </TableCell>
+                      )}
+                      {!isHidden("customer") && (
+                        <TableCell className="text-xs font-medium">
+                          {r.customer?.name ?? "—"}
                         </TableCell>
                       )}
                       {!isHidden("so") && (
