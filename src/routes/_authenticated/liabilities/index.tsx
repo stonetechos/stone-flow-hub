@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -444,37 +444,59 @@ function LiabilitiesPage() {
                 }
               />
             ) : (
-              <div className="space-y-6">
-                {sections.map((section) => {
-                  const sectionTotal = section.rows.reduce((s, r) => s + r.amount, 0);
-                  return (
-                    <div key={section.title}>
-                      <div className="mb-2 flex items-baseline justify-between">
-                        <h3 className="font-display text-sm font-semibold text-foreground">
-                          {section.title}
-                        </h3>
-                        <span className="text-sm text-muted-foreground">
-                          {formatInr(sectionTotal)}
-                        </span>
-                      </div>
-                      <div className="overflow-x-auto rounded-md border border-border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>{t("common.name", "Account / Liability")}</TableHead>
-                              <TableHead>{t("common.amount", "Monthly Amount")}</TableHead>
-                              <TableHead>
-                                {t("liabilities.columns.recurring", "Recurring")}
-                              </TableHead>
-                              <TableHead>{t("liabilities.columns.active", "Active")}</TableHead>
-                              <TableHead>{t("common.notes", "Notes")}</TableHead>
-                              <TableHead className="w-28 text-right">Actions</TableHead>
+              <div className="space-y-4">
+                <div className="overflow-x-auto rounded-md border border-border bg-card">
+                  <Table className="w-full table-fixed min-w-[800px]">
+                    <colgroup>
+                      <col className="w-[30%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[11%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[12%]" />
+                    </colgroup>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40">
+                        <TableHead className="pl-4 font-semibold text-xs uppercase tracking-wider">
+                          {t("common.name", "Account / Liability")}
+                        </TableHead>
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                          {t("common.amount", "Monthly Amount")}
+                        </TableHead>
+                        <TableHead className="text-center font-semibold text-xs uppercase tracking-wider">
+                          {t("liabilities.columns.recurring", "Recurring")}
+                        </TableHead>
+                        <TableHead className="text-center font-semibold text-xs uppercase tracking-wider">
+                          {t("liabilities.columns.active", "Active")}
+                        </TableHead>
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                          {t("common.notes", "Notes")}
+                        </TableHead>
+                        <TableHead className="text-right pr-4 font-semibold text-xs uppercase tracking-wider">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sections.map((section) => {
+                        const sectionTotal = section.rows.reduce((s, r) => s + r.amount, 0);
+                        return (
+                          <Fragment key={section.title}>
+                            <TableRow className="bg-muted/30 hover:bg-muted/30 border-y border-border/80 font-medium">
+                              <TableCell colSpan={6} className="py-2.5 px-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-display text-xs font-bold text-foreground">
+                                    {section.title}
+                                  </span>
+                                  <span className="font-mono text-xs font-semibold text-muted-foreground">
+                                    {formatInr(sectionTotal)}
+                                  </span>
+                                </div>
+                              </TableCell>
                             </TableRow>
-                          </TableHeader>
-                          <TableBody>
                             {section.rows.map((r) => (
-                              <TableRow key={r.id}>
-                                <TableCell className="font-medium text-foreground">
+                              <TableRow key={r.id} className="hover:bg-muted/40 transition-colors">
+                                <TableCell className="pl-4 font-medium text-foreground">
                                   <div className="flex flex-col">
                                     <span className="font-semibold text-sm">{r.name}</span>
                                     {r.due_day_of_month ? (
@@ -488,10 +510,10 @@ function LiabilitiesPage() {
                                     )}
                                   </div>
                                 </TableCell>
-                                <TableCell className="font-mono font-semibold">
+                                <TableCell className="font-mono font-semibold text-foreground text-sm">
                                   {formatInr(r.amount)}
                                 </TableCell>
-                                <TableCell className="text-sm">
+                                <TableCell className="text-center">
                                   {r.is_recurring ? (
                                     <Badge
                                       variant="secondary"
@@ -505,7 +527,7 @@ function LiabilitiesPage() {
                                     </Badge>
                                   )}
                                 </TableCell>
-                                <TableCell className="text-sm">
+                                <TableCell className="text-center">
                                   {r.is_active ? (
                                     <Badge
                                       variant="outline"
@@ -522,10 +544,10 @@ function LiabilitiesPage() {
                                     </Badge>
                                   )}
                                 </TableCell>
-                                <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
+                                <TableCell className="truncate text-xs text-muted-foreground max-w-[200px]">
                                   {r.notes ?? "—"}
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right pr-4">
                                   <div className="flex items-center justify-end gap-1">
                                     {roles.canWrite && (
                                       <Button
@@ -547,12 +569,12 @@ function LiabilitiesPage() {
                                 </TableCell>
                               </TableRow>
                             ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-                  );
-                })}
+                          </Fragment>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
                 <div className="flex justify-end text-sm font-semibold">
                   {t("liabilities.totalActive", "Total active liabilities")}:{" "}
                   {formatInr(totalActive)}
@@ -583,31 +605,52 @@ function LiabilitiesPage() {
                 }
               />
             ) : (
-              <div className="overflow-x-auto rounded-md border border-border">
-                <Table>
+              <div className="overflow-x-auto rounded-md border border-border bg-card">
+                <Table className="w-full table-fixed min-w-[800px]">
+                  <colgroup>
+                    <col className="w-[14%]" />
+                    <col className="w-[24%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[6%]" />
+                  </colgroup>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Payment Date</TableHead>
-                      <TableHead>Liability / Account</TableHead>
-                      <TableHead>Month For</TableHead>
-                      <TableHead>Amount Paid</TableHead>
-                      <TableHead>Mode / Ref</TableHead>
-                      <TableHead>Notes</TableHead>
-                      <TableHead className="w-12 text-right" />
+                    <TableRow className="bg-muted/40">
+                      <TableHead className="pl-4 font-semibold text-xs uppercase tracking-wider">
+                        Payment Date
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                        Liability / Account
+                      </TableHead>
+                      <TableHead className="text-center font-semibold text-xs uppercase tracking-wider">
+                        Month For
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                        Amount Paid
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                        Mode / Ref
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">
+                        Notes
+                      </TableHead>
+                      <TableHead className="w-12 text-right pr-4" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paymentRows.map((p) => {
                       const liability = liabilityMap.get(p.liability_id);
                       return (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-mono text-xs whitespace-nowrap">
+                        <TableRow key={p.id} className="hover:bg-muted/40 transition-colors">
+                          <TableCell className="pl-4 font-mono text-xs whitespace-nowrap">
                             {formatDate(p.payment_date)}
                           </TableCell>
                           <TableCell className="font-medium text-foreground">
                             {liability?.name ?? "Liability Account"}
                           </TableCell>
-                          <TableCell className="text-sm">
+                          <TableCell className="text-center text-sm">
                             {p.month_for ? (
                               <Badge variant="outline" className="font-mono text-xs">
                                 {p.month_for}
@@ -630,7 +673,7 @@ function LiabilitiesPage() {
                           <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
                             {p.notes || "—"}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right pr-4">
                             {roles.canWrite && (
                               <Button
                                 size="icon"
