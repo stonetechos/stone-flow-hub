@@ -15,6 +15,7 @@ import {
   Filter,
   RefreshCw,
   Boxes,
+  CreditCard,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,9 @@ import {
   type OrderPipelineItem,
   type DeadlineHealth,
 } from "@/lib/customers/order-pipeline";
+import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
+import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
+import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { formatDate } from "@/lib/format";
 import { buildWhatsappUrl, normalizeWhatsappPhone } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
@@ -45,6 +49,13 @@ export function CustomerOrderPipeline() {
   const [healthFilter, setHealthFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [assignQuoteModal, setAssignQuoteModal] = useState<{
+    quoteId: string;
+    quoteNo: string;
+    currentVendorId?: string | null;
+    currentVendorName?: string | null;
+    currentPromisedDate?: string | null;
+  } | null>(null);
 
   const {
     data: items = [],
@@ -58,6 +69,12 @@ export function CustomerOrderPipeline() {
     staleTime: 30_000,
   });
 
+  const { data: ledgerSummaries } = useQuery({
+    queryKey: ["customer-ledger-summaries"],
+    queryFn: () => listCustomerLedgerSummaries(),
+    staleTime: 30_000,
+  });
+
   // KPI Metrics
   const metrics = useMemo(() => {
     let overdueCount = 0;
@@ -65,8 +82,10 @@ export function CustomerOrderPipeline() {
     let tightBufferCount = 0;
     let onTrackCount = 0;
     let completedCount = 0;
+    let unassignedCount = 0;
 
     for (const item of items) {
+      if (!item.isVendorAssigned) unassignedCount++;
       if (item.health === "overdue") overdueCount++;
       else if (item.health === "critical_delay") criticalDelayCount++;
       else if (item.health === "tight_buffer") tightBufferCount++;
@@ -80,6 +99,7 @@ export function CustomerOrderPipeline() {
       tightBufferCount,
       onTrackCount,
       completedCount,
+      unassignedCount,
     };
   }, [items]);
 
@@ -88,7 +108,9 @@ export function CustomerOrderPipeline() {
     const q = search.trim().toLowerCase();
     return items.filter((item) => {
       // Health filter
-      if (healthFilter === "attention") {
+      if (healthFilter === "unassigned") {
+        if (item.isVendorAssigned) return false;
+      } else if (healthFilter === "attention") {
         if (item.health !== "overdue" && item.health !== "critical_delay") return false;
       } else if (healthFilter === "tight") {
         if (item.health !== "tight_buffer") return false;
@@ -130,7 +152,7 @@ export function CustomerOrderPipeline() {
   return (
     <div className="space-y-4">
       {/* KPI Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card
           className={cn(
             "cursor-pointer transition-all border",
@@ -150,6 +172,33 @@ export function CustomerOrderPipeline() {
             </div>
             <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
               <Boxes className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={cn(
+            "cursor-pointer transition-all border",
+            healthFilter === "unassigned"
+              ? "ring-2 ring-amber-500 border-amber-500 bg-amber-50/20"
+              : "hover:border-amber-300",
+          )}
+          onClick={() => {
+            setHealthFilter("unassigned");
+            setPage(1);
+          }}
+        >
+          <CardContent className="p-3.5 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-amber-800 font-medium flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3 text-amber-600" /> Unassigned
+              </p>
+              <h3 className="text-2xl font-bold text-amber-700 mt-0.5">
+                {metrics.unassignedCount}
+              </h3>
+            </div>
+            <div className="h-9 w-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800">
+              <Building2 className="h-5 w-5" />
             </div>
           </CardContent>
         </Card>
@@ -292,11 +341,12 @@ export function CustomerOrderPipeline() {
               <TableRow>
                 <TableHead className="w-12">Sr.</TableHead>
                 <TableHead className="w-36">Order / PO</TableHead>
-                <TableHead className="w-56">Customer & Point of Contact</TableHead>
-                <TableHead className="w-48">Assigned Vendor</TableHead>
-                <TableHead className="w-36">Vendor Deadline</TableHead>
-                <TableHead className="w-36">Customer Deadline</TableHead>
-                <TableHead className="w-40">Buffer & Health</TableHead>
+                <TableHead className="w-48">Customer & Contact</TableHead>
+                <TableHead className="w-44">Payment Status</TableHead>
+                <TableHead className="w-44">Vendor Assignment</TableHead>
+                <TableHead className="w-32">Vendor Deadline</TableHead>
+                <TableHead className="w-36">Promised Delivery</TableHead>
+                <TableHead className="w-36">Buffer & Health</TableHead>
                 <TableHead className="w-24 text-right">Follow-up</TableHead>
               </TableRow>
             </TableHeader>
@@ -305,7 +355,9 @@ export function CustomerOrderPipeline() {
                 const targetLink =
                   item.orderType === "po"
                     ? `/purchase-orders/${item.orderId}`
-                    : `/sales-orders/${item.orderId}`;
+                    : item.orderType === "quote"
+                      ? `/quotes/${item.orderId}`
+                      : `/sales-orders/${item.orderId}`;
 
                 // Pre-filled WhatsApp texts
                 const vendorPhone = item.vendorPhone
@@ -377,19 +429,59 @@ export function CustomerOrderPipeline() {
                       </div>
                     </TableCell>
 
+                    {/* Customer Payment Status */}
+                    <TableCell>
+                      {item.customerId ? (
+                        <CustomerPaymentStatusSelect
+                          customerId={item.customerId}
+                          customerName={item.customerName}
+                          ledgerSummary={ledgerSummaries?.get(item.customerId)}
+                        />
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+
                     {/* Assigned Vendor */}
                     <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-xs text-slate-800 flex items-center gap-1">
-                          <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
-                          <span>{item.vendorName}</span>
-                        </span>
-                        {item.vendorCode && (
-                          <span className="font-mono text-[11px] text-muted-foreground">
-                            {item.vendorCode}
+                      {item.isVendorAssigned ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                            <span>{item.vendorName}</span>
                           </span>
-                        )}
-                      </div>
+                          {item.vendorCode && (
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              {item.vendorCode}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge
+                            variant="outline"
+                            className="border-amber-300 bg-amber-50 text-amber-800 font-semibold gap-1 text-[11px] py-0.5"
+                          >
+                            <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0" />
+                            <span>Unassigned Yet</span>
+                          </Badge>
+                          {item.orderType === "quote" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssignQuoteModal({
+                                  quoteId: item.orderId,
+                                  quoteNo: item.orderNo,
+                                  currentPromisedDate: item.customerDeadline,
+                                });
+                              }}
+                              className="text-[10px] font-semibold text-primary hover:underline"
+                            >
+                              + Assign Vendor
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </TableCell>
 
                     {/* Vendor Deadline */}
@@ -408,7 +500,7 @@ export function CustomerOrderPipeline() {
                       )}
                     </TableCell>
 
-                    {/* Customer Deadline */}
+                    {/* Customer Deadline / Promised Delivery */}
                     <TableCell>
                       {item.customerDeadline ? (
                         <div className="flex flex-col gap-0.5">
@@ -416,11 +508,11 @@ export function CustomerOrderPipeline() {
                             {formatDate(item.customerDeadline)}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
-                            Client commitment
+                            Promised to client
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Not set</span>
+                        <span className="text-xs text-amber-700 italic font-medium">Not set</span>
                       )}
                     </TableCell>
 
@@ -476,6 +568,17 @@ export function CustomerOrderPipeline() {
             </TableBody>
           </Table>
         </DataTableShell>
+      )}
+
+      {assignQuoteModal && (
+        <AssignQuoteVendorDialog
+          open={!!assignQuoteModal}
+          onOpenChange={(o) => !o && setAssignQuoteModal(null)}
+          quoteId={assignQuoteModal.quoteId}
+          quoteNo={assignQuoteModal.quoteNo}
+          currentPromisedDate={assignQuoteModal.currentPromisedDate}
+          onSuccess={() => refetch()}
+        />
       )}
     </div>
   );

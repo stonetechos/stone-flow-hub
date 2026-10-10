@@ -724,7 +724,17 @@
     "contactPerson": "Contact Person's Name",
     "contactPersonHint": "Key person or representative",
     "companyName": "Firm / Company Name",
-    "companyNameHint": "Business or enterprise name"
+    "companyNameHint": "Business or enterprise name",
+    "paymentStatus": "Payment Status",
+    "paymentPending": "Payment Pending",
+    "partPaymentReceived": "Part Payment Received",
+    "fullPaymentReceived": "Full Payment Received",
+    "paymentReceived": "Advance / Payment Received",
+    "vendorAssignment": "Vendor Assignment",
+    "unassignedYet": "Unassigned Yet",
+    "promisedDelivery": "Promised Delivery",
+    "promisedDeliveryDate": "Promised Delivery Date",
+    "assignVendor": "Assign Vendor"
   },
   "enquiries": {
     "searchPlaceholder": "Search by enquiry no, requirement, or notes…",

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart } from "lucide-react";
+import { Plus, ShoppingCart, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -63,6 +63,7 @@ function SalesOrdersPage() {
       { key: "project", label: "Project" },
       { key: "quote", label: "Quote" },
       { key: "date", label: "Order date" },
+      { key: "deliveryDate", label: "Promised Delivery" },
       { key: "status", label: "Status" },
     ],
     [],
@@ -162,6 +163,9 @@ function SalesOrdersPage() {
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("quote") && <TableHead>Quote</TableHead>}
                 {!isHidden("date") && <TableHead>Order date</TableHead>}
+                {!isHidden("deliveryDate") && (
+                  <TableHead className="w-40">Promised Delivery</TableHead>
+                )}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
@@ -186,6 +190,18 @@ function SalesOrdersPage() {
                     <TableCell className="font-mono text-xs">{r.quote?.quote_no ?? "—"}</TableCell>
                   )}
                   {!isHidden("date") && <TableCell>{r.order_date}</TableCell>}
+                  {!isHidden("deliveryDate") && (
+                    <TableCell className="text-xs">
+                      {r.delivery_date ? (
+                        <span className="inline-flex items-center gap-1 font-mono text-slate-700">
+                          <Calendar className="h-3 w-3 text-slate-400" />
+                          {r.delivery_date}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground italic">—</span>
+                      )}
+                    </TableCell>
+                  )}
                   {!isHidden("status") && (
                     <TableCell>
                       <StatusPill status={r.status} />

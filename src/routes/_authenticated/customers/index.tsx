@@ -3,6 +3,7 @@ import { dispatchSystemNotification } from "@/lib/notifications/systemNotificati
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Plus,
   Loader2,
@@ -19,14 +20,21 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
 import type { ParsedVoiceCustomer } from "@/lib/customers/voice-parser";
 
-import { toast } from "sonner";
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
 import { CustomerOrderPipeline } from "@/components/customers/CustomerOrderPipeline";
 import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   getCustomerResponseStatus,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
+import {
+  CUSTOMER_PAYMENT_STATUS_CONFIG,
+  getCustomerPaymentStatus,
+  type CustomerPaymentStatus,
+} from "@/lib/customers/payment-status";
+import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
+import { CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -121,6 +129,7 @@ function CustomersPage() {
   const [pageSize, setPageSize] = useState(25);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
   useEffect(() => {
     if (urlTab === "pipeline" || urlTab === "directory") {
@@ -135,6 +144,12 @@ function CustomersPage() {
     queryFn: () => listCustomers(dq),
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
+  });
+
+  const ledgerQuery = useQuery({
+    queryKey: ["customer-ledger-summaries"],
+    queryFn: () => listCustomerLedgerSummaries(),
+    staleTime: 30_000,
   });
 
   useEffect(() => {
@@ -153,7 +168,7 @@ function CustomersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [dq, statusFilter, typeFilter]);
+  }, [dq, statusFilter, typeFilter, paymentFilter]);
 
   useEffect(() => {
     if (!edit) return;
@@ -183,8 +198,31 @@ function CustomersPage() {
     if (typeFilter !== "all") {
       list = list.filter((c) => c.customer_type === typeFilter);
     }
+    if (paymentFilter !== "all") {
+      list = list.filter(
+        (c) => getCustomerPaymentStatus(c, ledgerQuery.data?.get(c.id)) === paymentFilter,
+      );
+    }
     return list;
-  }, [query.data, statusFilter, typeFilter]);
+  }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data]);
+
+  const paymentCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: (query.data ?? []).length,
+      payment_pending: 0,
+      part_payment_received: 0,
+      full_payment_received: 0,
+      payment_received: 0,
+    };
+    for (const c of query.data ?? []) {
+      const st = getCustomerPaymentStatus(c, ledgerQuery.data?.get(c.id));
+      if (st in counts) {
+        counts[st] = (counts[st] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [query.data, ledgerQuery.data]);
+
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   const openCreate = () => {
@@ -275,6 +313,93 @@ function CustomersPage() {
         <CustomerOrderPipeline />
       ) : (
         <>
+          {/* Quick Payment Status Sub-Tabs / Filter Bar */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3">
+            <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
+              <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+              <span>Payment Status:</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("all");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
+                paymentFilter === "all"
+                  ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+              )}
+            >
+              All ({paymentCounts.all})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("payment_pending");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                paymentFilter === "payment_pending"
+                  ? "bg-rose-700 text-white border-rose-700 shadow-2xs font-semibold"
+                  : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+              Payment Pending ({paymentCounts.payment_pending})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("part_payment_received");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                paymentFilter === "part_payment_received"
+                  ? "bg-amber-700 text-white border-amber-700 shadow-2xs font-semibold"
+                  : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Part Payment Received ({paymentCounts.part_payment_received})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("full_payment_received");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                paymentFilter === "full_payment_received"
+                  ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Full Payment Received ({paymentCounts.full_payment_received})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("payment_received");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                paymentFilter === "payment_received"
+                  ? "bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold"
+                  : "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
+              Advance / Rcvd ({paymentCounts.payment_received})
+            </button>
+          </div>
+
           <DataToolbar
             count={rows.length}
             search={q}
@@ -304,6 +429,36 @@ function CustomersPage() {
                                 className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
                               />
                               <span>{cfg.shortLabel}</span>
+                            </span>
+                          </SelectItem>
+                        );
+                      },
+                    )}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={paymentFilter}
+                  onValueChange={(v) => {
+                    setPaymentFilter(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-44 text-xs bg-white">
+                    <SelectValue placeholder="Payment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All payment statuses</SelectItem>
+                    {(Object.keys(CUSTOMER_PAYMENT_STATUS_CONFIG) as CustomerPaymentStatus[]).map(
+                      (key) => {
+                        const cfg = CUSTOMER_PAYMENT_STATUS_CONFIG[key];
+                        return (
+                          <SelectItem key={key} value={key}>
+                            <span className="flex items-center gap-1.5">
+                              <span
+                                className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
+                              />
+                              <span>{cfg.label}</span>
                             </span>
                           </SelectItem>
                         );
@@ -379,6 +534,7 @@ function CustomersPage() {
                     <TableHead>{t("common.name", "Name")}</TableHead>
                     <TableHead className="w-40">Customer Type</TableHead>
                     <TableHead className="w-52">CRM · Response Status</TableHead>
+                    <TableHead className="w-52">Payment Status</TableHead>
                     <TableHead className="w-48">Contact</TableHead>
                     <TableHead className="w-12" />
                   </TableRow>
@@ -456,6 +612,14 @@ function CustomersPage() {
                             isActive={c.is_active}
                             workflowState={c.workflow_state}
                             externalRef={c.external_ref}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <CustomerPaymentStatusSelect
+                            customerId={c.id}
+                            customerName={c.name}
+                            workflowState={c.workflow_state}
+                            ledgerSummary={ledgerQuery.data?.get(c.id)}
                           />
                         </TableCell>
                         <TableCell>

@@ -18,10 +18,11 @@ export type DeadlineHealth =
 
 export interface OrderPipelineItem {
   id: string;
-  orderType: "po" | "so";
+  orderType: "po" | "so" | "quote";
   orderNo: string;
   orderId: string;
   orderDate: string;
+  isVendorAssigned?: boolean;
 
   // Customer details
   customerId: string | null;
@@ -155,7 +156,7 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
     .from("sales_orders")
     .select(
       `
-      id, so_no, status, order_date, delivery_date, notes,
+      id, so_no, quote_id, status, order_date, delivery_date, notes,
       customer:customers!sales_orders_customer_id_fkey(id, name, customer_code, primary_phone, whatsapp, external_ref),
       project:projects!sales_orders_project_id_fkey(id, name, project_code),
       items:sales_order_items(id, product_name, description, quantity, fulfilment)
@@ -165,10 +166,24 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
     .order("created_at", { ascending: false })
     .limit(100);
 
-  const [poResult, soResult] = await Promise.all([poPromise, soPromise]);
+  // 3. Fetch Accepted Quotes (approved customer orders awaiting production/dispatch)
+  const quotePromise = db
+    .from("quotes")
+    .select(
+      `
+      id, quote_no, status, created_at, valid_until, notes, workflow_state,
+      customer:customers!quotes_customer_id_fkey(id, name, customer_code, primary_phone, whatsapp, external_ref),
+      project:projects!quotes_project_id_fkey(id, name, project_code)
+    `,
+    )
+    .eq("status", "accepted")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const [poResult, soResult, quoteResult] = await Promise.all([poPromise, soPromise, quotePromise]);
 
   const pipeline: OrderPipelineItem[] = [];
-  const coveredSoNos = new Set<string>();
+  const coveredQuoteIds = new Set<string>();
 
   // Process Purchase Orders
   if (poResult.data) {
@@ -221,7 +236,7 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
   // Process Sales Orders (especially those with assigned fabricators or awaiting production)
   if (soResult.data) {
     for (const so of soResult.data) {
-      coveredSoNos.add(so.so_no);
+      if (so.quote_id) coveredQuoteIds.add(so.quote_id);
       const rawCustomer = so.customer;
       const normCustomer = normalizeCustomerRow(rawCustomer);
       const items = (so.items || []) as Array<{
@@ -256,6 +271,7 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
             orderNo: `${so.so_no} · ${item.product_name || "Custom Stone"}`,
             orderId: so.id,
             orderDate: so.order_date,
+            isVendorAssigned: true,
 
             customerId: rawCustomer?.id ?? null,
             customerName: normCustomer.name || "Client Order",
@@ -291,6 +307,7 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
           orderNo: so.so_no,
           orderId: so.id,
           orderDate: so.order_date,
+          isVendorAssigned: false,
 
           customerId: rawCustomer?.id ?? null,
           customerName: normCustomer.name || "Client Order",
@@ -315,6 +332,59 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
           projectName: so.project?.name ?? null,
         });
       }
+    }
+  }
+
+  // Process Accepted Quotations (Approved orders awaiting production conversion / assignment)
+  if (quoteResult.data) {
+    for (const quote of quoteResult.data) {
+      if (coveredQuoteIds.has(quote.id)) continue; // Already tracked under its sales order
+
+      const rawCustomer = quote.customer;
+      const normCustomer = normalizeCustomerRow(rawCustomer);
+      const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
+
+      const vendorId = (wf.assigned_vendor_id as string | undefined) || null;
+      const vendorName =
+        (wf.assigned_vendor_name as string | undefined) ||
+        (vendorId ? "Assigned Vendor" : "Unassigned Yet");
+      const isVendorAssigned = Boolean(vendorId && vendorName && vendorName !== "Unassigned Yet");
+
+      const customerDeadline =
+        (wf.promised_delivery_date as string | undefined) || quote.valid_until || null;
+
+      const { bufferDays, health } = calculateDeadlineHealth(null, customerDeadline, "accepted");
+
+      pipeline.push({
+        id: `quote-${quote.id}`,
+        orderType: "quote",
+        orderNo: quote.quote_no || `QUO-${quote.id.slice(0, 8)}`,
+        orderId: quote.id,
+        orderDate: quote.created_at,
+        isVendorAssigned,
+
+        customerId: rawCustomer?.id ?? null,
+        customerName: normCustomer.name || "Client Order",
+        customerCode: normCustomer.customer_code || null,
+        contactPerson: normCustomer.contact_person || null,
+        firmName: normCustomer.company_name || null,
+        customerPhone: normCustomer.primary_phone || normCustomer.whatsapp || null,
+
+        vendorId,
+        vendorName,
+        vendorCode: null,
+        vendorPhone: null,
+
+        vendorDeadline: null,
+        customerDeadline,
+        bufferDays,
+        health,
+
+        status: "Accepted · Awaiting Fulfilment",
+        notes: quote.notes,
+        projectCode: quote.project?.project_code ?? null,
+        projectName: quote.project?.name ?? null,
+      });
     }
   }
 

@@ -1,7 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, FileText, Trash2, Scale } from "lucide-react";
+import {
+  Plus,
+  Loader2,
+  FileText,
+  Trash2,
+  Scale,
+  Building2,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
+import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
+import { cn } from "@/lib/utils";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -88,12 +102,19 @@ function QuotesPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
 
+  const [vendorFilter, setVendorFilter] = useState<"all" | "accepted" | "unassigned" | "assigned">(
+    "all",
+  );
+  const [assigningQuote, setAssigningQuote] = useState<QuoteListItem | null>(null);
+
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "No.", required: true },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
       { key: "status", label: "Status" },
+      { key: "vendor", label: "Vendor Assignment" },
+      { key: "deliveryDate", label: "Promised Delivery" },
       { key: "total", label: "Total" },
       { key: "valid", label: "Valid until" },
     ],
@@ -110,10 +131,45 @@ function QuotesPage() {
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
-  const rows = (query.data ?? []).filter(
-    (r) => statusFilter === "all" || r.status === statusFilter,
-  );
-  useEffect(() => setPage(1), [dq, statusFilter]);
+
+  const quoteCounts = useMemo(() => {
+    const all = query.data ?? [];
+    let accepted = 0;
+    let unassigned = 0;
+    let assigned = 0;
+    for (const r of all) {
+      if (r.status === "accepted") {
+        accepted++;
+        const a = parseQuoteVendorAssignment(r);
+        if (a.isAssigned) {
+          assigned++;
+        } else {
+          unassigned++;
+        }
+      }
+    }
+    return { all: all.length, accepted, unassigned, assigned };
+  }, [query.data]);
+
+  const rows = useMemo(() => {
+    let list = query.data ?? [];
+    if (vendorFilter === "accepted") {
+      list = list.filter((r) => r.status === "accepted");
+    } else if (vendorFilter === "unassigned") {
+      list = list.filter(
+        (r) => r.status === "accepted" && !parseQuoteVendorAssignment(r).isAssigned,
+      );
+    } else if (vendorFilter === "assigned") {
+      list = list.filter(
+        (r) => r.status === "accepted" && parseQuoteVendorAssignment(r).isAssigned,
+      );
+    } else if (statusFilter !== "all") {
+      list = list.filter((r) => r.status === statusFilter);
+    }
+    return list;
+  }, [query.data, vendorFilter, statusFilter]);
+
+  useEffect(() => setPage(1), [dq, statusFilter, vendorFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   function toggleCompare(id: string) {
@@ -141,6 +197,78 @@ function QuotesPage() {
   return (
     <div>
       <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
+
+      {/* Quick Order / Vendor Sub-Tabs Filter */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3">
+        <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span>Orders & Fulfilment:</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setVendorFilter("all");
+            setStatusFilter("all");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
+            vendorFilter === "all" && statusFilter === "all"
+              ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+          )}
+        >
+          All Quotes ({quoteCounts.all})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setVendorFilter("accepted");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            vendorFilter === "accepted"
+              ? "bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold"
+              : "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+          )}
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 text-sky-600" />
+          Approved / Accepted Orders ({quoteCounts.accepted})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setVendorFilter("unassigned");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            vendorFilter === "unassigned"
+              ? "bg-rose-700 text-white border-rose-700 shadow-2xs font-semibold"
+              : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+          )}
+        >
+          <AlertCircle className="h-3.5 w-3.5 text-rose-500" />⚠ Unassigned Yet (
+          {quoteCounts.unassigned})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setVendorFilter("assigned");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            vendorFilter === "assigned"
+              ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
+              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+          )}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          Assigned to Vendor ({quoteCounts.assigned})
+        </button>
+      </div>
 
       <DataToolbar
         count={rows.length}
@@ -187,7 +315,7 @@ function QuotesPage() {
       />
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={6} />
+        <SkeletonTable rows={6} columns={8} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -225,55 +353,152 @@ function QuotesPage() {
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("vendor") && <TableHead className="w-48">Vendor Assignment</TableHead>}
+                {!isHidden("deliveryDate") && (
+                  <TableHead className="w-40">Promised Delivery</TableHead>
+                )}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
                 {!isHidden("valid") && <TableHead>Valid until</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pageRows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={compareIds.has(r.id)}
-                      onCheckedChange={() => toggleCompare(r.id)}
-                      aria-label={`Select ${r.quote_no} for comparison`}
-                    />
-                  </TableCell>
-                  {!isHidden("no") && (
-                    <TableCell className="font-mono text-xs">
-                      <Link
-                        to="/quotes/$quoteId"
-                        params={{ quoteId: r.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {r.quote_no}
-                      </Link>
-                    </TableCell>
-                  )}
-                  {!isHidden("project") && (
-                    <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
-                  )}
-                  {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
-                  {!isHidden("status") && (
+              {pageRows.map((r) => {
+                const assignment = parseQuoteVendorAssignment(r);
+                return (
+                  <TableRow key={r.id}>
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {r.status}
-                      </Badge>
+                      <Checkbox
+                        checked={compareIds.has(r.id)}
+                        onCheckedChange={() => toggleCompare(r.id)}
+                        aria-label={`Select ${r.quote_no} for comparison`}
+                      />
                     </TableCell>
-                  )}
-                  {!isHidden("total") && (
-                    <TableCell className="text-right tabular-nums">{formatInr(r.total)}</TableCell>
-                  )}
-                  {!isHidden("valid") && <TableCell>{r.valid_until ?? "—"}</TableCell>}
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })}
-                      onDelete={() => setToDelete(r)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+                    {!isHidden("no") && (
+                      <TableCell className="font-mono text-xs">
+                        <Link
+                          to="/quotes/$quoteId"
+                          params={{ quoteId: r.id }}
+                          className="text-primary hover:underline"
+                        >
+                          {r.quote_no}
+                        </Link>
+                      </TableCell>
+                    )}
+                    {!isHidden("project") && (
+                      <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
+                    )}
+                    {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
+                    {!isHidden("status") && (
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "capitalize font-medium",
+                            r.status === "accepted" &&
+                              "bg-emerald-50 text-emerald-700 border-emerald-200",
+                            r.status === "sent" && "bg-sky-50 text-sky-700 border-sky-200",
+                            r.status === "draft" && "bg-slate-50 text-slate-700 border-slate-200",
+                            r.status === "rejected" && "bg-rose-50 text-rose-700 border-rose-200",
+                          )}
+                        >
+                          {r.status}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {!isHidden("vendor") && (
+                      <TableCell>
+                        {assignment.isAssigned ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors text-left group cursor-pointer"
+                            title="Click to view or change assigned vendor"
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="font-semibold truncate max-w-[130px]">
+                              {assignment.vendorName}
+                            </span>
+                            <Building2 className="h-3 w-3 text-emerald-600 opacity-60 group-hover:opacity-100 shrink-0" />
+                          </button>
+                        ) : r.status === "accepted" ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 transition-colors shadow-2xs group cursor-pointer"
+                            title="Accepted order is not assigned to a vendor yet — Click to assign"
+                          >
+                            <AlertCircle className="h-3.5 w-3.5 text-rose-600 shrink-0 animate-pulse" />
+                            <span>Unassigned Yet</span>
+                            <span className="text-[10px] bg-rose-200/80 px-1 py-0.2 rounded text-rose-800 font-bold ml-0.5 group-hover:bg-rose-300">
+                              + Assign
+                            </span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors group cursor-pointer"
+                            title="Assign vendor"
+                          >
+                            <span>—</span>
+                            <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                              + Assign
+                            </span>
+                          </button>
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("deliveryDate") && (
+                      <TableCell className="text-xs">
+                        {assignment.promisedDeliveryDate ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1 text-slate-700 hover:text-primary hover:underline font-mono cursor-pointer"
+                            title="Click to change promised delivery date"
+                          >
+                            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            <span>{assignment.promisedDeliveryDate.slice(0, 10)}</span>
+                          </button>
+                        ) : r.status === "accepted" ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded transition-colors cursor-pointer"
+                            title="Promised delivery date missing — Click to set"
+                          >
+                            <Calendar className="h-3 w-3 text-amber-600 shrink-0" />
+                            <span>+ Set Date</span>
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {!isHidden("total") && (
+                      <TableCell className="text-right tabular-nums">
+                        {formatInr(r.total)}
+                      </TableCell>
+                    )}
+                    {!isHidden("valid") && <TableCell>{r.valid_until ?? "—"}</TableCell>}
+                    <TableCell>
+                      <RowActions
+                        extra={
+                          <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
+                            <Building2 className="mr-2 h-4 w-4" />
+                            Assign Vendor / Delivery Date
+                          </DropdownMenuItem>
+                        }
+                        onEdit={() =>
+                          nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
+                        }
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </DataTableShell>
@@ -304,6 +529,23 @@ function QuotesPage() {
           quoteIds={Array.from(compareIds)}
           onOpenChange={(o) => {
             if (!o) setCompareOpen(false);
+          }}
+        />
+      )}
+
+      {assigningQuote && (
+        <AssignQuoteVendorDialog
+          open={!!assigningQuote}
+          onOpenChange={(o) => {
+            if (!o) setAssigningQuote(null);
+          }}
+          quoteId={assigningQuote.id}
+          quoteNo={assigningQuote.quote_no}
+          currentVendorId={parseQuoteVendorAssignment(assigningQuote).vendorId}
+          currentVendorName={parseQuoteVendorAssignment(assigningQuote).vendorName}
+          currentPromisedDate={parseQuoteVendorAssignment(assigningQuote).promisedDeliveryDate}
+          onSuccess={() => {
+            invalidateQuote(qc);
           }}
         />
       )}
