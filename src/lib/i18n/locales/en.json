@@ -359,6 +359,14 @@
     "dispatchesToday": "{{count}} dispatch(es) today",
     "briefQuiet": "Everything is quiet. Production is operating normally.",
     "briefNoUrgent": "No urgent tasks. A good moment to plan next week.",
+    "briefPipeline": "Pipeline: ₹{{amount}} active across {{count}} quote(s) in play.",
+    "briefReceivables": "Receivables: ₹{{amount}} outstanding balance pending customer collection.",
+    "briefEnquiries": "{{count}} active CRM inquiries currently in progress.",
+    "briefFollowups": "{{count}} client follow-up(s) scheduled today{{overdue}}.",
+    "briefOrdersToStart": "{{count}} sales order(s) confirmed and ready to start production.",
+    "briefDeliveriesToday": "{{count}} dispatch delivery(ies) scheduled for today.",
+    "briefCustomers": "{{count}} registered active customer accounts in network directory.",
+    "system": "System",
     "executiveBrief": "Executive brief",
     "radar": {
       "critical": "Critical",
@@ -861,7 +869,17 @@
     "searchPlaceholder": "File name…",
     "allEntities": "All entities",
     "allFolders": "All folders",
-    "noDocumentsMatch": "No documents match your filters."
+    "noDocumentsMatch": "No documents match your filters.",
+    "shareWhatsapp": "Share on WhatsApp for Business (with PDF)",
+    "whatsappOptions": "WhatsApp Destination Options",
+    "sendViaWhatsapp": "Send Document via WhatsApp",
+    "whatsappApp": "WhatsApp for Business (App)",
+    "whatsappAppDesc": "Opens desktop app + prepares PDF",
+    "whatsappWeb": "WhatsApp Web",
+    "whatsappWebDesc": "Opens web.whatsapp.com directly",
+    "whatsappStandard": "Standard Link (wa.me)",
+    "whatsappStandardDesc": "Browser click-to-chat redirect",
+    "customizeMessagePhone": "Customize Message & Phone..."
   },
   "reports": {
     "downloaded": "Downloaded",
@@ -1372,6 +1390,7 @@
       "agency": "Agency Payments"
     },
     "columns": {
+      "receiptNo": "Receipt #",
       "invoice": "Invoice",
       "method": "Method",
       "reference": "Reference",
@@ -2333,5 +2352,66 @@
   "Accounts": "Accounts",
   "Logistics": "Logistics",
   "Production": "Production",
-  "Maintenance": "Maintenance"
+  "Maintenance": "Maintenance",
+  "receipts": {
+    "receipt": "Receipt",
+    "receiptNo": "Receipt #",
+    "customerReceipts": "Customer Receipts",
+    "customerReceiptsSubtitle": "Advance receipts, invoice payments, TDS, bank charges and refunds — with full allocation history.",
+    "searchPlaceholder": "Search receipt #, UTR, cheque…",
+    "received": "Received",
+    "unallocated": "Unallocated",
+    "newReceipt": "New receipt",
+    "emptyTitle": "No receipts yet",
+    "emptyMessage": "Record your first customer receipt to start tracking payments and ledger balances.",
+    "notFound": "Receipt not found",
+    "receivedOn": "Received on",
+    "method": "Method",
+    "bank": "Bank",
+    "account": "Account",
+    "utrRef": "UTR / Ref",
+    "chequeNo": "Cheque #",
+    "chequeDate": "Cheque date",
+    "gross": "Gross",
+    "tds": "TDS",
+    "bankCharges": "Bank charges",
+    "net": "Net",
+    "allocated": "Allocated",
+    "allocations": "Allocations",
+    "unallocatedAdvanceNote": "Unallocated advance — apply to invoices from the customer ledger.",
+    "applied": "Applied",
+    "void": "Void",
+    "voidTitle": "Void receipt {{no}}?",
+    "voidDescription": "Voiding removes this receipt from the customer ledger. Every invoice it was allocated to will be recalculated and may go back to unpaid or partially paid. This cannot be undone from here.",
+    "voidReceipt": "Void receipt"
+  },
+  "insights": {
+    "inactiveProfile": "{{name}} — 0 orders · Inactive client profile ({{level}})",
+    "ordersInactiveDays": "{{name}} — {{orders}} orders ({{amount}}), inactive {{days}}d ({{level}})",
+    "balanceOverdue": "{{name}} — {{amount}} balance ({{overdue}}{{level}})",
+    "actionReview": "Review",
+    "actionFollowUp": "Follow up",
+    "actionCollect": "Collect",
+    "levels": {
+      "watch": "Watch",
+      "risk": "Risk",
+      "critical": "Critical",
+      "healthy": "Healthy"
+    }
+  },
+  "activity": {
+    "actions": {
+      "updated": "updated",
+      "created": "created",
+      "deleted": "deleted",
+      "voided": "voided"
+    },
+    "summaries": {
+      "customersUpdated": "customers updated",
+      "receiptsCreated": "receipts created",
+      "invoicesCreated": "invoices created",
+      "quotesCreated": "quotes created",
+      "ordersCreated": "orders created"
+    }
+  }
 }

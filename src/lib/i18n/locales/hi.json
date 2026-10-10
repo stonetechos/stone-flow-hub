@@ -359,6 +359,14 @@
     "dispatchesToday": "{{count}} आज का डिस्पैच",
     "briefQuiet": "सब कुछ शांत है। उत्पादन सामान्य रूप से चल रहा है।",
     "briefNoUrgent": "कोई तत्काल कार्य नहीं। अगले सप्ताह की योजना बनाने का अच्छा समय।",
+    "briefPipeline": "पाइपलाइन: ₹{{amount}} — कुल {{count}} उद्धरण सक्रिय हैं।",
+    "briefReceivables": "प्राप्य: ₹{{amount}} ग्राहक वसूली हेतु शेष राशि।",
+    "briefEnquiries": "{{count}} सक्रिय CRM पूछताछ प्रगति पर हैं।",
+    "briefFollowups": "आज {{count}} ग्राहक फॉलो-अप निर्धारित हैं{{overdue}}।",
+    "briefOrdersToStart": "{{count}} बिक्री आदेश स्वीकृत और उत्पादन के लिए तैयार हैं।",
+    "briefDeliveriesToday": "आज के लिए {{count}} डिस्पैच डिलीवरी निर्धारित हैं।",
+    "briefCustomers": "नेटवर्क डायरेक्टरी में {{count}} पंजीकृत सक्रिय ग्राहक खाते।",
+    "system": "सिस्टम",
     "executiveBrief": "कार्यकारी संक्षिप्त विवरण",
     "radar": {
       "critical": "अति आवश्यक",
@@ -873,7 +881,17 @@
     "searchPlaceholder": "फ़ाइल का नाम…",
     "allEntities": "सभी इकाइयां",
     "allFolders": "सभी फ़ोल्डर",
-    "noDocumentsMatch": "कोई दस्तावेज़ आपके फ़िल्टर से मेल नहीं खाता।"
+    "noDocumentsMatch": "कोई दस्तावेज़ आपके फ़िल्टर से मेल नहीं खाता।",
+    "shareWhatsapp": "व्हाट्सएप पर साझा करें (PDF सहित)",
+    "whatsappOptions": "व्हाट्सएप विकल्प",
+    "sendViaWhatsapp": "व्हाट्सएप द्वारा दस्तावेज़ भेजें",
+    "whatsappApp": "व्हाट्सएप बिजनेस (ऐप)",
+    "whatsappAppDesc": "डेस्कटॉप ऐप खोलता है + PDF तैयार करता है",
+    "whatsappWeb": "व्हाट्सएप वेब (ब्राउज़र)",
+    "whatsappWebDesc": "web.whatsapp.com सीधे खोलता है",
+    "whatsappStandard": "मानक लिंक (wa.me)",
+    "whatsappStandardDesc": "ब्राउज़र क्लिक-टू-चैट रीडायरेक्ट",
+    "customizeMessagePhone": "संदेश और फ़ोन नंबर कस्टमाइज़ करें..."
   },
   "reports": {
     "downloaded": "डाउनलोड किया गया",
@@ -1172,7 +1190,7 @@
       "code": "कोड",
       "company": "कंपनी",
       "city": "शहर",
-      "gst": "GST",
+      "gst": "जीएसटी",
       "terms": "भुगतान शर्तें"
     }
   },
@@ -1384,6 +1402,7 @@
       "agency": "एजेंसी भुगतान"
     },
     "columns": {
+      "receiptNo": "रसीद क्र.",
       "invoice": "चालान",
       "method": "तरीका",
       "reference": "संदर्भ",
@@ -2346,5 +2365,66 @@
   "Production": "उत्पादन",
   "Maintenance": "रखरखाव",
   "Search by name, phone, city…": "नाम, फ़ोन, शहर द्वारा खोजें…",
-  "Search by name, phone, city...": "नाम, फ़ोन, शहर द्वारा खोजें…"
+  "Search by name, phone, city...": "नाम, फ़ोन, शहर द्वारा खोजें…",
+  "receipts": {
+    "receipt": "रसीद",
+    "receiptNo": "रसीद क्र.",
+    "customerReceipts": "ग्राहक रसीदें",
+    "customerReceiptsSubtitle": "अग्रिम रसीदें, चालान भुगतान, टीडीएस, बैंक शुल्क और रिफंड — पूर्ण आवंटन इतिहास के साथ।",
+    "searchPlaceholder": "रसीद #, UTR, चेक द्वारा खोजें…",
+    "received": "प्राप्त",
+    "unallocated": "अनावंटित",
+    "newReceipt": "नई रसीद",
+    "emptyTitle": "अभी तक कोई रसीद नहीं",
+    "emptyMessage": "भुगतान और बहीखाता शेष ट्रैक करने के लिए अपनी पहली ग्राहक रसीद दर्ज करें।",
+    "notFound": "रसीद नहीं मिली",
+    "receivedOn": "प्राप्ति तिथि",
+    "method": "भुगतान विधि",
+    "bank": "बैंक",
+    "account": "खाता",
+    "utrRef": "UTR / संदर्भ",
+    "chequeNo": "चेक #",
+    "chequeDate": "चेक तिथि",
+    "gross": "सकल राशि",
+    "tds": "टीडीएस",
+    "bankCharges": "बैंक शुल्क",
+    "net": "शुद्ध राशि",
+    "allocated": "आवंटित",
+    "allocations": "आवंटन सूची",
+    "unallocatedAdvanceNote": "अनावंटित अग्रिम — ग्राहक खाताबही से चालान पर लागू करें।",
+    "applied": "लागू राशि",
+    "void": "रद्द करें",
+    "voidTitle": "रसीद {{no}} रद्द करें?",
+    "voidDescription": "रद्द करने से यह रसीद ग्राहक बहीखाते से हट जाती है। आवंटित चालानों की पुनः गणना की जाएगी।",
+    "voidReceipt": "रसीद रद्द करें"
+  },
+  "insights": {
+    "inactiveProfile": "{{name}} — 0 आदेश · निष्क्रिय ग्राहक प्रोफ़ाइल ({{level}})",
+    "ordersInactiveDays": "{{name}} — {{orders}} आदेश ({{amount}}), {{days}} दिनों से निष्क्रिय ({{level}})",
+    "balanceOverdue": "{{name}} — {{amount}} शेष राशि {{overdue}}({{level}})",
+    "actionReview": "समीक्षा करें",
+    "actionFollowUp": "फॉलो-अप",
+    "actionCollect": "वसूली करें",
+    "levels": {
+      "watch": "निगरानी",
+      "risk": "जोखिम",
+      "critical": "गंभीर",
+      "healthy": "स्वस्थ"
+    }
+  },
+  "activity": {
+    "actions": {
+      "updated": "अपडेट किया गया",
+      "created": "दर्ज किया गया",
+      "deleted": "हटाया गया",
+      "voided": "रद्द किया गया"
+    },
+    "summaries": {
+      "customersUpdated": "ग्राहक विवरण अपडेट",
+      "receiptsCreated": "रसीद दर्ज की गई",
+      "invoicesCreated": "चालान बनाया गया",
+      "quotesCreated": "उद्धरण बनाया गया",
+      "ordersCreated": "बिक्री आदेश बनाया गया"
+    }
+  }
 }

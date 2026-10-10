@@ -6,6 +6,7 @@
  * routes every send through the Communication engine.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   ChevronDown,
@@ -56,6 +57,7 @@ interface Props {
 }
 
 export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, compact }: Props) {
+  const { t } = useTranslation();
   const [sendOpen, setSendOpen] = useState<"email" | "whatsapp" | null>(null);
   const [busy, setBusy] = useState<"preview" | "print" | "download" | "whatsapp" | null>(null);
 
@@ -184,35 +186,39 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
           variant="outline"
           disabled={busy !== null}
           onClick={() => run("preview", previewPdf)}
-          title="Preview"
+          title={t("common.preview", "Preview")}
         >
           <Eye className="h-4 w-4" />
-          {label("Preview")}
+          {label(t("common.preview", "Preview"))}
         </Button>
         <Button
           size={size}
           variant="outline"
           disabled={busy !== null}
           onClick={() => run("print", printPdf)}
-          title="Print"
+          title={t("common.print", "Print")}
         >
           <Printer className="h-4 w-4" />
-          {label("Print")}
+          {label(t("common.print", "Print"))}
         </Button>
         <Button
           size={size}
           variant="outline"
           disabled={busy !== null}
           onClick={() => run("download", downloadPdf)}
-          title="Download PDF"
+          title={t("common.downloadPdf", "Download PDF")}
         >
           <Download className="h-4 w-4" />
-          {label("Download PDF")}
+          {label(t("common.downloadPdf", "Download PDF"))}
         </Button>
         {!hideEmail && (
-          <Button size={size} onClick={() => setSendOpen("email")} title="Send Email">
+          <Button
+            size={size}
+            onClick={() => setSendOpen("email")}
+            title={t("common.sendEmail", "Send Email")}
+          >
             <Mail className="h-4 w-4" />
-            {label("Email")}
+            {label(t("common.email", "Email"))}
           </Button>
         )}
         {!hideWhatsapp && (
@@ -223,14 +229,18 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
               disabled={busy !== null}
               onClick={() => handleWhatsapp()}
               className={compact ? "" : "rounded-r-none border-r-0"}
-              title="Share on WhatsApp for Business (with PDF)"
+              title={t("documents.shareWhatsapp", "Share on WhatsApp for Business (with PDF)")}
             >
               {busy === "whatsapp" ? (
                 <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
               ) : (
                 <MessageCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               )}
-              {label(busy === "whatsapp" ? "Opening..." : "WhatsApp")}
+              {label(
+                busy === "whatsapp"
+                  ? t("common.opening", "Opening...")
+                  : t("common.whatsapp", "WhatsApp"),
+              )}
             </Button>
             {!compact && (
               <DropdownMenu>
@@ -240,46 +250,54 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
                     variant="outline"
                     disabled={busy !== null}
                     className="rounded-l-none px-2"
-                    title="WhatsApp Destination Options"
+                    title={t("documents.whatsappOptions", "WhatsApp Destination Options")}
                   >
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64">
                   <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    Send Document via WhatsApp
+                    {t("documents.sendViaWhatsapp", "Send Document via WhatsApp")}
                   </DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => handleWhatsapp("app")}>
                     <Laptop className="mr-2 h-4 w-4 text-emerald-600" />
                     <div className="flex flex-col">
-                      <span className="font-medium">WhatsApp for Business (App)</span>
+                      <span className="font-medium">
+                        {t("documents.whatsappApp", "WhatsApp for Business (App)")}
+                      </span>
                       <span className="text-[11px] text-muted-foreground">
-                        Opens desktop app + prepares PDF
+                        {t("documents.whatsappAppDesc", "Opens desktop app + prepares PDF")}
                       </span>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleWhatsapp("web")}>
                     <Globe className="mr-2 h-4 w-4 text-emerald-600" />
                     <div className="flex flex-col">
-                      <span className="font-medium">WhatsApp Web</span>
+                      <span className="font-medium">
+                        {t("documents.whatsappWeb", "WhatsApp Web")}
+                      </span>
                       <span className="text-[11px] text-muted-foreground">
-                        Opens web.whatsapp.com directly
+                        {t("documents.whatsappWebDesc", "Opens web.whatsapp.com directly")}
                       </span>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleWhatsapp("wa.me")}>
                     <ExternalLink className="mr-2 h-4 w-4 text-emerald-600" />
                     <div className="flex flex-col">
-                      <span className="font-medium">Standard Link (wa.me)</span>
+                      <span className="font-medium">
+                        {t("documents.whatsappStandard", "Standard Link (wa.me)")}
+                      </span>
                       <span className="text-[11px] text-muted-foreground">
-                        Browser click-to-chat redirect
+                        {t("documents.whatsappStandardDesc", "Browser click-to-chat redirect")}
                       </span>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setSendOpen("whatsapp")}>
                     <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
-                    <span>Customize Message & Phone...</span>
+                    <span>
+                      {t("documents.customizeMessagePhone", "Customize Message & Phone...")}
+                    </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

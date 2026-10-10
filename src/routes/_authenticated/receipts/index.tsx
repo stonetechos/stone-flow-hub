@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Plus, Wallet, MessageSquareText } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/_authenticated/receipts/")({
 });
 
 function ReceiptsListPage() {
+  const { t } = useTranslation();
   const [readerOpen, setReaderOpen] = useState(false);
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
@@ -42,16 +44,16 @@ function ReceiptsListPage() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: "Receipt #", required: true },
-      { key: "date", label: "Date" },
-      { key: "customer", label: "Customer" },
-      { key: "method", label: "Method" },
-      { key: "reference", label: "Reference" },
-      { key: "amount", label: "Amount" },
-      { key: "unallocated", label: "Unallocated" },
-      { key: "status", label: "Status" },
+      { key: "no", label: t("receipts.receiptNo", "Receipt #"), required: true },
+      { key: "date", label: t("common.date", "Date") },
+      { key: "customer", label: t("common.customer", "Customer") },
+      { key: "method", label: t("receipts.method", "Method") },
+      { key: "reference", label: t("receipts.reference", "Reference") },
+      { key: "amount", label: t("common.amount", "Amount") },
+      { key: "unallocated", label: t("receipts.unallocated", "Unallocated") },
+      { key: "status", label: t("common.status", "Status") },
     ],
-    [],
+    [t],
   );
 
   const query = useQuery({ queryKey: qk.receipts.list(dq), queryFn: () => listReceipts(dq) });
@@ -65,18 +67,22 @@ function ReceiptsListPage() {
   return (
     <div>
       <PageHeader
-        title="Customer Receipts"
-        subtitle="Advance receipts, invoice payments, TDS, bank charges and refunds — with full allocation history."
+        title={t("receipts.customerReceipts", "Customer Receipts")}
+        subtitle={t(
+          "receipts.customerReceiptsSubtitle",
+          "Advance receipts, invoice payments, TDS, bank charges and refunds — with full allocation history.",
+        )}
       />
 
       <DataToolbar
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Search receipt #, UTR, cheque…"
+        searchPlaceholder={t("receipts.searchPlaceholder", "Search receipt #, UTR, cheque…")}
         extra={
           <span className="hidden text-xs text-muted-foreground md:inline">
-            Received {formatInr(totalReceived)} · Unallocated {formatInr(totalUnalloc)}
+            {t("receipts.received", "Received")} {formatInr(totalReceived)} ·{" "}
+            {t("receipts.unallocated", "Unallocated")} {formatInr(totalUnalloc)}
           </span>
         }
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
@@ -91,11 +97,11 @@ function ReceiptsListPage() {
               onClick={() => setReaderOpen(true)}
             >
               <MessageSquareText className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Read UPI / SMS</span>
+              <span>{t("banking.readUpiSms", "Read UPI / SMS")}</span>
             </Button>
             <Button size="sm" className="h-8" asChild>
               <Link to="/receipts/new">
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> New receipt
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("receipts.newReceipt", "New receipt")}
               </Link>
             </Button>
           </div>
@@ -109,12 +115,15 @@ function ReceiptsListPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Wallet className="h-6 w-6" />}
-          title="No receipts yet"
-          message="Record your first customer receipt to start tracking payments and ledger balances."
+          title={t("receipts.emptyTitle", "No receipts yet")}
+          message={t(
+            "receipts.emptyMessage",
+            "Record your first customer receipt to start tracking payments and ledger balances.",
+          )}
           action={
             <Button asChild>
               <Link to="/receipts/new">
-                <Plus className="mr-2 h-4 w-4" /> New receipt
+                <Plus className="mr-2 h-4 w-4" /> {t("receipts.newReceipt", "New receipt")}
               </Link>
             </Button>
           }
@@ -138,16 +147,22 @@ function ReceiptsListPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>Receipt #</TableHead>}
-                {!isHidden("date") && <TableHead>Date</TableHead>}
-                {!isHidden("customer") && <TableHead>Customer</TableHead>}
-                {!isHidden("method") && <TableHead>Method</TableHead>}
-                {!isHidden("reference") && <TableHead>Reference</TableHead>}
-                {!isHidden("amount") && <TableHead className="text-right">Amount</TableHead>}
-                {!isHidden("unallocated") && (
-                  <TableHead className="text-right">Unallocated</TableHead>
+                {!isHidden("no") && <TableHead>{t("receipts.receiptNo", "Receipt #")}</TableHead>}
+                {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
+                {!isHidden("customer") && <TableHead>{t("common.customer", "Customer")}</TableHead>}
+                {!isHidden("method") && <TableHead>{t("receipts.method", "Method")}</TableHead>}
+                {!isHidden("reference") && (
+                  <TableHead>{t("receipts.reference", "Reference")}</TableHead>
                 )}
-                {!isHidden("status") && <TableHead>Status</TableHead>}
+                {!isHidden("amount") && (
+                  <TableHead className="text-right">{t("common.amount", "Amount")}</TableHead>
+                )}
+                {!isHidden("unallocated") && (
+                  <TableHead className="text-right">
+                    {t("receipts.unallocated", "Unallocated")}
+                  </TableHead>
+                )}
+                {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>

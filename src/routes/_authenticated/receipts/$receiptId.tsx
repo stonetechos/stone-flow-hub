@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Ban } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/_authenticated/receipts/$receiptId")({
 });
 
 function ReceiptDetailPage() {
+  const { t } = useTranslation();
   const { receiptId } = Route.useParams();
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -60,13 +62,13 @@ function ReceiptDetailPage() {
 
   if (query.isLoading) return <LoadingBlock />;
   if (query.error) return <ErrorBlock message={toUserMessage(query.error)} />;
-  if (!query.data) return <ErrorBlock message="Receipt not found" />;
+  if (!query.data) return <ErrorBlock message={t("receipts.notFound", "Receipt not found")} />;
   const r = query.data;
 
   return (
     <div>
       <PageHeader
-        title={`Receipt ${r.receipt_no}`}
+        title={`${t("receipts.receipt", "Receipt")} ${r.receipt_no}`}
         subtitle={
           r.customer?.name ? (
             <span className="flex items-center gap-2">
@@ -90,7 +92,7 @@ function ReceiptDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t("common.back", "Back")}
             </Button>
             <DocumentToolbar entity="receipt" entityId={receiptId} />
             {r.status !== "void" && (
@@ -100,7 +102,7 @@ function ReceiptDetailPage() {
                 onClick={() => setConfirmVoid(true)}
                 disabled={voidMut.isPending}
               >
-                <Ban className="mr-2 h-4 w-4" /> Void
+                <Ban className="mr-2 h-4 w-4" /> {t("receipts.void", "Void")}
               </Button>
             )}
           </div>
@@ -111,9 +113,12 @@ function ReceiptDetailPage() {
         open={confirmVoid}
         onOpenChange={setConfirmVoid}
         tone="danger"
-        title={`Void receipt ${r.receipt_no}?`}
-        description="Voiding removes this receipt from the customer ledger. Every invoice it was allocated to will be recalculated and may go back to unpaid or partially paid. This cannot be undone from here."
-        confirmLabel="Void receipt"
+        title={t("receipts.voidTitle", "Void receipt {{no}}?", { no: r.receipt_no })}
+        description={t(
+          "receipts.voidDescription",
+          "Voiding removes this receipt from the customer ledger. Every invoice it was allocated to will be recalculated and may go back to unpaid or partially paid. This cannot be undone from here.",
+        )}
+        confirmLabel={t("receipts.voidReceipt", "Void receipt")}
         busy={voidMut.isPending}
         onConfirm={() => voidMut.mutate()}
       />
@@ -123,18 +128,21 @@ function ReceiptDetailPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-sm">Details</CardTitle>
+            <CardTitle className="text-sm">{t("common.details", "Details")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm md:grid-cols-2">
-            <Field k="Received on" v={formatDate(r.received_at)} />
-            <Field k="Method" v={r.method.toUpperCase()} />
-            <Field k="Bank" v={r.bank_name ?? "—"} />
-            <Field k="Account" v={r.account_used ?? "—"} />
-            <Field k="UTR / Ref" v={r.reference_no ?? "—"} />
-            <Field k="Cheque #" v={r.cheque_no ?? "—"} />
-            <Field k="Cheque date" v={r.cheque_date ? formatDate(r.cheque_date) : "—"} />
+            <Field k={t("receipts.receivedOn", "Received on")} v={formatDate(r.received_at)} />
+            <Field k={t("receipts.method", "Method")} v={r.method.toUpperCase()} />
+            <Field k={t("receipts.bank", "Bank")} v={r.bank_name ?? "—"} />
+            <Field k={t("receipts.account", "Account")} v={r.account_used ?? "—"} />
+            <Field k={t("receipts.utrRef", "UTR / Ref")} v={r.reference_no ?? "—"} />
+            <Field k={t("receipts.chequeNo", "Cheque #")} v={r.cheque_no ?? "—"} />
             <Field
-              k="Status"
+              k={t("receipts.chequeDate", "Cheque date")}
+              v={r.cheque_date ? formatDate(r.cheque_date) : "—"}
+            />
+            <Field
+              k={t("common.status", "Status")}
               v={
                 <Badge
                   variant={r.status === "void" ? "destructive" : "outline"}
@@ -144,45 +152,57 @@ function ReceiptDetailPage() {
                 </Badge>
               }
             />
-            <Field k="Remarks" v={r.remarks ?? "—"} full />
+            <Field k={t("common.remarks", "Remarks")} v={r.remarks ?? "—"} full />
           </CardContent>
         </Card>
 
         <Card className="shadow-1">
           <CardHeader>
-            <CardTitle className="text-sm">Amounts</CardTitle>
+            <CardTitle className="text-sm">{t("common.amounts", "Amounts")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Line k="Gross" v={formatInr(r.amount)} />
-            <Line k="TDS" v={formatInr(-Number(r.tds_amount))} />
-            <Line k="Bank charges" v={formatInr(-Number(r.bank_charges))} />
-            <Line k="Net" v={formatInr(r.net_amount)} bold />
+            <Line k={t("receipts.gross", "Gross")} v={formatInr(r.amount)} />
+            <Line k={t("receipts.tds", "TDS")} v={formatInr(-Number(r.tds_amount))} />
+            <Line
+              k={t("receipts.bankCharges", "Bank charges")}
+              v={formatInr(-Number(r.bank_charges))}
+            />
+            <Line k={t("receipts.net", "Net")} v={formatInr(r.net_amount)} bold />
             <hr className="my-2 border-border" />
-            <Line k="Allocated" v={formatInr(r.allocated_amount)} />
-            <Line k="Unallocated" v={formatInr(r.unallocated_amount)} bold />
+            <Line k={t("receipts.allocated", "Allocated")} v={formatInr(r.allocated_amount)} />
+            <Line
+              k={t("receipts.unallocated", "Unallocated")}
+              v={formatInr(r.unallocated_amount)}
+              bold
+            />
           </CardContent>
         </Card>
       </div>
 
       <Card className="mt-4 shadow-1">
         <CardHeader>
-          <CardTitle className="text-sm">Allocations</CardTitle>
+          <CardTitle className="text-sm">{t("receipts.allocations", "Allocations")}</CardTitle>
         </CardHeader>
         <CardContent>
           {allocs.isLoading ? (
             <LoadingBlock />
           ) : (allocs.data ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Unallocated advance — apply to invoices from the customer ledger.
+              {t(
+                "receipts.unallocatedAdvanceNote",
+                "Unallocated advance — apply to invoices from the customer ledger.",
+              )}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Invoice total</TableHead>
-                  <TableHead className="text-right">Applied</TableHead>
+                  <TableHead>{t("invoices.invoiceNo", "Invoice #")}</TableHead>
+                  <TableHead>{t("common.date", "Date")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("invoices.invoiceTotal", "Invoice total")}
+                  </TableHead>
+                  <TableHead className="text-right">{t("receipts.applied", "Applied")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

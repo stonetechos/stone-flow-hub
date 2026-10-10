@@ -360,6 +360,14 @@
     "dispatchesToday": "{{count}} આજનું ડિસ્પેચ",
     "briefQuiet": "બધું શાંત છે. ઉત્પાદન સામાન્ય રીતે ચાલી રહ્યું છે.",
     "briefNoUrgent": "કોઈ તાત્કાલિક કાર્ય નથી. આવતા સપ્તાહની યોજના બનાવવાનો સારો સમય.",
+    "briefPipeline": "પાઇપલાઇન: ₹{{amount}} — કુલ {{count}} ક્વોટ સક્રિય છે.",
+    "briefReceivables": "લેણાં: ₹{{amount}} ગ્રાહક વસૂલાત બાકી રકમ.",
+    "briefEnquiries": "{{count}} સક્રિય CRM પૂછપરછ પ્રગતિમાં છે.",
+    "briefFollowups": "આજે {{count}} ગ્રાહક ફોલો-અપ્સ સુનિશ્ચિત છે{{overdue}}.",
+    "briefOrdersToStart": "{{count}} વેચાણ ઓર્ડર મંજૂર અને ઉત્પાદન માટે તૈયાર છે.",
+    "briefDeliveriesToday": "આજ માટે {{count}} ડિસ્પેચ ડિલિવરી સુનિશ્ચિત છે.",
+    "briefCustomers": "નેટવર્ક ડિરેક્ટરીમાં {{count}} નોંધાયેલા સક્રિય ગ્રાહક ખાતાઓ.",
+    "system": "સિસ્ટમ",
     "executiveBrief": "એક્ઝિક્યુટિવ બ્રીફ",
     "radar": {
       "critical": "તાકીદનું",
@@ -874,7 +882,17 @@
     "searchPlaceholder": "ફાઇલનું નામ…",
     "allEntities": "બધી એન્ટિટીઓ",
     "allFolders": "બધા ફોલ્ડર્સ",
-    "noDocumentsMatch": "કોઈપણ દસ્તાવેજ તમારા ફિલ્ટર્સ સાથે મેળ ખાતો નથી."
+    "noDocumentsMatch": "કોઈપણ દસ્તાવેજ તમારા ફિલ્ટર્સ સાથે મેળ ખાતો નથી.",
+    "shareWhatsapp": "વોટ્સએપ પર શેર કરો (PDF સાથે)",
+    "whatsappOptions": "વોટ્સએપ વિકલ્પો",
+    "sendViaWhatsapp": "વોટ્સએપ દ્વારા દસ્તાવેજ મોકલો",
+    "whatsappApp": "વોટ્સએપ બિઝનેસ (એપ્લિકેશન)",
+    "whatsappAppDesc": "ડેસ્કટોપ એપ્લિકેશન ખોલે છે + PDF તૈયાર કરે છે",
+    "whatsappWeb": "વોટ્સએપ વેબ (બ્રાઉઝર)",
+    "whatsappWebDesc": "web.whatsapp.com સીધું ખોલે છે",
+    "whatsappStandard": "માનક લિંક (wa.me)",
+    "whatsappStandardDesc": "બ્રાઉઝર ક્લિક-ટુ-ચેટ રીડાયરેક્ટ",
+    "customizeMessagePhone": "સંદેશ અને ફોન નંબર કસ્ટમાઇઝ કરો..."
   },
   "reports": {
     "downloaded": "ડાઉનલોડ થયું",
@@ -1173,7 +1191,7 @@
       "code": "કોડ",
       "company": "કંપની",
       "city": "શહેર",
-      "gst": "GST",
+      "gst": "જીએસટી",
       "terms": "ચુકવણીની શરતો"
     }
   },
@@ -1385,6 +1403,7 @@
       "agency": "એજન્સી ચૂકવણીઓ"
     },
     "columns": {
+      "receiptNo": "રસીદ નં.",
       "invoice": "ઇનવોઇસ",
       "method": "પદ્ધતિ",
       "reference": "સંદર્ભ",
@@ -2348,5 +2367,66 @@
   "Production": "ઉત્પાદન",
   "Maintenance": "જાળવણી",
   "Search by name, phone, city…": "નામ, ફોન, શહેર દ્વારા શોધો…",
-  "Search by name, phone, city...": "નામ, ફોન, શહેર દ્વારા શોધો…"
+  "Search by name, phone, city...": "નામ, ફોન, શહેર દ્વારા શોધો…",
+  "receipts": {
+    "receipt": "રસીદ",
+    "receiptNo": "રસીદ નં.",
+    "customerReceipts": "ગ્રાહક રસીદો",
+    "customerReceiptsSubtitle": "એડવાન્સ રસીદો, ઇન્વૉઇસ ચુકવણીઓ, TDS, બેંક ચાર્જિસ અને રિફંડ — સંપૂર્ણ વિગતો સાથે.",
+    "searchPlaceholder": "રસીદ #, UTR, ચેક દ્વારા શોધો…",
+    "received": "પ્રાપ્ત",
+    "unallocated": "અનાવંટિત",
+    "newReceipt": "નવી રસીદ",
+    "emptyTitle": "હજી સુધી કોઈ રસીદ નથી",
+    "emptyMessage": "ચુકવણી અને ખાતાવહી બાકી રકમ ટ્રૅક કરવા માટે તમારી પ્રથમ ગ્રાહક રસીદ નોંધો.",
+    "notFound": "રસીદ મળી નથી",
+    "receivedOn": "પ્રાપ્તિ તારીખ",
+    "method": "ચુકવણી પદ્ધતિ",
+    "bank": "બેંક",
+    "account": "ખાતું",
+    "utrRef": "UTR / સંદર્ભ",
+    "chequeNo": "ચેક #",
+    "chequeDate": "ચેક તારીખ",
+    "gross": "કુલ રકમ (ગ્રોસ)",
+    "tds": "ટીડીએસ (TDS)",
+    "bankCharges": "બેંક શુલ્ક",
+    "net": "ચોખ્ખી રકમ (નેટ)",
+    "allocated": "વહેંચાયેલ",
+    "allocations": "વહેંચણી યાદી",
+    "unallocatedAdvanceNote": "અનાવંટિત એડવાન્સ — ગ્રાહક ખાતાવહીમાંથી ઇન્વૉઇસ પર લાગુ કરો.",
+    "applied": "લાગુ કરેલ રકમ",
+    "void": "રદ કરો",
+    "voidTitle": "રસીદ {{no}} રદ કરવી છે?",
+    "voidDescription": "રદ કરવાથી આ રસીદ ગ્રાહક ખાતાવહીમાંથી નીકળી જશે. વહેંચાયેલા ઇન્વૉઇસેસની પુનઃ ગણતરી કરવામાં આવશે.",
+    "voidReceipt": "રસીદ રદ કરો"
+  },
+  "insights": {
+    "inactiveProfile": "{{name}} — 0 ઓર્ડર · નિષ્ક્રિય ગ્રાહક પ્રોફાઇલ ({{level}})",
+    "ordersInactiveDays": "{{name}} — {{orders}} ઓર્ડર ({{amount}}), {{days}} દિવસોથી નિષ્ક્રિય ({{level}})",
+    "balanceOverdue": "{{name}} — {{amount}} બાકી રકમ {{overdue}}({{level}})",
+    "actionReview": "સમીક્ષા કરો",
+    "actionFollowUp": "ફોલો-અપ",
+    "actionCollect": "વસૂલાત કરો",
+    "levels": {
+      "watch": "દેખરેખ",
+      "risk": "જોખમ",
+      "critical": "ગંભીર",
+      "healthy": "સ્વસ્થ"
+    }
+  },
+  "activity": {
+    "actions": {
+      "updated": "અપડેટ કર્યું",
+      "created": "દાખલ કર્યું",
+      "deleted": "કાઢી નાખ્યું",
+      "voided": "રદ કર્યું"
+    },
+    "summaries": {
+      "customersUpdated": "ગ્રાહક વિગતો અપડેટ થઈ",
+      "receiptsCreated": "રસીદ નોંધવામાં આવી",
+      "invoicesCreated": "ઇન્વૉઇસ બનાવવામાં આવ્યું",
+      "quotesCreated": "ક્વોટેશન બનાવવામાં આવ્યું",
+      "ordersCreated": "વેચાણ ઓર્ડર બનાવવામાં આવ્યો"
+    }
+  }
 }

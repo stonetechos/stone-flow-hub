@@ -168,7 +168,7 @@ function CustomerPaymentsTab() {
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
-      { key: "no", label: t("common.no", "No."), required: true },
+      { key: "no", label: t("payments.columns.receiptNo", "Receipt #"), required: true },
       { key: "invoice", label: t("payments.columns.invoice", "Invoice") },
       { key: "method", label: t("payments.columns.method", "Method") },
       { key: "reference", label: t("payments.columns.reference", "Reference") },
@@ -260,7 +260,9 @@ function CustomerPaymentsTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                {!isHidden("no") && <TableHead>{t("common.no", "No.")}</TableHead>}
+                {!isHidden("no") && (
+                  <TableHead>{t("payments.columns.receiptNo", "Receipt #")}</TableHead>
+                )}
                 {!isHidden("invoice") && (
                   <TableHead>{t("payments.columns.invoice", "Invoice")}</TableHead>
                 )}

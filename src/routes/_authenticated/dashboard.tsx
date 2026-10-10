@@ -988,7 +988,7 @@ function CopilotDock({
   activityLoading: boolean;
 }) {
   const { t } = useTranslation();
-  const suggestions = buildSuggestions(topInsights);
+  const suggestions = buildSuggestions(topInsights, t);
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
       {/* Contextual summary in 3D Milky White Box */}
@@ -1065,15 +1065,22 @@ function CopilotDock({
           </div>
         ) : (
           <ol className="space-y-2">
-            {activity.slice(0, 5).map((a) => (
-              <li key={a.id} className="engraved-well rounded-xl p-2 text-[12px] leading-snug">
-                <span className="font-black text-engraved-title">
-                  {a.actor_name ?? t("dashboard.someone", "Someone")}
-                </span>{" "}
-                <span className="font-medium text-slate-600">{a.action.replace(/_/g, " ")}</span>
-                {a.summary && <span className="font-bold text-engraved-blue"> — {a.summary}</span>}
-              </li>
-            ))}
+            {activity.slice(0, 5).map((a) => {
+              const actor = a.actor_name ?? t("dashboard.system", "System");
+              const actionLabel = formatActivityAction(a.action, t);
+              const summaryLabel = a.summary
+                ? formatActivitySummary(a.summary, a.entity_type, t)
+                : null;
+              return (
+                <li key={a.id} className="engraved-well rounded-xl p-2 text-[12px] leading-snug">
+                  <span className="font-black text-engraved-title">{actor}</span>{" "}
+                  <span className="font-medium text-slate-600">{actionLabel}</span>
+                  {summaryLabel && (
+                    <span className="font-bold text-engraved-blue"> — {summaryLabel}</span>
+                  )}
+                </li>
+              );
+            })}
           </ol>
         )}
       </SurfaceCard>
@@ -1518,35 +1525,75 @@ function buildBrief(
   if (kpis) {
     if (kpis.revenuePipelineInr > 0 || kpis.pendingQuotes > 0) {
       lines.push(
-        `Pipeline: ₹${formatMoney(kpis.revenuePipelineInr)} active across ${kpis.pendingQuotes} quote(s) in play.`,
+        t(
+          "dashboard.briefPipeline",
+          "Pipeline: ₹{{amount}} active across {{count}} quote(s) in play.",
+          {
+            amount: formatMoney(kpis.revenuePipelineInr),
+            count: kpis.pendingQuotes,
+          },
+        ),
       );
     }
     if (kpis.outstandingInr > 0) {
       lines.push(
-        `Receivables: ₹${formatMoney(kpis.outstandingInr)} outstanding balance pending customer collection.`,
+        t(
+          "dashboard.briefReceivables",
+          "Receivables: ₹{{amount}} outstanding balance pending customer collection.",
+          {
+            amount: formatMoney(kpis.outstandingInr),
+          },
+        ),
       );
     }
     if (kpis.activeEnquiries > 0) {
-      lines.push(`${kpis.activeEnquiries} active CRM inquiries currently in progress.`);
+      lines.push(
+        t("dashboard.briefEnquiries", "{{count}} active CRM inquiries currently in progress.", {
+          count: kpis.activeEnquiries,
+        }),
+      );
     }
     if (kpis.todayFollowups > 0 || kpis.overdueFollowups > 0) {
       lines.push(
-        `${kpis.todayFollowups} client follow-up(s) scheduled today${kpis.overdueFollowups > 0 ? ` (${kpis.overdueFollowups} overdue)` : ""}.`,
+        t("dashboard.briefFollowups", "{{count}} client follow-up(s) scheduled today{{overdue}}.", {
+          count: kpis.todayFollowups,
+          overdue:
+            kpis.overdueFollowups > 0
+              ? ` (${kpis.overdueFollowups} ${t("common.overdue", "overdue")})`
+              : "",
+        }),
       );
     }
     if (kpis.ordersToStart > 0) {
-      lines.push(`${kpis.ordersToStart} sales order(s) confirmed and ready to start production.`);
+      lines.push(
+        t(
+          "dashboard.briefOrdersToStart",
+          "{{count}} sales order(s) confirmed and ready to start production.",
+          {
+            count: kpis.ordersToStart,
+          },
+        ),
+      );
     }
     if (kpis.deliveriesToday > 0) {
-      lines.push(`${kpis.deliveriesToday} dispatch delivery(ies) scheduled for today.`);
+      lines.push(
+        t(
+          "dashboard.briefDeliveriesToday",
+          "{{count}} dispatch delivery(ies) scheduled for today.",
+          {
+            count: kpis.deliveriesToday,
+          },
+        ),
+      );
     }
   }
 
   // 2. Add individual insight statements (which now feature real numbers)
   for (const i of topInsights) {
     if (lines.length >= 6) break;
-    if (!lines.includes(i.title)) {
-      lines.push(i.title);
+    const localizedTitle = localizeInsightTitle(i.title, t);
+    if (!lines.includes(localizedTitle)) {
+      lines.push(localizedTitle);
     }
   }
 
@@ -1562,7 +1609,13 @@ function buildBrief(
 
   if (lines.length === 0) {
     if (kpis && kpis.customers > 0) {
-      lines.push(`${kpis.customers} registered active customer accounts in network directory.`);
+      lines.push(
+        t(
+          "dashboard.briefCustomers",
+          "{{count}} registered active customer accounts in network directory.",
+          { count: kpis.customers },
+        ),
+      );
     }
     lines.push(t("dashboard.briefQuiet", "Everything is quiet. Production is operating normally."));
   }
@@ -1570,13 +1623,114 @@ function buildBrief(
   return lines.slice(0, 6);
 }
 
+function localizeInsightTitle(title: string, t: TFunction): string {
+  // Pattern 1: "[Name] — 0 orders · Inactive client profile ([Level])"
+  const m1 = /^(.+?)\s+—\s+0\s+orders\s+·\s+Inactive\s+client\s+profile\s+\((.+?)\)$/i.exec(title);
+  if (m1) {
+    return t(
+      "insights.inactiveProfile",
+      "{{name}} — 0 orders · Inactive client profile ({{level}})",
+      {
+        name: m1[1],
+        level: translateLevel(m1[2], t),
+      },
+    );
+  }
+
+  // Pattern 2: "[Name] — [N] orders ([Amount]), inactive [Days]d ([Level])"
+  const m2 = /^(.+?)\s+—\s+(\d+)\s+orders\s+\((.+?)\),\s+inactive\s+(\d+)d\s+\((.+?)\)$/i.exec(
+    title,
+  );
+  if (m2) {
+    return t(
+      "insights.ordersInactiveDays",
+      "{{name}} — {{orders}} orders ({{amount}}), inactive {{days}}d ({{level}})",
+      {
+        name: m2[1],
+        orders: m2[2],
+        amount: m2[3],
+        days: m2[4],
+        level: translateLevel(m2[5], t),
+      },
+    );
+  }
+
+  // Pattern 3: "[Name] — [Amount] balance ([Days]d overdue · [Level])"
+  const m3 = /^(.+?)\s+—\s+(₹.+?)\s+balance\s+(?:\((?:(\d+)d\s+overdue\s+·\s+)?(.+?)\))$/i.exec(
+    title,
+  );
+  if (m3) {
+    return t("insights.balanceOverdue", "{{name}} — {{amount}} balance ({{overdue}}{{level}})", {
+      name: m3[1],
+      amount: m3[2],
+      overdue: m3[3] ? `${m3[3]}d overdue · ` : "",
+      level: translateLevel(m3[4], t),
+    });
+  }
+
+  return title;
+}
+
+function translateLevel(level: string, t: TFunction): string {
+  const norm = level.trim().toLowerCase();
+  if (norm === "watch") return t("insights.levels.watch", "Watch");
+  if (norm === "risk") return t("insights.levels.risk", "Risk");
+  if (norm === "critical") return t("insights.levels.critical", "Critical");
+  if (norm === "healthy") return t("insights.levels.healthy", "Healthy");
+  return level;
+}
+
+function localizeInsightAction(label: string, t: TFunction): string {
+  if (label.startsWith("Review · ")) {
+    const name = label.replace(/^Review · /, "");
+    return `${t("insights.actionReview", "Review")} · ${name}`;
+  }
+  if (label.startsWith("Follow up · ")) {
+    const name = label.replace(/^Follow up · /, "");
+    return `${t("insights.actionFollowUp", "Follow up")} · ${name}`;
+  }
+  if (label.startsWith("Collect ")) {
+    return label.replace(/^Collect /, `${t("insights.actionCollect", "Collect")} `);
+  }
+  return label;
+}
+
+function formatActivityAction(action: string, t: TFunction): string {
+  const norm = action.toLowerCase().replace(/_/g, " ");
+  if (norm.includes("update")) return t("activity.actions.updated", "updated");
+  if (norm.includes("create")) return t("activity.actions.created", "created");
+  if (norm.includes("delete")) return t("activity.actions.deleted", "deleted");
+  if (norm.includes("void")) return t("activity.actions.voided", "voided");
+  return norm;
+}
+
+function formatActivitySummary(summary: string, _entityType: string | null, t: TFunction): string {
+  const lower = summary.toLowerCase();
+  if (lower.includes("customers updated"))
+    return t("activity.summaries.customersUpdated", "customers updated");
+  if (lower.includes("receipts created"))
+    return t("activity.summaries.receiptsCreated", "receipts created");
+  if (lower.includes("invoices created"))
+    return t("activity.summaries.invoicesCreated", "invoices created");
+  if (lower.includes("quotes created"))
+    return t("activity.summaries.quotesCreated", "quotes created");
+  if (lower.includes("orders created"))
+    return t("activity.summaries.ordersCreated", "orders created");
+  return summary;
+}
+
 /**
  * Phase G.8.8: suggestions now come directly from the top processed
  * insights' own `action` field — every Insight already carries exactly
- * this {label, href} shape for its single primary call-to-action, so
- * this is a straight map, not a second judgment about what to suggest. */
-function buildSuggestions(topInsights: ProcessedInsight[]): Array<{ label: string; to: string }> {
-  return topInsights.slice(0, 5).map((i) => ({ label: i.action.label, to: i.action.href }));
+ * this {label, href} shape for its single primary call-to-action.
+ */
+function buildSuggestions(
+  topInsights: ProcessedInsight[],
+  t: TFunction,
+): Array<{ label: string; to: string }> {
+  return topInsights
+    .slice(0, 5)
+    .map((i) => ({ label: localizeInsightAction(i.action.label, t), to: i.action.href }));
 }
 
 function displayName(
