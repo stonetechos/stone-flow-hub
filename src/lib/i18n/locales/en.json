@@ -1657,6 +1657,33 @@
     "emptyMessage": "Use the form above to log your first business expense.",
     "editExpense": "Edit expense"
   },
+  "cashbook": {
+    "title": "Raman's Cashbook",
+    "subtitle": "Cash in hand ledger managed by Raman Pupneja. Live tracking of debits, credits, running balances, and notes.",
+    "cashInHand": "Cash In Hand Balance",
+    "totalDebit": "Total Inflow (Debits)",
+    "totalCredit": "Total Outflow (Credits)",
+    "entriesCount": "Recorded Entries",
+    "managedByRaman": "Managed by raman.pupneja@gmail.com",
+    "positiveLiquidity": "Healthy Cash Balance",
+    "deficit": "Cash Deficit / Overdrawn",
+    "quickEntryTitle": "Record Cash Transaction",
+    "inRemarksNotes": "Enter amount, select type, and provide notes",
+    "type": "Transaction Type",
+    "debit": "Debit (In)",
+    "credit": "Credit (Out)",
+    "addDebit": "Add Inflow",
+    "addCredit": "Add Outflow",
+    "remarksPlaceholder": "Write notes (e.g. Client advance, site petty cash, fuel spend...)",
+    "searchRemarks": "Search notes / remarks…",
+    "emptyTitle": "No cashbook entries recorded",
+    "emptyMessage": "Use the quick entry form above to record your first debit (cash in) or credit (cash out) transaction.",
+    "debitCol": "Debit (In)",
+    "creditCol": "Credit (Out)",
+    "balanceCol": "Balance",
+    "editEntryTitle": "Edit Cashbook Entry",
+    "deleteTitle": "Delete Cashbook Entry"
+  },
   "dashboards": {
     "index": {
       "title": "Role Dashboards",

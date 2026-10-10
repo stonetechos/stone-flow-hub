@@ -55,6 +55,7 @@ const LABELS: Record<string, string> = {
   receipts: "Receipts",
   estimates: "Estimates",
   "business-expenses": "Business Expenses",
+  "ramans-cashbook": "Raman's Cashbook",
   liabilities: "Liabilities",
   "installation-agencies": "Installation Agencies",
   "installation-ledger": "Installation Ledger",

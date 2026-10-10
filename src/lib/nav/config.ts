@@ -41,6 +41,7 @@ import {
   ArrowLeftRight,
   Layers,
   HardHat,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 
@@ -242,6 +243,15 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: ReceiptText,
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "ramans-cashbook",
+    to: "/ramans-cashbook",
+    label: "Raman's Cashbook",
+    icon: Coins,
+    group: "finance",
+    allowedRoles: ["super_admin"],
+    superAdminOnly: true,
   },
   {
     id: "gst",

@@ -137,6 +137,10 @@ export const qk = {
     list: (from?: string, to?: string) =>
       ["businessExpenses", "list", from ?? "", to ?? ""] as const,
   },
+  cashbook: {
+    all: ["cashbook"] as const,
+    list: (from?: string, to?: string) => ["cashbook", "list", from ?? "", to ?? ""] as const,
+  },
   annualGoal: {
     current: () => ["appSettings", "finance.annual_net_margin_goal"] as const,
   },

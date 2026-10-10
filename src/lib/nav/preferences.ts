@@ -145,6 +145,7 @@ function writeRecent(uid: string | null, ids: string[]): void {
 // ---------------- current user ----------------
 
 let cachedUid: string | null = null;
+let cachedEmail: string | null = null;
 const uidListeners = new Set<() => void>();
 
 function subscribeUid(cb: () => void): () => void {
@@ -159,10 +160,12 @@ function ensureUidSubscription(): void {
 
   void supabase.auth.getUser().then(({ data }) => {
     cachedUid = data.user?.id ?? null;
+    cachedEmail = data.user?.email ?? null;
     uidListeners.forEach((cb) => cb());
   });
   supabase.auth.onAuthStateChange((_event, session) => {
     cachedUid = session?.user?.id ?? null;
+    cachedEmail = session?.user?.email ?? null;
     uidListeners.forEach((cb) => cb());
   });
 }
@@ -174,6 +177,15 @@ export function useCurrentUserId(): string | null {
   return useSyncExternalStore(
     (cb) => subscribeUid(cb),
     () => cachedUid,
+    () => null,
+  );
+}
+
+export function useCurrentUserEmail(): string | null {
+  useEffect(ensureUidSubscription, []);
+  return useSyncExternalStore(
+    (cb) => subscribeUid(cb),
+    () => cachedEmail,
     () => null,
   );
 }
@@ -279,7 +291,11 @@ function isItemAllowed(
   isAdmin: boolean,
   isSuperAdmin: boolean,
   userRoles: readonly AppRole[],
+  userEmail?: string,
 ): boolean {
+  if (item.id === "ramans-cashbook" && userEmail?.toLowerCase() === "raman.pupneja@gmail.com") {
+    return true;
+  }
   if (item.superAdminOnly && !isSuperAdmin) return false;
   if (item.adminOnly && !isAdmin) return false;
   if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
@@ -301,6 +317,7 @@ export function resolveNav(
   isAdmin: boolean,
   userRolesOrSuperAdmin: readonly AppRole[] | boolean = [],
   maybeUserRoles: readonly AppRole[] = [],
+  userEmail?: string,
 ): ResolvedNav {
   const isSuperAdmin =
     typeof userRolesOrSuperAdmin === "boolean"
@@ -309,14 +326,18 @@ export function resolveNav(
   const userRoles =
     typeof userRolesOrSuperAdmin === "boolean" ? maybeUserRoles : userRolesOrSuperAdmin;
 
-  const visibleItems = NAV_ITEMS.filter((i) => isItemAllowed(i, isAdmin, isSuperAdmin, userRoles));
+  const visibleItems = NAV_ITEMS.filter((i) =>
+    isItemAllowed(i, isAdmin, isSuperAdmin, userRoles, userEmail),
+  );
   const hiddenSet = new Set(prefs.hidden);
 
   const starred = prefs.starred
     .map((id) => NAV_ITEMS_BY_ID[id])
     .filter(
       (i): i is NavItemDef =>
-        !!i && isItemAllowed(i, isAdmin, isSuperAdmin, userRoles) && !hiddenSet.has(i.id),
+        !!i &&
+        isItemAllowed(i, isAdmin, isSuperAdmin, userRoles, userEmail) &&
+        !hiddenSet.has(i.id),
     );
 
   const starredSet = new Set(starred.map((i) => i.id));

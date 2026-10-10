@@ -58,6 +58,7 @@ import {
   resolveNav,
   trackNavVisit,
   useCurrentUserId,
+  useCurrentUserEmail,
   useNavPreferences,
 } from "@/lib/nav/preferences";
 import { isNavItemActive, NAV_ITEMS_BY_ID, type NavItemDef } from "@/lib/nav/config";
@@ -212,9 +213,10 @@ function NavList({
 }) {
   const { t } = useTranslation();
   const { prefs, update } = useNavPreferences();
+  const userEmail = useCurrentUserEmail();
   const resolved = useMemo(
-    () => resolveNav(prefs, isAdmin, isSuperAdmin ?? false, userRoles),
-    [prefs, isAdmin, isSuperAdmin, userRoles],
+    () => resolveNav(prefs, isAdmin, isSuperAdmin ?? false, userRoles, userEmail ?? undefined),
+    [prefs, isAdmin, isSuperAdmin, userRoles, userEmail],
   );
 
   const checkActive = (item: NavItemDef): boolean => isNavItemActive(item, path);
