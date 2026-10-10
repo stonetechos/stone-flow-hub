@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban } from "lucide-react";
+import { ArrowLeft, Ban, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
 import { Button } from "@/components/ui/button";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { EditReceiptDialog } from "@/components/receipts/EditReceiptDialog";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getReceipt, getReceiptAllocations, voidReceipt } from "@/lib/receipts/api";
+import { getReceipt, getReceiptAllocations, voidReceipt, deleteReceipt } from "@/lib/receipts/api";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 
@@ -48,7 +49,10 @@ function ReceiptDetailPage() {
     queryFn: () => getReceiptAllocations(receiptId),
   });
 
+  const [editOpen, setEditOpen] = useState(false);
   const [confirmVoid, setConfirmVoid] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const voidMut = useMutation({
     mutationFn: () => voidReceipt(receiptId),
     onSuccess: () => {
@@ -56,6 +60,19 @@ function ReceiptDetailPage() {
       setConfirmVoid(false);
       invalidateReceipt(qc, receiptId, query.data?.customer_id);
       query.refetch();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const delMut = useMutation({
+    mutationFn: () => deleteReceipt(receiptId),
+    onSuccess: () => {
+      toast.success("Receipt deleted successfully");
+      invalidateReceipt(qc, receiptId, query.data?.customer_id);
+      void qc.invalidateQueries({ queryKey: qk.paymentRegister.all });
+      void qc.invalidateQueries({ queryKey: ["customer-ledger-summaries"] });
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
+      nav({ to: "/payments", search: { tab: "customer" } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -90,23 +107,52 @@ function ReceiptDetailPage() {
           )
         }
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => nav({ to: "/receipts" })}>
               <ArrowLeft className="mr-2 h-4 w-4" /> {t("common.back", "Back")}
             </Button>
             <DocumentToolbar entity="receipt" entityId={receiptId} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditOpen(true)}
+              className="bg-white hover:bg-slate-50"
+            >
+              <Pencil className="mr-2 h-4 w-4 text-slate-600" />
+              {t("common.edit", "Edit")}
+            </Button>
             {r.status !== "void" && (
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
                 onClick={() => setConfirmVoid(true)}
                 disabled={voidMut.isPending}
+                className="text-amber-700 border-amber-300 hover:bg-amber-50"
               >
                 <Ban className="mr-2 h-4 w-4" /> {t("receipts.void", "Void")}
               </Button>
             )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirmDelete(true)}
+              disabled={delMut.isPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete", "Delete")}
+            </Button>
           </div>
         }
+      />
+
+      <EditReceiptDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        receipt={r}
+        customerName={r.customer?.name}
+        onSuccess={() => {
+          query.refetch();
+          allocs.refetch();
+        }}
       />
 
       <ConfirmDialog
@@ -121,6 +167,17 @@ function ReceiptDetailPage() {
         confirmLabel={t("receipts.voidReceipt", "Void receipt")}
         busy={voidMut.isPending}
         onConfirm={() => voidMut.mutate()}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        tone="danger"
+        title={`Permanently delete receipt ${r.receipt_no}?`}
+        description="Deleting this receipt will remove it completely from the system and customer ledger. Any linked invoices will have their balances recalculated. This action cannot be undone."
+        confirmLabel="Delete receipt"
+        busy={delMut.isPending}
+        onConfirm={() => delMut.mutate()}
       />
 
       <GuidedNextStep entity="receipt" entityId={receiptId} ctx={{ customer_id: r.customer_id }} />

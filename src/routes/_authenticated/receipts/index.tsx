@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Plus, Wallet, MessageSquareText } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { EditReceiptDialog } from "@/components/receipts/EditReceiptDialog";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
@@ -24,7 +28,8 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { listReceipts } from "@/lib/receipts/api";
+import { listReceipts, deleteReceipt, type ReceiptListItem } from "@/lib/receipts/api";
+import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
 import { TransactionMessageReaderModal } from "@/components/banking/TransactionMessageReaderModal";
 
@@ -35,9 +40,12 @@ export const Route = createFileRoute("/_authenticated/receipts/")({
 
 function ReceiptsListPage() {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const [readerOpen, setReaderOpen] = useState(false);
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
+  const [toDelete, setToDelete] = useState<ReceiptListItem | null>(null);
+  const [editingReceipt, setEditingReceipt] = useState<ReceiptListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("receipts");
@@ -57,6 +65,20 @@ function ReceiptsListPage() {
   );
 
   const query = useQuery({ queryKey: qk.receipts.list(dq), queryFn: () => listReceipts(dq) });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => deleteReceipt(id),
+    onSuccess: () => {
+      toast.success("Receipt deleted successfully");
+      invalidateReceipt(qc, toDelete?.id, toDelete?.customer_id);
+      void qc.invalidateQueries({ queryKey: qk.paymentRegister.all });
+      void qc.invalidateQueries({ queryKey: ["customer-ledger-summaries"] });
+      setToDelete(null);
+      void query.refetch();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   const rows = query.data ?? [];
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
   useEffect(() => setPage(1), [dq]);
@@ -163,6 +185,7 @@ function ReceiptsListPage() {
                   </TableHead>
                 )}
                 {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -213,12 +236,53 @@ function ReceiptsListPage() {
                       </Badge>
                     </TableCell>
                   )}
+                  <TableCell className="text-right">
+                    <RowActions
+                      onEdit={() => setEditingReceipt(r)}
+                      onDelete={() => setToDelete(r)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </DataTableShell>
       )}
+
+      {editingReceipt && (
+        <EditReceiptDialog
+          open={!!editingReceipt}
+          onOpenChange={(open) => !open && setEditingReceipt(null)}
+          receipt={editingReceipt}
+          onSuccess={() => {
+            invalidateReceipt(qc, editingReceipt.id, editingReceipt.customer_id);
+            void qc.invalidateQueries({ queryKey: qk.receipts.all });
+            void qc.invalidateQueries({ queryKey: qk.paymentRegister.all });
+            void qc.invalidateQueries({ queryKey: ["customer-ledger-summaries"] });
+            void query.refetch();
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(open) => !open && setToDelete(null)}
+        title={t("receipts.deleteTitle", "Delete Receipt")}
+        description={
+          toDelete
+            ? t(
+                "receipts.deleteConfirm",
+                `Are you sure you want to delete receipt ${toDelete.receipt_no}? Any allocations to invoices will be reversed and the invoice balance updated.`,
+              )
+            : ""
+        }
+        confirmLabel={t("common.delete", "Delete")}
+        tone="danger"
+        busy={del.isPending}
+        onConfirm={() => {
+          if (toDelete) del.mutate(toDelete.id);
+        }}
+      />
 
       <TransactionMessageReaderModal open={readerOpen} onOpenChange={setReaderOpen} />
     </div>

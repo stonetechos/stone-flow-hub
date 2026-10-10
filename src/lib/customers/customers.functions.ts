@@ -316,6 +316,7 @@ const updateCustomerCrmStatusInput = z.object({
     .enum([
       "active_responsive",
       "order_placed",
+      "order_completed",
       "followup_pending",
       "awaiting_reply",
       "inactive_no_response",
@@ -382,6 +383,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     } else if (
       data.response_status === "active_responsive" ||
       data.response_status === "order_placed" ||
+      data.response_status === "order_completed" ||
       data.response_status === "followup_pending" ||
       data.response_status === "awaiting_reply"
     ) {
@@ -415,15 +417,19 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
 
     if (updateErr) throw new Error(updateErr.message);
 
-    // If customer gave their order, automatically resolve any open pending followups
-    if (data.response_status === "order_placed") {
+    // If customer gave their order or order completed, automatically resolve any open pending followups
+    if (data.response_status === "order_placed" || data.response_status === "order_completed") {
       await supabaseAdmin
         .from("followups")
         .update({
           status: "done",
           completed_at: nowIso,
           outcome_notes:
-            data.call_note || data.call_outcome || "Order placed — sales follow-up completed",
+            data.call_note ||
+            data.call_outcome ||
+            (data.response_status === "order_completed"
+              ? "Order completed — sales follow-up closed"
+              : "Order placed — sales follow-up completed"),
         })
         .eq("entity_type", "customer")
         .eq("entity_id", data.customerId)

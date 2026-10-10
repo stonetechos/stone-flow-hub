@@ -8,6 +8,7 @@
 export type CustomerResponseStatus =
   | "active_responsive"
   | "order_placed"
+  | "order_completed"
   | "followup_pending"
   | "awaiting_reply"
   | "inactive_no_response"
@@ -55,6 +56,15 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     description:
       "Client has placed their order. Sales follow-up complete; moved to order fulfillment.",
   },
+  order_completed: {
+    value: "order_completed",
+    label: "Order Completed",
+    shortLabel: "Completed",
+    tone: "bg-teal-50 text-teal-800 border-teal-200",
+    badgeTone: "bg-teal-100/80 text-teal-900 border-teal-300",
+    dotColor: "bg-teal-600",
+    description: "Order has been successfully fulfilled, delivered, and completed.",
+  },
   followup_pending: {
     value: "followup_pending",
     label: "Follow-up Pending",
@@ -96,6 +106,7 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
 export const CALL_OUTCOMES = [
   { value: "positive_proceeding", label: "Positive · Ready to proceed" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
+  { value: "order_completed", label: "Order Completed · Delivered & Closed" },
   { value: "quote_revision_requested", label: "Quote revision requested" },
   { value: "site_visit_requested", label: "Site visit / Measurement requested" },
   { value: "reviewing_with_architect", label: "Reviewing with architect / family" },

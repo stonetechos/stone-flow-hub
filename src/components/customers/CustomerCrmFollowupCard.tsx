@@ -406,7 +406,11 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                   onValueChange={(val) => {
                     const nextVal = val as CustomerResponseStatus;
                     setResponseStatus(nextVal);
-                    if (nextVal === "order_placed" || nextVal === "do_not_contact") {
+                    if (
+                      nextVal === "order_placed" ||
+                      nextVal === "order_completed" ||
+                      nextVal === "do_not_contact"
+                    ) {
                       setScheduleNextCall(false);
                     }
                   }}

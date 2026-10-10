@@ -46,6 +46,8 @@ import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deletePayment, listPaymentRegister, type PaymentRegisterRow } from "@/lib/payments/crud";
+import { deleteReceipt, getReceipt, type ReceiptListItem } from "@/lib/receipts/api";
+import { EditReceiptDialog } from "@/components/receipts/EditReceiptDialog";
 import {
   deleteVendorPayment,
   listVendorPayments,
@@ -162,6 +164,7 @@ function CustomerPaymentsTab() {
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<PaymentRegisterRow | null>(null);
+  const [editingReceipt, setEditingReceipt] = useState<ReceiptListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("payments");
@@ -184,10 +187,19 @@ function CustomerPaymentsTab() {
   });
 
   const del = useMutation({
-    mutationFn: (id: string) => deletePayment(id),
+    mutationFn: async (row: PaymentRegisterRow) => {
+      if (row.source === "receipt") {
+        await deleteReceipt(row.id);
+      } else {
+        await deletePayment(row.id);
+      }
+    },
     onSuccess: () => {
       toast.success(t("payments.customer.deletedToast", "Payment deleted"));
       invalidatePayment(qc);
+      void qc.invalidateQueries({ queryKey: qk.paymentRegister.all });
+      void qc.invalidateQueries({ queryKey: qk.receipts.all });
+      void qc.invalidateQueries({ queryKey: ["customer-ledger-summaries"] });
       setToDelete(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -325,12 +337,25 @@ function CustomerPaymentsTab() {
                     </TableCell>
                   )}
                   <TableCell>
-                    {r.source === "payment" && (
-                      <RowActions
-                        onEdit={() => nav({ to: "/payments/$id/edit", params: { id: r.id } })}
-                        onDelete={() => setToDelete(r)}
-                      />
-                    )}
+                    <RowActions
+                      onEdit={
+                        r.source === "payment"
+                          ? () => nav({ to: "/payments/$id/edit", params: { id: r.id } })
+                          : async () => {
+                              try {
+                                const rcpt = await getReceipt(r.id);
+                                if (rcpt) {
+                                  setEditingReceipt(rcpt);
+                                } else {
+                                  nav({ to: "/receipts/$receiptId", params: { receiptId: r.id } });
+                                }
+                              } catch {
+                                nav({ to: "/receipts/$receiptId", params: { receiptId: r.id } });
+                              }
+                            }
+                      }
+                      onDelete={() => setToDelete(r)}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -339,14 +364,34 @@ function CustomerPaymentsTab() {
         </DataTableShell>
       )}
 
+      {editingReceipt && (
+        <EditReceiptDialog
+          open={!!editingReceipt}
+          onOpenChange={(o) => !o && setEditingReceipt(null)}
+          receipt={editingReceipt}
+          customerName={editingReceipt.customer?.name}
+          onSuccess={() => {
+            void query.refetch();
+          }}
+        />
+      )}
+
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}
-        title={t("payments.customer.deleteTitle", "Delete payment?")}
-        description={toDelete ? `${toDelete.doc_no} will be removed.` : ""}
+        title={
+          toDelete?.source === "receipt"
+            ? `Delete customer receipt ${toDelete.doc_no}?`
+            : t("payments.customer.deleteTitle", "Delete payment?")
+        }
+        description={
+          toDelete
+            ? `${toDelete.doc_no} will be permanently removed. Any allocated invoices will have their balances recalculated.`
+            : ""
+        }
         busy={del.isPending}
         tone="danger"
-        onConfirm={() => toDelete && del.mutate(toDelete.id)}
+        onConfirm={() => toDelete && del.mutate(toDelete)}
       />
     </div>
   );

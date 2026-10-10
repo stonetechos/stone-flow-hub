@@ -265,6 +265,16 @@ export async function voidReceipt(id: string) {
   if (error) throw new AppError(mapDbError(error));
 }
 
+export async function deleteReceipt(id: string): Promise<void> {
+  // First delete allocations so linked invoices are recalculated
+  const { error: aErr } = await getDb().from("receipt_allocations").delete().eq("receipt_id", id);
+  if (aErr) throw new AppError(mapDbError(aErr));
+
+  // Then delete the receipt record
+  const { error: rErr } = await getDb().from("receipts").delete().eq("id", id);
+  if (rErr) throw new AppError(mapDbError(rErr));
+}
+
 export async function replaceAllocations(
   receiptId: string,
   allocations: Array<{ invoice_id: string; amount: number }>,

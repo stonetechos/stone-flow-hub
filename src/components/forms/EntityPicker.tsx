@@ -269,15 +269,19 @@ export function EntityPicker({
               aria-expanded={open}
               disabled={disabled}
               className={cn(
-                "w-full justify-between font-normal",
-                selectedRow ? "h-auto min-h-10 py-2" : "",
+                "w-full justify-between font-normal min-h-10 text-left",
+                selectedRow ? "h-auto py-1.5" : "h-10",
               )}
             >
               {triggerLabel}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] p-0"
+            align="start"
+            sideOffset={4}
+          >
             <Command shouldFilter={false}>
               <CommandInput
                 placeholder={`Search ${LABEL[type].singular}…`}
