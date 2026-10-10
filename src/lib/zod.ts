@@ -76,6 +76,12 @@ export function normalizeMobile(v?: string | null): string {
   return v.replace(/\D+/g, "").replace(/^0+/, "").slice(-10);
 }
 
+/** Extract raw digits from any phone input, stripping spaces, hyphens, plus signs, brackets. */
+export function extractPhoneDigits(v?: string | null): string {
+  if (!v) return "";
+  return v.replace(/\D+/g, "");
+}
+
 /**
  * Strip characters with PostgREST filter-syntax meaning from a search string,
  * so untrusted input cannot break out of an `.ilike()` value inside an `.or()` filter.

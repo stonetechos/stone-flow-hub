@@ -20,6 +20,7 @@ import { NAV_ITEMS_BY_ID } from "@/lib/nav/config";
 
 const GROUP_ORDER: ReadonlyArray<SearchGroupKey> = [
   "customers",
+  "contacts",
   "projects",
   "enquiries",
   "quotes",
@@ -27,6 +28,7 @@ const GROUP_ORDER: ReadonlyArray<SearchGroupKey> = [
   "rfqs",
   "purchaseOrders",
   "vendors",
+  "agencies",
   "tasks",
   "followups",
   "products",
@@ -98,7 +100,7 @@ export function GlobalSearchDialog({
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="Search customers, projects, quotes, invoices, payments…"
+        placeholder="Search customers, vendors, agencies by name, phone, code…"
         value={query}
         onValueChange={setQuery}
       />
@@ -174,7 +176,7 @@ export function GlobalSearchDialog({
                     {items.map((h) => (
                       <CommandItem
                         key={`${g}:${h.id}`}
-                        value={`${g}-${h.label}-${h.id}`}
+                        value={`${g}-${h.label}-${h.sublabel ?? ""}-${h.id}`}
                         onSelect={() => go(h.href)}
                       >
                         <span className="min-w-0 flex-1 truncate">{h.label}</span>

@@ -1,11 +1,13 @@
 /** Global search across all business modules. Runs queries in parallel and groups results. */
 import { getDb } from "@/integrations/supabase/server-context";
+import { extractPhoneDigits } from "@/lib/zod";
 
 export type SearchGroupKey =
   | "customers"
   | "contacts"
   | "projects"
   | "vendors"
+  | "agencies"
   | "products"
   | "enquiries"
   | "quotes"
@@ -160,12 +162,16 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   if (raw.length < 2) return [];
   const s = clean(raw);
   const p = `%${s}%`;
+  const digits = extractPhoneDigits(raw);
 
   const [
     customers,
     contacts,
     projects,
     vendors,
+    vendorContacts,
+    installationAgencies,
+    cartingAgencies,
     products,
     enquiries,
     quotes,
@@ -189,7 +195,17 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
         .from("customers")
         .select("id,name,customer_code,primary_phone,primary_email,city")
         .or(
-          `name.ilike.${p},customer_code.ilike.${p},primary_phone.ilike.${p},primary_email.ilike.${p},city.ilike.${p}`,
+          [
+            `name.ilike.${p}`,
+            `customer_code.ilike.${p}`,
+            `primary_phone.ilike.${p}`,
+            `primary_email.ilike.${p}`,
+            `city.ilike.${p}`,
+            digits.length >= 4 ? `primary_phone.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `primary_phone.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
         )
         .limit(LIMIT),
     ),
@@ -197,7 +213,19 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
       getDb()
         .from("customer_contacts")
         .select("id,name,phone,email,whatsapp,customer_id")
-        .or(`name.ilike.${p},phone.ilike.${p},email.ilike.${p},whatsapp.ilike.${p}`)
+        .or(
+          [
+            `name.ilike.${p}`,
+            `phone.ilike.${p}`,
+            `email.ilike.${p}`,
+            `whatsapp.ilike.${p}`,
+            digits.length >= 4 ? `phone.ilike.%${digits}%` : null,
+            digits.length >= 4 ? `whatsapp.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `phone.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
         .limit(LIMIT),
     ),
     safe(
@@ -210,8 +238,76 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
     safe(
       getDb()
         .from("vendors")
-        .select("id,company_name,vendor_code,city")
-        .or(`company_name.ilike.${p},vendor_code.ilike.${p},city.ilike.${p}`)
+        .select("id,company_name,vendor_code,city,contact_person,mobile_number")
+        .or(
+          [
+            `company_name.ilike.${p}`,
+            `vendor_code.ilike.${p}`,
+            `city.ilike.${p}`,
+            `contact_person.ilike.${p}`,
+            `mobile_number.ilike.${p}`,
+            digits.length >= 4 ? `mobile_number.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `mobile_number.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("vendor_contacts")
+        .select("id,name,phone,email,whatsapp,vendor_id")
+        .or(
+          [
+            `name.ilike.${p}`,
+            `phone.ilike.${p}`,
+            `email.ilike.${p}`,
+            `whatsapp.ilike.${p}`,
+            digits.length >= 4 ? `phone.ilike.%${digits}%` : null,
+            digits.length >= 4 ? `whatsapp.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `phone.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("installation_agencies" as never)
+        .select("id,name,code,contact_person,phone")
+        .or(
+          [
+            `name.ilike.${p}`,
+            `code.ilike.${p}`,
+            `contact_person.ilike.${p}`,
+            `phone.ilike.${p}`,
+            digits.length >= 4 ? `phone.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `phone.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
+        .limit(LIMIT),
+    ),
+    safe(
+      getDb()
+        .from("carting_agencies" as never)
+        .select("id,name,code,contact_person,phone,vehicle_type")
+        .or(
+          [
+            `name.ilike.${p}`,
+            `code.ilike.${p}`,
+            `contact_person.ilike.${p}`,
+            `phone.ilike.${p}`,
+            `vehicle_type.ilike.${p}`,
+            digits.length >= 4 ? `phone.ilike.%${digits}%` : null,
+            digits.length >= 10 ? `phone.ilike.%${digits.slice(-10)}%` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
         .limit(LIMIT),
     ),
     safe(
@@ -348,9 +444,72 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   };
 
   const hits: SearchHit[] = [];
-  push(customers, "customers", "Customers", "/customers", "name", "primary_phone", "Customer");
+  for (const r of customers as Row[]) {
+    const code = val(r, "customer_code");
+    const phone = val(r, "primary_phone");
+    const city = val(r, "city");
+    const sub = [code, phone, city].filter(Boolean).join(" · ");
+    hits.push({
+      id: r.id,
+      label: val(r, "name") ?? "Customer",
+      sublabel: sub || null,
+      href: `/customers/${r.id}`,
+      group: "customers",
+      groupLabel: "Customers",
+    });
+  }
   push(projects, "projects", "Projects", "/projects", "name", "site_address", "Project");
-  push(vendors, "vendors", "Vendors", "/vendors", "company_name", "vendor_code", "Vendor");
+  for (const r of vendors as Row[]) {
+    const code = val(r, "vendor_code");
+    const contact = val(r, "contact_person");
+    const phone = val(r, "mobile_number");
+    const sub = [code, contact, phone].filter(Boolean).join(" · ");
+    hits.push({
+      id: r.id,
+      label: val(r, "company_name") ?? "Vendor",
+      sublabel: sub || null,
+      href: `/vendors/${r.id}`,
+      group: "vendors",
+      groupLabel: "Vendors",
+    });
+  }
+  for (const r of vendorContacts as Array<
+    Record<string, unknown> & { id: string; vendor_id?: string | null }
+  >) {
+    const vid = typeof r.vendor_id === "string" ? r.vendor_id : "";
+    hits.push({
+      id: r.id,
+      label: val(r as Row, "name") ?? "Vendor Contact",
+      sublabel: val(r as Row, "phone") ?? val(r as Row, "email"),
+      href: vid ? `/vendors/${vid}` : `/vendors`,
+      group: "vendors",
+      groupLabel: "Vendors",
+    });
+  }
+  for (const r of installationAgencies as Row[]) {
+    hits.push({
+      id: r.id,
+      label: val(r, "name") ?? "Installation Agency",
+      sublabel:
+        [val(r, "code"), val(r, "contact_person"), val(r, "phone")].filter(Boolean).join(" · ") ||
+        null,
+      href: "/masters/installation-agencies",
+      group: "agencies",
+      groupLabel: "Agencies",
+    });
+  }
+  for (const r of cartingAgencies as Row[]) {
+    hits.push({
+      id: r.id,
+      label: val(r, "name") ?? "Carting Agency",
+      sublabel:
+        [val(r, "code"), val(r, "contact_person"), val(r, "phone")].filter(Boolean).join(" · ") ||
+        null,
+      href: "/masters/carting-agencies",
+      group: "agencies",
+      groupLabel: "Agencies",
+    });
+  }
   push(products, "products", "Products", "/products", "name", "product_code", "Product");
   push(enquiries, "enquiries", "Enquiries", "/enquiries", "enquiry_no", "notes", "Enquiry");
   push(quotes, "quotes", "Quotations", "/quotes", "quote_no", "notes", "Quote");

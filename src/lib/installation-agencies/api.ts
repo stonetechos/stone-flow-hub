@@ -8,6 +8,7 @@
  */
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
+import { extractPhoneDigits, sanitizeSearch } from "@/lib/zod";
 
 export const AGENCY_WORK_TYPES = [
   { value: "installation", label: "Installation" },
@@ -111,6 +112,7 @@ function toPayload(input: InstallationAgencyInput) {
 
 export async function listInstallationAgencies(
   activeOnly = true,
+  query = "",
 ): Promise<InstallationAgencyRow[]> {
   let q = getDb()
     .from("installation_agencies" as never)
@@ -119,6 +121,23 @@ export async function listInstallationAgencies(
     .order("name", { ascending: true })
     .limit(200);
   if (activeOnly) q = q.eq("is_active" as never, true as never);
+  const s = sanitizeSearch(query);
+  if (s) {
+    const digits = extractPhoneDigits(query);
+    const clauses = [
+      `name.ilike.%${s}%`,
+      `code.ilike.%${s}%`,
+      `contact_person.ilike.%${s}%`,
+      `phone.ilike.%${s}%`,
+    ];
+    if (digits.length >= 4) {
+      clauses.push(`phone.ilike.%${digits}%`);
+      if (digits.length >= 10) {
+        clauses.push(`phone.ilike.%${digits.slice(-10)}%`);
+      }
+    }
+    q = q.or(clauses.join(",") as never);
+  }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return ((data ?? []) as Record<string, unknown>[]).map(parseRow);

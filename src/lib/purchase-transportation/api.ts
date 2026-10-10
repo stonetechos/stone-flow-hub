@@ -16,7 +16,7 @@
  */
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
-import { sanitizeSearch } from "@/lib/zod";
+import { extractPhoneDigits, sanitizeSearch } from "@/lib/zod";
 import {
   purchaseTransportCreateSchema,
   purchaseTransportItemInputSchema,
@@ -243,7 +243,10 @@ export async function replacePurchaseTransportationItems(
 /* use the as-never cast pattern above rather than DbTable<...>).      */
 /* ------------------------------------------------------------------ */
 
-export async function listCartingAgencies(activeOnly = true): Promise<CartingAgencyRow[]> {
+export async function listCartingAgencies(
+  activeOnly = true,
+  query = "",
+): Promise<CartingAgencyRow[]> {
   let q = getDb()
     .from("carting_agencies" as never)
     .select("*")
@@ -251,6 +254,24 @@ export async function listCartingAgencies(activeOnly = true): Promise<CartingAge
     .order("name", { ascending: true })
     .limit(200);
   if (activeOnly) q = q.eq("is_active" as never, true as never);
+  const s = sanitizeSearch(query);
+  if (s) {
+    const digits = extractPhoneDigits(query);
+    const clauses = [
+      `name.ilike.%${s}%`,
+      `code.ilike.%${s}%`,
+      `contact_person.ilike.%${s}%`,
+      `phone.ilike.%${s}%`,
+      `vehicle_type.ilike.%${s}%`,
+    ];
+    if (digits.length >= 4) {
+      clauses.push(`phone.ilike.%${digits}%`);
+      if (digits.length >= 10) {
+        clauses.push(`phone.ilike.%${digits.slice(-10)}%`);
+      }
+    }
+    q = q.or(clauses.join(",") as never);
+  }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
   return (data ?? []) as unknown as CartingAgencyRow[];

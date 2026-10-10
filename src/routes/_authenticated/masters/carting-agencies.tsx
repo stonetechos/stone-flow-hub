@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -126,7 +126,28 @@ function CartingAgenciesPage() {
     setEditing(row);
   };
 
-  const rows = query.data ?? [];
+  const [search, setSearch] = useState("");
+  const rows = useMemo(() => query.data ?? [], [query.data]);
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    const qDigits = q.replace(/\D/g, "");
+    return rows.filter((r) => {
+      const nameMatch = r.name.toLowerCase().includes(q);
+      const codeMatch = (r.code ?? "").toLowerCase().includes(q);
+      const contactMatch = (r.contact_person ?? "").toLowerCase().includes(q);
+      const vehicleMatch = (r.vehicle_type ?? "").toLowerCase().includes(q);
+      const phoneRaw = r.phone ?? "";
+      const phoneMatch = phoneRaw.toLowerCase().includes(q);
+      const phoneDigits = phoneRaw.replace(/\D/g, "");
+      const digitMatch =
+        qDigits.length >= 4 &&
+        (phoneDigits.includes(qDigits) ||
+          (qDigits.length >= 10 && phoneDigits.includes(qDigits.slice(-10))));
+      return nameMatch || codeMatch || contactMatch || vehicleMatch || phoneMatch || digitMatch;
+    });
+  }, [rows, search]);
+
   const dialogOpen = creating || !!editing;
 
   return (
@@ -143,14 +164,30 @@ function CartingAgenciesPage() {
         }
       />
 
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, phone, contact, vehicle…"
+            className="h-8 pl-8 text-xs w-full"
+          />
+        </div>
+      </div>
+
       {query.isLoading ? (
         <SkeletonTable rows={5} columns={5} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : rows.length === 0 ? (
+      ) : filteredRows.length === 0 ? (
         <EmptyState
-          title="No carting agencies yet"
-          message="Add a transporter to select it when logging a Purchase Transportation shipment."
+          title="No carting agencies found"
+          message={
+            search
+              ? `No carting agencies matched "${search}".`
+              : "Add a transporter to select it when logging a Purchase Transportation shipment."
+          }
           action={
             roles.canWrite ? (
               <Button onClick={openCreate}>
@@ -175,7 +212,7 @@ function CartingAgenciesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((r) => (
+              {filteredRows.map((r) => (
                 <TableRow
                   key={r.id}
                   className="hover:bg-muted/40 transition-colors group cursor-pointer"

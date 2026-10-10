@@ -1,25 +1,79 @@
 /** Vendors data access. */
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
-import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
+import { extractPhoneDigits, normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { vendorCreateSchema, type VendorCreateInput } from "./schema";
 
 export type VendorRow = DbTable<"vendors">;
 export type VendorContactRow = DbTable<"vendor_contacts">;
 
+async function getContactVendorIds(s: string, digits: string): Promise<string[]> {
+  try {
+    const contactClauses: string[] = [
+      `name.ilike.%${s}%`,
+      `phone.ilike.%${s}%`,
+      `whatsapp.ilike.%${s}%`,
+    ];
+    if (digits.length >= 4) {
+      contactClauses.push(`phone.ilike.%${digits}%`, `whatsapp.ilike.%${digits}%`);
+      if (digits.length >= 10) {
+        const last10 = digits.slice(-10);
+        contactClauses.push(`phone.ilike.%${last10}%`, `whatsapp.ilike.%${last10}%`);
+      }
+    }
+    const { data: contacts } = await getDb()
+      .from("vendor_contacts")
+      .select("vendor_id")
+      .or(contactClauses.join(","))
+      .limit(50);
+    if (contacts && contacts.length > 0) {
+      return contacts.map((c) => c.vendor_id).filter(Boolean);
+    }
+  } catch {
+    // Safe fallback if vendor_contacts is unreachable
+  }
+  return [];
+}
+
+function buildVendorSearchClauses(s: string, digits: string, contactVendorIds: string[]): string {
+  const clauses = [
+    `company_name.ilike.%${s}%`,
+    `vendor_code.ilike.%${s}%`,
+    `gst_number.ilike.%${s}%`,
+    `city.ilike.%${s}%`,
+    `contact_person.ilike.%${s}%`,
+    `mobile_number.ilike.%${s}%`,
+    `email.ilike.%${s}%`,
+    `external_ref->>contact_person.ilike.%${s}%`,
+  ];
+
+  if (digits.length >= 4) {
+    clauses.push(
+      `mobile_number.ilike.%${digits}%`,
+      `external_ref->>mobile.ilike.%${digits}%`,
+      `external_ref->>phone.ilike.%${digits}%`,
+    );
+    if (digits.length >= 10) {
+      const last10 = digits.slice(-10);
+      clauses.push(`mobile_number.ilike.%${last10}%`, `external_ref->>mobile.ilike.%${last10}%`);
+    }
+  }
+
+  if (contactVendorIds.length > 0) {
+    clauses.push(`id.in.(${contactVendorIds.join(",")})`);
+  }
+
+  return clauses.join(",");
+}
+
 export async function listVendors(query = ""): Promise<VendorRow[]> {
   let q = getDb().from("vendors").select("*").order("created_at", { ascending: false }).limit(200);
   const s = sanitizeSearch(query);
   if (s) {
-    q = q.or(
-      [
-        `company_name.ilike.%${s}%`,
-        `vendor_code.ilike.%${s}%`,
-        `gst_number.ilike.%${s}%`,
-        `city.ilike.%${s}%`,
-      ].join(","),
-    );
+    const digits = extractPhoneDigits(query);
+    const contactVendorIds = await getContactVendorIds(s, digits);
+    q = q.or(buildVendorSearchClauses(s, digits, contactVendorIds));
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
@@ -35,14 +89,9 @@ export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
     .limit(500);
   const s = sanitizeSearch(query);
   if (s) {
-    q = q.or(
-      [
-        `company_name.ilike.%${s}%`,
-        `vendor_code.ilike.%${s}%`,
-        `gst_number.ilike.%${s}%`,
-        `city.ilike.%${s}%`,
-      ].join(","),
-    );
+    const digits = extractPhoneDigits(query);
+    const contactVendorIds = await getContactVendorIds(s, digits);
+    q = q.or(buildVendorSearchClauses(s, digits, contactVendorIds));
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
@@ -86,11 +135,15 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
     work_types: parsed.work_types ?? [],
   };
 
+  const phone = normalizeMobile(parsed.mobile);
   const { data: vendor, error } = await getDb()
     .from("vendors")
     .insert({
       vendor_code: "",
       company_name: parsed.company_name,
+      contact_person: parsed.contact_name,
+      mobile_number: phone || null,
+      email: parsed.email ?? null,
       city: parsed.city ?? null,
       state: parsed.state ?? null,
       pincode: parsed.pincode ?? null,
@@ -104,7 +157,6 @@ export async function createVendor(input: VendorCreateInput): Promise<VendorRow>
     .single();
   if (error) throw new AppError(mapDbError(error));
 
-  const phone = normalizeMobile(parsed.mobile);
   const { error: cErr } = await getDb()
     .from("vendor_contacts")
     .insert({
@@ -158,10 +210,14 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
     work_types: parsed.work_types ?? [],
   };
 
+  const phone = normalizeMobile(parsed.mobile);
   const { data: vendor, error } = await getDb()
     .from("vendors")
     .update({
       company_name: parsed.company_name,
+      contact_person: parsed.contact_name,
+      mobile_number: phone || null,
+      email: parsed.email ?? null,
       city: parsed.city ?? null,
       state: parsed.state ?? null,
       pincode: parsed.pincode ?? null,
@@ -176,7 +232,6 @@ export async function updateVendor(id: string, input: VendorCreateInput): Promis
     .single();
   if (error) throw new AppError(mapDbError(error));
 
-  const phone = normalizeMobile(parsed.mobile);
   const existingContact = await getPrimaryContact(id);
   if (existingContact) {
     const { error: uErr } = await getDb()

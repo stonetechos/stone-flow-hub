@@ -87,6 +87,8 @@ function VendorsPage() {
     () => [
       { key: "code", label: t("vendors.columns.code", "Code"), required: true },
       { key: "company", label: t("vendors.columns.company", "Company"), required: true },
+      { key: "phone", label: t("common.phone", "Phone") },
+      { key: "contact", label: t("common.contactPerson", "Contact") },
       { key: "city", label: t("vendors.columns.city", "City") },
       { key: "gst", label: t("vendors.columns.gst", "GST") },
       { key: "terms", label: t("vendors.columns.terms", "Payment terms") },
@@ -136,7 +138,10 @@ function VendorsPage() {
         count={rows.length}
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder={t("vendors.searchPlaceholder", "Search by company, code, city…")}
+        searchPlaceholder={t(
+          "vendors.searchPlaceholder",
+          "Search by company, phone, contact person, code, city…",
+        )}
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         action={
@@ -183,6 +188,10 @@ function VendorsPage() {
                 {!isHidden("code") && <TableHead>{t("vendors.columns.code", "Code")}</TableHead>}
                 {!isHidden("company") && (
                   <TableHead>{t("vendors.columns.company", "Company")}</TableHead>
+                )}
+                {!isHidden("phone") && <TableHead>{t("common.phone", "Phone")}</TableHead>}
+                {!isHidden("contact") && (
+                  <TableHead>{t("common.contactPerson", "Contact")}</TableHead>
                 )}
                 {!isHidden("city") && <TableHead>{t("vendors.columns.city", "City")}</TableHead>}
                 {!isHidden("gst") && <TableHead>{t("vendors.columns.gst", "GST")}</TableHead>}
@@ -244,6 +253,16 @@ function VendorsPage() {
                             </div>
                           )}
                         </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("phone") && (
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {v.mobile_number || "—"}
+                      </TableCell>
+                    )}
+                    {!isHidden("contact") && (
+                      <TableCell className="text-xs text-muted-foreground">
+                        {v.contact_person || "—"}
                       </TableCell>
                     )}
                     {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}

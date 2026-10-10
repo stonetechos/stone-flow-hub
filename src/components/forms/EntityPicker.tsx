@@ -109,6 +109,8 @@ export interface EntitySourceRow {
   project_code?: string | null;
   product_code?: string | null;
   primary_phone?: string | null;
+  mobile_number?: string | null;
+  contact_person?: string | null;
   city?: string | null;
   customer?: { name?: string | null } | null;
   stone_type?: string | null;
@@ -135,7 +137,9 @@ function toRow(type: EntityType, r: EntitySourceRow): EntityRow {
       return {
         id: r.id,
         label: r.company_name ?? "",
-        sublabel: [r.vendor_code, r.city].filter(Boolean).join(" · "),
+        sublabel: [r.vendor_code, r.contact_person, r.mobile_number, r.city]
+          .filter(Boolean)
+          .join(" · "),
       };
     case "project":
       return {

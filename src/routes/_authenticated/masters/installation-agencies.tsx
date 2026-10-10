@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Check, Sparkles, Pencil } from "lucide-react";
+import { Plus, Check, Sparkles, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -122,11 +122,32 @@ function InstallationAgenciesPage() {
     setEditing(row);
   };
 
+  const [search, setSearch] = useState("");
   const rows = useMemo(() => query.data ?? [], [query.data]);
   const filteredRows = useMemo(() => {
-    if (selectedFilter === "all") return rows;
-    return rows.filter((r) => (r.work_types ?? []).includes(selectedFilter as AgencyWorkType));
-  }, [rows, selectedFilter]);
+    let list = rows;
+    if (selectedFilter !== "all") {
+      list = list.filter((r) => (r.work_types ?? []).includes(selectedFilter as AgencyWorkType));
+    }
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const qDigits = q.replace(/\D/g, "");
+      list = list.filter((r) => {
+        const nameMatch = r.name.toLowerCase().includes(q);
+        const codeMatch = r.code.toLowerCase().includes(q);
+        const contactMatch = (r.contact_person ?? "").toLowerCase().includes(q);
+        const phoneRaw = r.phone ?? "";
+        const phoneMatch = phoneRaw.toLowerCase().includes(q);
+        const phoneDigits = phoneRaw.replace(/\D/g, "");
+        const digitMatch =
+          qDigits.length >= 4 &&
+          (phoneDigits.includes(qDigits) ||
+            (qDigits.length >= 10 && phoneDigits.includes(qDigits.slice(-10))));
+        return nameMatch || codeMatch || contactMatch || phoneMatch || digitMatch;
+      });
+    }
+    return list;
+  }, [rows, selectedFilter, search]);
 
   const dialogOpen = creating || !!editing;
 
@@ -144,32 +165,44 @@ function InstallationAgenciesPage() {
         }
       />
 
-      <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        <span className="text-xs text-muted-foreground mr-1">Work Type:</span>
-        <Button
-          type="button"
-          size="sm"
-          variant={selectedFilter === "all" ? "default" : "outline"}
-          className="h-7 text-xs rounded-full"
-          onClick={() => setSelectedFilter("all")}
-        >
-          All ({rows.length})
-        </Button>
-        {AGENCY_WORK_TYPES.map((wt) => {
-          const count = rows.filter((r) => (r.work_types ?? []).includes(wt.value)).length;
-          return (
-            <Button
-              key={wt.value}
-              type="button"
-              size="sm"
-              variant={selectedFilter === wt.value ? "default" : "outline"}
-              className="h-7 text-xs rounded-full"
-              onClick={() => setSelectedFilter(wt.value)}
-            >
-              {wt.label} {count > 0 && `(${count})`}
-            </Button>
-          );
-        })}
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground mr-1">Work Type:</span>
+          <Button
+            type="button"
+            size="sm"
+            variant={selectedFilter === "all" ? "default" : "outline"}
+            className="h-7 text-xs rounded-full"
+            onClick={() => setSelectedFilter("all")}
+          >
+            All ({rows.length})
+          </Button>
+          {AGENCY_WORK_TYPES.map((wt) => {
+            const count = rows.filter((r) => (r.work_types ?? []).includes(wt.value)).length;
+            return (
+              <Button
+                key={wt.value}
+                type="button"
+                size="sm"
+                variant={selectedFilter === wt.value ? "default" : "outline"}
+                className="h-7 text-xs rounded-full"
+                onClick={() => setSelectedFilter(wt.value)}
+              >
+                {wt.label} {count > 0 && `(${count})`}
+              </Button>
+            );
+          })}
+        </div>
+
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, phone, contact person…"
+            className="h-8 pl-8 text-xs w-full"
+          />
+        </div>
       </div>
 
       {query.isLoading ? (

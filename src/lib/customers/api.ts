@@ -1,7 +1,7 @@
 /** Customers data access. Trust boundary — validates inputs, generates codes, dedupes on phone. */
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
-import { normalizeMobile, sanitizeSearch } from "@/lib/zod";
+import { extractPhoneDigits, normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { customerCreateSchema, type CustomerCreateInput } from "./schema";
 import {
@@ -23,22 +23,74 @@ export async function listCustomers(query = ""): Promise<CustomerRow[]> {
 
   const s = sanitizeSearch(query);
   if (s) {
+    const digits = extractPhoneDigits(query);
+    let contactCustomerIds: string[] = [];
+
+    // Also check if any contact person matches this phone or name
+    try {
+      const contactClauses: string[] = [
+        `name.ilike.%${s}%`,
+        `phone.ilike.%${s}%`,
+        `whatsapp.ilike.%${s}%`,
+      ];
+      if (digits.length >= 4) {
+        contactClauses.push(`phone.ilike.%${digits}%`, `whatsapp.ilike.%${digits}%`);
+        if (digits.length >= 10) {
+          const last10 = digits.slice(-10);
+          contactClauses.push(`phone.ilike.%${last10}%`, `whatsapp.ilike.%${last10}%`);
+        }
+      }
+      const { data: contacts } = await getDb()
+        .from("customer_contacts")
+        .select("customer_id")
+        .or(contactClauses.join(","))
+        .limit(50);
+      if (contacts && contacts.length > 0) {
+        contactCustomerIds = contacts.map((c) => c.customer_id).filter(Boolean);
+      }
+    } catch {
+      // Safe fallback if customer_contacts is temporarily unreachable
+    }
+
     // Search across every field a staff user reasonably types when looking up a customer.
     // Query external_ref JSONB (for resilience if dedicated columns are not yet in Postgres)
     // alongside top-level fields safely without throwing 42703 schema errors.
-    q = q.or(
-      [
-        `name.ilike.%${s}%`,
-        `external_ref->>company_name.ilike.%${s}%`,
-        `external_ref->>contact_person.ilike.%${s}%`,
-        `customer_code.ilike.%${s}%`,
-        `primary_phone.ilike.%${s}%`,
-        `whatsapp.ilike.%${s}%`,
-        `primary_email.ilike.%${s}%`,
-        `gst_number.ilike.%${s}%`,
-        `city.ilike.%${s}%`,
-      ].join(","),
-    );
+    const clauses = [
+      `name.ilike.%${s}%`,
+      `external_ref->>company_name.ilike.%${s}%`,
+      `external_ref->>contact_person.ilike.%${s}%`,
+      `customer_code.ilike.%${s}%`,
+      `primary_phone.ilike.%${s}%`,
+      `whatsapp.ilike.%${s}%`,
+      `primary_email.ilike.%${s}%`,
+      `gst_number.ilike.%${s}%`,
+      `city.ilike.%${s}%`,
+    ];
+
+    if (digits.length >= 4) {
+      clauses.push(
+        `primary_phone.ilike.%${digits}%`,
+        `whatsapp.ilike.%${digits}%`,
+        `external_ref->>primary_phone.ilike.%${digits}%`,
+        `external_ref->>mobile.ilike.%${digits}%`,
+        `external_ref->>phone.ilike.%${digits}%`,
+      );
+      if (digits.length >= 10) {
+        const last10 = digits.slice(-10);
+        clauses.push(
+          `primary_phone.ilike.%${last10}%`,
+          `whatsapp.ilike.%${last10}%`,
+          `external_ref->>primary_phone.ilike.%${last10}%`,
+          `external_ref->>mobile.ilike.%${last10}%`,
+        );
+      }
+    }
+
+    if (contactCustomerIds.length > 0) {
+      clauses.push(`id.in.(${contactCustomerIds.join(",")})`);
+    }
+
+    q = q.or(clauses.join(","));
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
