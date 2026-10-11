@@ -22,7 +22,7 @@ export const publicInquiryInputSchema = z.object({
   email: z.string().trim().email("Invalid email address").optional().or(z.literal("")),
   city: z.string().trim().min(2, "Please enter your city or project location"),
   customer_role: z.string().optional().default("Owner / Homeowner"),
-  customer_type: z.string().optional().default("individual"),
+  customer_type: z.string().optional().default("website"),
   space_type: z.string().trim().min(1, "Please select the type of space"),
   required_date: z.string().min(1, "Please select when you need this by"),
   selected_products: z.array(z.string()).min(1, "Please select at least one product"),
@@ -241,17 +241,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         whatsapp: normalizedPhone,
         primary_email: input.email ? input.email.trim().toLowerCase() : null,
         city: input.city.trim(),
-        customer_type: ([
-          "builder",
-          "architect",
-          "interior_designer",
-          "contractor",
-          "individual",
-          "company",
-          "other",
-        ].includes(input.customer_type)
-          ? input.customer_type
-          : "individual") as Database["public"]["Enums"]["customer_type"],
+        customer_type: "website" as Database["public"]["Enums"]["customer_type"],
         source: "Shareable Web Link",
         space_type:
           (input.space_type ? VALID_SPACE_TYPES[input.space_type.trim().toLowerCase()] : null) ||
@@ -270,6 +260,29 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
         .select("id, customer_code")
         .single();
 
+      // If Postgres rejects 'website' before the enum migration is committed, fallback gracefully to 'individual'
+      if (
+        custErr &&
+        (custErr.message?.includes("customer_type") ||
+          (custErr.details && custErr.details.includes("customer_type")) ||
+          (custErr.code === "22P02" && custErr.message?.includes("enum")))
+      ) {
+        console.warn(
+          "[public-inquiry] customer_type 'website' fallback triggered on customer create:",
+          custErr.message,
+        );
+        const retry = await supabaseAdmin
+          .from("customers")
+          .insert({
+            ...customerInsertPayload,
+            customer_type: "individual",
+          } as unknown as Database["public"]["Tables"]["customers"]["Insert"])
+          .select("id, customer_code")
+          .single();
+        newCustomer = retry.data;
+        custErr = retry.error;
+      }
+
       if (custErr && isMaterialInterestEnumError(custErr)) {
         console.warn(
           "[public-inquiry] Enum fallback triggered on customer create:",
@@ -283,6 +296,7 @@ export const submitPublicEnquiryServerFn = createServerFn({ method: "POST" })
           .from("customers")
           .insert({
             ...customerInsertPayload,
+            customer_type: "individual",
             material_interests: filteredInterests,
             notes: sanitizedNotes,
           } as unknown as Database["public"]["Tables"]["customers"]["Insert"])

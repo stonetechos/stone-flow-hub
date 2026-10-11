@@ -118,6 +118,9 @@ const CUSTOMER_TYPE_MAP: Record<string, CustomerCreateInput["customer_type"]> = 
   individual: "walk_in",
   homeowner: "walk_in",
   client: "walk_in",
+  website: "website",
+  "web site": "website",
+  online: "website",
 };
 
 export function parseVoiceCustomer(utterance: string): ParsedVoiceCustomer {

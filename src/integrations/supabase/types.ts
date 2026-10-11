@@ -10128,6 +10128,7 @@ export type Database = {
         | "instagram"
         | "indiamart"
         | "pinterest"
+        | "website"
       dispatch_status: "planned" | "in_transit" | "delivered" | "cancelled"
       material_interest:
         | "natural_stone_cladding_tiles"
@@ -10641,6 +10642,7 @@ export const Constants = {
         "instagram",
         "indiamart",
         "pinterest",
+        "website",
       ],
       dispatch_status: ["planned", "in_transit", "delivered", "cancelled"],
       material_interest: [

@@ -97,6 +97,7 @@ import {
   customerCreateSchema,
   getCustomerTypeLabel,
   getCustomerTypeBadgeTone,
+  getEffectiveCustomerType,
   type CustomerCreateInput,
 } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
@@ -197,7 +198,7 @@ function CustomersPage() {
       list = list.filter((c) => getCustomerResponseStatus(c) === statusFilter);
     }
     if (typeFilter !== "all") {
-      list = list.filter((c) => c.customer_type === typeFilter);
+      list = list.filter((c) => getEffectiveCustomerType(c) === typeFilter);
     }
     if (paymentFilter !== "all") {
       list = list.filter(
@@ -606,14 +607,19 @@ function CustomersPage() {
                           {c.created_at ? formatDate(c.created_at) : "—"}
                         </TableCell>
                         <TableCell>
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide whitespace-nowrap",
-                              getCustomerTypeBadgeTone(c.customer_type),
-                            )}
-                          >
-                            {getCustomerTypeLabel(c.customer_type)}
-                          </span>
+                          {(() => {
+                            const effType = getEffectiveCustomerType(c);
+                            return (
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide whitespace-nowrap",
+                                  getCustomerTypeBadgeTone(effType),
+                                )}
+                              >
+                                {getCustomerTypeLabel(effType)}
+                              </span>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <CustomerResponseStatusSelect

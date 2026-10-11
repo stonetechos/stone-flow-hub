@@ -36,7 +36,12 @@ import {
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getCustomer } from "@/lib/customers/api";
-import { SPACE_TYPES, MATERIAL_OPTIONS } from "@/lib/customers/schema";
+import {
+  SPACE_TYPES,
+  MATERIAL_OPTIONS,
+  getCustomerTypeLabel,
+  getEffectiveCustomerType,
+} from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
 import { normalizeCustomerRow } from "@/lib/customers/normalize";
 import { hub } from "@/lib/hubs/api";
@@ -282,9 +287,7 @@ function CustomerHub() {
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs">{c.customer_code}</span>
-            <Badge variant="secondary" className="capitalize">
-              {c.customer_type.replace("_", " ")}
-            </Badge>
+            <Badge variant="secondary">{getCustomerTypeLabel(getEffectiveCustomerType(c))}</Badge>
             {c.company_name && (
               <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
                 Firm: {c.company_name}
@@ -445,7 +448,10 @@ function CustomerHub() {
                       ]
                     : []),
                   { label: "Code", value: <span className="font-mono">{c.customer_code}</span> },
-                  { label: "Type of Customer", value: c.customer_type.replace(/_/g, " ") },
+                  {
+                    label: "Type of Customer",
+                    value: getCustomerTypeLabel(getEffectiveCustomerType(c)),
+                  },
                   ...(c.customer_type === "reference" && c.referred_by
                     ? [{ label: "Referred by", value: c.referred_by }]
                     : []),

@@ -9,6 +9,7 @@ import type { DbEnum } from "@/lib/types";
  *  displaying correctly — they just aren't offered for new customers. */
 export const CUSTOMER_TYPES: ReadonlyArray<{ value: DbEnum<"customer_type">; label: string }> = [
   { value: "walk_in", label: "Walk-in" },
+  { value: "website", label: "Website" },
   { value: "b2b", label: "B2B" },
   { value: "architect", label: "Architect" },
   { value: "interior_designer", label: "Interior Designer" },
@@ -41,6 +42,7 @@ export function getCustomerTypeBadgeTone(type?: string | null): string {
       return "border-indigo-200 bg-indigo-50 text-indigo-800";
     case "reference":
       return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    case "website":
     case "google_search":
     case "instagram":
     case "indiamart":
@@ -49,6 +51,28 @@ export function getCustomerTypeBadgeTone(type?: string | null): string {
     default:
       return "border-slate-200 bg-slate-50 text-slate-700";
   }
+}
+
+/**
+ * Returns the effective customer type, recognizing website leads even if
+ * their stored customer_type hasn't migrated from 'individual' yet.
+ */
+export function getEffectiveCustomerType(
+  c?: {
+    customer_type?: string | null;
+    source?: string | null;
+    notes?: string | null;
+  } | null,
+): string {
+  if (!c) return "individual";
+  if (c.customer_type === "website") return "website";
+  if (
+    c.source === "Shareable Web Link" ||
+    (c.notes && c.notes.toLowerCase().includes("lead from public web form"))
+  ) {
+    return "website";
+  }
+  return c.customer_type || "individual";
 }
 
 /** "Type of space" at the customer's site. */
@@ -111,6 +135,7 @@ export const customerCreateSchema = z
     customer_type: z
       .enum([
         "walk_in",
+        "website",
         "b2b",
         "architect",
         "interior_designer",

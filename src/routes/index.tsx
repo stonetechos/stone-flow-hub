@@ -522,7 +522,7 @@ function HomePage() {
           email: email.trim(),
           city: city.trim(),
           customer_role: customerRole,
-          customer_type: selectedRoleObj?.type || "individual",
+          customer_type: "website",
           space_type: spaceType,
           required_date: requiredDate,
           selected_products: selectedProducts.length > 0 ? selectedProducts : ["Stone Veneer"],
