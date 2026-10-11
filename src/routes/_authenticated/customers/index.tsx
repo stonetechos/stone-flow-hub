@@ -559,7 +559,7 @@ function CustomersPage() {
                             params={{ customerId: c.id }}
                             className="hover:underline"
                           >
-                            {(page - 1) * pageSize + i + 1}
+                            {rows.length - ((page - 1) * pageSize + i)}
                           </Link>
                         </TableCell>
                         <TableCell className="font-medium">
