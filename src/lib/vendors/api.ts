@@ -12,51 +12,89 @@ export type VendorRow = DbTable<"vendors"> & {
 
 export function getVendorPhone(v: VendorRow | null | undefined): string | null {
   if (!v) return null;
-  if (v.mobile_number) return v.mobile_number;
-  if (v.whatsapp_number) return v.whatsapp_number;
+  if (v.mobile_number && v.mobile_number.trim()) return v.mobile_number.trim();
+  if (v.whatsapp_number && v.whatsapp_number.trim()) return v.whatsapp_number.trim();
   if (v.vendor_contacts && v.vendor_contacts.length > 0) {
-    const primary = v.vendor_contacts.find((c) => c.is_primary) ?? v.vendor_contacts[0];
-    if (primary?.phone) return primary.phone;
-    if (primary?.whatsapp) return primary.whatsapp;
+    const primary =
+      v.vendor_contacts.find((c) => c.is_primary && (c.phone || c.whatsapp)) ??
+      v.vendor_contacts.find((c) => c.phone || c.whatsapp) ??
+      v.vendor_contacts[0];
+    if (primary?.phone && primary.phone.trim()) return primary.phone.trim();
+    if (primary?.whatsapp && primary.whatsapp.trim()) return primary.whatsapp.trim();
   }
   const ref = v.external_ref as Record<string, unknown> | null;
-  if (ref) {
-    if (typeof ref.mobile === "string" && ref.mobile) return ref.mobile;
-    if (typeof ref.phone === "string" && ref.phone) return ref.phone;
-    if (typeof ref.mobile_number === "string" && ref.mobile_number) return ref.mobile_number;
+  if (ref && typeof ref === "object") {
+    for (const key of [
+      "mobile",
+      "phone",
+      "mobile_number",
+      "contact_phone",
+      "contact_mobile",
+      "phone_number",
+      "contact_no",
+      "contact_number",
+    ]) {
+      const val = ref[key];
+      if (typeof val === "string" && val.trim()) return val.trim();
+      if (typeof val === "number") return String(val);
+    }
   }
   return null;
 }
 
 export function getVendorContactName(v: VendorRow | null | undefined): string | null {
   if (!v) return null;
-  if (v.contact_person) return v.contact_person;
+  if (v.contact_person && v.contact_person.trim()) return v.contact_person.trim();
   if (v.vendor_contacts && v.vendor_contacts.length > 0) {
-    const primary = v.vendor_contacts.find((c) => c.is_primary) ?? v.vendor_contacts[0];
-    if (primary?.name) return primary.name;
+    const primary =
+      v.vendor_contacts.find((c) => c.is_primary && c.name) ??
+      v.vendor_contacts.find((c) => c.name) ??
+      v.vendor_contacts[0];
+    if (primary?.name && primary.name.trim()) return primary.name.trim();
   }
   const ref = v.external_ref as Record<string, unknown> | null;
-  if (ref) {
-    if (typeof ref.contact_person === "string" && ref.contact_person) return ref.contact_person;
-    if (typeof ref.contact_name === "string" && ref.contact_name) return ref.contact_name;
-    if (typeof ref.name === "string" && ref.name) return ref.name;
+  if (ref && typeof ref === "object") {
+    for (const key of ["contact_person", "contact_name", "contact", "name", "person"]) {
+      const val = ref[key];
+      if (typeof val === "string" && val.trim()) return val.trim();
+    }
   }
   return null;
 }
 
 async function attachVendorContacts(vendors: VendorRow[]): Promise<VendorRow[]> {
   if (vendors.length === 0) return [];
-  const vendorIds = vendors.map((v) => v.id);
   try {
-    const { data: contacts } = await getDb()
-      .from("vendor_contacts")
-      .select("*")
-      .in("vendor_id", vendorIds)
-      .order("is_primary", { ascending: false });
+    let contacts: VendorContactRow[] | null = null;
+    if (vendors.length === 1) {
+      const { data, error } = await getDb()
+        .from("vendor_contacts")
+        .select("*")
+        .eq("vendor_id", vendors[0].id)
+        .order("is_primary", { ascending: false });
+      if (error) {
+        console.warn("[vendors] failed to query vendor_contacts for vendor:", vendors[0].id, error);
+      } else {
+        contacts = data;
+      }
+    } else {
+      // Query contacts directly without huge query params that can fail in PostgREST
+      const { data, error } = await getDb()
+        .from("vendor_contacts")
+        .select("*")
+        .order("is_primary", { ascending: false })
+        .limit(1000);
+      if (error) {
+        console.warn("[vendors] failed to batch query vendor_contacts:", error);
+      } else {
+        contacts = data;
+      }
+    }
 
     const contactMap = new Map<string, VendorContactRow[]>();
-    if (contacts) {
+    if (contacts && contacts.length > 0) {
       for (const c of contacts) {
+        if (!c.vendor_id) continue;
         if (!contactMap.has(c.vendor_id)) {
           contactMap.set(c.vendor_id, []);
         }
@@ -65,24 +103,52 @@ async function attachVendorContacts(vendors: VendorRow[]): Promise<VendorRow[]> 
     }
 
     return vendors.map((v) => {
-      const vContacts = contactMap.get(v.id) ?? [];
-      const primary = vContacts.find((c) => c.is_primary) ?? vContacts[0];
-      const phone = v.mobile_number || primary?.phone || primary?.whatsapp || getVendorPhone(v);
-      const contactPerson = v.contact_person || primary?.name || getVendorContactName(v);
-      const email = v.email || primary?.email || null;
-      return {
+      const vContacts = contactMap.get(v.id) ?? v.vendor_contacts ?? [];
+      const primary =
+        vContacts.find((c) => c.is_primary && (c.phone || c.name)) ??
+        vContacts.find((c) => c.is_primary) ??
+        vContacts.find((c) => c.phone || c.name) ??
+        vContacts[0];
+
+      const enrichedVendor: VendorRow = {
         ...v,
         vendor_contacts: vContacts,
+      };
+
+      const phone =
+        (v.mobile_number && v.mobile_number.trim()) ||
+        (primary?.phone && primary.phone.trim()) ||
+        (primary?.whatsapp && primary.whatsapp.trim()) ||
+        (v.whatsapp_number && v.whatsapp_number.trim()) ||
+        getVendorPhone(enrichedVendor) ||
+        null;
+
+      const contactPerson =
+        (v.contact_person && v.contact_person.trim()) ||
+        (primary?.name && primary.name.trim()) ||
+        getVendorContactName(enrichedVendor) ||
+        null;
+
+      const email =
+        (v.email && v.email.trim()) ||
+        (primary?.email && primary.email.trim()) ||
+        ((v.external_ref as Record<string, unknown> | null)?.email as string) ||
+        null;
+
+      return {
+        ...enrichedVendor,
         mobile_number: phone,
         contact_person: contactPerson,
         email,
       };
     });
-  } catch {
+  } catch (err) {
+    console.warn("[vendors] error in attachVendorContacts:", err);
     return vendors.map((v) => ({
       ...v,
-      mobile_number: v.mobile_number || getVendorPhone(v),
-      contact_person: v.contact_person || getVendorContactName(v),
+      mobile_number: (v.mobile_number && v.mobile_number.trim()) || getVendorPhone(v) || null,
+      contact_person:
+        (v.contact_person && v.contact_person.trim()) || getVendorContactName(v) || null,
     }));
   }
 }
@@ -188,14 +254,26 @@ export async function getVendor(id: string): Promise<VendorRow | null> {
 }
 
 export async function getPrimaryContact(vendorId: string): Promise<VendorContactRow | null> {
-  const { data, error } = await getDb()
+  const { data: primary, error: pErr } = await getDb()
     .from("vendor_contacts")
     .select("*")
     .eq("vendor_id", vendorId)
     .eq("is_primary", true)
     .maybeSingle();
-  if (error) throw new AppError(mapDbError(error));
-  return data;
+
+  if (!pErr && primary) return primary;
+
+  // Fallback to any contact for this vendor
+  const { data: anyContact, error: aErr } = await getDb()
+    .from("vendor_contacts")
+    .select("*")
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (aErr) throw new AppError(mapDbError(aErr));
+  return anyContact ?? null;
 }
 
 export function extractVendorMetadata(v: VendorRow | null | undefined): {

@@ -53,6 +53,8 @@ import {
   listVendors,
   updateVendor,
   extractVendorMetadata,
+  getVendorPhone,
+  getVendorContactName,
   type VendorRow,
 } from "@/lib/vendors/api";
 import {
@@ -255,25 +257,35 @@ function VendorsPage() {
                         </div>
                       </TableCell>
                     )}
-                    {!isHidden("phone") && (
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {v.mobile_number ? (
-                          <a
-                            href={`tel:${v.mobile_number}`}
-                            className="hover:underline hover:text-foreground"
-                          >
-                            {v.mobile_number}
-                          </a>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                    )}
-                    {!isHidden("contact") && (
-                      <TableCell className="text-xs text-muted-foreground">
-                        {v.contact_person || "—"}
-                      </TableCell>
-                    )}
+                    {!isHidden("phone") &&
+                      (() => {
+                        const phone =
+                          (v.mobile_number && v.mobile_number.trim()) || getVendorPhone(v);
+                        return (
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {phone ? (
+                              <a
+                                href={`tel:${phone}`}
+                                className="hover:underline hover:text-foreground"
+                              >
+                                {phone}
+                              </a>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                        );
+                      })()}
+                    {!isHidden("contact") &&
+                      (() => {
+                        const contactPerson =
+                          (v.contact_person && v.contact_person.trim()) || getVendorContactName(v);
+                        return (
+                          <TableCell className="text-xs text-muted-foreground">
+                            {contactPerson || "—"}
+                          </TableCell>
+                        );
+                      })()}
                     {!isHidden("city") && <TableCell>{v.city ?? "—"}</TableCell>}
                     {!isHidden("gst") && <TableCell>{v.gst_number ?? "—"}</TableCell>}
                     {!isHidden("terms") && <TableCell>{v.payment_terms ?? "—"}</TableCell>}

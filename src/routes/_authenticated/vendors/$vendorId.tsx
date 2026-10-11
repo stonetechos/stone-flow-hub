@@ -57,8 +57,8 @@ function VendorHub() {
   if (!q.data) return <ErrorBlock message="Vendor not found." />;
   const v = q.data;
 
-  const phone = contact.data?.phone ?? getVendorPhone(v) ?? "";
-  const contactName = contact.data?.name ?? getVendorContactName(v) ?? "";
+  const phone = contact.data?.phone ?? v.mobile_number ?? getVendorPhone(v) ?? "";
+  const contactName = contact.data?.name ?? v.contact_person ?? getVendorContactName(v) ?? "";
   const email =
     contact.data?.email ??
     v.email ??
