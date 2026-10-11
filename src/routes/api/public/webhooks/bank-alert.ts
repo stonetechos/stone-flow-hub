@@ -10,12 +10,29 @@
  * and updates live account balances.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { matchesSharedSecret } from "@/lib/server/shared-secret";
 import { parseTransactionMessage } from "@/lib/banking/sms-parser";
 
 export const Route = createFileRoute("/api/public/webhooks/bank-alert")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const webhookSecret =
+          process.env.BANK_ALERT_WEBHOOK_SECRET ||
+          process.env.CRON_SECRET ||
+          process.env.CRON_SHARED_SECRET;
+        if (!webhookSecret) {
+          return Response.json({ error: "Webhook secret not configured" }, { status: 500 });
+        }
+        const suppliedSecret =
+          request.headers.get("x-webhook-secret") ??
+          request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+          request.headers.get("x-cron-secret") ??
+          null;
+        if (!matchesSharedSecret(suppliedSecret, webhookSecret)) {
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         try {
           const contentType = request.headers.get("content-type") || "";
           let rawBody = "";
@@ -155,9 +172,6 @@ export const Route = createFileRoute("/api/public/webhooks/bank-alert")({
         return Response.json({
           endpoint: "/api/public/webhooks/bank-alert",
           status: "active",
-          monitored_account: "Bank of Baroda Current A/c 53130200000136",
-          sms_channel: "+91 7742090866",
-          email_channel: "stonetech.ahmedabad@gmail.com",
         });
       },
     },

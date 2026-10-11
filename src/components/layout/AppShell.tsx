@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -522,14 +522,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     trackNavVisit(path);
   }, [path]);
 
-  const openShortcuts = (): void => {
+  const openShortcuts = useCallback((): void => {
     toast(t("shortcuts.title", "Keyboard shortcuts"), {
       description: t(
         "shortcuts.description",
         "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — quick create · / — search · ? — help",
       ),
     });
-  };
+  }, [t]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
@@ -570,7 +570,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [collapsed, setCollapsed]);
+  }, [collapsed, setCollapsed, openShortcuts]);
 
   async function onSignOut() {
     try {

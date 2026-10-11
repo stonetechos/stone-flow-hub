@@ -8,7 +8,6 @@
  * Supabase types are regenerated the client is cast via `as any` to avoid
  * TypeScript errors — the runtime behaviour is identical.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { supabase } from "@/integrations/supabase/client";
 import type { SiteSettings, SiteReview } from "./types";
 import { SITE_SETTINGS_DEFAULTS } from "./types";

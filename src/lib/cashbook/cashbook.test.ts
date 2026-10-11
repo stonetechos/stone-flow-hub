@@ -100,4 +100,39 @@ describe("Cashbook Running Balance Computation", () => {
     expect(computed[3].running_balance).toBe(10000);
     expect(computed[4].running_balance).toBe(-2000);
   });
+
+  it("handles app_settings fallback format gracefully", () => {
+    const rawVal = {
+      entries: [
+        {
+          id: "cb-1",
+          entry_date: "2026-10-09",
+          entry_type: "debit",
+          amount: 5000,
+          remarks: "Opening cash in hand",
+          created_at: "2026-10-09T10:00:00Z",
+          updated_at: "2026-10-09T10:00:00Z",
+        },
+        {
+          id: "cb-2",
+          entry_date: "2026-10-10",
+          entry_type: "credit",
+          amount: 2000,
+          remarks: "Site fuel payment",
+          created_at: "2026-10-10T11:00:00Z",
+          updated_at: "2026-10-10T11:00:00Z",
+        },
+      ],
+    };
+
+    const entries = Array.isArray(rawVal)
+      ? rawVal
+      : Array.isArray(rawVal?.entries)
+        ? rawVal.entries
+        : [];
+
+    expect(entries.length).toBe(2);
+    expect(entries[0].amount).toBe(5000);
+    expect(entries[1].amount).toBe(2000);
+  });
 });

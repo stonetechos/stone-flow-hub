@@ -82,13 +82,14 @@ export function TaxRegimeOptimizer({ initialEmployeeId }: TaxRegimeOptimizerProp
   });
 
   const employees = employeesQ.data ?? [];
+  const firstEmployeeId = employeesQ.data?.[0]?.id;
 
   // Default to first employee if none specified
   useEffect(() => {
-    if (!selectedEmpId && employees.length > 0) {
-      setSelectedEmpId(employees[0].id);
+    if (!selectedEmpId && firstEmployeeId) {
+      setSelectedEmpId(firstEmployeeId);
     }
-  }, [employees, selectedEmpId]);
+  }, [firstEmployeeId, selectedEmpId]);
 
   // Fetch salary structure for chosen employee
   const structuresQ = useQuery({

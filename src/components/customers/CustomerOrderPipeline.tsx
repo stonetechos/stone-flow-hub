@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Boxes,
   CreditCard,
+  PackageCheck,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,8 +53,10 @@ export function CustomerOrderPipeline() {
   const [assignQuoteModal, setAssignQuoteModal] = useState<{
     quoteId: string;
     quoteNo: string;
+    currentFulfilmentType?: "in_stock" | "vendor" | "unassigned";
     currentVendorId?: string | null;
     currentVendorName?: string | null;
+    currentStockLocation?: string | null;
     currentPromisedDate?: string | null;
   } | null>(null);
 
@@ -445,17 +448,74 @@ export function CustomerOrderPipeline() {
                     {/* Assigned Vendor */}
                     <TableCell>
                       {item.isVendorAssigned ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800">
-                            <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
-                            <span>{item.vendorName}</span>
-                          </span>
-                          {item.vendorCode && (
-                            <span className="font-mono text-[10px] text-muted-foreground">
-                              {item.vendorCode}
+                        item.fulfilmentType === "in_stock" ||
+                        item.vendorName === "In-House Stock" ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-800">
+                              <PackageCheck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                              <span>In-House Stock</span>
                             </span>
-                          )}
-                        </div>
+                            {item.stockLocation ? (
+                              <span className="text-[10px] text-blue-600/80">
+                                Stock: {item.stockLocation}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-blue-600/80">
+                                Fulfilled from Stock
+                              </span>
+                            )}
+                            {item.orderType === "quote" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAssignQuoteModal({
+                                    quoteId: item.orderId,
+                                    quoteNo: item.orderNo,
+                                    currentFulfilmentType: "in_stock",
+                                    currentStockLocation: item.stockLocation,
+                                    currentVendorId: item.vendorId,
+                                    currentVendorName: item.vendorName,
+                                    currentPromisedDate: item.customerDeadline,
+                                  });
+                                }}
+                                className="text-[10px] text-blue-700 hover:underline text-left cursor-pointer"
+                              >
+                                Edit Fulfilment
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800">
+                              <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                              <span>{item.vendorName}</span>
+                            </span>
+                            {item.vendorCode && (
+                              <span className="font-mono text-[10px] text-muted-foreground">
+                                {item.vendorCode}
+                              </span>
+                            )}
+                            {item.orderType === "quote" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAssignQuoteModal({
+                                    quoteId: item.orderId,
+                                    quoteNo: item.orderNo,
+                                    currentFulfilmentType: "vendor",
+                                    currentStockLocation: item.stockLocation,
+                                    currentVendorId: item.vendorId,
+                                    currentVendorName: item.vendorName,
+                                    currentPromisedDate: item.customerDeadline,
+                                  });
+                                }}
+                                className="text-[10px] text-muted-foreground hover:underline text-left cursor-pointer"
+                              >
+                                Edit Vendor
+                              </button>
+                            )}
+                          </div>
+                        )
                       ) : (
                         <div className="flex flex-col gap-1 items-start">
                           <Badge
@@ -472,12 +532,15 @@ export function CustomerOrderPipeline() {
                                 setAssignQuoteModal({
                                   quoteId: item.orderId,
                                   quoteNo: item.orderNo,
+                                  currentFulfilmentType: "unassigned",
+                                  currentVendorId: item.vendorId,
+                                  currentVendorName: item.vendorName,
                                   currentPromisedDate: item.customerDeadline,
                                 });
                               }}
-                              className="text-[10px] font-semibold text-primary hover:underline"
+                              className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
                             >
-                              + Assign Vendor
+                              + Assign Fulfilment
                             </button>
                           )}
                         </div>
@@ -576,6 +639,10 @@ export function CustomerOrderPipeline() {
           onOpenChange={(o) => !o && setAssignQuoteModal(null)}
           quoteId={assignQuoteModal.quoteId}
           quoteNo={assignQuoteModal.quoteNo}
+          currentFulfilmentType={assignQuoteModal.currentFulfilmentType}
+          currentStockLocation={assignQuoteModal.currentStockLocation}
+          currentVendorId={assignQuoteModal.currentVendorId}
+          currentVendorName={assignQuoteModal.currentVendorName}
           currentPromisedDate={assignQuoteModal.currentPromisedDate}
           onSuccess={() => refetch()}
         />

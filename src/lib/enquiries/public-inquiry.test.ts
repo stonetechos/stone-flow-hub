@@ -98,11 +98,24 @@ describe("lookupCustomerInputSchema", () => {
     expect(result.country_code).toBe("+91");
   });
 
-  test("rejects very short search numbers", () => {
+  test("rejects phone fragments shorter than ten digits", () => {
     expect(() =>
       lookupCustomerInputSchema.parse({
         whatsapp: "123",
       }),
     ).toThrow();
+    expect(() =>
+      lookupCustomerInputSchema.parse({
+        whatsapp: "123456",
+      }),
+    ).toThrow();
+  });
+
+  test("accepts a ten-digit phone number", () => {
+    expect(
+      lookupCustomerInputSchema.parse({
+        whatsapp: "9876543210",
+      }).whatsapp,
+    ).toBe("9876543210");
   });
 });

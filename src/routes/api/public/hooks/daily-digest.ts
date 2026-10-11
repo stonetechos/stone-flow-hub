@@ -7,18 +7,26 @@
  * work happens with the service-role client behind the header check.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { matchesSharedSecret } from "@/lib/server/shared-secret";
 
 export const Route = createFileRoute("/api/public/hooks/daily-digest")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const auth = request.headers.get("apikey") ?? request.headers.get("authorization");
-        if (!auth) return new Response("Missing apikey", { status: 401 });
+        const cronSecret = process.env.CRON_SECRET || process.env.CRON_SHARED_SECRET;
+        if (!cronSecret) {
+          return new Response("Cron secret not configured", { status: 500 });
+        }
+        const suppliedSecret =
+          request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+          request.headers.get("x-cron-secret") ??
+          null;
+        if (!matchesSharedSecret(suppliedSecret, cronSecret)) {
+          return new Response("Unauthorized", { status: 401 });
+        }
 
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(process.env.SUPABASE_URL!, auth.replace(/^Bearer\s+/i, ""), {
-          auth: { autoRefreshToken: false, persistSession: false },
-        });
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const supabase = supabaseAdmin;
 
         // Load recipient list from app_settings singleton
         const { data: settings, error: sErr } = await supabase

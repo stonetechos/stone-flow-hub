@@ -11,6 +11,8 @@ import {
   Calendar,
   AlertCircle,
   CheckCircle2,
+  Boxes,
+  PackageCheck,
 } from "lucide-react";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -102,9 +104,9 @@ function QuotesPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
 
-  const [vendorFilter, setVendorFilter] = useState<"all" | "accepted" | "unassigned" | "assigned">(
-    "all",
-  );
+  const [vendorFilter, setVendorFilter] = useState<
+    "all" | "accepted" | "unassigned" | "assigned" | "in_stock"
+  >("all");
   const [assigningQuote, setAssigningQuote] = useState<QuoteListItem | null>(null);
 
   const columnDefs: ColumnDef[] = useMemo(
@@ -137,18 +139,21 @@ function QuotesPage() {
     let accepted = 0;
     let unassigned = 0;
     let assigned = 0;
+    let inStock = 0;
     for (const r of all) {
       if (r.status === "accepted") {
         accepted++;
         const a = parseQuoteVendorAssignment(r);
-        if (a.isAssigned) {
+        if (a.fulfilmentType === "in_stock") {
+          inStock++;
+        } else if (a.fulfilmentType === "vendor" || a.isAssigned) {
           assigned++;
         } else {
           unassigned++;
         }
       }
     }
-    return { all: all.length, accepted, unassigned, assigned };
+    return { all: all.length, accepted, unassigned, assigned, inStock };
   }, [query.data]);
 
   const rows = useMemo(() => {
@@ -157,11 +162,19 @@ function QuotesPage() {
       list = list.filter((r) => r.status === "accepted");
     } else if (vendorFilter === "unassigned") {
       list = list.filter(
-        (r) => r.status === "accepted" && !parseQuoteVendorAssignment(r).isAssigned,
+        (r) =>
+          r.status === "accepted" &&
+          parseQuoteVendorAssignment(r).fulfilmentType === "unassigned" &&
+          !parseQuoteVendorAssignment(r).isAssigned,
       );
     } else if (vendorFilter === "assigned") {
       list = list.filter(
-        (r) => r.status === "accepted" && parseQuoteVendorAssignment(r).isAssigned,
+        (r) => r.status === "accepted" && parseQuoteVendorAssignment(r).fulfilmentType === "vendor",
+      );
+    } else if (vendorFilter === "in_stock") {
+      list = list.filter(
+        (r) =>
+          r.status === "accepted" && parseQuoteVendorAssignment(r).fulfilmentType === "in_stock",
       );
     } else if (statusFilter !== "all") {
       list = list.filter((r) => r.status === statusFilter);
@@ -259,7 +272,7 @@ function QuotesPage() {
             setPage(1);
           }}
           className={cn(
-            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
             vendorFilter === "assigned"
               ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
               : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
@@ -267,6 +280,22 @@ function QuotesPage() {
         >
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Assigned to Vendor ({quoteCounts.assigned})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setVendorFilter("in_stock");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
+            vendorFilter === "in_stock"
+              ? "bg-blue-700 text-white border-blue-700 shadow-2xs font-semibold"
+              : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+          )}
+        >
+          <Boxes className="h-3.5 w-3.5 text-blue-600" />
+          In-House Stock ({quoteCounts.inStock})
         </button>
       </div>
 
@@ -413,7 +442,28 @@ function QuotesPage() {
                     )}
                     {!isHidden("vendor") && (
                       <TableCell>
-                        {assignment.isAssigned ? (
+                        {assignment.fulfilmentType === "in_stock" ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition-colors text-left group cursor-pointer"
+                            title={
+                              assignment.stockLocation
+                                ? `Fulfilled from in-house stock (${assignment.stockLocation}) — Click to view/edit`
+                                : "Fulfilled from in-house stock — Click to view/edit"
+                            }
+                          >
+                            <PackageCheck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                            <span className="font-semibold truncate max-w-[130px]">
+                              In-House Stock
+                            </span>
+                            {assignment.stockLocation && (
+                              <span className="text-[10px] text-blue-600/80 max-w-[80px] truncate">
+                                · {assignment.stockLocation}
+                              </span>
+                            )}
+                          </button>
+                        ) : assignment.isAssigned ? (
                           <button
                             type="button"
                             onClick={() => setAssigningQuote(r)}
@@ -546,6 +596,8 @@ function QuotesPage() {
           }}
           quoteId={assigningQuote.id}
           quoteNo={assigningQuote.quote_no}
+          currentFulfilmentType={parseQuoteVendorAssignment(assigningQuote).fulfilmentType}
+          currentStockLocation={parseQuoteVendorAssignment(assigningQuote).stockLocation}
           currentVendorId={parseQuoteVendorAssignment(assigningQuote).vendorId}
           currentVendorName={parseQuoteVendorAssignment(assigningQuote).vendorName}
           currentPromisedDate={parseQuoteVendorAssignment(assigningQuote).promisedDeliveryDate}

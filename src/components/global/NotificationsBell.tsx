@@ -92,9 +92,6 @@ export function NotificationsBell() {
 
   // Cheap enough to compute per render — a memo keyed on `items` just to
   // "refresh now() when data refreshes" isn't buying anything real here
-  // and was tripping the exhaustive-deps lint (nothing in the callback
-  // actually reads `items`).
-  const now = new Date();
   const unreadItems = useMemo(() => items.filter((i) => !i.readAt), [items]);
   const unread = unreadItems.length;
 
@@ -102,14 +99,18 @@ export function NotificationsBell() {
     switch (tab) {
       case "unread":
         return unreadItems;
-      case "today":
+      case "today": {
+        const now = new Date();
         return items.filter((i) => bucketFor(i, now) === "today");
-      case "yesterday":
+      }
+      case "yesterday": {
+        const now = new Date();
         return items.filter((i) => bucketFor(i, now) === "yesterday");
+      }
       default:
         return items;
     }
-  }, [items, now, unreadItems, tab]);
+  }, [items, unreadItems, tab]);
 
   const markAll = (): void => {
     const ids = unreadItems.map((i) => i.id);

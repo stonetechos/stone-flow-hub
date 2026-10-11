@@ -17,6 +17,8 @@ export interface QuoteVendorAssignmentInfo {
   isAssigned: boolean;
   salesOrderId?: string | null;
   salesOrderNo?: string | null;
+  fulfilmentType: "in_stock" | "vendor" | "unassigned";
+  stockLocation?: string | null;
 }
 
 export function parseQuoteVendorAssignment(
@@ -36,6 +38,8 @@ export function parseQuoteVendorAssignment(
 
   let vendorId = (wf.assigned_vendor_id as string | undefined) || null;
   let vendorName = (wf.assigned_vendor_name as string | undefined) || null;
+  let rawFulfilmentType = (wf.fulfilment_type as string | undefined) || null;
+  const stockLocation = (wf.stock_location as string | undefined) || null;
   let promisedDeliveryDate =
     (wf.promised_delivery_date as string | undefined) || quote.valid_until || null;
 
@@ -60,7 +64,31 @@ export function parseQuoteVendorAssignment(
     }
   }
 
-  const isAssigned = Boolean(vendorId && vendorName && vendorName !== "Unassigned Yet");
+  const isInStock =
+    rawFulfilmentType === "in_stock" ||
+    vendorId === "in_house_stock" ||
+    Boolean(
+      vendorName &&
+      (vendorName.toLowerCase().includes("in-house stock") ||
+        vendorName.toLowerCase().includes("in house stock") ||
+        vendorName.toLowerCase().includes("from stock")),
+    );
+
+  if (isInStock) {
+    vendorId = "in_house_stock";
+    vendorName = "In-House Stock";
+    rawFulfilmentType = "in_stock";
+  }
+
+  const isAssigned = Boolean(
+    isInStock || (vendorId && vendorName && vendorName !== "Unassigned Yet"),
+  );
+
+  const fulfilmentType: "in_stock" | "vendor" | "unassigned" = isInStock
+    ? "in_stock"
+    : isAssigned
+      ? "vendor"
+      : "unassigned";
 
   return {
     quoteId: quote.id,
@@ -70,13 +98,17 @@ export function parseQuoteVendorAssignment(
     isAssigned,
     salesOrderId,
     salesOrderNo,
+    fulfilmentType,
+    stockLocation,
   };
 }
 
 export interface AssignVendorToQuoteInput {
   quoteId: string;
-  vendorId: string;
-  vendorName: string;
+  fulfilmentType?: "in_stock" | "vendor";
+  vendorId?: string | null;
+  vendorName?: string | null;
+  stockLocation?: string | null;
   promisedDeliveryDate?: string | null;
   notes?: string | null;
 }
@@ -96,10 +128,14 @@ export async function assignVendorToQuote(
   }
 
   const currentWf = (existing.workflow_state as Record<string, unknown> | null) ?? {};
+  const isInStock = input.fulfilmentType === "in_stock" || input.vendorId === "in_house_stock";
+
   const updatedWf: Record<string, unknown> = {
     ...currentWf,
-    assigned_vendor_id: input.vendorId,
-    assigned_vendor_name: input.vendorName,
+    fulfilment_type: isInStock ? "in_stock" : "vendor",
+    assigned_vendor_id: isInStock ? "in_house_stock" : (input.vendorId ?? null),
+    assigned_vendor_name: isInStock ? "In-House Stock" : (input.vendorName ?? null),
+    stock_location: isInStock ? input.stockLocation?.trim() || "Main Warehouse / Yard Stock" : null,
     vendor_assigned_at: new Date().toISOString(),
   };
 
@@ -115,7 +151,10 @@ export async function assignVendorToQuote(
       hour: "2-digit",
       minute: "2-digit",
     });
-    const log = `\n[Vendor Assigned · ${timestamp}] Assigned to ${input.vendorName}. ${input.notes.trim()}`;
+    const label = isInStock
+      ? `Fulfilled from In-House Stock (${input.stockLocation?.trim() || "Main Warehouse / Yard Stock"})`
+      : `Assigned to ${input.vendorName || "Vendor"}`;
+    const log = `\n[Fulfilment Updated · ${timestamp}] ${label}. ${input.notes.trim()}`;
     updatedNotes = existing.notes ? `${existing.notes.trim()}${log}` : log.trim();
   }
 
@@ -147,8 +186,10 @@ export async function unassignQuoteVendor(quoteId: string): Promise<DbTable<"quo
 
   const currentWf = (existing.workflow_state as Record<string, unknown> | null) ?? {};
   const updatedWf = { ...currentWf };
+  delete updatedWf.fulfilment_type;
   delete updatedWf.assigned_vendor_id;
   delete updatedWf.assigned_vendor_name;
+  delete updatedWf.stock_location;
   delete updatedWf.vendor_assigned_at;
 
   const { data: updated, error: updateErr } = await db

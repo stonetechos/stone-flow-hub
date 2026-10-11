@@ -6,6 +6,7 @@
  * - Database Unification & Repair: `curl https://erp.stonetech.in/api/public/diagnostics/env-status?unify=true`
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { matchesSharedSecret } from "@/lib/server/shared-secret";
 
 const OPERATIONAL_TABLES = [
   "customers",
@@ -68,6 +69,24 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
         const targetTable = url.searchParams.get("table");
 
         if (shouldUnify || action) {
+          const cronSecret = process.env.CRON_SECRET || process.env.CRON_SHARED_SECRET;
+          if (!cronSecret) {
+            return new Response(JSON.stringify({ error: "Cron secret not configured" }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          const suppliedSecret =
+            request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+            request.headers.get("x-cron-secret") ??
+            null;
+          if (!matchesSharedSecret(suppliedSecret, cronSecret)) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -86,10 +105,10 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
               const allUsers = usersData?.users ?? [];
               const userSummaries = allUsers.map((u) => ({
                 id: u.id,
-                email: u.email,
+                email: u.email ? u.email.replace(/(.{2})(.*)(@.*)/, "$1***$3") : null,
               }));
 
-              // 2. Ensure rp140528@gmail.com and all users have active profiles with is_demo_mode = false and admin roles
+              // 2. Ensure users have active profiles with is_demo_mode = false and existing roles preserved
               for (const u of allUsers) {
                 await supabaseAdmin.from("profiles").upsert(
                   {
@@ -107,13 +126,20 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
                   { onConflict: "id" },
                 );
 
-                await supabaseAdmin.from("user_roles").upsert(
-                  {
-                    user_id: u.id,
-                    role: "admin",
-                  },
-                  { onConflict: "user_id,role" },
-                );
+                const { data: existingRoles } = await supabaseAdmin
+                  .from("user_roles")
+                  .select("role")
+                  .eq("user_id", u.id);
+
+                if (!existingRoles || existingRoles.length === 0) {
+                  await supabaseAdmin.from("user_roles").upsert(
+                    {
+                      user_id: u.id,
+                      role: u.email === "rp140528@gmail.com" ? "admin" : "sales",
+                    },
+                    { onConflict: "user_id,role" },
+                  );
+                }
               }
 
               body.users = {

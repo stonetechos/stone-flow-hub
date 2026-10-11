@@ -133,7 +133,7 @@ export interface PublicInquiryResult {
 
 export const lookupCustomerInputSchema = z.object({
   country_code: z.string().default("+91"),
-  whatsapp: z.string().trim().min(6, "Please enter your WhatsApp phone number"),
+  whatsapp: z.string().trim().min(10, "Please enter your 10-digit WhatsApp phone number"),
 });
 
 export interface CustomerInquirySummary {
@@ -151,9 +151,9 @@ export const lookupCustomerEnquiriesServerFn = createServerFn({ method: "POST" }
   .handler(async ({ data: input }): Promise<{ inquiries: CustomerInquirySummary[] }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const rawDigits = input.whatsapp.replace(/\D/g, "");
-    if (rawDigits.length < 6) return { inquiries: [] };
+    if (rawDigits.length < 10) return { inquiries: [] };
 
-    const searchDigits = rawDigits.length > 10 ? rawDigits.slice(-10) : rawDigits;
+    const searchDigits = rawDigits.slice(-10);
 
     // Find customer by phone
     const { data: custs } = await supabaseAdmin

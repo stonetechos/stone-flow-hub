@@ -23,6 +23,8 @@ export interface OrderPipelineItem {
   orderId: string;
   orderDate: string;
   isVendorAssigned?: boolean;
+  fulfilmentType?: "in_stock" | "vendor" | "unassigned";
+  stockLocation?: string | null;
 
   // Customer details
   customerId: string | null;
@@ -344,11 +346,22 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
       const normCustomer = normalizeCustomerRow(rawCustomer);
       const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
 
+      const fulfilmentType =
+        (wf.fulfilment_type as "in_stock" | "vendor" | "unassigned" | undefined) ||
+        (wf.assigned_vendor_id === "in_house_stock" ? "in_stock" : undefined);
+      const stockLocation = (wf.stock_location as string | undefined) || null;
+
       const vendorId = (wf.assigned_vendor_id as string | undefined) || null;
-      const vendorName =
-        (wf.assigned_vendor_name as string | undefined) ||
-        (vendorId ? "Assigned Vendor" : "Unassigned Yet");
-      const isVendorAssigned = Boolean(vendorId && vendorName && vendorName !== "Unassigned Yet");
+      let vendorName = (wf.assigned_vendor_name as string | undefined) || null;
+      if (fulfilmentType === "in_stock" || vendorId === "in_house_stock") {
+        vendorName = "In-House Stock";
+      } else if (!vendorName) {
+        vendorName = vendorId ? "Assigned Vendor" : "Unassigned Yet";
+      }
+      const isVendorAssigned = Boolean(
+        fulfilmentType === "in_stock" ||
+        (vendorId && vendorName && vendorName !== "Unassigned Yet"),
+      );
 
       const customerDeadline =
         (wf.promised_delivery_date as string | undefined) || quote.valid_until || null;
@@ -362,6 +375,8 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
         orderId: quote.id,
         orderDate: quote.created_at,
         isVendorAssigned,
+        fulfilmentType: fulfilmentType ?? (isVendorAssigned ? "vendor" : "unassigned"),
+        stockLocation,
 
         customerId: rawCustomer?.id ?? null,
         customerName: normCustomer?.name || "Client Order",

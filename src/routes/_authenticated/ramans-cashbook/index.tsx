@@ -53,6 +53,7 @@ import {
   createCashbookEntry,
   updateCashbookEntry,
   deleteCashbookEntry,
+  isMissingTableError,
 } from "@/lib/cashbook/api";
 import {
   cashbookEntryInputSchema,
@@ -530,7 +531,7 @@ function RamansCashbookPage() {
       {/* Ledger Table */}
       {query.isLoading ? (
         <SkeletonTable rows={6} columns={6} />
-      ) : query.error ? (
+      ) : query.error && !isMissingTableError(query.error) ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : filteredRows.length === 0 ? (
         <EmptyState
