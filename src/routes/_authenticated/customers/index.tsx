@@ -204,7 +204,12 @@ function CustomersPage() {
         (c) => getCustomerPaymentStatus(c, ledgerQuery.data?.get(c.id)) === paymentFilter,
       );
     }
-    return list;
+    return [...list].sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (timeB !== timeA) return timeB - timeA;
+      return (b.customer_code ?? "").localeCompare(a.customer_code ?? "");
+    });
   }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data]);
 
   const paymentCounts = useMemo(() => {
