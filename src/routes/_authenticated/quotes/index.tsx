@@ -411,18 +411,13 @@ function QuotesPage() {
                           <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
                             {r.customer?.name ?? "—"}
                           </span>
-                          <div className="flex items-center gap-1.5">
-                            <Link
-                              to="/quotes/$quoteId"
-                              params={{ quoteId: r.id }}
-                              className="font-mono text-[11px] text-primary hover:underline truncate"
-                            >
-                              {r.quote_no}
-                            </Link>
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                              · {formatDate(r.issue_date || r.created_at)}
-                            </span>
-                          </div>
+                          <Link
+                            to="/quotes/$quoteId"
+                            params={{ quoteId: r.id }}
+                            className="font-mono text-[11px] text-primary hover:underline truncate"
+                          >
+                            {r.quote_no}
+                          </Link>
                         </div>
                       </TableCell>
                     )}

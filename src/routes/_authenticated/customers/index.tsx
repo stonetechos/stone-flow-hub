@@ -570,11 +570,6 @@ function CustomersPage() {
                                   ({c.customer_code})
                                 </span>
                               )}
-                              {c.created_at && (
-                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                                  · {formatDate(c.created_at)}
-                                </span>
-                              )}
                             </div>
                             {(() => {
                               const norm = normalizeCustomerRow(c);
