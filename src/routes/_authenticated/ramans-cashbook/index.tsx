@@ -93,7 +93,7 @@ function RamansCashbookPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Quick entry state
+  // Quick entry state (credit = Cash In, debit = Cash Out)
   const [quickDate, setQuickDate] = useState(today());
   const [quickType, setQuickType] = useState<CashbookEntryType>("credit");
   const [quickAmount, setQuickAmount] = useState<string>("");
@@ -132,11 +132,7 @@ function RamansCashbookPage() {
   const createMut = useMutation({
     mutationFn: (input: CashbookEntryInput) => createCashbookEntry(input),
     onSuccess: () => {
-      toast.success(
-        quickType === "credit"
-          ? "Cash In (Credit) entry recorded"
-          : "Cash Out (Debit) entry recorded",
-      );
+      toast.success(quickType === "credit" ? "Cash In entry recorded" : "Cash Out entry recorded");
       invalidate();
       setQuickAmount("");
       setQuickRemarks("");
@@ -247,14 +243,7 @@ function RamansCashbookPage() {
       toast.info("No entries or opening balance to export");
       return;
     }
-    const headers = [
-      "Date",
-      "Type",
-      "Credit / In (INR)",
-      "Debit / Out (INR)",
-      "Balance (INR)",
-      "Remarks",
-    ];
+    const headers = ["Date", "Type", "Cash In (INR)", "Cash Out (INR)", "Balance (INR)", "Remarks"];
     const csvLines = [headers.join(",")];
 
     // Include Opening balance line
@@ -266,7 +255,7 @@ function RamansCashbookPage() {
       csvLines.push(
         [
           r.entry_date,
-          r.entry_type.toUpperCase(),
+          r.entry_type === "credit" ? "CASH IN" : "CASH OUT",
           r.credit || 0,
           r.debit || 0,
           r.running_balance || 0,
@@ -293,7 +282,7 @@ function RamansCashbookPage() {
         title={t("cashbook.title", "Raman's Cashbook")}
         subtitle={t(
           "cashbook.subtitle",
-          "Cash in hand ledger managed by Raman Pupneja. Live tracking of credits (+), debits (-), running balances, and opening cash.",
+          "Cash in hand ledger managed by Raman Pupneja. Live tracking of cash in (+), cash out (-), running balances, and opening cash.",
         )}
         actions={
           <div className="flex items-center gap-2">
@@ -377,12 +366,12 @@ function RamansCashbookPage() {
           </CardContent>
         </Card>
 
-        {/* 3. Total Cash In (Credits) */}
+        {/* 3. Total Cash In */}
         <Card className="shadow-xs">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("cashbook.totalCredit", "Total Inflow (Credits)")}
+                {t("cashbook.totalCredit", "Total Cash In")}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <ArrowDownLeft className="h-5 w-5" />
@@ -397,12 +386,12 @@ function RamansCashbookPage() {
           </CardContent>
         </Card>
 
-        {/* 4. Total Cash Out (Debits) */}
+        {/* 4. Total Cash Out */}
         <Card className="shadow-xs">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("cashbook.totalDebit", "Total Outflow (Debits)")}
+                {t("cashbook.totalDebit", "Total Cash Out")}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
                 <ArrowUpRight className="h-5 w-5" />
@@ -464,7 +453,7 @@ function RamansCashbookPage() {
               />
             </Field>
 
-            {/* 2. Type (Credit vs Debit) */}
+            {/* 2. Type (Cash In vs Cash Out) */}
             <Field label={t("cashbook.type", "Transaction Type")} required>
               <div className="grid grid-cols-2 gap-1 rounded-md border border-border p-0.5 bg-muted/40">
                 <button
@@ -476,7 +465,7 @@ function RamansCashbookPage() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t("cashbook.credit", "Credit (In)")}
+                  {t("cashbook.cashIn", "Cash In")}
                 </button>
                 <button
                   type="button"
@@ -487,7 +476,7 @@ function RamansCashbookPage() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t("cashbook.debit", "Debit (Out)")}
+                  {t("cashbook.cashOut", "Cash Out")}
                 </button>
               </div>
             </Field>
@@ -527,8 +516,8 @@ function RamansCashbookPage() {
             >
               <Plus className="mr-1.5 h-4 w-4" />
               {quickType === "credit"
-                ? t("cashbook.addCredit", "Add Inflow (+)")
-                : t("cashbook.addDebit", "Add Outflow (-)")}
+                ? t("cashbook.addCashIn", "Add Cash In (+)")
+                : t("cashbook.addCashOut", "Add Cash Out (-)")}
             </Button>
           </form>
         </CardContent>
@@ -628,10 +617,10 @@ function RamansCashbookPage() {
                 <TableHead className="w-[120px]">{t("common.date", "Date")}</TableHead>
                 <TableHead className="w-[110px]">{t("common.type", "Type")}</TableHead>
                 <TableHead className="text-right w-[140px]">
-                  {t("cashbook.creditCol", "Credit (In)")}
+                  {t("cashbook.cashInCol", "Cash In")}
                 </TableHead>
                 <TableHead className="text-right w-[140px]">
-                  {t("cashbook.debitCol", "Debit (Out)")}
+                  {t("cashbook.cashOutCol", "Cash Out")}
                 </TableHead>
                 <TableHead className="text-right w-[150px]">
                   {t("cashbook.balanceCol", "Balance")}
@@ -660,16 +649,16 @@ function RamansCashbookPage() {
                             : "border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
                         }`}
                       >
-                        {isCredit ? "Credit (In)" : "Debit (Out)"}
+                        {isCredit ? "Cash In" : "Cash Out"}
                       </Badge>
                     </TableCell>
 
-                    {/* Credit Column */}
+                    {/* Cash In Column */}
                     <TableCell className="text-right font-medium tabular-nums text-emerald-700 dark:text-emerald-400">
                       {isCredit ? `+${formatInr(r.amount)}` : "—"}
                     </TableCell>
 
-                    {/* Debit Column */}
+                    {/* Cash Out Column */}
                     <TableCell className="text-right font-medium tabular-nums text-rose-700 dark:text-rose-400">
                       {!isCredit ? `-${formatInr(r.amount)}` : "—"}
                     </TableCell>
@@ -755,8 +744,8 @@ function RamansCashbookPage() {
           </DialogHeader>
           <DialogBody className="space-y-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              The Opening Cash Balance is the baseline cash in hand amount. All subsequent credits
-              (+) and debits (-) will automatically add to or subtract from this initial balance.
+              The Opening Cash Balance is the baseline cash in hand amount. All subsequent cash in
+              (+) and cash out (-) will automatically add to or subtract from this initial balance.
             </p>
             <Field label={t("cashbook.openingAmount", "Opening Balance Amount (₹)")} required>
               <CurrencyInput
@@ -819,7 +808,7 @@ function RamansCashbookPage() {
                 />
               </Field>
 
-              <Field label={t("cashbook.type", "Type")} required>
+              <Field label={t("cashbook.type", "Transaction Type")} required>
                 <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-1">
                   <button
                     type="button"
@@ -830,7 +819,7 @@ function RamansCashbookPage() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {t("cashbook.credit", "Credit (Inflow)")}
+                    {t("cashbook.cashIn", "Cash In")}
                   </button>
                   <button
                     type="button"
@@ -841,7 +830,7 @@ function RamansCashbookPage() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {t("cashbook.debit", "Debit (Outflow)")}
+                    {t("cashbook.cashOut", "Cash Out")}
                   </button>
                 </div>
               </Field>
@@ -894,7 +883,7 @@ function RamansCashbookPage() {
         title={t("cashbook.deleteTitle", "Delete Cashbook Entry")}
         description={
           toDelete
-            ? `Delete ${toDelete.entry_type.toUpperCase()} entry of ${formatInr(
+            ? `Delete ${toDelete.entry_type === "credit" ? "CASH IN" : "CASH OUT"} entry of ${formatInr(
                 toDelete.amount,
               )} on ${formatDate(toDelete.entry_date)}? Running balances will be automatically recalculated.`
             : ""
