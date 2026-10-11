@@ -257,7 +257,16 @@ function VendorsPage() {
                     )}
                     {!isHidden("phone") && (
                       <TableCell className="font-mono text-xs text-muted-foreground">
-                        {v.mobile_number || "—"}
+                        {v.mobile_number ? (
+                          <a
+                            href={`tel:${v.mobile_number}`}
+                            className="hover:underline hover:text-foreground"
+                          >
+                            {v.mobile_number}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
                     )}
                     {!isHidden("contact") && (
@@ -367,13 +376,17 @@ function VendorFormDialog({
       return;
     }
     const meta = extractVendorMetadata(editing);
+    const primary =
+      contactQuery.data ??
+      editing.vendor_contacts?.find((c) => c.is_primary) ??
+      editing.vendor_contacts?.[0];
     const next: VendorCreateInput = {
       company_name: editing.company_name,
-      contact_name: contactQuery.data?.name ?? "",
-      mobile: contactQuery.data?.phone ?? "",
+      contact_name: primary?.name ?? editing.contact_person ?? "",
+      mobile: primary?.phone ?? editing.mobile_number ?? "",
       products_dealt: meta.products_dealt,
       work_types: meta.work_types,
-      email: contactQuery.data?.email ?? null,
+      email: primary?.email ?? editing.email ?? null,
       city: editing.city,
       address: editing.address,
       state: editing.state,

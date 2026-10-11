@@ -5,8 +5,87 @@ import { extractPhoneDigits, normalizeMobile, sanitizeSearch } from "@/lib/zod";
 import type { DbTable } from "@/lib/types";
 import { vendorCreateSchema, type VendorCreateInput } from "./schema";
 
-export type VendorRow = DbTable<"vendors">;
 export type VendorContactRow = DbTable<"vendor_contacts">;
+export type VendorRow = DbTable<"vendors"> & {
+  vendor_contacts?: VendorContactRow[];
+};
+
+export function getVendorPhone(v: VendorRow | null | undefined): string | null {
+  if (!v) return null;
+  if (v.mobile_number) return v.mobile_number;
+  if (v.whatsapp_number) return v.whatsapp_number;
+  if (v.vendor_contacts && v.vendor_contacts.length > 0) {
+    const primary = v.vendor_contacts.find((c) => c.is_primary) ?? v.vendor_contacts[0];
+    if (primary?.phone) return primary.phone;
+    if (primary?.whatsapp) return primary.whatsapp;
+  }
+  const ref = v.external_ref as Record<string, unknown> | null;
+  if (ref) {
+    if (typeof ref.mobile === "string" && ref.mobile) return ref.mobile;
+    if (typeof ref.phone === "string" && ref.phone) return ref.phone;
+    if (typeof ref.mobile_number === "string" && ref.mobile_number) return ref.mobile_number;
+  }
+  return null;
+}
+
+export function getVendorContactName(v: VendorRow | null | undefined): string | null {
+  if (!v) return null;
+  if (v.contact_person) return v.contact_person;
+  if (v.vendor_contacts && v.vendor_contacts.length > 0) {
+    const primary = v.vendor_contacts.find((c) => c.is_primary) ?? v.vendor_contacts[0];
+    if (primary?.name) return primary.name;
+  }
+  const ref = v.external_ref as Record<string, unknown> | null;
+  if (ref) {
+    if (typeof ref.contact_person === "string" && ref.contact_person) return ref.contact_person;
+    if (typeof ref.contact_name === "string" && ref.contact_name) return ref.contact_name;
+    if (typeof ref.name === "string" && ref.name) return ref.name;
+  }
+  return null;
+}
+
+async function attachVendorContacts(vendors: VendorRow[]): Promise<VendorRow[]> {
+  if (vendors.length === 0) return [];
+  const vendorIds = vendors.map((v) => v.id);
+  try {
+    const { data: contacts } = await getDb()
+      .from("vendor_contacts")
+      .select("*")
+      .in("vendor_id", vendorIds)
+      .order("is_primary", { ascending: false });
+
+    const contactMap = new Map<string, VendorContactRow[]>();
+    if (contacts) {
+      for (const c of contacts) {
+        if (!contactMap.has(c.vendor_id)) {
+          contactMap.set(c.vendor_id, []);
+        }
+        contactMap.get(c.vendor_id)!.push(c);
+      }
+    }
+
+    return vendors.map((v) => {
+      const vContacts = contactMap.get(v.id) ?? [];
+      const primary = vContacts.find((c) => c.is_primary) ?? vContacts[0];
+      const phone = v.mobile_number || primary?.phone || primary?.whatsapp || getVendorPhone(v);
+      const contactPerson = v.contact_person || primary?.name || getVendorContactName(v);
+      const email = v.email || primary?.email || null;
+      return {
+        ...v,
+        vendor_contacts: vContacts,
+        mobile_number: phone,
+        contact_person: contactPerson,
+        email,
+      };
+    });
+  } catch {
+    return vendors.map((v) => ({
+      ...v,
+      mobile_number: v.mobile_number || getVendorPhone(v),
+      contact_person: v.contact_person || getVendorContactName(v),
+    }));
+  }
+}
 
 async function getContactVendorIds(s: string, digits: string): Promise<string[]> {
   try {
@@ -77,7 +156,8 @@ export async function listVendors(query = ""): Promise<VendorRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+  const vendors = data ?? [];
+  return attachVendorContacts(vendors);
 }
 
 export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
@@ -95,13 +175,16 @@ export async function listVendorsForPicker(query = ""): Promise<VendorRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+  const vendors = data ?? [];
+  return attachVendorContacts(vendors);
 }
 
 export async function getVendor(id: string): Promise<VendorRow | null> {
   const { data, error } = await getDb().from("vendors").select("*").eq("id", id).maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  if (!data) return null;
+  const [enriched] = await attachVendorContacts([data]);
+  return enriched ?? data;
 }
 
 export async function getPrimaryContact(vendorId: string): Promise<VendorContactRow | null> {

@@ -20,7 +20,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getVendor, getPrimaryContact, extractVendorMetadata } from "@/lib/vendors/api";
+import {
+  getVendor,
+  getPrimaryContact,
+  extractVendorMetadata,
+  getVendorPhone,
+  getVendorContactName,
+} from "@/lib/vendors/api";
 import { VENDOR_WORK_TYPES } from "@/lib/vendors/schema";
 import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
 import { hub } from "@/lib/hubs/api";
@@ -51,9 +57,14 @@ function VendorHub() {
   if (!q.data) return <ErrorBlock message="Vendor not found." />;
   const v = q.data;
 
-  const phone = contact.data?.phone ?? "";
-  const email = contact.data?.email ?? "";
-  const waDigits = phone.replace(/[^0-9]/g, "");
+  const phone = contact.data?.phone ?? getVendorPhone(v) ?? "";
+  const contactName = contact.data?.name ?? getVendorContactName(v) ?? "";
+  const email =
+    contact.data?.email ??
+    v.email ??
+    ((v.external_ref as Record<string, unknown> | null)?.email as string) ??
+    "";
+  const waDigits = (contact.data?.whatsapp ?? phone).replace(/[^0-9]/g, "");
 
   return (
     <div>
@@ -240,6 +251,27 @@ function VendorHub() {
                 items={[
                   { label: "Company", value: v.company_name },
                   { label: "Code", value: <span className="font-mono">{v.vendor_code}</span> },
+                  { label: "Contact person", value: contactName || "—" },
+                  {
+                    label: "Phone / Mobile",
+                    value: phone ? (
+                      <a href={`tel:${phone}`} className="font-mono hover:underline">
+                        {phone}
+                      </a>
+                    ) : (
+                      "—"
+                    ),
+                  },
+                  {
+                    label: "Email",
+                    value: email ? (
+                      <a href={`mailto:${email}`} className="hover:underline">
+                        {email}
+                      </a>
+                    ) : (
+                      "—"
+                    ),
+                  },
                   { label: "City", value: v.city },
                   { label: "State", value: v.state },
                   { label: "Address", value: v.address },
