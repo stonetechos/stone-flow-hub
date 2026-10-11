@@ -34,6 +34,7 @@ import { listSalesOrdersForPicker } from "@/lib/sales-orders/api";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { allowedNextDispatchStatuses } from "@/lib/status-transitions";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
+import { CartingAgencySelect } from "@/components/dispatch/CartingAgencySelect";
 
 export const Route = createFileRoute("/_authenticated/dispatch/$id/edit")({
   ssr: false,
@@ -188,6 +189,16 @@ function EditDispatchPage() {
               </SelectContent>
             </Select>
           </Field>
+          <Field label="Carting agency / Carrier">
+            <CartingAgencySelect
+              value={form.carrier}
+              onChange={(c) => set("carrier", c)}
+              onAgencyAutoFill={({ phone, contactPerson }) => {
+                if (!form.driver_phone && phone) set("driver_phone", phone);
+                if (!form.driver_name && contactPerson) set("driver_name", contactPerson);
+              }}
+            />
+          </Field>
           <Field label="Driver name">
             <Input
               value={form.driver_name ?? ""}
@@ -198,12 +209,6 @@ function EditDispatchPage() {
             <Input
               value={form.driver_phone ?? ""}
               onChange={(e) => set("driver_phone", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Carrier / Transport">
-            <Input
-              value={form.carrier ?? ""}
-              onChange={(e) => set("carrier", e.target.value || null)}
             />
           </Field>
           <Field label="Tracking #">
