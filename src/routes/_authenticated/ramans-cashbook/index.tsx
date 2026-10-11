@@ -173,7 +173,7 @@ function RamansCashbookPage() {
 
   const openOpeningModal = () => {
     setOpeningAmount(String(query.data?.openingBalance ?? 0));
-    setOpeningDate(today());
+    setOpeningDate(query.data?.openingDate ?? today());
     setOpeningNotes("Opening cash in hand balance");
     setIsOpeningModalOpen(true);
   };
@@ -234,6 +234,7 @@ function RamansCashbookPage() {
   }
 
   const openingBalance = query.data?.openingBalance ?? 0;
+  const currentOpeningDate = query.data?.openingDate ?? today();
   const currentBalance = query.data?.currentBalance ?? 0;
   const totalDebit = query.data?.totalDebit ?? 0;
   const totalCredit = query.data?.totalCredit ?? 0;
@@ -248,7 +249,14 @@ function RamansCashbookPage() {
 
     // Include Opening balance line
     csvLines.push(
-      [today(), "OPENING BALANCE", 0, 0, openingBalance, `"Opening Cash Balance"`].join(","),
+      [
+        formatDate(currentOpeningDate),
+        "OPENING BALANCE",
+        0,
+        0,
+        openingBalance,
+        `"Opening Cash Balance"`,
+      ].join(","),
     );
 
     allRows.forEach((r) => {
@@ -699,7 +707,9 @@ function RamansCashbookPage() {
               {/* Show Opening Balance row on last page or when no entries exist */}
               {(isLastPage || filteredRows.length === 0) && (
                 <TableRow className="bg-muted/40 font-medium border-t-2">
-                  <TableCell className="text-sm text-muted-foreground">{today()}</TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {formatDate(currentOpeningDate)}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"

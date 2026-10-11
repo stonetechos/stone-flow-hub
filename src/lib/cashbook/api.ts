@@ -162,6 +162,7 @@ async function saveCashbookToAppSettings(entries: CashbookEntryRow[]): Promise<v
 export async function listCashbookEntries(range?: { from?: string; to?: string }): Promise<{
   rows: CashbookEntryRow[];
   openingBalance: number;
+  openingDate?: string;
   totalDebit: number;
   totalCredit: number;
   currentBalance: number;
@@ -244,6 +245,7 @@ export async function listCashbookEntries(range?: { from?: string; to?: string }
   return {
     rows,
     openingBalance,
+    openingDate: openingObj.as_of_date || new Date().toISOString().slice(0, 10),
     totalDebit: allDebit,
     totalCredit: allCredit,
     currentBalance,
