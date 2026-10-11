@@ -18,8 +18,11 @@ import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
 import { supabase } from "@/integrations/supabase/client";
 import { listVendorsForPicker, extractVendorMetadata, type VendorRow } from "@/lib/vendors/api";
-import { VENDOR_WORK_TYPES } from "@/lib/vendors/schema";
-import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
+import {
+  VENDOR_WORK_TYPES,
+  VENDOR_PRODUCT_OPTIONS,
+  getVendorProductLabel,
+} from "@/lib/vendors/schema";
 import { sendRfq } from "@/lib/enquiries/api";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -74,7 +77,7 @@ export function QuoteSendRfqDialog({
     const set = new Set<string>();
     items.forEach((it) => {
       const text = `${it.product_name ?? ""} ${it.description ?? ""}`.toLowerCase();
-      MATERIAL_OPTIONS.forEach((m) => {
+      VENDOR_PRODUCT_OPTIONS.forEach((m) => {
         const words = m.label.toLowerCase().split(/\s+/);
         if (words.some((w) => w.length > 3 && text.includes(w))) {
           set.add(m.value);
@@ -345,12 +348,7 @@ export function QuoteSendRfqDialog({
                               {matchedProducts.length > 0 && (
                                 <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium">
                                   Deals in:{" "}
-                                  {matchedProducts
-                                    .map((p) => {
-                                      const mat = MATERIAL_OPTIONS.find((m) => m.value === p);
-                                      return mat?.label ?? p;
-                                    })
-                                    .join(", ")}
+                                  {matchedProducts.map((p) => getVendorProductLabel(p)).join(", ")}
                                 </span>
                               )}
                             </div>

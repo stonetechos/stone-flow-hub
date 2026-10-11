@@ -60,9 +60,9 @@ import {
 import {
   vendorCreateSchema,
   VENDOR_WORK_TYPES,
+  VENDOR_PRODUCT_OPTIONS,
   type VendorCreateInput,
 } from "@/lib/vendors/schema";
-import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
 
 export const Route = createFileRoute("/_authenticated/vendors/")({
   ssr: false,
@@ -528,7 +528,7 @@ function VendorFormDialog({
                     onClick={() =>
                       set(
                         "products_dealt",
-                        MATERIAL_OPTIONS.map((m) => m.value),
+                        VENDOR_PRODUCT_OPTIONS.map((m) => m.value),
                       )
                     }
                   >
@@ -546,7 +546,7 @@ function VendorFormDialog({
                 </div>
               </div>
               <div className="grid max-h-48 grid-cols-1 gap-1.5 overflow-y-auto sm:grid-cols-2 rounded border border-border/50 bg-background/50 p-2">
-                {MATERIAL_OPTIONS.map((mat) => {
+                {VENDOR_PRODUCT_OPTIONS.map((mat) => {
                   const checked = form.products_dealt.includes(mat.value);
                   return (
                     <label

@@ -27,8 +27,11 @@ import {
   getVendorPhone,
   getVendorContactName,
 } from "@/lib/vendors/api";
-import { VENDOR_WORK_TYPES } from "@/lib/vendors/schema";
-import { MATERIAL_OPTIONS } from "@/lib/customers/schema";
+import {
+  VENDOR_WORK_TYPES,
+  VENDOR_PRODUCT_OPTIONS,
+  getVendorProductLabel,
+} from "@/lib/vendors/schema";
 import { hub } from "@/lib/hubs/api";
 import { RelatedList, InfoGrid, PlaceholderTab } from "@/components/entity/RelatedList";
 import { NotesPanel, AttachmentsPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -222,14 +225,11 @@ function VendorHub() {
                     </div>
                     {meta.products_dealt.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {meta.products_dealt.map((prodKey) => {
-                          const mat = MATERIAL_OPTIONS.find((m) => m.value === prodKey);
-                          return (
-                            <Badge key={prodKey} variant="secondary" className="text-xs">
-                              {mat?.label ?? prodKey}
-                            </Badge>
-                          );
-                        })}
+                        {meta.products_dealt.map((prodKey) => (
+                          <Badge key={prodKey} variant="secondary" className="text-xs">
+                            {getVendorProductLabel(prodKey)}
+                          </Badge>
+                        ))}
                       </div>
                     ) : (
                       <p className="text-xs text-muted-foreground">
