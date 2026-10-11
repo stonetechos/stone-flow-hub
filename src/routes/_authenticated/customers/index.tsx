@@ -38,6 +38,7 @@ import { CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
+import { formatDate } from "@/lib/format";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -495,7 +496,7 @@ function CustomersPage() {
           />
 
           {query.isLoading ? (
-            <SkeletonTable rows={6} columns={5} />
+            <SkeletonTable rows={6} columns={8} />
           ) : query.error ? (
             <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
           ) : rows.length === 0 ? (
@@ -530,6 +531,9 @@ function CustomersPage() {
                   <TableRow>
                     <TableHead className="w-16">{t("common.srNo", "Sr. No.")}</TableHead>
                     <TableHead>{t("common.name", "Name")}</TableHead>
+                    <TableHead className="w-32">
+                      {t("common.createdDate", "Created Date")}
+                    </TableHead>
                     <TableHead className="w-40">Customer Type</TableHead>
                     <TableHead className="w-52">CRM · Response Status</TableHead>
                     <TableHead className="w-52">Payment Status</TableHead>
@@ -566,6 +570,11 @@ function CustomersPage() {
                                   ({c.customer_code})
                                 </span>
                               )}
+                              {c.created_at && (
+                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                  · {formatDate(c.created_at)}
+                                </span>
+                              )}
                             </div>
                             {(() => {
                               const norm = normalizeCustomerRow(c);
@@ -592,6 +601,9 @@ function CustomersPage() {
                               );
                             })()}
                           </Link>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {c.created_at ? formatDate(c.created_at) : "—"}
                         </TableCell>
                         <TableCell>
                           <span

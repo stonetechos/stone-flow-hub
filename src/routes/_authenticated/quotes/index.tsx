@@ -68,7 +68,7 @@ import {
 } from "@/lib/quotes/schema";
 import { EntityPicker } from "@/components/forms/EntityPicker";
 import { invalidateQuote } from "@/lib/query-invalidation";
-import { formatInr } from "@/lib/format";
+import { formatInr, formatDate } from "@/lib/format";
 import {
   EstimateStudioCalculator,
   type EstimateStudioResult,
@@ -112,6 +112,7 @@ function QuotesPage() {
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "Quote / Customer", required: true },
+      { key: "date", label: "Quote Date" },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
       { key: "status", label: "Status" },
@@ -344,7 +345,7 @@ function QuotesPage() {
       />
 
       {query.isLoading ? (
-        <SkeletonTable rows={6} columns={8} />
+        <SkeletonTable rows={6} columns={9} />
       ) : query.error ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
       ) : rows.length === 0 ? (
@@ -379,6 +380,7 @@ function QuotesPage() {
               <TableRow>
                 <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
+                {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
@@ -409,14 +411,24 @@ function QuotesPage() {
                           <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
                             {r.customer?.name ?? "—"}
                           </span>
-                          <Link
-                            to="/quotes/$quoteId"
-                            params={{ quoteId: r.id }}
-                            className="font-mono text-[11px] text-primary hover:underline truncate"
-                          >
-                            {r.quote_no}
-                          </Link>
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              to="/quotes/$quoteId"
+                              params={{ quoteId: r.id }}
+                              className="font-mono text-[11px] text-primary hover:underline truncate"
+                            >
+                              {r.quote_no}
+                            </Link>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              · {formatDate(r.issue_date || r.created_at)}
+                            </span>
+                          </div>
                         </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("date") && (
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(r.issue_date || r.created_at)}
                       </TableCell>
                     )}
                     {!isHidden("project") && (
@@ -514,7 +526,7 @@ function QuotesPage() {
                             title="Click to change promised delivery date"
                           >
                             <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{assignment.promisedDeliveryDate.slice(0, 10)}</span>
+                            <span>{formatDate(assignment.promisedDeliveryDate)}</span>
                           </button>
                         ) : r.status === "accepted" ? (
                           <button
@@ -536,7 +548,11 @@ function QuotesPage() {
                         {formatInr(r.total)}
                       </TableCell>
                     )}
-                    {!isHidden("valid") && <TableCell>{r.valid_until ?? "—"}</TableCell>}
+                    {!isHidden("valid") && (
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {r.valid_until ? formatDate(r.valid_until) : "—"}
+                      </TableCell>
+                    )}
                     <TableCell>
                       <RowActions
                         extra={
