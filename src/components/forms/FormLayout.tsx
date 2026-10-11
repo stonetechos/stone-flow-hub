@@ -168,7 +168,7 @@ export function FormActions({
           var to stay aligned with the desktop sidebar, same as before —
           split into pl/pr (rather than the previous shorthand `px-6`) so
           the md: override only ever touches the left side. */}
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-[var(--stos-shell-inset,0px)]">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-2 sm:gap-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-[var(--stos-shell-inset,0px)]">
         <div className="flex items-center gap-2">{extra}</div>
         <div className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
           {busy ? (

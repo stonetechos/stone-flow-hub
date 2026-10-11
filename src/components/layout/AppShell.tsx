@@ -13,6 +13,9 @@ import {
   Shield,
   LayoutDashboard,
   X,
+  Globe,
+  FileText,
+  Truck,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -715,10 +718,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-text-primary hover:bg-surface-panel md:hidden"
+                  className="h-9 w-9 text-text-primary hover:bg-surface-panel md:hidden"
                   aria-label="Open navigation menu"
                 >
-                  <Menu className="h-4 w-4" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
 
@@ -777,9 +780,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetPortal>
             </Sheet>
 
-            <div className="flex items-center gap-2 md:hidden">
-              <AppMark size={20} className="h-5 w-5 rounded" />
-              <span className="font-display text-sm font-semibold">{t("brand.name", "STOS")}</span>
+            <div className="flex items-center gap-1.5 md:hidden">
+              <AppMark size={22} className="h-5.5 w-5.5 rounded" />
+              <span className="font-display text-sm font-bold tracking-tight text-text-primary">
+                {t("brand.name", "STOS")}
+              </span>
             </div>
 
             {/* Search — the visual focus of the topbar. min-w-0 lets this
@@ -812,30 +817,31 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 sm:hidden"
+                className="h-9 w-9 sm:hidden"
                 onClick={() => setSearchOpen(true)}
                 aria-label={t("header.openSearch", "Open global search")}
               >
-                <Search className="h-4 w-4" />
+                <Search className="h-4.5 w-4.5" />
               </Button>
             </div>
 
-            {/* shrink-0: this icon cluster is the header's priority content
-                on narrow phones — the search region above absorbs any
-                squeeze first (via min-w-0) rather than these tap targets
-                getting compressed or overlapping. */}
+            {/* shrink-0: priority topbar controls. Secondary indicators
+                (DemoBadge, SyncStatus, LanguageToggle) collapse to sm+ screens
+                to prevent mobile header compression or horizontal overflow. */}
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-              <DemoBadge />
-
-              {/* The real AI entry point is the Copilot launcher mounted at
-                  the bottom of this shell (<Copilot />); the old placeholder
-                  button that only raised a "coming soon" toast was removed. */}
+              <div className="hidden sm:inline-flex">
+                <DemoBadge />
+              </div>
 
               <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
-              <SyncStatusIndicator />
-              <LanguageToggle />
+              <div className="hidden sm:inline-flex">
+                <SyncStatusIndicator />
+              </div>
+              <div className="hidden sm:inline-flex">
+                <LanguageToggle />
+              </div>
               <NotificationsBell />
-              <div className="ml-1">
+              <div className="ml-0.5 sm:ml-1">
                 <UserMenu
                   onSignOut={onSignOut}
                   onOpenShortcuts={openShortcuts}
@@ -857,7 +863,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <main
             id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto paper-texture px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:px-8 md:pt-6 md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="min-h-0 flex-1 overflow-y-auto paper-texture px-3 sm:px-4 md:px-8 pt-3 sm:pt-5 md:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             {/* Single consistent content container (Sprint 1.1): every
                 route previously decided its own width ad hoc, or didn't
@@ -870,6 +876,70 @@ export function AppShell({ children }: { children: ReactNode }) {
               <PageTransition>{children}</PageTransition>
             </div>
           </main>
+
+          {/* Mobile Bottom Navigation Bar — calibrated for one-thumb ergonomics and safe area insets */}
+          <nav
+            aria-label="Mobile navigation"
+            className="fixed bottom-0 inset-x-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom,0px))] items-center justify-around border-t border-border-subtle bg-surface-header/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur supports-[backdrop-filter]:bg-surface-header/80 md:hidden shadow-lg"
+          >
+            <Link
+              to="/dashboard"
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                path === "/" || path === "/dashboard" || path.startsWith("/dashboard/")
+                  ? "text-intent-primary font-bold"
+                  : "text-text-muted hover:text-text-primary",
+              )}
+            >
+              <LayoutDashboard className="h-5 w-5 mb-0.5" />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              to="/enquiries"
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                path.startsWith("/enquiries")
+                  ? "text-intent-primary font-bold"
+                  : "text-text-muted hover:text-text-primary",
+              )}
+            >
+              <Globe className="h-5 w-5 mb-0.5" />
+              <span>Leads</span>
+            </Link>
+            <Link
+              to="/quotes"
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                path.startsWith("/quotes")
+                  ? "text-intent-primary font-bold"
+                  : "text-text-muted hover:text-text-primary",
+              )}
+            >
+              <FileText className="h-5 w-5 mb-0.5" />
+              <span>Quotes</span>
+            </Link>
+            <Link
+              to="/dispatch"
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium transition-colors",
+                path.startsWith("/dispatch")
+                  ? "text-intent-primary font-bold"
+                  : "text-text-muted hover:text-text-primary",
+              )}
+            >
+              <Truck className="h-5 w-5 mb-0.5" />
+              <span>Dispatch</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="flex flex-1 flex-col items-center justify-center py-1 text-[11px] font-medium text-text-muted hover:text-text-primary transition-colors"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5 mb-0.5" />
+              <span>Menu</span>
+            </button>
+          </nav>
         </div>
 
         <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />

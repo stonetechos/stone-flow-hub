@@ -802,6 +802,14 @@
   * {
     border-color: var(--color-border);
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    touch-action: manipulation;
+  }
   html,
   body {
     font-family: var(--font-sans);
@@ -815,6 +823,14 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: clip;
     max-width: 100%;
+  }
+  /* Prevent iOS Safari from auto-zooming and de-calibrating the viewport when focusing inputs */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
   h1,
   h2,

@@ -40,26 +40,26 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 sm:flex sm:flex-wrap sm:justify-between",
+        "mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
         className,
       )}
     >
       <div className="min-w-0">
         {eyebrow && (
-          <div className="mb-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-engraved-kicker">
+          <div className="mb-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-engraved-kicker">
             {eyebrow}
           </div>
         )}
-        <h1 className="font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px] truncate">
+        <h1 className="font-display text-2xl font-black tracking-tight text-engraved-title sm:text-[28px] break-words text-balance">
           {displayTitle}
         </h1>
         {displaySubtitle && (
-          <p className="mt-1 truncate text-xs sm:text-sm font-medium text-slate-500">
+          <p className="mt-1 break-words text-xs sm:text-sm font-medium text-slate-500">
             {displaySubtitle}
           </p>
         )}
       </div>
-      {actions && <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div>}
     </div>
   );
 }
