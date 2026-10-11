@@ -19,6 +19,7 @@ import { installToastDiagnostics } from "@/lib/diagnostics/toast-diagnostics";
 import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { StoneGrainFilter } from "@/components/stone/StoneGrainFilter";
 import { ViewportDebugPanel } from "@/components/debug/ViewportDebugPanel";
 import { getSupabaseConfigStatus } from "@/lib/env/config-status";
@@ -279,14 +280,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StoneGrainFilter />
-      <Outlet />
-      {/* closeButton: lets a toast be dismissed immediately (an X
+      <TooltipProvider delayDuration={200}>
+        <StoneGrainFilter />
+        <Outlet />
+        {/* closeButton: lets a toast be dismissed immediately (an X
           appears on hover) instead of waiting out its auto-dismiss timer
           — requested for the danger/overdue toasts DangerNotifications.tsx
           fires, which sit for up to 10s otherwise. */}
-      <Toaster richColors position="top-right" closeButton />
-      {import.meta.env.DEV ? <ViewportDebugPanel /> : null}
+        <Toaster richColors position="top-right" closeButton />
+        {import.meta.env.DEV ? <ViewportDebugPanel /> : null}
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
