@@ -1,8 +1,14 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
-import { cashbookEntryInputSchema, type CashbookEntryInput, type CashbookEntryRow } from "./schema";
+import {
+  cashbookEntryInputSchema,
+  type CashbookEntryInput,
+  type CashbookEntryRow,
+  type CashbookOpeningBalance,
+} from "./schema";
 
 const CASHBOOK_SETTINGS_KEY = "finance.ramans_cashbook";
+export const CASHBOOK_OPENING_KEY = "finance.ramans_cashbook.opening_balance";
 
 export function isMissingTableError(error: unknown): boolean {
   if (!error) return false;
@@ -30,6 +36,87 @@ export function isMissingTableError(error: unknown): boolean {
     msg.includes("could not find the table") ||
     msg.includes("relation")
   );
+}
+
+export async function getCashbookOpeningBalance(): Promise<CashbookOpeningBalance> {
+  try {
+    const { data, error } = await getDb()
+      .from("app_settings" as never)
+      .select("value")
+      .eq("key" as never, CASHBOOK_OPENING_KEY as never)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[cashbook.api] Error reading opening balance from app_settings:", error);
+    } else {
+      const val = (data as { value?: unknown } | null)?.value as CashbookOpeningBalance | null;
+      if (val && typeof val.amount === "number") {
+        return val;
+      }
+    }
+  } catch (err) {
+    console.warn("[cashbook.api] Exception reading opening balance:", err);
+  }
+
+  // Fallback: Check if stored in finance.ramans_cashbook envelope
+  try {
+    const { data: legacyData } = await getDb()
+      .from("app_settings" as never)
+      .select("value")
+      .eq("key" as never, CASHBOOK_SETTINGS_KEY as never)
+      .maybeSingle();
+
+    const legVal = (legacyData as { value?: unknown } | null)?.value as {
+      opening_balance?: number;
+    } | null;
+    if (legVal && typeof legVal.opening_balance === "number") {
+      return { amount: legVal.opening_balance };
+    }
+  } catch {
+    /* ignore fallback error */
+  }
+
+  return { amount: 0, as_of_date: new Date().toISOString().slice(0, 10) };
+}
+
+export async function setCashbookOpeningBalance(
+  amount: number,
+  as_of_date?: string,
+  notes?: string,
+): Promise<CashbookOpeningBalance> {
+  const payload: CashbookOpeningBalance = {
+    amount: Number(amount) || 0,
+    as_of_date: as_of_date || new Date().toISOString().slice(0, 10),
+    notes: (notes || "").trim(),
+    updated_at: new Date().toISOString(),
+  };
+
+  // 1. Try server function (authenticated super admin)
+  try {
+    const { setOpeningBalanceServerFn } = await import("./cashbook.functions");
+    const res = await setOpeningBalanceServerFn({ data: payload });
+    if (res) return res as CashbookOpeningBalance;
+  } catch (err) {
+    console.warn(
+      "[cashbook.api] Server function for opening balance failed, falling back to direct upsert:",
+      err,
+    );
+  }
+
+  // 2. Fallback: Direct upsert in app_settings
+  const { error } = await getDb()
+    .from("app_settings" as never)
+    .upsert(
+      {
+        key: CASHBOOK_OPENING_KEY,
+        value: payload as never,
+        description: "Raman's Cashbook initial opening cash balance",
+      } as never,
+      { onConflict: "key" },
+    );
+
+  if (error) throw new AppError(mapDbError(error));
+  return payload;
 }
 
 async function getCashbookFromAppSettings(): Promise<CashbookEntryRow[]> {
@@ -67,11 +154,14 @@ async function saveCashbookToAppSettings(entries: CashbookEntryRow[]): Promise<v
 }
 
 /**
- * Lists Raman's cashbook entries with computed running balances,
- * latest entries first.
+ * Lists Raman's cashbook entries with computed running balances starting
+ * from the configured Opening Cash Balance.
+ * Formula:
+ *   Current Balance = Opening Balance + Total Credit (In) - Total Debit (Out)
  */
 export async function listCashbookEntries(range?: { from?: string; to?: string }): Promise<{
   rows: CashbookEntryRow[];
+  openingBalance: number;
   totalDebit: number;
   totalCredit: number;
   currentBalance: number;
@@ -104,23 +194,29 @@ export async function listCashbookEntries(range?: { from?: string; to?: string }
     }
   }
 
+  // Retrieve configured opening cash balance
+  const openingObj = await getCashbookOpeningBalance();
+  const openingBalance = Number(openingObj.amount) || 0;
+
   allRaw.sort((a, b) => {
     const d = (a.entry_date || "").localeCompare(b.entry_date || "");
     if (d !== 0) return d;
     return (a.created_at || "").localeCompare(b.created_at || "");
   });
 
-  let running = 0;
+  // Start sequential balance from Opening Balance:
+  // Credit = Cash In (+), Debit = Cash Out (-)
+  let running = openingBalance;
   let allDebit = 0;
   let allCredit = 0;
 
   const withBalances: CashbookEntryRow[] = allRaw.map((entry) => {
-    const isDebit = entry.entry_type === "debit";
-    const debit = isDebit ? Number(entry.amount) : 0;
-    const credit = !isDebit ? Number(entry.amount) : 0;
-    allDebit += debit;
+    const isCredit = entry.entry_type === "credit";
+    const credit = isCredit ? Number(entry.amount) : 0;
+    const debit = !isCredit ? Number(entry.amount) : 0;
     allCredit += credit;
-    running += debit - credit;
+    allDebit += debit;
+    running += credit - debit;
 
     return {
       ...entry,
@@ -147,6 +243,7 @@ export async function listCashbookEntries(range?: { from?: string; to?: string }
 
   return {
     rows,
+    openingBalance,
     totalDebit: allDebit,
     totalCredit: allCredit,
     currentBalance,

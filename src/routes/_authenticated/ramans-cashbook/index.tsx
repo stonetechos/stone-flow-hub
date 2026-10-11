@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Search,
   Download,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -53,10 +54,10 @@ import {
   createCashbookEntry,
   updateCashbookEntry,
   deleteCashbookEntry,
+  setCashbookOpeningBalance,
   isMissingTableError,
 } from "@/lib/cashbook/api";
 import {
-  cashbookEntryInputSchema,
   type CashbookEntryInput,
   type CashbookEntryRow,
   type CashbookEntryType,
@@ -73,7 +74,7 @@ function today() {
 
 const EMPTY_EDIT: CashbookEntryInput = {
   entry_date: today(),
-  entry_type: "debit",
+  entry_type: "credit",
   amount: 0,
   remarks: "",
 };
@@ -94,9 +95,15 @@ function RamansCashbookPage() {
 
   // Quick entry state
   const [quickDate, setQuickDate] = useState(today());
-  const [quickType, setQuickType] = useState<CashbookEntryType>("debit");
+  const [quickType, setQuickType] = useState<CashbookEntryType>("credit");
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [quickRemarks, setQuickRemarks] = useState("");
+
+  // Opening balance dialog state
+  const [isOpeningModalOpen, setIsOpeningModalOpen] = useState(false);
+  const [openingAmount, setOpeningAmount] = useState<string>("");
+  const [openingDate, setOpeningDate] = useState<string>(today());
+  const [openingNotes, setOpeningNotes] = useState<string>("");
 
   // Edit / Delete dialogs
   const [editing, setEditing] = useState<CashbookEntryRow | null>(null);
@@ -111,13 +118,24 @@ function RamansCashbookPage() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: qk.cashbook.all });
 
+  const openingMut = useMutation({
+    mutationFn: (vars: { amount: number; as_of_date?: string; notes?: string }) =>
+      setCashbookOpeningBalance(vars.amount, vars.as_of_date, vars.notes),
+    onSuccess: () => {
+      toast.success("Opening cash balance updated");
+      invalidate();
+      setIsOpeningModalOpen(false);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   const createMut = useMutation({
     mutationFn: (input: CashbookEntryInput) => createCashbookEntry(input),
     onSuccess: () => {
       toast.success(
-        quickType === "debit"
-          ? "Cash In (Debit) entry recorded"
-          : "Cash Out (Credit) entry recorded",
+        quickType === "credit"
+          ? "Cash In (Credit) entry recorded"
+          : "Cash Out (Debit) entry recorded",
       );
       invalidate();
       setQuickAmount("");
@@ -155,6 +173,13 @@ function RamansCashbookPage() {
       remarks: row.remarks ?? "",
     });
     setEditing(row);
+  };
+
+  const openOpeningModal = () => {
+    setOpeningAmount(String(query.data?.openingBalance ?? 0));
+    setOpeningDate(today());
+    setOpeningNotes("Opening cash in hand balance");
+    setIsOpeningModalOpen(true);
   };
 
   const allRows = useMemo(() => query.data?.rows ?? [], [query.data?.rows]);
@@ -212,24 +237,38 @@ function RamansCashbookPage() {
     );
   }
 
+  const openingBalance = query.data?.openingBalance ?? 0;
   const currentBalance = query.data?.currentBalance ?? 0;
   const totalDebit = query.data?.totalDebit ?? 0;
   const totalCredit = query.data?.totalCredit ?? 0;
 
   const handleExportCsv = () => {
-    if (allRows.length === 0) {
-      toast.info("No entries to export");
+    if (allRows.length === 0 && openingBalance === 0) {
+      toast.info("No entries or opening balance to export");
       return;
     }
-    const headers = ["Date", "Type", "Debit (INR)", "Credit (INR)", "Balance (INR)", "Remarks"];
+    const headers = [
+      "Date",
+      "Type",
+      "Credit / In (INR)",
+      "Debit / Out (INR)",
+      "Balance (INR)",
+      "Remarks",
+    ];
     const csvLines = [headers.join(",")];
+
+    // Include Opening balance line
+    csvLines.push(
+      [today(), "OPENING BALANCE", 0, 0, openingBalance, `"Opening Cash Balance"`].join(","),
+    );
+
     allRows.forEach((r) => {
       csvLines.push(
         [
           r.entry_date,
           r.entry_type.toUpperCase(),
-          r.debit || 0,
           r.credit || 0,
+          r.debit || 0,
           r.running_balance || 0,
           `"${(r.remarks || "").replace(/"/g, '""')}"`,
         ].join(","),
@@ -245,25 +284,39 @@ function RamansCashbookPage() {
     toast.success("Cashbook exported to CSV");
   };
 
+  const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+  const isLastPage = page === totalPages;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("cashbook.title", "Raman's Cashbook")}
         subtitle={t(
           "cashbook.subtitle",
-          "Cash in hand ledger managed by Raman Pupneja. Live tracking of debits, credits, running balances, and notes.",
+          "Cash in hand ledger managed by Raman Pupneja. Live tracking of credits (+), debits (-), running balances, and opening cash.",
         )}
         actions={
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCsv}>
-            <Download className="h-4 w-4" />
-            <span>{t("common.exportCsv", "Export CSV")}</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 border-teal-600/30 text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
+              onClick={openOpeningModal}
+            >
+              <Pencil className="h-4 w-4" />
+              <span>{t("cashbook.setOpeningBalance", "Opening Balance")}</span>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCsv}>
+              <Download className="h-4 w-4" />
+              <span>{t("common.exportCsv", "Export CSV")}</span>
+            </Button>
+          </div>
         }
       />
 
       {/* KPI Balance Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Cash in Hand Balance */}
+        {/* 1. Cash in Hand Balance */}
         <Card className="border-teal-800/20 bg-gradient-to-br from-teal-900/10 via-background to-background shadow-xs">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
@@ -298,62 +351,68 @@ function RamansCashbookPage() {
           </CardContent>
         </Card>
 
-        {/* Total Cash In (Debits) */}
+        {/* 2. Opening Cash Balance */}
+        <Card className="shadow-xs border-border/80">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("cashbook.openingBalanceCard", "Opening Cash Balance")}
+              </span>
+              <button
+                type="button"
+                onClick={openOpeningModal}
+                className="flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-teal-700 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-950/40 transition-colors"
+                title="Edit opening cash balance"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>{t("common.edit", "Edit")}</span>
+              </button>
+            </div>
+            <div className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl tabular-nums">
+              {formatInr(openingBalance)}
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              {t("cashbook.baselineBalance", "Starting baseline cash in hand")}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 3. Total Cash In (Credits) */}
         <Card className="shadow-xs">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("cashbook.totalDebit", "Total Inflow (Debits)")}
+                {t("cashbook.totalCredit", "Total Inflow (Credits)")}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <ArrowDownLeft className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-2 text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 sm:text-3xl tabular-nums">
-              {formatInr(totalDebit)}
+              +{formatInr(totalCredit)}
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {t("cashbook.totalCashInReceived", "Total cash deposits & receipts")}
+              {t("cashbook.totalCashInReceived", "Total cash deposits & receipts (+)")}
             </div>
           </CardContent>
         </Card>
 
-        {/* Total Cash Out (Credits) */}
+        {/* 4. Total Cash Out (Debits) */}
         <Card className="shadow-xs">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("cashbook.totalCredit", "Total Outflow (Credits)")}
+                {t("cashbook.totalDebit", "Total Outflow (Debits)")}
               </span>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
                 <ArrowUpRight className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-2 text-2xl font-bold tracking-tight text-rose-700 dark:text-rose-400 sm:text-3xl tabular-nums">
-              {formatInr(totalCredit)}
+              -{formatInr(totalDebit)}
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {t("cashbook.totalCashPaidOut", "Total cash withdrawals & expenses")}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Total Transactions */}
-        <Card className="shadow-xs">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("cashbook.entriesCount", "Recorded Entries")}
-              </span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                <Coins className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl tabular-nums">
-              {allRows.length}
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              {t("cashbook.managedByRaman", "Managed by raman.pupneja@gmail.com")}
+              {t("cashbook.totalCashPaidOut", "Total cash withdrawals & spent (-)")}
             </div>
           </CardContent>
         </Card>
@@ -375,7 +434,7 @@ function RamansCashbookPage() {
           </div>
 
           <form
-            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[140px_160px_160px_1fr_auto] lg:items-end"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[140px_180px_160px_1fr_auto] lg:items-end"
             onSubmit={(e) => {
               e.preventDefault();
               const amt = Number(quickAmount || 0);
@@ -405,30 +464,30 @@ function RamansCashbookPage() {
               />
             </Field>
 
-            {/* 2. Type (Debit vs Credit) */}
+            {/* 2. Type (Credit vs Debit) */}
             <Field label={t("cashbook.type", "Transaction Type")} required>
               <div className="grid grid-cols-2 gap-1 rounded-md border border-border p-0.5 bg-muted/40">
-                <button
-                  type="button"
-                  onClick={() => setQuickType("debit")}
-                  className={`flex h-8 items-center justify-center rounded text-xs font-semibold transition-all ${
-                    quickType === "debit"
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t("cashbook.debit", "Debit (In)")}
-                </button>
                 <button
                   type="button"
                   onClick={() => setQuickType("credit")}
                   className={`flex h-8 items-center justify-center rounded text-xs font-semibold transition-all ${
                     quickType === "credit"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t("cashbook.credit", "Credit (In)")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuickType("debit")}
+                  className={`flex h-8 items-center justify-center rounded text-xs font-semibold transition-all ${
+                    quickType === "debit"
                       ? "bg-rose-600 text-white shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t("cashbook.credit", "Credit (Out)")}
+                  {t("cashbook.debit", "Debit (Out)")}
                 </button>
               </div>
             </Field>
@@ -461,15 +520,15 @@ function RamansCashbookPage() {
               type="submit"
               disabled={createMut.isPending}
               className={`h-9 font-semibold ${
-                quickType === "debit"
+                quickType === "credit"
                   ? "bg-emerald-700 hover:bg-emerald-800 text-white"
                   : "bg-rose-700 hover:bg-rose-800 text-white"
               }`}
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              {quickType === "debit"
-                ? t("cashbook.addDebit", "Add Inflow")
-                : t("cashbook.addCredit", "Add Outflow")}
+              {quickType === "credit"
+                ? t("cashbook.addCredit", "Add Inflow (+)")
+                : t("cashbook.addDebit", "Add Outflow (-)")}
             </Button>
           </form>
         </CardContent>
@@ -533,14 +592,20 @@ function RamansCashbookPage() {
         <SkeletonTable rows={6} columns={6} />
       ) : query.error && !isMissingTableError(query.error) ? (
         <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />
-      ) : filteredRows.length === 0 ? (
+      ) : filteredRows.length === 0 && openingBalance === 0 ? (
         <EmptyState
           icon={<Coins className="h-6 w-6" />}
           title={t("cashbook.emptyTitle", "No cashbook entries recorded")}
           message={t(
             "cashbook.emptyMessage",
-            "Use the quick entry form above to record your first debit (cash in) or credit (cash out) transaction.",
+            "Set your opening balance or use the quick entry form above to record your first transaction.",
           )}
+          action={
+            <Button variant="default" size="sm" onClick={openOpeningModal} className="gap-2">
+              <Pencil className="h-4 w-4" />
+              <span>Set Opening Balance</span>
+            </Button>
+          }
         />
       ) : (
         <DataTableShell
@@ -563,10 +628,10 @@ function RamansCashbookPage() {
                 <TableHead className="w-[120px]">{t("common.date", "Date")}</TableHead>
                 <TableHead className="w-[110px]">{t("common.type", "Type")}</TableHead>
                 <TableHead className="text-right w-[140px]">
-                  {t("cashbook.debitCol", "Debit (In)")}
+                  {t("cashbook.creditCol", "Credit (In)")}
                 </TableHead>
                 <TableHead className="text-right w-[140px]">
-                  {t("cashbook.creditCol", "Credit (Out)")}
+                  {t("cashbook.debitCol", "Debit (Out)")}
                 </TableHead>
                 <TableHead className="text-right w-[150px]">
                   {t("cashbook.balanceCol", "Balance")}
@@ -577,7 +642,7 @@ function RamansCashbookPage() {
             </TableHeader>
             <TableBody>
               {pageRows.map((r) => {
-                const isDebit = r.entry_type === "debit";
+                const isCredit = r.entry_type === "credit";
                 return (
                   <TableRow key={r.id}>
                     {/* Date */}
@@ -590,23 +655,23 @@ function RamansCashbookPage() {
                       <Badge
                         variant="outline"
                         className={`font-semibold capitalize ${
-                          isDebit
+                          isCredit
                             ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
                             : "border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
                         }`}
                       >
-                        {isDebit ? "Debit (In)" : "Credit (Out)"}
+                        {isCredit ? "Credit (In)" : "Debit (Out)"}
                       </Badge>
                     </TableCell>
 
-                    {/* Debit Column */}
+                    {/* Credit Column */}
                     <TableCell className="text-right font-medium tabular-nums text-emerald-700 dark:text-emerald-400">
-                      {isDebit ? `+${formatInr(r.amount)}` : "—"}
+                      {isCredit ? `+${formatInr(r.amount)}` : "—"}
                     </TableCell>
 
-                    {/* Credit Column */}
+                    {/* Debit Column */}
                     <TableCell className="text-right font-medium tabular-nums text-rose-700 dark:text-rose-400">
-                      {!isDebit ? `-${formatInr(r.amount)}` : "—"}
+                      {!isCredit ? `-${formatInr(r.amount)}` : "—"}
                     </TableCell>
 
                     {/* Running Balance Column */}
@@ -641,10 +706,102 @@ function RamansCashbookPage() {
                   </TableRow>
                 );
               })}
+
+              {/* Show Opening Balance row on last page or when no entries exist */}
+              {(isLastPage || filteredRows.length === 0) && (
+                <TableRow className="bg-muted/40 font-medium border-t-2">
+                  <TableCell className="text-sm text-muted-foreground">{today()}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="border-teal-300 bg-teal-50 text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 font-semibold"
+                    >
+                      Opening Balance
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">—</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">—</TableCell>
+                  <TableCell className="text-right font-bold tabular-nums text-foreground">
+                    {formatInr(openingBalance)}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground italic">
+                    Starting baseline cash in hand balance
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      onClick={openOpeningModal}
+                      title="Edit Opening Balance"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </DataTableShell>
       )}
+
+      {/* Opening Balance Modal */}
+      <Dialog open={isOpeningModalOpen} onOpenChange={setIsOpeningModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t("cashbook.openingBalanceTitle", "Set Opening Cash Balance")}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              The Opening Cash Balance is the baseline cash in hand amount. All subsequent credits
+              (+) and debits (-) will automatically add to or subtract from this initial balance.
+            </p>
+            <Field label={t("cashbook.openingAmount", "Opening Balance Amount (₹)")} required>
+              <CurrencyInput
+                value={openingAmount}
+                onChange={setOpeningAmount}
+                placeholder="0.00"
+                autoFocus
+              />
+            </Field>
+            <Field label={t("cashbook.asOfDate", "As of Date")} required>
+              <Input
+                type="date"
+                value={openingDate}
+                onChange={(e) => setOpeningDate(e.target.value)}
+              />
+            </Field>
+            <Field label={t("common.remarks", "Notes / Reference")}>
+              <Textarea
+                rows={2}
+                value={openingNotes}
+                onChange={(e) => setOpeningNotes(e.target.value)}
+                placeholder="E.g. Opening cash in hand as of financial year start..."
+              />
+            </Field>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpeningModalOpen(false)}>
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              disabled={openingMut.isPending}
+              onClick={() => {
+                const amt = Number(openingAmount || 0);
+                openingMut.mutate({
+                  amount: amt,
+                  as_of_date: openingDate,
+                  notes: openingNotes,
+                });
+              }}
+            >
+              {t("common.save", "Save Opening Balance")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Entry Dialog */}
       {editing && (
@@ -666,25 +823,25 @@ function RamansCashbookPage() {
                 <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-1">
                   <button
                     type="button"
-                    onClick={() => setEditForm((f) => ({ ...f, entry_type: "debit" }))}
+                    onClick={() => setEditForm((f) => ({ ...f, entry_type: "credit" }))}
                     className={`flex h-9 items-center justify-center rounded text-xs font-semibold transition-all ${
-                      editForm.entry_type === "debit"
+                      editForm.entry_type === "credit"
                         ? "bg-emerald-600 text-white shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {t("cashbook.debit", "Debit (Inflow)")}
+                    {t("cashbook.credit", "Credit (Inflow)")}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditForm((f) => ({ ...f, entry_type: "credit" }))}
+                    onClick={() => setEditForm((f) => ({ ...f, entry_type: "debit" }))}
                     className={`flex h-9 items-center justify-center rounded text-xs font-semibold transition-all ${
-                      editForm.entry_type === "credit"
+                      editForm.entry_type === "debit"
                         ? "bg-rose-600 text-white shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {t("cashbook.credit", "Credit (Outflow)")}
+                    {t("cashbook.debit", "Debit (Outflow)")}
                   </button>
                 </div>
               </Field>

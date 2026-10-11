@@ -219,3 +219,42 @@ export const deleteCashbookEntryServerFn = createServerFn({ method: "POST" })
     }
     return { success: true };
   });
+
+export const setOpeningBalanceServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) =>
+    z
+      .object({
+        amount: z.coerce.number(),
+        as_of_date: z.string().optional(),
+        notes: z.string().optional(),
+        updated_at: z.string().optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId;
+
+    await assertSuperAdminOrRaman(supabaseAdmin, uid);
+
+    const payload = {
+      amount: Number(data.amount) || 0,
+      as_of_date: data.as_of_date || new Date().toISOString().slice(0, 10),
+      notes: (data.notes || "").trim(),
+      updated_at: new Date().toISOString(),
+      updated_by: uid,
+    };
+
+    const { error } = await supabaseAdmin.from("app_settings" as never).upsert(
+      {
+        key: "finance.ramans_cashbook.opening_balance",
+        value: payload as never,
+        description: "Raman's Cashbook initial opening cash balance",
+      } as never,
+      { onConflict: "key" },
+    );
+
+    if (error) throw new Error(error.message);
+    return payload;
+  });

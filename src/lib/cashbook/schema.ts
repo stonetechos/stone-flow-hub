@@ -31,3 +31,15 @@ export type CashbookEntryRow = {
   debit?: number;
   credit?: number;
 };
+
+export const cashbookOpeningBalanceSchema = z.object({
+  amount: z.coerce.number().default(0),
+  as_of_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)")
+    .optional(),
+  notes: z.string().trim().optional(),
+  updated_at: z.string().optional(),
+});
+
+export type CashbookOpeningBalance = z.infer<typeof cashbookOpeningBalanceSchema>;
