@@ -104,7 +104,13 @@ export function PersonalTransfersLedger() {
   const [perspective, setPerspective] = useState<LedgerPerspective>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [fromDate, setFromDate] = useState("");
+  // Default: show from the start of the current Indian financial year (April 1)
+  // Leave toDate empty so all records up to today are included.
+  const [fromDate, setFromDate] = useState(() => {
+    const now = new Date();
+    const fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+    return `${fyStart}-04-01`;
+  });
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -545,7 +551,7 @@ export function PersonalTransfersLedger() {
               className="text-xs h-7 px-2.5 bg-background border-purple-500/30 hover:border-purple-500"
               onClick={() => handleOpenNew("stone_tech_current", "rishi_upi", "drawings")}
             >
-              Stone Tech SBI → Rishi UPI
+              Stone Tech BOB → Rishi UPI
             </Button>
             <Button
               size="sm"
@@ -553,7 +559,7 @@ export function PersonalTransfersLedger() {
               className="text-xs h-7 px-2.5 bg-background border-amber-500/30 hover:border-amber-500"
               onClick={() => handleOpenNew("stone_tech_current", "raman_upi", "drawings")}
             >
-              Stone Tech SBI → Raman UPI
+              Stone Tech BOB → Raman UPI
             </Button>
             <Button
               size="sm"
@@ -577,7 +583,7 @@ export function PersonalTransfersLedger() {
               className="text-xs h-7 px-2.5 bg-background border-emerald-500/30 hover:border-emerald-500"
               onClick={() => handleOpenNew("rishi_upi", "stone_tech_current", "capital_infusion")}
             >
-              Rishi UPI → Stone Tech SBI
+              Rishi UPI → Stone Tech BOB
             </Button>
             <Button
               size="sm"
@@ -585,7 +591,15 @@ export function PersonalTransfersLedger() {
               className="text-xs h-7 px-2.5 bg-background border-emerald-500/30 hover:border-emerald-500"
               onClick={() => handleOpenNew("raman_upi", "stone_tech_current", "capital_infusion")}
             >
-              Raman UPI → Stone Tech SBI
+              Raman UPI → Stone Tech BOB
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs h-7 px-2.5 bg-background border-emerald-500/30 hover:border-emerald-500"
+              onClick={() => handleOpenNew("stone_tech_current", "stone_tech_upi", "self_transfer")}
+            >
+              BOB Current → BOB UPI
             </Button>
           </div>
 
@@ -738,11 +752,30 @@ export function PersonalTransfersLedger() {
             <EmptyState
               icon={<ArrowLeftRight className="h-5 w-5" />}
               title="No personal transfers recorded"
-              message="Record payments received into personal accounts, transfers to UPI, partner settlements, or drawings."
+              message={
+                fromDate || toDate
+                  ? `No transfers found for the selected date range. Try "Show all time" or record the first one.`
+                  : "Record payments received into personal accounts, transfers to UPI, partner settlements, or drawings."
+              }
               action={
-                <Button size="sm" onClick={() => handleOpenNew()}>
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Record First Transfer
-                </Button>
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  {(fromDate || toDate) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setFromDate("");
+                        setToDate("");
+                        setPage(1);
+                      }}
+                    >
+                      Show all time
+                    </Button>
+                  )}
+                  <Button size="sm" onClick={() => handleOpenNew()}>
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> Record First Transfer
+                  </Button>
+                </div>
               }
             />
           ) : (
@@ -946,7 +979,10 @@ export function PersonalTransfersLedger() {
                     <SelectItem value="raman_bank">Raman Pupneja — Personal Bank A/c</SelectItem>
                     <SelectItem value="raman_upi">Raman Pupneja — UPI</SelectItem>
                     <SelectItem value="stone_tech_current">
-                      Stone Tech Operations — SBI Current A/c
+                      Stone Tech Operations — BOB Current A/c
+                    </SelectItem>
+                    <SelectItem value="stone_tech_upi">
+                      Stone Tech Operations — BOB UPI Current A/c
                     </SelectItem>
                     <SelectItem value="petty_cash">Stone Tech — Cash Drawer</SelectItem>
                     <SelectItem value="other">Other Account</SelectItem>
@@ -988,7 +1024,10 @@ export function PersonalTransfersLedger() {
                     <SelectItem value="raman_bank">Raman Pupneja — Personal Bank A/c</SelectItem>
                     <SelectItem value="raman_upi">Raman Pupneja — UPI</SelectItem>
                     <SelectItem value="stone_tech_current">
-                      Stone Tech Operations — SBI Current A/c
+                      Stone Tech Operations — BOB Current A/c
+                    </SelectItem>
+                    <SelectItem value="stone_tech_upi">
+                      Stone Tech Operations — BOB UPI Current A/c
                     </SelectItem>
                     <SelectItem value="petty_cash">Stone Tech — Cash Drawer</SelectItem>
                     <SelectItem value="other">Other Account</SelectItem>

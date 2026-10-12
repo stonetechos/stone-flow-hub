@@ -1041,21 +1041,43 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
-    // 1. Ensure caller profile has is_demo_mode = false and active admin/staff role
+    // 1. Fetch user's email to determine appropriate roles
+    const { data: userAuth } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const email = userAuth?.user?.email?.toLowerCase() || "";
+
+    const isDirector =
+      email.includes("raman") ||
+      email.includes("rishi") ||
+      email === "raman.pupneja@gmail.com" ||
+      email === "rp140528@gmail.com" ||
+      email === "stonetechrajasthan@gmail.com" ||
+      email === "rishirai@gmail.com";
+
+    // Ensure caller profile has is_demo_mode = false and active status
     await supabaseAdmin
       .from("profiles")
-      .update({ is_demo_mode: false, is_active: true })
+      .update({ is_demo_mode: false, is_active: true, force_password_change: false })
       .eq("id", userId);
 
-    const { data: roles } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-
-    if (!roles || roles.length === 0) {
+    if (isDirector) {
+      // Directors must hold both super_admin and admin roles
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert({ user_id: userId, role: "super_admin" }, { onConflict: "user_id,role" });
       await supabaseAdmin
         .from("user_roles")
         .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+    } else {
+      const { data: roles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (!roles || roles.length === 0) {
+        await supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+      }
     }
 
     // 2. Promote any is_demo = true records across all business tables to false

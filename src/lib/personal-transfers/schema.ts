@@ -46,11 +46,19 @@ export const TRANSFER_ACCOUNTS: readonly TransferAccountDef[] = [
   },
   {
     id: "stone_tech_current",
-    label: "Stone Tech Operations — SBI Current A/c",
-    shortLabel: "Stone Tech Current (SBI)",
+    label: "Stone Tech Operations — BOB Current A/c",
+    shortLabel: "Stone Tech Current (BOB)",
     owner: "company",
     type: "current",
     iconName: "Building2",
+  },
+  {
+    id: "stone_tech_upi",
+    label: "Stone Tech Operations — BOB UPI Current A/c",
+    shortLabel: "Stone Tech UPI (BOB)",
+    owner: "company",
+    type: "upi",
+    iconName: "Smartphone",
   },
   {
     id: "petty_cash",
@@ -311,7 +319,7 @@ export function computeScopedLedger(
       } else if (isFromCompany && !isToCompany) {
         debit = amount;
       } else {
-        // Internal between Stone Tech SBI and Cash Drawer
+        // Internal between Stone Tech BOB and Cash Drawer / UPI
         credit = 0;
         debit = 0;
       }

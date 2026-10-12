@@ -87,7 +87,7 @@ describe("computeScopedLedger", () => {
       to_account: "stone_tech_current",
       amount: 15000,
       category: "capital_infusion",
-      remarks: "Raman deposited into Company SBI",
+      remarks: "Raman deposited into Company BOB",
       created_at: "2026-10-03T12:00:00Z",
       updated_at: "2026-10-03T12:00:00Z",
     },

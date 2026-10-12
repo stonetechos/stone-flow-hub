@@ -63,6 +63,8 @@ function NewVendorPaymentPage() {
   const set = <K extends keyof VendorPaymentCreateInput>(k: K, v: VendorPaymentCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
   const mut = useMutation({
     mutationFn: createVendorPayment,
     onSuccess: (row) => {
@@ -73,25 +75,47 @@ function NewVendorPaymentPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!form.vendor_id) {
+      errors.vendor_id = "Please select a vendor";
+    }
+    if (!form.amount || form.amount <= 0) {
+      errors.amount = "Please enter an amount greater than 0";
+    }
+    if (!form.paid_at) {
+      errors.paid_at = "Payment date is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError);
+      return;
+    }
+    setFormErrors({});
+    mut.mutate(form);
+  };
+
   return (
     <div>
       <PageHeader
         title="Record vendor payment"
         subtitle="Posts to the vendor ledger automatically."
       />
-      <QuickForm
-        onSubmit={(e) => {
-          e.preventDefault();
-          mut.mutate(form);
-        }}
-        busy={mut.isPending}
-      >
+      <QuickForm onSubmit={handleSubmit} busy={mut.isPending}>
         <QuickForm.QuickFill>
-          <Field label="Vendor" required>
+          <Field label="Vendor" required error={formErrors.vendor_id}>
             <EntityPicker
               type="vendor"
               value={form.vendor_id || null}
-              onChange={(v) => set("vendor_id", v ?? "")}
+              onChange={(v) => {
+                set("vendor_id", v ?? "");
+                if (v && formErrors.vendor_id) {
+                  setFormErrors((prev) => ({ ...prev, vendor_id: "" }));
+                }
+              }}
             />
           </Field>
           <Field label="Payment type" required>
@@ -113,20 +137,31 @@ function NewVendorPaymentPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Amount (₹)" required>
+          <Field label="Amount (₹)" required error={formErrors.amount}>
             <Input
               type="number"
               step="0.01"
+              min="0.01"
               value={form.amount || ""}
-              onChange={(e) => set("amount", Number(e.target.value || 0))}
+              onChange={(e) => {
+                set("amount", Number(e.target.value || 0));
+                if (formErrors.amount) {
+                  setFormErrors((prev) => ({ ...prev, amount: "" }));
+                }
+              }}
               required
             />
           </Field>
-          <Field label="Paid on" required>
+          <Field label="Paid on" required error={formErrors.paid_at}>
             <Input
               type="date"
               value={form.paid_at}
-              onChange={(e) => set("paid_at", e.target.value)}
+              onChange={(e) => {
+                set("paid_at", e.target.value);
+                if (formErrors.paid_at) {
+                  setFormErrors((prev) => ({ ...prev, paid_at: "" }));
+                }
+              }}
               required
             />
           </Field>
