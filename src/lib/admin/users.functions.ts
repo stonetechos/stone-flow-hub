@@ -358,21 +358,27 @@ export const inviteUser = createServerFn({ method: "POST" })
     }
 
     if (userId) {
-      if (fullName) {
-        // Ensure profile row reflects display name immediately
-        await supabaseAdmin
-          .from("profiles")
-          .upsert({ id: userId, email, full_name: fullName }, { onConflict: "id" });
-      }
-      if (data.role) {
-        // Assign role on the server using service role client to bypass client RLS issues
-        await supabaseAdmin
-          .from("user_roles")
-          .upsert(
-            { user_id: userId, role: data.role as AppRole, granted_by: context.userId },
-            { onConflict: "user_id,role" },
-          );
-      }
+      // Ensure profile row is active, non-demo, with display name set immediately.
+      await supabaseAdmin.from("profiles").upsert(
+        {
+          id: userId,
+          email,
+          ...(fullName ? { full_name: fullName } : {}),
+          is_active: true,
+          is_demo_mode: false,
+          force_password_change: false,
+        },
+        { onConflict: "id" },
+      );
+      // Always assign a role (defaulting to "admin") so RLS-gated data flows
+      // through on first login without requiring a separate ensureUserRole call.
+      const effectiveRole = (data.role || "admin") as AppRole;
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert(
+          { user_id: userId, role: effectiveRole, granted_by: context.userId },
+          { onConflict: "user_id,role" },
+        );
     }
 
     // 2. If RESEND_API_KEY is configured in the environment, dispatch branded invite email
@@ -457,28 +463,29 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const userId = result.user?.id;
     if (userId) {
-      // The password above is exactly what the admin
-      // typed — nothing is generated. Since it's a temporary credential the
-      // admin now has to share with the user out of band, force a password
-      // change before the account can be used (Part 7 enforces the
-      // redirect; this just sets the flag that triggers it).
+      // Set profile as active, non-demo, and without forced password change so the
+      // user lands directly on the dashboard — the admin set the credential explicitly
+      // and is responsible for communicating it out-of-band.
       await supabaseAdmin.from("profiles").upsert(
         {
           id: userId,
           email,
           ...(fullName ? { full_name: fullName } : {}),
-          force_password_change: true,
+          is_active: true,
+          is_demo_mode: false,
+          force_password_change: false,
         },
         { onConflict: "id" },
       );
-      if (data.role) {
-        await supabaseAdmin
-          .from("user_roles")
-          .upsert(
-            { user_id: userId, role: data.role as AppRole, granted_by: context.userId },
-            { onConflict: "user_id,role" },
-          );
-      }
+      // Always assign a role (defaulting to "admin") so RLS-gated data flows
+      // through on first login without requiring a separate ensureUserRole call.
+      const effectiveRole = (data.role || "admin") as AppRole;
+      await supabaseAdmin
+        .from("user_roles")
+        .upsert(
+          { user_id: userId, role: effectiveRole, granted_by: context.userId },
+          { onConflict: "user_id,role" },
+        );
       await logAuditEvent(supabaseAdmin, {
         entityId: userId,
         action: "user_created",
@@ -977,7 +984,7 @@ export const completeUserPasswordActivation = createServerFn({ method: "POST" })
       .limit(1);
 
     if (!existingRoles || existingRoles.length === 0) {
-      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "sales" });
+      await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "admin" });
     }
 
     await logAuditEvent(supabaseAdmin, {

@@ -874,7 +874,9 @@ function InviteForm({
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<AppRole | "none">("none");
+  // Default to "admin" so every new user gets a usable role immediately on first login.
+  // The admin can still downgrade before sending the invite.
+  const [role, setRole] = useState<AppRole | "none">("admin");
   const availableRoles = isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
 
   return (
@@ -993,7 +995,8 @@ function PasswordCreateForm({
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<AppRole | "none">("none");
+  // Default to "admin" so every password-created user gets a usable role immediately on login.
+  const [role, setRole] = useState<AppRole | "none">("admin");
   const availableRoles = isSuperAdmin ? ALL_ROLES_INCLUDING_SUPER : APP_ROLES;
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -1003,8 +1006,9 @@ function PasswordCreateForm({
 
   // Reports unsaved-edit state up to CreateUserDialog,
   // which uses it to guard against an accidental close.
+  // "admin" is the default, so it alone (without email/password changes) is not considered dirty.
   useEffect(() => {
-    onDirtyChange?.(!!email || !!fullName || !!password || role !== "none");
+    onDirtyChange?.(!!email || !!fullName || !!password || (role !== "none" && role !== "admin"));
   }, [email, fullName, password, role, onDirtyChange]);
 
   // Ctrl/Cmd+Enter submits, matching the shortcut convention used across
