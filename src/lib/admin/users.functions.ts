@@ -1060,13 +1060,19 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
       .eq("id", userId);
 
     if (isDirector) {
-      // Directors must hold both super_admin and admin roles
-      await supabaseAdmin
-        .from("user_roles")
-        .upsert({ user_id: userId, role: "super_admin" }, { onConflict: "user_id,role" });
-      await supabaseAdmin
-        .from("user_roles")
-        .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+      // Directors must hold both super_admin and admin roles.
+      // Use check-then-insert to avoid ON CONFLICT constraint name issues.
+      for (const role of ["super_admin", "admin"] as const) {
+        const { data: existing } = await supabaseAdmin
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("role", role)
+          .maybeSingle();
+        if (!existing) {
+          await supabaseAdmin.from("user_roles").insert({ user_id: userId, role });
+        }
+      }
     } else {
       const { data: roles } = await supabaseAdmin
         .from("user_roles")
@@ -1074,9 +1080,7 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
         .eq("user_id", userId);
 
       if (!roles || roles.length === 0) {
-        await supabaseAdmin
-          .from("user_roles")
-          .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "admin" });
       }
     }
 
