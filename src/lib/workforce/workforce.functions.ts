@@ -316,13 +316,19 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
     // 5. Assign system role if user_id linked and role specified
     if (targetUserId && systemRole) {
       try {
-        await supabaseAdmin.from("user_roles").upsert(
-          {
+        const roleToAssign = systemRole as Database["public"]["Enums"]["app_role"];
+        const { data: existingRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", targetUserId)
+          .eq("role", roleToAssign)
+          .maybeSingle();
+        if (!existingRole) {
+          await supabaseAdmin.from("user_roles").insert({
             user_id: targetUserId,
-            role: systemRole as Database["public"]["Enums"]["app_role"],
-          },
-          { onConflict: "user_id,role" },
-        );
+            role: roleToAssign,
+          });
+        }
       } catch (roleErr) {
         console.warn("[workforce.functions] Failed to assign user role:", roleErr);
       }

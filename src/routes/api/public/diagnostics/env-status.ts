@@ -132,13 +132,10 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
                   .eq("user_id", u.id);
 
                 if (!existingRoles || existingRoles.length === 0) {
-                  await supabaseAdmin.from("user_roles").upsert(
-                    {
-                      user_id: u.id,
-                      role: u.email === "rp140528@gmail.com" ? "admin" : "sales",
-                    },
-                    { onConflict: "user_id,role" },
-                  );
+                  await supabaseAdmin.from("user_roles").insert({
+                    user_id: u.id,
+                    role: u.email === "rp140528@gmail.com" ? "admin" : "sales",
+                  });
                 }
               }
 

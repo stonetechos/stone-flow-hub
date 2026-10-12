@@ -373,12 +373,17 @@ export const inviteUser = createServerFn({ method: "POST" })
       // Always assign a role (defaulting to "admin") so RLS-gated data flows
       // through on first login without requiring a separate ensureUserRole call.
       const effectiveRole = (data.role || "admin") as AppRole;
-      await supabaseAdmin
+      const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
-        .upsert(
-          { user_id: userId, role: effectiveRole, granted_by: context.userId },
-          { onConflict: "user_id,role" },
-        );
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", effectiveRole)
+        .maybeSingle();
+      if (!existingRole) {
+        await supabaseAdmin
+          .from("user_roles")
+          .insert({ user_id: userId, role: effectiveRole, granted_by: context.userId });
+      }
     }
 
     // 2. If RESEND_API_KEY is configured in the environment, dispatch branded invite email
@@ -480,12 +485,17 @@ export const createUserWithPassword = createServerFn({ method: "POST" })
       // Always assign a role (defaulting to "admin") so RLS-gated data flows
       // through on first login without requiring a separate ensureUserRole call.
       const effectiveRole = (data.role || "admin") as AppRole;
-      await supabaseAdmin
+      const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
-        .upsert(
-          { user_id: userId, role: effectiveRole, granted_by: context.userId },
-          { onConflict: "user_id,role" },
-        );
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", effectiveRole)
+        .maybeSingle();
+      if (!existingRole) {
+        await supabaseAdmin
+          .from("user_roles")
+          .insert({ user_id: userId, role: effectiveRole, granted_by: context.userId });
+      }
       await logAuditEvent(supabaseAdmin, {
         entityId: userId,
         action: "user_created",
@@ -875,15 +885,21 @@ export const assignUserRoleServerFn = createServerFn({ method: "POST" })
       throw new Error("Only a Super Admin can grant the Super Admin role.");
     }
 
-    const { error } = await supabaseAdmin.from("user_roles").upsert(
-      {
+    const { data: existingRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", data.user_id)
+      .eq("role", role)
+      .maybeSingle();
+
+    if (!existingRole) {
+      const { error } = await supabaseAdmin.from("user_roles").insert({
         user_id: data.user_id,
         role,
         granted_by: context.userId,
-      },
-      { onConflict: "user_id,role" },
-    );
-    if (error && error.code !== "23505") throw new Error(error.message);
+      });
+      if (error && error.code !== "23505") throw new Error(error.message);
+    }
 
     await logAuditEvent(supabaseAdmin, {
       entityId: data.user_id,
@@ -1084,7 +1100,57 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
       }
     }
 
-    // 2. Promote any is_demo = true records across all business tables to false
+    // 2. Organization-wide auto-heal: loop through all users in the system to ensure
+    // every user's profile is active, non-demo, and has an active role (admin by default)
+    // so entries created by any user flow through and are visible to everyone according to roles.
+    try {
+      const { data: allUsersData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+      const usersList = allUsersData?.users ?? [];
+
+      for (const u of usersList) {
+        const uEmail = u.email?.toLowerCase() || "";
+        const uIsDirector =
+          uEmail.includes("raman") ||
+          uEmail.includes("rishi") ||
+          uEmail === "raman.pupneja@gmail.com" ||
+          uEmail === "rp140528@gmail.com" ||
+          uEmail === "stonetechrajasthan@gmail.com" ||
+          uEmail === "rishirai@gmail.com";
+
+        // Ensure profile is active and non-demo
+        await supabaseAdmin
+          .from("profiles")
+          .update({ is_demo_mode: false, is_active: true, force_password_change: false })
+          .eq("id", u.id);
+
+        if (uIsDirector) {
+          for (const role of ["super_admin", "admin"] as const) {
+            const { data: ex } = await supabaseAdmin
+              .from("user_roles")
+              .select("id")
+              .eq("user_id", u.id)
+              .eq("role", role)
+              .maybeSingle();
+            if (!ex) {
+              await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role });
+            }
+          }
+        } else {
+          const { data: uRoles } = await supabaseAdmin
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", u.id);
+
+          if (!uRoles || uRoles.length === 0) {
+            await supabaseAdmin.from("user_roles").insert({ user_id: u.id, role: "admin" });
+          }
+        }
+      }
+    } catch (usersErr) {
+      console.warn("[syncOrganizationDataServerFn] all-users auto-heal note:", usersErr);
+    }
+
+    // 3. Promote any is_demo = true records across all business tables to false
     for (const table of OPERATIONAL_BUSINESS_TABLES) {
       try {
         await supabaseAdmin

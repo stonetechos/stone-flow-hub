@@ -60,26 +60,35 @@ export async function createVendorPayment(
   input: VendorPaymentCreateInput,
 ): Promise<VendorPaymentRow> {
   const p = vendorPaymentCreateSchema.parse(input);
-  const { data, error } = await supabase
-    .from("vendor_payments" as never)
-    .insert({
-      payment_no: "",
-      vendor_id: p.vendor_id,
-      purchase_order_id: p.purchase_order_id ?? null,
-      grn_id: p.grn_id ?? null,
-      project_id: p.project_id ?? null,
-      payment_type: p.payment_type,
-      amount: p.amount,
-      currency_code: p.currency_code,
-      method: p.method ?? null,
-      reference_no: p.reference_no ?? null,
-      paid_at: p.paid_at,
-      notes: p.notes ?? null,
-    } as never)
-    .select("*")
-    .single();
-  if (error) throw new AppError(mapDbError(error));
-  return data as unknown as VendorPaymentRow;
+  try {
+    const { createVendorPaymentServerFn } = await import("./vendor-payments.functions");
+    return await createVendorPaymentServerFn({ data: { data: p } });
+  } catch (serverErr) {
+    console.warn(
+      "[createVendorPayment] server function failed, falling back to client:",
+      serverErr,
+    );
+    const { data, error } = await supabase
+      .from("vendor_payments" as never)
+      .insert({
+        payment_no: "",
+        vendor_id: p.vendor_id,
+        purchase_order_id: p.purchase_order_id ?? null,
+        grn_id: p.grn_id ?? null,
+        project_id: p.project_id ?? null,
+        payment_type: p.payment_type,
+        amount: p.amount,
+        currency_code: p.currency_code,
+        method: p.method ?? null,
+        reference_no: p.reference_no ?? null,
+        paid_at: p.paid_at,
+        notes: p.notes ?? null,
+      } as never)
+      .select("*")
+      .single();
+    if (error) throw new AppError(mapDbError(error));
+    return data as unknown as VendorPaymentRow;
+  }
 }
 
 export async function deleteVendorPayment(id: string): Promise<void> {

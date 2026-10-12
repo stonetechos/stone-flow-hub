@@ -93,6 +93,7 @@ import {
   deleteAuthUser,
   setUserActive,
   resetUserPassword,
+  syncOrganizationDataServerFn,
   type AdminUserRow,
   type AdminUserStatus,
 } from "@/lib/admin/users.functions";
@@ -468,6 +469,15 @@ function UsersAdminPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  const syncAllUsers = useMutation({
+    mutationFn: () => syncOrganizationDataServerFn(),
+    onSuccess: () => {
+      toast.success("Database access & roles synchronized for all users");
+      invalidate();
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AdminUserStatus>("all");
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -517,9 +527,23 @@ function UsersAdminPage() {
         title="Users & Roles"
         subtitle="Invite users, assign roles, and manage the full user lifecycle. Email remains the login identity."
         actions={
-          <Button onClick={() => setInviteOpen(true)} size="sm">
-            <UserPlus className="mr-1.5 h-4 w-4" /> {t("actions.addUser", "Add user")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={syncAllUsers.isPending}
+              onClick={() => syncAllUsers.mutate()}
+              title="Ensure all users have database access and permissions according to their roles"
+            >
+              <RefreshCw
+                className={cn("mr-1.5 h-4 w-4", syncAllUsers.isPending && "animate-spin")}
+              />
+              {syncAllUsers.isPending ? "Syncing…" : "Sync Access & Roles"}
+            </Button>
+            <Button onClick={() => setInviteOpen(true)} size="sm">
+              <UserPlus className="mr-1.5 h-4 w-4" /> {t("actions.addUser", "Add user")}
+            </Button>
+          </div>
         }
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
