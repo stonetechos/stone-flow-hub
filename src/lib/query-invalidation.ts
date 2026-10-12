@@ -407,3 +407,8 @@ export function invalidateInstallationTeam(qc: QueryClient, id?: string): void {
   bump(qc, qk.installationTeams.picker);
   if (id) bump(qc, qk.installationTeams.byId(id));
 }
+
+export function invalidatePersonalTransfers(qc: QueryClient): void {
+  bump(qc, qk.personalTransfers.all);
+  bump(qc, ["personalTransfers"]);
+}

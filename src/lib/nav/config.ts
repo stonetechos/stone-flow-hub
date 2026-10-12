@@ -254,6 +254,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     superAdminOnly: true,
   },
   {
+    id: "personal-transfers",
+    to: "/money-flow?tab=personal-transfers",
+    label: "Personal Transfers",
+    icon: ArrowLeftRight,
+    group: "finance",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
     id: "gst",
     to: "/gst",
     label: "Pay GST & Filing",

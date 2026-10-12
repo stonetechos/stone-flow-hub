@@ -57,6 +57,7 @@ import { listCustomers } from "@/lib/customers/api";
 import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { listVendors } from "@/lib/vendors/api";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
+import { PersonalTransfersLedger } from "@/components/finance/PersonalTransfersLedger";
 
 type MoneyFlowTab =
   | "overview"
@@ -65,7 +66,8 @@ type MoneyFlowTab =
   | "agency-payments"
   | "customer-ledgers"
   | "vendor-ledgers"
-  | "agency-ledgers";
+  | "agency-ledgers"
+  | "personal-transfers";
 
 export const Route = createFileRoute("/_authenticated/money-flow")({
   ssr: false,
@@ -232,6 +234,15 @@ function MoneyFlowCommandCenterPage() {
                   <Plus className="mr-1.5 h-3.5 w-3.5" />{" "}
                   {t("moneyFlow.agencyDisbursements", "Agency Disbursements")}
                 </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-600/40 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold"
+                onClick={() => setActiveTab("personal-transfers")}
+              >
+                <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
+                <span>Personal Transfers</span>
               </Button>
             </div>
           }
@@ -446,6 +457,10 @@ function MoneyFlowCommandCenterPage() {
               <TabsTrigger value="agency-ledgers" className="gap-1.5 text-xs">
                 <Layers className="h-3.5 w-3.5" />
                 <span>{t("moneyFlow.tabs.agencyLedgers", "Agency Ledgers")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="personal-transfers" className="gap-1.5 text-xs">
+                <ArrowLeftRight className="h-3.5 w-3.5 text-purple-600" />
+                <span>Personal Transfers & Ledgers</span>
               </TabsTrigger>
               <TabsTrigger value="gst" className="gap-1.5 text-xs" asChild>
                 <Link to="/gst">
@@ -758,6 +773,11 @@ function MoneyFlowCommandCenterPage() {
               error={agencySummariesQ.error}
               onRetry={() => agencySummariesQ.refetch()}
             />
+          </TabsContent>
+
+          {/* TAB 8: PERSONAL TRANSFERS & LEDGERS */}
+          <TabsContent value="personal-transfers">
+            <PersonalTransfersLedger />
           </TabsContent>
         </Tabs>
       </div>
