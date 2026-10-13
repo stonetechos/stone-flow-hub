@@ -51,52 +51,44 @@ describe("getCustomerPaymentStatus", () => {
     // Debit with 0 credit -> payment_pending
     expect(
       getCustomerPaymentStatus(customer, {
-        customerId: "c1",
-        customerName: "Test",
         totalDebit: 10000,
         totalCredit: 0,
         balance: 10000,
         entryCount: 1,
-        lastTransactionAt: null,
+        lastEntryAt: null,
       }),
     ).toBe("payment_pending");
 
     // Partial credit -> part_payment_received
     expect(
       getCustomerPaymentStatus(customer, {
-        customerId: "c1",
-        customerName: "Test",
         totalDebit: 10000,
         totalCredit: 4000,
         balance: 6000,
         entryCount: 2,
-        lastTransactionAt: null,
+        lastEntryAt: null,
       }),
     ).toBe("part_payment_received");
 
     // Full credit -> full_payment_received
     expect(
       getCustomerPaymentStatus(customer, {
-        customerId: "c1",
-        customerName: "Test",
         totalDebit: 10000,
         totalCredit: 10000,
         balance: 0,
         entryCount: 2,
-        lastTransactionAt: null,
+        lastEntryAt: null,
       }),
     ).toBe("full_payment_received");
 
     // Zero debit and zero credit -> no_dues
     expect(
       getCustomerPaymentStatus(customer, {
-        customerId: "c1",
-        customerName: "Test",
         totalDebit: 0,
         totalCredit: 0,
         balance: 0,
         entryCount: 0,
-        lastTransactionAt: null,
+        lastEntryAt: null,
       }),
     ).toBe("no_dues");
   });
