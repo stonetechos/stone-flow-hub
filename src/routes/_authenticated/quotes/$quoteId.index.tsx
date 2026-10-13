@@ -213,14 +213,13 @@ function QuoteDetailPage() {
             pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
             primary={
               <>
-                {isDraft && (
-                  <Button
-                    size="sm"
-                    onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
-                  >
-                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant={isDraft ? "default" : "outline"}
+                  onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
                 {!isAccepted && (
                   <Button
                     size="sm"
@@ -382,8 +381,16 @@ function QuoteDetailPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm">Line items</CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
+            >
+              <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit items
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>

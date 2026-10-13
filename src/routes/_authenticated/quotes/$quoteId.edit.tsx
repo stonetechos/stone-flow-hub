@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { Badge } from "@/components/ui/badge";
 
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
@@ -114,42 +115,25 @@ function EditQuotePage() {
     return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Quote not found." />;
 
-  // Editing is only allowed while the quote is a Draft. Every other status
-  // locks commercials; users must use "Create revision" from the detail page
-  // to obtain a new draft.
   const status = query.data.status;
-  if (status !== "draft") {
-    return (
-      <div>
-        <PageHeader
-          title={`Edit ${query.data.quote_no}`}
-          subtitle="Editing is not available for this quote."
-          actions={
-            <Button
-              variant="ghost"
-              onClick={() => nav({ to: "/quotes/$quoteId", params: { quoteId } })}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-          }
-        />
-        <Card className="shadow-1">
-          <CardContent className="py-8 text-sm text-muted-foreground">
-            This quote is <span className="font-medium capitalize">{status}</span> and its
-            commercials are locked. To change quantities, rates, GST, fulfilment or notes, open the
-            quote and choose <span className="font-medium">Create revision</span> — that duplicates
-            it into a new draft while preserving this version for audit.
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const isDraft = status === "draft";
 
   return (
     <div>
       <PageHeader
         title={`Edit ${query.data.quote_no}`}
-        subtitle="Draft quote — full editing enabled."
+        subtitle={
+          <div className="flex items-center gap-2">
+            <span>
+              {isDraft
+                ? "Draft quote — full editing enabled."
+                : `Active quote — updating line items and commercials.`}
+            </span>
+            <Badge variant="outline" className="capitalize text-xs font-semibold">
+              {status}
+            </Badge>
+          </div>
+        }
         actions={
           <div className="flex items-center gap-2">
             {canReassign && (
