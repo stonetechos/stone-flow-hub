@@ -1769,7 +1769,12 @@ function HomePage() {
       </div>
 
       {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
-      <StonemanMascot onClick={() => setStonemanOpen(true)} />
+      <StonemanMascot
+        onClick={() => setStonemanOpen(true)}
+        className={
+          stonemanOpen ? "pointer-events-none opacity-0 transition-opacity duration-200" : ""
+        }
+      />
       <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
     </div>
   );
