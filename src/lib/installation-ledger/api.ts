@@ -109,3 +109,57 @@ export async function deleteInstallationLedgerEntry(id: string): Promise<void> {
     .eq("id" as never, id as never);
   if (error) throw new AppError(mapDbError(error));
 }
+
+export interface UpdateInstallationLedgerEntryInput {
+  installation_agency_id?: string;
+  entry_date?: string;
+  entry_type?: "charge" | "payment";
+  amount?: number;
+  debit?: number;
+  credit?: number;
+  description?: string;
+  ref_no?: string | null;
+  notes?: string | null;
+}
+
+export async function updateInstallationLedgerEntry(
+  id: string,
+  input: UpdateInstallationLedgerEntryInput,
+): Promise<InstallationLedgerRow> {
+  const updates: Record<string, unknown> = {};
+  if (input.installation_agency_id !== undefined) {
+    updates.installation_agency_id = input.installation_agency_id;
+  }
+  if (input.entry_date !== undefined) {
+    updates.entry_date = input.entry_date;
+  }
+  if (input.description !== undefined) {
+    updates.description = input.description;
+  }
+  if (input.ref_no !== undefined) {
+    updates.ref_no = input.ref_no ?? null;
+  }
+  if (input.notes !== undefined) {
+    updates.notes = input.notes ?? null;
+  }
+  if (input.entry_type !== undefined) {
+    const amount = Number(input.amount ?? 0);
+    updates.debit = input.entry_type === "charge" ? amount : 0;
+    updates.credit = input.entry_type === "payment" ? amount : 0;
+  } else {
+    if (input.debit !== undefined) updates.debit = Number(input.debit);
+    if (input.credit !== undefined) updates.credit = Number(input.credit);
+    if (input.amount !== undefined && input.debit === undefined && input.credit === undefined) {
+      updates.credit = Number(input.amount);
+    }
+  }
+
+  const { data, error } = await getDb()
+    .from("installation_agency_ledger_entries" as never)
+    .update(updates as never)
+    .eq("id" as never, id as never)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data as unknown as InstallationLedgerRow;
+}

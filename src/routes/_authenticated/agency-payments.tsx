@@ -36,13 +36,19 @@ import {
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { formatInr, formatDate } from "@/lib/format";
 import {
   listInstallationLedger,
   createInstallationLedgerEntry,
+  updateInstallationLedgerEntry,
+  deleteInstallationLedgerEntry,
+  type InstallationLedgerRow,
 } from "@/lib/installation-ledger/api";
+import { invalidateInstallationLedger } from "@/lib/query-invalidation";
 import { listInstallationAgencies } from "@/lib/installation-agencies/api";
 import { useRoles } from "@/hooks/use-roles";
 import { useTranslation } from "react-i18next";
@@ -65,11 +71,22 @@ function AgencyPaymentsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [openCreate, setOpenCreate] = useState(false);
+  const [toDelete, setToDelete] = useState<InstallationLedgerRow | null>(null);
+  const [toEdit, setToEdit] = useState<InstallationLedgerRow | null>(null);
 
   const [form, setForm] = useState({
     installation_agency_id: "",
     entry_date: today(),
     description: "Payment to agency",
+    ref_no: "",
+    amount: 0,
+    notes: "",
+  });
+
+  const [editForm, setEditForm] = useState({
+    installation_agency_id: "",
+    entry_date: today(),
+    description: "",
     ref_no: "",
     amount: 0,
     notes: "",
@@ -130,9 +147,8 @@ function AgencyPaymentsPage() {
         notes: form.notes || null,
       }),
     onSuccess: () => {
-      toast.success("Agency payment recorded");
-      qc.invalidateQueries({ queryKey: qk.installationLedger.all() });
-      qc.invalidateQueries({ queryKey: qk.installationLedger.summaries() });
+      toast.success(t("agencyPayments.recorded", "Agency payment recorded"));
+      invalidateInstallationLedger(qc, form.installation_agency_id);
       setOpenCreate(false);
       setForm({
         installation_agency_id: "",
@@ -142,6 +158,40 @@ function AgencyPaymentsPage() {
         amount: 0,
         notes: "",
       });
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteInstallationLedgerEntry(id),
+    onSuccess: () => {
+      toast.success(t("agencyPayments.deleted", "Agency payment deleted"));
+      invalidateInstallationLedger(qc, toDelete?.installation_agency_id);
+      setToDelete(null);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const editMut = useMutation({
+    mutationFn: () => {
+      if (!toEdit) throw new Error("No payment selected");
+      return updateInstallationLedgerEntry(toEdit.id, {
+        installation_agency_id: editForm.installation_agency_id,
+        entry_date: editForm.entry_date,
+        entry_type: "payment",
+        amount: editForm.amount,
+        description: editForm.description,
+        ref_no: editForm.ref_no || null,
+        notes: editForm.notes || null,
+      });
+    },
+    onSuccess: () => {
+      toast.success(t("agencyPayments.updated", "Agency payment updated"));
+      invalidateInstallationLedger(qc, editForm.installation_agency_id);
+      if (toEdit && toEdit.installation_agency_id !== editForm.installation_agency_id) {
+        invalidateInstallationLedger(qc, toEdit.installation_agency_id);
+      }
+      setToEdit(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -180,7 +230,7 @@ function AgencyPaymentsPage() {
       />
 
       {ledgerQuery.isLoading || agenciesQuery.isLoading ? (
-        <SkeletonTable rows={5} columns={6} />
+        <SkeletonTable rows={5} columns={7} />
       ) : ledgerQuery.error ? (
         <ErrorBlock
           message={toUserMessage(ledgerQuery.error)}
@@ -203,8 +253,18 @@ function AgencyPaymentsPage() {
           }
         />
       ) : (
-        <DataTableShell>
-          <Table>
+        <DataTableShell
+          footer={
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={paymentRows.length}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          }
+        >
+          <Table className="min-w-[680px]">
             <TableHeader>
               <TableRow>
                 <TableHead>{t("agencyPayments.columns.date", "Date")}</TableHead>
@@ -215,6 +275,7 @@ function AgencyPaymentsPage() {
                   {t("agencyPayments.columns.amountPaid", "Amount Paid")}
                 </TableHead>
                 <TableHead>{t("agencyPayments.columns.ledger", "Ledger")}</TableHead>
+                <TableHead className="w-12 text-right">{t("common.actions", "Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,20 +288,20 @@ function AgencyPaymentsPage() {
                     </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <HandCoins className="h-4 w-4 text-muted-foreground" />
-                        <span>
+                        <HandCoins className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="truncate max-w-[150px] sm:max-w-none">
                           {agency?.name ?? t("agencyPayments.unknownAgency", "Unknown agency")}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>{r.description}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{r.description}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {r.ref_no ?? "—"}
                     </TableCell>
-                    <TableCell className="text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="text-right font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                       {formatInr(r.credit)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <Link
                         to="/installation-ledger/$agencyId"
                         params={{ agencyId: r.installation_agency_id }}
@@ -249,23 +310,35 @@ function AgencyPaymentsPage() {
                         {t("agencyPayments.viewLedger", "View ledger")}
                       </Link>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <RowActions
+                        canEdit={roles.canWrite}
+                        canDelete={roles.canDelete}
+                        onEdit={() => {
+                          setToEdit(r);
+                          setEditForm({
+                            installation_agency_id: r.installation_agency_id,
+                            entry_date: r.entry_date,
+                            description: r.description,
+                            ref_no: r.ref_no ?? "",
+                            amount: Number(r.credit || 0),
+                            notes: r.notes ?? "",
+                          });
+                        }}
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
-          <TablePagination
-            page={page}
-            pageSize={pageSize}
-            total={paymentRows.length}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-          />
         </DataTableShell>
       )}
 
+      {/* Create Dialog */}
       <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-full">
           <DialogHeader>
             <DialogTitle>{t("agencyPayments.dialogTitle", "Record agency payment")}</DialogTitle>
           </DialogHeader>
@@ -360,6 +433,129 @@ function AgencyPaymentsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!toEdit} onOpenChange={(o) => !o && setToEdit(null)}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>{t("agencyPayments.editDialogTitle", "Edit agency payment")}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editForm.installation_agency_id) {
+                toast.error("Please select an installation agency");
+                return;
+              }
+              if (editForm.amount <= 0) {
+                toast.error("Please enter a valid amount");
+                return;
+              }
+              editMut.mutate();
+            }}
+          >
+            <DialogBody className="space-y-4">
+              <Field label={t("agencyPayments.fieldAgency", "Installation agency")} required>
+                <Select
+                  value={editForm.installation_agency_id}
+                  onValueChange={(v) => setEditForm({ ...editForm, installation_agency_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("agencyPayments.selectAgency", "Select agency…")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agencies.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        {a.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t("agencyPayments.fieldPaymentDate", "Payment date")} required>
+                  <Input
+                    type="date"
+                    value={editForm.entry_date}
+                    onChange={(e) => setEditForm({ ...editForm, entry_date: e.target.value })}
+                    required
+                  />
+                </Field>
+                <Field label={t("agencyPayments.fieldAmount", "Amount (₹)")} required>
+                  <Input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={editForm.amount || ""}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, amount: parseFloat(e.target.value) || 0 })
+                    }
+                    required
+                  />
+                </Field>
+              </div>
+
+              <Field label={t("agencyPayments.fieldDescription", "Description")} required>
+                <Input
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  placeholder="e.g. Site installation advance"
+                  required
+                />
+              </Field>
+
+              <Field label={t("agencyPayments.fieldRefNo", "Reference # / UTR")}>
+                <Input
+                  value={editForm.ref_no}
+                  onChange={(e) => setEditForm({ ...editForm, ref_no: e.target.value })}
+                  placeholder="e.g. UTR / Cheque / Bank Ref"
+                />
+              </Field>
+
+              <Field label={t("agencyPayments.fieldNotes", "Notes")}>
+                <Textarea
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  rows={2}
+                />
+              </Field>
+            </DialogBody>
+            <DialogFooter className="mt-4">
+              <Button type="button" variant="outline" onClick={() => setToEdit(null)}>
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button type="submit" disabled={editMut.isPending}>
+                {t("common.save", "Save changes")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title={t("agencyPayments.deleteTitle", "Delete agency payment?")}
+        description={
+          toDelete
+            ? t(
+                "agencyPayments.deleteDesc",
+                "This payment of {{amount}} for {{agency}} will be permanently removed and reversed from the ledger.",
+                {
+                  amount: formatInr(toDelete.credit),
+                  agency:
+                    agencyMap.get(toDelete.installation_agency_id)?.name ??
+                    t("agencyPayments.unknownAgency", "agency"),
+                },
+              )
+            : ""
+        }
+        busy={deleteMut.isPending}
+        onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }

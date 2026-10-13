@@ -1481,7 +1481,13 @@
     "fieldAmount": "Amount (₹)",
     "fieldDescription": "Description",
     "fieldRefNo": "Reference # / UTR",
-    "fieldNotes": "Notes"
+    "fieldNotes": "Notes",
+    "editDialogTitle": "Edit agency payment",
+    "recorded": "Agency payment recorded",
+    "deleted": "Agency payment deleted",
+    "updated": "Agency payment updated",
+    "deleteTitle": "Delete agency payment?",
+    "deleteDesc": "This payment of {{amount}} for {{agency}} will be permanently removed and reversed from the ledger."
   },
   "installationLedger": {
     "title": "Installation Agency Ledger",

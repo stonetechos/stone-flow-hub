@@ -33,13 +33,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { RowActions } from "@/components/data/RowActions";
+import { ConfirmDialog } from "@/components/data/ConfirmDialog";
+import { DataTableShell } from "@/components/data/DataTableShell";
 import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import {
   createInstallationLedgerEntry,
+  updateInstallationLedgerEntry,
+  deleteInstallationLedgerEntry,
   listInstallationLedger,
+  type InstallationLedgerRow,
 } from "@/lib/installation-ledger/api";
+import { invalidateInstallationLedger } from "@/lib/query-invalidation";
 import { listInstallationAgencies } from "@/lib/installation-agencies/api";
 import { LEDGER_ENTRY_TYPES, type LedgerEntryType } from "@/lib/installation-ledger/schema";
 import { useRoles } from "@/hooks/use-roles";
@@ -83,6 +90,15 @@ function InstallationLedgerDetail() {
   const [refNo, setRefNo] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [toDelete, setToDelete] = useState<InstallationLedgerRow | null>(null);
+  const [toEdit, setToEdit] = useState<InstallationLedgerRow | null>(null);
+  const [editType, setEditType] = useState<LedgerEntryType>("charge");
+  const [editDate, setEditDate] = useState(today());
+  const [editDescription, setEditDescription] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [editRefNo, setEditRefNo] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+
   const resetForm = () => {
     setEntryType("charge");
     setEntryDate(today());
@@ -90,6 +106,16 @@ function InstallationLedgerDetail() {
     setAmount("");
     setRefNo("");
     setNotes("");
+  };
+
+  const handleOpenEdit = (r: InstallationLedgerRow) => {
+    setToEdit(r);
+    setEditType(r.debit > 0 ? "charge" : "payment");
+    setEditDate(r.entry_date);
+    setEditDescription(r.description);
+    setEditAmount(String(r.debit > 0 ? r.debit : r.credit));
+    setEditRefNo(r.ref_no ?? "");
+    setEditNotes(r.notes ?? "");
   };
 
   const createMut = useMutation({
@@ -105,10 +131,39 @@ function InstallationLedgerDetail() {
       }),
     onSuccess: () => {
       toast.success("Entry recorded");
-      qc.invalidateQueries({ queryKey: qk.installationLedger.byAgency(agencyId) });
-      qc.invalidateQueries({ queryKey: qk.installationLedger.summaries() });
+      invalidateInstallationLedger(qc, agencyId);
       setRecording(false);
       resetForm();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteInstallationLedgerEntry(id),
+    onSuccess: () => {
+      toast.success("Ledger entry deleted");
+      invalidateInstallationLedger(qc, agencyId);
+      setToDelete(null);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const editMut = useMutation({
+    mutationFn: () => {
+      if (!toEdit) throw new Error("No entry selected");
+      return updateInstallationLedgerEntry(toEdit.id, {
+        entry_date: editDate,
+        entry_type: editType,
+        amount: Number(editAmount || 0),
+        description: editDescription,
+        ref_no: editRefNo || null,
+        notes: editNotes || null,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Ledger entry updated");
+      invalidateInstallationLedger(qc, agencyId);
+      setToEdit(null);
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });
@@ -131,7 +186,7 @@ function InstallationLedgerDetail() {
       />
 
       {ledgerQuery.isLoading ? (
-        <SkeletonTable rows={5} columns={6} />
+        <SkeletonTable rows={5} columns={7} />
       ) : ledgerQuery.error ? (
         <ErrorBlock
           message={toUserMessage(ledgerQuery.error)}
@@ -150,8 +205,8 @@ function InstallationLedgerDetail() {
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <Table>
+        <DataTableShell>
+          <Table className="min-w-[650px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
@@ -160,24 +215,44 @@ function InstallationLedgerDetail() {
                 <TableHead>Charge (Dr)</TableHead>
                 <TableHead>Payment (Cr)</TableHead>
                 <TableHead>Balance</TableHead>
+                <TableHead className="w-12 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="text-sm">{r.entry_date}</TableCell>
-                  <TableCell className="font-medium">{r.description}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{r.ref_no ?? "—"}</TableCell>
-                  <TableCell>{r.debit > 0 ? formatInr(r.debit) : "—"}</TableCell>
-                  <TableCell>{r.credit > 0 ? formatInr(r.credit) : "—"}</TableCell>
-                  <TableCell className="font-semibold">{formatInr(r.running_balance)}</TableCell>
+                  <TableCell className="text-sm whitespace-nowrap">{r.entry_date}</TableCell>
+                  <TableCell className="font-medium max-w-[220px] truncate">
+                    {r.description}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    {r.ref_no ?? "—"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {r.debit > 0 ? formatInr(r.debit) : "—"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {r.credit > 0 ? formatInr(r.credit) : "—"}
+                  </TableCell>
+                  <TableCell className="font-semibold whitespace-nowrap">
+                    {formatInr(r.running_balance)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RowActions
+                      canEdit={roles.canWrite}
+                      canDelete={roles.canDelete}
+                      onEdit={() => handleOpenEdit(r)}
+                      onDelete={() => setToDelete(r)}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataTableShell>
       )}
 
+      {/* Record Entry Dialog */}
       <Dialog
         open={recording}
         onOpenChange={(o) => {
@@ -187,7 +262,7 @@ function InstallationLedgerDetail() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-md w-full">
           <DialogHeader>
             <DialogTitle>Record ledger entry</DialogTitle>
           </DialogHeader>
@@ -259,6 +334,102 @@ function InstallationLedgerDetail() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Entry Dialog */}
+      <Dialog
+        open={!!toEdit}
+        onOpenChange={(o) => {
+          if (!o) setToEdit(null);
+        }}
+      >
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>Edit ledger entry</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editDescription.trim()) {
+                toast.error("Description is required");
+                return;
+              }
+              if (Number(editAmount || 0) <= 0) {
+                toast.error("Amount must be greater than zero");
+                return;
+              }
+              editMut.mutate();
+            }}
+          >
+            <DialogBody className="grid gap-3 sm:grid-cols-2">
+              <Field label="Entry type" required>
+                <Select value={editType} onValueChange={(v) => setEditType(v as LedgerEntryType)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LEDGER_ENTRY_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t === "charge" ? "Charge (they billed us)" : "Payment (we paid them)"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Date" required>
+                <Input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  required
+                />
+              </Field>
+              <Field label="Amount" required>
+                <CurrencyInput value={editAmount} onChange={setEditAmount} />
+              </Field>
+              <Field label="Reference #">
+                <Input value={editRefNo} onChange={(e) => setEditRefNo(e.target.value)} />
+              </Field>
+              <Field label="Description" required className="sm:col-span-2">
+                <Input
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="e.g. Installation charge — Sharma residence"
+                  required
+                />
+              </Field>
+              <Field label="Notes" className="sm:col-span-2">
+                <Textarea
+                  rows={2}
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                />
+              </Field>
+            </DialogBody>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setToEdit(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={editMut.isPending}>
+                Save changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete ledger entry?"
+        description={
+          toDelete
+            ? `Are you sure you want to delete "${toDelete.description}"? This entry will be permanently removed and the running balance will be recalculated.`
+            : ""
+        }
+        busy={deleteMut.isPending}
+        onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
+      />
     </div>
   );
 }

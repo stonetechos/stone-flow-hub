@@ -412,3 +412,9 @@ export function invalidatePersonalTransfers(qc: QueryClient): void {
   bump(qc, qk.personalTransfers.all);
   bump(qc, ["personalTransfers"]);
 }
+
+export function invalidateInstallationLedger(qc: QueryClient, agencyId?: string): void {
+  bump(qc, qk.installationLedger.all());
+  bump(qc, qk.installationLedger.summaries());
+  if (agencyId) bump(qc, qk.installationLedger.byAgency(agencyId));
+}

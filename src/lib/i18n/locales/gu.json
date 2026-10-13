@@ -1494,7 +1494,13 @@
     "fieldAmount": "રકમ (₹)",
     "fieldDescription": "વિગત",
     "fieldRefNo": "સંદર્ભ નં. / UTR",
-    "fieldNotes": "નોંધો"
+    "fieldNotes": "નોંધો",
+    "editDialogTitle": "એજન્સી ચુકવણી સંપાદિત કરો",
+    "recorded": "એજન્સી ચુકવણી નોંધાઈ ગઈ",
+    "deleted": "એજન્સી ચુકવણી કાઢી નાખવામાં આવી",
+    "updated": "એજન્સી ચુકવણી અપડેટ કરવામાં આવી",
+    "deleteTitle": "શું એજન્સી ચુકવણી કાઢી નાખવી છે?",
+    "deleteDesc": "{{agency}} માટે {{amount}} ની આ ચુકવણી ખાતાવહીમાંથી કાયમ માટે કાઢી નાખવામાં આવશે."
   },
   "installationLedger": {
     "title": "ઇન્સ્ટોલેશન એજન્સી ખાતાવહી",
