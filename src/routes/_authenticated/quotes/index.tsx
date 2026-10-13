@@ -470,7 +470,7 @@ function QuotesPage() {
             />
           }
         >
-          <Table>
+          <Table className="min-w-[1200px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
@@ -486,9 +486,7 @@ function QuotesPage() {
                 )}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
                 {!isHidden("valid") && <TableHead>Valid until</TableHead>}
-                <TableHead className="sticky right-0 w-28 bg-background/95 backdrop-blur-xs z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)] text-right pr-4 font-semibold">
-                  Actions
-                </TableHead>
+                <TableHead className="w-28 text-right pr-4 font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -679,7 +677,7 @@ function QuotesPage() {
                         {r.valid_until ? formatDate(r.valid_until) : "—"}
                       </TableCell>
                     )}
-                    <TableCell className="sticky right-0 bg-background/95 backdrop-blur-xs z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)] pr-4">
+                    <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           size="icon"
