@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
@@ -119,7 +119,19 @@ function EditDispatchPage() {
 
   return (
     <div>
-      <PageHeader title={`Edit ${query.data?.dispatch_no ?? ""}`} />
+      <PageHeader
+        title={`Edit ${query.data?.dispatch_no ?? ""}`}
+        subtitle="Update delivery details, challan date, transport, and line items."
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => nav({ to: "/dispatch/$id", params: { id } })}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+        }
+      />
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -145,7 +157,7 @@ function EditDispatchPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Challan date" required>
+          <Field label="Delivery / Challan date" required>
             <Input
               type="date"
               value={form.dispatch_date}

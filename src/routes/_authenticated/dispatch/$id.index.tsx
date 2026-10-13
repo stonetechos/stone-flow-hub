@@ -1,21 +1,33 @@
+import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Pencil, FolderOpen, History, Calendar, Loader2 } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/entity/StatusPill";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getDispatch, listDispatchItems } from "@/lib/dispatch/api";
+import { getDispatch, listDispatchItems, updateDispatch } from "@/lib/dispatch/api";
+import { invalidateDispatch } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/dispatch/$id")({
+export const Route = createFileRoute("/_authenticated/dispatch/$id/")({
   ssr: false,
   component: DispatchDetailPage,
 });
@@ -23,10 +35,46 @@ export const Route = createFileRoute("/_authenticated/dispatch/$id")({
 function DispatchDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const qc = useQueryClient();
+  const [editDateOpen, setEditDateOpen] = useState(false);
+  const [newDate, setNewDate] = useState("");
+
   const query = useQuery({ queryKey: qk.dispatch.byId(id), queryFn: () => getDispatch(id) });
   const itemsQuery = useQuery({
     queryKey: qk.dispatch.items(id),
     queryFn: () => listDispatchItems(id),
+  });
+
+  const updateDateMut = useMutation({
+    mutationFn: async (updatedDate: string) => {
+      if (!query.data) return;
+      const r = query.data;
+      await updateDispatch(id, {
+        sales_order_id: r.sales_order_id,
+        customer_id: r.customer_id,
+        project_id: r.project_id,
+        status: r.status,
+        dispatch_date: updatedDate,
+        carrier: r.carrier,
+        tracking_no: r.tracking_no,
+        site_address: r.site_address,
+        vehicle_no: r.vehicle_no,
+        driver_name: r.driver_name,
+        driver_phone: r.driver_phone,
+        lr_no: r.lr_no,
+        delivered_by: r.delivered_by,
+        received_by: r.received_by,
+        carting_charge: Number(r.carting_charge ?? 0),
+        remarks: r.remarks,
+        notes: r.notes,
+      });
+    },
+    onSuccess: (_, updatedDate) => {
+      toast.success(`Delivery date updated to ${updatedDate}`);
+      invalidateDispatch(qc, id);
+      setEditDateOpen(false);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
   });
 
   if (query.isLoading) return <LoadingBlock />;
@@ -95,6 +143,26 @@ function DispatchDetailPage() {
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
               <Row label="Status">
                 <StatusPill status={r.status} />
+              </Row>
+              <Row label="Delivery / Challan Date">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground flex items-center gap-1.5 font-mono text-xs">
+                    <Calendar className="h-3.5 w-3.5 text-primary" />
+                    {r.dispatch_date || "—"}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 text-[11px] px-2 cursor-pointer text-slate-700 hover:text-primary"
+                    onClick={() => {
+                      setNewDate(r.dispatch_date || "");
+                      setEditDateOpen(true);
+                    }}
+                    title="Change delivery date at any stage"
+                  >
+                    <Pencil className="mr-1 h-3 w-3" /> Change date
+                  </Button>
+                </div>
               </Row>
               <Row label="Sales order">{r.sales_order?.so_no ?? "—"}</Row>
               <Row label="Customer">{r.customer?.name ?? "—"}</Row>
@@ -190,6 +258,47 @@ function DispatchDetailPage() {
           <TimelinePanel entityType="dispatch" entityId={r.id} />
         </div>
       </div>
+
+      <Dialog open={editDateOpen} onOpenChange={setEditDateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Delivery Date</DialogTitle>
+            <DialogDescription>
+              Update the delivery date for challan{" "}
+              <span className="font-semibold text-foreground font-mono">{r.dispatch_no}</span>. This
+              can be updated at any stage.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <label className="text-xs font-semibold text-slate-700 block">
+              Delivery / Challan Date
+            </label>
+            <Input
+              type="date"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              className="w-full"
+              required
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDateOpen(false)}
+              disabled={updateDateMut.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => updateDateMut.mutate(newDate)}
+              disabled={!newDate || updateDateMut.isPending}
+            >
+              {updateDateMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Delivery Date
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
