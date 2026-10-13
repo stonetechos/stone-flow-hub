@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRoles } from "@/hooks/use-roles";
@@ -43,10 +44,9 @@ export function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        {extra}
         {editVisible && (
           <DropdownMenuItem onSelect={() => onEdit!()}>
-            <Pencil className="mr-2 h-4 w-4" /> {t("common.edit", "Edit")}
+            <Pencil className="mr-2 h-4 w-4 text-slate-700" /> {t("common.edit", "Edit")}
           </DropdownMenuItem>
         )}
         {deleteVisible && (
@@ -57,6 +57,8 @@ export function RowActions({
             <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete", "Delete")}
           </DropdownMenuItem>
         )}
+        {Boolean(editVisible || deleteVisible) && Boolean(extra) && <DropdownMenuSeparator />}
+        {extra}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -22,6 +22,7 @@ import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getDispatch, listDispatchItems, updateDispatch } from "@/lib/dispatch/api";
+import { listQuotes } from "@/lib/quotes/api";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
@@ -43,6 +44,10 @@ function DispatchDetailPage() {
   const itemsQuery = useQuery({
     queryKey: qk.dispatch.items(id),
     queryFn: () => listDispatchItems(id),
+  });
+  const quotesList = useQuery({
+    queryKey: qk.quotes.list(""),
+    queryFn: () => listQuotes(""),
   });
 
   const updateDateMut = useMutation({
@@ -82,6 +87,14 @@ function DispatchDetailPage() {
     return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Delivery challan not found." />;
   const r = query.data;
+  const linkedQuote = (quotesList.data ?? []).find(
+    (q) =>
+      (r.notes && r.notes.includes(q.quote_no)) ||
+      (r.customer_id && q.customer_id === r.customer_id),
+  );
+  const quoteTotal = linkedQuote ? Number(linkedQuote.total) : 0;
+  const cartingCharge = Number(r.carting_charge ?? 0);
+  const totalAmount = quoteTotal + cartingCharge;
 
   return (
     <div>
@@ -143,6 +156,23 @@ function DispatchDetailPage() {
             <CardContent className="grid gap-3 text-sm md:grid-cols-2">
               <Row label="Status">
                 <StatusPill status={r.status} />
+              </Row>
+              <Row label="Total Amount">
+                <div className="flex flex-col">
+                  <span className="font-bold text-base font-mono text-emerald-600 dark:text-emerald-400">
+                    {formatInr(totalAmount)}
+                  </span>
+                  {linkedQuote ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      Quote #{linkedQuote.quote_no} ({formatInr(linkedQuote.total)}) + Carting (
+                      {formatInr(cartingCharge)})
+                    </span>
+                  ) : cartingCharge > 0 ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      Carting: {formatInr(cartingCharge)}
+                    </span>
+                  ) : null}
+                </div>
               </Row>
               <Row label="Delivery / Challan Date">
                 <div className="flex items-center gap-2">

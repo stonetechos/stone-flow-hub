@@ -36,6 +36,11 @@ import { allowedNextDispatchStatuses } from "@/lib/status-transitions";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
 import { CartingAgencySelect } from "@/components/dispatch/CartingAgencySelect";
 
+import { getQuote, getQuoteItems, listQuotes } from "@/lib/quotes/api";
+import { formatInr } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
+import { EntityPicker } from "@/components/forms/EntityPicker";
+
 export const Route = createFileRoute("/_authenticated/dispatch/$id/edit")({
   ssr: false,
   component: EditDispatchPage,
@@ -54,9 +59,15 @@ function EditDispatchPage() {
     queryKey: qk.salesOrders.list("", ""),
     queryFn: listSalesOrdersForPicker,
   });
+  const quotesList = useQuery({
+    queryKey: qk.quotes.list(""),
+    queryFn: () => listQuotes(""),
+  });
 
   const [form, setForm] = useState<DispatchCreateInput | null>(null);
   const [items, setItems] = useState<DispatchItemInput[]>([]);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+
   useEffect(() => {
     if (query.data) {
       const r = query.data;
@@ -81,6 +92,63 @@ function EditDispatchPage() {
       });
     }
   }, [query.data]);
+
+  // Auto-detect linked quote from notes or customer
+  useEffect(() => {
+    if (quotesList.data && query.data && !selectedQuoteId) {
+      const notes = query.data.notes || "";
+      const matched = quotesList.data.find(
+        (q) =>
+          notes.includes(q.quote_no) ||
+          (query.data?.customer_id && q.customer_id === query.data.customer_id),
+      );
+      if (matched) {
+        setSelectedQuoteId(matched.id);
+      }
+    }
+  }, [quotesList.data, query.data, selectedQuoteId]);
+
+  const handleQuoteSelect = async (quoteId: string | null) => {
+    setSelectedQuoteId(quoteId);
+    if (!quoteId) return;
+    try {
+      const [quote, quoteItems] = await Promise.all([getQuote(quoteId), getQuoteItems(quoteId)]);
+      if (quote) {
+        setForm((f) =>
+          f
+            ? {
+                ...f,
+                customer_id: f.customer_id ?? quote.customer_id,
+                project_id: f.project_id ?? quote.project_id,
+                notes: f.notes
+                  ? f.notes.includes(quote.quote_no)
+                    ? f.notes
+                    : `${f.notes}\nLinked Quote: #${quote.quote_no}`
+                  : `Delivery challan for Quote #${quote.quote_no}`,
+              }
+            : f,
+        );
+        if (quoteItems && quoteItems.length > 0) {
+          setItems(
+            quoteItems.map((qi, idx) => ({
+              product_id: qi.product_id,
+              product_name: qi.description || null,
+              description: qi.description || "Stone item",
+              unit: qi.unit || "sqft",
+              quantity: Number(qi.quantity) || 1,
+              sort_order: idx + 1,
+            })),
+          );
+          toast.success(`Loaded ${quoteItems.length} items from Quote #${quote.quote_no}`);
+        } else {
+          toast.info(`Linked Quote #${quote.quote_no}`);
+        }
+      }
+    } catch {
+      toast.error("Failed to load quotation details");
+    }
+  };
+
   useEffect(() => {
     if (itemsQuery.data) {
       setItems(
@@ -117,6 +185,16 @@ function EditDispatchPage() {
   const set = <K extends keyof DispatchCreateInput>(k: K, v: DispatchCreateInput[K]) =>
     setForm((f) => (f ? { ...f, [k]: v } : f));
 
+  const linkedQuote = (quotesList.data ?? []).find(
+    (q) =>
+      q.id === selectedQuoteId ||
+      (form?.notes && form.notes.includes(q.quote_no)) ||
+      (query.data?.notes && query.data.notes.includes(q.quote_no)),
+  );
+  const quoteTotal = linkedQuote ? Number(linkedQuote.total) : 0;
+  const cartingCharge = Number(form?.carting_charge ?? 0);
+  const totalAmount = quoteTotal + cartingCharge;
+
   return (
     <div>
       <PageHeader
@@ -132,6 +210,36 @@ function EditDispatchPage() {
           </Button>
         }
       />
+
+      <div className="mb-4 rounded-xl border border-primary/25 bg-primary/5 p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <div>
+          <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
+            Total Dispatch Amount
+          </div>
+          <div className="text-2xl font-bold font-mono text-primary flex items-baseline gap-2">
+            {formatInr(totalAmount)}
+            {linkedQuote && (
+              <span className="text-xs font-normal text-muted-foreground font-sans">
+                (Quotation #{linkedQuote.quote_no}: {formatInr(linkedQuote.total)} + Carting:{" "}
+                {formatInr(cartingCharge)})
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground font-medium">Status:</span>
+          <Badge variant="outline" className="font-semibold capitalize">
+            {form.status === "in_transit"
+              ? "Dispatched for delivery"
+              : form.status === "planned"
+                ? "Planned"
+                : form.status === "delivered"
+                  ? "Delivered"
+                  : form.status}
+          </Badge>
+        </div>
+      </div>
+
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -140,15 +248,42 @@ function EditDispatchPage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
-          <Field label="Sales order">
+          <Field label="Quotation (Link Quote / Pull items & value)">
             <Select
-              value={form.sales_order_id ?? ""}
-              onValueChange={(v) => set("sales_order_id", v || null)}
+              value={selectedQuoteId ?? "none"}
+              onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select quotation to pull items…" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">— None (Custom Challan) —</SelectItem>
+                {(quotesList.data ?? []).map((q) => (
+                  <SelectItem key={q.id} value={q.id}>
+                    {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Customer">
+            <EntityPicker
+              type="customer"
+              value={form.customer_id ?? null}
+              onChange={(cid) => set("customer_id", cid)}
+              placeholder="Search customers…"
+            />
+          </Field>
+          <Field label="Sales order (optional)">
+            <Select
+              value={form.sales_order_id ?? "none"}
+              onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select SO (if applicable)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
                 {(orders.data ?? []).map((o) => (
                   <SelectItem key={o.id} value={o.id}>
                     {o.so_no}
@@ -188,16 +323,10 @@ function EditDispatchPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DISPATCH_STATUSES.map((s) => {
-                  const allowed = allowedNextDispatchStatuses(query.data!.status);
-                  const disabled = !allowed.includes(s);
-                  return (
-                    <SelectItem key={s} value={s} disabled={disabled} className="capitalize">
-                      {s.replace(/_/g, " ")}
-                      {disabled ? " (blocked)" : ""}
-                    </SelectItem>
-                  );
-                })}
+                <SelectItem value="planned">Planned</SelectItem>
+                <SelectItem value="in_transit">Dispatched for delivery</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </Field>

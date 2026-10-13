@@ -485,7 +485,9 @@ function QuotesPage() {
                 )}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
                 {!isHidden("valid") && <TableHead>Valid until</TableHead>}
-                <TableHead className="w-12" />
+                <TableHead className="w-16 sticky right-0 bg-background/95 backdrop-blur-xs text-center font-semibold border-l shadow-xs z-10">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -676,8 +678,10 @@ function QuotesPage() {
                         {r.valid_until ? formatDate(r.valid_until) : "—"}
                       </TableCell>
                     )}
-                    <TableCell>
+                    <TableCell className="sticky right-0 bg-background/95 backdrop-blur-xs text-center border-l shadow-xs z-10">
                       <RowActions
+                        canEdit={true}
+                        canDelete={true}
                         extra={
                           <>
                             <DropdownMenuItem

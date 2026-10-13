@@ -222,6 +222,46 @@ function NewDispatchPage() {
           </div>
         </div>
       )}
+
+      {/* Prominent Total Dispatch Amount */}
+      <div className="mb-4 rounded-xl border border-primary/25 bg-primary/5 p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <div>
+          <div className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
+            Total Dispatch Amount
+          </div>
+          <div className="text-2xl font-bold font-mono text-primary flex items-baseline gap-2">
+            {formatInr(
+              (quotesList.data ?? []).find((q) => q.id === selectedQuoteId)?.total
+                ? Number((quotesList.data ?? []).find((q) => q.id === selectedQuoteId)!.total) +
+                    Number(form.carting_charge ?? 0)
+                : Number(form.carting_charge ?? 0),
+            )}
+            {selectedQuoteId && (
+              <span className="text-xs font-normal text-muted-foreground font-sans">
+                (Quotation #
+                {(quotesList.data ?? []).find((q) => q.id === selectedQuoteId)?.quote_no}:{" "}
+                {formatInr(
+                  (quotesList.data ?? []).find((q) => q.id === selectedQuoteId)?.total ?? 0,
+                )}{" "}
+                + Carting: {formatInr(Number(form.carting_charge ?? 0))})
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground font-medium">Status:</span>
+          <span className="font-semibold px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            {form.status === "in_transit"
+              ? "Dispatched for delivery"
+              : form.status === "planned"
+                ? "Planned"
+                : form.status === "delivered"
+                  ? "Delivered"
+                  : form.status}
+          </span>
+        </div>
+      </div>
+
       <QuickForm
         onSubmit={(e) => {
           e.preventDefault();
@@ -230,6 +270,24 @@ function NewDispatchPage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
+          <Field label="Quotation (Link Quote / Pull items & value)">
+            <Select
+              value={selectedQuoteId ?? "none"}
+              onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select quotation to pull items…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None (Custom Challan) —</SelectItem>
+                {(quotesList.data ?? []).map((q) => (
+                  <SelectItem key={q.id} value={q.id}>
+                    {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Customer" required>
             <EntityPicker
               type="customer"
@@ -237,6 +295,24 @@ function NewDispatchPage() {
               onChange={(id) => set("customer_id", id)}
               placeholder="Search customers…"
             />
+          </Field>
+          <Field label="Sales order (optional)">
+            <Select
+              value={form.sales_order_id ?? "none"}
+              onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select SO (if applicable)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
+                {(orders.data ?? []).map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.so_no}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Challan date" required>
             <Input
@@ -262,42 +338,6 @@ function NewDispatchPage() {
         </QuickForm.QuickFill>
 
         <QuickForm.MoreDetails>
-          <Field label="Quotation (Cash Sale / Pull Line Items)">
-            <Select
-              value={selectedQuoteId ?? "none"}
-              onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select quotation to pull items…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None (Custom Challan) —</SelectItem>
-                {(quotesList.data ?? []).map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Sales order (optional)">
-            <Select
-              value={form.sales_order_id ?? "none"}
-              onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select SO (if applicable)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {(orders.data ?? []).map((o) => (
-                  <SelectItem key={o.id} value={o.id}>
-                    {o.so_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
           <Field label="Carting agency / Carrier">
             <CartingAgencySelect
               value={form.carrier}
@@ -356,11 +396,10 @@ function NewDispatchPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DISPATCH_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
+                <SelectItem value="planned">Planned</SelectItem>
+                <SelectItem value="in_transit">Dispatched for delivery</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </Field>

@@ -35,6 +35,8 @@ import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteDispatch, listDispatches, type DispatchListItem } from "@/lib/dispatch/api";
+import { listQuotes } from "@/lib/quotes/api";
+import { formatInr } from "@/lib/format";
 import { DISPATCH_STATUSES } from "@/lib/dispatch/schema";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
@@ -72,6 +74,7 @@ function DispatchPage() {
       { key: "so", label: t("dispatch.columns.so", "Sales Order") },
       { key: "carrier", label: t("dispatch.columns.carrier", "Carrier") },
       { key: "tracking", label: t("dispatch.columns.tracking", "Tracking") },
+      { key: "amount", label: t("common.amount", "Total Amount") },
       { key: "date", label: t("common.date", "Date") },
       { key: "status", label: t("common.status", "Status") },
     ],
@@ -81,6 +84,10 @@ function DispatchPage() {
   const query = useQuery({
     queryKey: qk.dispatch.list(dq, status),
     queryFn: () => listDispatches(dq, status),
+  });
+  const quotesList = useQuery({
+    queryKey: qk.quotes.list(""),
+    queryFn: () => listQuotes(""),
   });
   useEffect(() => setPage(1), [dq, status]);
 
@@ -224,56 +231,76 @@ function DispatchPage() {
                     {!isHidden("tracking") && (
                       <TableHead>{t("dispatch.columns.tracking", "Tracking")}</TableHead>
                     )}
+                    {!isHidden("amount") && (
+                      <TableHead className="text-right">
+                        {t("common.amount", "Total Amount")}
+                      </TableHead>
+                    )}
                     {!isHidden("date") && <TableHead>{t("common.date", "Date")}</TableHead>}
                     {!isHidden("status") && <TableHead>{t("common.status", "Status")}</TableHead>}
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pageRows.map((r) => (
-                    <TableRow key={r.id}>
-                      {!isHidden("no") && (
-                        <TableCell className="text-xs">
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                              {r.customer?.name ?? "—"}
-                            </span>
-                            <Link
-                              to="/dispatch/$id"
-                              params={{ id: r.id }}
-                              className="font-mono text-[11px] text-primary hover:underline truncate"
-                            >
-                              {r.dispatch_no}
-                            </Link>
-                          </div>
-                        </TableCell>
-                      )}
-                      {!isHidden("customer") && (
-                        <TableCell className="text-xs font-medium">
-                          {r.customer?.name ?? "—"}
-                        </TableCell>
-                      )}
-                      {!isHidden("so") && (
-                        <TableCell className="font-mono text-xs">
-                          {r.sales_order?.so_no ?? "—"}
-                        </TableCell>
-                      )}
-                      {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
-                      {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
-                      {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
-                      {!isHidden("status") && (
+                  {pageRows.map((r) => {
+                    const matchedQuote = (quotesList.data ?? []).find(
+                      (q) =>
+                        (r.notes && r.notes.includes(q.quote_no)) ||
+                        (r.customer_id && q.customer_id === r.customer_id),
+                    );
+                    const totalAmt =
+                      (matchedQuote ? Number(matchedQuote.total) : 0) +
+                      Number(r.carting_charge ?? 0);
+                    return (
+                      <TableRow key={r.id}>
+                        {!isHidden("no") && (
+                          <TableCell className="text-xs">
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                                {r.customer?.name ?? "—"}
+                              </span>
+                              <Link
+                                to="/dispatch/$id"
+                                params={{ id: r.id }}
+                                className="font-mono text-[11px] text-primary hover:underline truncate"
+                              >
+                                {r.dispatch_no}
+                              </Link>
+                            </div>
+                          </TableCell>
+                        )}
+                        {!isHidden("customer") && (
+                          <TableCell className="text-xs font-medium">
+                            {r.customer?.name ?? "—"}
+                          </TableCell>
+                        )}
+                        {!isHidden("so") && (
+                          <TableCell className="font-mono text-xs">
+                            {r.sales_order?.so_no ?? "—"}
+                          </TableCell>
+                        )}
+                        {!isHidden("carrier") && <TableCell>{r.carrier ?? "—"}</TableCell>}
+                        {!isHidden("tracking") && <TableCell>{r.tracking_no ?? "—"}</TableCell>}
+                        {!isHidden("amount") && (
+                          <TableCell className="text-right font-mono text-xs font-semibold tabular-nums text-foreground">
+                            {totalAmt > 0 ? formatInr(totalAmt) : "—"}
+                          </TableCell>
+                        )}
+                        {!isHidden("date") && <TableCell>{r.dispatch_date}</TableCell>}
+                        {!isHidden("status") && (
+                          <TableCell>
+                            <StatusPill status={r.status} />
+                          </TableCell>
+                        )}
                         <TableCell>
-                          <StatusPill status={r.status} />
+                          <RowActions
+                            onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
+                            onDelete={() => setToDelete(r)}
+                          />
                         </TableCell>
-                      )}
-                      <TableCell>
-                        <RowActions
-                          onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
-                          onDelete={() => setToDelete(r)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </DataTableShell>

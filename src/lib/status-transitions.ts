@@ -17,10 +17,10 @@ const SO: Record<SalesOrderStatus, SalesOrderStatus[]> = {
 };
 
 const DISP: Record<DispatchStatus, DispatchStatus[]> = {
-  planned: ["planned", "in_transit", "cancelled"],
-  in_transit: ["in_transit", "delivered", "cancelled"],
-  delivered: ["delivered"],
-  cancelled: ["cancelled"],
+  planned: ["planned", "in_transit", "delivered", "cancelled"],
+  in_transit: ["planned", "in_transit", "delivered", "cancelled"],
+  delivered: ["planned", "in_transit", "delivered", "cancelled"],
+  cancelled: ["planned", "in_transit", "delivered", "cancelled"],
 };
 
 const INV: Record<InvoiceStatus, InvoiceStatus[]> = {

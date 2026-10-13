@@ -66,9 +66,10 @@ export function StatusPill({
 }) {
   const key = status.toLowerCase().replace(/\s+/g, "_");
   const tone = toneOverride ?? TONE_MAP[key] ?? "neutral";
+  const displayLabel = key === "in_transit" ? "Dispatched for delivery" : status.replace(/_/g, " ");
   return (
     <Badge variant="outline" className={cn("capitalize", TONE_CLASS[tone], className)}>
-      {status.replace(/_/g, " ")}
+      {displayLabel}
     </Badge>
   );
 }
