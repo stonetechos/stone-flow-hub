@@ -2,8 +2,11 @@ import { describe, expect, it } from "bun:test";
 import {
   extractCustomerSerialNumber,
   getCustomerPaymentStatus,
+  getCustomerDirectoryRank,
+  compareCustomersForDirectory,
   CUSTOMER_PAYMENT_STATUS_CONFIG,
 } from "./payment-status";
+import type { CustomerRow } from "./api";
 
 describe("extractCustomerSerialNumber", () => {
   it("extracts serial numbers correctly from formatted customer codes", () => {
@@ -119,59 +122,117 @@ describe("getCustomerPaymentStatus", () => {
   });
 });
 
-describe("Customer directory sorting and OG serial ordering", () => {
-  it("prioritizes customers with order_placed response status at the top sorted by OG numbers descending", () => {
-    const customers = [
-      {
-        id: "1",
-        customer_code: "CUS-000001",
-        workflow_state: { response_status: "order_completed" },
-      },
-      {
-        id: "23",
-        customer_code: "CUS-000023",
+describe("Customer directory sorting and 3-Tier ranking", () => {
+  it("determines directory rank correctly for all three tiers", () => {
+    // Tier 1: Order Placed
+    expect(
+      getCustomerDirectoryRank({
         workflow_state: { response_status: "order_placed" },
-      },
-      {
-        id: "39",
-        customer_code: "CUS-000039",
+      }),
+    ).toBe(1);
+
+    // Tier 2: Order Completed AND Payment Pending (explicit or positive ledger balance)
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: { response_status: "order_completed", payment_status: "payment_pending" },
+        },
+        null,
+      ),
+    ).toBe(2);
+
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: { response_status: "order_completed" },
+        },
+        {
+          orderInfo: { health: "completed" },
+          ledgerSummary: {
+            totalDebit: 50000,
+            totalCredit: 20000,
+            balance: 30000,
+            entryCount: 2,
+            lastEntryAt: null,
+          },
+        },
+      ),
+    ).toBe(2);
+
+    // Tier 3: Newly entered or active leads without completed order + pending payment
+    expect(
+      getCustomerDirectoryRank({
         workflow_state: { response_status: "active_responsive" },
+      }),
+    ).toBe(3);
+
+    expect(
+      getCustomerDirectoryRank({
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "full_payment_received",
+        },
+      }),
+    ).toBe(3);
+  });
+
+  it("sorts customers across 3 tiers and by serial number descending within each tier", () => {
+    const customers: Partial<CustomerRow>[] = [
+      // Tier 3: newly entered
+      {
+        id: "new-50",
+        customer_code: "CUS-000050",
+        workflow_state: { response_status: "active_responsive" },
+        created_at: "2026-10-10T10:00:00Z",
       },
       {
-        id: "40",
-        customer_code: "CUS-000040",
-        workflow_state: { response_status: "order_placed" },
+        id: "new-49",
+        customer_code: "CUS-000049",
+        workflow_state: { response_status: "followup_pending" },
+        created_at: "2026-10-09T10:00:00Z",
       },
+      // Tier 1: Order Placed
       {
-        id: "41",
+        id: "placed-41",
         customer_code: "CUS-000041",
         workflow_state: { response_status: "order_placed" },
       },
+      {
+        id: "placed-45",
+        customer_code: "CUS-000045",
+        workflow_state: { response_status: "order_placed" },
+      },
+      // Tier 2: Order Completed AND Payment Pending
+      {
+        id: "completed-38",
+        customer_code: "CUS-000038",
+        workflow_state: { response_status: "order_completed", payment_status: "payment_pending" },
+      },
+      {
+        id: "completed-42",
+        customer_code: "CUS-000042",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "part_payment_received",
+        },
+      },
     ];
 
-    const sorted = [...customers].sort((a, b) => {
-      const isOrderPlacedA = a.workflow_state.response_status === "order_placed";
-      const isOrderPlacedB = b.workflow_state.response_status === "order_placed";
+    const sorted = [...customers].sort((a, b) =>
+      compareCustomersForDirectory(a as CustomerRow, b as CustomerRow),
+    );
 
-      if (isOrderPlacedA && !isOrderPlacedB) return -1;
-      if (!isOrderPlacedA && isOrderPlacedB) return 1;
-
-      const serialA = extractCustomerSerialNumber(a.customer_code);
-      const serialB = extractCustomerSerialNumber(b.customer_code);
-
-      if (serialA !== null && serialB !== null && serialA !== serialB) {
-        return serialB - serialA;
-      }
-      return 0;
-    });
-
-    // Top rows MUST be order_placed, sorted by OG serial number descending
+    // Expected order:
+    // Tier 1 (Order Placed): 45, 41
+    // Tier 2 (Order Completed + Payment Pending): 42, 38
+    // Tier 3 (Recently Entered Leads): 50, 49
     expect(sorted.map((c) => c.customer_code)).toEqual([
-      "CUS-000041", // order_placed (serial 41)
-      "CUS-000040", // order_placed (serial 40)
-      "CUS-000023", // order_placed (serial 23)
-      "CUS-000039", // active_responsive (serial 39)
-      "CUS-000001", // order_completed (serial 1)
+      "CUS-000045", // Tier 1 (serial 45)
+      "CUS-000041", // Tier 1 (serial 41)
+      "CUS-000042", // Tier 2 (serial 42)
+      "CUS-000038", // Tier 2 (serial 38)
+      "CUS-000050", // Tier 3 (serial 50)
+      "CUS-000049", // Tier 3 (serial 49)
     ]);
   });
 });

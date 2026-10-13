@@ -15,8 +15,11 @@ import {
   Building2,
   User,
   Sparkles,
+  FolderPlus,
+  FileText,
+  ShoppingCart,
 } from "lucide-react";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
 import type { ParsedVoiceCustomer } from "@/lib/customers/voice-parser";
 
@@ -32,6 +35,7 @@ import {
   CUSTOMER_PAYMENT_STATUS_CONFIG,
   getCustomerPaymentStatus,
   extractCustomerSerialNumber,
+  compareCustomersForDirectory,
   type CustomerPaymentStatus,
 } from "@/lib/customers/payment-status";
 import { listOrderPipeline } from "@/lib/customers/order-pipeline";
@@ -81,7 +85,6 @@ import { TablePagination } from "@/components/data/Pagination";
 import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import type { LifecycleStatus } from "@/lib/mdm/lifecycle";
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { qk } from "@/lib/query-keys";
 import { invalidateCustomer, seedPickerCache } from "@/lib/query-invalidation";
 import { toUserMessage } from "@/lib/errors";
@@ -168,6 +171,8 @@ function CustomersPage() {
       {
         nearestDeadline: string | null;
         activeOrderCount: number;
+        completedOrderCount: number;
+        hasCompletedOrder: boolean;
         recentOrderDate: string | null;
         urgentOrderNo: string | null;
         health: string | null;
@@ -190,12 +195,17 @@ function CustomersPage() {
         map.set(item.customerId, {
           nearestDeadline: deadline ?? null,
           activeOrderCount: isCompleted ? 0 : 1,
+          completedOrderCount: isCompleted ? 1 : 0,
+          hasCompletedOrder: isCompleted,
           recentOrderDate: orderDate ?? null,
           urgentOrderNo: isCompleted ? null : item.orderNo,
           health: isCompleted ? "completed" : item.health,
         });
       } else {
-        if (!isCompleted) {
+        if (isCompleted) {
+          existing.completedOrderCount += 1;
+          existing.hasCompletedOrder = true;
+        } else {
           existing.activeOrderCount += 1;
         }
         if (orderDate && (!existing.recentOrderDate || orderDate > existing.recentOrderDate)) {
@@ -276,34 +286,12 @@ function CustomersPage() {
         return getCustomerPaymentStatus(c, ledgerSummary) === paymentFilter;
       });
     }
-    return [...list].sort((a, b) => {
-      const statusA = getCustomerResponseStatus(a);
-      const statusB = getCustomerResponseStatus(b);
-
-      const isOrderPlacedA = statusA === "order_placed";
-      const isOrderPlacedB = statusB === "order_placed";
-
-      // 1. Customers with "Order Placed" response status must be at the top of the list
-      if (isOrderPlacedA && !isOrderPlacedB) return -1;
-      if (!isOrderPlacedA && isOrderPlacedB) return 1;
-
-      // 2. Both are "Order Placed" or both are not "Order Placed":
-      // Numbering like the OG numbers only: sort by assigned serial number descending (OG numbers: 41, 40, 39...)
-      const serialA = extractCustomerSerialNumber(a.customer_code);
-      const serialB = extractCustomerSerialNumber(b.customer_code);
-
-      if (serialA !== null && serialB !== null && serialA !== serialB) {
-        return serialB - serialA;
-      }
-      if (serialA !== null && serialB === null) return -1;
-      if (serialA === null && serialB !== null) return 1;
-
-      // 3. Fallback: newest creation time, then customer code
-      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      if (timeB !== timeA) return timeB - timeA;
-      return (b.customer_code ?? "").localeCompare(a.customer_code ?? "");
-    });
+    return [...list].sort((a, b) =>
+      compareCustomersForDirectory(a, b, {
+        getOrderInfo: (id) => customerOrderMap.get(id),
+        getLedgerSummary: (id) => ledgerQuery.data?.get(id),
+      }),
+    );
   }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data, customerOrderMap]);
 
   const paymentCounts = useMemo(() => {
@@ -821,6 +809,23 @@ function CustomersPage() {
                                   <Link to="/customers/$customerId" params={{ customerId: c.id }}>
                                     <ExternalLink className="mr-2 h-4 w-4" />{" "}
                                     {t("common.open", "Open")}
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link to="/projects" search={{ new: "1", customer: c.id }}>
+                                    <FolderPlus className="mr-2 h-4 w-4 text-indigo-600" /> Add Next
+                                    Project
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link to="/quotes" search={{ new: "1", customer: c.id }}>
+                                    <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New Quote
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link to="/sales-orders/new" search={{ customer: c.id }}>
+                                    <ShoppingCart className="mr-2 h-4 w-4 text-amber-600" /> New
+                                    Sales Order
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />

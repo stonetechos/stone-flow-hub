@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Users,
@@ -14,7 +15,29 @@ import {
   FolderOpen,
   History,
   UserCheck,
+  Building2,
+  Plus,
+  ShoppingCart,
+  Truck,
+  Receipt,
+  ExternalLink,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { QuickForm } from "@/components/forms/QuickForm";
+import { Field } from "@/components/forms/Field";
+import { NumericInput } from "@/components/forms/inputs/SmartInputs";
+import { PROJECT_TYPES, projectCreateSchema, type ProjectCreateInput } from "@/lib/projects/schema";
+import { createProject } from "@/lib/projects/api";
+import { invalidateProject } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { Button } from "@/components/ui/button";
@@ -238,6 +261,340 @@ function CustomerTimelineTab({ customerId }: { customerId: string }) {
   );
 }
 
+function CreateCustomerProjectDialog({
+  open,
+  onOpenChange,
+  customerId,
+  customerName,
+  defaultCity,
+  defaultAddress,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  customerId: string;
+  customerName: string;
+  defaultCity?: string | null;
+  defaultAddress?: string | null;
+}) {
+  const qc = useQueryClient();
+  const nav = useNavigate();
+  const [form, setForm] = useState<ProjectCreateInput>({
+    customer_id: customerId,
+    name: "",
+    city: defaultCity || "",
+    project_type: "residential",
+    site_address: defaultAddress || null,
+    state: null,
+    pincode: null,
+    expected_value_inr: null,
+    expected_start_date: null,
+    expected_completion_date: null,
+    notes: null,
+  });
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        customer_id: customerId,
+        name: "",
+        city: defaultCity || "",
+        project_type: "residential",
+        site_address: defaultAddress || null,
+        state: null,
+        pincode: null,
+        expected_value_inr: null,
+        expected_start_date: null,
+        expected_completion_date: null,
+        notes: null,
+      });
+    }
+  }, [open, customerId, defaultCity, defaultAddress]);
+
+  const mutation = useMutation({
+    mutationFn: (input: ProjectCreateInput) => createProject(input),
+    onSuccess: (row) => {
+      toast.success(`Project ${row.project_code} created for ${customerName}`, {
+        description: "Ready to draft quotation, approve order, or generate dispatch?",
+        action: {
+          label: "Draft quote",
+          onClick: () =>
+            nav({
+              to: "/quotes",
+              search: { new: "1", project: row.id, customer: customerId },
+            }),
+        },
+      });
+      invalidateProject(qc, row.id);
+      qc.invalidateQueries({ queryKey: qk.projects.byCustomer(customerId) });
+      qc.invalidateQueries({ queryKey: ["hub", "customer", customerId, "projects"] });
+      onOpenChange(false);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = projectCreateSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
+    mutation.mutate(parsed.data);
+  }
+
+  const set = <K extends keyof ProjectCreateInput>(k: K, v: ProjectCreateInput[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FolderPlus className="h-5 w-5 text-primary" />
+            <span>Add Project for {customerName}</span>
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground -mt-2">
+          Create a new project site to start a fresh cycle: Quote → Customer Approval → Delivery
+          Challan → Invoices.
+        </p>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <Field label="Project / Site Name" required className="md:col-span-2">
+            <Input
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              placeholder="e.g. DLF Magnolias 1202, Chattarpur Farmhouse, Sec 42 Villa"
+              autoFocus
+            />
+          </Field>
+          <Field label="Project Type" required>
+            <Select
+              value={form.project_type}
+              onValueChange={(v) => set("project_type", v as ProjectCreateInput["project_type"])}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PROJECT_TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="City" required>
+            <Input
+              value={form.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder="e.g. Gurugram, Delhi, Mumbai"
+            />
+          </Field>
+          <Field label="Site Address" className="md:col-span-2">
+            <Textarea
+              value={form.site_address ?? ""}
+              onChange={(e) => set("site_address", e.target.value || null)}
+              placeholder="Physical delivery / installation address"
+              rows={2}
+            />
+          </Field>
+          <Field label="Expected Value (INR)">
+            <NumericInput
+              value={
+                form.expected_value_inr !== null && form.expected_value_inr !== undefined
+                  ? String(form.expected_value_inr)
+                  : ""
+              }
+              onChange={(v) => set("expected_value_inr", v === "" ? null : Number(v))}
+              placeholder="₹ 0"
+            />
+          </Field>
+          <Field label="Notes">
+            <Input
+              value={form.notes ?? ""}
+              onChange={(e) => set("notes", e.target.value || null)}
+              placeholder="Any special remarks or architect details"
+            />
+          </Field>
+        </QuickForm>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CustomerProjectsTab({
+  customerId,
+  customerName,
+  onOpenNewProject,
+}: {
+  customerId: string;
+  customerName: string;
+  onOpenNewProject: () => void;
+}) {
+  const q = useQuery({
+    queryKey: qk.projects.byCustomer(customerId),
+    queryFn: () => hub.customerProjects(customerId),
+  });
+  const rows = q.data ?? [];
+
+  if (q.isLoading) return <LoadingBlock />;
+  if (q.error) return <ErrorBlock message={toUserMessage(q.error)} onRetry={() => q.refetch()} />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200/80 rounded-lg p-3 sm:px-4">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-primary" />
+            <span>Customer Projects & Repeat Workflows</span>
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Every project runs its own complete lifecycle: Quote → Approval (Sales Order) → Delivery
+            Challan → Invoice & Ledger.
+          </p>
+        </div>
+        <Button size="sm" onClick={onOpenNewProject} className="shrink-0">
+          <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Next Project
+        </Button>
+      </div>
+
+      {rows.length === 0 ? (
+        <Card className="shadow-1">
+          <CardContent className="py-8 text-center">
+            <Building2 className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
+            <p className="text-sm font-medium text-slate-800">
+              No projects registered yet for {customerName}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+              Start their first or next project to manage dedicated quotations, customer approvals,
+              dispatches, and invoices for each site.
+            </p>
+            <Button size="sm" className="mt-4" onClick={onOpenNewProject}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> Start New Project
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-1 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-28">Project Code</TableHead>
+                <TableHead>Project Name & Site</TableHead>
+                <TableHead className="w-28">Type</TableHead>
+                <TableHead className="w-28">City</TableHead>
+                <TableHead className="w-28">Created</TableHead>
+                <TableHead className="text-right">Project Lifecycle Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell className="font-mono text-xs font-semibold text-primary">
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      className="hover:underline"
+                    >
+                      {p.project_code || "—"}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      className="font-medium text-slate-900 hover:underline block"
+                    >
+                      {p.name}
+                    </Link>
+                    {p.site_address && (
+                      <span className="text-xs text-muted-foreground block line-clamp-1">
+                        {p.site_address}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="capitalize text-[11px]">
+                      {p.project_type || "residential"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-600">{p.city || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {formatDate(p.created_at)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs px-2 text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/60"
+                        title="Draft a new Quotation for this project"
+                      >
+                        <Link
+                          to="/quotes"
+                          search={{ new: "1", project: p.id, customer: customerId }}
+                        >
+                          <FileText className="mr-1 h-3 w-3" /> Quote
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs px-2 text-amber-700 bg-amber-50/50 border-amber-200 hover:bg-amber-100/60"
+                        title="Create a Sales Order / Customer Approval"
+                      >
+                        <Link
+                          to="/sales-orders/new"
+                          search={{ project: p.id, customer: customerId }}
+                        >
+                          <ShoppingCart className="mr-1 h-3 w-3" /> Order
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs px-2 text-blue-700 bg-blue-50/50 border-blue-200 hover:bg-blue-100/60"
+                        title="Dispatch / Delivery Challan"
+                      >
+                        <Link to="/dispatch/new" search={{ customer: customerId }}>
+                          <Truck className="mr-1 h-3 w-3" /> Challan
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs px-2 text-emerald-700 bg-emerald-50/50 border-emerald-200 hover:bg-emerald-100/60"
+                        title="Create an Invoice"
+                      >
+                        <Link to="/invoices/new" search={{ customer: customerId }}>
+                          <Receipt className="mr-1 h-3 w-3" /> Invoice
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        title="Open Project Workspace"
+                      >
+                        <Link to="/projects/$projectId" params={{ projectId: p.id }}>
+                          <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   ssr: false,
   component: CustomerHub,
@@ -249,6 +606,7 @@ function CustomerHub() {
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;
   const [transferOpen, setTransferOpen] = useState(false);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
@@ -331,19 +689,17 @@ function CustomerHub() {
                     <Pencil className="mr-2 h-4 w-4" /> Edit
                   </Button>
                 </Link>
-                <Link to="/enquiries">
+                <Link to="/enquiries" search={{ new: "1", customer: customerId }}>
                   <Button variant="outline" size="sm">
                     <ClipboardList className="mr-2 h-4 w-4" /> New enquiry
                   </Button>
                 </Link>
-                <Link to="/projects">
+                <Button variant="outline" size="sm" onClick={() => setNewProjectOpen(true)}>
+                  <FolderPlus className="mr-2 h-4 w-4 text-indigo-600" /> New project
+                </Button>
+                <Link to="/quotes" search={{ new: "1", customer: customerId }}>
                   <Button variant="outline" size="sm">
-                    <FolderPlus className="mr-2 h-4 w-4" /> New project
-                  </Button>
-                </Link>
-                <Link to="/quotes" search={{ new: "1" }}>
-                  <Button variant="outline" size="sm">
-                    <FileText className="mr-2 h-4 w-4" /> New quote
+                    <FileText className="mr-2 h-4 w-4 text-emerald-600" /> New quote
                   </Button>
                 </Link>
               </>
@@ -411,6 +767,15 @@ function CustomerHub() {
         />
       )}
 
+      <CreateCustomerProjectDialog
+        open={newProjectOpen}
+        onOpenChange={setNewProjectOpen}
+        customerId={customerId}
+        customerName={c.name}
+        defaultCity={c.city}
+        defaultAddress={c.site_address}
+      />
+
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -434,6 +799,35 @@ function CustomerHub() {
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <CustomerCrmFollowupCard customer={c} />
+
+          {/* Repeat Projects & Multi-Project Workflow Banner */}
+          <Card className="shadow-1 border-primary/20 bg-gradient-to-r from-slate-50/60 to-white">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <span>Customer Projects & Repeat Workflows</span>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Returning customer with a new site? Easily add their next project with dedicated
+                  quotes, orders, delivery challans, and invoices.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8"
+                  onClick={() => setTab("projects")}
+                >
+                  View All Projects
+                </Button>
+                <Button size="sm" className="h-8" onClick={() => setNewProjectOpen(true)}>
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Next Project
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
 
           <CustomerDuesCard customerId={customerId} />
 
@@ -499,27 +893,10 @@ function CustomerHub() {
         </TabsContent>
 
         <TabsContent value="projects" className="mt-4">
-          <RelatedList
-            title="Projects"
-            queryKey={qk.projects.byCustomer(customerId)}
-            queryFn={() => hub.customerProjects(customerId)}
-            linkFor={(r) => ({ to: "/projects/$projectId", params: { projectId: r.id } })}
-            columns={[
-              {
-                header: "Code",
-                cell: (r) => <span className="font-mono text-xs">{r.project_code}</span>,
-              },
-              { header: "Name", cell: (r) => r.name },
-              { header: "City", cell: (r) => r.city ?? "—" },
-              {
-                header: "Type",
-                cell: (r) => (
-                  <Badge variant="secondary" className="capitalize">
-                    {r.project_type}
-                  </Badge>
-                ),
-              },
-            ]}
+          <CustomerProjectsTab
+            customerId={customerId}
+            customerName={c.name}
+            onOpenNewProject={() => setNewProjectOpen(true)}
           />
         </TabsContent>
 

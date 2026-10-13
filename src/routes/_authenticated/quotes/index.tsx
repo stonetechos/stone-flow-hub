@@ -87,6 +87,7 @@ const search = z.object({
   new: z.string().optional(),
   project: z.string().uuid().optional(),
   enquiry: z.string().uuid().optional(),
+  customer: z.string().uuid().optional(),
   status: z.string().optional(),
 });
 
@@ -733,6 +734,7 @@ function QuotesPage() {
         }}
         initialProjectId={params.project ?? null}
         initialEnquiryId={params.enquiry ?? null}
+        initialCustomerId={params.customer ?? null}
       />
 
       {compareOpen && (
@@ -800,17 +802,19 @@ function CreateQuoteDialog({
   onOpenChange,
   initialProjectId,
   initialEnquiryId,
+  initialCustomerId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   initialProjectId: string | null;
   initialEnquiryId: string | null;
+  initialCustomerId?: string | null;
 }) {
   const qc = useQueryClient();
   const nav = useNavigate();
 
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(initialCustomerId ?? "");
   const [category, setCategory] = useState<QuoteCategory | "">("");
   const [saleMode, setSaleMode] = useState<SaleMode>("invoiced");
   const [hybridCashAmount, setHybridCashAmount] = useState("");
@@ -825,7 +829,7 @@ function CreateQuoteDialog({
   useEffect(() => {
     if (open) {
       setProjectId(initialProjectId ?? "");
-      setCustomerId("");
+      setCustomerId(initialCustomerId ?? "");
       setCategory("");
       setSaleMode("invoiced");
       setHybridCashAmount("");
@@ -837,7 +841,7 @@ function CreateQuoteDialog({
       setMode("manual");
       setCalcResult(null);
     }
-  }, [open, initialProjectId]);
+  }, [open, initialProjectId, initialCustomerId]);
 
   const totals = useMemo(() => {
     let sub = 0,

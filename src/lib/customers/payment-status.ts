@@ -8,6 +8,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 import { AppError, mapDbError } from "@/lib/errors";
 import type { CustomerLedgerOverviewItem } from "@/lib/customer-ledger/api";
+import { getCustomerResponseStatus } from "./crm-status";
 import { normalizeCustomerRow } from "./normalize";
 import type { CustomerRow } from "./api";
 
@@ -84,12 +85,101 @@ export const CUSTOMER_PAYMENT_STATUS_CONFIG: Record<
  */
 export function extractCustomerSerialNumber(code?: string | null): number | null {
   if (!code) return null;
-  const match = code.match(/(\d+)$/);
+  const match = code.trim().match(/(\d+)(?!.*\d)/);
   if (match) {
     const num = parseInt(match[1], 10);
     if (!isNaN(num)) return num;
   }
   return null;
+}
+
+export interface CustomerRankingContext {
+  orderInfo?: {
+    activeOrderCount?: number;
+    completedOrderCount?: number;
+    hasCompletedOrder?: boolean;
+    health?: string | null;
+  } | null;
+  ledgerSummary?: CustomerLedgerOverviewItem | null;
+}
+
+/**
+ * 3-Tier Customer Directory Ranking:
+ * Tier 1: CRM Response Status = "order_placed" (occupies the very top of the list)
+ * Tier 2: Customers where "order is completed" AND "payment status is pending"
+ * Tier 3: Customers entered recently (sorted by allotted serial number descending / creation date)
+ */
+export function getCustomerDirectoryRank(
+  customer:
+    | {
+        workflow_state?: unknown;
+        external_ref?: unknown;
+        is_active?: boolean;
+      }
+    | null
+    | undefined,
+  context?: CustomerRankingContext | null,
+): number {
+  if (!customer) return 3;
+
+  const crmStatus = getCustomerResponseStatus(customer);
+  // Tier 1: "order placed" status occupying the top of the list
+  if (crmStatus === "order_placed") return 1;
+
+  // Tier 2: "order is completed" and "payment status is pending"
+  const isOrderCompleted =
+    crmStatus === "order_completed" ||
+    context?.orderInfo?.health === "completed" ||
+    context?.orderInfo?.hasCompletedOrder === true;
+
+  const payStatus = getCustomerPaymentStatus(customer, context?.ledgerSummary);
+  const isPaymentPending =
+    payStatus === "payment_pending" ||
+    payStatus === "part_payment_received" ||
+    (context?.ledgerSummary ? context.ledgerSummary.balance > 0 : false);
+
+  if (isOrderCompleted && isPaymentPending) {
+    return 2;
+  }
+
+  // Tier 3: customers entered recently
+  return 3;
+}
+
+export function compareCustomersForDirectory(
+  a: CustomerRow,
+  b: CustomerRow,
+  contextMap?: {
+    getOrderInfo?: (customerId: string) => CustomerRankingContext["orderInfo"];
+    getLedgerSummary?: (customerId: string) => CustomerRankingContext["ledgerSummary"];
+  },
+): number {
+  const rankA = getCustomerDirectoryRank(a, {
+    orderInfo: contextMap?.getOrderInfo?.(a.id),
+    ledgerSummary: contextMap?.getLedgerSummary?.(a.id),
+  });
+  const rankB = getCustomerDirectoryRank(b, {
+    orderInfo: contextMap?.getOrderInfo?.(b.id),
+    ledgerSummary: contextMap?.getLedgerSummary?.(b.id),
+  });
+
+  if (rankA !== rankB) return rankA - rankB;
+
+  // Within each tier: sort by allotted serial number descending (OG numbers: 41, 40, 39...)
+  const serialA = extractCustomerSerialNumber(a.customer_code);
+  const serialB = extractCustomerSerialNumber(b.customer_code);
+
+  if (serialA !== null && serialB !== null && serialA !== serialB) {
+    return serialB - serialA;
+  }
+  if (serialA !== null && serialB === null) return -1;
+  if (serialA === null && serialB !== null) return 1;
+
+  // Fallback: newest creation time, then customer code
+  const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+  const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+  if (timeB !== timeA) return timeB - timeA;
+  return (b.customer_code ?? "").localeCompare(a.customer_code ?? "");
 }
 
 /**
