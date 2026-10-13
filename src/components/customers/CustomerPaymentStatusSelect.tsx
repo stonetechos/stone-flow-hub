@@ -68,6 +68,7 @@ export function CustomerPaymentStatusSelect({
       );
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
       void qc.invalidateQueries({ queryKey: qk.customers.all });
+      void qc.invalidateQueries({ queryKey: ["customers"] });
       void qc.invalidateQueries({ queryKey: ["customer-ledger-summaries"] });
       void qc.invalidateQueries({ queryKey: ["customer-order-pipeline"] });
       setOpen(false);

@@ -58,6 +58,8 @@ import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPa
 import { listFollowups } from "@/lib/followups/api";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
+import { extractCustomerSerialNumber } from "@/lib/customers/payment-status";
 import { CustomerCrmFollowupCard } from "@/components/customers/CustomerCrmFollowupCard";
 
 /** Payment and dispatch due dates for this customer, glanceable right on
@@ -283,10 +285,16 @@ function CustomerHub() {
         </Link>
       </div>
       <PageHeader
-        title={c.name}
+        title={(() => {
+          const serial = extractCustomerSerialNumber(c.customer_code);
+          return serial !== null
+            ? `${serial}. ${c.name}${c.customer_code ? ` (${c.customer_code})` : ""}`
+            : c.customer_code
+              ? `${c.name} (${c.customer_code})`
+              : c.name;
+        })()}
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs">{c.customer_code}</span>
             <Badge variant="secondary">{getCustomerTypeLabel(getEffectiveCustomerType(c))}</Badge>
             {c.company_name && (
               <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
@@ -302,6 +310,12 @@ function CustomerHub() {
               customerId={customerId}
               customerName={c.name}
               isActive={c.is_active}
+              workflowState={c.workflow_state}
+              externalRef={c.external_ref}
+            />
+            <CustomerPaymentStatusSelect
+              customerId={customerId}
+              customerName={c.name}
               workflowState={c.workflow_state}
               externalRef={c.external_ref}
             />

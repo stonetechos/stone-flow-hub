@@ -31,8 +31,10 @@ import {
 import {
   CUSTOMER_PAYMENT_STATUS_CONFIG,
   getCustomerPaymentStatus,
+  extractCustomerSerialNumber,
   type CustomerPaymentStatus,
 } from "@/lib/customers/payment-status";
+import { listOrderPipeline } from "@/lib/customers/order-pipeline";
 import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -154,6 +156,55 @@ function CustomersPage() {
     staleTime: 30_000,
   });
 
+  const pipelineQuery = useQuery({
+    queryKey: ["customer-order-pipeline"],
+    queryFn: () => listOrderPipeline(),
+    staleTime: 30_000,
+  });
+
+  const customerOrderMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        nearestDeadline: string | null;
+        activeOrderCount: number;
+        recentOrderDate: string | null;
+        urgentOrderNo: string | null;
+        health: string | null;
+      }
+    >();
+
+    for (const item of pipelineQuery.data ?? []) {
+      if (!item.customerId) continue;
+      const existing = map.get(item.customerId);
+      const deadline = item.customerDeadline || item.vendorDeadline;
+      const orderDate = item.orderDate;
+
+      if (!existing) {
+        map.set(item.customerId, {
+          nearestDeadline: deadline ?? null,
+          activeOrderCount: 1,
+          recentOrderDate: orderDate ?? null,
+          urgentOrderNo: item.orderNo,
+          health: item.health,
+        });
+      } else {
+        existing.activeOrderCount += 1;
+        if (orderDate && (!existing.recentOrderDate || orderDate > existing.recentOrderDate)) {
+          existing.recentOrderDate = orderDate;
+        }
+        if (deadline) {
+          if (!existing.nearestDeadline || deadline < existing.nearestDeadline) {
+            existing.nearestDeadline = deadline;
+            existing.urgentOrderNo = item.orderNo;
+            existing.health = item.health;
+          }
+        }
+      }
+    }
+    return map;
+  }, [pipelineQuery.data]);
+
   useEffect(() => {
     import("@/integrations/supabase/client").then(({ supabase }) => {
       const sub = supabase
@@ -206,16 +257,38 @@ function CustomersPage() {
       );
     }
     return [...list].sort((a, b) => {
+      const orderA = customerOrderMap.get(a.id);
+      const orderB = customerOrderMap.get(b.id);
+
+      const deadlineA = orderA?.nearestDeadline;
+      const deadlineB = orderB?.nearestDeadline;
+
+      // 1. Customers with active order deadlines come first, in ascending order of deadline (earliest deadline first)
+      if (deadlineA && deadlineB) {
+        const diff = new Date(deadlineA).getTime() - new Date(deadlineB).getTime();
+        if (diff !== 0) return diff;
+      }
+      if (deadlineA && !deadlineB) return -1;
+      if (!deadlineA && deadlineB) return 1;
+
+      // 2. Customers with active orders without deadline come before customers without orders
+      const countA = orderA?.activeOrderCount ?? 0;
+      const countB = orderB?.activeOrderCount ?? 0;
+      if (countA > 0 && countB === 0) return -1;
+      if (countA === 0 && countB > 0) return 1;
+
+      // 3. Fallback: newest creation time, then serial number
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
       if (timeB !== timeA) return timeB - timeA;
       return (b.customer_code ?? "").localeCompare(a.customer_code ?? "");
     });
-  }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data]);
+  }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data, customerOrderMap]);
 
   const paymentCounts = useMemo(() => {
     const counts: Record<string, number> = {
       all: (query.data ?? []).length,
+      no_dues: 0,
       payment_pending: 0,
       part_payment_received: 0,
       full_payment_received: 0,
@@ -338,6 +411,22 @@ function CustomersPage() {
               )}
             >
               All ({paymentCounts.all})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentFilter("no_dues");
+                setPage(1);
+              }}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                paymentFilter === "no_dues"
+                  ? "bg-slate-800 text-white border-slate-800 shadow-2xs font-semibold"
+                  : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+              No Dues ({paymentCounts.no_dues})
             </button>
             <button
               type="button"
@@ -552,15 +641,17 @@ function CustomersPage() {
                     const phone =
                       c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
                     const cleanPhone = phone.replace(/[^0-9]/g, "");
+                    const serial = extractCustomerSerialNumber(c.customer_code);
+                    const orderInfo = customerOrderMap.get(c.id);
                     return (
                       <TableRow key={c.id}>
                         <TableCell className="font-mono text-xs text-muted-foreground">
                           <Link
                             to="/customers/$customerId"
                             params={{ customerId: c.id }}
-                            className="hover:underline"
+                            className="hover:underline font-semibold text-slate-700"
                           >
-                            {rows.length - ((page - 1) * pageSize + i)}
+                            {serial !== null ? serial : rows.length - ((page - 1) * pageSize + i)}
                           </Link>
                         </TableCell>
                         <TableCell className="font-medium">
@@ -569,11 +660,29 @@ function CustomersPage() {
                             params={{ customerId: c.id }}
                             className="hover:underline flex flex-col gap-1 py-1"
                           >
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-slate-900">{c.name}</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="font-semibold text-slate-900">
+                                {serial !== null ? `${serial}. ` : ""}
+                                {c.name}
+                              </span>
                               {c.customer_code && (
                                 <span className="font-mono text-[11px] text-muted-foreground">
                                   ({c.customer_code})
+                                </span>
+                              )}
+                              {orderInfo?.nearestDeadline && (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border",
+                                    orderInfo.health === "overdue"
+                                      ? "bg-rose-50 text-rose-700 border-rose-200"
+                                      : orderInfo.health === "tight_buffer"
+                                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                                        : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                  )}
+                                  title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
+                                >
+                                  ⏳ Due: {formatDate(orderInfo.nearestDeadline)}
                                 </span>
                               )}
                             </div>
@@ -635,6 +744,7 @@ function CustomersPage() {
                             customerId={c.id}
                             customerName={c.name}
                             workflowState={c.workflow_state}
+                            externalRef={c.external_ref}
                             ledgerSummary={ledgerQuery.data?.get(c.id)}
                           />
                         </TableCell>

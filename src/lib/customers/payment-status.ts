@@ -12,6 +12,7 @@ import { normalizeCustomerRow } from "./normalize";
 import type { CustomerRow } from "./api";
 
 export type CustomerPaymentStatus =
+  | "no_dues"
   | "payment_pending"
   | "part_payment_received"
   | "full_payment_received"
@@ -31,6 +32,15 @@ export const CUSTOMER_PAYMENT_STATUS_CONFIG: Record<
   CustomerPaymentStatus,
   CustomerPaymentStatusConfig
 > = {
+  no_dues: {
+    value: "no_dues",
+    label: "No Dues / Clean",
+    shortLabel: "No Dues",
+    tone: "bg-slate-50 text-slate-700 border-slate-200",
+    badgeTone: "bg-slate-100 text-slate-700 border-slate-200 font-medium",
+    dotColor: "bg-slate-400",
+    description: "No pending payment on account; zero dues.",
+  },
   full_payment_received: {
     value: "full_payment_received",
     label: "Full Payment Received",
@@ -65,9 +75,22 @@ export const CUSTOMER_PAYMENT_STATUS_CONFIG: Record<
     tone: "bg-rose-50 text-rose-800 border-rose-200",
     badgeTone: "bg-rose-100/90 text-rose-900 border-rose-300 font-semibold",
     dotColor: "bg-rose-500",
-    description: "No payment received yet; awaiting remittance.",
+    description: "Pending payment on account; awaiting remittance.",
   },
 };
+
+/**
+ * Extracts numeric serial number from customer code (e.g. "CUS-000035" -> 35, "CUS-000024" -> 24).
+ */
+export function extractCustomerSerialNumber(code?: string | null): number | null {
+  if (!code) return null;
+  const match = code.match(/(\d+)$/);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    if (!isNaN(num)) return num;
+  }
+  return null;
+}
 
 /**
  * Determines a customer's payment status, checking manual assignment in workflow_state / external_ref
@@ -83,7 +106,7 @@ export function getCustomerPaymentStatus(
     | undefined,
   ledgerSummary?: CustomerLedgerOverviewItem | null,
 ): CustomerPaymentStatus {
-  if (!customer) return "payment_pending";
+  if (!customer) return "no_dues";
 
   const wf = (customer.workflow_state as Record<string, unknown> | null) ?? {};
   const ext = (customer.external_ref as Record<string, unknown> | null) ?? {};
@@ -111,9 +134,12 @@ export function getCustomerPaymentStatus(
     if (totalDebit > 0 && totalCredit === 0) {
       return "payment_pending";
     }
+    if (totalDebit === 0 && totalCredit === 0) {
+      return "no_dues";
+    }
   }
 
-  return "payment_pending";
+  return "no_dues";
 }
 
 export interface UpdateCustomerPaymentStatusOptions {
