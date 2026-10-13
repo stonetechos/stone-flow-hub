@@ -176,20 +176,28 @@ function CustomersPage() {
 
     for (const item of pipelineQuery.data ?? []) {
       if (!item.customerId) continue;
+      const isCompleted =
+        item.health === "completed" ||
+        ["received", "completed", "delivered", "closed", "dispatched"].includes(
+          (item.status || "").toLowerCase(),
+        );
+
       const existing = map.get(item.customerId);
-      const deadline = item.customerDeadline || item.vendorDeadline;
+      const deadline = isCompleted ? null : item.customerDeadline || item.vendorDeadline;
       const orderDate = item.orderDate;
 
       if (!existing) {
         map.set(item.customerId, {
           nearestDeadline: deadline ?? null,
-          activeOrderCount: 1,
+          activeOrderCount: isCompleted ? 0 : 1,
           recentOrderDate: orderDate ?? null,
-          urgentOrderNo: item.orderNo,
-          health: item.health,
+          urgentOrderNo: isCompleted ? null : item.orderNo,
+          health: isCompleted ? "completed" : item.health,
         });
       } else {
-        existing.activeOrderCount += 1;
+        if (!isCompleted) {
+          existing.activeOrderCount += 1;
+        }
         if (orderDate && (!existing.recentOrderDate || orderDate > existing.recentOrderDate)) {
           existing.recentOrderDate = orderDate;
         }
@@ -269,27 +277,28 @@ function CustomersPage() {
       });
     }
     return [...list].sort((a, b) => {
-      const orderA = customerOrderMap.get(a.id);
-      const orderB = customerOrderMap.get(b.id);
+      const statusA = getCustomerResponseStatus(a);
+      const statusB = getCustomerResponseStatus(b);
 
-      const deadlineA = orderA?.nearestDeadline;
-      const deadlineB = orderB?.nearestDeadline;
+      const isOrderPlacedA = statusA === "order_placed";
+      const isOrderPlacedB = statusB === "order_placed";
 
-      // 1. Customers with active order deadlines come first, in ascending order of deadline (earliest deadline first)
-      if (deadlineA && deadlineB) {
-        const diff = new Date(deadlineA).getTime() - new Date(deadlineB).getTime();
-        if (diff !== 0) return diff;
+      // 1. Customers with "Order Placed" response status must be at the top of the list
+      if (isOrderPlacedA && !isOrderPlacedB) return -1;
+      if (!isOrderPlacedA && isOrderPlacedB) return 1;
+
+      // 2. Both are "Order Placed" or both are not "Order Placed":
+      // Numbering like the OG numbers only: sort by assigned serial number descending (OG numbers: 41, 40, 39...)
+      const serialA = extractCustomerSerialNumber(a.customer_code);
+      const serialB = extractCustomerSerialNumber(b.customer_code);
+
+      if (serialA !== null && serialB !== null && serialA !== serialB) {
+        return serialB - serialA;
       }
-      if (deadlineA && !deadlineB) return -1;
-      if (!deadlineA && deadlineB) return 1;
+      if (serialA !== null && serialB === null) return -1;
+      if (serialA === null && serialB !== null) return 1;
 
-      // 2. Customers with active orders without deadline come before customers without orders
-      const countA = orderA?.activeOrderCount ?? 0;
-      const countB = orderB?.activeOrderCount ?? 0;
-      if (countA > 0 && countB === 0) return -1;
-      if (countA === 0 && countB > 0) return 1;
-
-      // 3. Fallback: newest creation time, then serial number
+      // 3. Fallback: newest creation time, then customer code
       const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
       if (timeB !== timeA) return timeB - timeA;
@@ -676,30 +685,29 @@ function CustomersPage() {
                             className="hover:underline flex flex-col gap-1 py-1"
                           >
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="font-semibold text-slate-900">
-                                {serial !== null ? `${serial}. ` : ""}
-                                {c.name}
-                              </span>
+                              <span className="font-semibold text-slate-900">{c.name}</span>
                               {c.customer_code && (
                                 <span className="font-mono text-[11px] text-muted-foreground">
                                   ({c.customer_code})
                                 </span>
                               )}
-                              {orderInfo?.nearestDeadline && (
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border",
-                                    orderInfo.health === "overdue"
-                                      ? "bg-rose-50 text-rose-700 border-rose-200"
-                                      : orderInfo.health === "tight_buffer"
-                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                        : "bg-emerald-50 text-emerald-700 border-emerald-200",
-                                  )}
-                                  title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
-                                >
-                                  ⏳ Due: {formatDate(orderInfo.nearestDeadline)}
-                                </span>
-                              )}
+                              {orderInfo?.nearestDeadline &&
+                                getCustomerResponseStatus(c) !== "order_completed" &&
+                                orderInfo.health !== "completed" && (
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border",
+                                      orderInfo.health === "overdue"
+                                        ? "bg-rose-50 text-rose-700 border-rose-200"
+                                        : orderInfo.health === "tight_buffer"
+                                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                                          : "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                    )}
+                                    title={`Order #${orderInfo.urgentOrderNo ?? ""}`}
+                                  >
+                                    ⏳ Due: {formatDate(orderInfo.nearestDeadline)}
+                                  </span>
+                                )}
                             </div>
                             {(() => {
                               const norm = normalizeCustomerRow(c);

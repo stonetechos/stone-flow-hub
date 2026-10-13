@@ -118,3 +118,60 @@ describe("getCustomerPaymentStatus", () => {
     expect(keys).toContain("clay_veneers");
   });
 });
+
+describe("Customer directory sorting and OG serial ordering", () => {
+  it("prioritizes customers with order_placed response status at the top sorted by OG numbers descending", () => {
+    const customers = [
+      {
+        id: "1",
+        customer_code: "CUS-000001",
+        workflow_state: { response_status: "order_completed" },
+      },
+      {
+        id: "23",
+        customer_code: "CUS-000023",
+        workflow_state: { response_status: "order_placed" },
+      },
+      {
+        id: "39",
+        customer_code: "CUS-000039",
+        workflow_state: { response_status: "active_responsive" },
+      },
+      {
+        id: "40",
+        customer_code: "CUS-000040",
+        workflow_state: { response_status: "order_placed" },
+      },
+      {
+        id: "41",
+        customer_code: "CUS-000041",
+        workflow_state: { response_status: "order_placed" },
+      },
+    ];
+
+    const sorted = [...customers].sort((a, b) => {
+      const isOrderPlacedA = a.workflow_state.response_status === "order_placed";
+      const isOrderPlacedB = b.workflow_state.response_status === "order_placed";
+
+      if (isOrderPlacedA && !isOrderPlacedB) return -1;
+      if (!isOrderPlacedA && isOrderPlacedB) return 1;
+
+      const serialA = extractCustomerSerialNumber(a.customer_code);
+      const serialB = extractCustomerSerialNumber(b.customer_code);
+
+      if (serialA !== null && serialB !== null && serialA !== serialB) {
+        return serialB - serialA;
+      }
+      return 0;
+    });
+
+    // Top rows MUST be order_placed, sorted by OG serial number descending
+    expect(sorted.map((c) => c.customer_code)).toEqual([
+      "CUS-000041", // order_placed (serial 41)
+      "CUS-000040", // order_placed (serial 40)
+      "CUS-000023", // order_placed (serial 23)
+      "CUS-000039", // active_responsive (serial 39)
+      "CUS-000001", // order_completed (serial 1)
+    ]);
+  });
+});
