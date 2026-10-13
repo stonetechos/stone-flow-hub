@@ -35,6 +35,8 @@ import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/
 import { Route as BackendIndexRouteImport } from './routes/backend/index'
 import { Route as BackendSiteSettingsRouteImport } from './routes/backend/site-settings'
 import { Route as PayLinkIdRouteImport } from './routes/pay.$linkId'
+import { Route as TrackIndexRouteImport } from './routes/track.index'
+import { Route as TrackOrderNoRouteImport } from './routes/track.$orderNo'
 import { Route as VendorDashboardRouteImport } from './routes/vendor/dashboard'
 import { Route as VendorProfileRouteImport } from './routes/vendor/profile'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
@@ -329,6 +331,16 @@ const BackendSiteSettingsRoute = BackendSiteSettingsRouteImport.update({
 const PayLinkIdRoute = PayLinkIdRouteImport.update({
   id: '/pay/$linkId',
   path: '/pay/$linkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackIndexRoute = TrackIndexRouteImport.update({
+  id: '/track/',
+  path: '/track/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackOrderNoRoute = TrackOrderNoRouteImport.update({
+  id: '/track/$orderNo',
+  path: '/track/$orderNo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VendorDashboardRoute = VendorDashboardRouteImport.update({
@@ -1289,9 +1301,11 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksRoute
   '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
+  '/track/$orderNo': typeof TrackOrderNoRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend/': typeof BackendIndexRoute
+  '/track/': typeof TrackIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1474,9 +1488,11 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
+  '/track/$orderNo': typeof TrackOrderNoRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend': typeof BackendIndexRoute
+  '/track': typeof TrackIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1662,9 +1678,11 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/backend/site-settings': typeof BackendSiteSettingsRoute
   '/pay/$linkId': typeof PayLinkIdRoute
+  '/track/$orderNo': typeof TrackOrderNoRoute
   '/vendor/dashboard': typeof VendorDashboardRoute
   '/vendor/profile': typeof VendorProfileRoute
   '/backend/': typeof BackendIndexRoute
+  '/track/': typeof TrackIndexRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/dashboards/analytics': typeof AuthenticatedDashboardsAnalyticsRoute
@@ -1850,9 +1868,11 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/backend/site-settings'
     | '/pay/$linkId'
+    | '/track/$orderNo'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend/'
+    | '/track/'
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
@@ -2035,9 +2055,11 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/backend/site-settings'
     | '/pay/$linkId'
+    | '/track/$orderNo'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend'
+    | '/track'
     | '/admin/users'
     | '/customers/$customerId'
     | '/dashboards/analytics'
@@ -2222,9 +2244,11 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/backend/site-settings'
     | '/pay/$linkId'
+    | '/track/$orderNo'
     | '/vendor/dashboard'
     | '/vendor/profile'
     | '/backend/'
+    | '/track/'
     | '/_authenticated/admin/users'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/dashboards/analytics'
@@ -2392,6 +2416,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   InquiryRoute: typeof InquiryRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
+  TrackOrderNoRoute: typeof TrackOrderNoRoute
+  TrackIndexRoute: typeof TrackIndexRoute
   ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
   ApiPublicHooksAgentSuiteSchedulerRoute: typeof ApiPublicHooksAgentSuiteSchedulerRoute
   ApiPublicHooksAuthEmailRoute: typeof ApiPublicHooksAuthEmailRoute
@@ -2588,6 +2614,20 @@ declare module '@tanstack/react-router' {
       path: '/pay/$linkId'
       fullPath: '/pay/$linkId'
       preLoaderRoute: typeof PayLinkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/': {
+      id: '/track/'
+      path: '/track'
+      fullPath: '/track/'
+      preLoaderRoute: typeof TrackIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/$orderNo': {
+      id: '/track/$orderNo'
+      path: '/track/$orderNo'
+      fullPath: '/track/$orderNo'
+      preLoaderRoute: typeof TrackOrderNoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vendor/dashboard': {
@@ -4240,6 +4280,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   InquiryRoute: InquiryRoute,
   PayLinkIdRoute: PayLinkIdRoute,
+  TrackOrderNoRoute: TrackOrderNoRoute,
+  TrackIndexRoute: TrackIndexRoute,
   ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
   ApiPublicHooksAgentSuiteSchedulerRoute:
     ApiPublicHooksAgentSuiteSchedulerRoute,
@@ -4258,14 +4300,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
-

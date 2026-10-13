@@ -2,12 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Truck } from "lucide-react";
+import { Plus, Truck, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
 import {
   Select,
   SelectContent,
@@ -63,6 +65,7 @@ function DispatchPage() {
   const [q, setQ] = useState(search.q ?? "");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<DispatchListItem | null>(null);
+  const [trackingTarget, setTrackingTarget] = useState<DispatchListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("dispatch");
@@ -296,6 +299,12 @@ function DispatchPage() {
                           <RowActions
                             onEdit={() => nav({ to: "/dispatch/$id/edit", params: { id: r.id } })}
                             onDelete={() => setToDelete(r)}
+                            extra={
+                              <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
+                                <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
+                                Send WhatsApp Tracking
+                              </DropdownMenuItem>
+                            }
                           />
                         </TableCell>
                       </TableRow>
@@ -321,6 +330,30 @@ function DispatchPage() {
           <LocalCartingView />
         </TabsContent>
       </Tabs>
+
+      {trackingTarget && (
+        <OrderTrackingWhatsappDialog
+          open={Boolean(trackingTarget)}
+          onOpenChange={(o) => !o && setTrackingTarget(null)}
+          orderNo={trackingTarget.sales_order?.so_no || trackingTarget.dispatch_no}
+          customerName={trackingTarget.customer?.name}
+          customerPhone={
+            trackingTarget.customer?.primary_phone || trackingTarget.customer?.whatsapp
+          }
+          orderDate={trackingTarget.dispatch_date}
+          deliveryDate={trackingTarget.sales_order?.delivery_date || trackingTarget.dispatch_date}
+          status={trackingTarget.status}
+          dispatches={[
+            {
+              dispatch_no: trackingTarget.dispatch_no,
+              status: trackingTarget.status,
+              dispatch_date: trackingTarget.dispatch_date,
+              carrier: trackingTarget.carrier,
+              vehicle_no: trackingTarget.vehicle_no,
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

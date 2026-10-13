@@ -15,10 +15,12 @@ import {
   Factory,
   AlertTriangle,
   Phone,
+  MessageSquare,
 } from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
@@ -38,6 +40,7 @@ import { parseItemVendorAssignment } from "@/lib/sales-orders/vendor-assignment"
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getSalesOrder, listSalesOrderItems, type SalesOrderItemRow } from "@/lib/sales-orders/api";
+import { listDispatchesBySalesOrder } from "@/lib/dispatch/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
 import { invalidateInvoice } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
@@ -57,10 +60,15 @@ function SalesOrderDetailPage() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [selectedVendorItem, setSelectedVendorItem] = useState<SalesOrderItemRow | null>(null);
   const [vendorModalOpen, setVendorModalOpen] = useState(false);
+  const [trackingWhatsappOpen, setTrackingWhatsappOpen] = useState(false);
   const query = useQuery({ queryKey: qk.salesOrders.byId(id), queryFn: () => getSalesOrder(id) });
   const itemsQuery = useQuery({
     queryKey: qk.salesOrders.items(id),
     queryFn: () => listSalesOrderItems(id),
+  });
+  const dispatchesQuery = useQuery({
+    queryKey: ["dispatches", "sales-order", id],
+    queryFn: () => listDispatchesBySalesOrder(id),
   });
 
   const convertMut = useMutation({
@@ -100,6 +108,16 @@ function SalesOrderDetailPage() {
                   onClick={() => nav({ to: "/sales-orders/$id/edit", params: { id } })}
                 >
                   <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-700/60 dark:hover:bg-emerald-950/30"
+                  onClick={() => setTrackingWhatsappOpen(true)}
+                  title="Send customer visual tracking link and AI status update via WhatsApp"
+                >
+                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-emerald-600 fill-current" />
+                  WhatsApp Tracking
                 </Button>
                 <Link to="/dispatch/new" search={{ so: id }}>
                   <Button size="sm" variant="outline">
@@ -484,6 +502,23 @@ function SalesOrderDetailPage() {
         onOpenChange={setVendorModalOpen}
         item={selectedVendorItem}
         salesOrderId={id}
+      />
+
+      <OrderTrackingWhatsappDialog
+        open={trackingWhatsappOpen}
+        onOpenChange={setTrackingWhatsappOpen}
+        orderNo={r.so_no}
+        customerName={r.customer?.name}
+        customerPhone={r.customer?.primary_phone || r.customer?.whatsapp}
+        orderDate={r.order_date}
+        deliveryDate={r.delivery_date}
+        status={r.status}
+        dispatches={dispatchesQuery.data ?? []}
+        itemsSummary={(itemsQuery.data ?? []).map((it) => ({
+          itemDescription: it.product_name || it.description || "Natural Stone Item",
+          quantity: Number(it.quantity || 1),
+          unit: it.unit || "sqft",
+        }))}
       />
     </div>
   );

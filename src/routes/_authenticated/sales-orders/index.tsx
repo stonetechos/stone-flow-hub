@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Calendar } from "lucide-react";
+import { Plus, ShoppingCart, Calendar, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
 import {
   Select,
   SelectContent,
@@ -52,6 +54,7 @@ function SalesOrdersPage() {
   const dq = useDebouncedValue(q, 250);
   const [status, setStatus] = useState<string>(search.status ?? "");
   const [toDelete, setToDelete] = useState<SalesOrderListItem | null>(null);
+  const [trackingTarget, setTrackingTarget] = useState<SalesOrderListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("sales-orders");
@@ -216,6 +219,12 @@ function SalesOrdersPage() {
                     <RowActions
                       onEdit={() => nav({ to: "/sales-orders/$id/edit", params: { id: r.id } })}
                       onDelete={() => setToDelete(r)}
+                      extra={
+                        <DropdownMenuItem onSelect={() => setTrackingTarget(r)}>
+                          <MessageSquare className="mr-2 h-4 w-4 text-emerald-600 fill-current" />
+                          Send WhatsApp Tracking
+                        </DropdownMenuItem>
+                      }
                     />
                   </TableCell>
                 </TableRow>
@@ -234,6 +243,21 @@ function SalesOrdersPage() {
         busy={del.isPending}
         onConfirmDelete={() => toDelete && del.mutate(toDelete.id)}
       />
+
+      {trackingTarget && (
+        <OrderTrackingWhatsappDialog
+          open={Boolean(trackingTarget)}
+          onOpenChange={(o) => !o && setTrackingTarget(null)}
+          orderNo={trackingTarget.so_no}
+          customerName={trackingTarget.customer?.name}
+          customerPhone={
+            trackingTarget.customer?.primary_phone || trackingTarget.customer?.whatsapp
+          }
+          orderDate={trackingTarget.order_date}
+          deliveryDate={trackingTarget.delivery_date}
+          status={trackingTarget.status}
+        />
+      )}
     </div>
   );
 }

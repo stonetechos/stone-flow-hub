@@ -13,13 +13,18 @@ import {
 export type DispatchRow = DbTable<"dispatches">;
 export type DispatchItemRow = DbTable<"dispatch_items">;
 export type DispatchListItem = DispatchRow & {
-  sales_order: { id: string; so_no: string } | null;
-  customer: { id: string; name: string } | null;
+  sales_order: { id: string; so_no: string; delivery_date?: string | null } | null;
+  customer: {
+    id: string;
+    name: string;
+    primary_phone?: string | null;
+    whatsapp?: string | null;
+  } | null;
   project: { id: string; name: string } | null;
 };
 
 const SELECT =
-  "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no), customer:customers!dispatches_customer_id_fkey(id,name), project:projects!dispatches_project_id_fkey(id,name)";
+  "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no,delivery_date), customer:customers!dispatches_customer_id_fkey(id,name,primary_phone,whatsapp), project:projects!dispatches_project_id_fkey(id,name)";
 
 function toPayload(p: DispatchCreateInput) {
   return {

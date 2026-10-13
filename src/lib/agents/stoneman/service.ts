@@ -54,34 +54,40 @@ export interface VerifiedOrderLookupInput {
   verificationCode?: string;
 }
 
+import {
+  computeOrderPin,
+  senseOrderDeliveryStatus,
+  buildOrderMilestones,
+  type OrderMilestoneItem,
+} from "@/lib/orders/tracking";
+
+export { computeOrderPin };
+
 export interface CustomerSafeOrderDetails {
   orderNo: string;
   orderDate: string;
   statusText: string;
   isCompleted: boolean;
   estimatedDeliveryDate: string | null;
+  expectedDeliveryText?: string;
+  isDelayed?: boolean;
+  delayDays?: number;
+  whatsBeenDone?: string;
+  milestones?: OrderMilestoneItem[];
+  dispatches?: Array<{
+    dispatchNo: string;
+    dispatchDate: string;
+    status: string;
+    carrier?: string | null;
+    vehicleNo?: string | null;
+    trackingNo?: string | null;
+  }>;
   itemsSummary: Array<{
     itemDescription: string;
     quantity: number;
     unit: string;
   }>;
   notice: string;
-}
-
-/**
- * Computes a deterministic 6-digit security verification PIN based on order reference and registered phone.
- */
-export function computeOrderPin(orderNo: string, phone: string): string {
-  const cleanOrder = orderNo.trim().toUpperCase();
-  const cleanPhone = phone.replace(/\D+/g, "").slice(-10);
-  let hash = 0x811c9dc5;
-  const str = `${cleanOrder}:${cleanPhone}:stoneman-secret-salt-2026`;
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  const pinNum = (Math.abs(hash) % 900000) + 100000;
-  return String(pinNum);
 }
 
 /**
@@ -244,6 +250,43 @@ export async function lookupVerifiedOrder(
     );
   }
 
+  let dispatchesData: Array<{
+    id: string;
+    dispatch_no: string;
+    status: string;
+    dispatch_date: string;
+    carrier: string | null;
+    vehicle_no: string | null;
+    tracking_no: string | null;
+  }> = [];
+
+  try {
+    const { data: disp } = await db
+      .from("dispatches")
+      .select("id, dispatch_no, status, dispatch_date, carrier, vehicle_no, tracking_no")
+      .eq("sales_order_id", salesOrder.id)
+      .order("dispatch_date", { ascending: false });
+    if (disp) {
+      dispatchesData = disp as typeof dispatchesData;
+    }
+  } catch {
+    // Graceful fallback if dispatches query is mocked or fails in tests
+  }
+
+  const assessment = senseOrderDeliveryStatus({
+    orderDate: salesOrder.order_date,
+    deliveryDate: salesOrder.delivery_date,
+    status: salesOrder.status,
+    dispatches: dispatchesData,
+  });
+
+  const milestones = buildOrderMilestones({
+    orderDate: salesOrder.order_date,
+    deliveryDate: salesOrder.delivery_date,
+    status: salesOrder.status,
+    dispatches: dispatchesData,
+  });
+
   // Map internal technical status to customer-friendly milestone
   let statusText = "Order Confirmed & Scheduled";
   const st = (salesOrder.status || "").toLowerCase();
@@ -270,8 +313,22 @@ export async function lookupVerifiedOrder(
     orderNo: salesOrder.so_no,
     orderDate: salesOrder.order_date ? formatDate(salesOrder.order_date) : "—",
     statusText,
-    isCompleted: st.includes("delivered") || st.includes("completed"),
+    isCompleted:
+      st.includes("delivered") || st.includes("completed") || assessment.stage === "delivered",
     estimatedDeliveryDate: salesOrder.delivery_date ? formatDate(salesOrder.delivery_date) : null,
+    expectedDeliveryText: assessment.expectedDateText,
+    isDelayed: assessment.isDelayed,
+    delayDays: assessment.delayDays,
+    whatsBeenDone: assessment.whatsBeenDone,
+    milestones,
+    dispatches: dispatchesData.map((d) => ({
+      dispatchNo: d.dispatch_no,
+      dispatchDate: d.dispatch_date ? formatDate(d.dispatch_date) : "—",
+      status: d.status,
+      carrier: d.carrier,
+      vehicleNo: d.vehicle_no,
+      trackingNo: d.tracking_no,
+    })),
     itemsSummary: rawItems.map((it) => ({
       itemDescription: it.product_name || it.description || "Architectural Stone Order",
       quantity: Number(it.quantity || 1),

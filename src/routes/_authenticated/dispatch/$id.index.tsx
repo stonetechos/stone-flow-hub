@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, FolderOpen, History, Calendar, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  FolderOpen,
+  History,
+  Calendar,
+  Loader2,
+  MessageSquare,
+} from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -39,6 +48,7 @@ function DispatchDetailPage() {
   const qc = useQueryClient();
   const [editDateOpen, setEditDateOpen] = useState(false);
   const [newDate, setNewDate] = useState("");
+  const [trackingWhatsappOpen, setTrackingWhatsappOpen] = useState(false);
 
   const query = useQuery({ queryKey: qk.dispatch.byId(id), queryFn: () => getDispatch(id) });
   const itemsQuery = useQuery({
@@ -113,6 +123,16 @@ function DispatchDetailPage() {
               <>
                 <Button size="sm" onClick={() => nav({ to: "/dispatch/$id/edit", params: { id } })}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-700/60 dark:hover:bg-emerald-950/30"
+                  onClick={() => setTrackingWhatsappOpen(true)}
+                  title="Send customer visual tracking link and AI status update via WhatsApp"
+                >
+                  <MessageSquare className="mr-1.5 h-3.5 w-3.5 text-emerald-600 fill-current" />
+                  WhatsApp Tracking
                 </Button>
                 <DocumentToolbar entity="delivery_challan" entityId={id} />
               </>
@@ -329,6 +349,31 @@ function DispatchDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OrderTrackingWhatsappDialog
+        open={trackingWhatsappOpen}
+        onOpenChange={setTrackingWhatsappOpen}
+        orderNo={r.sales_order?.so_no || r.dispatch_no}
+        customerName={r.customer?.name}
+        customerPhone={r.customer?.primary_phone || r.customer?.whatsapp}
+        orderDate={r.dispatch_date}
+        deliveryDate={r.sales_order?.delivery_date || r.dispatch_date}
+        status={r.status}
+        dispatches={[
+          {
+            dispatch_no: r.dispatch_no,
+            status: r.status,
+            dispatch_date: r.dispatch_date,
+            carrier: r.carrier,
+            vehicle_no: r.vehicle_no,
+          },
+        ]}
+        itemsSummary={(itemsQuery.data ?? []).map((it) => ({
+          itemDescription: it.description || "Natural Stone Item",
+          quantity: Number(it.quantity || 1),
+          unit: it.unit || "sqft",
+        }))}
+      />
     </div>
   );
 }
