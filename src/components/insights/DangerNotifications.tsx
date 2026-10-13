@@ -42,6 +42,13 @@ export function DangerNotifications() {
       if (resolveTone(insight.tone) !== "danger") continue;
       if (insight.confidence < HIGH_CONFIDENCE_MIN) continue;
       if (insight.lifecycleStatus !== "new") continue;
+      if (
+        insight.entity?.type === "dispatch" ||
+        insight.id.includes("dispatch") ||
+        insight.source === "operations.dispatch-risk"
+      ) {
+        continue;
+      }
 
       const key = `${insight.source}:${insight.id}`;
       // Guards against the same insight toasting twice within one mount

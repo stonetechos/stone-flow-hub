@@ -96,29 +96,6 @@ export const CustomerHygieneProvider: InsightProvider = {
       });
     }
 
-    // 3. Planned dispatches that can't proceed — no delivery address.
-    for (const d of dispatches) {
-      if (d.status !== "planned") continue;
-      if (d.site_address && d.site_address.trim() !== "") continue;
-
-      const ageDays = daysSince(d.created_at, nowMs);
-      const customerPart = d.customer ? ` for ${d.customer.name}` : "";
-      insights.push({
-        id: `${CUSTOMER_HYGIENE_PROVIDER_ID}:dispatch-address:${d.id}`,
-        source: CUSTOMER_HYGIENE_PROVIDER_ID,
-        module: "Customer",
-        kind: "risk",
-        tone: "danger",
-        confidence: 1,
-        title: `Dispatch ${d.dispatch_no} can't proceed — delivery address missing`,
-        why: `Dispatch ${d.dispatch_no}${customerPart} has no site address recorded, so it cannot be dispatched.`,
-        action: { label: "Open dispatch", href: `/dispatch/${d.id}` },
-        entity: { type: "dispatch", id: d.id, label: d.dispatch_no },
-        priority: computePriority({ urgencyDays: ageDays }),
-        generatedAt: now,
-      });
-    }
-
     // 4. Unpaid milestones whose reminder can't be sent — no contact at all.
     const unpaidByCustomer = new Map<string, typeof unpaidSchedules>();
     for (const row of unpaidSchedules) {

@@ -6,7 +6,6 @@ import {
   Loader2,
   FileText,
   Trash2,
-  Pencil,
   Scale,
   Building2,
   Calendar,
@@ -486,7 +485,7 @@ function QuotesPage() {
                 )}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
                 {!isHidden("valid") && <TableHead>Valid until</TableHead>}
-                <TableHead className="w-28 text-right pr-4 font-semibold">Actions</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -677,56 +676,32 @@ function QuotesPage() {
                         {r.valid_until ? formatDate(r.valid_until) : "—"}
                       </TableCell>
                     )}
-                    <TableCell className="text-right pr-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-slate-600 hover:text-primary hover:bg-slate-100"
-                          onClick={() =>
-                            nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
-                          }
-                          title="Edit Quote"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                          onClick={() => setToDelete(r)}
-                          title="Delete Quote"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                        <RowActions
-                          extra={
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  nav({
-                                    to: "/dispatch/new",
-                                    search: { quote: r.id, customer: r.customer_id },
-                                  })
-                                }
-                              >
-                                <Truck className="mr-2 h-4 w-4 text-emerald-600" />
-                                Issue Delivery Challan
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
-                                <Building2 className="mr-2 h-4 w-4" />
-                                Assign Vendor / Delivery Date
-                              </DropdownMenuItem>
-                            </>
-                          }
-                          onEdit={() =>
-                            nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
-                          }
-                          onDelete={() => setToDelete(r)}
-                        />
-                      </div>
+                    <TableCell>
+                      <RowActions
+                        extra={
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                nav({
+                                  to: "/dispatch/new",
+                                  search: { quote: r.id, customer: r.customer_id },
+                                })
+                              }
+                            >
+                              <Truck className="mr-2 h-4 w-4 text-emerald-600" />
+                              Issue Delivery Challan
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
+                              <Building2 className="mr-2 h-4 w-4" />
+                              Assign Vendor / Delivery Date
+                            </DropdownMenuItem>
+                          </>
+                        }
+                        onEdit={() =>
+                          nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
+                        }
+                        onDelete={() => setToDelete(r)}
+                      />
                     </TableCell>
                   </TableRow>
                 );
