@@ -42,6 +42,14 @@ import {
 } from "@/lib/quotes/schema";
 import { invalidateQuote } from "@/lib/query-invalidation";
 import { formatInr } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
+import {
+  getQuoteSaleMode,
+  getQuoteHybridSplit,
+  SALE_MODE_CONFIG,
+  type SaleMode,
+} from "@/lib/quotes/sale-mode";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   ssr: false,
@@ -56,11 +64,15 @@ function EditQuotePage() {
   const roles = useRoles();
   const canReassign = roles.isAdmin || roles.isSalesManager;
   const [reassignOpen, setReassignOpen] = useState(false);
+  const [saleMode, setSaleMode] = useState<SaleMode>("invoiced");
   const [form, setForm] = useState<QuoteUpdateInput>({
     category: null,
     valid_until: null,
     notes: null,
     terms: null,
+    sale_mode: "invoiced",
+    hybrid_cash_amount: null,
+    hybrid_invoiced_amount: null,
   });
 
   useEffect(() => {
@@ -69,11 +81,17 @@ function EditQuotePage() {
       const cat = (QUOTE_CATEGORIES as readonly string[]).includes(raw ?? "")
         ? (raw as QuoteCategory)
         : null;
+      const mode = getQuoteSaleMode(query.data);
+      const split = getQuoteHybridSplit(query.data);
+      setSaleMode(mode);
       setForm({
         category: cat,
         valid_until: query.data.valid_until ?? null,
         notes: query.data.notes ?? null,
         terms: query.data.terms ?? null,
+        sale_mode: mode,
+        hybrid_cash_amount: split.cashAmount,
+        hybrid_invoiced_amount: split.invoicedAmount,
       });
     }
   }, [query.data]);
@@ -149,7 +167,11 @@ function EditQuotePage() {
         }
       />
 
-      <LineItemsEditor quoteId={quoteId} defaultFulfilment={form.category ?? null} />
+      <LineItemsEditor
+        quoteId={quoteId}
+        defaultFulfilment={form.category ?? null}
+        saleMode={saleMode}
+      />
 
       <QuickForm
         onSubmit={(e) => {
@@ -159,6 +181,94 @@ function EditQuotePage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
+          <Field label="Mode of Sale" className="md:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSaleMode("invoiced");
+                  set("sale_mode", "invoiced");
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                  saleMode === "invoiced"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                )}
+              >
+                <span>📄 Invoiced (GST Bill)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSaleMode("cash");
+                  set("sale_mode", "cash");
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                  saleMode === "cash"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                )}
+              >
+                <span>🚚 Cash Sale (Challan · No GST)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSaleMode("hybrid");
+                  set("sale_mode", "hybrid");
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                  saleMode === "hybrid"
+                    ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                )}
+              >
+                <span>⚖️ Hybrid</span>
+              </button>
+            </div>
+            {saleMode === "cash" && (
+              <p className="text-[11px] text-emerald-700 font-medium mt-1.5">
+                GST percentage is removed (0%). Amounts are added as-is without tax. Only Delivery
+                Challans will be issued.
+              </p>
+            )}
+            {saleMode === "hybrid" && (
+              <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
+                <div>
+                  <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                    Cash Amount (Challan · No GST)
+                  </label>
+                  <NumericInput
+                    placeholder="0"
+                    value={form.hybrid_cash_amount != null ? String(form.hybrid_cash_amount) : ""}
+                    onChange={(v) => set("hybrid_cash_amount", v ? Number(v) : null)}
+                    min={0}
+                    allowDecimal
+                    className="h-8 text-xs bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                    Invoiced Amount (With GST Bill)
+                  </label>
+                  <NumericInput
+                    placeholder="0"
+                    value={
+                      form.hybrid_invoiced_amount != null ? String(form.hybrid_invoiced_amount) : ""
+                    }
+                    onChange={(v) => set("hybrid_invoiced_amount", v ? Number(v) : null)}
+                    min={0}
+                    allowDecimal
+                    className="h-8 text-xs bg-white"
+                  />
+                </div>
+              </div>
+            )}
+          </Field>
+
           <Field label="Category">
             <Select
               value={form.category ?? "none"}
@@ -261,9 +371,11 @@ function toDraft(row: QuoteItemRow): DraftRow {
 function LineItemsEditor({
   quoteId,
   defaultFulfilment,
+  saleMode = "invoiced",
 }: {
   quoteId: string;
   defaultFulfilment: string | null;
+  saleMode?: SaleMode;
 }) {
   const qc = useQueryClient();
   const itemsQuery = useQuery({
@@ -298,7 +410,7 @@ function LineItemsEditor({
         description: "New line",
         quantity: 1,
         unit_price: 0,
-        tax_pct: 0,
+        tax_pct: saleMode === "cash" ? 0 : 0,
         fulfilment: defaultFulfilment,
       }),
     onSuccess: () => invalidate(),
@@ -445,19 +557,46 @@ function LineItemsEditor({
           <div className="space-y-3">
             {rows.map((r, i) => {
               const original = originalsById.get(r.id);
+              const lineTaxPct = saleMode === "cash" ? 0 : Number(r.tax_pct) || 0;
               const lineTotal =
-                (Number(r.quantity) || 0) *
-                (Number(r.unit_price) || 0) *
-                (1 + (Number(r.tax_pct) || 0) / 100);
+                (Number(r.quantity) || 0) * (Number(r.unit_price) || 0) * (1 + lineTaxPct / 100);
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
                     <div className="md:col-span-3">
                       <label className="text-xs text-muted-foreground">Description</label>
-                      <Input
+                      <CatalogProductSelect
                         value={r.description}
-                        onChange={(e) => updateRow(r.id, "description", e.target.value)}
-                        onBlur={() => commit(r.id, "description", original)}
+                        onChange={(val) => {
+                          updateRow(r.id, "description", val);
+                          if (val.trim()) {
+                            patchMut.mutate({ id: r.id, patch: { description: val.trim() } });
+                          }
+                        }}
+                        onSelectCatalogItem={(prod) => {
+                          updateRow(r.id, "description", prod.name);
+                          const patchObj: Parameters<typeof updateQuoteItem>[1] = {
+                            description: prod.name,
+                          };
+                          if (prod.defaultUnit) {
+                            updateRow(r.id, "unit", prod.defaultUnit);
+                            patchObj.unit = prod.defaultUnit;
+                          }
+                          if (prod.hsnCode) {
+                            updateRow(r.id, "hsn_sac", prod.hsnCode);
+                            patchObj.hsn_sac = prod.hsnCode;
+                          }
+                          if (prod.defaultPrice && (!r.unit_price || Number(r.unit_price) === 0)) {
+                            updateRow(r.id, "unit_price", String(prod.defaultPrice));
+                            patchObj.unit_price = prod.defaultPrice;
+                          }
+                          if (saleMode === "cash") {
+                            updateRow(r.id, "tax_pct", "0");
+                            patchObj.tax_pct = 0;
+                          }
+                          patchMut.mutate({ id: r.id, patch: patchObj });
+                        }}
+                        placeholder="Search or enter product…"
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -501,11 +640,20 @@ function LineItemsEditor({
                     </div>
                     <div className="md:col-span-1">
                       <label className="text-xs text-muted-foreground">GST %</label>
-                      <PercentInput
-                        value={r.tax_pct}
-                        onChange={(val) => updateRow(r.id, "tax_pct", val)}
-                        onBlur={() => commit(r.id, "tax_pct", original)}
-                      />
+                      {saleMode === "cash" ? (
+                        <div
+                          title="Cash sale: 0% GST (Challan only)"
+                          className="h-9 px-2 flex items-center justify-center text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-200 rounded-md cursor-not-allowed"
+                        >
+                          0%
+                        </div>
+                      ) : (
+                        <PercentInput
+                          value={r.tax_pct}
+                          onChange={(val) => updateRow(r.id, "tax_pct", val)}
+                          onBlur={() => commit(r.id, "tax_pct", original)}
+                        />
+                      )}
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs text-muted-foreground">Fulfilment</label>

@@ -42,6 +42,7 @@ import {
   Layers,
   HardHat,
   Coins,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 
@@ -128,6 +129,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+    group: "overview",
+  },
+  {
+    id: "agent-centre",
+    to: "/agent-centre",
+    label: "Agent Centre",
+    icon: Bot,
     group: "overview",
   },
 

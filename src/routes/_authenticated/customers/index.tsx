@@ -243,6 +243,15 @@ function CustomersPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  function hasCustomerPlacedOrder(
+    c: CustomerRow,
+    orderInfo?: { activeOrderCount: number } | null,
+  ): boolean {
+    if ((orderInfo?.activeOrderCount ?? 0) > 0) return true;
+    const crmStatus = getCustomerResponseStatus(c);
+    return crmStatus === "order_placed" || crmStatus === "order_completed";
+  }
+
   const rows = useMemo(() => {
     let list = query.data ?? [];
     if (statusFilter !== "all") {
@@ -252,9 +261,12 @@ function CustomersPage() {
       list = list.filter((c) => getEffectiveCustomerType(c) === typeFilter);
     }
     if (paymentFilter !== "all") {
-      list = list.filter(
-        (c) => getCustomerPaymentStatus(c, ledgerQuery.data?.get(c.id)) === paymentFilter,
-      );
+      list = list.filter((c) => {
+        const orderInfo = customerOrderMap.get(c.id);
+        if (!hasCustomerPlacedOrder(c, orderInfo)) return false;
+        const ledgerSummary = ledgerQuery.data?.get(c.id);
+        return getCustomerPaymentStatus(c, ledgerSummary) === paymentFilter;
+      });
     }
     return [...list].sort((a, b) => {
       const orderA = customerOrderMap.get(a.id);
@@ -295,13 +307,16 @@ function CustomersPage() {
       payment_received: 0,
     };
     for (const c of query.data ?? []) {
-      const st = getCustomerPaymentStatus(c, ledgerQuery.data?.get(c.id));
+      const orderInfo = customerOrderMap.get(c.id);
+      if (!hasCustomerPlacedOrder(c, orderInfo)) continue;
+      const ledgerSummary = ledgerQuery.data?.get(c.id);
+      const st = getCustomerPaymentStatus(c, ledgerSummary);
       if (st in counts) {
         counts[st] = (counts[st] ?? 0) + 1;
       }
     }
     return counts;
-  }, [query.data, ledgerQuery.data]);
+  }, [query.data, ledgerQuery.data, customerOrderMap]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
@@ -740,13 +755,28 @@ function CustomersPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <CustomerPaymentStatusSelect
-                            customerId={c.id}
-                            customerName={c.name}
-                            workflowState={c.workflow_state}
-                            externalRef={c.external_ref}
-                            ledgerSummary={ledgerQuery.data?.get(c.id)}
-                          />
+                          {(() => {
+                            if (!hasCustomerPlacedOrder(c, orderInfo)) {
+                              return (
+                                <span
+                                  className="text-slate-400 font-mono text-xs pl-2"
+                                  title="No orders placed"
+                                >
+                                  —
+                                </span>
+                              );
+                            }
+                            const ledger = ledgerQuery.data?.get(c.id);
+                            return (
+                              <CustomerPaymentStatusSelect
+                                customerId={c.id}
+                                customerName={c.name}
+                                workflowState={c.workflow_state}
+                                externalRef={c.external_ref}
+                                ledgerSummary={ledger}
+                              />
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           {phone ? (
@@ -1080,7 +1110,7 @@ function CustomerFormDialog({
     }
   };
 
-  const toggleMaterial = (value: DbEnum<"material_interest">, checked: boolean) =>
+  const toggleMaterial = (value: string, checked: boolean) =>
     setForm((f) => {
       const current = f.material_interests ?? [];
       const next = checked ? [...current, value] : current.filter((v) => v !== value);

@@ -66,6 +66,8 @@ import {
   setQuoteStatus,
 } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { getQuoteSaleMode, getQuoteHybridSplit, SALE_MODE_CONFIG } from "@/lib/quotes/sale-mode";
 import type { DbTable } from "@/lib/types";
 import { invalidateQuote, invalidateInvoice, invalidateSalesOrder } from "@/lib/query-invalidation";
 
@@ -174,6 +176,8 @@ function QuoteDetailPage() {
   const canConvert = quote.status === "accepted";
   const isDraft = quote.status === "draft";
   const isAccepted = quote.status === "accepted";
+  const saleMode = getQuoteSaleMode(quote);
+  const hybridSplit = getQuoteHybridSplit(quote);
 
   return (
     <div>
@@ -188,7 +192,22 @@ function QuoteDetailPage() {
 
       <PageHeader
         title={quote.quote_no}
-        subtitle={`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}
+        subtitle={
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>{`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}</span>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
+                SALE_MODE_CONFIG[saleMode].badgeTone,
+              )}
+            >
+              <span
+                className={cn("h-1.5 w-1.5 rounded-full", SALE_MODE_CONFIG[saleMode].dotColor)}
+              />
+              {SALE_MODE_CONFIG[saleMode].label}
+            </span>
+          </div>
+        }
         actions={
           <DetailActionBar
             pin={{ entityType: "quote", entityId: quoteId, label: quote.quote_no }}
@@ -221,8 +240,12 @@ function QuoteDetailPage() {
                   <>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                      className={
+                        saleMode === "cash"
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                          : "border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                      }
+                      variant={saleMode === "cash" ? "default" : "outline"}
                       onClick={() =>
                         nav({
                           to: "/dispatch/new",
@@ -233,10 +256,14 @@ function QuoteDetailPage() {
                           },
                         })
                       }
-                      title="Generate delivery challan before invoice (for cash transactions)"
+                      title={
+                        saleMode === "cash"
+                          ? "Issue Delivery Challan for cash transaction (no tax invoice)"
+                          : "Issue Delivery Challan"
+                      }
                     >
-                      <Truck className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
-                      Delivery Challan (Cash Deal)
+                      <Truck className="mr-2 h-4 w-4" />
+                      {saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan"}
                     </Button>
                     <Button
                       size="sm"
@@ -280,14 +307,17 @@ function QuoteDetailPage() {
                   )}
                   {linkedSo.data ? "Open sales order" : "Convert to Sales Order"}
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => convertMut.mutate()}
-                  disabled={!canConvert || convertMut.isPending}
-                >
-                  {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
-                </Button>
+                {saleMode !== "cash" && (
+                  <Button
+                    size="sm"
+                    onClick={() => convertMut.mutate()}
+                    disabled={!canConvert || convertMut.isPending}
+                    title="Generate Tax Invoice"
+                  >
+                    {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
+                  </Button>
+                )}
                 <DocumentToolbar entity="quote" entityId={quoteId} />
               </>
             }
@@ -388,10 +418,22 @@ function QuoteDetailPage() {
               <div>
                 Subtotal: <span className="font-medium">{formatInr(quote.subtotal)}</span>
               </div>
-              <div>
-                Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span>
-              </div>
+              {saleMode === "cash" ? (
+                <div className="text-xs text-emerald-700 font-medium">
+                  GST (Cash Sale · No Tax): <span className="font-semibold">0% (₹0.00)</span>
+                </div>
+              ) : (
+                <div>
+                  Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span>
+                </div>
+              )}
               <div className="text-base font-semibold">Total: {formatInr(quote.total)}</div>
+              {saleMode === "hybrid" && (
+                <div className="text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded border border-purple-200 mt-1">
+                  Hybrid Split: Cash {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
+                  {formatInr(hybridSplit.invoicedAmount ?? 0)}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -424,7 +466,8 @@ function QuoteDetailPage() {
               </Select>
               {!canConvert && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Mark as <span className="font-medium">Accepted</span> to convert into an invoice.
+                  Mark as <span className="font-medium">Accepted</span> to{" "}
+                  {saleMode === "cash" ? "issue delivery challans." : "convert into an invoice."}
                 </p>
               )}
             </div>

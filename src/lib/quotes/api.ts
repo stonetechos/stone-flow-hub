@@ -93,6 +93,15 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     projectId = project.id;
     customerId = customer.id;
   }
+  const workflowState = {
+    sale_mode: parsed.sale_mode ?? "invoiced",
+    ...(parsed.hybrid_cash_amount !== undefined
+      ? { hybrid_cash_amount: parsed.hybrid_cash_amount }
+      : {}),
+    ...(parsed.hybrid_invoiced_amount !== undefined
+      ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
+      : {}),
+  };
 
   const { data: quote, error } = await getDb()
     .from("quotes")
@@ -105,12 +114,14 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
       wall_estimate: parsed.wall_estimate ?? null,
+      workflow_state: workflowState,
       ...(parsed.category ? { category: parsed.category } : {}),
     } as never)
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
 
+  const isCashSale = parsed.sale_mode === "cash";
   const rows = parsed.items.map((it, idx) => ({
     quote_id: quote.id,
     product_id: it.product_id ?? null,
@@ -118,7 +129,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     quantity: it.quantity,
     unit: it.unit ?? null,
     unit_price: it.unit_price,
-    tax_pct: it.tax_pct,
+    tax_pct: isCashSale ? 0 : it.tax_pct,
     hsn_sac: it.hsn_sac ?? null,
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
@@ -190,6 +201,26 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
 
 export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<QuoteRow> {
   const parsed = quoteUpdateSchema.parse(input);
+
+  // Fetch current quote to merge workflow_state
+  const { data: current } = await getDb()
+    .from("quotes")
+    .select("workflow_state")
+    .eq("id", id)
+    .maybeSingle();
+  const currentWf = (current?.workflow_state as Record<string, unknown> | null) ?? {};
+
+  const nextWf = {
+    ...currentWf,
+    ...(parsed.sale_mode ? { sale_mode: parsed.sale_mode } : {}),
+    ...(parsed.hybrid_cash_amount !== undefined
+      ? { hybrid_cash_amount: parsed.hybrid_cash_amount }
+      : {}),
+    ...(parsed.hybrid_invoiced_amount !== undefined
+      ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
+      : {}),
+  };
+
   const { data, error } = await getDb()
     .from("quotes")
     .update({
@@ -197,11 +228,24 @@ export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<
       notes: parsed.notes ?? null,
       terms: parsed.terms ?? null,
       category: parsed.category ?? null,
+      workflow_state: nextWf,
     } as never)
     .eq("id", id)
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (parsed.sale_mode === "cash") {
+    // When switching to cash sale, remove GST % from all line items
+    await getDb()
+      .from("quote_items")
+      .update({ tax_pct: 0 } as never)
+      .eq("quote_id", id);
+    // Reload quote to reflect new zero-tax totals
+    const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", id).single();
+    if (reloaded) return reloaded;
+  }
+
   return data;
 }
 

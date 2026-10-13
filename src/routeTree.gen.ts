@@ -34,6 +34,7 @@ import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCommunicationRouteImport } from './routes/_authenticated/communication'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedAgentCentreRouteImport } from './routes/_authenticated/agent-centre'
 import { Route as AuthenticatedAgencyPaymentsRouteImport } from './routes/_authenticated/agency-payments'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as VendorRfqsIndexRouteImport } from './routes/vendor/rfqs/index'
@@ -174,6 +175,7 @@ import { Route as ApiPublicHooksDispatchQueueRouteImport } from './routes/api/pu
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicHooksCustomerPaymentRemindersRouteImport } from './routes/api/public/hooks/customer-payment-reminders'
 import { Route as ApiPublicHooksAuthEmailRouteImport } from './routes/api/public/hooks/auth-email'
+import { Route as ApiPublicHooksAgentSuiteSchedulerRouteImport } from './routes/api/public/hooks/agent-suite-scheduler'
 import { Route as ApiPublicDiagnosticsEnvStatusRouteImport } from './routes/api/public/diagnostics/env-status'
 import { Route as AuthenticatedWorkforceIntelligenceRolesIdRouteImport } from './routes/_authenticated/workforce-intelligence/roles/$id'
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesNewRouteImport } from './routes/_authenticated/workforce-intelligence/employees/new'
@@ -322,6 +324,12 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgentCentreRoute =
+  AuthenticatedAgentCentreRouteImport.update({
+    id: '/agent-centre',
+    path: '/agent-centre',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAgencyPaymentsRoute =
   AuthenticatedAgencyPaymentsRouteImport.update({
     id: '/agency-payments',
@@ -1140,6 +1148,12 @@ const ApiPublicHooksAuthEmailRoute = ApiPublicHooksAuthEmailRouteImport.update({
   path: '/api/public/hooks/auth-email',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksAgentSuiteSchedulerRoute =
+  ApiPublicHooksAgentSuiteSchedulerRouteImport.update({
+    id: '/api/public/hooks/agent-suite-scheduler',
+    path: '/api/public/hooks/agent-suite-scheduler',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDiagnosticsEnvStatusRoute =
   ApiPublicDiagnosticsEnvStatusRouteImport.update({
     id: '/api/public/diagnostics/env-status',
@@ -1257,6 +1271,7 @@ export interface FileRoutesByFullPath {
   '/inquiry': typeof InquiryRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
+  '/agent-centre': typeof AuthenticatedAgentCentreRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -1415,6 +1430,7 @@ export interface FileRoutesByFullPath {
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/agent-suite-scheduler': typeof ApiPublicHooksAgentSuiteSchedulerRoute
   '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
@@ -1440,6 +1456,7 @@ export interface FileRoutesByTo {
   '/inquiry': typeof InquiryRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
+  '/agent-centre': typeof AuthenticatedAgentCentreRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -1598,6 +1615,7 @@ export interface FileRoutesByTo {
   '/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/agent-suite-scheduler': typeof ApiPublicHooksAgentSuiteSchedulerRoute
   '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
@@ -1626,6 +1644,7 @@ export interface FileRoutesById {
   '/inquiry': typeof InquiryRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agency-payments': typeof AuthenticatedAgencyPaymentsRoute
+  '/_authenticated/agent-centre': typeof AuthenticatedAgentCentreRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/communication': typeof AuthenticatedCommunicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -1784,6 +1803,7 @@ export interface FileRoutesById {
   '/_authenticated/workforce-intelligence/employees/new': typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   '/_authenticated/workforce-intelligence/roles/$id': typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   '/api/public/diagnostics/env-status': typeof ApiPublicDiagnosticsEnvStatusRoute
+  '/api/public/hooks/agent-suite-scheduler': typeof ApiPublicHooksAgentSuiteSchedulerRoute
   '/api/public/hooks/auth-email': typeof ApiPublicHooksAuthEmailRoute
   '/api/public/hooks/customer-payment-reminders': typeof ApiPublicHooksCustomerPaymentRemindersRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
@@ -1812,6 +1832,7 @@ export interface FileRouteTypes {
     | '/inquiry'
     | '/activity'
     | '/agency-payments'
+    | '/agent-centre'
     | '/calendar'
     | '/communication'
     | '/dashboard'
@@ -1970,6 +1991,7 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/agent-suite-scheduler'
     | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
@@ -1995,6 +2017,7 @@ export interface FileRouteTypes {
     | '/inquiry'
     | '/activity'
     | '/agency-payments'
+    | '/agent-centre'
     | '/calendar'
     | '/communication'
     | '/dashboard'
@@ -2153,6 +2176,7 @@ export interface FileRouteTypes {
     | '/workforce-intelligence/employees/new'
     | '/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/agent-suite-scheduler'
     | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
@@ -2180,6 +2204,7 @@ export interface FileRouteTypes {
     | '/inquiry'
     | '/_authenticated/activity'
     | '/_authenticated/agency-payments'
+    | '/_authenticated/agent-centre'
     | '/_authenticated/calendar'
     | '/_authenticated/communication'
     | '/_authenticated/dashboard'
@@ -2338,6 +2363,7 @@ export interface FileRouteTypes {
     | '/_authenticated/workforce-intelligence/employees/new'
     | '/_authenticated/workforce-intelligence/roles/$id'
     | '/api/public/diagnostics/env-status'
+    | '/api/public/hooks/agent-suite-scheduler'
     | '/api/public/hooks/auth-email'
     | '/api/public/hooks/customer-payment-reminders'
     | '/api/public/hooks/daily-digest'
@@ -2366,6 +2392,7 @@ export interface RootRouteChildren {
   InquiryRoute: typeof InquiryRoute
   PayLinkIdRoute: typeof PayLinkIdRoute
   ApiPublicDiagnosticsEnvStatusRoute: typeof ApiPublicDiagnosticsEnvStatusRoute
+  ApiPublicHooksAgentSuiteSchedulerRoute: typeof ApiPublicHooksAgentSuiteSchedulerRoute
   ApiPublicHooksAuthEmailRoute: typeof ApiPublicHooksAuthEmailRoute
   ApiPublicHooksCustomerPaymentRemindersRoute: typeof ApiPublicHooksCustomerPaymentRemindersRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
@@ -2553,6 +2580,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agent-centre': {
+      id: '/_authenticated/agent-centre'
+      path: '/agent-centre'
+      fullPath: '/agent-centre'
+      preLoaderRoute: typeof AuthenticatedAgentCentreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/agency-payments': {
@@ -3535,6 +3569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksAuthEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/agent-suite-scheduler': {
+      id: '/api/public/hooks/agent-suite-scheduler'
+      path: '/api/public/hooks/agent-suite-scheduler'
+      fullPath: '/api/public/hooks/agent-suite-scheduler'
+      preLoaderRoute: typeof ApiPublicHooksAgentSuiteSchedulerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/diagnostics/env-status': {
       id: '/api/public/diagnostics/env-status'
       path: '/api/public/diagnostics/env-status'
@@ -3818,6 +3859,7 @@ const AuthenticatedVendorsVendorIdRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedAgencyPaymentsRoute: typeof AuthenticatedAgencyPaymentsRoute
+  AuthenticatedAgentCentreRoute: typeof AuthenticatedAgentCentreRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCommunicationRoute: typeof AuthenticatedCommunicationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -3967,6 +4009,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedAgencyPaymentsRoute: AuthenticatedAgencyPaymentsRoute,
+  AuthenticatedAgentCentreRoute: AuthenticatedAgentCentreRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCommunicationRoute: AuthenticatedCommunicationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -4209,6 +4252,8 @@ const rootRouteChildren: RootRouteChildren = {
   InquiryRoute: InquiryRoute,
   PayLinkIdRoute: PayLinkIdRoute,
   ApiPublicDiagnosticsEnvStatusRoute: ApiPublicDiagnosticsEnvStatusRoute,
+  ApiPublicHooksAgentSuiteSchedulerRoute:
+    ApiPublicHooksAgentSuiteSchedulerRoute,
   ApiPublicHooksAuthEmailRoute: ApiPublicHooksAuthEmailRoute,
   ApiPublicHooksCustomerPaymentRemindersRoute:
     ApiPublicHooksCustomerPaymentRemindersRoute,

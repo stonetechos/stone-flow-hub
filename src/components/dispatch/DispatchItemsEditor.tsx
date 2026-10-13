@@ -16,18 +16,22 @@ import { listSalesOrderItems } from "@/lib/sales-orders/api";
 import { getSalesOrderDeliveryStatus } from "@/lib/dispatch/api";
 import type { DispatchItemInput } from "@/lib/dispatch/schema";
 
+import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
+
 /**
- * Editor for delivery-challan line items. If a sales order is selected,
+ * Editor for delivery-challan line items. If a sales order or quotation is selected,
  * we pre-fill the grid from its line items and show ordered / already-delivered
  * / remaining. Quantity defaults to the remaining amount.
  */
 export function DispatchItemsEditor({
   salesOrderId,
+  quoteId,
   value,
   onChange,
   excludeDispatchId,
 }: {
-  salesOrderId: string | null | undefined;
+  salesOrderId?: string | null;
+  quoteId?: string | null;
   value: DispatchItemInput[];
   onChange: (rows: DispatchItemInput[]) => void;
   /** When editing, exclude this challan's own quantities from the "delivered" total */
@@ -81,8 +85,8 @@ export function DispatchItemsEditor({
         product_id: null,
         product_name: "",
         description: "",
-        unit: "",
-        quantity: 0,
+        unit: "sqft",
+        quantity: 1,
         sort_order: value.length,
       },
     ]);
@@ -95,12 +99,12 @@ export function DispatchItemsEditor({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Item</TableHead>
+              <TableHead className="min-w-[240px]">Item / Product</TableHead>
               <TableHead className="text-right">Ordered</TableHead>
               <TableHead className="text-right">Already delivered</TableHead>
               <TableHead className="text-right">Remaining</TableHead>
-              <TableHead className="text-right">This challan</TableHead>
-              <TableHead>Unit</TableHead>
+              <TableHead className="text-right min-w-[100px]">This challan qty</TableHead>
+              <TableHead className="min-w-[80px]">Unit</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -108,9 +112,9 @@ export function DispatchItemsEditor({
             {value.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="p-4 text-center text-sm text-muted-foreground">
-                  {salesOrderId
-                    ? "Pick a sales order first — items will be pre-filled."
-                    : "No line items added yet."}
+                  {salesOrderId || quoteId
+                    ? "No items in this delivery challan. Click “Add line” or pick an order."
+                    : "No line items added yet. Click “Add line” to add products."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -125,19 +129,29 @@ export function DispatchItemsEditor({
                 const remaining = s ? Math.max(0, ordered - delivered) : Number(r.quantity);
                 return (
                   <TableRow key={idx}>
-                    <TableCell className="align-top">
-                      <div className="font-medium">
-                        <Input
-                          value={r.product_name ?? ""}
-                          onChange={(e) => update(idx, { product_name: e.target.value })}
-                          placeholder="Product"
-                        />
-                      </div>
+                    <TableCell className="align-top space-y-1.5">
+                      <CatalogProductSelect
+                        value={r.product_name || r.description}
+                        onChange={(val) =>
+                          update(idx, {
+                            product_name: val,
+                            description: r.description || val,
+                          })
+                        }
+                        onSelectCatalogItem={(cat) => {
+                          update(idx, {
+                            product_name: cat.name,
+                            description: cat.name,
+                            unit: cat.defaultUnit,
+                          });
+                        }}
+                        placeholder="Select stone, adhesive or sealer…"
+                      />
                       <Input
-                        className="mt-1"
                         value={r.description}
                         onChange={(e) => update(idx, { description: e.target.value })}
-                        placeholder="Description"
+                        placeholder="Description / dimensions / finish details"
+                        className="text-xs h-8"
                       />
                     </TableCell>
                     <TableCell className="text-right align-top text-sm">

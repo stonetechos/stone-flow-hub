@@ -50,6 +50,9 @@ export const quoteCreateSchema = z
     valid_until: zOptional(),
     notes: zOptional(),
     terms: zOptional(),
+    sale_mode: z.enum(["invoiced", "cash", "hybrid"]).default("invoiced").optional(),
+    hybrid_cash_amount: z.coerce.number().min(0).nullable().optional(),
+    hybrid_invoiced_amount: z.coerce.number().min(0).nullable().optional(),
     items: z.array(quoteItemInputSchema).min(1, "Add at least one line item"),
     /** Estimate Studio calculator worksheet (walls, products, installation,
      *  discount) that produced these items, when the quote was created via
@@ -88,5 +91,8 @@ export const quoteUpdateSchema = z.object({
   valid_until: zOptional(),
   notes: zOptional(),
   terms: zOptional(),
+  sale_mode: z.enum(["invoiced", "cash", "hybrid"]).optional(),
+  hybrid_cash_amount: z.coerce.number().min(0).nullable().optional(),
+  hybrid_invoiced_amount: z.coerce.number().min(0).nullable().optional(),
 });
 export type QuoteUpdateInput = z.infer<typeof quoteUpdateSchema>;

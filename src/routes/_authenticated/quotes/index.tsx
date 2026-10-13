@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Boxes,
   PackageCheck,
+  Truck,
 } from "lucide-react";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -21,6 +22,13 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
+import { CatalogProductSelect } from "@/components/quotes/CatalogProductSelect";
+import {
+  getQuoteSaleMode,
+  getQuoteHybridSplit,
+  SALE_MODE_CONFIG,
+  type SaleMode,
+} from "@/lib/quotes/sale-mode";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -107,11 +115,15 @@ function QuotesPage() {
   const [vendorFilter, setVendorFilter] = useState<
     "all" | "accepted" | "unassigned" | "assigned" | "in_stock"
   >("all");
+  const [saleModeFilter, setSaleModeFilter] = useState<"all" | "invoiced" | "cash" | "hybrid">(
+    "all",
+  );
   const [assigningQuote, setAssigningQuote] = useState<QuoteListItem | null>(null);
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "Quote / Customer", required: true },
+      { key: "saleMode", label: "Sale Mode" },
       { key: "date", label: "Quote Date" },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
@@ -141,7 +153,15 @@ function QuotesPage() {
     let unassigned = 0;
     let assigned = 0;
     let inStock = 0;
+    let invoiced = 0;
+    let cash = 0;
+    let hybrid = 0;
     for (const r of all) {
+      const mode = getQuoteSaleMode(r);
+      if (mode === "cash") cash++;
+      else if (mode === "hybrid") hybrid++;
+      else invoiced++;
+
       if (r.status === "accepted") {
         accepted++;
         const a = parseQuoteVendorAssignment(r);
@@ -154,11 +174,14 @@ function QuotesPage() {
         }
       }
     }
-    return { all: all.length, accepted, unassigned, assigned, inStock };
+    return { all: all.length, accepted, unassigned, assigned, inStock, invoiced, cash, hybrid };
   }, [query.data]);
 
   const rows = useMemo(() => {
     let list = query.data ?? [];
+    if (saleModeFilter !== "all") {
+      list = list.filter((r) => getQuoteSaleMode(r) === saleModeFilter);
+    }
     if (vendorFilter === "accepted") {
       list = list.filter((r) => r.status === "accepted");
     } else if (vendorFilter === "unassigned") {
@@ -181,9 +204,9 @@ function QuotesPage() {
       list = list.filter((r) => r.status === statusFilter);
     }
     return list;
-  }, [query.data, vendorFilter, statusFilter]);
+  }, [query.data, saleModeFilter, vendorFilter, statusFilter]);
 
-  useEffect(() => setPage(1), [dq, statusFilter, vendorFilter]);
+  useEffect(() => setPage(1), [dq, statusFilter, vendorFilter, saleModeFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   function toggleCompare(id: string) {
@@ -212,6 +235,77 @@ function QuotesPage() {
     <div>
       <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
 
+      {/* Mode of Sale Sub-Tabs: Cash Sales vs Invoiced Sales vs Hybrid */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2">
+        <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
+          <FileText className="h-3.5 w-3.5 text-slate-400" />
+          <span>Mode of Sale:</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setSaleModeFilter("all");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
+            saleModeFilter === "all"
+              ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
+              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+          )}
+        >
+          All Quotes ({quoteCounts.all})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSaleModeFilter("invoiced");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            saleModeFilter === "invoiced"
+              ? "bg-blue-700 text-white border-blue-700 shadow-2xs font-semibold"
+              : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+          )}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          Invoiced Sales · Tax Bills ({quoteCounts.invoiced})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSaleModeFilter("cash");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            saleModeFilter === "cash"
+              ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
+              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+          )}
+        >
+          <Truck className="h-3.5 w-3.5 text-emerald-600" />
+          Cash Sales · Challans Only ({quoteCounts.cash})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSaleModeFilter("hybrid");
+            setPage(1);
+          }}
+          className={cn(
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            saleModeFilter === "hybrid"
+              ? "bg-purple-700 text-white border-purple-700 shadow-2xs font-semibold"
+              : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100",
+          )}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+          Hybrid ({quoteCounts.hybrid})
+        </button>
+      </div>
+
       {/* Quick Order / Vendor Sub-Tabs Filter */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3">
         <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
@@ -232,7 +326,7 @@ function QuotesPage() {
               : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
           )}
         >
-          All Quotes ({quoteCounts.all})
+          All ({quoteCounts.all})
         </button>
         <button
           type="button"
@@ -380,6 +474,7 @@ function QuotesPage() {
               <TableRow>
                 <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
+                {!isHidden("saleMode") && <TableHead className="w-36">Sale Mode</TableHead>}
                 {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
@@ -419,6 +514,39 @@ function QuotesPage() {
                             {r.quote_no}
                           </Link>
                         </div>
+                      </TableCell>
+                    )}
+                    {!isHidden("saleMode") && (
+                      <TableCell>
+                        {(() => {
+                          const mode = getQuoteSaleMode(r);
+                          const cfg = SALE_MODE_CONFIG[mode];
+                          return (
+                            <div className="flex flex-col gap-1 items-start">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold border",
+                                  cfg.badgeTone,
+                                )}
+                              >
+                                <span
+                                  className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
+                                />
+                                <span>{cfg.shortLabel}</span>
+                              </span>
+                              {mode === "cash" && (
+                                <Link
+                                  to="/dispatch/new"
+                                  search={{ quote: r.id, customer: r.customer_id }}
+                                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:underline"
+                                >
+                                  <Truck className="h-3 w-3" />
+                                  <span>Challan Only</span>
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                     )}
                     {!isHidden("date") && (
@@ -551,10 +679,23 @@ function QuotesPage() {
                     <TableCell>
                       <RowActions
                         extra={
-                          <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
-                            <Building2 className="mr-2 h-4 w-4" />
-                            Assign Vendor / Delivery Date
-                          </DropdownMenuItem>
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                nav({
+                                  to: "/dispatch/new",
+                                  search: { quote: r.id, customer: r.customer_id },
+                                })
+                              }
+                            >
+                              <Truck className="mr-2 h-4 w-4 text-emerald-600" />
+                              Issue Delivery Challan
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
+                              <Building2 className="mr-2 h-4 w-4" />
+                              Assign Vendor / Delivery Date
+                            </DropdownMenuItem>
+                          </>
                         }
                         onEdit={() =>
                           nav({ to: "/quotes/$quoteId/edit", params: { quoteId: r.id } })
@@ -636,7 +777,7 @@ type FormItem = {
   fulfilment: QuoteCategory | "";
 };
 
-function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
+function emptyItem(defaultFulfilment: QuoteCategory | "" = "", isCash = false): FormItem {
   return {
     key: Math.random().toString(36).slice(2),
     product_id: null,
@@ -644,7 +785,7 @@ function emptyItem(defaultFulfilment: QuoteCategory | "" = ""): FormItem {
     quantity: "",
     unit: "sqft",
     unit_price: "",
-    tax_pct: "18",
+    tax_pct: isCash ? "0" : "18",
     hsn_sac: "",
     fulfilment: defaultFulfilment,
   };
@@ -667,10 +808,13 @@ function CreateQuoteDialog({
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
   const [customerId, setCustomerId] = useState("");
   const [category, setCategory] = useState<QuoteCategory | "">("");
+  const [saleMode, setSaleMode] = useState<SaleMode>("invoiced");
+  const [hybridCashAmount, setHybridCashAmount] = useState("");
+  const [hybridInvoicedAmount, setHybridInvoicedAmount] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
-  const [items, setItems] = useState<FormItem[]>([emptyItem("")]);
+  const [items, setItems] = useState<FormItem[]>([emptyItem("", false)]);
   const [mode, setMode] = useState<"manual" | "calculator">("manual");
   const [calcResult, setCalcResult] = useState<EstimateStudioResult | null>(null);
 
@@ -679,10 +823,13 @@ function CreateQuoteDialog({
       setProjectId(initialProjectId ?? "");
       setCustomerId("");
       setCategory("");
+      setSaleMode("invoiced");
+      setHybridCashAmount("");
+      setHybridInvoicedAmount("");
       setValidUntil("");
       setNotes("");
       setTerms("");
-      setItems([emptyItem("")]);
+      setItems([emptyItem("", false)]);
       setMode("manual");
       setCalcResult(null);
     }
@@ -694,10 +841,16 @@ function CreateQuoteDialog({
     for (const it of items) {
       const line = Number(it.quantity || 0) * Number(it.unit_price || 0);
       sub += line;
-      tax += (line * Number(it.tax_pct || 0)) / 100;
+      if (saleMode !== "cash") {
+        tax += (line * Number(it.tax_pct || 0)) / 100;
+      }
     }
-    return { sub, tax, total: sub + tax };
-  }, [items]);
+    return {
+      sub,
+      tax: saleMode === "cash" ? 0 : tax,
+      total: saleMode === "cash" ? sub : sub + tax,
+    };
+  }, [items, saleMode]);
 
   const mutation = useMutation({
     mutationFn: createQuote,
@@ -742,7 +895,15 @@ function CreateQuoteDialog({
         valid_until: validUntil || null,
         notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
         terms: terms || null,
-        items: calcResult.items,
+        sale_mode: saleMode,
+        hybrid_cash_amount:
+          saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
+        hybrid_invoiced_amount:
+          saleMode === "hybrid" && hybridInvoicedAmount ? Number(hybridInvoicedAmount) : undefined,
+        items: calcResult.items.map((it) => ({
+          ...it,
+          tax_pct: saleMode === "cash" ? 0 : it.tax_pct,
+        })),
         wall_estimate: calcResult.worksheet,
       });
       return;
@@ -756,7 +917,7 @@ function CreateQuoteDialog({
         quantity: it.quantity,
         unit: it.unit,
         unit_price: it.unit_price === "" ? 0 : it.unit_price,
-        tax_pct: it.tax_pct === "" ? 0 : it.tax_pct,
+        tax_pct: saleMode === "cash" ? 0 : it.tax_pct === "" ? 0 : it.tax_pct,
         hsn_sac: it.hsn_sac || null,
         fulfilment: it.fulfilment || null,
       });
@@ -771,6 +932,11 @@ function CreateQuoteDialog({
       valid_until: validUntil || null,
       notes: notes || null,
       terms: terms || null,
+      sale_mode: saleMode,
+      hybrid_cash_amount:
+        saleMode === "hybrid" && hybridCashAmount ? Number(hybridCashAmount) : undefined,
+      hybrid_invoiced_amount:
+        saleMode === "hybrid" && hybridInvoicedAmount ? Number(hybridInvoicedAmount) : undefined,
       items: parsedItems,
     });
   }
@@ -849,6 +1015,100 @@ function CreateQuoteDialog({
               </Select>
             </Field>
 
+            <Field label="Mode of Sale" className="md:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSaleMode("invoiced");
+                    setItems((prev) =>
+                      prev.map((it) => ({
+                        ...it,
+                        tax_pct: it.tax_pct === "0" ? "18" : it.tax_pct,
+                      })),
+                    );
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "invoiced"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>Invoiced Sale (GST Bill)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSaleMode("cash");
+                    setItems((prev) => prev.map((it) => ({ ...it, tax_pct: "0" })));
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "cash"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <Truck className="h-3.5 w-3.5" />
+                  <span>Cash Sale (Challan Only · No GST)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSaleMode("hybrid")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "hybrid"
+                      ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                  <span>Hybrid (Invoiced + Cash)</span>
+                </button>
+              </div>
+              {saleMode === "cash" && (
+                <p className="text-[11px] text-emerald-700 font-medium mt-1.5 flex items-center gap-1">
+                  <Truck className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    GST percentage is removed. Amounts are added as-is without tax. Only Delivery
+                    Challans will be sent.
+                  </span>
+                </p>
+              )}
+              {saleMode === "hybrid" && (
+                <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
+                  <div>
+                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                      Cash Amount (Challan · No GST)
+                    </label>
+                    <NumericInput
+                      placeholder="0"
+                      value={hybridCashAmount}
+                      onChange={setHybridCashAmount}
+                      min={0}
+                      allowDecimal
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                      Invoiced Amount (With GST Bill)
+                    </label>
+                    <NumericInput
+                      placeholder="0"
+                      value={hybridInvoicedAmount}
+                      onChange={setHybridInvoicedAmount}
+                      min={0}
+                      allowDecimal
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+            </Field>
+
             {mode === "manual" && (
               <div className="md:col-span-2">
                 <div className="mb-2 flex items-center justify-between">
@@ -857,7 +1117,9 @@ function CreateQuoteDialog({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setItems((p) => [...p, emptyItem(category)])}
+                    onClick={() =>
+                      setItems((p) => [...p, emptyItem(category, saleMode === "cash")])
+                    }
                   >
                     <Plus className="mr-1 h-3 w-3" /> Add line
                   </Button>
@@ -868,11 +1130,29 @@ function CreateQuoteDialog({
                       key={it.key}
                       className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
                     >
-                      <LineField label="Description" className="col-span-12 md:col-span-3">
-                        <Input
-                          placeholder="e.g. Monsoon Black Crazy"
+                      <LineField
+                        label="Description / Product"
+                        className="col-span-12 md:col-span-3"
+                      >
+                        <CatalogProductSelect
                           value={it.description}
-                          onChange={(e) => updateItem(it.key, { description: e.target.value })}
+                          onChange={(val) => updateItem(it.key, { description: val })}
+                          onSelectCatalogItem={(cat) => {
+                            updateItem(it.key, {
+                              description: cat.name,
+                              unit: cat.defaultUnit,
+                              unit_price: cat.defaultPrice
+                                ? String(cat.defaultPrice)
+                                : it.unit_price,
+                              hsn_sac: cat.hsnCode || it.hsn_sac,
+                              tax_pct:
+                                saleMode === "cash"
+                                  ? "0"
+                                  : cat.defaultTaxPct !== undefined
+                                    ? String(cat.defaultTaxPct)
+                                    : it.tax_pct,
+                            });
+                          }}
                         />
                       </LineField>
                       <LineField label="HSN Code" className="col-span-6 md:col-span-2">
@@ -912,11 +1192,20 @@ function CreateQuoteDialog({
                         />
                       </LineField>
                       <LineField label="GST %" className="col-span-6 md:col-span-1">
-                        <PercentInput
-                          placeholder="0"
-                          value={it.tax_pct}
-                          onChange={(val) => updateItem(it.key, { tax_pct: val })}
-                        />
+                        {saleMode === "cash" ? (
+                          <div
+                            className="h-9 px-2 flex items-center justify-center text-xs font-semibold text-slate-400 bg-slate-50 border rounded-md"
+                            title="0% GST for Cash Sale"
+                          >
+                            0%
+                          </div>
+                        ) : (
+                          <PercentInput
+                            placeholder="0"
+                            value={it.tax_pct}
+                            onChange={(val) => updateItem(it.key, { tax_pct: val })}
+                          />
+                        )}
                       </LineField>
                       <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
                         <Select
@@ -959,10 +1248,20 @@ function CreateQuoteDialog({
                   <div>
                     Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
                   </div>
+                  {saleMode !== "cash" && (
+                    <div>
+                      Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
+                    </div>
+                  )}
                   <div>
-                    Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
+                    Total:{" "}
+                    <span className="font-bold text-slate-900">{formatInr(totals.total)}</span>
+                    {saleMode === "cash" && (
+                      <span className="text-[11px] text-emerald-700 ml-1.5 font-semibold">
+                        (Cash · No GST)
+                      </span>
+                    )}
                   </div>
-                  <div className="font-semibold">Total: {formatInr(totals.total)}</div>
                 </div>
               </div>
             )}

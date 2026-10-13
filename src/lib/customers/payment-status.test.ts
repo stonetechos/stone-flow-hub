@@ -105,4 +105,24 @@ describe("getCustomerPaymentStatus", () => {
     expect(CUSTOMER_PAYMENT_STATUS_CONFIG.no_dues).toBeDefined();
     expect(CUSTOMER_PAYMENT_STATUS_CONFIG.no_dues.value).toBe("no_dues");
   });
+
+  it("verifies MATERIAL_OPTIONS contains the complete 29-product range including marble, granite, waterfall, fountain", async () => {
+    const { MATERIAL_OPTIONS } = await import("./schema");
+    expect(MATERIAL_OPTIONS.length).toBe(29);
+    const keys = MATERIAL_OPTIONS.map((m) => m.value);
+    expect(keys).toContain("italian_marble_slabs");
+    expect(keys).toContain("indian_marble_slabs");
+    expect(keys).toContain("granite_slabs");
+    expect(keys).toContain("limestone_slabs");
+    expect(keys).toContain("cobblestone");
+    expect(keys).toContain("pebblestone");
+    expect(keys).toContain("boulders");
+    expect(keys).toContain("sculptures");
+    expect(keys).toContain("custom_stone_basins");
+    expect(keys).toContain("waterfall");
+    expect(keys).toContain("fountain");
+    expect(keys).toContain("temple_work_handcrafting");
+    expect(keys).toContain("stone_veneer");
+    expect(keys).toContain("clay_veneers");
+  });
 });

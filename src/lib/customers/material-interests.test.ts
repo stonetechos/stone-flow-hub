@@ -85,4 +85,21 @@ describe("material-interests fallback helpers", () => {
     expect(hydrated).toContain("stone_veneer");
     expect(hydrated).toContain("clay_veneers");
   });
+
+  it("sanitizes and hydrates expanded stone range like Italian Marble and Waterfalls", () => {
+    const sanitized = sanitizeForPendingDbEnum(
+      ["italian_marble_slabs", "waterfall", "general_flooring"],
+      "Discussed villa interior & landscape",
+    );
+    // general_flooring is native in PostgreSQL enum; italian_marble_slabs and waterfall are preserved in notes
+    expect(sanitized.filteredInterests).toEqual(["general_flooring"]);
+    expect(sanitized.hasPending).toBe(true);
+    expect(sanitized.sanitizedNotes).toContain("[Products of Interest: Italian Marble Slabs]");
+    expect(sanitized.sanitizedNotes).toContain("[Products of Interest: Waterfall]");
+
+    const hydrated = hydrateMaterialInterests(["general_flooring"], sanitized.sanitizedNotes);
+    expect(hydrated).toContain("general_flooring");
+    expect(hydrated).toContain("italian_marble_slabs");
+    expect(hydrated).toContain("waterfall");
+  });
 });

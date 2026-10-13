@@ -26,7 +26,8 @@ import {
   type DispatchItemInput,
 } from "@/lib/dispatch/schema";
 import { getSalesOrder, listSalesOrdersForPicker } from "@/lib/sales-orders/api";
-import { getQuote, getQuoteItems } from "@/lib/quotes/api";
+import { getQuote, getQuoteItems, listQuotes } from "@/lib/quotes/api";
+import { formatInr } from "@/lib/format";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
 import { CartingAgencySelect } from "@/components/dispatch/CartingAgencySelect";
@@ -52,9 +53,16 @@ function NewDispatchPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const params = Route.useSearch();
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(params.quote ?? null);
+
   const orders = useQuery({
     queryKey: qk.salesOrders.list("", ""),
     queryFn: listSalesOrdersForPicker,
+  });
+
+  const quotesList = useQuery({
+    queryKey: qk.quotes.list(""),
+    queryFn: () => listQuotes(""),
   });
 
   const [form, setForm] = useState<DispatchCreateInput>({
@@ -80,6 +88,37 @@ function NewDispatchPage() {
 
   const set = <K extends keyof DispatchCreateInput>(k: K, v: DispatchCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  const handleQuoteSelect = async (quoteId: string | null) => {
+    setSelectedQuoteId(quoteId);
+    if (!quoteId) return;
+    try {
+      const [quote, quoteItems] = await Promise.all([getQuote(quoteId), getQuoteItems(quoteId)]);
+      if (quote) {
+        setForm((f) => ({
+          ...f,
+          customer_id: f.customer_id ?? quote.customer_id,
+          project_id: f.project_id ?? quote.project_id,
+          notes: f.notes ?? `Delivery challan for Quote #${quote.quote_no}`,
+        }));
+        if (quoteItems && quoteItems.length > 0) {
+          setItems(
+            quoteItems.map((qi, idx) => ({
+              product_id: qi.product_id,
+              product_name: qi.description || null,
+              description: qi.description || "Stone item",
+              unit: qi.unit || "sqft",
+              quantity: Number(qi.quantity) || 1,
+              sort_order: idx + 1,
+            })),
+          );
+          toast.success(`Loaded ${quoteItems.length} items from Quote #${quote.quote_no}`);
+        }
+      }
+    } catch (e) {
+      toast.error("Failed to load quotation line items");
+    }
+  };
 
   // Preload carting default + customer/project when SO chosen
   useQuery({
@@ -223,6 +262,24 @@ function NewDispatchPage() {
         </QuickForm.QuickFill>
 
         <QuickForm.MoreDetails>
+          <Field label="Quotation (Cash Sale / Pull Line Items)">
+            <Select
+              value={selectedQuoteId ?? "none"}
+              onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select quotation to pull items…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None (Custom Challan) —</SelectItem>
+                {(quotesList.data ?? []).map((q) => (
+                  <SelectItem key={q.id} value={q.id}>
+                    {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Sales order (optional)">
             <Select
               value={form.sales_order_id ?? "none"}
@@ -314,16 +371,30 @@ function NewDispatchPage() {
               onChange={(e) => set("site_address", e.target.value || null)}
             />
           </Field>
-        </QuickForm.MoreDetails>
 
-        <QuickForm.Advanced>
-          <Field label="Material" className="md:col-span-2">
+          {/* Prominent Delivery Challan Line Items */}
+          <div className="md:col-span-2 rounded-lg border bg-card p-4 space-y-3 mt-2 shadow-2xs">
+            <div className="flex items-center justify-between border-b pb-2">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary" />
+                  <span>Delivery Challan Line Items (Products, Adhesives & Sealers)</span>
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Specify stone products, adhesives, and sealers to accompany this delivery.
+                </p>
+              </div>
+            </div>
             <DispatchItemsEditor
               salesOrderId={form.sales_order_id ?? null}
+              quoteId={selectedQuoteId ?? null}
               value={items}
               onChange={setItems}
             />
-          </Field>
+          </div>
+        </QuickForm.MoreDetails>
+
+        <QuickForm.Advanced>
           <Field label="Remarks" className="md:col-span-2">
             <Textarea
               rows={2}

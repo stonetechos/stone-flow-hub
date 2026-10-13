@@ -66,6 +66,8 @@ import {
   type PublicInquiryResult,
 } from "@/lib/enquiries/public-inquiry.functions";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+import { StonemanMascot } from "@/components/mascot/StonemanMascot";
+import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -97,12 +99,106 @@ interface ProductOption {
 }
 
 const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
+  // Slabs & Stone Types
   {
-    id: "stone_veneer",
-    name: "Stone Veneer",
-    tagline:
-      "Ultra-thin, flexible natural slate & quartzite sheets for walls, ceilings & furniture",
+    id: "italian_marble_slabs",
+    name: "Italian Marble Slabs",
+    tagline: "Imported luxury bookmatched Italian marble slabs for high-end villas & lobbies",
     popular: true,
+  },
+  {
+    id: "indian_marble_slabs",
+    name: "Indian Marble Slabs",
+    tagline: "Pure Makrana, Ambaji white, and premium Indian marble slabs",
+    popular: true,
+  },
+  {
+    id: "granite_slabs",
+    name: "Granite Slabs",
+    tagline: "Exotic and architectural high-durability natural granite slabs",
+    popular: true,
+  },
+  {
+    id: "limestone_slabs",
+    name: "Limestone Slabs",
+    tagline: "Natural cleft and calibrated Kota & limestone slabs for exterior elevations",
+  },
+  {
+    id: "cobblestone",
+    name: "Cobblestone",
+    tagline: "Heavy-duty cleft natural stone cobblestones for driveways & pathways",
+  },
+  {
+    id: "pebblestone",
+    name: "Pebblestone",
+    tagline: "Polished river pebbles and tumbled landscaping stones",
+  },
+  {
+    id: "boulders",
+    name: "Boulders",
+    tagline: "Large natural rock monoliths and landscape garden boulders",
+  },
+  {
+    id: "sculptures",
+    name: "Sculptures",
+    tagline: "Hand-carved architectural stone statues and bespoke artistic sculptures",
+  },
+  {
+    id: "custom_stone_basins",
+    name: "Custom Stone Basins",
+    tagline: "Monolithic hand-carved stone washbasins and natural vanity bowls",
+  },
+  {
+    id: "agate_stone_articles",
+    name: "Agate Stone Articles",
+    tagline: "Exclusive semi-precious agate artifacts and luxury home decor",
+  },
+  {
+    id: "waterfall",
+    name: "Waterfall",
+    tagline: "Cascading architectural natural stone waterfalls and water features",
+  },
+  {
+    id: "fountain",
+    name: "Fountain",
+    tagline: "Classical and contemporary hand-carved stone fountains",
+  },
+  {
+    id: "temple_work_handcrafting",
+    name: "Temple Work Handcrafting",
+    tagline: "Sacred mandir stone architecture, intricately carved pillars & jaalis",
+  },
+  // Cladding, Flooring & Special Articles
+  {
+    id: "natural_stone_cladding_tiles",
+    name: "Natural Stone Cladding Tiles",
+    tagline: "Precision-cut natural stone tiles for wall cladding & elevations",
+  },
+  {
+    id: "natural_stone_interlocking_panels",
+    name: "Natural Stone Interlocking Panels",
+    tagline: "Seamless 3D textured ledgestone & interlocking elevation panels",
+    popular: true,
+  },
+  {
+    id: "natural_stone_mosaics",
+    name: "Natural Stone Mosaics",
+    tagline: "Artistic geometric mosaic patterns and handcrafted mesh tiles",
+  },
+  {
+    id: "stone_murals",
+    name: "Stone Murals",
+    tagline: "CNC 3D carved temple mandirs, artistic jaalis & stone wall sculptures",
+  },
+  {
+    id: "inlay_work",
+    name: "Inlay Work",
+    tagline: "Waterjet geometric medallions, floral Pietra Dura floor inlays & brass borders",
+  },
+  {
+    id: "table_top",
+    name: "Table Top",
+    tagline: "Luxury dining tables, kitchen waterfall islands & stone vanity counters",
   },
   {
     id: "custom_stone_cladding",
@@ -111,44 +207,50 @@ const MASTER_PRODUCT_OPTIONS: ProductOption[] = [
     popular: true,
   },
   {
-    id: "interlocking_panels",
-    name: "Interlocking Panels",
-    tagline: "Seamless 3D textured ledgestone & interlocking elevation panels",
-    popular: true,
+    id: "crazy_pattern_in_stone",
+    name: "Crazy Pattern in Stone",
+    tagline: "Artisanal random irregular flagstone paving and crazy flooring",
   },
   {
-    id: "stone_mosaics_inlay",
-    name: "Stone Mosaics & Inlay",
-    tagline: "Waterjet geometric medallions, floral floor inlays & brass borders",
+    id: "general_flooring",
+    name: "General Flooring",
+    tagline: "Precision calibrated natural stone flooring slabs and tiles",
   },
   {
-    id: "stone_murals_carvings",
-    name: "Stone Murals & Carvings",
-    tagline: "CNC 3D carved temple mandirs, artistic jaalis & stone wall sculptures",
-  },
-  {
-    id: "marble_granite_flooring",
+    id: "custom_flooring",
     name: "Custom Flooring",
     tagline: "Imported Italian marble, premium granites & dry-lay vein matching",
   },
   {
-    id: "table_tops_countertops",
-    name: "Table Tops & Countertops",
-    tagline: "Luxury dining tables, kitchen waterfall islands & stone vanity counters",
+    id: "stepping_stone",
+    name: "Stepping Stone",
+    tagline: "Natural garden cobbles, flagstones, pavers & pathway stepping stones",
   },
   {
-    id: "pu_decorative_panels",
-    name: "PU Decorative Panels",
+    id: "stone_veneer",
+    name: "Stone Veneer",
+    tagline:
+      "Ultra-thin, flexible natural slate & quartzite sheets for walls, ceilings & furniture",
+    popular: true,
+  },
+  {
+    id: "clay_veneers",
+    name: "Clay Veneers",
+    tagline: "Eco-friendly ultra-thin flexible clay wall coverings and terracotta finishes",
+  },
+  {
+    id: "pu_panels",
+    name: "PU Panels",
     tagline: "Ultra-lightweight, quick-mount high-definition faux stone replica panels",
   },
   {
-    id: "stepping_stones_landscaping",
-    name: "Stepping Stones & Landscape",
-    tagline: "Natural garden cobbles, flagstones, pavers & water feature boulders",
+    id: "stone_veneer_artwork",
+    name: "Stone Veneer Artwork",
+    tagline: "Curated backlit artistic translucent stone veneer compositions",
   },
   {
-    id: "agate_semi_precious",
-    name: "Agate & Semi-Precious Slabs",
+    id: "agate_slabs",
+    name: "Agate Slabs",
     tagline: "Backlit translucent luxury quartz slabs for bar counters & entry foyers",
   },
 ];
@@ -232,8 +334,8 @@ function HomePage() {
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>(["Stone Veneer"]);
-  const [spaceType, setSpaceType] = useState<string>("Bungalow / Villa");
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [spaceType, setSpaceType] = useState<string>("");
   const [planDescription, setPlanDescription] = useState<string>("");
 
   // Customer contact states with country code
@@ -266,6 +368,9 @@ function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedResult, setSubmittedResult] = useState<PublicInquiryResult | null>(null);
 
+  // StoneMan AI Mascot Dialog state
+  const [stonemanOpen, setStonemanOpen] = useState(false);
+
   // Clear specific error on field change
   const clearError = (field: string) => {
     if (formErrors[field]) {
@@ -283,6 +388,42 @@ function HomePage() {
     const direct = MASTER_PRODUCT_OPTIONS.find((p) => p.name.toLowerCase() === trimmed);
     if (direct) return direct.name;
 
+    if (trimmed.includes("italian")) {
+      return "Italian Marble Slabs";
+    }
+    if (trimmed.includes("indian") && trimmed.includes("marble")) {
+      return "Indian Marble Slabs";
+    }
+    if (trimmed.includes("limestone")) {
+      return "Limestone Slabs";
+    }
+    if (trimmed.includes("cobble")) {
+      return "Cobblestone";
+    }
+    if (trimmed.includes("pebble")) {
+      return "Pebblestone";
+    }
+    if (trimmed.includes("boulder")) {
+      return "Boulders";
+    }
+    if (trimmed.includes("sculpt")) {
+      return "Sculptures";
+    }
+    if (trimmed.includes("basin") || trimmed.includes("sink")) {
+      return "Custom Stone Basins";
+    }
+    if (trimmed.includes("waterfall")) {
+      return "Waterfall";
+    }
+    if (trimmed.includes("fountain")) {
+      return "Fountain";
+    }
+    if (trimmed.includes("temple") || trimmed.includes("mandir")) {
+      return "Temple Work Handcrafting";
+    }
+    if (trimmed.includes("clay")) {
+      return "Clay Veneers";
+    }
     if (trimmed.includes("veneer") || trimmed.includes("slim") || trimmed.includes("sheet")) {
       return "Stone Veneer";
     }
@@ -295,24 +436,19 @@ function HomePage() {
       return "Custom Stone Cladding";
     }
     if (trimmed.includes("interlock") || trimmed.includes("ledge") || trimmed.includes("panel")) {
-      return "Interlocking Panels";
+      return "Natural Stone Interlocking Panels";
     }
-    if (
-      trimmed.includes("mosaic") ||
-      trimmed.includes("inlay") ||
-      trimmed.includes("brass") ||
-      trimmed.includes("waterjet")
-    ) {
-      return "Stone Mosaics & Inlay";
+    if (trimmed.includes("mosaic") || trimmed.includes("brass") || trimmed.includes("waterjet")) {
+      return "Natural Stone Mosaics";
     }
-    if (
-      trimmed.includes("mural") ||
-      trimmed.includes("carv") ||
-      trimmed.includes("mandir") ||
-      trimmed.includes("temple") ||
-      trimmed.includes("jaali")
-    ) {
-      return "Stone Murals & Carvings";
+    if (trimmed.includes("inlay")) {
+      return "Inlay Work";
+    }
+    if (trimmed.includes("mural") || trimmed.includes("carv") || trimmed.includes("jaali")) {
+      return "Stone Murals";
+    }
+    if (trimmed.includes("crazy")) {
+      return "Crazy Pattern in Stone";
     }
     if (trimmed.includes("floor") || trimmed.includes("marble") || trimmed.includes("granite")) {
       return "Custom Flooring";
@@ -323,14 +459,14 @@ function HomePage() {
       trimmed.includes("island") ||
       trimmed.includes("vanity")
     ) {
-      return "Table Tops & Countertops";
+      return "Table Top";
     }
     if (
       trimmed.includes("pu ") ||
       trimmed.includes("polyurethane") ||
       trimmed.includes("lightweight")
     ) {
-      return "PU Decorative Panels";
+      return "PU Panels";
     }
     if (
       trimmed.includes("step") ||
@@ -339,7 +475,7 @@ function HomePage() {
       trimmed.includes("pathway") ||
       trimmed.includes("paver")
     ) {
-      return "Stepping Stones & Landscape";
+      return "Stepping Stone";
     }
     if (
       trimmed.includes("agate") ||
@@ -348,7 +484,7 @@ function HomePage() {
       trimmed.includes("backlit") ||
       trimmed.includes("gem")
     ) {
-      return "Agate & Semi-Precious Slabs";
+      return "Agate Slabs";
     }
 
     return "Custom Stone Cladding";
@@ -474,9 +610,19 @@ function HomePage() {
     setSubmitError(null);
 
     if (formStep === 1) {
+      const step1Errors: Record<string, string> = {};
       if (selectedProducts.length === 0) {
-        setSelectedProducts(["Stone Veneer"]);
+        step1Errors.selectedProducts = "Please select at least one stone product.";
       }
+      if (!spaceType.trim()) {
+        step1Errors.spaceType = "Please select your project space type.";
+      }
+      if (Object.keys(step1Errors).length > 0) {
+        setFormErrors(step1Errors);
+        toast.error(Object.values(step1Errors)[0]);
+        return;
+      }
+      setFormErrors({});
       setFormStep(2);
       return;
     }
@@ -484,6 +630,9 @@ function HomePage() {
     const errors: Record<string, string> = {};
     if (selectedProducts.length === 0) {
       errors.selectedProducts = "Please select at least one stone product.";
+    }
+    if (!spaceType.trim()) {
+      errors.spaceType = "Please select your project space type.";
     }
     if (!name.trim()) {
       errors.name = "Please enter your full name.";
@@ -503,7 +652,7 @@ function HomePage() {
       setFormErrors(errors);
       const firstError = Object.values(errors)[0];
       toast.error(firstError);
-      if (errors.selectedProducts) {
+      if (errors.selectedProducts || errors.spaceType) {
         setFormStep(1);
       }
       return;
@@ -525,7 +674,7 @@ function HomePage() {
           customer_type: "website",
           space_type: spaceType,
           required_date: requiredDate,
-          selected_products: selectedProducts.length > 0 ? selectedProducts : ["Stone Veneer"],
+          selected_products: selectedProducts,
           plan_description: planDescription.trim(),
           photos: photos.map((p) => ({
             name: p.name,
@@ -977,7 +1126,7 @@ function HomePage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
                             {MASTER_PRODUCT_OPTIONS.map((prod) => {
                               const isSelected = selectedProducts.includes(prod.name);
                               return (
@@ -1022,7 +1171,7 @@ function HomePage() {
                                 }}
                                 className="text-primary hover:underline font-medium cursor-pointer"
                               >
-                                Select All (10)
+                                Select All ({MASTER_PRODUCT_OPTIONS.length})
                               </button>
                             )}
                           </div>
@@ -1045,6 +1194,15 @@ function HomePage() {
                                 Project Space Type <span className="text-destructive">*</span>:
                               </span>
                             </label>
+                            {spaceType && (
+                              <button
+                                type="button"
+                                onClick={() => setSpaceType("")}
+                                className="text-[11px] text-muted-foreground hover:text-destructive underline cursor-pointer"
+                              >
+                                Clear
+                              </button>
+                            )}
                           </div>
 
                           {/* Space Type Selector Chips */}
@@ -1053,7 +1211,10 @@ function HomePage() {
                               <button
                                 key={st}
                                 type="button"
-                                onClick={() => setSpaceType(st)}
+                                onClick={() => {
+                                  clearError("spaceType");
+                                  setSpaceType((prev) => (prev === st ? "" : st));
+                                }}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                                   spaceType === st
                                     ? "border-primary bg-primary text-primary-foreground shadow-2xs font-semibold"
@@ -1064,6 +1225,12 @@ function HomePage() {
                               </button>
                             ))}
                           </div>
+
+                          {formErrors.spaceType && (
+                            <p className="text-[11px] text-destructive font-medium mt-1">
+                              {formErrors.spaceType}
+                            </p>
+                          )}
 
                           {/* Description & Quick Idea Suggestions */}
                           <div className="space-y-1.5">
@@ -1169,9 +1336,20 @@ function HomePage() {
                           <Button
                             type="button"
                             onClick={() => {
+                              const step1Errors: Record<string, string> = {};
                               if (selectedProducts.length === 0) {
-                                setSelectedProducts(["Stone Veneer"]);
+                                step1Errors.selectedProducts =
+                                  "Please select at least one stone product.";
                               }
+                              if (!spaceType.trim()) {
+                                step1Errors.spaceType = "Please select your project space type.";
+                              }
+                              if (Object.keys(step1Errors).length > 0) {
+                                setFormErrors(step1Errors);
+                                toast.error(Object.values(step1Errors)[0]);
+                                return;
+                              }
+                              setFormErrors({});
                               setFormStep(2);
                             }}
                             className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
@@ -1196,7 +1374,7 @@ function HomePage() {
                               Selected:
                             </span>
                             <span className="font-bold text-foreground truncate">
-                              {selectedProducts.join(", ") || "Stone Veneer"}
+                              {selectedProducts.join(", ") || "None selected"}
                             </span>
                           </div>
                           <button
@@ -1589,6 +1767,10 @@ function HomePage() {
           <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
+
+      {/* StoneMan AI Mascot Assistant & Track Order Dialog */}
+      <StonemanMascot onClick={() => setStonemanOpen(true)} />
+      <StonemanCustomerDialog open={stonemanOpen} onOpenChange={setStonemanOpen} />
     </div>
   );
 }

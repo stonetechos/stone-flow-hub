@@ -97,11 +97,26 @@ export const SPACE_TYPES: ReadonlyArray<{ value: DbEnum<"space_type">; label: st
   { value: "mall", label: "Mall" },
 ];
 
-/** "Product of interest" — multi-select product interest list. */
+/** "Product of interest" — multi-select product interest list (complete architectural stone range). */
 export const MATERIAL_OPTIONS: ReadonlyArray<{
-  value: DbEnum<"material_interest">;
+  value: string;
   label: string;
 }> = [
+  // Slabs & Stone Types
+  { value: "italian_marble_slabs", label: "Italian Marble Slabs" },
+  { value: "indian_marble_slabs", label: "Indian Marble Slabs" },
+  { value: "granite_slabs", label: "Granite Slabs" },
+  { value: "limestone_slabs", label: "Limestone Slabs" },
+  { value: "cobblestone", label: "Cobblestone" },
+  { value: "pebblestone", label: "Pebblestone" },
+  { value: "boulders", label: "Boulders" },
+  { value: "sculptures", label: "Sculptures" },
+  { value: "custom_stone_basins", label: "Custom Stone Basins" },
+  { value: "agate_stone_articles", label: "Agate Stone Articles" },
+  { value: "waterfall", label: "Waterfall" },
+  { value: "fountain", label: "Fountain" },
+  { value: "temple_work_handcrafting", label: "Temple Work Handcrafting" },
+  // Cladding, Flooring & Special Articles
   { value: "natural_stone_cladding_tiles", label: "Natural Stone Cladding Tiles" },
   { value: "natural_stone_interlocking_panels", label: "Natural Stone Interlocking Panels" },
   { value: "natural_stone_mosaics", label: "Natural Stone Mosaics" },
@@ -179,28 +194,7 @@ export const customerCreateSchema = z
       ])
       .nullable()
       .optional(),
-    material_interests: z
-      .array(
-        z.enum([
-          "natural_stone_cladding_tiles",
-          "natural_stone_interlocking_panels",
-          "natural_stone_mosaics",
-          "stone_murals",
-          "inlay_work",
-          "table_top",
-          "custom_stone_cladding",
-          "crazy_pattern_in_stone",
-          "general_flooring",
-          "custom_flooring",
-          "stepping_stone",
-          "stone_veneer",
-          "clay_veneers",
-          "pu_panels",
-          "stone_veneer_artwork",
-          "agate_slabs",
-        ]),
-      )
-      .default([]),
+    material_interests: z.array(z.string()).default([]),
     notes: zOptional(),
 
     // More details / Advanced — kept from the original form so GST, email,
