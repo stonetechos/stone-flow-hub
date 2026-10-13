@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, User, Building2, Smartphone, Banknote, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable, EmptyState } from "@/components/layout/States";
@@ -33,11 +33,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { RowActions } from "@/components/data/RowActions";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { DataTableShell } from "@/components/data/DataTableShell";
+import { EntityPicker } from "@/components/forms/EntityPicker";
 import { toUserMessage } from "@/lib/errors";
-import { formatInr } from "@/lib/format";
+import { formatInr, formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { qk } from "@/lib/query-keys";
 import {
   createInstallationLedgerEntry,
@@ -47,15 +50,18 @@ import {
   type InstallationLedgerRow,
 } from "@/lib/installation-ledger/api";
 import { invalidateInstallationLedger } from "@/lib/query-invalidation";
-import { listInstallationAgencies } from "@/lib/installation-agencies/api";
+import {
+  listInstallationAgencies,
+  getAgencyCategoryInfo,
+  parsePaymentMeta,
+} from "@/lib/installation-agencies/api";
 import { LEDGER_ENTRY_TYPES, type LedgerEntryType } from "@/lib/installation-ledger/schema";
 import { useRoles } from "@/hooks/use-roles";
 
 /**
- * Installation Agency Ledger — per-agency detail (Task #48). Manual entry
- * only: the "Record entry" dialog is the entire write path, mirroring how
- * a vendor payment gets recorded today, except the debit/credit choice is
- * explicit here (Charge vs Payment) since there's no trigger inferring it.
+ * Installation Agency Ledger — per-agency detail.
+ * Displays agency category/specialization, running balance, and allows recording
+ * both Company Direct and Customer Direct (UPI/Cash) payments.
  */
 export const Route = createFileRoute("/_authenticated/installation-ledger/$agencyId")({
   ssr: false,
@@ -81,6 +87,7 @@ function InstallationLedgerDetail() {
   });
 
   const agency = (agenciesQuery.data ?? []).find((a) => a.id === agencyId);
+  const categories = getAgencyCategoryInfo(agency);
 
   const [recording, setRecording] = useState(false);
   const [entryType, setEntryType] = useState<LedgerEntryType>("charge");
@@ -90,6 +97,14 @@ function InstallationLedgerDetail() {
   const [refNo, setRefNo] = useState("");
   const [notes, setNotes] = useState("");
 
+  // Customer on our behalf payment fields
+  const [paidBy, setPaidBy] = useState<"company" | "customer">("company");
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [paymentChannel, setPaymentChannel] = useState<"upi" | "cash" | "bank_transfer" | "cheque">(
+    "upi",
+  );
+
   const [toDelete, setToDelete] = useState<InstallationLedgerRow | null>(null);
   const [toEdit, setToEdit] = useState<InstallationLedgerRow | null>(null);
   const [editType, setEditType] = useState<LedgerEntryType>("charge");
@@ -98,6 +113,11 @@ function InstallationLedgerDetail() {
   const [editAmount, setEditAmount] = useState("");
   const [editRefNo, setEditRefNo] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [editPaidBy, setEditPaidBy] = useState<"company" | "customer">("company");
+  const [editCustomerName, setEditCustomerName] = useState("");
+  const [editPaymentChannel, setEditPaymentChannel] = useState<
+    "upi" | "cash" | "bank_transfer" | "cheque"
+  >("upi");
 
   const resetForm = () => {
     setEntryType("charge");
@@ -106,29 +126,73 @@ function InstallationLedgerDetail() {
     setAmount("");
     setRefNo("");
     setNotes("");
+    setPaidBy("company");
+    setCustomerId(null);
+    setCustomerName("");
+    setPaymentChannel("upi");
   };
 
   const handleOpenEdit = (r: InstallationLedgerRow) => {
+    const meta = parsePaymentMeta(r);
     setToEdit(r);
     setEditType(r.debit > 0 ? "charge" : "payment");
     setEditDate(r.entry_date);
     setEditDescription(r.description);
     setEditAmount(String(r.debit > 0 ? r.debit : r.credit));
     setEditRefNo(r.ref_no ?? "");
-    setEditNotes(r.notes ?? "");
+    setEditNotes(
+      (r.notes ?? "")
+        .replace(/\[PaidBy:[^\]]+\]\s*/g, "")
+        .replace(/\[Customer:[^\]]+\]\s*/g, "")
+        .replace(/\[Method:[^\]]+\]\s*/g, "")
+        .trim(),
+    );
+    setEditPaidBy(meta.isCustomerPayment ? "customer" : "company");
+    setEditCustomerName(meta.customerName);
+    setEditPaymentChannel(
+      meta.channel === "cash"
+        ? "cash"
+        : meta.channel === "bank_transfer"
+          ? "bank_transfer"
+          : meta.channel === "cheque"
+            ? "cheque"
+            : "upi",
+    );
   };
 
   const createMut = useMutation({
-    mutationFn: () =>
-      createInstallationLedgerEntry({
+    mutationFn: async () => {
+      let finalDescription = description.trim();
+      let finalRef = refNo.trim();
+      let finalNotes = notes.trim();
+
+      if (entryType === "payment" && paidBy === "customer") {
+        const channelLabel = paymentChannel.toUpperCase();
+        if (!finalDescription) {
+          finalDescription = `Paid by Customer${
+            customerName ? `: ${customerName}` : ""
+          } (${channelLabel})`;
+        }
+        if (!finalRef) {
+          finalRef = `${channelLabel} (Direct to Agency)`;
+        }
+        const tags = `[PaidBy:customer]${
+          customerName ? ` [Customer:${customerName}]` : ""
+        } [Method:${paymentChannel}]`;
+        finalNotes = finalNotes ? `${tags} ${finalNotes}` : tags;
+      }
+
+      return createInstallationLedgerEntry({
         installation_agency_id: agencyId,
         entry_date: entryDate,
         entry_type: entryType,
         amount: Number(amount || 0),
-        description,
-        ref_no: refNo || null,
-        notes: notes || null,
-      }),
+        description:
+          finalDescription || (entryType === "charge" ? "Agency charge" : "Payment to agency"),
+        ref_no: finalRef || null,
+        notes: finalNotes || null,
+      });
+    },
     onSuccess: () => {
       toast.success("Entry recorded");
       invalidateInstallationLedger(qc, agencyId);
@@ -149,15 +213,35 @@ function InstallationLedgerDetail() {
   });
 
   const editMut = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       if (!toEdit) throw new Error("No entry selected");
+      let finalDescription = editDescription.trim();
+      let finalRef = editRefNo.trim();
+      let finalNotes = editNotes.trim();
+
+      if (editType === "payment" && editPaidBy === "customer") {
+        const channelLabel = editPaymentChannel.toUpperCase();
+        if (!finalDescription) {
+          finalDescription = `Paid by Customer${
+            editCustomerName ? `: ${editCustomerName}` : ""
+          } (${channelLabel})`;
+        }
+        if (!finalRef) {
+          finalRef = `${channelLabel} (Direct to Agency)`;
+        }
+        const tags = `[PaidBy:customer]${
+          editCustomerName ? ` [Customer:${editCustomerName}]` : ""
+        } [Method:${editPaymentChannel}]`;
+        finalNotes = finalNotes ? `${tags} ${finalNotes}` : tags;
+      }
+
       return updateInstallationLedgerEntry(toEdit.id, {
         entry_date: editDate,
         entry_type: editType,
         amount: Number(editAmount || 0),
-        description: editDescription,
-        ref_no: editRefNo || null,
-        notes: editNotes || null,
+        description: finalDescription,
+        ref_no: finalRef || null,
+        notes: finalNotes || null,
       });
     },
     onSuccess: () => {
@@ -172,10 +256,31 @@ function InstallationLedgerDetail() {
   const balance = rows.length > 0 ? rows[rows.length - 1].running_balance : 0;
 
   return (
-    <div>
+    <div className="space-y-4">
       <PageHeader
-        title={agency ? agency.name : "Installation Agency Ledger"}
-        subtitle={agency ? `Running balance ${formatInr(balance)}` : undefined}
+        title={agency ? agency.name : "Agency Ledger"}
+        eyebrow={
+          categories.length > 0 ? (
+            <div className="flex gap-1 mb-1">
+              {categories.map((c, i) => (
+                <Badge key={i} variant="outline" className={cn("text-xs py-0.5", c.badgeClass)}>
+                  {c.label}
+                </Badge>
+              ))}
+            </div>
+          ) : undefined
+        }
+        subtitle={
+          agency
+            ? `Running balance: ${formatInr(balance)} (${
+                balance > 0
+                  ? "Amount payable to agency"
+                  : balance < 0
+                    ? "Advance / Excess paid"
+                    : "Settled"
+              })`
+            : undefined
+        }
         actions={
           roles.canWrite ? (
             <Button size="sm" onClick={() => setRecording(true)}>
@@ -206,47 +311,78 @@ function InstallationLedgerDetail() {
         />
       ) : (
         <DataTableShell>
-          <Table className="min-w-[650px]">
+          <Table className="min-w-[700px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Charge (Dr)</TableHead>
-                <TableHead>Payment (Cr)</TableHead>
-                <TableHead>Balance</TableHead>
+                <TableHead className="w-28">Date</TableHead>
+                <TableHead className="min-w-[200px]">Description & Payer</TableHead>
+                <TableHead className="min-w-[140px]">Reference</TableHead>
+                <TableHead className="text-right w-28">Charge (Dr)</TableHead>
+                <TableHead className="text-right w-28">Payment (Cr)</TableHead>
+                <TableHead className="text-right w-32">Balance</TableHead>
                 <TableHead className="w-12 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="text-sm whitespace-nowrap">{r.entry_date}</TableCell>
-                  <TableCell className="font-medium max-w-[220px] truncate">
-                    {r.description}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {r.ref_no ?? "—"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {r.debit > 0 ? formatInr(r.debit) : "—"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {r.credit > 0 ? formatInr(r.credit) : "—"}
-                  </TableCell>
-                  <TableCell className="font-semibold whitespace-nowrap">
-                    {formatInr(r.running_balance)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <RowActions
-                      canEdit={roles.canWrite}
-                      canDelete={roles.canDelete}
-                      onEdit={() => handleOpenEdit(r)}
-                      onDelete={() => setToDelete(r)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rows.map((r) => {
+                const meta = parsePaymentMeta(r);
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatDate(r.entry_date)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1 max-w-[260px]">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium text-sm text-foreground">
+                            {r.description}
+                          </span>
+                        </div>
+                        {meta.isCustomerPayment && (
+                          <div className="flex items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 font-medium py-0 px-1.5"
+                            >
+                              <User className="h-3 w-3 mr-0.5" />
+                              Paid by Customer
+                            </Badge>
+                            {meta.channel === "upi" ? (
+                              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                                UPI
+                              </span>
+                            ) : meta.channel === "cash" ? (
+                              <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400">
+                                Cash
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                      {r.ref_no ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-medium text-rose-600 dark:text-rose-400">
+                      {r.debit > 0 ? formatInr(r.debit) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-medium text-emerald-600 dark:text-emerald-400">
+                      {r.credit > 0 ? formatInr(r.credit) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold whitespace-nowrap">
+                      {formatInr(r.running_balance)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <RowActions
+                        canEdit={roles.canWrite}
+                        canDelete={roles.canDelete}
+                        onEdit={() => handleOpenEdit(r)}
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </DataTableShell>
@@ -264,56 +400,198 @@ function InstallationLedgerDetail() {
       >
         <DialogContent className="max-w-md w-full">
           <DialogHeader>
-            <DialogTitle>Record ledger entry</DialogTitle>
+            <DialogTitle>Record agency ledger entry</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (!description.trim()) {
-                toast.error("Description is required");
+              if (Number(amount || 0) <= 0) {
+                toast.error("Please enter a valid amount");
                 return;
               }
               createMut.mutate();
             }}
           >
-            <DialogBody className="grid gap-3 sm:grid-cols-2">
-              <Field label="Entry type" required>
-                <Select value={entryType} onValueChange={(v) => setEntryType(v as LedgerEntryType)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEDGER_ENTRY_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t === "charge" ? "Charge (they billed us)" : "Payment (we paid them)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Date" required>
-                <Input
-                  type="date"
-                  value={entryDate}
-                  onChange={(e) => setEntryDate(e.target.value)}
-                />
-              </Field>
-              <Field label="Amount" required>
+            <DialogBody className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Entry type" required>
+                  <Select
+                    value={entryType}
+                    onValueChange={(v) => setEntryType(v as LedgerEntryType)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEDGER_ENTRY_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t === "charge" ? "Charge (they billed us)" : "Payment (we paid them)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Date" required>
+                  <Input
+                    type="date"
+                    value={entryDate}
+                    onChange={(e) => setEntryDate(e.target.value)}
+                  />
+                </Field>
+              </div>
+
+              <Field label="Amount (₹)" required>
                 <CurrencyInput value={amount} onChange={setAmount} />
               </Field>
-              <Field label="Reference #">
-                <Input value={refNo} onChange={(e) => setRefNo(e.target.value)} />
-              </Field>
-              <Field label="Description" required className="sm:col-span-2">
+
+              {/* PAYMENT SOURCE TOGGLE (IF PAYMENT) */}
+              {entryType === "payment" && (
+                <div className="rounded-xl border border-border/80 bg-muted/30 p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-foreground">
+                      Who is paying this agency?
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPaidBy("company")}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all",
+                        paidBy === "company"
+                          ? "border-primary bg-primary/10 text-primary shadow-xs"
+                          : "border-border bg-background hover:bg-muted/50 text-muted-foreground",
+                      )}
+                    >
+                      <Building2 className="h-4 w-4 shrink-0" />
+                      <div className="text-left">
+                        <div className="font-semibold text-foreground">Company Direct</div>
+                        <div className="text-[10px] text-muted-foreground">Stone Tech Account</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaidBy("customer")}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all",
+                        paidBy === "customer"
+                          ? "border-sky-500 bg-sky-500/10 text-sky-700 dark:text-sky-300 shadow-xs"
+                          : "border-border bg-background hover:bg-muted/50 text-muted-foreground",
+                      )}
+                    >
+                      <User className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
+                      <div className="text-left">
+                        <div className="font-semibold text-foreground">Customer on our behalf</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          UPI / Cash to agency
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  {paidBy === "customer" && (
+                    <div className="space-y-3 pt-2 border-t border-border/60">
+                      <Field label="Customer (Who paid on our behalf?)">
+                        <EntityPicker
+                          type="customer"
+                          value={customerId}
+                          onChange={(id, row) => {
+                            setCustomerId(id);
+                            if (row) setCustomerName((row as { name?: string })?.name ?? "");
+                          }}
+                          placeholder="Search customer…"
+                        />
+                        <div className="mt-1.5">
+                          <Input
+                            placeholder="Or type customer / site name"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            className="text-xs h-8"
+                          />
+                        </div>
+                      </Field>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field label="Payment Method">
+                          <Select
+                            value={paymentChannel}
+                            onValueChange={(v) => setPaymentChannel(v as typeof paymentChannel)}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="upi">UPI (GPay/PhonePe)</SelectItem>
+                              <SelectItem value="cash">Cash (at site)</SelectItem>
+                              <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                              <SelectItem value="cheque">Cheque</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+
+                        <Field label="Reference / UPI">
+                          <Input
+                            value={refNo}
+                            onChange={(e) => setRefNo(e.target.value)}
+                            placeholder="e.g. UPI / Ref #"
+                            className="h-9 text-xs"
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
+
+                  {paidBy === "company" && (
+                    <div className="pt-2 border-t border-border/60">
+                      <Field label="Reference # / UTR">
+                        <Input
+                          value={refNo}
+                          onChange={(e) => setRefNo(e.target.value)}
+                          placeholder="e.g. UTR / Cheque / Bank Ref"
+                          className="h-9 text-xs"
+                        />
+                      </Field>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Charge Reference */}
+              {entryType === "charge" && (
+                <Field label="Bill / Reference #">
+                  <Input
+                    value={refNo}
+                    onChange={(e) => setRefNo(e.target.value)}
+                    placeholder="e.g. Bill # / Memo Ref"
+                  />
+                </Field>
+              )}
+
+              <Field label="Description">
                 <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. Installation charge — Sharma residence"
-                  required
+                  placeholder={
+                    entryType === "charge"
+                      ? "e.g. Polishing work — Sharma site"
+                      : paidBy === "customer"
+                        ? "e.g. Paid by Customer via UPI"
+                        : "e.g. Payment to agency"
+                  }
                 />
               </Field>
-              <Field label="Notes" className="sm:col-span-2">
-                <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+
+              <Field label="Notes (Optional)">
+                <Textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Additional remarks or site context…"
+                  className="text-xs"
+                />
               </Field>
             </DialogBody>
             <DialogFooter>
@@ -328,7 +606,7 @@ function InstallationLedgerDetail() {
                 Cancel
               </Button>
               <Button type="submit" disabled={createMut.isPending}>
-                Save
+                Save entry
               </Button>
             </DialogFooter>
           </form>
@@ -349,10 +627,6 @@ function InstallationLedgerDetail() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (!editDescription.trim()) {
-                toast.error("Description is required");
-                return;
-              }
               if (Number(editAmount || 0) <= 0) {
                 toast.error("Amount must be greater than zero");
                 return;
@@ -360,44 +634,124 @@ function InstallationLedgerDetail() {
               editMut.mutate();
             }}
           >
-            <DialogBody className="grid gap-3 sm:grid-cols-2">
-              <Field label="Entry type" required>
-                <Select value={editType} onValueChange={(v) => setEditType(v as LedgerEntryType)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEDGER_ENTRY_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t === "charge" ? "Charge (they billed us)" : "Payment (we paid them)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Date" required>
-                <Input
-                  type="date"
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                  required
-                />
-              </Field>
+            <DialogBody className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Entry type" required>
+                  <Select value={editType} onValueChange={(v) => setEditType(v as LedgerEntryType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEDGER_ENTRY_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t === "charge" ? "Charge (they billed us)" : "Payment (we paid them)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Date" required>
+                  <Input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    required
+                  />
+                </Field>
+              </div>
+
               <Field label="Amount" required>
                 <CurrencyInput value={editAmount} onChange={setEditAmount} />
               </Field>
-              <Field label="Reference #">
-                <Input value={editRefNo} onChange={(e) => setEditRefNo(e.target.value)} />
-              </Field>
-              <Field label="Description" required className="sm:col-span-2">
+
+              {editType === "payment" && (
+                <div className="rounded-xl border border-border/80 bg-muted/30 p-3 space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditPaidBy("company")}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all",
+                        editPaidBy === "company"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      <Building2 className="h-4 w-4" />
+                      <span>Company</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditPaidBy("customer")}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all",
+                        editPaidBy === "customer"
+                          ? "border-sky-500 bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Customer</span>
+                    </button>
+                  </div>
+
+                  {editPaidBy === "customer" && (
+                    <div className="space-y-2 pt-2 border-t border-border/60">
+                      <Field label="Customer / Payer Name">
+                        <Input
+                          value={editCustomerName}
+                          onChange={(e) => setEditCustomerName(e.target.value)}
+                          placeholder="e.g. Ramesh Sharma"
+                          className="h-8 text-xs"
+                        />
+                      </Field>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field label="Channel">
+                          <Select
+                            value={editPaymentChannel}
+                            onValueChange={(v) =>
+                              setEditPaymentChannel(v as typeof editPaymentChannel)
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="upi">UPI</SelectItem>
+                              <SelectItem value="cash">Cash</SelectItem>
+                              <SelectItem value="bank_transfer">Bank</SelectItem>
+                              <SelectItem value="cheque">Cheque</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                        <Field label="Reference">
+                          <Input
+                            value={editRefNo}
+                            onChange={(e) => setEditRefNo(e.target.value)}
+                            className="h-8 text-xs"
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {editType === "charge" && (
+                <Field label="Reference #">
+                  <Input value={editRefNo} onChange={(e) => setEditRefNo(e.target.value)} />
+                </Field>
+              )}
+
+              <Field label="Description" required>
                 <Input
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="e.g. Installation charge — Sharma residence"
                   required
                 />
               </Field>
-              <Field label="Notes" className="sm:col-span-2">
+
+              <Field label="Notes">
                 <Textarea
                   rows={2}
                   value={editNotes}

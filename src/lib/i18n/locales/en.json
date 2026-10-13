@@ -1467,6 +1467,7 @@
     "columns": {
       "date": "Date",
       "agency": "Agency",
+      "category": "Category / Specialization",
       "description": "Description",
       "refNo": "Reference #",
       "amountPaid": "Amount Paid",

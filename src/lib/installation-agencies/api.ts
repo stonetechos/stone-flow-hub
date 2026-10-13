@@ -176,3 +176,157 @@ export async function deleteInstallationAgency(id: string): Promise<void> {
     .eq("id" as never, id as never);
   if (error) throw new AppError(mapDbError(error));
 }
+
+export interface AgencyCategoryBadge {
+  value: AgencyWorkType | string;
+  label: string;
+  badgeClass: string;
+}
+
+export function getAgencyCategoryInfo(
+  agency?: InstallationAgencyRow | null,
+): AgencyCategoryBadge[] {
+  if (!agency) {
+    return [
+      {
+        value: "installation",
+        label: "Installation Agency",
+        badgeClass:
+          "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+      },
+    ];
+  }
+
+  const types = agency.work_types && agency.work_types.length > 0 ? [...agency.work_types] : [];
+
+  const fullText = `${agency.name} ${agency.code} ${agency.notes ?? ""}`.toLowerCase();
+  if (fullText.includes("polish") && !types.includes("polishing_work")) {
+    types.push("polishing_work");
+  }
+  if ((fullText.includes("cart") || fullText.includes("transport")) && !types.includes("carting")) {
+    types.push("carting");
+  }
+  if (fullText.includes("cnc") && !types.includes("cnc_works")) {
+    types.push("cnc_works");
+  }
+  if (
+    (fullText.includes("handcraft") || fullText.includes("carv")) &&
+    !types.includes("handcrafter")
+  ) {
+    types.push("handcrafter");
+  }
+  if (fullText.includes("art") && !types.includes("artwork")) {
+    types.push("artwork");
+  }
+
+  const finalTypes = types.length > 0 ? types : ["installation"];
+
+  return finalTypes.map((wt) => {
+    switch (wt) {
+      case "polishing_work":
+        return {
+          value: wt,
+          label: "Polishing Agency",
+          badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
+        };
+      case "carting":
+        return {
+          value: wt,
+          label: "Carting & Transport",
+          badgeClass: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",
+        };
+      case "installation":
+        return {
+          value: wt,
+          label: "Installation Agency",
+          badgeClass:
+            "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+        };
+      case "cnc_works":
+        return {
+          value: wt,
+          label: "CNC Works",
+          badgeClass: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30",
+        };
+      case "handcrafter":
+        return {
+          value: wt,
+          label: "Handcrafter",
+          badgeClass: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30",
+        };
+      case "artwork":
+        return {
+          value: wt,
+          label: "Artwork",
+          badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30",
+        };
+      default:
+        return {
+          value: wt,
+          label: wt,
+          badgeClass: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/30",
+        };
+    }
+  });
+}
+
+export function parsePaymentMeta(row: {
+  description?: string | null;
+  ref_no?: string | null;
+  notes?: string | null;
+}) {
+  const notes = row.notes ?? "";
+  const desc = row.description ?? "";
+  const ref = row.ref_no ?? "";
+  const combined = `${notes} ${desc} ${ref}`.toLowerCase();
+
+  const isCustomerPayment =
+    notes.includes("[PaidBy:customer]") ||
+    combined.includes("paid by customer") ||
+    combined.includes("customer direct") ||
+    combined.includes("customer paid") ||
+    combined.includes("client paid") ||
+    combined.includes("on behalf");
+
+  let customerName = "";
+  const custMatch = notes.match(/\[Customer:([^\]]+)\]/);
+  if (custMatch) {
+    customerName = custMatch[1].trim();
+  } else if (desc.toLowerCase().includes("customer")) {
+    const parts = desc.split(/customer:?/i);
+    if (parts[1]) {
+      const firstChunk = parts[1].split(/[(–—]/)[0];
+      customerName = (firstChunk ?? "").replace(/[[\]]/g, "").trim();
+    }
+  }
+
+  let channel: "upi" | "cash" | "bank_transfer" | "cheque" | "other" = "other";
+  const channelMatch = notes.match(/\[Method:([^\]]+)\]/);
+  if (channelMatch) {
+    channel = channelMatch[1].trim() as typeof channel;
+  } else if (
+    combined.includes("upi") ||
+    combined.includes("gpay") ||
+    combined.includes("phonepe") ||
+    combined.includes("paytm")
+  ) {
+    channel = "upi";
+  } else if (combined.includes("cash")) {
+    channel = "cash";
+  } else if (combined.includes("cheque") || combined.includes("chq")) {
+    channel = "cheque";
+  } else if (
+    combined.includes("neft") ||
+    combined.includes("rtgs") ||
+    combined.includes("imps") ||
+    combined.includes("bank")
+  ) {
+    channel = "bank_transfer";
+  }
+
+  return {
+    isCustomerPayment,
+    customerName,
+    channel,
+  };
+}
