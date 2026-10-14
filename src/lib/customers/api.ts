@@ -508,14 +508,31 @@ export async function updateCustomerCrmStatus(
   }
 
   if (input.next_call_at) {
-    await db.from("followups").insert({
+    const { data: latestEnq } = await db
+      .from("enquiries")
+      .select("id, project_id")
+      .eq("customer_id", input.customerId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const scheduledIso = new Date(input.next_call_at).toISOString();
+
+    const { error: insErr } = await db.from("followups").insert({
       entity_type: "customer",
       entity_id: input.customerId,
-      scheduled_at: input.next_call_at,
+      enquiry_id: latestEnq?.id ?? null,
+      project_id: latestEnq?.project_id ?? null,
+      scheduled_at: scheduledIso,
       channel: input.next_call_channel || "call",
       notes: input.next_call_agenda || input.call_note || "Scheduled customer follow-up call",
       status: "pending",
     });
+
+    if (insErr) {
+      console.error("[customers/api] Error inserting fallback followup:", insErr);
+      throw new AppError(mapDbError(insErr));
+    }
   }
 
   return normalizeCustomerRow(updated as CustomerRow);

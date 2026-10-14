@@ -312,7 +312,7 @@ export const purgeMisplacedCustomerEntriesServerFn = createServerFn({ method: "P
 
 const updateCustomerCrmStatusInput = z.object({
   customerId: z.string().uuid(),
-  is_active: z.boolean().optional(),
+  is_active: z.boolean().nullish(),
   response_status: z
     .enum([
       "active_responsive",
@@ -323,13 +323,13 @@ const updateCustomerCrmStatusInput = z.object({
       "inactive_no_response",
       "do_not_contact",
     ])
-    .optional(),
-  call_note: z.string().optional(),
-  call_outcome: z.string().optional(),
-  next_call_at: z.string().optional(),
-  next_call_channel: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]).optional(),
-  next_call_agenda: z.string().optional(),
-  complete_pending_followup_id: z.string().uuid().optional(),
+    .nullish(),
+  call_note: z.string().nullish(),
+  call_outcome: z.string().nullish(),
+  next_call_at: z.string().nullish(),
+  next_call_channel: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]).nullish(),
+  next_call_agenda: z.string().nullish(),
+  complete_pending_followup_id: z.string().uuid().or(z.literal("")).nullish(),
 });
 
 export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" })
@@ -374,7 +374,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
 
     // Determine is_active status
     let targetIsActive = existing.is_active;
-    if (data.is_active !== undefined) {
+    if (data.is_active !== undefined && data.is_active !== null) {
       targetIsActive = data.is_active;
     } else if (
       data.response_status === "inactive_no_response" ||
@@ -452,15 +452,33 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
 
     // If a next call is scheduled, insert into followups table
     if (data.next_call_at) {
-      await supabaseAdmin.from("followups").insert({
+      // Find latest enquiry / project for this customer (e.g. from website leads)
+      const { data: latestEnq } = await supabaseAdmin
+        .from("enquiries")
+        .select("id, project_id")
+        .eq("customer_id", data.customerId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const scheduledIso = new Date(data.next_call_at).toISOString();
+
+      const { error: insErr } = await supabaseAdmin.from("followups").insert({
         entity_type: "customer",
         entity_id: data.customerId,
-        scheduled_at: data.next_call_at,
+        enquiry_id: latestEnq?.id ?? null,
+        project_id: latestEnq?.project_id ?? null,
+        scheduled_at: scheduledIso,
         channel: data.next_call_channel || "call",
         notes: data.next_call_agenda || data.call_note || "Scheduled customer follow-up call",
         status: "pending",
         created_by: uid,
       });
+
+      if (insErr) {
+        console.error("[customers.functions] Error inserting followup:", insErr);
+        throw new Error(insErr.message || "Failed to schedule follow-up call");
+      }
     }
 
     return { customer: normalizeCustomerRow(updatedCustomer as CustomerRow), ok: true };

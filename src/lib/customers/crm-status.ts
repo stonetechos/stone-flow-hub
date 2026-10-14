@@ -107,6 +107,8 @@ export const CALL_OUTCOMES = [
   { value: "positive_proceeding", label: "Positive · Ready to proceed" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
   { value: "order_completed", label: "Order Completed · Delivered & Closed" },
+  { value: "samples_required_site", label: "Samples required at site" },
+  { value: "asked_for_catalog", label: "Asked for product catalog/s" },
   { value: "quote_revision_requested", label: "Quote revision requested" },
   { value: "site_visit_requested", label: "Site visit / Measurement requested" },
   { value: "reviewing_with_architect", label: "Reviewing with architect / family" },

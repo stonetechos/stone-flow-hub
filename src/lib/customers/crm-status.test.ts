@@ -76,5 +76,13 @@ describe("Customer CRM Status", () => {
     const foundCompleted = CALL_OUTCOMES.find((o) => o.value === "order_completed");
     expect(foundCompleted).toBeDefined();
     expect(foundCompleted?.label).toContain("Order Completed");
+
+    const foundSamples = CALL_OUTCOMES.find((o) => o.value === "samples_required_site");
+    expect(foundSamples).toBeDefined();
+    expect(foundSamples?.label).toBe("Samples required at site");
+
+    const foundCatalog = CALL_OUTCOMES.find((o) => o.value === "asked_for_catalog");
+    expect(foundCatalog).toBeDefined();
+    expect(foundCatalog?.label).toBe("Asked for product catalog/s");
   });
 });

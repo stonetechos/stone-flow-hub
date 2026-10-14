@@ -121,11 +121,19 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
       });
     },
     onSuccess: () => {
-      toast.success("Call update saved & follow-up updated");
+      toast.success(
+        nextCallAt
+          ? "Follow-up scheduled & CRM status updated"
+          : "Call update saved & CRM status updated",
+      );
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
       void qc.invalidateQueries({ queryKey: ["customer-pending-followups", customerId] });
       void qc.invalidateQueries({ queryKey: ["customer-followups-history", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-next-followup", customerId] });
       void qc.invalidateQueries({ queryKey: qk.followups.all });
+      void qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      void qc.invalidateQueries({ queryKey: ["lead-stage-signals"] });
+      void qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
       void qc.invalidateQueries({ queryKey: qk.dashboard });
       // Reset form
       setCallNote("");
@@ -145,9 +153,14 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
     },
     onSuccess: () => {
       toast.success("Follow-up marked as completed");
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
       void qc.invalidateQueries({ queryKey: ["customer-pending-followups", customerId] });
       void qc.invalidateQueries({ queryKey: ["customer-followups-history", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-next-followup", customerId] });
       void qc.invalidateQueries({ queryKey: qk.followups.all });
+      void qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      void qc.invalidateQueries({ queryKey: ["lead-stage-signals"] });
+      void qc.invalidateQueries({ queryKey: ["website-leads-dashboard"] });
       void qc.invalidateQueries({ queryKey: qk.dashboard });
       setCompleteDialogOpen(false);
       setCompletionNotes("");
@@ -441,13 +454,21 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
 
             {/* Current Call Discussion Note */}
             <Field
-              label="Discussion Notes / Client Update on this Call"
+              label={
+                nextCallAt
+                  ? "Discussion Notes / Client Update (Optional if scheduling future call)"
+                  : "Discussion Notes / Client Update on this Call"
+              }
               hint="Record what the client said, quantities, stone choices, or timeline"
-              required
+              required={!nextCallAt}
             >
               <Textarea
                 rows={3}
-                placeholder="e.g. Discussed pricing for Beige Travertine 1200 sq.ft. Client likes the vein-cut sample, requested formal quotation with delivery by Friday."
+                placeholder={
+                  nextCallAt
+                    ? "e.g. Lead arrived from website; scheduling intro call to understand requirements and share catalogue."
+                    : "e.g. Discussed pricing for Beige Travertine 1200 sq.ft. Client likes the vein-cut sample, requested formal quotation with delivery by Friday."
+                }
                 value={callNote}
                 onChange={(e) => setCallNote(e.target.value)}
                 className="bg-white text-sm"
@@ -547,7 +568,11 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                 ) : (
                   <Send className="h-3.5 w-3.5" />
                 )}
-                Save Call Note & Set Reminder
+                {nextCallAt && callNote.trim()
+                  ? "Save Note & Schedule Follow-up"
+                  : nextCallAt
+                    ? "Schedule Follow-up Call"
+                    : "Save Call Note"}
               </Button>
             </div>
           </div>
