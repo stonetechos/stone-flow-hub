@@ -105,13 +105,13 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         return;
       }
 
-      // If mode is "app" (default WhatsApp Desktop/Business), use popupWin to show/print the PDF document
-      // and launch the desktop WhatsApp / WhatsApp Business app via custom protocol
+      // If mode is "app" (WhatsApp Desktop/Business), save PDF silently to Downloads in background
+      // and launch WhatsApp via wa.me / app protocol in popupWin WITHOUT opening any print dialog
       if (mode === "app") {
-        if (popupWin && !popupWin.closed) {
-          await printPdf(built.doc, popupWin);
-        } else {
-          await printPdf(built.doc);
+        try {
+          await downloadPdf(built.doc);
+        } catch {
+          /* best effort */
         }
 
         // Copy formatted message text to clipboard as convenience
@@ -123,17 +123,17 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
           /* ignore */
         }
 
-        openWhatsappToContact(phone, text, null, { mode: "app" });
+        openWhatsappToContact(phone, text, popupWin, { mode: "wa.me" });
 
         toast.success(
-          `Opening WhatsApp for Business for ${built.meta.toName || "recipient"}! PDF opened in adjacent tab to attach.`,
+          `Opening WhatsApp for ${built.meta.toName || "recipient"}! PDF saved to Downloads to attach.`,
           { duration: 7000 },
         );
       } else if (mode === "web") {
         // Mode "web": navigate popupWin to web.whatsapp.com directly
         openWhatsappToContact(phone, text, popupWin, { mode: "web" });
 
-        // Also trigger PDF print/save
+        // Also trigger PDF download
         try {
           await downloadPdf(built.doc);
         } catch {
@@ -141,7 +141,7 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         }
 
         toast.success(
-          `Opening WhatsApp Web for ${built.meta.toName || "recipient"}! PDF prepared for attachment.`,
+          `Opening WhatsApp Web for ${built.meta.toName || "recipient"}! PDF saved to Downloads to attach.`,
           { duration: 7000 },
         );
       } else {

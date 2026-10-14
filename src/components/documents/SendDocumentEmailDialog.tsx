@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { enqueueMessage } from "@/lib/notifications/queue";
-import { printPdf, renderDocHtmlAsync } from "@/lib/pdf/generator";
+import { downloadPdf, renderDocHtmlAsync } from "@/lib/pdf/generator";
 import {
   getWhatsappModePreference,
   openWhatsappToContact,
@@ -135,9 +135,9 @@ export function SendDocumentEmailDialog({
         if (attachPdf) {
           try {
             const { doc } = await buildDocument(entity, entityId);
-            await printPdf(doc);
+            await downloadPdf(doc);
           } catch (e) {
-            console.warn("Could not auto-open PDF print dialog:", e);
+            console.warn("Could not auto-download PDF:", e);
           }
         }
 
@@ -159,7 +159,7 @@ export function SendDocumentEmailDialog({
               : "WhatsApp for Business";
 
         toast.success(
-          `Opening ${targetLabel} — ${attachPdf ? "PDF opened in adjacent tab to attach, " : ""}press Enter to send`,
+          `Opening ${targetLabel} — ${attachPdf ? "PDF saved to Downloads to attach, " : ""}press Enter to send`,
         );
 
         // Record in queue/timeline as SENT so automated dispatcher does not attempt Meta API
