@@ -18,40 +18,40 @@ export function ZohoDashboardHeader({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="card-3d-milky mb-6 p-4 sm:px-6 sm:py-5">
+    <div className="card-3d-milky mb-4 sm:mb-6 p-3 sm:px-6 sm:py-5 w-full max-w-full overflow-hidden">
       {/* Top row: Company name + actions */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 pb-3 sm:pb-4 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {/* Stone Tech Official Logo */}
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-cyan-950/20 border border-cyan-200/60 ring-1 ring-cyan-500/20">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-white/95 p-1 shadow-md shadow-cyan-950/20 border border-cyan-200/60 ring-1 ring-cyan-500/20">
             <img
               src="/branding/stone-tech-icon.png"
               alt="Stone Tech"
               className="h-full w-full object-contain"
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display text-lg font-black tracking-tight text-engraved-title sm:text-xl">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="font-display text-base sm:text-xl font-black tracking-tight text-engraved-title">
                 {t("brand.companyName", "STONE TECH")}
               </span>
-              <span className="engraved-well-glow rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black tracking-wide uppercase text-engraved-blue">
+              <span className="engraved-well-glow rounded-full px-2 py-0.5 font-mono text-[9px] sm:text-[10px] font-black tracking-wide uppercase text-engraved-blue shrink-0">
                 {t("brand.liveErp", "Live ERP")}
               </span>
             </div>
-            <p className="font-mono text-xs font-semibold text-engraved-kicker">
+            <p className="font-mono text-[11px] sm:text-xs font-semibold text-engraved-kicker truncate">
               {t("dashboard.zoho.hubSubtitle", "Executive & Operational Hub")}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
           <Button
             variant="outline"
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="engraved-well h-9 gap-2 rounded-xl px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-cyan-400"
+            className="engraved-well h-8 sm:h-9 gap-1.5 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-engraved-blue shadow-xs transition-all hover:scale-[1.02] hover:border-cyan-400"
             title={t("common.refresh", "Refresh")}
           >
             <RefreshCw
@@ -67,12 +67,12 @@ export function ZohoDashboardHeader({
       </div>
 
       {/* Tabs Row — 3D Engraved Recessed Pill Bar */}
-      <div className="engraved-well flex items-center gap-1.5 overflow-x-auto rounded-xl p-1.5 text-xs sm:text-sm">
+      <div className="engraved-well flex items-center gap-1 sm:gap-1.5 overflow-x-auto rounded-xl p-1 sm:p-1.5 text-xs sm:text-sm max-w-full">
         <button
           type="button"
           onClick={() => onTabChange("operations")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "operations"
               ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-cyan-800",
@@ -86,7 +86,7 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("announcements")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "announcements"
               ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-cyan-800",
@@ -101,7 +101,7 @@ export function ZohoDashboardHeader({
           type="button"
           onClick={() => onTabChange("help")}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 font-bold transition-all",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3.5 py-1.5 font-bold transition-all shrink-0",
             activeTab === "help"
               ? "bg-gradient-to-r from-cyan-800 to-cyan-700 text-white shadow-md shadow-cyan-800/35 border-t border-white/40"
               : "text-slate-600 hover:bg-white hover:text-cyan-800",

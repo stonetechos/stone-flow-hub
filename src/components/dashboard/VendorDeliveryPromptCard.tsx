@@ -36,7 +36,7 @@ export function VendorDeliveryPromptCard() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 sm:p-5 shadow-sm transition-all">
+      <div className="relative overflow-hidden rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-5 shadow-sm transition-all w-full max-w-full">
         {/* Glow accent */}
         <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
 

@@ -178,30 +178,30 @@ export function WebsiteLeadsDashboardCard() {
   };
 
   return (
-    <div className="card-3d-milky overflow-hidden border border-teal-800/20 shadow-sm">
+    <div className="card-3d-milky overflow-hidden border border-teal-800/20 shadow-sm w-full max-w-full">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-950/[0.04] via-transparent to-transparent px-4 py-3.5 sm:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-700 text-white shadow-md shadow-cyan-700/25">
-            <Globe className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-950/[0.04] via-transparent to-transparent px-3.5 py-3 sm:px-6">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-700 text-white shadow-md shadow-cyan-700/25">
+            <Globe className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-display text-base font-bold tracking-tight text-engraved-title sm:text-lg">
                 {t("crm.leadsTitle", "Visitor Inquiries & CRM Leads")}
               </h3>
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-600" />
               </span>
             </div>
-            <p className="font-mono text-xs font-semibold text-engraved-kicker">
+            <p className="font-mono text-[11px] sm:text-xs font-semibold text-engraved-kicker truncate">
               {t("crm.leadsSubtitle")}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Filter Mode Toggle */}
           <div className="flex items-center rounded-lg border border-slate-200 bg-white/90 p-0.5 shadow-2xs">
             <button

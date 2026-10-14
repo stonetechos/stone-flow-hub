@@ -16,6 +16,7 @@ import {
   Globe,
   FileText,
   Truck,
+  Languages,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,7 @@ import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
+import { SUPPORTED_LANGUAGES, type LangCode } from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SyncStatusIndicator } from "@/components/layout/SyncStatusIndicator";
@@ -372,7 +374,8 @@ function UserMenu({
   isAdmin: boolean;
   isSuperAdmin?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [lastLogin, setLastLogin] = useState<string | null>(null);
@@ -492,6 +495,39 @@ function UserMenu({
             </kbd>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {/* Quick Language switcher */}
+          <div className="px-2.5 py-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-text-muted mb-1.5">
+              <Languages className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
+              <span>{t("common.language", "Language / भाषा")}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  onClick={() => {
+                    void i18n.changeLanguage(lang.code);
+                    try {
+                      localStorage.setItem("stos-lang", lang.code);
+                      document.documentElement.lang = lang.code;
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  className={cn(
+                    "py-1 px-1.5 rounded text-[11px] font-bold text-center transition-all border",
+                    currentLang === lang.code
+                      ? "bg-cyan-700 text-white border-cyan-700 shadow-xs"
+                      : "bg-surface-panel text-text-primary border-border-default hover:bg-surface-elevated",
+                  )}
+                >
+                  {lang.nativeLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={onSignOut}
             className="text-intent-destructive focus:text-intent-destructive"
@@ -509,7 +545,8 @@ function UserMenu({
 /* AppShell                                                               */
 /* --------------------------------------------------------------------- */
 export function AppShell({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const uid = useCurrentUserId();
@@ -776,6 +813,40 @@ export function AppShell({ children }: { children: ReactNode }) {
                       scrollable={false}
                     />
                   </div>
+
+                  {/* Mobile Drawer Language Switcher Bar */}
+                  <div className="relative z-10 border-t border-white/12 p-3 bg-black/20 shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-200/90 mb-2">
+                      <Languages className="h-3.5 w-3.5" />
+                      <span>{t("common.language", "Language / भाषा")}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {SUPPORTED_LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            void i18n.changeLanguage(lang.code);
+                            try {
+                              localStorage.setItem("stos-lang", lang.code);
+                              document.documentElement.lang = lang.code;
+                            } catch {
+                              /* ignore */
+                            }
+                            setMobileNavOpen(false);
+                          }}
+                          className={cn(
+                            "py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-all border",
+                            currentLang === lang.code
+                              ? "bg-white text-cyan-950 border-white shadow-sm"
+                              : "bg-white/10 text-white border-white/20 hover:bg-white/20",
+                          )}
+                        >
+                          {lang.nativeLabel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </DialogPrimitive.Content>
               </SheetPortal>
             </Sheet>
@@ -826,8 +897,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
 
             {/* shrink-0: priority topbar controls. Secondary indicators
-                (DemoBadge, SyncStatus, LanguageToggle) collapse to sm+ screens
-                to prevent mobile header compression or horizontal overflow. */}
+                (DemoBadge, SyncStatus) collapse to sm+ screens to preserve
+                mobile header spacing while LanguageToggle remains visible across all screens. */}
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               <div className="hidden sm:inline-flex">
                 <DemoBadge />
@@ -837,7 +908,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="hidden sm:inline-flex">
                 <SyncStatusIndicator />
               </div>
-              <div className="hidden sm:inline-flex">
+              <div className="inline-flex items-center">
                 <LanguageToggle />
               </div>
               <NotificationsBell />
@@ -863,7 +934,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <main
             id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto paper-texture px-3 sm:px-4 md:px-8 pt-3 sm:pt-5 md:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full paper-texture px-2.5 sm:px-4 md:px-8 pt-2.5 sm:pt-5 md:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             {/* Single consistent content container (Sprint 1.1): every
                 route previously decided its own width ad hoc, or didn't
@@ -872,7 +943,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 is the same 1400px ceiling FormActions' footer already used,
                 centralized here as one token instead of a second hardcoded
                 number. */}
-            <div className="mx-auto w-full max-w-[var(--stos-content-max-width)]">
+            <div className="mx-auto w-full max-w-[var(--stos-content-max-width)] min-w-0 overflow-x-hidden">
               <PageTransition>{children}</PageTransition>
             </div>
           </main>
