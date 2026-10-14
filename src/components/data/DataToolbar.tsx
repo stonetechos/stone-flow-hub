@@ -52,7 +52,12 @@ export function DataToolbar({
       : searchPlaceholder;
 
   return (
-    <div className={cn("mb-3.5 flex flex-wrap items-center gap-2.5", className)}>
+    <div
+      className={cn(
+        "mb-3.5 flex flex-wrap items-center gap-2.5 w-full max-w-full min-w-0",
+        className,
+      )}
+    >
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         {displayTitle && (
           <div className="flex items-center gap-2">

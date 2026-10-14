@@ -186,7 +186,7 @@ function DashboardPage() {
       };
 
   return (
-    <div className="relative pb-24 w-full max-w-full">
+    <div className="relative pb-24 w-full max-w-full min-w-0">
       {/* Zoho Books Top Header & Navigation Sub-tabs */}
       <ZohoDashboardHeader
         activeTab={activeTab}
@@ -203,9 +203,9 @@ function DashboardPage() {
           ) : kpisQ.error ? (
             <ErrorBlock message={toUserMessage(kpisQ.error)} onRetry={() => void kpisQ.refetch()} />
           ) : (
-            <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_320px] w-full max-w-full min-w-0">
               {/* MAIN COLUMN */}
-              <div className="space-y-4 sm:space-y-6 min-w-0">
+              <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
                 <ExecutiveHero
                   greeting={greeting}
                   name={name}
@@ -231,7 +231,7 @@ function DashboardPage() {
                   topInsights={topInsights}
                 />
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 w-full max-w-full min-w-0">
                   <CashFlowSnapshot kpis={kpisQ.data} />
                   <DispatchAndInstallation kpis={kpisQ.data} />
                 </div>
@@ -301,16 +301,16 @@ function ExecutiveHero({
 
   return (
     <section
-      className="card-3d-milky relative overflow-hidden w-full max-w-full"
+      className="card-3d-milky relative overflow-hidden w-full max-w-full min-w-0"
       aria-label="Executive briefing"
     >
-      <div className="relative z-10 p-3.5 sm:p-8">
-        <div className="flex items-center justify-between gap-3 sm:gap-4">
+      <div className="relative z-10 p-3 sm:p-6 lg:p-8 min-w-0">
+        <div className="flex items-center justify-between gap-2.5 sm:gap-4 min-w-0">
           <div className="min-w-0 flex-1">
             <div className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker break-words">
               {today}
             </div>
-            <h1 className="mt-1 sm:mt-2 font-display text-xl sm:text-[28px] font-black tracking-tight text-engraved-title leading-snug">
+            <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
               {isNocturnal ? (
                 <>
                   {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
@@ -322,48 +322,50 @@ function ExecutiveHero({
               )}
             </h1>
             {isNocturnal && nocturnalQuip && (
-              <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+              <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 break-words">
                 <span>🌙</span>
                 <span>{nocturnalQuip}</span>
               </p>
             )}
           </div>
-          <HealthGauge score={health.score} band={health.band} />
+          <div className="shrink-0">
+            <HealthGauge score={health.score} band={health.band} />
+          </div>
         </div>
 
         {/* Headline metric in 3D Engraved Well */}
-        <div className="engraved-well-glow mt-4 sm:mt-6 flex flex-wrap items-baseline gap-x-3 sm:gap-x-4 gap-y-1.5 sm:gap-y-2 rounded-2xl p-3 sm:p-4">
+        <div className="engraved-well-glow mt-3.5 sm:mt-6 flex flex-wrap items-baseline gap-x-2.5 sm:gap-x-4 gap-y-1 sm:gap-y-2 rounded-2xl p-2.5 sm:p-4 min-w-0">
           <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker">
             {headline.label}
           </span>
           <Link
             to={headline.to}
-            className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg transition-transform hover:scale-105 sm:text-[36px]"
+            className="font-display text-xl sm:text-2xl lg:text-[36px] font-black tabular-nums text-engraved-blue-lg transition-transform hover:scale-105"
           >
             {headline.value}
           </Link>
-          <span className="font-mono text-[11px] sm:text-[12px] font-bold text-slate-500">
+          <span className="font-mono text-[10px] sm:text-[12px] font-bold text-slate-500 break-words">
             {headline.context}
           </span>
         </div>
 
         {/* AI Executive Brief */}
-        <div className="mt-4 sm:mt-6 border-t border-blue-50 pt-3.5 sm:pt-5">
+        <div className="mt-3.5 sm:mt-6 border-t border-blue-50 pt-3 sm:pt-5">
           <div className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker">
             <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
             {t("dashboard.executiveBrief", "Executive brief")}
           </div>
-          <ul className="space-y-1.5 sm:space-y-2">
+          <ul className="space-y-1.5 sm:space-y-2 min-w-0">
             {brief.map((line, i) => (
               <li
                 key={i}
-                className="flex gap-2 sm:gap-2.5 text-xs sm:text-[14px] font-semibold leading-relaxed text-slate-700"
+                className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-[14px] font-semibold leading-relaxed text-slate-700 min-w-0"
               >
                 <span
                   aria-hidden
                   className="mt-1.5 sm:mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-700 shadow-sm shadow-cyan-700/50"
                 />
-                <span>{line}</span>
+                <span className="min-w-0 flex-1 break-words">{line}</span>
               </li>
             ))}
           </ul>
@@ -376,8 +378,8 @@ function ExecutiveHero({
 function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
   const { t } = useTranslation();
   const isIdle = band === "idle" || score === 0;
-  const size = 72;
-  const stroke = 7;
+  const size = 64;
+  const stroke = 6;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = isIdle ? c : c - (Math.max(0, Math.min(100, score)) / 100) * c;
@@ -418,13 +420,13 @@ function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
           className={cn(
-            "font-display text-xl sm:text-2xl font-black tabular-nums leading-none",
+            "font-display text-lg sm:text-2xl font-black tabular-nums leading-none",
             isIdle ? "text-slate-400 dark:text-slate-500" : "text-orange-700 dark:text-orange-400",
           )}
         >
           {isIdle ? "—" : score}
         </span>
-        <span className="mt-0.5 font-mono text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-engraved-kicker">
+        <span className="mt-0.5 font-mono text-[7.5px] sm:text-[9px] font-black uppercase tracking-wider text-engraved-kicker">
           {isIdle ? t("dashboard.noData", "No Data") : t("dashboard.health", "Health")}
         </span>
       </div>
@@ -462,7 +464,7 @@ function BusinessHealthGrid({ kpis }: { kpis: DashboardKpis }) {
         kicker={t("dashboard.businessHealth", "Business health")}
         title={t("dashboard.pillarsTitle")}
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 w-full max-w-full min-w-0">
         <HealthCard
           to="/dashboards/sales"
           icon={<TrendingUp className="h-4 w-4" />}
@@ -693,7 +695,7 @@ function OperationalRadar({
         kicker={t("dashboard.radarKicker", "Operational radar")}
         title={t("dashboard.radarTitle")}
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 w-full max-w-full min-w-0">
         <RadarColumn
           icon={<Flame className="h-3.5 w-3.5" />}
           title={t("dashboard.radar.critical", "Critical")}
@@ -963,7 +965,7 @@ function SalesCommandCentre({ kpis }: { kpis: DashboardKpis }) {
       title={t("dashboard.pipelinePulseTitle", "Pipeline pulse")}
       to="/dashboards/sales"
     >
-      <div className="grid gap-2.5 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 w-full max-w-full min-w-0">
         {cells.map((c) => (
           <Link
             key={c.label}

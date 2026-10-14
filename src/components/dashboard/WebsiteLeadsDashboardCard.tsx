@@ -178,37 +178,37 @@ export function WebsiteLeadsDashboardCard() {
   };
 
   return (
-    <div className="card-3d-milky overflow-hidden border border-teal-800/20 shadow-sm w-full max-w-full">
+    <div className="card-3d-milky overflow-hidden border border-teal-800/20 shadow-sm w-full max-w-full min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-950/[0.04] via-transparent to-transparent px-3.5 py-3 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-950/[0.04] via-transparent to-transparent px-3 py-3 sm:px-6 min-w-0">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-700 text-white shadow-md shadow-cyan-700/25">
             <Globe className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-display text-base font-bold tracking-tight text-engraved-title sm:text-lg">
+              <h3 className="font-display text-sm sm:text-base font-bold tracking-tight text-engraved-title truncate">
                 {t("crm.leadsTitle", "Visitor Inquiries & CRM Leads")}
               </h3>
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-600" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-600" />
               </span>
             </div>
-            <p className="font-mono text-[11px] sm:text-xs font-semibold text-engraved-kicker truncate">
+            <p className="font-mono text-[10px] sm:text-xs font-semibold text-engraved-kicker truncate">
               {t("crm.leadsSubtitle")}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
           {/* Filter Mode Toggle */}
           <div className="flex items-center rounded-lg border border-slate-200 bg-white/90 p-0.5 shadow-2xs">
             <button
               type="button"
               onClick={() => setFilterMode("all")}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-bold transition-all",
+                "rounded-md px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition-all",
                 filterMode === "all"
                   ? "bg-cyan-700 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900",
@@ -220,7 +220,7 @@ export function WebsiteLeadsDashboardCard() {
               type="button"
               onClick={() => setFilterMode("web")}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-bold transition-all",
+                "rounded-md px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition-all",
                 filterMode === "web"
                   ? "bg-cyan-700 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900",
@@ -234,92 +234,90 @@ export function WebsiteLeadsDashboardCard() {
             variant="outline"
             size="sm"
             onClick={handleCopyLink}
-            className="engraved-well h-8 gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-700 hover:border-cyan-400"
+            className="engraved-well h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold text-slate-700 hover:border-cyan-400"
             title="Copy public website link"
           >
             {copiedLink ? (
-              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-600" />
             ) : (
-              <Copy className="h-3.5 w-3.5 text-slate-500" />
+              <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500" />
             )}
-            <span>
-              {copiedLink ? t("crm.copied", "Copied") : t("crm.copyLink", "Copy Website Link")}
-            </span>
+            <span>{copiedLink ? t("crm.copied", "Copied") : t("crm.copyLink", "Copy Link")}</span>
           </Button>
 
           <Button
             asChild
             size="sm"
-            className="h-8 gap-1.5 rounded-lg bg-cyan-700 px-3 text-xs font-bold text-white shadow-xs hover:bg-cyan-800"
+            className="h-7 sm:h-8 gap-1 sm:gap-1.5 rounded-lg bg-cyan-700 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold text-white shadow-xs hover:bg-cyan-800"
           >
             <Link to="/enquiries">
               <span>{t("crm.viewFull", "View All CRM")}</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Link>
           </Button>
         </div>
       </div>
 
       {/* KPI Stats Strip */}
-      <div className="grid grid-cols-2 gap-2 border-b border-slate-200/80 bg-slate-50/50 p-3 sm:grid-cols-4 sm:gap-3 sm:p-4">
-        <div className="engraved-well flex flex-col rounded-xl p-3">
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-2 gap-2 border-b border-slate-200/80 bg-slate-50/50 p-2.5 sm:grid-cols-4 sm:gap-3 sm:p-4 min-w-0">
+        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 min-w-0 overflow-hidden">
+          <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate">
             {t("crm.totalLeads", "Total Inquiries")}
           </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
+          <div className="mt-1 flex items-baseline gap-1 sm:gap-1.5 min-w-0">
+            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-engraved-blue-lg">
               {totalCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 truncate">
               {t("crm.inquiries", "in pipeline")}
             </span>
           </div>
         </div>
 
-        <div className="engraved-well flex flex-col rounded-xl p-3 border-cyan-200/80 bg-cyan-50/30">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-800">
+        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 border-cyan-200/80 bg-cyan-50/30 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between min-w-0 gap-1">
+            <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-cyan-800 truncate">
               {t("crm.newUncontacted", "New Uncontacted")}
             </span>
             {newCount > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-cyan-600 px-1.5 py-0.5 text-[9px] font-bold text-white animate-pulse">
-                <Flame className="h-2.5 w-2.5" /> Action Req
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-cyan-600 px-1.5 py-0.5 text-[8px] font-bold text-white shrink-0 animate-pulse">
+                <Flame className="h-2 w-2" /> Action
               </span>
             )}
           </div>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-black tabular-nums text-cyan-800 sm:text-3xl">
+          <div className="mt-1 flex items-baseline gap-1 sm:gap-1.5 min-w-0">
+            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-cyan-800">
               {newCount}
             </span>
-            <span className="text-[11px] font-medium text-cyan-700">
+            <span className="text-[10px] sm:text-[11px] font-medium text-cyan-700 truncate">
               {t("crm.awaitingReply", "awaiting contact")}
             </span>
           </div>
         </div>
 
-        <div className="engraved-well flex flex-col rounded-xl p-3">
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 min-w-0 overflow-hidden">
+          <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 truncate">
             {t("crm.inDiscussion", "In Discussion / Quoting")}
           </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-black tabular-nums text-engraved-blue-lg sm:text-3xl">
+          <div className="mt-1 flex items-baseline gap-1 sm:gap-1.5 min-w-0">
+            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-engraved-blue-lg">
               {inDiscussionCount}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 truncate">
               {t("crm.active", "in discussion")}
             </span>
           </div>
         </div>
 
-        <div className="engraved-well flex flex-col rounded-xl p-3">
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+        <div className="engraved-well flex flex-col rounded-xl p-2.5 sm:p-3 min-w-0 overflow-hidden">
+          <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-800 truncate">
             {t("crm.ordersWon", "Orders Won / Approved")}
           </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-black tabular-nums text-emerald-700 sm:text-3xl">
+          <div className="mt-1 flex items-baseline gap-1 sm:gap-1.5 min-w-0">
+            <span className="font-display text-xl sm:text-2xl font-black tabular-nums text-emerald-700">
               {wonCount}
             </span>
-            <span className="text-[11px] font-medium text-emerald-600">
+            <span className="text-[10px] sm:text-[11px] font-medium text-emerald-600 truncate">
               {t("crm.converted", "converted")}
             </span>
           </div>

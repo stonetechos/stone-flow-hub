@@ -36,18 +36,18 @@ export function VendorDeliveryPromptCard() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-5 shadow-sm transition-all w-full max-w-full">
+      <div className="relative overflow-hidden rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-5 shadow-sm transition-all w-full max-w-full min-w-0">
         {/* Glow accent */}
         <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
 
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 min-w-0">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
               <Truck className="h-5 w-5 animate-pulse" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-foreground text-sm sm:text-base">
                   Vendor Deliveries Round the Corner
                 </h3>
@@ -58,7 +58,7 @@ export function VendorDeliveryPromptCard() {
                   Due within 5 Days
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5 break-words">
                 {prompts.length}{" "}
                 {prompts.length === 1
                   ? "order approaching deadline"
@@ -69,7 +69,7 @@ export function VendorDeliveryPromptCard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium shrink-0 self-start sm:self-auto">
             <Sparkles className="h-3.5 w-3.5" />
             <span>1-Day Early Inquiries Active</span>
           </div>

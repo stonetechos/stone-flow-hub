@@ -29,7 +29,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "card-3d-milky overflow-hidden shadow-xs",
+        "card-3d-milky overflow-hidden shadow-xs w-full max-w-full min-w-0",
         // Row / head padding driven by data-attribute so descendants can react.
         density === "dense" && "[&_tbody_td]:py-1.5 [&_thead_th]:h-8.5",
         density === "compact" && "[&_tbody_td]:py-2.5 [&_thead_th]:h-9.5",
