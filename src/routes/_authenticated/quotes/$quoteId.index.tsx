@@ -19,7 +19,17 @@ import {
   Truck,
   Send,
   MessageCircle,
+  Image as ImageIcon,
+  Eye,
+  Sparkles,
 } from "lucide-react";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  resolveAllQuoteImages,
+  getLineItemImage,
+  getQuoteGalleryImages,
+} from "@/lib/quotes/quote-images";
 
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
@@ -105,6 +115,14 @@ function QuoteDetailPage() {
     queryKey: ["quotes", "sourceEstimate", sourceEstimateId ?? ""],
     queryFn: () => (sourceEstimateId ? getEstimateForQuote(sourceEstimateId) : null),
     enabled: !!sourceEstimateId,
+  });
+
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+
+  const quoteImages = useQuery({
+    queryKey: ["quotes", "images", quoteId],
+    queryFn: () => resolveAllQuoteImages(q.data, items.data ?? []),
+    enabled: Boolean(q.data && items.data),
   });
 
   const statusMut = useMutation({
@@ -398,6 +416,7 @@ function QuoteDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-14 text-center">Photo</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>HSN</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
@@ -408,19 +427,57 @@ function QuoteDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(items.data ?? []).map((it) => (
-                  <TableRow key={it.id}>
-                    <TableCell className="font-medium">{it.description}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">{it.quantity}</TableCell>
-                    <TableCell>{it.unit ?? "—"}</TableCell>
-                    <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                    <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                    <TableCell className="text-right">{formatInr(it.line_total)}</TableCell>
-                  </TableRow>
-                ))}
+                {(items.data ?? []).map((it) => {
+                  const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                  return (
+                    <TableRow key={it.id}>
+                      <TableCell className="p-2 text-center align-middle">
+                        {img ? (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: img, title: it.description })}
+                            className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
+                            title="Click to view full photo"
+                          >
+                            <img
+                              src={img}
+                              alt={it.description}
+                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                              <Eye className="h-3.5 w-3.5" />
+                            </span>
+                          </button>
+                        ) : (
+                          <div
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                            title="No photo attached"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col">
+                          <span>{it.description}</span>
+                          {img && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
+                              <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                      </TableCell>
+                      <TableCell className="text-right">{it.quantity}</TableCell>
+                      <TableCell>{it.unit ?? "—"}</TableCell>
+                      <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
+                      <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                      <TableCell className="text-right">{formatInr(it.line_total)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">
@@ -444,6 +501,43 @@ function QuoteDetailPage() {
                 </div>
               )}
             </div>
+
+            {quoteImages.data && quoteImages.data.size > 0 && (
+              <div className="mt-6 border-t border-border pt-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <ImageIcon className="h-3.5 w-3.5 text-primary" /> Product Visuals & Material
+                    Samples ({getQuoteGalleryImages(items.data ?? [], quoteImages.data).length})
+                  </h4>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                  {getQuoteGalleryImages(items.data ?? [], quoteImages.data).map((gImg) => (
+                    <div
+                      key={gImg.id}
+                      onClick={() => setPreviewImage({ url: gImg.url, title: gImg.label })}
+                      className="group relative cursor-pointer overflow-hidden rounded-lg border border-border bg-card shadow-xs transition hover:border-primary/50 hover:shadow-md"
+                    >
+                      <div className="aspect-square w-full overflow-hidden bg-muted/20">
+                        <img
+                          src={gImg.url}
+                          alt={gImg.label}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="p-2">
+                        <p className="truncate text-xs font-medium text-foreground group-hover:text-primary">
+                          {gImg.label}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{gImg.source}</p>
+                      </div>
+                      <div className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100">
+                        <Eye className="h-3 w-3" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -589,6 +683,25 @@ function QuoteDetailPage() {
         projectId={quote.project_id}
         customerId={quote.customer_id}
       />
+
+      <Dialog open={Boolean(previewImage)} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-4">
+          <DialogHeader>
+            <DialogTitle className="truncate text-base font-semibold">
+              {previewImage?.title || "Product Visual"}
+            </DialogTitle>
+          </DialogHeader>
+          {previewImage?.url && (
+            <div className="flex items-center justify-center overflow-hidden rounded-lg bg-black/5 p-2">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[75vh] w-auto max-w-full rounded-md object-contain shadow-md"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

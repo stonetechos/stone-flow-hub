@@ -11,6 +11,7 @@ import type { PdfDoc, PdfLine, PdfMeta, PdfParty } from "@/lib/pdf/generator";
 
 import { getEstimate, getEstimateItems, getEstimateSchedule } from "@/lib/estimates/api";
 import { getQuote, getQuoteItems } from "@/lib/quotes/api";
+import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
 import { getSalesOrder, listSalesOrderItems } from "@/lib/sales-orders/api";
@@ -227,6 +228,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       if (!q) throw new Error("Quotation not found");
       const items = await getQuoteItems(id);
       const cust = await fetchCustomer(q.customer_id);
+      const imageMap = await resolveAllQuoteImages(q, items);
       const lines: PdfLine[] = items.map((it) => ({
         label: it.description,
         hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
@@ -234,6 +236,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         unit: it.unit ?? "",
         rate: inr(it.unit_price),
         amount: inr(it.line_total),
+        image: getLineItemImage(it, imageMap),
       }));
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [

@@ -39,6 +39,7 @@ export type PdfLine = {
   rate?: number | string;
   amount?: number | string;
   hsn?: string;
+  image?: string | null;
 };
 export type PdfMeta = { label: string; value: string | number | null | undefined };
 
@@ -100,16 +101,28 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     : `<div style="font-size:24px;font-weight:800;color:${accent};letter-spacing:-.01em">${esc(brand.company_name)}</div>`;
 
   const showHsn = (doc.lines ?? []).some((l) => l.hsn);
+  const showPhoto = (doc.lines ?? []).some((l) => Boolean(l.image));
   const rows = (doc.lines ?? [])
     .map(
       (l, i) => `<tr>
-        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};font-size:11px">${i + 1}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border}">${esc(l.label)}</td>
-        ${showHsn ? `<td style="padding:8px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px">${esc(l.hsn ?? "")}</td>` : ""}
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right">${esc(l.qty ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted}">${esc(l.unit ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right">${esc(l.rate ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums">${esc(l.amount ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};font-size:11px;vertical-align:middle">${i + 1}</td>
+        ${
+          showPhoto
+            ? `<td style="padding:6px;border-bottom:1px solid ${border};text-align:center;vertical-align:middle;width:56px">
+                ${
+                  l.image
+                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid ${border};display:block;margin:0 auto;" />`
+                    : `<span style="color:${muted}">—</span>`
+                }
+              </td>`
+            : ""
+        }
+        <td style="padding:8px;border-bottom:1px solid ${border};vertical-align:middle">${esc(l.label)}</td>
+        ${showHsn ? `<td style="padding:8px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px;vertical-align:middle">${esc(l.hsn ?? "")}</td>` : ""}
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;vertical-align:middle">${esc(l.qty ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};vertical-align:middle">${esc(l.unit ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;vertical-align:middle">${esc(l.rate ?? "")}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle">${esc(l.amount ?? "")}</td>
       </tr>`,
     )
     .join("");
@@ -196,6 +209,26 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       </div>`
     : "";
 
+  const uniquePhotos = Array.from(
+    new Set((doc.lines ?? []).map((l) => l.image).filter((img): img is string => Boolean(img))),
+  );
+  const galleryBlock =
+    uniquePhotos.length > 0
+      ? `<div style="margin-top:20px;padding:12px 14px;border:1px solid ${border};border-radius:6px;background:#FAFAFA;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:10px;font-weight:700">Product &amp; Material Visuals</div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px">
+            ${uniquePhotos
+              .map(
+                (url) =>
+                  `<div style="border:1px solid ${border};border-radius:6px;overflow:hidden;background:#fff;padding:4px">
+                    <img src="${esc(url)}" alt="Product Photo" style="width:140px;height:110px;object-fit:cover;border-radius:4px;display:block;" />
+                  </div>`,
+              )
+              .join("")}
+          </div>
+        </div>`
+      : "";
+
   return `<!doctype html><html><head><meta charset="utf-8" />
 <title>${esc(doc.title)} · ${esc(doc.number)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -253,6 +286,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
         ? `<table>
             <thead><tr>
               <th style="width:28px">#</th>
+              ${showPhoto ? `<th style="width:56px;text-align:center">Photo</th>` : ""}
               <th>Description</th>
               ${showHsn ? `<th style="width:70px">HSN</th>` : ""}
               <th class="right" style="width:70px">Qty</th>
@@ -266,6 +300,8 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     }
 
     ${totals ? `<div class="totals">${totals}</div>` : ""}
+
+    ${galleryBlock}
 
     <div style="display:flex;justify-content:space-between;gap:24px;margin-top:20px;flex-wrap:wrap">
       ${bankBlock}

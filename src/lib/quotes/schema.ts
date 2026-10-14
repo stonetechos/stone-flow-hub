@@ -31,6 +31,7 @@ export const quoteItemInputSchema = z.object({
     (v) => (typeof v === "string" && v.trim() === "" ? null : v),
     z.enum(QUOTE_CATEGORIES).nullable().optional(),
   ),
+  image_url: z.string().nullable().optional(),
 });
 export type QuoteItemInput = z.infer<typeof quoteItemInputSchema>;
 

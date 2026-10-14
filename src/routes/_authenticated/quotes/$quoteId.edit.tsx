@@ -1,7 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowDown, ArrowUp, Loader2, Plus, Trash2, UserCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowDown,
+  ArrowUp,
+  Loader2,
+  Plus,
+  Trash2,
+  UserCheck,
+  ImagePlus,
+  Image as ImageIcon,
+  X as XIcon,
+} from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { toast } from "sonner";
@@ -33,8 +44,10 @@ import {
   reorderQuoteItems,
   updateQuote,
   updateQuoteItem,
+  updateQuoteItemImage,
   type QuoteItemRow,
 } from "@/lib/quotes/api";
+import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
 import {
   QUOTE_CATEGORIES,
   QUOTE_CATEGORY_LABELS,
@@ -362,9 +375,18 @@ function LineItemsEditor({
   saleMode?: SaleMode;
 }) {
   const qc = useQueryClient();
+  const quoteQuery = useQuery({
+    queryKey: qk.quotes.byId(quoteId),
+    queryFn: () => getQuote(quoteId),
+  });
   const itemsQuery = useQuery({
     queryKey: qk.quotes.items(quoteId),
     queryFn: () => getQuoteItems(quoteId),
+  });
+  const quoteImages = useQuery({
+    queryKey: ["quotes", "images", quoteId],
+    queryFn: () => resolveAllQuoteImages(quoteQuery.data, itemsQuery.data ?? []),
+    enabled: Boolean(quoteQuery.data && itemsQuery.data),
   });
 
   const [rows, setRows] = useState<DraftRow[]>([]);
@@ -386,6 +408,35 @@ function LineItemsEditor({
   const invalidate = () => {
     invalidateQuote(qc, quoteId);
     qc.invalidateQueries({ queryKey: qk.quotes.items(quoteId) });
+    qc.invalidateQueries({ queryKey: ["quotes", "images", quoteId] });
+  };
+
+  const updateImgMut = useMutation({
+    mutationFn: async ({ id, url }: { id: string; url: string | null }) => {
+      await updateQuoteItemImage(quoteId, id, url);
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success("Product photo updated");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  const handleImageUpload = (rowId: string, file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image file should be under 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      updateImgMut.mutate({ id: rowId, url: dataUrl });
+    };
+    reader.readAsDataURL(file);
   };
 
   const addMut = useMutation({
@@ -541,6 +592,7 @@ function LineItemsEditor({
           <div className="space-y-3">
             {rows.map((r, i) => {
               const original = originalsById.get(r.id);
+              const lineImg = getLineItemImage(r, quoteImages.data ?? new Map());
               const lineTaxPct = saleMode === "cash" ? 0 : Number(r.tax_pct) || 0;
               const lineTotal =
                 (Number(r.quantity) || 0) * (Number(r.unit_price) || 0) * (1 + lineTaxPct / 100);
@@ -548,40 +600,90 @@ function LineItemsEditor({
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <label className="text-xs text-muted-foreground">Description</label>
-                      <CatalogProductSelect
-                        value={r.description}
-                        onChange={(val) => {
-                          updateRow(r.id, "description", val);
-                          if (val.trim()) {
-                            patchMut.mutate({ id: r.id, patch: { description: val.trim() } });
-                          }
-                        }}
-                        onSelectCatalogItem={(prod) => {
-                          updateRow(r.id, "description", prod.name);
-                          const patchObj: Parameters<typeof updateQuoteItem>[1] = {
-                            description: prod.name,
-                          };
-                          if (prod.defaultUnit) {
-                            updateRow(r.id, "unit", prod.defaultUnit);
-                            patchObj.unit = prod.defaultUnit;
-                          }
-                          if (prod.hsnCode) {
-                            updateRow(r.id, "hsn_sac", prod.hsnCode);
-                            patchObj.hsn_sac = prod.hsnCode;
-                          }
-                          if (prod.defaultPrice && (!r.unit_price || Number(r.unit_price) === 0)) {
-                            updateRow(r.id, "unit_price", String(prod.defaultPrice));
-                            patchObj.unit_price = prod.defaultPrice;
-                          }
-                          if (saleMode === "cash") {
-                            updateRow(r.id, "tax_pct", "0");
-                            patchObj.tax_pct = 0;
-                          }
-                          patchMut.mutate({ id: r.id, patch: patchObj });
-                        }}
-                        placeholder="Search or enter product…"
-                      />
+                      <div className="mb-1 flex items-center justify-between">
+                        <label className="text-xs text-muted-foreground">Description & Photo</label>
+                        {lineImg && (
+                          <span className="flex items-center gap-1 text-[10px] font-medium text-primary">
+                            <ImageIcon className="h-3 w-3" /> Photo attached
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {lineImg ? (
+                          <div
+                            className="group relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30"
+                            title="Hover to remove photo"
+                          >
+                            <img
+                              src={lineImg}
+                              alt={r.description}
+                              className="h-full w-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateImgMut.mutate({ id: r.id, url: null })}
+                              className="absolute inset-0 flex items-center justify-center bg-destructive/85 text-white opacity-0 transition group-hover:opacity-100"
+                              title="Remove photo"
+                            >
+                              <XIcon className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            className="flex h-9 w-9 shrink-0 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/20 text-muted-foreground transition hover:border-primary/50 hover:bg-muted/40 hover:text-primary"
+                            title="Attach product photo"
+                          >
+                            <ImagePlus className="h-4 w-4" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleImageUpload(r.id, file);
+                              }}
+                            />
+                          </label>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <CatalogProductSelect
+                            value={r.description}
+                            onChange={(val) => {
+                              updateRow(r.id, "description", val);
+                              if (val.trim()) {
+                                patchMut.mutate({ id: r.id, patch: { description: val.trim() } });
+                              }
+                            }}
+                            onSelectCatalogItem={(prod) => {
+                              updateRow(r.id, "description", prod.name);
+                              const patchObj: Parameters<typeof updateQuoteItem>[1] = {
+                                description: prod.name,
+                              };
+                              if (prod.defaultUnit) {
+                                updateRow(r.id, "unit", prod.defaultUnit);
+                                patchObj.unit = prod.defaultUnit;
+                              }
+                              if (prod.hsnCode) {
+                                updateRow(r.id, "hsn_sac", prod.hsnCode);
+                                patchObj.hsn_sac = prod.hsnCode;
+                              }
+                              if (
+                                prod.defaultPrice &&
+                                (!r.unit_price || Number(r.unit_price) === 0)
+                              ) {
+                                updateRow(r.id, "unit_price", String(prod.defaultPrice));
+                                patchObj.unit_price = prod.defaultPrice;
+                              }
+                              if (saleMode === "cash") {
+                                updateRow(r.id, "tax_pct", "0");
+                                patchObj.tax_pct = 0;
+                              }
+                              patchMut.mutate({ id: r.id, patch: patchObj });
+                            }}
+                            placeholder="Search or enter product…"
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs text-muted-foreground">HSN Code</label>

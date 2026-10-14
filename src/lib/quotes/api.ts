@@ -93,6 +93,25 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     projectId = project.id;
     customerId = customer.id;
   }
+  const lineItemImages: Record<string, string> = {};
+  if (parsed.wall_estimate && typeof parsed.wall_estimate === "object") {
+    const we = parsed.wall_estimate as {
+      products?: Array<{ productName?: string; imageDataUrl?: string }>;
+    };
+    if (Array.isArray(we.products)) {
+      for (const p of we.products) {
+        if (p.productName && p.imageDataUrl) {
+          lineItemImages[p.productName.trim().toLowerCase()] = p.imageDataUrl;
+        }
+      }
+    }
+  }
+  for (const it of parsed.items) {
+    if (it.image_url) {
+      lineItemImages[it.description.trim().toLowerCase()] = it.image_url;
+    }
+  }
+
   const workflowState = {
     sale_mode: parsed.sale_mode ?? "invoiced",
     ...(parsed.hybrid_cash_amount !== undefined
@@ -101,6 +120,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     ...(parsed.hybrid_invoiced_amount !== undefined
       ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
       : {}),
+    ...(Object.keys(lineItemImages).length > 0 ? { line_item_images: lineItemImages } : {}),
   };
 
   const { data: quote, error } = await getDb()
@@ -454,4 +474,34 @@ export async function reassignQuoteCustomer(
   });
   if (error) throw new AppError(mapDbError(error));
   return data as QuoteRow;
+}
+
+export async function updateQuoteItemImage(
+  quoteId: string,
+  itemKeyOrDesc: string,
+  imageUrl: string | null,
+): Promise<void> {
+  const { data: q, error: fetchErr } = await getDb()
+    .from("quotes")
+    .select("id, workflow_state")
+    .eq("id", quoteId)
+    .single();
+  if (fetchErr || !q) throw new AppError("Quotation not found");
+
+  const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+  const currentImages = { ...((wf.line_item_images as Record<string, string> | null) ?? {}) };
+
+  const key = itemKeyOrDesc.trim().toLowerCase();
+  if (imageUrl) {
+    currentImages[key] = imageUrl;
+  } else {
+    delete currentImages[key];
+  }
+
+  const updatedWf = { ...wf, line_item_images: currentImages };
+  const { error } = await getDb()
+    .from("quotes")
+    .update({ workflow_state: updatedWf } as never)
+    .eq("id", quoteId);
+  if (error) throw new AppError(mapDbError(error));
 }

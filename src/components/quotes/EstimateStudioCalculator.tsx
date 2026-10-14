@@ -344,7 +344,7 @@ export function EstimateStudioCalculator({
       version: 1,
       unit,
       walls: wallsComputed,
-      products: productsComputed.map((p) => ({ ...p, imageDataUrl: undefined })),
+      products: productsComputed.map((p) => ({ ...p, imageDataUrl: p.imageDataUrl || undefined })),
       installation: {
         labour: { ratePerSqft: Number(labourRate) || 0, amount: labourAmount },
         adhesives: adhesiveLines,
@@ -401,6 +401,7 @@ export function EstimateStudioCalculator({
         unit_price: p.pricePerUnit,
         tax_pct: 0,
         fulfilment: null,
+        image_url: p.imageDataUrl || null,
       });
     }
     if (labourAmount > 0) {
