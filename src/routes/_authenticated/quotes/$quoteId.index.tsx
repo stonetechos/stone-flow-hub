@@ -427,7 +427,7 @@ function QuoteDetailPage() {
               </div>
               {saleMode === "cash" ? (
                 <div className="text-xs text-emerald-700 font-medium">
-                  GST (Cash Sale · No Tax): <span className="font-semibold">0% (₹0.00)</span>
+                  GST (Cash Sale · No Tax): <span className="font-semibold">0% (₹0)</span>
                 </div>
               ) : (
                 <div>

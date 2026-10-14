@@ -188,7 +188,7 @@ export function TransactionMessageReaderModal({
         a.name.toLowerCase().includes("baroda") ||
         a.name.toLowerCase().includes("bob"),
     );
-    const bal = bobAcc ? formatInr(bobAcc.current_balance) : "₹12,85,420.00";
+    const bal = bobAcc ? formatInr(bobAcc.current_balance) : "₹12,85,420";
     toast.info(`Bank of Baroda Current A/c (53130200000136): Synced Balance is ${bal}`, {
       description: "Monitored via SMS on +917742090866 & Email stonetech.ahmedabad@gmail.com",
       duration: 6000,

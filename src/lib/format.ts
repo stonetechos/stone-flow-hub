@@ -3,7 +3,8 @@ export function formatInr(n: number | string | null | undefined): string {
   if (n == null || n === "") return "—";
   const num = typeof n === "string" ? Number(n) : n;
   if (!Number.isFinite(num)) return "—";
-  return "₹" + num.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  const rounded = Math.round(num);
+  return "₹" + rounded.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
 /** Relative time — "3m ago", "2h ago", "5d ago". */

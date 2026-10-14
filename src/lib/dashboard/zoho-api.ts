@@ -143,12 +143,11 @@ export function formatIndianCompact(val: number): string {
 
 /** Format currency in Indian standard ₹ */
 export function formatInrFull(val: number | null | undefined): string {
-  if (val == null || !Number.isFinite(val)) return "₹0.00";
+  if (val == null || !Number.isFinite(val)) return "₹0";
   return (
     "₹" +
-    val.toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+    Math.round(val).toLocaleString("en-IN", {
+      maximumFractionDigits: 0,
     })
   );
 }
