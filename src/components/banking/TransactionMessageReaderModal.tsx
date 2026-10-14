@@ -28,6 +28,9 @@ import {
   RefreshCw,
   AlertTriangle,
   ShoppingBag,
+  PieChart,
+  Wallet,
+  ArrowRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -584,6 +587,114 @@ export function TransactionMessageReaderModal({
                         </Button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Smart Inflow Distribution & Reserve Suggestion */}
+              {parsedItems.some((it) => it.transaction_type === "credit") && (
+                <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-3.5 space-y-2 text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PieChart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="font-semibold text-xs text-foreground">
+                        Recommended Fund Distribution & Allocation
+                      </span>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-mono bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20"
+                    >
+                      Total Inflow:{" "}
+                      {formatInr(
+                        parsedItems
+                          .filter((i) => i.transaction_type === "credit")
+                          .reduce((s, i) => s + i.amount, 0),
+                      )}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    As customer funds enter your account, distribute and ring-fence allocations to
+                    secure fabrication timelines and monthly obligations:
+                  </p>
+                  {(() => {
+                    const totalCredit = parsedItems
+                      .filter((i) => i.transaction_type === "credit")
+                      .reduce((s, i) => s + i.amount, 0);
+                    const vendorPart = Math.round(totalCredit * 0.55);
+                    const liabilitiesPart = Math.round(totalCredit * 0.2);
+                    const operationalPart = Math.round(totalCredit * 0.15);
+                    const profitMarginPart =
+                      totalCredit - vendorPart - liabilitiesPart - operationalPart;
+
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+                        <div className="rounded-lg bg-background border border-border p-2 space-y-0.5">
+                          <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
+                            <span>Vendor & Adv</span>
+                            <span className="font-mono font-bold text-amber-600">55%</span>
+                          </div>
+                          <div className="font-bold text-foreground font-mono">
+                            {formatInr(vendorPart)}
+                          </div>
+                          <div className="text-[9.5px] text-muted-foreground">
+                            Material procurement
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg bg-background border border-border p-2 space-y-0.5">
+                          <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
+                            <span>Rent & Loans</span>
+                            <span className="font-mono font-bold text-rose-600">20%</span>
+                          </div>
+                          <div className="font-bold text-foreground font-mono">
+                            {formatInr(liabilitiesPart)}
+                          </div>
+                          <div className="text-[9.5px] text-muted-foreground">
+                            Monthly liabilities reserve
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg bg-background border border-border p-2 space-y-0.5">
+                          <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
+                            <span>Ops & Carting</span>
+                            <span className="font-mono font-bold text-blue-600">15%</span>
+                          </div>
+                          <div className="font-bold text-foreground font-mono">
+                            {formatInr(operationalPart)}
+                          </div>
+                          <div className="text-[9.5px] text-muted-foreground">
+                            Transport & labour
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg bg-background border border-border p-2 space-y-0.5">
+                          <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
+                            <span>Net Profit</span>
+                            <span className="font-mono font-bold text-emerald-600">10%</span>
+                          </div>
+                          <div className="font-bold text-foreground font-mono">
+                            {formatInr(profitMarginPart)}
+                          </div>
+                          <div className="text-[9.5px] text-muted-foreground">
+                            Retained earnings
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+                    <span>
+                      💡 Keeps your factory free of supplier holds & guarantees on-time rent
+                      payment.
+                    </span>
+                    <Link
+                      to="/liabilities"
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>Check Liabilities Due</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
                   </div>
                 </div>
               )}

@@ -73,6 +73,7 @@ import { listFollowups, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { useAuthReady } from "@/hooks/use-auth-ready";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { formatInr } from "@/lib/format";
 import {
   ZohoDashboardHeader,
   type DashboardViewTab,
@@ -81,6 +82,8 @@ import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAux
 import { WebsiteLeadsDashboardCard } from "@/components/dashboard/WebsiteLeadsDashboardCard";
 import { VendorDeliveryPromptCard } from "@/components/dashboard/VendorDeliveryPromptCard";
 import { useVendorDeliveryPrompts } from "@/lib/vendors/delivery-prompts";
+import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesPromptCard";
+import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -171,11 +174,13 @@ function DashboardPage() {
     : { score: 0, band: "idle" as HealthBand, isUninitialized: true };
   const vendorPromptsQ = useVendorDeliveryPrompts();
   const vendorPromptCount = vendorPromptsQ.data?.length ?? 0;
+  const dueLiabilitiesQ = useDueLiabilityPrompts();
+  const dueLiabilities = dueLiabilitiesQ.items ?? [];
 
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
-  const brief = buildBrief(topInsights, tasks, t, kpis, vendorPromptCount);
+  const brief = buildBrief(topInsights, tasks, t, kpis, vendorPromptCount, dueLiabilities);
   const headline = kpis
     ? pickHeadline(kpis, t)
     : {
@@ -215,6 +220,9 @@ function DashboardPage() {
                   brief={brief}
                   nocturnalQuip={nocturnalQuip}
                 />
+
+                {/* Liabilities & Loan EMIs Due Prompts */}
+                <DueLiabilitiesPromptCard />
 
                 {/* Vendor Delivery Proximity Prompts (Orders due within 5 days) */}
                 <VendorDeliveryPromptCard />
@@ -1570,10 +1578,26 @@ function buildBrief(
   t: TFunction,
   kpis?: DashboardKpis,
   vendorPromptCount = 0,
+  dueLiabilities: import("@/lib/liabilities/liability-prompts").DueLiabilityPromptItem[] = [],
 ): string[] {
   const lines: string[] = [];
 
-  // 1. Imminent vendor deliveries within 5-day window
+  // 1. Rent, loan EMIs, or recurring liabilities due this month
+  if (dueLiabilities.length > 0) {
+    const rentItem = dueLiabilities.find((l) => l.isRent);
+    if (rentItem) {
+      lines.push(
+        `🏢 The rent of this month (${rentItem.name}) is now due (${formatInr(rentItem.amount)}). If you have paid, kindly make the entry.`,
+      );
+    } else {
+      const topDue = dueLiabilities[0];
+      lines.push(
+        `💳 ${topDue.name} (${formatInr(topDue.amount)}) is now due for this month. If you have paid, kindly make the entry.`,
+      );
+    }
+  }
+
+  // 2. Imminent vendor deliveries within 5-day window
   if (vendorPromptCount > 0) {
     lines.push(
       vendorPromptCount === 1
