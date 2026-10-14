@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Truck,
   Send,
+  MessageCircle,
 } from "lucide-react";
 
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
@@ -111,11 +112,12 @@ function QuoteDetailPage() {
     onSuccess: (_, s) => {
       toast.success("Status updated");
       if (s === "accepted") {
+        setRfqOpen(true);
         void dispatchSystemNotification({
           scope: "broadcast",
           tier: "important",
           title: "Quotation Approved",
-          body: `A quotation has been approved: ${q.data?.quote_no ?? "Quotation"} for ${q.data?.customer?.name ?? "Customer"}`,
+          body: `A quotation has been approved: ${q.data?.quote_no ?? "Quotation"} for ${q.data?.customer?.name ?? "Customer"}. You can now send WhatsApp RFQs to category vendors.`,
           entityType: "quote",
           entityId: quoteId,
           linkPath: `/quotes/${quoteId}`,
@@ -266,12 +268,12 @@ function QuoteDetailPage() {
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
                       onClick={() => setRfqOpen(true)}
-                      title="Send RFQ to vendors matching products in this approved quotation"
+                      title="Send WhatsApp RFQ to category vendors with product images & assign order"
                     >
-                      <Send className="mr-2 h-4 w-4 text-primary" />
-                      Send RFQ
+                      <MessageCircle className="mr-1.5 h-4 w-4" />
+                      WhatsApp RFQ to Vendors
                     </Button>
                     <Button
                       size="sm"

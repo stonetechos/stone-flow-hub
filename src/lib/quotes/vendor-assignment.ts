@@ -14,6 +14,8 @@ export interface QuoteVendorAssignmentInfo {
   vendorId: string | null;
   vendorName: string | null;
   promisedDeliveryDate: string | null;
+  quotedRateSqft?: number | null;
+  leadTimeDays?: number | null;
   isAssigned: boolean;
   salesOrderId?: string | null;
   salesOrderNo?: string | null;
@@ -90,11 +92,16 @@ export function parseQuoteVendorAssignment(
       ? "vendor"
       : "unassigned";
 
+  const quotedRateSqft = typeof wf.quoted_rate_sqft === "number" ? wf.quoted_rate_sqft : null;
+  const leadTimeDays = typeof wf.lead_time_days === "number" ? wf.lead_time_days : null;
+
   return {
     quoteId: quote.id,
     vendorId,
     vendorName,
     promisedDeliveryDate,
+    quotedRateSqft,
+    leadTimeDays,
     isAssigned,
     salesOrderId,
     salesOrderNo,
@@ -110,6 +117,8 @@ export interface AssignVendorToQuoteInput {
   vendorName?: string | null;
   stockLocation?: string | null;
   promisedDeliveryDate?: string | null;
+  quotedRateSqft?: number | null;
+  leadTimeDays?: number | null;
   notes?: string | null;
 }
 
@@ -141,6 +150,12 @@ export async function assignVendorToQuote(
 
   if (input.promisedDeliveryDate) {
     updatedWf.promised_delivery_date = input.promisedDeliveryDate;
+  }
+  if (input.quotedRateSqft != null) {
+    updatedWf.quoted_rate_sqft = input.quotedRateSqft;
+  }
+  if (input.leadTimeDays != null) {
+    updatedWf.lead_time_days = input.leadTimeDays;
   }
 
   let updatedNotes = existing.notes;

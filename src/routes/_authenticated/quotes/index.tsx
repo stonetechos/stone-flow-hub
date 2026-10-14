@@ -14,9 +14,11 @@ import {
   Boxes,
   PackageCheck,
   Truck,
+  MessageCircle,
 } from "lucide-react";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
+import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { cn } from "@/lib/utils";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -120,6 +122,7 @@ function QuotesPage() {
     "all",
   );
   const [assigningQuote, setAssigningQuote] = useState<QuoteListItem | null>(null);
+  const [rfqQuote, setRfqQuote] = useState<QuoteListItem | null>(null);
 
   const columnDefs: ColumnDef[] = useMemo(
     () => [
@@ -617,14 +620,14 @@ function QuotesPage() {
                         ) : r.status === "accepted" ? (
                           <button
                             type="button"
-                            onClick={() => setAssigningQuote(r)}
+                            onClick={() => setRfqQuote(r)}
                             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 transition-colors shadow-2xs group cursor-pointer"
-                            title="Accepted order is not assigned to a vendor yet — Click to assign"
+                            title="Accepted order is not assigned to a vendor yet — Click to send WhatsApp RFQ & assign"
                           >
                             <AlertCircle className="h-3.5 w-3.5 text-rose-600 shrink-0 animate-pulse" />
                             <span>Unassigned Yet</span>
-                            <span className="text-[10px] bg-rose-200/80 px-1 py-0.2 rounded text-rose-800 font-bold ml-0.5 group-hover:bg-rose-300">
-                              + Assign
+                            <span className="text-[10px] bg-rose-200/80 px-1 py-0.2 rounded text-rose-800 font-bold ml-0.5 group-hover:bg-rose-300 flex items-center gap-0.5">
+                              <MessageCircle className="h-2.5 w-2.5" /> RFQ
                             </span>
                           </button>
                         ) : (
@@ -696,6 +699,10 @@ function QuotesPage() {
                               <Truck className="mr-2 h-4 w-4 text-emerald-600" />
                               Issue Delivery Challan
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRfqQuote(r)}>
+                              <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" />
+                              WhatsApp RFQ / Sourcing
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setAssigningQuote(r)}>
                               <Building2 className="mr-2 h-4 w-4" />
                               Assign Vendor / Delivery Date
@@ -760,6 +767,24 @@ function QuotesPage() {
           currentVendorName={parseQuoteVendorAssignment(assigningQuote).vendorName}
           currentPromisedDate={parseQuoteVendorAssignment(assigningQuote).promisedDeliveryDate}
           onSuccess={() => {
+            invalidateQuote(qc);
+          }}
+        />
+      )}
+
+      {rfqQuote && (
+        <QuoteSendRfqDialog
+          open={!!rfqQuote}
+          onOpenChange={(o) => {
+            if (!o) setRfqQuote(null);
+          }}
+          quoteId={rfqQuote.id}
+          quoteNo={rfqQuote.quote_no}
+          customerName={rfqQuote.customer?.name}
+          projectId={rfqQuote.project_id}
+          customerId={rfqQuote.customer_id}
+          enquiryId={rfqQuote.enquiry_id}
+          onAssigned={() => {
             invalidateQuote(qc);
           }}
         />
