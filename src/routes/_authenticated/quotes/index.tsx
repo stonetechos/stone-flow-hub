@@ -485,13 +485,13 @@ function QuotesPage() {
                 {!isHidden("status") && <TableHead>Status</TableHead>}
                 {!isHidden("vendor") && <TableHead className="w-48">Vendor Assignment</TableHead>}
                 {!isHidden("deliveryDate") && (
-                  <TableHead className="w-40">Promised Delivery</TableHead>
+                  <TableHead className="w-36 whitespace-nowrap">Promised Delivery</TableHead>
                 )}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
-                {!isHidden("valid") && <TableHead>Valid until</TableHead>}
-                <TableHead className="w-16 sticky right-0 bg-background/95 backdrop-blur-xs text-center font-semibold border-l shadow-xs z-10">
-                  Actions
-                </TableHead>
+                {!isHidden("valid") && (
+                  <TableHead className="whitespace-nowrap">Valid until</TableHead>
+                )}
+                <TableHead className="w-12 text-right" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -646,7 +646,7 @@ function QuotesPage() {
                       </TableCell>
                     )}
                     {!isHidden("deliveryDate") && (
-                      <TableCell className="text-xs">
+                      <TableCell className="text-xs whitespace-nowrap">
                         {assignment.promisedDeliveryDate ? (
                           <button
                             type="button"
@@ -682,7 +682,7 @@ function QuotesPage() {
                         {r.valid_until ? formatDate(r.valid_until) : "—"}
                       </TableCell>
                     )}
-                    <TableCell className="sticky right-0 bg-background/95 backdrop-blur-xs text-center border-l shadow-xs z-10">
+                    <TableCell className="text-right">
                       <RowActions
                         canEdit={true}
                         canDelete={true}
