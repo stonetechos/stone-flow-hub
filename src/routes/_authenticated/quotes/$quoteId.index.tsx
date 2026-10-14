@@ -240,6 +240,15 @@ function QuoteDetailPage() {
                 >
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
+                  onClick={() => setRfqOpen(true)}
+                  title="Send WhatsApp RFQ to category vendors with product images & assign order"
+                >
+                  <MessageCircle className="mr-1.5 h-4 w-4" />
+                  WhatsApp RFQ to Vendors
+                </Button>
                 {!isAccepted && (
                   <Button
                     size="sm"
@@ -283,15 +292,6 @@ function QuoteDetailPage() {
                     >
                       <Truck className="mr-2 h-4 w-4" />
                       {saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
-                      onClick={() => setRfqOpen(true)}
-                      title="Send WhatsApp RFQ to category vendors with product images & assign order"
-                    >
-                      <MessageCircle className="mr-1.5 h-4 w-4" />
-                      WhatsApp RFQ to Vendors
                     </Button>
                     <Button
                       size="sm"
@@ -573,6 +573,17 @@ function QuoteDetailPage() {
                   {saleMode === "cash" ? "issue delivery challans." : "convert into an invoice."}
                 </p>
               )}
+            </div>
+            <div className="border-t border-border pt-3">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 border-emerald-300 dark:border-emerald-700/60 dark:text-emerald-400 font-medium"
+                onClick={() => setRfqOpen(true)}
+              >
+                <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
+                WhatsApp RFQ to Vendors
+              </Button>
             </div>
             {quote.status === "sent" && (
               <div className="border-t border-border pt-3">

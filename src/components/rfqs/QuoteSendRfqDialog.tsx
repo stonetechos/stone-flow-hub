@@ -683,9 +683,9 @@ export function QuoteSendRfqDialog({
             enquiry_no: "",
             customer_id: effectiveCustomerId,
             project_id: effectiveProjectId,
-            requirement: `Approved Quotation #${quoteNo} products sourcing`,
+            requirement: `Quotation #${quoteNo} products sourcing`,
             stage: "customer_quotation_sent",
-            notes: `Auto-generated for Vendor RFQ from approved Quote #${quoteNo}`,
+            notes: `Auto-generated for Vendor RFQ from Quote #${quoteNo}`,
           })
           .select("id")
           .single();

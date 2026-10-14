@@ -631,17 +631,25 @@ function QuotesPage() {
                             </span>
                           </button>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => setAssigningQuote(r)}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors group cursor-pointer"
-                            title="Assign vendor"
-                          >
-                            <span>—</span>
-                            <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
-                              + Assign
-                            </span>
-                          </button>
+                          <div className="inline-flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setRfqQuote(r)}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded transition-colors cursor-pointer"
+                              title="Send WhatsApp RFQ to vendors for this quote"
+                            >
+                              <MessageCircle className="h-3 w-3 text-emerald-600" />
+                              <span>RFQ</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                              title="Assign vendor"
+                            >
+                              <span>+ Assign</span>
+                            </button>
+                          </div>
                         )}
                       </TableCell>
                     )}
