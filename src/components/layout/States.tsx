@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Loader2, Inbox, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,13 @@ import { useTranslation } from "react-i18next";
  */
 
 export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div
       role="status"
@@ -22,6 +29,31 @@ export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
     >
       <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
       <span className="text-xs">{label}</span>
+      {slow && (
+        <div className="mt-3 flex flex-col items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Taking longer than expected?</span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-primary underline font-medium hover:opacity-80"
+            >
+              Reload
+            </button>
+            <span>·</span>
+            <a
+              href="/auth?flow=signin"
+              className="text-primary underline font-medium hover:opacity-80"
+            >
+              Sign In
+            </a>
+            <span>·</span>
+            <a href="/" className="text-primary underline font-medium hover:opacity-80">
+              Go Home
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

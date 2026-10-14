@@ -99,8 +99,11 @@ export const Route = createFileRoute("/auth")({
     // outcome than losing the page, so the check gives up after 4 seconds
     // and falls through to rendering the form.
     const session = await Promise.race([
-      supabase.auth.getSession().then(({ data }) => data.session),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+      supabase.auth
+        .getSession()
+        .then(({ data }) => data.session)
+        .catch(() => null),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
     ]);
     if (session) throw redirect({ to: "/dashboard" });
   },

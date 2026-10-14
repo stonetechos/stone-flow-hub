@@ -60,6 +60,10 @@ function createSupabaseClient() {
       storage: typeof window !== "undefined" ? localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
+      // Provide an in-process lock bypass to avoid navigator.locks deadlocks in Safari/WebKit
+      lock: async (_name, _acquireTimeout, fn) => {
+        return await fn();
+      },
     },
   });
 }

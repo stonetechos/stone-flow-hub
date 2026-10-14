@@ -51,10 +51,41 @@ export const Route = createFileRoute("/_authenticated")({
     // before redirecting makes the two agree again, and `flow: "expired"`
     // both explains what happened and is a flow `/auth` never redirects out
     // of, so the loop cannot re-form even if the sign-out fails.
-    const { data, error } = await supabase.auth.getUser();
+    const getUserWithTimeout = async () => {
+      try {
+        const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((resolve) =>
+          setTimeout(
+            () => resolve({ data: { user: null }, error: new Error("Auth timeout") }),
+            3000,
+          ),
+        );
+        const fetchPromise = supabase.auth
+          .getUser()
+          .catch((err) => ({ data: { user: null }, error: err as Error }));
+        return await Promise.race([fetchPromise, timeoutPromise]);
+      } catch (err) {
+        return { data: { user: null }, error: err as Error };
+      }
+    };
+
+    const { data, error } = await getUserWithTimeout();
     if (error || !data.user) {
-      const { data: stored } = await supabase.auth.getSession();
-      if (!stored.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
+      const getSessionWithTimeout = async () => {
+        try {
+          const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null } }), 1500),
+          );
+          const fetchPromise = supabase.auth
+            .getSession()
+            .catch(() => ({ data: { session: null } }));
+          return await Promise.race([fetchPromise, timeoutPromise]);
+        } catch {
+          return { data: { session: null } };
+        }
+      };
+
+      const { data: stored } = await getSessionWithTimeout();
+      if (!stored?.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
       // `beginManagedSignOut` tells the root shell's `SIGNED_OUT` listener
       // to leave this one alone; otherwise its `window.location.replace`
       // fires first and the redirect below — the part that explains what
@@ -75,13 +106,21 @@ export const Route = createFileRoute("/_authenticated")({
     // reset (Part 6) both set `force_password_change` — checked here so it
     // applies no matter which authenticated route the user lands on first,
     // and the dashboard is unreachable until they set their own password.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("force_password_change")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    if (profile?.force_password_change) {
-      throw redirect({ to: "/auth", search: { flow: "force-change" } });
+    try {
+      const profilePromise = supabase
+        .from("profiles")
+        .select("force_password_change")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      const profileTimeout = new Promise<{ data: null }>((resolve) =>
+        setTimeout(() => resolve({ data: null }), 2000),
+      );
+      const { data: profile } = await Promise.race([profilePromise, profileTimeout]);
+      if (profile?.force_password_change) {
+        throw redirect({ to: "/auth", search: { flow: "force-change" } });
+      }
+    } catch (e) {
+      if ((e as { to?: string })?.to) throw e;
     }
 
     return { user: data.user };
