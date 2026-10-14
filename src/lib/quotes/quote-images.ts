@@ -11,6 +11,18 @@ export interface ResolvedQuoteImage {
   source: "line_item" | "wall_estimate" | "master_product" | "attachment";
 }
 
+export type ResolvableQuote = {
+  id?: string;
+  workflow_state?: unknown;
+  wall_estimate?: unknown;
+};
+
+export type ResolvableQuoteItem = {
+  id?: string;
+  product_id?: string | null;
+  description?: string | null;
+};
+
 /**
  * Extracts all product images associated with a quotation and its line items.
  * Checks:
@@ -20,8 +32,8 @@ export interface ResolvedQuoteImage {
  * 4. File attachments on the quote with image/* mime types
  */
 export async function resolveAllQuoteImages(
-  quote: QuoteListItem | null | undefined,
-  items: QuoteItemRow[],
+  quote: ResolvableQuote | QuoteListItem | null | undefined,
+  items: ResolvableQuoteItem[] | QuoteItemRow[],
 ): Promise<Map<string, string>> {
   const imageMap = new Map<string, string>(); // itemId or description -> image url/dataUrl
   if (!quote) return imageMap;
@@ -116,7 +128,7 @@ export interface QuoteGalleryImage {
 }
 
 export function getQuoteGalleryImages(
-  items: QuoteItemRow[],
+  items: ResolvableQuoteItem[] | QuoteItemRow[],
   imageMap: Map<string, string>,
 ): QuoteGalleryImage[] {
   const seenUrls = new Set<string>();
@@ -127,9 +139,9 @@ export function getQuoteGalleryImages(
     if (url && !seenUrls.has(url)) {
       seenUrls.add(url);
       gallery.push({
-        id: it.id,
+        id: it.id || "",
         url,
-        label: it.description,
+        label: it.description || "Stone Product",
         source: "Line Item",
       });
     }
@@ -184,4 +196,63 @@ export function getLineItemImage(
   }
 
   return null;
+}
+
+/**
+ * Detects whether a quotation item is a natural stone / stone material item.
+ * Filters out adhesives, sealers, chemicals, grouts, labour, installation, transport, etc.
+ */
+export function isStoneMaterialItem(it: {
+  product_name?: string | null;
+  description?: string | null;
+}): boolean {
+  const text = `${it.product_name ?? ""} ${it.description ?? ""}`.toLowerCase();
+  const nonStoneKeywords = [
+    "adhesive",
+    "adhesives",
+    "sealer",
+    "sealers",
+    "sealant",
+    "sealants",
+    "chemical",
+    "chemicals",
+    "grout",
+    "grouts",
+    "epoxy",
+    "mortar",
+    "tenax",
+    "impregnator",
+    "cleaner",
+    "wax",
+    "labour",
+    "labor",
+    "installation",
+    "installing",
+    "fixing",
+    "fitting",
+    "laying",
+    "application",
+    "site visit",
+    "measurement",
+    "scaffolding",
+    "transport",
+    "transportation",
+    "carting",
+    "freight",
+    "unloading",
+    "loading",
+    "tempo",
+    "truck",
+    "delivery",
+    "crane",
+    "fabrication charge",
+    "cutting charge",
+  ];
+
+  for (const kw of nonStoneKeywords) {
+    if (text.includes(kw)) {
+      return false;
+    }
+  }
+  return true;
 }

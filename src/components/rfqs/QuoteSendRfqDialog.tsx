@@ -20,6 +20,7 @@ import {
   Calendar,
   AlertCircle,
   ArrowRight,
+  Download,
 } from "lucide-react";
 import {
   Dialog,
@@ -55,6 +56,12 @@ import { toUserMessage } from "@/lib/errors";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
 import { assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { listAttachments } from "@/lib/attachments/api";
+import {
+  resolveAllQuoteImages,
+  getQuoteGalleryImages,
+  isStoneMaterialItem,
+} from "@/lib/quotes/quote-images";
+import { FILES_BUCKET } from "@/lib/constants";
 
 export interface QuoteSendRfqItem {
   id?: string;
@@ -64,6 +71,37 @@ export interface QuoteSendRfqItem {
   quantity?: number;
   uom?: string | null;
   unit?: string | null;
+}
+
+/**
+ * Uploads a base64 data URL to Supabase storage (FILES_BUCKET) so it can be previewed/unfurled on WhatsApp
+ */
+async function uploadDataUrlToStorage(
+  quoteId: string,
+  dataUrl: string,
+  label = "stone_sample",
+): Promise<string> {
+  if (!dataUrl || !dataUrl.startsWith("data:")) return dataUrl;
+  try {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const ext = blob.type.includes("png") ? "png" : "jpg";
+    const cleanLabel = label.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 25);
+    const objectPath = `quotes/${quoteId}/rfq_${cleanLabel}_${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from(FILES_BUCKET).upload(objectPath, blob, {
+      contentType: blob.type || "image/jpeg",
+      upsert: true,
+    });
+    if (error) {
+      console.warn("Storage upload error:", error);
+      return dataUrl;
+    }
+    const { data } = supabase.storage.from(FILES_BUCKET).getPublicUrl(objectPath);
+    return data.publicUrl;
+  } catch (err) {
+    console.warn("Failed to convert dataUrl to storage URL:", err);
+    return dataUrl;
+  }
 }
 
 export interface QuoteSendRfqDialogProps {
@@ -126,18 +164,18 @@ export function QuoteSendRfqDialog({
     enabled: open && (!items || items.length === 0),
   });
 
-  // Fallback query for project/customer ids if not provided
-  const quoteFallback = useQuery({
-    queryKey: ["quote-meta-for-rfq-dialog", quoteId],
+  // Query full quote record to resolve images from workflow_state, wall_estimate, and IDs
+  const fullQuoteQuery = useQuery({
+    queryKey: ["quote-full-for-rfq", quoteId],
     queryFn: async () => {
       const { data } = await supabase
         .from("quotes")
-        .select("id, customer_id, project_id, enquiry_id")
+        .select("id, quote_no, customer_id, project_id, enquiry_id, workflow_state, wall_estimate")
         .eq("id", quoteId)
         .single();
       return data;
     },
-    enabled: open && (!projectId || !customerId),
+    enabled: open,
   });
 
   const effectiveItems = useMemo<QuoteSendRfqItem[]>(() => {
@@ -145,9 +183,15 @@ export function QuoteSendRfqDialog({
     return quoteItemsFallback.data ?? [];
   }, [items, quoteItemsFallback.data]);
 
-  const effectiveCustomerId = customerId || quoteFallback.data?.customer_id || "";
-  const effectiveProjectId = projectId || quoteFallback.data?.project_id || "";
-  const effectiveEnquiryId = enquiryId ?? quoteFallback.data?.enquiry_id ?? null;
+  // Exclude non-stone items (adhesives, sealers, labour, etc.) for the stone vendor RFQ
+  const stoneItems = useMemo<QuoteSendRfqItem[]>(() => {
+    const filtered = effectiveItems.filter(isStoneMaterialItem);
+    return filtered.length > 0 ? filtered : effectiveItems;
+  }, [effectiveItems]);
+
+  const effectiveCustomerId = customerId || fullQuoteQuery.data?.customer_id || "";
+  const effectiveProjectId = projectId || fullQuoteQuery.data?.project_id || "";
+  const effectiveEnquiryId = enquiryId ?? fullQuoteQuery.data?.enquiry_id ?? null;
 
   // Track which vendors received the WhatsApp text during this session
   const [sentVendorMap, setSentVendorMap] = useState<
@@ -180,10 +224,10 @@ export function QuoteSendRfqDialog({
     enabled: open,
   });
 
-  // Extract keywords / products of interest from quote items
+  // Extract keywords / products of interest from stone items
   const quoteProductKeywords = useMemo(() => {
     const set = new Set<string>();
-    effectiveItems.forEach((it) => {
+    stoneItems.forEach((it) => {
       const text = `${it.product_name ?? ""} ${it.description ?? ""}`.toLowerCase();
       VENDOR_PRODUCT_OPTIONS.forEach((m) => {
         const words = m.label.toLowerCase().split(/\s+/);
@@ -203,18 +247,11 @@ export function QuoteSendRfqDialog({
         text.includes("waterjet")
       )
         set.add("artwork");
-      if (
-        text.includes("transport") ||
-        text.includes("carting") ||
-        text.includes("tempo") ||
-        text.includes("truck")
-      )
-        set.add("transport");
       if (text.includes("cladding") || text.includes("veneer") || text.includes("panel"))
         set.add("wall_cladding");
     });
     return Array.from(set);
-  }, [effectiveItems]);
+  }, [stoneItems]);
 
   // Load product images for any line items that reference a master product
   const productIds = useMemo(() => {
@@ -254,21 +291,57 @@ export function QuoteSendRfqDialog({
     enabled: open,
   });
 
+  // Extract all quote images (Estimate Studio worksheet, line items, attachments, master catalog)
+  const resolvedQuoteImagesQ = useQuery({
+    queryKey: ["quote-resolved-images-for-rfq", quoteId, effectiveItems.length],
+    queryFn: async () => {
+      const q = fullQuoteQuery.data;
+      if (!q) return [];
+      const mappedItems = effectiveItems.map((it, idx) => ({
+        id: it.id || `item_${idx}`,
+        quote_id: quoteId,
+        product_id: it.product_id ?? null,
+        description: it.description || it.product_name || "",
+        quantity: it.quantity ?? 1,
+        unit_price: 0,
+        unit: it.uom || it.unit || "sqft",
+        line_total: 0,
+        sort_order: idx + 1,
+      }));
+      const map = await resolveAllQuoteImages(q, mappedItems);
+      return getQuoteGalleryImages(mappedItems, map);
+    },
+    enabled: open && Boolean(fullQuoteQuery.data),
+  });
+
   // Available candidate images for the RFQ
   const availableImages = useMemo(() => {
     const list: Array<{ url: string; label: string }> = [];
+    const seen = new Set<string>();
+
+    (resolvedQuoteImagesQ.data ?? []).forEach((gi) => {
+      if (gi.url && !seen.has(gi.url)) {
+        seen.add(gi.url);
+        list.push({ url: gi.url, label: gi.label || "Quotation Product Photo" });
+      }
+    });
+
     (productImagesQ.data ?? []).forEach((pi) => {
-      if (pi.url && !list.some((x) => x.url === pi.url)) {
+      if (pi.url && !seen.has(pi.url)) {
+        seen.add(pi.url);
         list.push({ url: pi.url, label: "Product Catalog Photo" });
       }
     });
+
     (quoteAttachmentsQ.data ?? []).forEach((att) => {
-      if (att.url && !list.some((x) => x.url === att.url)) {
+      if (att.url && !seen.has(att.url)) {
+        seen.add(att.url);
         list.push({ url: att.url, label: att.file_name || "Quote Drawing / Photo" });
       }
     });
+
     return list;
-  }, [productImagesQ.data, quoteAttachmentsQ.data]);
+  }, [resolvedQuoteImagesQ.data, productImagesQ.data, quoteAttachmentsQ.data]);
 
   // Auto-select first image if available and none selected yet
   useEffect(() => {
@@ -276,6 +349,21 @@ export function QuoteSendRfqDialog({
       setSelectedImageUrl(availableImages[0].url);
     }
   }, [availableImages, selectedImageUrl]);
+
+  // If selected image is a data URL, upload it to storage in the background for clean WhatsApp preview
+  useEffect(() => {
+    if (selectedImageUrl && selectedImageUrl.startsWith("data:")) {
+      let isMounted = true;
+      void uploadDataUrlToStorage(quoteId, selectedImageUrl, "stone_product").then((publicUrl) => {
+        if (isMounted && publicUrl && publicUrl.startsWith("http")) {
+          setSelectedImageUrl(publicUrl);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [quoteId, selectedImageUrl]);
 
   // Rank vendors: vendors matching products dealt in or work types come first
   const scoredVendors = useMemo(() => {
@@ -326,43 +414,46 @@ export function QuoteSendRfqDialog({
     }
   };
 
-  // Build the tailored WhatsApp RFQ text
-  const generateWhatsappMessage = (vendorName: string, contactPerson: string | null) => {
+  // Build the tailored WhatsApp RFQ text (Stone only, anonymized, no quote no, direct time & price request)
+  const generateWhatsappMessage = (
+    vendorName: string,
+    contactPerson: string | null,
+    overrideImageUrl?: string,
+  ) => {
     const greeting = contactPerson ? `Namaste ${contactPerson} ji` : `Namaste Team ${vendorName}`;
 
-    const itemsSummary = effectiveItems
+    const itemsSummary = stoneItems
       .map((it, idx) => {
-        const name = it.product_name || it.description || `Item #${idx + 1}`;
+        const name = it.product_name || it.description || `Stone Material #${idx + 1}`;
         const qty = it.quantity ?? 1;
-        const uom = it.uom || "sqft";
+        const uom = it.uom || it.unit || "sqft";
         const specs =
-          it.description && it.description !== it.product_name ? ` (Specs: ${it.description})` : "";
+          it.description && it.description !== it.product_name ? ` (${it.description})` : "";
         return `• *${name}* — ${qty} ${uom}${specs}`;
       })
       .join("\n");
 
-    const imgBlock = selectedImageUrl
-      ? `📸 *Design / Reference Image:*\n${selectedImageUrl}\n\n`
-      : "";
+    const imgUrl = overrideImageUrl ?? selectedImageUrl;
+    const imgBlock =
+      imgUrl && imgUrl.startsWith("http") ? `📸 *Design / Reference Image:*\n${imgUrl}\n\n` : "";
 
     return (
-      `*REQUEST FOR QUOTATION (RFQ) — STONE TECH*\n` +
-      `Ref: Approved Order #${quoteNo}${customerName ? ` (${customerName})` : ""}\n\n` +
+      `*REQUEST FOR QUOTATION (RFQ) — STONE TECH*\n\n` +
       `${greeting},\n\n` +
-      `We have an approved order and would like to invite your quote for the following product(s):\n\n` +
+      `Please share your best quote for the following stone requirement:\n\n` +
       `${itemsSummary}\n\n` +
       `${imgBlock}` +
       `Kindly treat this as an RFQ and please return with:\n` +
       `1. ⏱️ *Time required to manufacture / deliver* (in days)\n` +
       `2. 💰 *Your best rate per sq ft* (₹/sqft)\n\n` +
       (notes ? `*Special Notes:* ${notes}\n\n` : "") +
-      `Looking forward to your swift response.\n` +
+      `Looking forward to your prompt response.\n` +
       `— *Stone Tech Operations*`
     );
   };
 
   // Trigger one-by-one WhatsApp text
-  const handleSendWhatsapp = (
+  const handleSendWhatsapp = async (
     vendor: VendorRow,
     contactPerson: string | null,
     rawPhone: string | null,
@@ -374,7 +465,17 @@ export function QuoteSendRfqDialog({
       return;
     }
 
-    const message = generateWhatsappMessage(vendor.company_name, contactPerson);
+    let activeImageUrl = selectedImageUrl;
+    if (activeImageUrl && activeImageUrl.startsWith("data:")) {
+      toast.info("Uploading product image for WhatsApp preview…");
+      const uploaded = await uploadDataUrlToStorage(quoteId, activeImageUrl, "stone_product");
+      if (uploaded && uploaded.startsWith("http")) {
+        activeImageUrl = uploaded;
+        setSelectedImageUrl(uploaded);
+      }
+    }
+
+    const message = generateWhatsappMessage(vendor.company_name, contactPerson, activeImageUrl);
     const url = buildWhatsappUrl(rawPhone, message, "wa.me");
 
     window.open(url, "_blank", "noopener,noreferrer");
@@ -395,12 +496,78 @@ export function QuoteSendRfqDialog({
     toast.success(`WhatsApp RFQ opened for ${vendor.company_name}`);
   };
 
-  const copyTemplateToClipboard = () => {
-    const sampleMsg = generateWhatsappMessage("Vendor Name", "Vendor Contact");
-    navigator.clipboard.writeText(sampleMsg);
+  const copyTemplateToClipboard = async () => {
+    let activeImageUrl = selectedImageUrl;
+    if (activeImageUrl && activeImageUrl.startsWith("data:")) {
+      const uploaded = await uploadDataUrlToStorage(quoteId, activeImageUrl, "stone_product");
+      if (uploaded && uploaded.startsWith("http")) {
+        activeImageUrl = uploaded;
+        setSelectedImageUrl(uploaded);
+      }
+    }
+    const sampleMsg = generateWhatsappMessage("Vendor Name", "Vendor Contact", activeImageUrl);
+    await navigator.clipboard.writeText(sampleMsg);
     setCopiedTemplate(true);
     toast.success("WhatsApp RFQ message copied to clipboard");
     setTimeout(() => setCopiedTemplate(false), 2000);
+  };
+
+  const handleDownloadImage = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `stone_sample_${quoteNo}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("Image downloaded. You can attach it in WhatsApp chat.");
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
+  const handleCopyImage = async (url: string) => {
+    try {
+      if (url.startsWith("http") && navigator.clipboard && window.ClipboardItem) {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        const imgBlobUrl = URL.createObjectURL(blob);
+        img.src = imgBlobUrl;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0);
+        URL.revokeObjectURL(imgBlobUrl);
+        canvas.toBlob(async (pngBlob) => {
+          if (!pngBlob) {
+            await navigator.clipboard.writeText(url);
+            toast.success("Image link copied to clipboard");
+            return;
+          }
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob })]);
+          toast.success(
+            "Image copied to clipboard! You can paste (Ctrl+V) directly into WhatsApp.",
+          );
+        }, "image/png");
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Image link copied to clipboard");
+      }
+    } catch {
+      await navigator.clipboard.writeText(url);
+      toast.success("Image link copied to clipboard");
+    }
   };
 
   // Vendor Reply updates
@@ -525,8 +692,8 @@ export function QuoteSendRfqDialog({
         if (enqErr) throw enqErr;
         targetEnquiryId = enq.id;
 
-        if (effectiveItems.length > 0) {
-          const enqItems = effectiveItems.map((it, idx) => {
+        if (stoneItems.length > 0) {
+          const enqItems = stoneItems.map((it, idx) => {
             const unitVal = it.uom || it.unit;
             const validUnit = (
               unitVal === "sqm" ||
@@ -558,9 +725,7 @@ export function QuoteSendRfqDialog({
         enquiry_id: targetEnquiryId,
         vendor_ids: selected,
         due_date: dueDate,
-        notes: notes
-          ? `[Quote #${quoteNo}] ${notes}`
-          : `Products requested for approved Quote #${quoteNo}`,
+        notes: notes ? notes : `Stone materials sourcing requirement`,
       });
     },
     onSuccess: () => {
@@ -590,29 +755,29 @@ export function QuoteSendRfqDialog({
           </div>
           <DialogDescription className="text-xs">
             Send WhatsApp RFQs directly to category vendors with product images, then record their
-            quoted sq ft rate & manufacturing time to assign the order.
+            quoted sq ft rate &amp; manufacturing time to assign the order.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Quote Line Items & Image Selection Summary */}
-        <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-2.5">
+        {/* Stone Items & Image Selection Summary */}
+        <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> Products to Source (
-              {effectiveItems.length})
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> Stone Materials to Source (
+              {stoneItems.length})
             </span>
-            {customerName && (
-              <span className="text-xs text-muted-foreground">
-                Client: <span className="font-medium text-foreground">{customerName}</span>
+            {effectiveItems.length > stoneItems.length && (
+              <span className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded px-2 py-0.5 font-medium">
+                Adhesives, sealers &amp; labour excluded for stone vendor RFQ
               </span>
             )}
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {effectiveItems.length === 0 ? (
+            {stoneItems.length === 0 ? (
               <span className="text-xs text-muted-foreground italic">Loading quote products…</span>
             ) : (
-              effectiveItems.map((it, idx) => (
+              stoneItems.map((it, idx) => (
                 <Badge
                   key={idx}
                   variant="outline"
@@ -620,61 +785,109 @@ export function QuoteSendRfqDialog({
                 >
                   {it.product_name || it.description || `Item #${idx + 1}`}{" "}
                   <span className="text-muted-foreground ml-1 font-mono">
-                    ({it.quantity ?? 1} {it.uom || "sqft"})
+                    ({it.quantity ?? 1} {it.uom || it.unit || "sqft"})
                   </span>
                 </Badge>
               ))
             )}
           </div>
 
-          {/* Product Image Reference Picker */}
-          <div className="pt-1.5 border-t border-border/60 flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
-            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 shrink-0">
-              <ImageIcon className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-              <span>Product Image for WhatsApp RFQ:</span>
-            </div>
+          {/* Product Image Reference Picker with Visual Thumbnail & Direct Actions */}
+          <div className="pt-2 border-t border-border/60 space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 shrink-0">
+                <ImageIcon className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <span>Quotation Product Photo:</span>
+              </div>
 
-            <div className="flex-1 flex items-center gap-2">
-              <Input
-                value={selectedImageUrl}
-                onChange={(e) => setSelectedImageUrl(e.target.value)}
-                placeholder="Paste or select image URL to send with WhatsApp RFQ…"
-                className="h-8 text-xs font-mono"
-              />
               {selectedImageUrl && (
-                <a
-                  href={selectedImageUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-1 rounded border border-border hover:bg-muted shrink-0 text-blue-600"
-                  title="View image full size"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </a>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs px-2 text-slate-600 hover:text-slate-900 dark:text-slate-300"
+                    onClick={() => handleCopyImage(selectedImageUrl)}
+                    title="Copy image or link to clipboard for WhatsApp"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    <span>Copy Photo</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs px-2 text-slate-600 hover:text-slate-900 dark:text-slate-300"
+                    onClick={() => handleDownloadImage(selectedImageUrl)}
+                    title="Download photo to attach directly in WhatsApp"
+                  >
+                    <Download className="h-3 w-3 mr-1" />
+                    <span>Download</span>
+                  </Button>
+                  <a
+                    href={selectedImageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded border border-border hover:bg-muted text-blue-600"
+                    title="View full size image"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>View</span>
+                  </a>
+                </div>
               )}
             </div>
-          </div>
 
-          {availableImages.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pt-1">
-              <span className="text-[11px] text-muted-foreground shrink-0">Available images:</span>
-              {availableImages.map((img, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedImageUrl(img.url)}
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border transition-colors cursor-pointer shrink-0 ${
-                    selectedImageUrl === img.url
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 font-semibold"
-                      : "border-border bg-background hover:bg-muted text-muted-foreground"
-                  }`}
-                >
-                  <ImageIcon className="h-3 w-3" />
-                  <span>{img.label}</span>
-                </button>
-              ))}
+            <div className="flex items-center gap-3">
+              {/* Visual Thumbnail */}
+              {selectedImageUrl ? (
+                <div className="relative h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40 shrink-0 shadow-xs">
+                  <img
+                    src={selectedImageUrl}
+                    alt="Quotation stone product"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="h-14 w-14 rounded-lg border border-dashed border-border bg-muted/20 flex flex-col items-center justify-center shrink-0 text-muted-foreground">
+                  <ImageIcon className="h-5 w-5 opacity-40" />
+                  <span className="text-[9px] mt-0.5">No photo</span>
+                </div>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <Input
+                  value={selectedImageUrl}
+                  onChange={(e) => setSelectedImageUrl(e.target.value)}
+                  placeholder="Paste or select image URL to send with WhatsApp RFQ…"
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
             </div>
-          )}
+
+            {availableImages.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pt-1">
+                <span className="text-[11px] text-muted-foreground shrink-0">
+                  Available images:
+                </span>
+                {availableImages.map((img, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedImageUrl(img.url)}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border transition-colors cursor-pointer shrink-0 ${
+                      selectedImageUrl === img.url
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-semibold"
+                        : "border-border bg-background hover:bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    <ImageIcon className="h-3 w-3" />
+                    <span className="max-w-[140px] truncate">{img.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tab switcher */}
@@ -701,7 +914,7 @@ export function QuoteSendRfqDialog({
               className="flex items-center gap-1.5 text-xs font-semibold"
             >
               <Award className="h-3.5 w-3.5 text-blue-600" />
-              <span>2. Check Replies & Assign</span>
+              <span>2. Check Replies &amp; Assign</span>
             </TabsTrigger>
             <TabsTrigger value="formal" className="flex items-center gap-1.5 text-xs font-semibold">
               <Send className="h-3.5 w-3.5 text-slate-500" />
@@ -718,8 +931,8 @@ export function QuoteSendRfqDialog({
                   <span>Send RFQs to Category Vendors One-by-One</span>
                 </span>
                 <p className="text-emerald-700/90 dark:text-emerald-400">
-                  Clicking "Send via WhatsApp" opens the vendor's chat with product specs, image
-                  link, and questions for manufacturing time &amp; sq ft price.
+                  Sends stone material &amp; photo to vendors. Inquires about manufacturing lead
+                  time and sq ft price without revealing customer or quote details.
                 </p>
               </div>
               <Button
