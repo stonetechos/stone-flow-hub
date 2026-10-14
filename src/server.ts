@@ -77,6 +77,13 @@ export default {
         headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
       }
 
+      // Cache-Control: never cache SSR/HTML shells so new deployments reflect immediately
+      const contentType = headers.get("content-type") ?? "";
+      if (contentType.includes("text/html")) {
+        headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.set("Pragma", "no-cache");
+      }
+
       // 204 No Content and 304 Not Modified responses MUST NOT have a body
       const hasNullBody = response.status === 204 || response.status === 304 || !response.body;
       return new Response(hasNullBody ? null : response.body, {
