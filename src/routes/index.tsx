@@ -68,6 +68,7 @@ import {
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
+import { LanguageToggle } from "@/components/global/LanguageToggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -816,22 +817,22 @@ function HomePage() {
   // MAIN LIVSPACE-STYLE ARCHITECTURAL LANDING VIEW
   // -------------------------------------------------------------
   return (
-    <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-clip">
+    <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Tagline */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
             <img
               src="/branding/stone-tech-icon.png"
               alt="Stone Tech"
-              className="h-9 w-9 sm:h-10 sm:w-10 object-contain drop-shadow-2xs shrink-0"
+              className="h-8 w-8 sm:h-10 sm:w-10 object-contain drop-shadow-2xs shrink-0"
             />
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-black tracking-tight uppercase text-foreground leading-none">
+            <div className="flex flex-col min-w-0">
+              <span className="text-base sm:text-xl font-black tracking-tight uppercase text-foreground leading-none truncate">
                 STONE TECH
               </span>
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 whitespace-nowrap">
+              <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 whitespace-nowrap">
                 Architectural Stone Atelier
               </span>
             </div>
@@ -868,14 +869,17 @@ function HomePage() {
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+            {/* Language Switcher */}
+            <LanguageToggle className="h-8 sm:h-9 px-1.5 sm:px-2.5 text-xs rounded-lg border border-border/80 bg-background/80" />
+
             {/* Customer Tracking Dialog */}
             <CustomerInquiryLookupDialog
               trigger={
                 <Button
                   variant="outline"
                   size="default"
-                  className="h-9 px-3 sm:px-3.5 gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
+                  className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
                 >
                   <Search className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span className="hidden sm:inline whitespace-nowrap">Track My Inquiry</span>
@@ -888,12 +892,12 @@ function HomePage() {
             <Button
               asChild
               size="default"
-              className="h-9 px-3 sm:px-3.5 gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
+              className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
             >
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
                 search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap"
+                className="inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
               >
                 <Lock
                   className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
@@ -1742,29 +1746,30 @@ function HomePage() {
       <ContactCenter />
 
       {/* 9. STICKY MOBILE ACTION BAR (LIVSPACE MOBILE PATTERN) */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-2.5 sm:p-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] flex items-center gap-2 sm:gap-2.5 shadow-xl">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-2 sm:p-2.5 pb-[max(env(safe-area-inset-bottom),0.625rem)] flex items-center gap-1.5 sm:gap-2 shadow-xl">
+        <LanguageToggle className="h-10 px-2 text-xs border border-border shrink-0 bg-background" />
         <Button
           asChild
           size="sm"
-          className="flex-1 h-11 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1.5 text-xs"
+          className="flex-1 h-10 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-1 text-xs"
         >
           <a
             href="https://api.whatsapp.com/send?phone=917742090866&text=Hi%20Stone%20Tech%20Team,%20I%20have%20an%20inquiry%20for%20stone%20requirements"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Phone className="h-3.5 w-3.5 fill-current" />
-            <span>WhatsApp Us</span>
+            <Phone className="h-3.5 w-3.5 fill-current shrink-0" />
+            <span className="truncate">WhatsApp</span>
           </a>
         </Button>
 
         <Button
           onClick={() => scrollToForm()}
           size="sm"
-          className="flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 text-xs cursor-pointer shadow-md"
+          className="flex-1 h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1 text-xs cursor-pointer shadow-md"
         >
-          <span>Get Free Estimate</span>
-          <ArrowRight className="h-3.5 w-3.5" />
+          <span className="truncate">Free Estimate</span>
+          <ArrowRight className="h-3.5 w-3.5 shrink-0" />
         </Button>
       </div>
 
