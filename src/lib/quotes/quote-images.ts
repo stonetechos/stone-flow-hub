@@ -88,33 +88,35 @@ export async function resolveAllQuoteImages(
   }
 
   // 4. Quote image attachments
-  try {
-    const attachments = await listAttachments("quote", quote.id);
-    const imageAttachments = attachments.filter((f) => f.mime_type?.startsWith("image/"));
-    for (const att of imageAttachments) {
-      let url: string | null = null;
-      try {
-        const { data: signed } = await supabase.storage
-          .from(att.bucket || FILES_BUCKET)
-          .createSignedUrl(att.object_path, 3600 * 24);
-        url = signed?.signedUrl ?? null;
-      } catch {
-        // Fallback to public URL
-        const { data } = supabase.storage
-          .from(att.bucket || FILES_BUCKET)
-          .getPublicUrl(att.object_path);
-        url = data?.publicUrl ?? null;
-      }
+  if (quote.id) {
+    try {
+      const attachments = await listAttachments("quote", quote.id);
+      const imageAttachments = attachments.filter((f) => f.mime_type?.startsWith("image/"));
+      for (const att of imageAttachments) {
+        let url: string | null = null;
+        try {
+          const { data: signed } = await supabase.storage
+            .from(att.bucket || FILES_BUCKET)
+            .createSignedUrl(att.object_path, 3600 * 24);
+          url = signed?.signedUrl ?? null;
+        } catch {
+          // Fallback to public URL
+          const { data } = supabase.storage
+            .from(att.bucket || FILES_BUCKET)
+            .getPublicUrl(att.object_path);
+          url = data?.publicUrl ?? null;
+        }
 
-      if (url) {
-        imageMap.set(`att_${att.id}`, url);
-        if (att.file_name) {
-          imageMap.set(`file_${att.file_name.toLowerCase()}`, url);
+        if (url) {
+          imageMap.set(`att_${att.id}`, url);
+          if (att.file_name) {
+            imageMap.set(`file_${att.file_name.toLowerCase()}`, url);
+          }
         }
       }
+    } catch {
+      // Safe fallback if attachments query fails
     }
-  } catch {
-    // Safe fallback if attachments query fails
   }
 
   return imageMap;
@@ -166,7 +168,7 @@ export function getQuoteGalleryImages(
  * Resolves the best available image URL or dataUrl for a specific quote item
  */
 export function getLineItemImage(
-  item: QuoteItemRow | { id?: string; description?: string; product_id?: string | null },
+  item: ResolvableQuoteItem | QuoteItemRow,
   imageMap: Map<string, string>,
 ): string | null {
   if (item.id) {
