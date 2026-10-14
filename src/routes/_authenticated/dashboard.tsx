@@ -79,6 +79,8 @@ import {
 } from "@/components/dashboard/zoho/ZohoDashboardHeader";
 import { AnnouncementsView, HelpView } from "@/components/dashboard/zoho/ZohoAuxiliaryViews";
 import { WebsiteLeadsDashboardCard } from "@/components/dashboard/WebsiteLeadsDashboardCard";
+import { VendorDeliveryPromptCard } from "@/components/dashboard/VendorDeliveryPromptCard";
+import { useVendorDeliveryPrompts } from "@/lib/vendors/delivery-prompts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -167,10 +169,13 @@ function DashboardPage() {
   const health = kpis
     ? computeHealth(kpis)
     : { score: 0, band: "idle" as HealthBand, isUninitialized: true };
+  const vendorPromptsQ = useVendorDeliveryPrompts();
+  const vendorPromptCount = vendorPromptsQ.data?.length ?? 0;
+
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
-  const brief = buildBrief(topInsights, tasks, t, kpis);
+  const brief = buildBrief(topInsights, tasks, t, kpis, vendorPromptCount);
   const headline = kpis
     ? pickHeadline(kpis, t)
     : {
@@ -210,6 +215,9 @@ function DashboardPage() {
                   brief={brief}
                   nocturnalQuip={nocturnalQuip}
                 />
+
+                {/* Vendor Delivery Proximity Prompts (Orders due within 5 days) */}
+                <VendorDeliveryPromptCard />
 
                 {/* Visitor Inquiries & CRM Leads */}
                 <WebsiteLeadsDashboardCard />
@@ -1554,10 +1562,27 @@ function buildBrief(
   tasks: TaskRow[],
   t: TFunction,
   kpis?: DashboardKpis,
+  vendorPromptCount = 0,
 ): string[] {
   const lines: string[] = [];
 
-  // 1. Critical operational alerts & Red Flags lead the executive briefing
+  // 1. Imminent vendor deliveries within 5-day window
+  if (vendorPromptCount > 0) {
+    lines.push(
+      vendorPromptCount === 1
+        ? t(
+            "dashboard.briefVendorDeliverySingle",
+            "🚚 1 vendor delivery is round the corner (due within 5 days). Tap prompt below to nudge supplier.",
+          )
+        : t(
+            "dashboard.briefVendorDeliveryMultiple",
+            "🚚 {{count}} vendor deliveries are round the corner (due within 5 days). Tap prompt below to nudge suppliers.",
+            { count: vendorPromptCount },
+          ),
+    );
+  }
+
+  // 2. Critical operational alerts & Red Flags lead the executive briefing
   const criticalAlerts = topInsights.filter(
     (i) => i.normalizedPriority >= 85 || i.tone === "danger" || i.title.includes("Red Flag"),
   );
