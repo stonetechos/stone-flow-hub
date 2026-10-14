@@ -318,6 +318,7 @@ const updateCustomerCrmStatusInput = z.object({
       "active_responsive",
       "order_placed",
       "order_completed",
+      "regular_future_requirement",
       "followup_pending",
       "awaiting_reply",
       "inactive_no_response",
@@ -385,6 +386,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       data.response_status === "active_responsive" ||
       data.response_status === "order_placed" ||
       data.response_status === "order_completed" ||
+      data.response_status === "regular_future_requirement" ||
       data.response_status === "followup_pending" ||
       data.response_status === "awaiting_reply"
     ) {
@@ -480,6 +482,56 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
         throw new Error(insErr.message || "Failed to schedule follow-up call");
       }
     }
+
+    return { customer: normalizeCustomerRow(updatedCustomer as CustomerRow), ok: true };
+  });
+
+const updateCustomerSalespersonInput = z.object({
+  customerId: z.string().uuid(),
+  salesperson: z.enum(["rishi", "raman"]).nullable(),
+});
+
+export const updateCustomerSalespersonServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => updateCustomerSalespersonInput.parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing, error: fetchErr } = await supabaseAdmin
+      .from("customers")
+      .select("id, name, workflow_state, external_ref")
+      .eq("id", data.customerId)
+      .single();
+
+    if (fetchErr || !existing) {
+      throw new Error(fetchErr?.message || "Customer not found");
+    }
+
+    const currentWf = (existing.workflow_state as Record<string, unknown>) || {};
+    const salespersonLabel =
+      data.salesperson === "rishi"
+        ? "Rishi Rai"
+        : data.salesperson === "raman"
+          ? "Raman Pupneja"
+          : null;
+
+    const updatedWf: Record<string, unknown> = {
+      ...currentWf,
+      assigned_to: data.salesperson,
+      assigned_salesperson: salespersonLabel,
+      assigned_at: new Date().toISOString(),
+    };
+
+    const { data: updatedCustomer, error: updateErr } = await supabaseAdmin
+      .from("customers")
+      .update({
+        workflow_state: updatedWf as unknown as import("@/integrations/supabase/types").Json,
+      })
+      .eq("id", data.customerId)
+      .select("*")
+      .single();
+
+    if (updateErr) throw new Error(updateErr.message);
 
     return { customer: normalizeCustomerRow(updatedCustomer as CustomerRow), ok: true };
   });

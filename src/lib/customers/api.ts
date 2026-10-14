@@ -15,6 +15,7 @@ import {
   prepareCustomerExternalRef,
   stripMissingCustomerColumns,
 } from "./normalize";
+import type { CustomerResponseStatus } from "./crm-status";
 
 export type CustomerRow = DbTable<"customers">;
 
@@ -370,14 +371,7 @@ export async function deleteCustomer(id: string): Promise<void> {
 export interface UpdateCustomerCrmStatusOptions {
   customerId: string;
   is_active?: boolean;
-  response_status?:
-    | "active_responsive"
-    | "order_placed"
-    | "order_completed"
-    | "followup_pending"
-    | "awaiting_reply"
-    | "inactive_no_response"
-    | "do_not_contact";
+  response_status?: CustomerResponseStatus;
   call_note?: string;
   call_outcome?: string;
   next_call_at?: string;
@@ -445,6 +439,7 @@ export async function updateCustomerCrmStatus(
     input.response_status === "active_responsive" ||
     input.response_status === "order_placed" ||
     input.response_status === "order_completed" ||
+    input.response_status === "regular_future_requirement" ||
     input.response_status === "followup_pending" ||
     input.response_status === "awaiting_reply"
   ) {
@@ -536,4 +531,59 @@ export async function updateCustomerCrmStatus(
   }
 
   return normalizeCustomerRow(updated as CustomerRow);
+}
+
+export async function updateCustomerSalesperson(input: {
+  customerId: string;
+  salesperson: "rishi" | "raman" | null;
+}): Promise<CustomerRow> {
+  try {
+    const { updateCustomerSalespersonServerFn } = await import("./customers.functions");
+    const res = await updateCustomerSalespersonServerFn({
+      data: {
+        customerId: input.customerId,
+        salesperson: input.salesperson,
+      },
+    });
+    return res.customer;
+  } catch (fnErr) {
+    console.warn(
+      "[customers/api] updateCustomerSalespersonServerFn failed, attempting fallback:",
+      fnErr,
+    );
+    const db = getDb();
+    const { data: existing, error: fetchErr } = await db
+      .from("customers")
+      .select("id, workflow_state")
+      .eq("id", input.customerId)
+      .single();
+    if (fetchErr || !existing) throw new AppError(mapDbError(fetchErr));
+
+    const currentWf = (existing.workflow_state as Record<string, unknown>) || {};
+    const salespersonLabel =
+      input.salesperson === "rishi"
+        ? "Rishi Rai"
+        : input.salesperson === "raman"
+          ? "Raman Pupneja"
+          : null;
+
+    const updatedWf = {
+      ...currentWf,
+      assigned_to: input.salesperson,
+      assigned_salesperson: salespersonLabel,
+      assigned_at: new Date().toISOString(),
+    };
+
+    const { data: updated, error: updateErr } = await db
+      .from("customers")
+      .update({
+        workflow_state: updatedWf as unknown as import("@/integrations/supabase/types").Json,
+      })
+      .eq("id", input.customerId)
+      .select("*")
+      .single();
+
+    if (updateErr) throw new AppError(mapDbError(updateErr));
+    return normalizeCustomerRow(updated as CustomerRow);
+  }
 }

@@ -9,6 +9,7 @@ export type CustomerResponseStatus =
   | "active_responsive"
   | "order_placed"
   | "order_completed"
+  | "regular_future_requirement"
   | "followup_pending"
   | "awaiting_reply"
   | "inactive_no_response"
@@ -16,6 +17,9 @@ export type CustomerResponseStatus =
 
 export interface CustomerCrmWorkflowState {
   response_status?: CustomerResponseStatus;
+  assigned_to?: string | null;
+  assigned_salesperson?: string | null;
+  assigned_at?: string;
   last_call_at?: string;
   last_call_outcome?: string;
   last_call_notes?: string;
@@ -65,6 +69,16 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     dotColor: "bg-teal-600",
     description: "Order has been successfully fulfilled, delivered, and completed.",
   },
+  regular_future_requirement: {
+    value: "regular_future_requirement",
+    label: "Regular Requirement · Future Consideration",
+    shortLabel: "Regular · Future",
+    tone: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    badgeTone: "bg-indigo-100/80 text-indigo-900 border-indigo-300",
+    dotColor: "bg-indigo-500",
+    description:
+      "Client visited with regular/ongoing stone requirements and will consider Stone Tech for future orders.",
+  },
   followup_pending: {
     value: "followup_pending",
     label: "Follow-up Pending",
@@ -107,6 +121,10 @@ export const CALL_OUTCOMES = [
   { value: "positive_proceeding", label: "Positive · Ready to proceed" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
   { value: "order_completed", label: "Order Completed · Delivered & Closed" },
+  {
+    value: "regular_future_requirement",
+    label: "Regular requirement · Will consider for future orders",
+  },
   { value: "samples_required_site", label: "Samples required at site" },
   { value: "asked_for_catalog", label: "Asked for product catalog/s" },
   { value: "quote_revision_requested", label: "Quote revision requested" },
@@ -117,6 +135,60 @@ export const CALL_OUTCOMES = [
   { value: "price_negotiation", label: "Negotiating on pricing / budget" },
   { value: "not_interested", label: "Not interested / Budget mismatch" },
 ] as const;
+
+export type CustomerSalespersonKey = "rishi" | "raman";
+
+export interface CustomerSalespersonConfig {
+  key: CustomerSalespersonKey;
+  label: string;
+  shortName: string;
+  email: string;
+  badgeTone: string;
+  avatarTone: string;
+}
+
+export const CUSTOMER_SALESPEOPLE: Record<CustomerSalespersonKey, CustomerSalespersonConfig> = {
+  rishi: {
+    key: "rishi",
+    label: "Rishi Rai",
+    shortName: "Rishi",
+    email: "rishirai@gmail.com",
+    badgeTone: "bg-indigo-50 text-indigo-900 border-indigo-300 hover:bg-indigo-100",
+    avatarTone: "bg-indigo-600 text-white",
+  },
+  raman: {
+    key: "raman",
+    label: "Raman Pupneja",
+    shortName: "Raman",
+    email: "raman.pupneja@gmail.com",
+    badgeTone: "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100",
+    avatarTone: "bg-amber-600 text-white",
+  },
+};
+
+export function getCustomerSalesperson(
+  customer?: {
+    workflow_state?: unknown;
+    external_ref?: unknown;
+  } | null,
+): CustomerSalespersonKey | null {
+  if (!customer) return null;
+  const crm = getCustomerCrmState(customer);
+  const ext = (customer.external_ref as Record<string, unknown> | null) ?? {};
+
+  const raw = String(
+    crm.assigned_salesperson ||
+      crm.assigned_to ||
+      crm.salesperson ||
+      ext.assigned_salesperson ||
+      ext.assigned_to ||
+      "",
+  ).toLowerCase();
+
+  if (raw.includes("raman")) return "raman";
+  if (raw.includes("rishi")) return "rishi";
+  return null;
+}
 
 /** Extract CRM state safely from customer row */
 export function getCustomerCrmState(customer: {

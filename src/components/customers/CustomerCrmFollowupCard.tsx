@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/forms/Field";
 import { CustomerResponseStatusSelect } from "./CustomerResponseStatusSelect";
+import { CustomerAssigneeSelect } from "./CustomerAssigneeSelect";
 import {
   CALL_OUTCOMES,
   CUSTOMER_RESPONSE_STATUS_CONFIG,
@@ -234,11 +235,15 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
           </div>
         </div>
 
-        {/* 1-Click Interactive Client Response Status */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-slate-500 hidden sm:inline">
-            Response Status:
-          </span>
+        {/* 1-Click Interactive Client Response Status & Salesperson Assignee */}
+        <div className="flex flex-wrap items-center gap-2">
+          <CustomerAssigneeSelect
+            customerId={customerId}
+            customerName={customer.name}
+            workflowState={customer.workflow_state}
+            externalRef={customer.external_ref}
+            variant="badge"
+          />
           <CustomerResponseStatusSelect
             customerId={customerId}
             customerName={customer.name}

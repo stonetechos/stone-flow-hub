@@ -104,10 +104,11 @@ export interface CustomerRankingContext {
 }
 
 /**
- * 3-Tier Customer Directory Ranking:
+ * Customer Directory Ranking:
  * Tier 1: CRM Response Status = "order_placed" (occupies the very top of the list)
  * Tier 2: Customers where "order is completed" AND "payment status is pending"
  * Tier 3: Customers entered recently (sorted by allotted serial number descending / creation date)
+ * Tier 99: CRM Response Status = "do_not_contact" ("Closed · Not Interested") pushed to the very bottom / last of the list
  */
 export function getCustomerDirectoryRank(
   customer:
@@ -123,6 +124,12 @@ export function getCustomerDirectoryRank(
   if (!customer) return 3;
 
   const crmStatus = getCustomerResponseStatus(customer);
+
+  // Push "Closed · Not Interested" to the very end of the directory
+  if (crmStatus === "do_not_contact") {
+    return 99;
+  }
+
   // Tier 1: "order placed" status occupying the top of the list
   if (crmStatus === "order_placed") return 1;
 

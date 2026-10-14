@@ -174,10 +174,23 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
         },
       }),
     ).toBe(3);
+
+    // Tier 99: Closed · Not Interested (pushed to end of list)
+    expect(
+      getCustomerDirectoryRank({
+        workflow_state: { response_status: "do_not_contact" },
+      }),
+    ).toBe(99);
   });
 
-  it("sorts customers across 3 tiers and by serial number descending within each tier", () => {
+  it("sorts customers across tiers and pushes closed / not interested customers to the very end", () => {
     const customers: Partial<CustomerRow>[] = [
+      // Tier 99: Closed · Not Interested (should be at the very bottom)
+      {
+        id: "closed-27",
+        customer_code: "CUS-000027",
+        workflow_state: { response_status: "do_not_contact" },
+      },
       // Tier 3: newly entered
       {
         id: "new-50",
@@ -226,6 +239,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
     // Tier 1 (Order Placed): 45, 41
     // Tier 2 (Order Completed + Payment Pending): 42, 38
     // Tier 3 (Recently Entered Leads): 50, 49
+    // Tier 99 (Closed · Not Interested pushed to last): 27
     expect(sorted.map((c) => c.customer_code)).toEqual([
       "CUS-000045", // Tier 1 (serial 45)
       "CUS-000041", // Tier 1 (serial 41)
@@ -233,6 +247,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
       "CUS-000038", // Tier 2 (serial 38)
       "CUS-000050", // Tier 3 (serial 50)
       "CUS-000049", // Tier 3 (serial 49)
+      "CUS-000027", // Tier 99 (serial 27, pushed to very last)
     ]);
   });
 });

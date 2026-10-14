@@ -24,11 +24,13 @@ import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssista
 import type { ParsedVoiceCustomer } from "@/lib/customers/voice-parser";
 
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
 import { CustomerOrderPipeline } from "@/components/customers/CustomerOrderPipeline";
 import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   getCustomerResponseStatus,
+  getCustomerSalesperson,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
 import {
@@ -137,6 +139,7 @@ function CustomersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [salespersonFilter, setSalespersonFilter] = useState<string>("all");
 
   useEffect(() => {
     if (urlTab === "pipeline" || urlTab === "directory") {
@@ -239,7 +242,7 @@ function CustomersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [dq, statusFilter, typeFilter, paymentFilter]);
+  }, [dq, statusFilter, typeFilter, paymentFilter, salespersonFilter]);
 
   useEffect(() => {
     if (!edit) return;
@@ -278,6 +281,13 @@ function CustomersPage() {
     if (typeFilter !== "all") {
       list = list.filter((c) => getEffectiveCustomerType(c) === typeFilter);
     }
+    if (salespersonFilter !== "all") {
+      list = list.filter((c) => {
+        const sp = getCustomerSalesperson(c);
+        if (salespersonFilter === "unassigned") return !sp;
+        return sp === salespersonFilter;
+      });
+    }
     if (paymentFilter !== "all") {
       list = list.filter((c) => {
         const orderInfo = customerOrderMap.get(c.id);
@@ -292,7 +302,15 @@ function CustomersPage() {
         getLedgerSummary: (id) => ledgerQuery.data?.get(id),
       }),
     );
-  }, [query.data, statusFilter, typeFilter, paymentFilter, ledgerQuery.data, customerOrderMap]);
+  }, [
+    query.data,
+    statusFilter,
+    typeFilter,
+    salespersonFilter,
+    paymentFilter,
+    ledgerQuery.data,
+    customerOrderMap,
+  ]);
 
   const paymentCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -592,6 +610,23 @@ function CustomersPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select
+                  value={salespersonFilter}
+                  onValueChange={(v) => {
+                    setSalespersonFilter(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-40 text-xs bg-white">
+                    <SelectValue placeholder="Assigned to" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All assignees</SelectItem>
+                    <SelectItem value="rishi">👤 Rishi Rai</SelectItem>
+                    <SelectItem value="raman">👤 Raman Pupneja</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             }
             density={<DensityMenu density={prefs.density} onChange={setDensity} />}
@@ -643,6 +678,7 @@ function CustomersPage() {
                     </TableHead>
                     <TableHead className="w-40">Customer Type</TableHead>
                     <TableHead className="w-52">CRM · Response Status</TableHead>
+                    <TableHead className="w-48">Assigned To</TableHead>
                     <TableHead className="w-52">Payment Status</TableHead>
                     <TableHead className="w-48">Contact</TableHead>
                     <TableHead className="w-12" />
@@ -746,6 +782,14 @@ function CustomersPage() {
                             customerId={c.id}
                             customerName={c.name}
                             isActive={c.is_active}
+                            workflowState={c.workflow_state}
+                            externalRef={c.external_ref}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <CustomerAssigneeSelect
+                            customerId={c.id}
+                            customerName={c.name}
                             workflowState={c.workflow_state}
                             externalRef={c.external_ref}
                           />

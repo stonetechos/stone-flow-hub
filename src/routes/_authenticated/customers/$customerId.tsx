@@ -81,6 +81,7 @@ import { CustomerPaymentCentre } from "@/components/customer-payments/CustomerPa
 import { listFollowups } from "@/lib/followups/api";
 import { NextFollowupChip } from "@/components/enquiry/NextFollowupChip";
 import { CustomerResponseStatusSelect } from "@/components/customers/CustomerResponseStatusSelect";
+import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
 import { extractCustomerSerialNumber } from "@/lib/customers/payment-status";
 import { CustomerCrmFollowupCard } from "@/components/customers/CustomerCrmFollowupCard";
@@ -668,6 +669,12 @@ function CustomerHub() {
               customerId={customerId}
               customerName={c.name}
               isActive={c.is_active}
+              workflowState={c.workflow_state}
+              externalRef={c.external_ref}
+            />
+            <CustomerAssigneeSelect
+              customerId={customerId}
+              customerName={c.name}
               workflowState={c.workflow_state}
               externalRef={c.external_ref}
             />
