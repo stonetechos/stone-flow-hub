@@ -351,7 +351,8 @@ function ProductConfigurator() {
                 thicknessMm={
                   (
                     thicknesses.data?.find((t) => t.id === thicknessId) as
-                      (MasterOpt & { mm?: number }) | undefined
+                      | (MasterOpt & { mm?: number })
+                      | undefined
                   )?.mm ?? null
                 }
                 productName={derived.name}

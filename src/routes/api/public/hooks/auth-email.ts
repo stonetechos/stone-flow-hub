@@ -41,7 +41,12 @@ import { ReauthenticationEmail } from "@/lib/email-templates/reauthentication";
  */
 
 type SupabaseEmailActionType =
-  "signup" | "invite" | "magiclink" | "recovery" | "email_change" | "reauthentication";
+  | "signup"
+  | "invite"
+  | "magiclink"
+  | "recovery"
+  | "email_change"
+  | "reauthentication";
 
 interface SendEmailHookPayload {
   user: {

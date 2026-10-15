@@ -209,7 +209,8 @@ export function getCustomerPaymentStatus(
   const ext = (customer.external_ref as Record<string, unknown> | null) ?? {};
 
   const explicitStatus = (wf.payment_status || ext.payment_status) as
-    CustomerPaymentStatus | undefined;
+    | CustomerPaymentStatus
+    | undefined;
 
   if (explicitStatus && CUSTOMER_PAYMENT_STATUS_CONFIG[explicitStatus]) {
     return explicitStatus;

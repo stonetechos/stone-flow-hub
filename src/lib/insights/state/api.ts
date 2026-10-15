@@ -20,7 +20,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 
 export type InsightLifecycleStatus =
-  "new" | "seen" | "acknowledged" | "resolved" | "dismissed" | "expired" | "snoozed";
+  | "new"
+  | "seen"
+  | "acknowledged"
+  | "resolved"
+  | "dismissed"
+  | "expired"
+  | "snoozed";
 
 export interface InsightStateRow {
   id: string;
