@@ -1,20 +1,15 @@
 /**
- * Vendor Payment detail — read-only overview + Notes/Attachments/Timeline,
- * matching every other document type in the app (purchase orders, GRNs,
- * purchase invoices). No edit form: `vendor_payment_after_ins()` posts this
- * payment's amount to `vendor_ledger_entries` on insert and
- * `vendor_payment_after_del()` reverses it on delete (both in migration
- * 20260707151013_c5a29341-...sql) — there's no matching AFTER UPDATE
- * trigger, so editing a posted payment's amount here would silently leave
- * the vendor ledger showing the old figure. Until that trigger exists,
- * "delete and re-record" is the safe way to correct a mistake — the delete
- * confirmation on the list page already says as much. See Task #39 /
- * engineering/purchase-module-and-sidebar-restructure-plan-2026-09-04.md.
+ * Vendor Payment detail — overview + Notes/Attachments/Timeline,
+ * with Edit Vendor Payment modal to update amount, date, method, reference, or vendor.
+ * Both the database trigger `trg_vpay_after_upd` and server function ensure
+ * `vendor_ledger_entries` remains in sync with any updates.
  */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
+import { EditVendorPaymentDialog } from "@/components/vendor-payments/EditVendorPaymentDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, LoadingBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -34,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/vendor-payments/$id")({
 function VendorPaymentDetailPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
   const query = useQuery({
     queryKey: qk.vendorPayments.byId(id),
     queryFn: () => getVendorPayment(id),
@@ -56,9 +52,20 @@ function VendorPaymentDetailPage() {
         title={r.payment_no}
         subtitle={`Paid ${formatDate(r.paid_at)}`}
         actions={
-          <DetailActionBar
-            pin={{ entityType: "vendor_payment", entityId: id, label: r.payment_no }}
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit Payment
+            </Button>
+            <DetailActionBar
+              pin={{ entityType: "vendor_payment", entityId: id, label: r.payment_no }}
+            />
+          </div>
         }
       />
       <div className="grid gap-4 lg:grid-cols-3">
@@ -120,6 +127,13 @@ function VendorPaymentDetailPage() {
           <TimelinePanel entityType="vendor_payment" entityId={r.id} />
         </div>
       </div>
+
+      <EditVendorPaymentDialog
+        open={isEditing}
+        onOpenChange={setIsEditing}
+        payment={r}
+        onSuccess={() => void query.refetch()}
+      />
     </div>
   );
 }

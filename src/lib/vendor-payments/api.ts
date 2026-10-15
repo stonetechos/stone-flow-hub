@@ -3,7 +3,9 @@ import { AppError, mapDbError } from "@/lib/errors";
 import { sanitizeSearch } from "@/lib/zod";
 import {
   vendorPaymentCreateSchema,
+  vendorPaymentUpdateSchema,
   type VendorPaymentCreateInput,
+  type VendorPaymentUpdateInput,
   type VendorPaymentType,
   type VendorPaymentMethod,
 } from "./schema";
@@ -91,10 +93,55 @@ export async function createVendorPayment(
   }
 }
 
+export async function updateVendorPayment(
+  id: string,
+  input: VendorPaymentUpdateInput,
+): Promise<VendorPaymentRow> {
+  const p = vendorPaymentUpdateSchema.parse(input);
+  try {
+    const { updateVendorPaymentServerFn } = await import("./vendor-payments.functions");
+    return await updateVendorPaymentServerFn({ data: { id, data: p } });
+  } catch (serverErr) {
+    console.warn(
+      "[updateVendorPayment] server function failed, falling back to client:",
+      serverErr,
+    );
+    const { data, error } = await supabase
+      .from("vendor_payments" as never)
+      .update({
+        vendor_id: p.vendor_id,
+        purchase_order_id: p.purchase_order_id ?? null,
+        grn_id: p.grn_id ?? null,
+        project_id: p.project_id ?? null,
+        payment_type: p.payment_type,
+        amount: p.amount,
+        currency_code: p.currency_code ?? "INR",
+        method: p.method ?? null,
+        reference_no: p.reference_no ?? null,
+        paid_at: p.paid_at,
+        notes: p.notes ?? null,
+      } as never)
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw new AppError(mapDbError(error));
+    return data as unknown as VendorPaymentRow;
+  }
+}
+
 export async function deleteVendorPayment(id: string): Promise<void> {
-  const { error } = await supabase
-    .from("vendor_payments" as never)
-    .delete()
-    .eq("id", id);
-  if (error) throw new AppError(mapDbError(error));
+  try {
+    const { deleteVendorPaymentServerFn } = await import("./vendor-payments.functions");
+    await deleteVendorPaymentServerFn({ data: { id } });
+  } catch (serverErr) {
+    console.warn(
+      "[deleteVendorPayment] server function failed, falling back to client:",
+      serverErr,
+    );
+    const { error } = await supabase
+      .from("vendor_payments" as never)
+      .delete()
+      .eq("id", id);
+    if (error) throw new AppError(mapDbError(error));
+  }
 }

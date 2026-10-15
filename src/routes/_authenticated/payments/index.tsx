@@ -48,6 +48,7 @@ import { toUserMessage } from "@/lib/errors";
 import { deletePayment, listPaymentRegister, type PaymentRegisterRow } from "@/lib/payments/crud";
 import { deleteReceipt, getReceipt, type ReceiptListItem } from "@/lib/receipts/api";
 import { EditReceiptDialog } from "@/components/receipts/EditReceiptDialog";
+import { EditVendorPaymentDialog } from "@/components/vendor-payments/EditVendorPaymentDialog";
 import {
   deleteVendorPayment,
   listVendorPayments,
@@ -418,6 +419,7 @@ function VendorPaymentsTab() {
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<VendorPaymentListItem | null>(null);
+  const [toEdit, setToEdit] = useState<VendorPaymentListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("vendor-payments");
@@ -609,7 +611,9 @@ function VendorPaymentsTab() {
                     </TableCell>
                   )}
                   <TableCell>
-                    {roles.canWrite && <RowActions onDelete={() => setToDelete(r)} />}
+                    {roles.canWrite && (
+                      <RowActions onEdit={() => setToEdit(r)} onDelete={() => setToDelete(r)} />
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -617,6 +621,13 @@ function VendorPaymentsTab() {
           </Table>
         </DataTableShell>
       )}
+
+      <EditVendorPaymentDialog
+        open={!!toEdit}
+        onOpenChange={(o) => !o && setToEdit(null)}
+        payment={toEdit}
+        onSuccess={() => void query.refetch()}
+      />
 
       <ConfirmDialog
         open={!!toDelete}

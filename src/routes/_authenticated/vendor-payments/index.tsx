@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { DataToolbar } from "@/components/data/DataToolbar";
 import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
+import { EditVendorPaymentDialog } from "@/components/vendor-payments/EditVendorPaymentDialog";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
@@ -48,6 +49,7 @@ function VendorPaymentsPage() {
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [toDelete, setToDelete] = useState<VendorPaymentListItem | null>(null);
+  const [toEdit, setToEdit] = useState<VendorPaymentListItem | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { prefs, setDensity, toggleColumn, isHidden } = useTablePrefs("vendor-payments");
@@ -226,7 +228,7 @@ function VendorPaymentsPage() {
                   )}
                   {!isHidden("paid") && <TableCell>{r.paid_at}</TableCell>}
                   <TableCell>
-                    <RowActions onDelete={() => setToDelete(r)} />
+                    <RowActions onEdit={() => setToEdit(r)} onDelete={() => setToDelete(r)} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -234,6 +236,13 @@ function VendorPaymentsPage() {
           </Table>
         </DataTableShell>
       )}
+
+      <EditVendorPaymentDialog
+        open={!!toEdit}
+        onOpenChange={(o) => !o && setToEdit(null)}
+        payment={toEdit}
+        onSuccess={() => void query.refetch()}
+      />
 
       <ConfirmDialog
         open={!!toDelete}
