@@ -636,13 +636,33 @@ function QuoteDetailPage() {
                 </Button>
               </div>
               <div>
-                {assignment.fulfilmentType === "in_stock" ? (
-                  <div className="rounded-md bg-blue-50/80 border border-blue-200/80 p-2.5 text-xs text-blue-900">
-                    <p className="font-semibold flex items-center gap-1.5 text-blue-950">
+                {assignment.fulfilmentType === "stock_lifted" || assignment.isOrderCompleted ? (
+                  <div className="rounded-md bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-xs text-emerald-900 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                    <p className="font-semibold flex items-center gap-1.5 text-emerald-950 dark:text-emerald-100">
+                      <PackageCheck className="h-4 w-4 text-emerald-600" /> Material Lifted from
+                      Stock
+                    </p>
+                    <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-1">
+                      Status:{" "}
+                      <span className="font-medium">
+                        {assignment.isOrderCompleted
+                          ? "Order Completed · No RFQ Needed"
+                          : "Lifted from Stock · No RFQ Needed"}
+                      </span>
+                    </p>
+                    {assignment.stockLocation && (
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
+                        Location: <span className="font-medium">{assignment.stockLocation}</span>
+                      </p>
+                    )}
+                  </div>
+                ) : assignment.fulfilmentType === "in_stock" ? (
+                  <div className="rounded-md bg-blue-50/80 border border-blue-200/80 p-2.5 text-xs text-blue-900 dark:bg-blue-950/20 dark:border-blue-900/40">
+                    <p className="font-semibold flex items-center gap-1.5 text-blue-950 dark:text-blue-100">
                       <PackageCheck className="h-4 w-4 text-blue-600" /> Fulfilled from In-House
                       Stock
                     </p>
-                    <p className="text-[11px] text-blue-700 mt-1">
+                    <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1">
                       Godown:{" "}
                       <span className="font-medium">
                         {assignment.stockLocation || "Main Warehouse / Yard Stock"}
@@ -650,15 +670,15 @@ function QuoteDetailPage() {
                     </p>
                   </div>
                 ) : assignment.isAssigned ? (
-                  <div className="rounded-md bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-xs text-emerald-900">
-                    <p className="font-semibold flex items-center gap-1.5 text-emerald-950">
+                  <div className="rounded-md bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-xs text-emerald-900 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                    <p className="font-semibold flex items-center gap-1.5 text-emerald-950 dark:text-emerald-100">
                       <Building2 className="h-4 w-4 text-emerald-600" /> Vendor Assigned
                     </p>
-                    <p className="text-[11px] text-emerald-800 mt-0.5 font-medium">
+                    <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5 font-medium">
                       {assignment.vendorName}
                     </p>
                     {assignment.promisedDeliveryDate && (
-                      <p className="text-[10px] text-emerald-700 mt-0.5">
+                      <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">
                         Promised Delivery: {assignment.promisedDeliveryDate.slice(0, 10)}
                       </p>
                     )}
@@ -670,8 +690,7 @@ function QuoteDetailPage() {
                     className="w-full text-xs border-dashed text-slate-700 hover:text-slate-900 hover:bg-slate-50 justify-start"
                     onClick={() => setAssignVendorOpen(true)}
                   >
-                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-slate-500" />+ Assign In-House Stock
-                    or Vendor
+                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-slate-500" />+ Assign Stock or Vendor
                   </Button>
                 )}
               </div>
@@ -684,7 +703,7 @@ function QuoteDetailPage() {
                 onClick={() => setRfqOpen(true)}
               >
                 <MessageCircle className="mr-1.5 h-4 w-4 text-emerald-600" />
-                WhatsApp RFQ to Vendors
+                WhatsApp RFQ to Vendors (Optional)
               </Button>
             </div>
             {quote.status === "sent" && (

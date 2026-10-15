@@ -437,6 +437,45 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
         .eq("entity_type", "customer")
         .eq("entity_id", data.customerId)
         .eq("status", "pending");
+
+      if (data.response_status === "order_completed") {
+        try {
+          const { data: openQuotes } = await supabaseAdmin
+            .from("quotes")
+            .select("id, workflow_state")
+            .eq("customer_id", data.customerId)
+            .eq("status", "accepted");
+
+          if (openQuotes && openQuotes.length > 0) {
+            for (const q of openQuotes) {
+              const qWf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+              if (
+                !qWf.assigned_vendor_id ||
+                qWf.assigned_vendor_id === "in_house_stock" ||
+                qWf.assigned_vendor_id === "stock_lifted" ||
+                qWf.assigned_vendor_id === "Unassigned Yet"
+              ) {
+                await supabaseAdmin
+                  .from("quotes")
+                  .update({
+                    workflow_state: {
+                      ...qWf,
+                      fulfilment_type: "stock_lifted",
+                      assigned_vendor_id: "stock_lifted",
+                      assigned_vendor_name: "Material Lifted from Stock",
+                      stock_location:
+                        (qWf.stock_location as string) || "Lifted from Stock · Order Completed",
+                      vendor_assigned_at: nowIso,
+                    } as never,
+                  })
+                  .eq("id", q.id);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("[customers] auto-fulfil quotes from stock skipped", e);
+        }
+      }
     }
 
     // If an existing pending follow-up was fulfilled by this call, mark it complete

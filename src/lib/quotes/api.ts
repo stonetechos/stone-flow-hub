@@ -17,12 +17,17 @@ import {
 export type QuoteRow = DbTable<"quotes">;
 export type QuoteItemRow = DbTable<"quote_items">;
 export type QuoteListItem = QuoteRow & {
-  customer: { id: string; name: string; customer_code: string } | null;
+  customer: {
+    id: string;
+    name: string;
+    customer_code: string;
+    workflow_state?: unknown;
+  } | null;
   project: { id: string; name: string; project_code: string } | null;
 };
 
 const SELECT_WITH_JOINS =
-  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code), project:projects!quotes_project_id_fkey(id,name,project_code)";
+  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code)";
 
 export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
   let q = getDb()

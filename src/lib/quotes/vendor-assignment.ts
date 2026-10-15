@@ -19,8 +19,10 @@ export interface QuoteVendorAssignmentInfo {
   isAssigned: boolean;
   salesOrderId?: string | null;
   salesOrderNo?: string | null;
-  fulfilmentType: "in_stock" | "vendor" | "unassigned";
+  fulfilmentType: "in_stock" | "stock_lifted" | "vendor" | "unassigned";
   stockLocation?: string | null;
+  isOrderCompleted?: boolean;
+  rfqNotRequired?: boolean;
 }
 
 export function parseQuoteVendorAssignment(
@@ -28,6 +30,11 @@ export function parseQuoteVendorAssignment(
     id: string;
     valid_until?: string | null;
     workflow_state?: unknown;
+    status?: string | null;
+    customer?: {
+      id?: string;
+      workflow_state?: unknown;
+    } | null;
   },
   linkedSo?: {
     id: string;
@@ -37,11 +44,16 @@ export function parseQuoteVendorAssignment(
   } | null,
 ): QuoteVendorAssignmentInfo {
   const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
+  const customerWf = (quote.customer?.workflow_state as Record<string, unknown> | null) ?? {};
+
+  const customerCrmStatus = (customerWf.response_status as string | undefined) || null;
+  const isCustomerOrderCompleted =
+    customerCrmStatus === "order_completed" || quote.status === "converted";
 
   let vendorId = (wf.assigned_vendor_id as string | undefined) || null;
   let vendorName = (wf.assigned_vendor_name as string | undefined) || null;
   let rawFulfilmentType = (wf.fulfilment_type as string | undefined) || null;
-  const stockLocation = (wf.stock_location as string | undefined) || null;
+  let stockLocation = (wf.stock_location as string | undefined) || null;
   let promisedDeliveryDate =
     (wf.promised_delivery_date as string | undefined) || quote.valid_until || null;
 
@@ -66,31 +78,60 @@ export function parseQuoteVendorAssignment(
     }
   }
 
-  const isInStock =
-    rawFulfilmentType === "in_stock" ||
-    vendorId === "in_house_stock" ||
-    Boolean(
-      vendorName &&
-      (vendorName.toLowerCase().includes("in-house stock") ||
-        vendorName.toLowerCase().includes("in house stock") ||
-        vendorName.toLowerCase().includes("from stock")),
-    );
+  const isExplicitVendorAssigned = Boolean(
+    vendorId &&
+    vendorId !== "in_house_stock" &&
+    vendorId !== "stock_lifted" &&
+    vendorId !== "Unassigned Yet" &&
+    vendorName &&
+    vendorName !== "Unassigned Yet" &&
+    !vendorName.toLowerCase().includes("stock") &&
+    rawFulfilmentType === "vendor",
+  );
 
-  if (isInStock) {
+  const isStockLifted =
+    rawFulfilmentType === "stock_lifted" ||
+    vendorId === "stock_lifted" ||
+    Boolean(vendorName && vendorName.toLowerCase().includes("lifted from stock")) ||
+    (isCustomerOrderCompleted && !isExplicitVendorAssigned);
+
+  const isInStock =
+    !isStockLifted &&
+    (rawFulfilmentType === "in_stock" ||
+      vendorId === "in_house_stock" ||
+      Boolean(
+        vendorName &&
+        (vendorName.toLowerCase().includes("in-house stock") ||
+          vendorName.toLowerCase().includes("in house stock") ||
+          vendorName.toLowerCase().includes("from stock")),
+      ));
+
+  if (isStockLifted) {
+    vendorId = "stock_lifted";
+    vendorName = "Material Lifted from Stock";
+    rawFulfilmentType = "stock_lifted";
+    stockLocation =
+      stockLocation ||
+      (isCustomerOrderCompleted
+        ? "Lifted from Stock · Order Completed"
+        : "Lifted from Stock / Yard");
+  } else if (isInStock) {
     vendorId = "in_house_stock";
     vendorName = "In-House Stock";
     rawFulfilmentType = "in_stock";
   }
 
   const isAssigned = Boolean(
-    isInStock || (vendorId && vendorName && vendorName !== "Unassigned Yet"),
+    isStockLifted || isInStock || (vendorId && vendorName && vendorName !== "Unassigned Yet"),
   );
 
-  const fulfilmentType: "in_stock" | "vendor" | "unassigned" = isInStock
-    ? "in_stock"
-    : isAssigned
-      ? "vendor"
-      : "unassigned";
+  const fulfilmentType: "in_stock" | "stock_lifted" | "vendor" | "unassigned" = isStockLifted
+    ? "stock_lifted"
+    : isInStock
+      ? "in_stock"
+      : isAssigned
+        ? "vendor"
+        : "unassigned";
 
   const quotedRateSqft = typeof wf.quoted_rate_sqft === "number" ? wf.quoted_rate_sqft : null;
   const leadTimeDays = typeof wf.lead_time_days === "number" ? wf.lead_time_days : null;
@@ -107,12 +148,14 @@ export function parseQuoteVendorAssignment(
     salesOrderNo,
     fulfilmentType,
     stockLocation,
+    isOrderCompleted: isCustomerOrderCompleted,
+    rfqNotRequired: isStockLifted || isInStock || isCustomerOrderCompleted,
   };
 }
 
 export interface AssignVendorToQuoteInput {
   quoteId: string;
-  fulfilmentType?: "in_stock" | "vendor";
+  fulfilmentType?: "in_stock" | "stock_lifted" | "vendor";
   vendorId?: string | null;
   vendorName?: string | null;
   stockLocation?: string | null;
@@ -137,14 +180,34 @@ export async function assignVendorToQuote(
   }
 
   const currentWf = (existing.workflow_state as Record<string, unknown> | null) ?? {};
-  const isInStock = input.fulfilmentType === "in_stock" || input.vendorId === "in_house_stock";
+  const isStockLifted =
+    input.fulfilmentType === "stock_lifted" || input.vendorId === "stock_lifted";
+  const isInStock =
+    !isStockLifted && (input.fulfilmentType === "in_stock" || input.vendorId === "in_house_stock");
+
+  const targetFulfilment = isStockLifted ? "stock_lifted" : isInStock ? "in_stock" : "vendor";
+  const targetVendorId = isStockLifted
+    ? "stock_lifted"
+    : isInStock
+      ? "in_house_stock"
+      : (input.vendorId ?? null);
+  const targetVendorName = isStockLifted
+    ? "Material Lifted from Stock"
+    : isInStock
+      ? "In-House Stock"
+      : (input.vendorName ?? null);
+  const targetLocation = isStockLifted
+    ? input.stockLocation?.trim() || "Lifted from Stock / Yard"
+    : isInStock
+      ? input.stockLocation?.trim() || "Main Warehouse / Yard Stock"
+      : null;
 
   const updatedWf: Record<string, unknown> = {
     ...currentWf,
-    fulfilment_type: isInStock ? "in_stock" : "vendor",
-    assigned_vendor_id: isInStock ? "in_house_stock" : (input.vendorId ?? null),
-    assigned_vendor_name: isInStock ? "In-House Stock" : (input.vendorName ?? null),
-    stock_location: isInStock ? input.stockLocation?.trim() || "Main Warehouse / Yard Stock" : null,
+    fulfilment_type: targetFulfilment,
+    assigned_vendor_id: targetVendorId,
+    assigned_vendor_name: targetVendorName,
+    stock_location: targetLocation,
     vendor_assigned_at: new Date().toISOString(),
   };
 
@@ -166,9 +229,11 @@ export async function assignVendorToQuote(
       hour: "2-digit",
       minute: "2-digit",
     });
-    const label = isInStock
-      ? `Fulfilled from In-House Stock (${input.stockLocation?.trim() || "Main Warehouse / Yard Stock"})`
-      : `Assigned to ${input.vendorName || "Vendor"}`;
+    const label = isStockLifted
+      ? `Material Lifted from Stock (${targetLocation})`
+      : isInStock
+        ? `Fulfilled from In-House Stock (${targetLocation})`
+        : `Assigned to ${input.vendorName || "Vendor"}`;
     const log = `\n[Fulfilment Updated · ${timestamp}] ${label}. ${input.notes.trim()}`;
     updatedNotes = existing.notes ? `${existing.notes.trim()}${log}` : log.trim();
   }

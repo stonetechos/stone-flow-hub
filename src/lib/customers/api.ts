@@ -489,6 +489,45 @@ export async function updateCustomerCrmStatus(
       .eq("entity_type", "customer")
       .eq("entity_id", input.customerId)
       .eq("status", "pending");
+
+    if (input.response_status === "order_completed") {
+      try {
+        const { data: openQuotes } = await db
+          .from("quotes")
+          .select("id, workflow_state")
+          .eq("customer_id", input.customerId)
+          .eq("status", "accepted");
+
+        if (openQuotes && openQuotes.length > 0) {
+          for (const q of openQuotes) {
+            const qWf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+            if (
+              !qWf.assigned_vendor_id ||
+              qWf.assigned_vendor_id === "in_house_stock" ||
+              qWf.assigned_vendor_id === "stock_lifted" ||
+              qWf.assigned_vendor_id === "Unassigned Yet"
+            ) {
+              await db
+                .from("quotes")
+                .update({
+                  workflow_state: {
+                    ...qWf,
+                    fulfilment_type: "stock_lifted",
+                    assigned_vendor_id: "stock_lifted",
+                    assigned_vendor_name: "Material Lifted from Stock",
+                    stock_location:
+                      (qWf.stock_location as string) || "Lifted from Stock · Order Completed",
+                    vendor_assigned_at: nowIso,
+                  } as never,
+                })
+                .eq("id", q.id);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[customers] auto-fulfil quotes from stock skipped", e);
+      }
+    }
   }
 
   if (input.complete_pending_followup_id) {

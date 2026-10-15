@@ -32,7 +32,7 @@ interface AssignQuoteVendorDialogProps {
   onOpenChange: (open: boolean) => void;
   quoteId: string;
   quoteNo: string;
-  currentFulfilmentType?: "in_stock" | "vendor" | "unassigned";
+  currentFulfilmentType?: "in_stock" | "stock_lifted" | "vendor" | "unassigned";
   currentVendorId?: string | null;
   currentVendorName?: string | null;
   currentStockLocation?: string | null;
@@ -53,18 +53,34 @@ export function AssignQuoteVendorDialog({
   onSuccess,
 }: AssignQuoteVendorDialogProps) {
   const qc = useQueryClient();
-  const initialIsInStock =
-    currentFulfilmentType === "in_stock" || currentVendorId === "in_house_stock";
+  const computeInitialMode = (): "stock_lifted" | "in_stock" | "vendor" => {
+    if (currentFulfilmentType === "stock_lifted" || currentVendorId === "stock_lifted") {
+      return "stock_lifted";
+    }
+    if (currentFulfilmentType === "in_stock" || currentVendorId === "in_house_stock") {
+      return "in_stock";
+    }
+    if (currentVendorId && currentVendorId !== "Unassigned Yet") {
+      return "vendor";
+    }
+    return "stock_lifted";
+  };
 
-  const [mode, setMode] = useState<"in_stock" | "vendor">(initialIsInStock ? "in_stock" : "vendor");
+  const [mode, setMode] = useState<"stock_lifted" | "in_stock" | "vendor">(computeInitialMode);
   const [stockLocation, setStockLocation] = useState<string>(
     currentStockLocation || "Main Warehouse / Yard Stock",
   );
   const [vendorId, setVendorId] = useState<string>(
-    currentVendorId && currentVendorId !== "in_house_stock" ? currentVendorId : "",
+    currentVendorId && currentVendorId !== "in_house_stock" && currentVendorId !== "stock_lifted"
+      ? currentVendorId
+      : "",
   );
   const [vendorName, setVendorName] = useState<string>(
-    currentVendorName && currentVendorName !== "In-House Stock" ? currentVendorName : "",
+    currentVendorName &&
+      currentVendorName !== "In-House Stock" &&
+      currentVendorName !== "Material Lifted from Stock"
+      ? currentVendorName
+      : "",
   );
   const [deliveryDate, setDeliveryDate] = useState<string>(
     currentPromisedDate ? currentPromisedDate.slice(0, 10) : "",
@@ -73,12 +89,31 @@ export function AssignQuoteVendorDialog({
 
   useEffect(() => {
     if (open) {
-      const isStock = currentFulfilmentType === "in_stock" || currentVendorId === "in_house_stock";
-      setMode(isStock ? "in_stock" : "vendor");
-      setStockLocation(currentStockLocation || "Main Warehouse / Yard Stock");
-      setVendorId(currentVendorId && currentVendorId !== "in_house_stock" ? currentVendorId : "");
+      if (currentFulfilmentType === "stock_lifted" || currentVendorId === "stock_lifted") {
+        setMode("stock_lifted");
+        setStockLocation(currentStockLocation || "Lifted from Stock / Yard");
+      } else if (currentFulfilmentType === "in_stock" || currentVendorId === "in_house_stock") {
+        setMode("in_stock");
+        setStockLocation(currentStockLocation || "Main Warehouse / Yard Stock");
+      } else if (currentVendorId && currentVendorId !== "Unassigned Yet") {
+        setMode("vendor");
+      } else {
+        setMode("stock_lifted");
+        setStockLocation(currentStockLocation || "Lifted from Stock / Yard");
+      }
+      setVendorId(
+        currentVendorId &&
+          currentVendorId !== "in_house_stock" &&
+          currentVendorId !== "stock_lifted"
+          ? currentVendorId
+          : "",
+      );
       setVendorName(
-        currentVendorName && currentVendorName !== "In-House Stock" ? currentVendorName : "",
+        currentVendorName &&
+          currentVendorName !== "In-House Stock" &&
+          currentVendorName !== "Material Lifted from Stock"
+          ? currentVendorName
+          : "",
       );
       setDeliveryDate(currentPromisedDate ? currentPromisedDate.slice(0, 10) : "");
       setNotes("");
@@ -97,14 +132,31 @@ export function AssignQuoteVendorDialog({
       assignVendorToQuote({
         quoteId,
         fulfilmentType: mode,
-        vendorId: mode === "in_stock" ? "in_house_stock" : vendorId,
-        vendorName: mode === "in_stock" ? "In-House Stock" : vendorName || "Selected Vendor",
-        stockLocation: mode === "in_stock" ? stockLocation : null,
+        vendorId:
+          mode === "stock_lifted"
+            ? "stock_lifted"
+            : mode === "in_stock"
+              ? "in_house_stock"
+              : vendorId,
+        vendorName:
+          mode === "stock_lifted"
+            ? "Material Lifted from Stock"
+            : mode === "in_stock"
+              ? "In-House Stock"
+              : vendorName || "Selected Vendor",
+        stockLocation:
+          mode === "stock_lifted"
+            ? stockLocation || "Lifted from Stock / Yard"
+            : mode === "in_stock"
+              ? stockLocation || "Main Warehouse / Yard Stock"
+              : null,
         promisedDeliveryDate: deliveryDate || null,
         notes: notes || null,
       }),
     onSuccess: () => {
-      if (mode === "in_stock") {
+      if (mode === "stock_lifted") {
+        toast.success(`Quote ${quoteNo} marked: Material lifted from stock (RFQ not required)`);
+      } else if (mode === "in_stock") {
         toast.success(`Quote ${quoteNo} fulfilled from In-House Stock`);
       } else {
         toast.success(`Quote ${quoteNo} assigned to ${vendorName || "vendor"}`);
@@ -153,64 +205,121 @@ export function AssignQuoteVendorDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {mode === "in_stock" ? (
-              <PackageCheck className="h-5 w-5 text-blue-600" />
+            {mode === "stock_lifted" ? (
+              <PackageCheck className="h-5 w-5 text-emerald-600" />
+            ) : mode === "in_stock" ? (
+              <Boxes className="h-5 w-5 text-blue-600" />
             ) : (
               <Building2 className="h-5 w-5 text-primary" />
             )}
-            <span>Order Fulfilment & Delivery Date</span>
+            <span>Order Fulfilment &amp; Source</span>
           </DialogTitle>
           <DialogDescription>
-            Specify fulfilment source (In-House Stock or Vendor) and delivery date for quote{" "}
-            <span className="font-mono font-semibold text-foreground">{quoteNo}</span>.
+            Choose how to fulfill quote{" "}
+            <span className="font-mono font-semibold text-foreground">{quoteNo}</span>. Vendor RFQ
+            is purely optional.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Mode Selector */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-lg text-xs font-semibold">
+        {/* Mode Selector - 3 Clean Tabs */}
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold">
           <button
             type="button"
-            onClick={() => setMode("in_stock")}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md transition-all cursor-pointer ${
-              mode === "in_stock"
-                ? "bg-white text-blue-700 shadow-xs font-bold border border-blue-200"
-                : "text-slate-600 hover:text-slate-900"
+            onClick={() => {
+              setMode("stock_lifted");
+              if (!stockLocation || stockLocation === "Main Warehouse / Yard Stock") {
+                setStockLocation("Lifted from Stock / Yard");
+              }
+            }}
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
+              mode === "stock_lifted"
+                ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold border border-emerald-300"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
             }`}
           >
-            <Boxes className="h-4 w-4 text-blue-600" />
-            <span>In-House Stock</span>
+            <PackageCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span className="leading-tight">Lifted from Stock</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("in_stock");
+              if (!stockLocation || stockLocation === "Lifted from Stock / Yard") {
+                setStockLocation("Main Warehouse / Yard Stock");
+              }
+            }}
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
+              mode === "in_stock"
+                ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-xs font-bold border border-blue-300"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Boxes className="h-4 w-4 text-blue-600 shrink-0" />
+            <span className="leading-tight">In-House Stock</span>
           </button>
           <button
             type="button"
             onClick={() => setMode("vendor")}
-            className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-md transition-all cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
               mode === "vendor"
-                ? "bg-white text-emerald-700 shadow-xs font-bold border border-emerald-200"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold border border-slate-300"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
             }`}
           >
-            <Building2 className="h-4 w-4 text-emerald-600" />
-            <span>Outsource to Vendor</span>
+            <Building2 className="h-4 w-4 text-slate-600 dark:text-slate-300 shrink-0" />
+            <span className="leading-tight">Outsource (RFQ)</span>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          {mode === "in_stock" ? (
-            /* In-House Stock Option */
+          {mode === "stock_lifted" ? (
+            /* Material Lifted from Stock Option */
             <div className="space-y-3">
-              <div className="rounded-md bg-blue-50/80 border border-blue-200/80 p-3 text-xs text-blue-900 flex items-start gap-2.5">
-                <Warehouse className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+              <div className="rounded-md bg-emerald-50/90 border border-emerald-200/90 dark:bg-emerald-950/20 dark:border-emerald-900/50 p-3 text-xs text-emerald-950 dark:text-emerald-200 flex items-start gap-2.5">
+                <PackageCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-semibold text-blue-950">Fulfilled from Existing Stock</p>
-                  <p className="text-blue-800 text-[11px] leading-relaxed">
-                    Material is already in our inventory. This order will be marked as fulfilled
-                    in-house without issuing an external vendor PO.
+                  <p className="font-semibold text-emerald-950 dark:text-emerald-100">
+                    Material Lifted from Stock · No RFQ Needed
+                  </p>
+                  <p className="text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed">
+                    The material was already taken from inventory or yard stock. This order does not
+                    require vendor RFQ or purchase order.
                   </p>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Stock Location / Godown</span>
+                </label>
+                <Input
+                  type="text"
+                  value={stockLocation}
+                  onChange={(e) => setStockLocation(e.target.value)}
+                  placeholder="e.g. Lifted from Stock / Yard, Godown 2"
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+          ) : mode === "in_stock" ? (
+            /* In-House Stock Option */
+            <div className="space-y-3">
+              <div className="rounded-md bg-blue-50/80 border border-blue-200/80 dark:bg-blue-950/20 dark:border-blue-900/50 p-3 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5">
+                <Warehouse className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-blue-950 dark:text-blue-100">
+                    Fulfill from Existing Stock
+                  </p>
+                  <p className="text-blue-800 dark:text-blue-300 text-[11px] leading-relaxed">
+                    Material will be cut and dispatched from in-house stock without issuing an
+                    external vendor PO.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Stock Location / Godown</span>
                 </label>
@@ -225,22 +334,30 @@ export function AssignQuoteVendorDialog({
             </div>
           ) : (
             /* Third-Party Vendor Option */
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Assigned Vendor / Fabricator *</span>
-              </label>
-              <EntityPicker
-                type="vendor"
-                value={vendorId || null}
-                onChange={(val, row) => {
-                  setVendorId(val || "");
-                  if (row?.label) {
-                    setVendorName(row.label);
-                  }
-                }}
-                placeholder="Search & choose vendor…"
-              />
+            <div className="space-y-3">
+              <div className="rounded-md bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-2.5 text-xs text-slate-700 dark:text-slate-300">
+                <p className="text-[11px]">
+                  Assign an outside stone supplier / fabricator. You can optionally send an RFQ via
+                  WhatsApp.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Assigned Vendor / Fabricator *</span>
+                </label>
+                <EntityPicker
+                  type="vendor"
+                  value={vendorId || null}
+                  onChange={(val, row) => {
+                    setVendorId(val || "");
+                    if (row?.label) {
+                      setVendorName(row.label);
+                    }
+                  }}
+                  placeholder="Search &amp; choose vendor…"
+                />
+              </div>
             </div>
           )}
 

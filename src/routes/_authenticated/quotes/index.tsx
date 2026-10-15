@@ -15,8 +15,9 @@ import {
   PackageCheck,
   Truck,
   MessageCircle,
+  Clock,
 } from "lucide-react";
-import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
+import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { cn } from "@/lib/utils";
@@ -151,6 +152,25 @@ function QuotesPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const quickLiftStockMut = useMutation({
+    mutationFn: (quote: QuoteListItem) =>
+      assignVendorToQuote({
+        quoteId: quote.id,
+        fulfilmentType: "stock_lifted",
+        vendorId: "stock_lifted",
+        vendorName: "Material Lifted from Stock",
+        stockLocation: "Lifted from Stock / Yard",
+        notes: "Marked as material lifted from stock (RFQ not required)",
+      }),
+    onSuccess: (_, quote) => {
+      toast.success(`Quote ${quote.quote_no} marked: Material lifted from stock`);
+      invalidateQuote(qc);
+    },
+    onError: (err) => {
+      toast.error(toUserMessage(err));
+    },
+  });
+
   const quoteCounts = useMemo(() => {
     const all = query.data ?? [];
     let accepted = 0;
@@ -169,7 +189,11 @@ function QuotesPage() {
       if (r.status === "accepted") {
         accepted++;
         const a = parseQuoteVendorAssignment(r);
-        if (a.fulfilmentType === "in_stock") {
+        if (
+          a.fulfilmentType === "in_stock" ||
+          a.fulfilmentType === "stock_lifted" ||
+          a.isOrderCompleted
+        ) {
           inStock++;
         } else if (a.fulfilmentType === "vendor" || a.isAssigned) {
           assigned++;
@@ -189,21 +213,25 @@ function QuotesPage() {
     if (vendorFilter === "accepted") {
       list = list.filter((r) => r.status === "accepted");
     } else if (vendorFilter === "unassigned") {
-      list = list.filter(
-        (r) =>
-          r.status === "accepted" &&
-          parseQuoteVendorAssignment(r).fulfilmentType === "unassigned" &&
-          !parseQuoteVendorAssignment(r).isAssigned,
-      );
+      list = list.filter((r) => {
+        if (r.status !== "accepted") return false;
+        const a = parseQuoteVendorAssignment(r);
+        return !a.isAssigned && !a.isOrderCompleted && a.fulfilmentType === "unassigned";
+      });
     } else if (vendorFilter === "assigned") {
       list = list.filter(
         (r) => r.status === "accepted" && parseQuoteVendorAssignment(r).fulfilmentType === "vendor",
       );
     } else if (vendorFilter === "in_stock") {
-      list = list.filter(
-        (r) =>
-          r.status === "accepted" && parseQuoteVendorAssignment(r).fulfilmentType === "in_stock",
-      );
+      list = list.filter((r) => {
+        if (r.status !== "accepted") return false;
+        const a = parseQuoteVendorAssignment(r);
+        return (
+          a.fulfilmentType === "in_stock" ||
+          a.fulfilmentType === "stock_lifted" ||
+          a.isOrderCompleted
+        );
+      });
     } else if (statusFilter !== "all") {
       list = list.filter((r) => r.status === statusFilter);
     }
@@ -355,14 +383,14 @@ function QuotesPage() {
             setPage(1);
           }}
           className={cn(
-            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5 cursor-pointer",
             vendorFilter === "unassigned"
-              ? "bg-rose-700 text-white border-rose-700 shadow-2xs font-semibold"
-              : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+              ? "bg-amber-600 text-white border-amber-600 shadow-2xs font-semibold"
+              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100",
           )}
         >
-          <AlertCircle className="h-3.5 w-3.5 text-rose-500" />⚠ Unassigned Yet (
-          {quoteCounts.unassigned})
+          <Clock className="h-3.5 w-3.5 text-amber-600" />
+          Awaiting Fulfilment ({quoteCounts.unassigned})
         </button>
         <button
           type="button"
@@ -394,7 +422,7 @@ function QuotesPage() {
           )}
         >
           <Boxes className="h-3.5 w-3.5 text-blue-600" />
-          In-House Stock ({quoteCounts.inStock})
+          In-House / Stock Lifted ({quoteCounts.inStock})
         </button>
       </div>
 
@@ -583,7 +611,25 @@ function QuotesPage() {
                     )}
                     {!isHidden("vendor") && (
                       <TableCell>
-                        {assignment.fulfilmentType === "in_stock" ? (
+                        {assignment.fulfilmentType === "stock_lifted" ||
+                        assignment.isOrderCompleted ? (
+                          <button
+                            type="button"
+                            onClick={() => setAssigningQuote(r)}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs group cursor-pointer text-left"
+                            title="Material lifted from stock · No RFQ required. Click to view or edit."
+                          >
+                            <PackageCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            <span className="font-semibold truncate max-w-[140px]">
+                              Material Lifted from Stock
+                            </span>
+                            {assignment.isOrderCompleted && (
+                              <span className="text-[10px] bg-emerald-200/80 px-1 py-0.2 rounded text-emerald-900 font-bold ml-0.5">
+                                Order Completed
+                              </span>
+                            )}
+                          </button>
+                        ) : assignment.fulfilmentType === "in_stock" ? (
                           <button
                             type="button"
                             onClick={() => setAssigningQuote(r)}
@@ -594,7 +640,7 @@ function QuotesPage() {
                                 : "Fulfilled from in-house stock — Click to view/edit"
                             }
                           >
-                            <PackageCheck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                            <Boxes className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                             <span className="font-semibold truncate max-w-[130px]">
                               In-House Stock
                             </span>
@@ -618,25 +664,42 @@ function QuotesPage() {
                             <Building2 className="h-3 w-3 text-emerald-600 opacity-60 group-hover:opacity-100 shrink-0" />
                           </button>
                         ) : r.status === "accepted" ? (
-                          <button
-                            type="button"
-                            onClick={() => setRfqQuote(r)}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 transition-colors shadow-2xs group cursor-pointer"
-                            title="Accepted order is not assigned to a vendor yet — Click to send WhatsApp RFQ & assign"
-                          >
-                            <AlertCircle className="h-3.5 w-3.5 text-rose-600 shrink-0 animate-pulse" />
-                            <span>Unassigned Yet</span>
-                            <span className="text-[10px] bg-rose-200/80 px-1 py-0.2 rounded text-rose-800 font-bold ml-0.5 group-hover:bg-rose-300 flex items-center gap-0.5">
-                              <MessageCircle className="h-2.5 w-2.5" /> RFQ
-                            </span>
-                          </button>
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => quickLiftStockMut.mutate(r)}
+                              disabled={quickLiftStockMut.isPending}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors shadow-2xs cursor-pointer"
+                              title="1-click: Mark material as lifted from stock (RFQ not required)"
+                            >
+                              <PackageCheck className="h-3 w-3 text-blue-600 shrink-0" />
+                              <span>Lift from Stock</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRfqQuote(r)}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded transition-colors cursor-pointer"
+                              title="Send optional WhatsApp RFQ to vendors"
+                            >
+                              <MessageCircle className="h-3 w-3 text-slate-500" />
+                              <span>RFQ</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setAssigningQuote(r)}
+                              className="inline-flex items-center px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                              title="More options (Vendor, Promised date, Godown)"
+                            >
+                              <span>+ Assign</span>
+                            </button>
+                          </div>
                         ) : (
                           <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => setRfqQuote(r)}
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded transition-colors cursor-pointer"
-                              title="Send WhatsApp RFQ to vendors for this quote"
+                              title="Send optional WhatsApp RFQ to vendors"
                             >
                               <MessageCircle className="h-3 w-3 text-emerald-600" />
                               <span>RFQ</span>
@@ -645,7 +708,7 @@ function QuotesPage() {
                               type="button"
                               onClick={() => setAssigningQuote(r)}
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                              title="Assign vendor"
+                              title="Assign vendor or stock"
                             >
                               <span>+ Assign</span>
                             </button>

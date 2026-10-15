@@ -69,4 +69,38 @@ describe("parseQuoteVendorAssignment", () => {
     expect(parsed.isAssigned).toBe(true);
     expect(parsed.fulfilmentType).toBe("in_stock");
   });
+
+  it("correctly parses material lifted from stock", () => {
+    const parsed = parseQuoteVendorAssignment({
+      id: "q-lifted",
+      workflow_state: {
+        fulfilment_type: "stock_lifted",
+        stock_location: "Yard Stock Lot 4",
+      },
+    });
+
+    expect(parsed.isAssigned).toBe(true);
+    expect(parsed.fulfilmentType).toBe("stock_lifted");
+    expect(parsed.vendorName).toBe("Material Lifted from Stock");
+    expect(parsed.rfqNotRequired).toBe(true);
+  });
+
+  it("automatically treats customer with CRM response_status order_completed as lifted from stock", () => {
+    const parsed = parseQuoteVendorAssignment({
+      id: "q-jash",
+      status: "accepted",
+      customer: {
+        id: "cus-jash",
+        workflow_state: {
+          response_status: "order_completed",
+        },
+      },
+    });
+
+    expect(parsed.isAssigned).toBe(true);
+    expect(parsed.fulfilmentType).toBe("stock_lifted");
+    expect(parsed.vendorName).toBe("Material Lifted from Stock");
+    expect(parsed.isOrderCompleted).toBe(true);
+    expect(parsed.rfqNotRequired).toBe(true);
+  });
 });

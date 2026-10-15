@@ -35,7 +35,7 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
         .select(
           `
           id, quote_no, status, valid_until, total, notes, workflow_state, created_at,
-          customer:customers!quotes_customer_id_fkey(id, name)
+          customer:customers!quotes_customer_id_fkey(id, name, workflow_state)
         `,
         )
         .eq("status", "accepted")
@@ -148,11 +148,21 @@ export const OrderVendorAssignmentProvider: InsightProvider = {
       if (coveredQuoteIds.has(q.id)) continue;
 
       const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+      const customerWf = (q.customer?.workflow_state as Record<string, unknown> | null) ?? {};
+      const isCustomerOrderCompleted =
+        customerWf.response_status === "order_completed" || q.status === "converted";
+      const isStockFulfilled =
+        wf.fulfilment_type === "in_stock" ||
+        wf.fulfilment_type === "stock_lifted" ||
+        wf.assigned_vendor_id === "in_house_stock" ||
+        wf.assigned_vendor_id === "stock_lifted" ||
+        isCustomerOrderCompleted;
+
       const vendorId = (wf.assigned_vendor_id as string | undefined) || null;
       const vendorName = (wf.assigned_vendor_name as string | undefined) || null;
       const isVendorAssigned = Boolean(vendorId && vendorName && vendorName !== "Unassigned Yet");
 
-      if (isVendorAssigned) continue;
+      if (isVendorAssigned || isStockFulfilled) continue;
 
       const customerName = q.customer?.name || "Customer";
       const orderNo = q.quote_no || "QUO";

@@ -23,7 +23,7 @@ export interface OrderPipelineItem {
   orderId: string;
   orderDate: string;
   isVendorAssigned?: boolean;
-  fulfilmentType?: "in_stock" | "vendor" | "unassigned";
+  fulfilmentType?: "in_stock" | "stock_lifted" | "vendor" | "unassigned";
   stockLocation?: string | null;
 
   // Customer details
@@ -174,7 +174,7 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
     .select(
       `
       id, quote_no, status, created_at, valid_until, notes, workflow_state,
-      customer:customers!quotes_customer_id_fkey(id, name, customer_code, primary_phone, whatsapp, external_ref),
+      customer:customers!quotes_customer_id_fkey(id, name, customer_code, primary_phone, whatsapp, external_ref, workflow_state),
       project:projects!quotes_project_id_fkey(id, name, project_code)
     `,
     )
@@ -345,20 +345,33 @@ export async function listOrderPipeline(): Promise<OrderPipelineItem[]> {
       const rawCustomer = quote.customer;
       const normCustomer = normalizeCustomerRow(rawCustomer);
       const wf = (quote.workflow_state as Record<string, unknown> | null) ?? {};
+      const customerWf = (
+        rawCustomer && typeof rawCustomer === "object" && "workflow_state" in rawCustomer
+          ? (rawCustomer as { workflow_state?: unknown }).workflow_state
+          : null
+      ) as Record<string, unknown> | null;
+      const isCustomerOrderCompleted = customerWf?.response_status === "order_completed";
 
       const fulfilmentType =
-        (wf.fulfilment_type as "in_stock" | "vendor" | "unassigned" | undefined) ||
-        (wf.assigned_vendor_id === "in_house_stock" ? "in_stock" : undefined);
+        (wf.fulfilment_type as "in_stock" | "stock_lifted" | "vendor" | "unassigned" | undefined) ||
+        (wf.assigned_vendor_id === "stock_lifted" ? "stock_lifted" : undefined) ||
+        (wf.assigned_vendor_id === "in_house_stock" ? "in_stock" : undefined) ||
+        (isCustomerOrderCompleted ? "stock_lifted" : undefined);
       const stockLocation = (wf.stock_location as string | undefined) || null;
 
-      const vendorId = (wf.assigned_vendor_id as string | undefined) || null;
+      const vendorId =
+        (wf.assigned_vendor_id as string | undefined) ||
+        (fulfilmentType === "stock_lifted" ? "stock_lifted" : null);
       let vendorName = (wf.assigned_vendor_name as string | undefined) || null;
-      if (fulfilmentType === "in_stock" || vendorId === "in_house_stock") {
+      if (fulfilmentType === "stock_lifted" || vendorId === "stock_lifted") {
+        vendorName = "Material Lifted from Stock";
+      } else if (fulfilmentType === "in_stock" || vendorId === "in_house_stock") {
         vendorName = "In-House Stock";
       } else if (!vendorName) {
         vendorName = vendorId ? "Assigned Vendor" : "Unassigned Yet";
       }
       const isVendorAssigned = Boolean(
+        fulfilmentType === "stock_lifted" ||
         fulfilmentType === "in_stock" ||
         (vendorId && vendorName && vendorName !== "Unassigned Yet"),
       );

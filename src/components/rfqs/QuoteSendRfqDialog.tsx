@@ -647,23 +647,24 @@ export function QuoteSendRfqDialog({
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
-  // Assign Order to In-House Stock
+  // Assign Order to In-House Stock / Material Lifted from Stock
   const assignStockMutation = useMutation({
     mutationFn: async () => {
       return await assignVendorToQuote({
         quoteId,
-        fulfilmentType: "in_stock",
-        vendorId: "in_house_stock",
-        vendorName: "In-House Stock",
-        stockLocation: "Main Warehouse / Yard Stock",
-        notes: "Fulfilled directly from in-house stock inventory",
+        fulfilmentType: "stock_lifted",
+        vendorId: "stock_lifted",
+        vendorName: "Material Lifted from Stock",
+        stockLocation: "Lifted from Stock / Yard",
+        notes: "Marked as material lifted from stock (RFQ not required)",
       });
     },
     onSuccess: () => {
-      toast.success(`Quote #${quoteNo} assigned to In-House Stock`);
+      toast.success(`Quote #${quoteNo} marked: Material lifted from stock`);
       void qc.invalidateQueries({ queryKey: qk.quotes.byId(quoteId) });
       void qc.invalidateQueries({ queryKey: qk.quotes.all });
       void qc.invalidateQueries({ queryKey: ["customer-order-pipeline"] });
+      onAssigned?.("Material Lifted from Stock");
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -930,17 +931,17 @@ export function QuoteSendRfqDialog({
                 <Boxes className="h-4 w-4 text-blue-600 shrink-0" />
                 <div>
                   <span className="font-semibold text-blue-950 dark:text-blue-200">
-                    Have this stone in warehouse stock?
+                    Have this stone in stock or lifted?
                   </span>
                   <p className="text-[11px] text-blue-700 dark:text-blue-300">
-                    Fulfill directly from inventory without outsourcing to external vendors.
+                    Fulfill directly from inventory. Vendor RFQ is completely optional.
                   </p>
                 </div>
               </div>
               <Button
                 type="button"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 shrink-0 font-medium shadow-2xs"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 shrink-0 font-medium shadow-2xs cursor-pointer"
                 onClick={() => assignStockMutation.mutate()}
                 disabled={assignStockMutation.isPending}
               >
@@ -949,7 +950,7 @@ export function QuoteSendRfqDialog({
                 ) : (
                   <PackageCheck className="h-3.5 w-3.5 mr-1" />
                 )}
-                Fulfill from Stock
+                Material Lifted from Stock
               </Button>
             </div>
 
