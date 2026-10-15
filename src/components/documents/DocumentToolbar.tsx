@@ -105,15 +105,7 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         return;
       }
 
-      // If mode is "app" (WhatsApp Desktop/Business), save PDF silently to Downloads in background
-      // and launch WhatsApp via wa.me / app protocol in popupWin WITHOUT opening any print dialog
       if (mode === "app") {
-        try {
-          await downloadPdf(built.doc);
-        } catch {
-          /* best effort */
-        }
-
         // Copy formatted message text to clipboard as convenience
         try {
           if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -125,25 +117,15 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
 
         openWhatsappToContact(phone, text, popupWin, { mode: "wa.me" });
 
-        toast.success(
-          `Opening WhatsApp for ${built.meta.toName || "recipient"}! PDF saved to Downloads to attach.`,
-          { duration: 7000 },
-        );
+        toast.success(`Opening WhatsApp for ${built.meta.toName || "recipient"}!`, {
+          duration: 5000,
+        });
       } else if (mode === "web") {
-        // Mode "web": navigate popupWin to web.whatsapp.com directly
         openWhatsappToContact(phone, text, popupWin, { mode: "web" });
 
-        // Also trigger PDF download
-        try {
-          await downloadPdf(built.doc);
-        } catch {
-          /* best effort */
-        }
-
-        toast.success(
-          `Opening WhatsApp Web for ${built.meta.toName || "recipient"}! PDF saved to Downloads to attach.`,
-          { duration: 7000 },
-        );
+        toast.success(`Opening WhatsApp Web for ${built.meta.toName || "recipient"}!`, {
+          duration: 5000,
+        });
       } else {
         // Mode "wa.me"
         openWhatsappToContact(phone, text, popupWin, { mode: "wa.me" });

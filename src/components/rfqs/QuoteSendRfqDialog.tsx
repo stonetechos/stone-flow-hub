@@ -21,6 +21,7 @@ import {
   AlertCircle,
   ArrowRight,
   Download,
+  PackageCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -924,6 +925,34 @@ export function QuoteSendRfqDialog({
 
           {/* TAB 1: WhatsApp RFQ One-by-One */}
           <TabsContent value="whatsapp" className="space-y-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-blue-50/80 border border-blue-200/80 dark:bg-blue-950/30 dark:border-blue-900/50 text-xs">
+              <div className="flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-blue-600 shrink-0" />
+                <div>
+                  <span className="font-semibold text-blue-950 dark:text-blue-200">
+                    Have this stone in warehouse stock?
+                  </span>
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                    Fulfill directly from inventory without outsourcing to external vendors.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 shrink-0 font-medium shadow-2xs"
+                onClick={() => assignStockMutation.mutate()}
+                disabled={assignStockMutation.isPending}
+              >
+                {assignStockMutation.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <PackageCheck className="h-3.5 w-3.5 mr-1" />
+                )}
+                Fulfill from Stock
+              </Button>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/40 text-xs">
               <div className="space-y-0.5">
                 <span className="font-semibold text-emerald-900 dark:text-emerald-300 flex items-center gap-1">

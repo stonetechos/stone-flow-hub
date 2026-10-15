@@ -12,11 +12,7 @@
 import { getDb } from "@/integrations/supabase/server-context";
 
 export type PeriodFilter =
-  | "this_fiscal_year"
-  | "previous_fiscal_year"
-  | "this_quarter"
-  | "this_month"
-  | "today";
+  "this_fiscal_year" | "previous_fiscal_year" | "this_quarter" | "this_month" | "today";
 
 export type AgingBucket = {
   label: string;

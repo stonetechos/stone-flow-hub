@@ -398,10 +398,20 @@ export async function printPdf(doc: PdfDoc, targetWindow?: Window | null): Promi
 }
 
 /**
- * Download as PDF: opens the print dialog (which offers "Save as PDF"
- * on every modern OS). The historical "blank tab" bug was caused by
- * `noopener` making `window.open` return null; fixed above.
+ * Download document: downloads the full self-contained document file
+ * directly without opening a disruptive system print dialog.
  */
-export async function downloadPdf(doc: PdfDoc, targetWindow?: Window | null): Promise<void> {
-  return printPdf(doc, targetWindow);
+export async function downloadPdf(doc: PdfDoc, _targetWindow?: Window | null): Promise<void> {
+  const html = await renderDocHtmlAsync(doc);
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeTitle = (doc.title || doc.kind || "document").replace(/[^a-zA-Z0-9_-]/g, "_");
+  const safeNumber = (doc.number || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+  a.download = `${safeTitle}_${safeNumber || "doc"}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }

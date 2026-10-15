@@ -31,13 +31,7 @@ export interface InstagramPost {
 }
 
 export type InstagramCategoryKey =
-  | "all"
-  | "veneer"
-  | "cladding"
-  | "murals"
-  | "marble"
-  | "ledgestone"
-  | "reels";
+  "all" | "veneer" | "cladding" | "murals" | "marble" | "ledgestone" | "reels";
 
 export interface CategoryTab {
   key: InstagramCategoryKey;

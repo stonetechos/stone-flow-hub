@@ -155,9 +155,9 @@ export function FormActions({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 backdrop-blur",
-        "supports-[backdrop-filter]:bg-background/80",
-        "pb-[env(safe-area-inset-bottom)]",
+        "fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-background/98 backdrop-blur shadow-2xl",
+        "supports-[backdrop-filter]:bg-background/90",
+        "pb-[max(0.5rem,env(safe-area-inset-bottom))]",
         className,
       )}
       role="group"

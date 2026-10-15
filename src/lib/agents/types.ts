@@ -13,13 +13,7 @@ export type AgentTaskPriority = "urgent" | "high" | "medium" | "low";
 export type AgentChannel = "whatsapp" | "email" | "call_script" | "internal_review";
 
 export type AgentActionStatus =
-  | "drafted"
-  | "awaiting_approval"
-  | "approved"
-  | "executed"
-  | "rejected"
-  | "failed"
-  | "cancelled";
+  "drafted" | "awaiting_approval" | "approved" | "executed" | "rejected" | "failed" | "cancelled";
 
 export interface AgentDraftPayload {
   channel: AgentChannel;

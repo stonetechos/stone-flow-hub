@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { FormActions } from "@/components/forms/FormLayout";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createDispatch, replaceDispatchItems } from "@/lib/dispatch/api";
@@ -450,14 +451,19 @@ function NewDispatchPage() {
           </Field>
         </QuickForm.Advanced>
 
-        <QuickForm.Actions>
-          <Button type="button" variant="ghost" onClick={() => nav({ to: "/dispatch" })}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={mut.isPending}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create challan
-          </Button>
-        </QuickForm.Actions>
+        <FormActions
+          busy={mut.isPending}
+          secondary={
+            <Button type="button" variant="ghost" onClick={() => nav({ to: "/dispatch" })}>
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={mut.isPending}>
+              {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create challan
+            </Button>
+          }
+        />
       </QuickForm>
     </div>
   );
