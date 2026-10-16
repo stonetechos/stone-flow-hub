@@ -133,41 +133,158 @@ export function decodeAgencyWorkTypes(notes: string | null | undefined): {
   return { cleanNotes, workTypes, vehicleType, vehicleNo, entityType };
 }
 
+export function isVehicleKeyword(str?: string | null): boolean {
+  if (!str) return false;
+  const s = str.trim().toLowerCase();
+  const vehiclePatterns = [
+    /\btempo\b/,
+    /\btata\s*ace\b/,
+    /\bchhota\s*hathi\b/,
+    /\bchota\s*hathi\b/,
+    /\bbolero\b/,
+    /\bpickup\b/,
+    /\beicher\b/,
+    /\btruck\b/,
+    /\btractor\b/,
+    /\btrolley\b/,
+    /\btrailer\b/,
+    /\brickshaw\b/,
+    /\bauto\b/,
+    /\bape\b/,
+    /\bpiaggio\b/,
+    /\b3\s*wheeler\b/,
+    /\bthree\s*wheeler\b/,
+    /\b407\b/,
+    /\bcanter\b/,
+    /\b14\s*ft\b/,
+    /\b17\s*ft\b/,
+    /\b19\s*ft\b/,
+    /\b20\s*ft\b/,
+    /\b22\s*ft\b/,
+    /\bdumper\b/,
+    /\bcrane\b/,
+    /\bhathi\b/,
+    /\blcv\b/,
+    /\bhcv\b/,
+  ];
+  return vehiclePatterns.some((pattern) => pattern.test(s));
+}
+
+export function normalizeVehicleName(str: string): string {
+  const s = str.trim().toLowerCase();
+  if (s.includes("chhota hathi") || s.includes("chota hathi") || s.includes("tata ace")) {
+    return "Tata Ace (Chhota Hathi)";
+  }
+  if (s.includes("bolero") || s.includes("pickup")) {
+    return "Bolero / Pickup (1.5T - 1.7T)";
+  }
+  if (s.includes("eicher") || s.includes("14 ft") || s.includes("14ft")) {
+    return "14 ft Eicher / Truck";
+  }
+  if (
+    s.includes("tempo") ||
+    s.includes("ape") ||
+    s.includes("3 wheeler") ||
+    s.includes("three wheeler") ||
+    s.includes("piaggio")
+  ) {
+    return "3-Wheeler Tempo";
+  }
+  if (s.includes("tractor")) {
+    return "Tractor Trolley";
+  }
+  if (s.includes("trailer")) {
+    return "Trailer / Multi-axle";
+  }
+  if (s.includes("truck") || s.includes("17 ft") || s.includes("19 ft") || s.includes("canter")) {
+    return "17 ft - 19 ft Truck";
+  }
+  return str.trim();
+}
+
 function parseRow(r: Record<string, unknown>): InstallationAgencyRow {
   const { cleanNotes, workTypes, vehicleType, vehicleNo, entityType } = decodeAgencyWorkTypes(
     r.notes as string | null,
   );
+
+  const rawContact = typeof r.contact_person === "string" ? r.contact_person.trim() : null;
+  const rawName = typeof r.name === "string" ? r.name.trim() : "";
+  const contactIsVehicle = isVehicleKeyword(rawContact);
+
+  let finalVehicleType = (r.vehicle_type as string | undefined) ?? vehicleType;
+  let finalContactPerson = rawContact;
+  const finalWorkTypes = [...workTypes];
+  let finalEntityType = entityType;
+
+  // Auto-heal legacy database entries where vehicle was mistakenly stored in contact_person (e.g. "Tempo")
+  if (contactIsVehicle && rawContact) {
+    if (!finalVehicleType) {
+      finalVehicleType = normalizeVehicleName(rawContact);
+    }
+    // The contractor must have their actual contact name, never a vehicle model!
+    finalContactPerson = rawName;
+    if (!finalWorkTypes.includes("carting")) {
+      finalWorkTypes.push("carting");
+    }
+    finalEntityType = "individual";
+  } else if (!finalContactPerson || !finalContactPerson.trim()) {
+    // If contact person was left empty, default to the contractor's name
+    finalContactPerson = rawName;
+  }
+
   return {
     ...(r as unknown as InstallationAgencyRow),
+    name: rawName,
+    contact_person: finalContactPerson,
     notes: cleanNotes,
-    work_types: workTypes,
-    agency_type: workTypes[0] ?? "installation",
-    vehicle_type: (r.vehicle_type as string | undefined) ?? vehicleType,
+    work_types: finalWorkTypes,
+    agency_type: finalWorkTypes[0] ?? "installation",
+    vehicle_type: finalVehicleType,
     vehicle_no: (r.vehicle_no as string | undefined) ?? vehicleNo,
-    entity_type: entityType,
+    entity_type: finalEntityType,
   };
 }
 
 function toPayload(input: InstallationAgencyInput) {
-  const workTypes =
-    input.work_types ?? (input.agency_type ? [input.agency_type] : ["installation"]);
+  let workTypes = input.work_types ?? (input.agency_type ? [input.agency_type] : ["installation"]);
+  let vehicleType = input.vehicle_type ? input.vehicle_type.trim() : null;
+  let contactPerson = input.contact_person ? input.contact_person.trim() : null;
+  const contractorName = input.name.trim();
+
+  // Guard against vehicle names being placed in contact person
+  if (isVehicleKeyword(contactPerson)) {
+    if (!vehicleType && contactPerson) {
+      vehicleType = normalizeVehicleName(contactPerson);
+    }
+    // The contractor must have contact name (the actual contractor/person's name)
+    contactPerson = contractorName;
+    if (!workTypes.includes("carting")) {
+      workTypes = [...workTypes, "carting"];
+    }
+  }
+
+  // Ensure contact person always has the contractor's contact name
+  if (!contactPerson) {
+    contactPerson = contractorName;
+  }
+
   const codeVal =
     input.code && input.code.trim().length > 0
       ? input.code.trim()
-      : input.name
-          .trim()
+      : contractorName
           .replace(/[^a-zA-Z0-9]/g, "-")
           .toUpperCase()
           .slice(0, 30) || `AG-${Date.now()}`;
+
   return {
     code: codeVal,
-    name: input.name.trim(),
-    contact_person: input.contact_person ?? null,
+    name: contractorName,
+    contact_person: contactPerson,
     phone: input.phone ?? null,
     notes: encodeAgencyNotes(
       input.notes,
       workTypes,
-      input.vehicle_type,
+      vehicleType,
       input.vehicle_no,
       input.entity_type,
     ),

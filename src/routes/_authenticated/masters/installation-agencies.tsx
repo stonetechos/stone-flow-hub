@@ -37,6 +37,8 @@ import {
   deleteInstallationAgency,
   listInstallationAgencies,
   updateInstallationAgency,
+  isVehicleKeyword,
+  normalizeVehicleName,
   AGENCY_WORK_TYPES,
   type AgencyWorkType,
   type InstallationAgencyInput,
@@ -112,18 +114,33 @@ function InstallationAgenciesPage() {
     setCreating(true);
   };
   const openEdit = (row: InstallationAgencyRow) => {
+    let vehicle = row.vehicle_type ?? "";
+    let contactPerson = (row.contact_person ?? "").trim();
+    const workTypes: AgencyWorkType[] =
+      row.work_types && row.work_types.length > 0 ? [...row.work_types] : ["installation"];
+
+    // Auto-heal legacy database rows where vehicle model (e.g. "Tempo", "Pickup") was stored in contact_person
+    if (isVehicleKeyword(contactPerson)) {
+      if (!vehicle) vehicle = normalizeVehicleName(contactPerson);
+      contactPerson = row.name;
+      if (!workTypes.includes("carting")) workTypes.push("carting");
+    }
+
+    if (!contactPerson) {
+      contactPerson = row.name;
+    }
+
     const isCompany =
-      row.entity_type === "company" ||
-      (!!row.contact_person &&
-        row.contact_person.trim().toLowerCase() !== row.name.trim().toLowerCase());
+      row.entity_type === "company" &&
+      contactPerson.trim().toLowerCase() !== row.name.trim().toLowerCase();
 
     setForm({
       code: row.code,
       name: row.name,
-      contact_person: row.contact_person ?? "",
+      contact_person: contactPerson,
       phone: row.phone ?? "",
-      work_types: row.work_types && row.work_types.length > 0 ? row.work_types : ["installation"],
-      vehicle_type: row.vehicle_type ?? "",
+      work_types: workTypes,
+      vehicle_type: vehicle,
       vehicle_no: row.vehicle_no ?? "",
       entity_type: isCompany ? "company" : "individual",
       notes: row.notes ?? "",
@@ -246,7 +263,7 @@ function InstallationAgenciesPage() {
               <TableRow className="bg-muted/40">
                 <TableHead className="min-w-[190px]">Agency / Contractor Name</TableHead>
                 <TableHead className="min-w-[200px]">Specialization & Vehicle</TableHead>
-                <TableHead className="min-w-[140px]">Primary Contact</TableHead>
+                <TableHead className="min-w-[140px]">Contact Person</TableHead>
                 <TableHead className="min-w-[130px]">Phone</TableHead>
                 <TableHead className="w-20">Status</TableHead>
                 <TableHead className="w-36 text-right pr-4 sticky right-0 bg-background/95 backdrop-blur-xs">
@@ -308,15 +325,10 @@ function InstallationAgenciesPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm py-3">
-                    {r.contact_person &&
-                    r.contact_person.trim().toLowerCase() !== r.name.trim().toLowerCase() ? (
-                      r.contact_person
-                    ) : (
-                      <span className="text-muted-foreground/60 text-xs italic">
-                        {r.entity_type === "company" ? "—" : "Self (Individual)"}
-                      </span>
-                    )}
+                  <TableCell className="text-sm py-3 font-medium text-foreground">
+                    {r.contact_person && !isVehicleKeyword(r.contact_person)
+                      ? r.contact_person
+                      : r.name}
                   </TableCell>
                   <TableCell className="text-sm py-3">
                     {r.phone ? (
@@ -447,34 +459,80 @@ function InstallationAgenciesPage() {
               {/* Primary Name Field */}
               <Field
                 label={
-                  form.entity_type === "company"
-                    ? "Firm / Agency Company Name"
-                    : "Contractor / Craftsman Name"
+                  form.entity_type === "company" ? "Firm / Agency Company Name" : "Contractor Name"
                 }
                 required
                 className={form.entity_type === "company" ? "" : "sm:col-span-2"}
               >
                 <Input
                   value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setForm((f) => {
+                      const shouldSync =
+                        !f.contact_person ||
+                        f.contact_person === f.name ||
+                        isVehicleKeyword(f.contact_person);
+                      return {
+                        ...f,
+                        name: newName,
+                        contact_person: shouldSync ? newName : f.contact_person,
+                      };
+                    });
+                  }}
                   placeholder={
                     form.entity_type === "company"
-                      ? "e.g. Royal Marble Crafters / Shree Ram Transport"
-                      : "e.g. Arjun Parmar / Brijesh Kushwah"
+                      ? "e.g. Shree Ram Carting / Royal Marble Crafters"
+                      : "e.g. Anil Bharwad / Arjun Parmar"
                   }
                   required
                 />
               </Field>
 
-              {/* Contact person is ONLY shown for Companies/Firms */}
-              {form.entity_type === "company" && (
-                <Field label="Contact Person / Manager">
+              {/* Contact Person Field */}
+              {form.entity_type === "company" ? (
+                <Field label="Contact Person / Manager" required>
                   <Input
                     value={form.contact_person ?? ""}
-                    onChange={(e) => setForm((f) => ({ ...f, contact_person: e.target.value }))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (isVehicleKeyword(val)) {
+                        setForm((f) => ({
+                          ...f,
+                          contact_person: f.name,
+                          vehicle_type: f.vehicle_type || normalizeVehicleName(val),
+                          work_types: f.work_types?.includes("carting")
+                            ? f.work_types
+                            : [...(f.work_types ?? []), "carting"],
+                        }));
+                        toast.info(
+                          `"${val}" is a vehicle model. It has been moved to "What vehicle do they have?" below.`,
+                        );
+                        return;
+                      }
+                      setForm((f) => ({ ...f, contact_person: val }));
+                    }}
                     placeholder="e.g. Ramesh Sharma"
+                    required
                   />
+                  <span className="text-[11px] text-muted-foreground mt-1 block">
+                    Person name representing this firm (vehicles belong below)
+                  </span>
                 </Field>
+              ) : (
+                <div className="sm:col-span-2 rounded-md bg-muted/30 px-3 py-2 border border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    Contractor contact:{" "}
+                    <strong className="text-foreground font-medium">
+                      {form.contact_person && !isVehicleKeyword(form.contact_person)
+                        ? form.contact_person
+                        : form.name || "Contractor"}
+                    </strong>
+                  </span>
+                  <span className="text-[11px] text-muted-foreground/80 italic">
+                    (Personal name registered as primary contact)
+                  </span>
+                </div>
               )}
 
               {/* Work Specialization */}
