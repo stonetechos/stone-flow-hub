@@ -28,7 +28,13 @@ export function DemoBadge() {
   const { isDemo, setMode, resetDemo } = useDemoMode();
   const [confirmReset, setConfirmReset] = useState(false);
 
-  const modeLabel = isDemo ? t("common.demo", "Demo") : t("common.live", "Live");
+  // When running in standard Live production mode, do not show any badge.
+  // Only surface the pill indicator if actively running inside isolated Demo Mode.
+  if (!isDemo) {
+    return null;
+  }
+
+  const modeLabel = t("common.demo", "Demo");
 
   return (
     <>
@@ -39,9 +45,7 @@ export function DemoBadge() {
             className={cn(
               "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold uppercase tracking-wide transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isDemo
-                ? "bg-amber-50 text-amber-800 hover:bg-amber-100/80 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
-                : "bg-blue-50 text-blue-700 hover:bg-blue-100/80 border border-blue-200/80 shadow-2xs dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
+              "bg-amber-50 text-amber-800 hover:bg-amber-100/80 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
             )}
             aria-label={t("common.currentMode", {
               mode: modeLabel,

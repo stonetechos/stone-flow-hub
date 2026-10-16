@@ -35,9 +35,6 @@ export function ZohoDashboardHeader({
               <span className="font-display text-base sm:text-xl font-black tracking-tight text-engraved-title">
                 {t("brand.companyName", "STONE TECH")}
               </span>
-              <span className="engraved-well-glow rounded-full px-2 py-0.5 font-mono text-[9px] sm:text-[10px] font-black tracking-wide uppercase text-engraved-blue shrink-0">
-                {t("brand.liveErp", "Live ERP")}
-              </span>
             </div>
             <p className="font-mono text-[11px] sm:text-xs font-semibold text-engraved-kicker truncate">
               {t("dashboard.zoho.hubSubtitle", "Executive & Operational Hub")}

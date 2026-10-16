@@ -55,7 +55,7 @@ import {
   Package,
   Plus,
   Receipt,
-  Sparkles,
+  Activity,
   TrendingUp,
   Truck,
   Users,
@@ -361,10 +361,10 @@ function ExecutiveHero({
           </span>
         </div>
 
-        {/* AI Executive Brief */}
+        {/* Executive Brief */}
         <div className="mt-3.5 sm:mt-6 border-t border-blue-50 pt-3 sm:pt-5">
           <div className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker">
-            <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
+            <FileText className="h-3.5 w-3.5 text-blue-600" aria-hidden />
             {t("dashboard.executiveBrief", "Executive brief")}
           </div>
           <ul className="space-y-1.5 sm:space-y-2 min-w-0">
@@ -1040,8 +1040,8 @@ function CopilotDock({
       {/* Contextual summary in 3D Milky White Box */}
       <div className="card-3d-milky p-5">
         <div className="mb-2.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-engraved-kicker">
-          <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden />
-          {t("dashboard.aiCopilot")}
+          <Activity className="h-3.5 w-3.5 text-blue-600" aria-hidden />
+          {t("dashboard.aiCopilot", "OPERATIONAL SUMMARY")}
         </div>
         <div className="font-display text-[15px] font-black leading-snug text-engraved-title">
           {health.band === "idle"

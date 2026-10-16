@@ -17,6 +17,7 @@ import {
   FileText,
   Truck,
   Languages,
+  FlaskConical,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +57,7 @@ import { Copilot } from "@/components/copilot/Copilot";
 import { DangerNotifications } from "@/components/insights/DangerNotifications";
 import { GrowthAdvisoryBroadcaster } from "@/components/insights/GrowthAdvisoryBroadcaster";
 import { NotificationBanner } from "@/components/global/NotificationBanner";
-import { DemoProvider } from "@/lib/demo/context";
+import { DemoProvider, useDemoMode } from "@/lib/demo/context";
 
 import { DemoBadge, DemoBanner } from "@/components/global/DemoBadge";
 import {
@@ -375,6 +376,7 @@ function UserMenu({
   isSuperAdmin?: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const { isDemo, setMode } = useDemoMode();
   const currentLang = (i18n.language?.substring(0, 2) || "en") as LangCode;
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
@@ -482,6 +484,17 @@ function UserMenu({
             <SettingsIcon className="mr-2 h-4 w-4" aria-hidden />
             {t("user.preferences", "Preferences")}
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem onSelect={() => void setMode(!isDemo)}>
+              <FlaskConical
+                className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400"
+                aria-hidden
+              />
+              {isDemo
+                ? t("common.liveMode", "Switch to Live Mode")
+                : t("common.demoMode", "Demo Mode")}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
