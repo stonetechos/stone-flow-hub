@@ -84,6 +84,7 @@ import { VendorDeliveryPromptCard } from "@/components/dashboard/VendorDeliveryP
 import { useVendorDeliveryPrompts } from "@/lib/vendors/delivery-prompts";
 import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesPromptCard";
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
+import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -229,6 +230,9 @@ function DashboardPage() {
 
                 {/* Visitor Inquiries & CRM Leads */}
                 <WebsiteLeadsDashboardCard />
+
+                {/* Executive Daily Money Flow & Transaction Radar */}
+                <DailyMoneyFlowCard />
 
                 <BusinessHealthGrid kpis={kpisQ.data} />
 
