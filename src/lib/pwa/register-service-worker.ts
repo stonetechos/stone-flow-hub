@@ -77,18 +77,15 @@ export function registerServiceWorker(): void {
     let reloading = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController || reloading) return;
-      try {
-        const lastReload = Number(sessionStorage.getItem("stos:sw-last-reload") || 0);
-        if (Date.now() - lastReload < 15000) {
-          // Throttled: already reloaded within last 15s, prevent looping
-          return;
-        }
-        sessionStorage.setItem("stos:sw-last-reload", String(Date.now()));
-      } catch {
-        // ignore storage errors
-      }
       reloading = true;
-      window.location.reload();
+      toast.info("A new STOS update is available", {
+        description: "Click to refresh and load the latest updates",
+        action: {
+          label: "Refresh",
+          onClick: () => window.location.reload(),
+        },
+        duration: 8000,
+      });
     });
 
     navigator.serviceWorker.addEventListener("message", (event) => {

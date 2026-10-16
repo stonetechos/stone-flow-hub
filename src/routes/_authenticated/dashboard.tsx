@@ -61,7 +61,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
+import { LoadingBlock, ErrorBlock, SkeletonCards } from "@/components/layout/States";
 import { HealthCard, type HealthCardTone } from "@/components/dashboard/HealthCard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toUserMessage } from "@/lib/errors";
@@ -1467,11 +1467,11 @@ function ShellLoading({
   const isNocturnal = greeting.includes("Nocturnal");
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-border-subtle bg-surface-card p-6">
-        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-muted">
+      <div className="card-3d-milky p-6">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-engraved-kicker">
           {today}
         </div>
-        <h1 className="mt-2 font-display text-2xl font-semibold text-text-primary">
+        <h1 className="mt-2 font-display text-2xl font-black text-engraved-title">
           {isNocturnal ? (
             <>
               {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
@@ -1483,7 +1483,11 @@ function ShellLoading({
           )}
         </h1>
       </div>
-      <LoadingBlock />
+      <SkeletonCards count={4} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="h-44 rounded-xl bg-slate-100/80 animate-pulse border border-slate-200/60" />
+        <div className="h-44 rounded-xl bg-slate-100/80 animate-pulse border border-slate-200/60" />
+      </div>
     </div>
   );
 }

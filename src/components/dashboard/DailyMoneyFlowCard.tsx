@@ -58,33 +58,33 @@ export function DailyMoneyFlowCard() {
   // 1. Customer Receipts & Payments (Money In)
   const customerPaymentsQ = useQuery({
     queryKey: qk.paymentRegister.list(""),
-    queryFn: () => listPaymentRegister(""),
+    queryFn: () => listPaymentRegister("").catch(() => []),
     enabled: isAuthorized && roles.isReady,
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   // 2. Vendor Payments (Money Out)
   const vendorPaymentsQ = useQuery({
     queryKey: qk.vendorPayments.all,
-    queryFn: () => listVendorPayments(),
+    queryFn: () => listVendorPayments().catch(() => []),
     enabled: isAuthorized && roles.isReady,
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   // 3. Agency Payments (Money Out)
   const agencyLedgerQ = useQuery({
     queryKey: qk.installationLedger.all(),
-    queryFn: () => listInstallationLedger(),
+    queryFn: () => listInstallationLedger().catch(() => []),
     enabled: isAuthorized && roles.isReady,
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   // 4. Agencies List (for party names)
   const agenciesQ = useQuery({
     queryKey: ["installationAgencies", "list"],
-    queryFn: () => listInstallationAgencies(),
+    queryFn: () => listInstallationAgencies().catch(() => []),
     enabled: isAuthorized && roles.isReady,
-    staleTime: 60_000,
+    staleTime: 120_000,
   });
 
   const agencyNames = useMemo(() => {

@@ -110,7 +110,9 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     deliveriesToday,
     activeInstallations,
   ]) {
-    if (r.error) throw new AppError(mapDbError(r.error));
+    if (r.error) {
+      console.warn("[getDashboardKpis] Sub-query failed, falling back:", r.error.message);
+    }
   }
 
   const sumField = <K extends string>(

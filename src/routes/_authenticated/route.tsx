@@ -17,21 +17,17 @@ import { useAuthReady } from "@/hooks/use-auth-ready";
 import { isChunkLoadError, recoverFromChunkError } from "@/lib/router/chunk-recovery";
 import { toast } from "sonner";
 
+// In-memory verification cache: once verified for this browser session, subsequent internal route/tab
+// transitions resolve in 0ms without performing blocking network roundtrips to Supabase auth & profiles.
+let cachedUserAuth: {
+  userId: string;
+  verifiedAt: number;
+} | null = null;
+const VERIFY_TTL_MS = 10 * 60 * 1000; // 10 minutes cache
+
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  // `ssr: false` means the server renders nothing for this
-  // route (and everything nested under it) and TanStack Start defers to a
-  // client-only render — by design, and not itself the bug. The actual
-  // defect was a timing race: `beforeLoad`'s auth check (and its redirect
-  // to /auth when signed out) can resolve before React finishes committing
-  // its first hydration pass, since nothing forces the router to hold that
-  // initial pass open. `pendingMinMs` uses TanStack Router's own built-in
-  // mechanism (see `setMatchForcePending` in `@tanstack/router-core`'s
-  // ssr-client hydrate()) to force this match to stay in its pending state
-  // for a minimum window, guaranteeing hydration fully commits before the
-  // resolved (redirected-or-not) content swaps in. No auth/SSR/TanStack
-  // behavior changes — this only closes the race window.
-  pendingMinMs: 300,
+  pendingMinMs: 0,
   beforeLoad: async () => {
     // When Supabase isn't configured, the root route
     // (`__root.tsx`) renders the global configuration screen instead of
@@ -42,15 +38,6 @@ export const Route = createFileRoute("/_authenticated")({
     // router error instead of the configuration screen.
     if (!getSupabaseConfigStatus().ok) return { user: null };
 
-    // `/auth` decides whether to bounce you to the dashboard by reading the
-    // session out of local storage; this route validates that session over
-    // the network. When a stored token has been revoked or has expired the
-    // two disagree, and the browser ping-pongs between the two routes until
-    // the router's redirect limit trips — with nothing rendered in between,
-    // because both routes are `ssr: false`. Clearing the dead token locally
-    // before redirecting makes the two agree again, and `flow: "expired"`
-    // both explains what happened and is a flow `/auth` never redirects out
-    // of, so the loop cannot re-form even if the sign-out fails.
     // Verify session locally first (instant, non-blocking from storage)
     const { data: sessionData } = await supabase.auth
       .getSession()
@@ -58,12 +45,24 @@ export const Route = createFileRoute("/_authenticated")({
     const session = sessionData?.session;
 
     if (!session?.user) {
+      cachedUserAuth = null;
       throw redirect({ to: "/auth", search: { flow: "signin" } });
     }
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = session.expires_at ?? 0;
     const isExpired = expiresAt > 0 && expiresAt <= now;
+
+    // Fast-path for smooth operation: if the session token is unexpired and we already verified this user
+    // in this session within the TTL, return immediately (0ms). Internal tab transitions become instantaneous!
+    if (
+      !isExpired &&
+      cachedUserAuth &&
+      cachedUserAuth.userId === session.user.id &&
+      Date.now() - cachedUserAuth.verifiedAt < VERIFY_TTL_MS
+    ) {
+      return { user: session.user };
+    }
 
     let activeUser = session.user;
 
@@ -163,6 +162,11 @@ export const Route = createFileRoute("/_authenticated")({
       if ((e as { to?: string })?.to) throw e;
     }
 
+    cachedUserAuth = {
+      userId: activeUser.id,
+      verifiedAt: Date.now(),
+    };
+
     return { user: activeUser };
   },
   component: AuthenticatedLayout,
@@ -178,6 +182,8 @@ export const Route = createFileRoute("/_authenticated")({
  * the boundary to the current pathname so navigating away automatically
  * clears the error state for the next page.
  */
+let hasSyncedOrgData = false;
+
 function AuthenticatedLayout() {
   const router = useRouter();
   const pathname = router.state.location.pathname;
@@ -191,7 +197,8 @@ function AuthenticatedLayout() {
       if (typeof window !== "undefined") {
         window.location.replace("/auth?flow=signin");
       }
-    } else if (activeUser) {
+    } else if (activeUser && !hasSyncedOrgData) {
+      hasSyncedOrgData = true;
       import("@/lib/admin/users.functions")
         .then(({ syncOrganizationDataServerFn }) => {
           void syncOrganizationDataServerFn().catch(() => {});

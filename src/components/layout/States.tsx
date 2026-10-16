@@ -17,7 +17,7 @@ export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 4000);
+    const timer = setTimeout(() => setSlow(true), 15000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -27,29 +27,21 @@ export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
       aria-live="polite"
       className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground"
     >
-      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-      <span className="text-xs">{label}</span>
+      <Loader2 className="h-4 w-4 animate-spin text-cyan-700 dark:text-cyan-400" aria-hidden />
+      <span className="text-xs font-medium">{label}</span>
       {slow && (
         <div className="mt-3 flex flex-col items-center gap-2 text-xs">
-          <span className="text-muted-foreground">Taking longer than expected?</span>
+          <span className="text-muted-foreground">Synchronizing data with database…</span>
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="text-primary underline font-medium hover:opacity-80"
-            >
-              Reload
-            </button>
-            <span>·</span>
             <a
               href="/auth?flow=signin"
-              className="text-primary underline font-medium hover:opacity-80"
+              className="text-muted-foreground underline hover:text-foreground"
             >
               Sign In
             </a>
             <span>·</span>
-            <a href="/" className="text-primary underline font-medium hover:opacity-80">
-              Go Home
+            <a href="/" className="text-muted-foreground underline hover:text-foreground">
+              Home
             </a>
           </div>
         </div>
