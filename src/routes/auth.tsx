@@ -105,7 +105,10 @@ export const Route = createFileRoute("/auth")({
         .catch(() => null),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
     ]);
-    if (session) throw redirect({ to: "/dashboard" });
+    const now = Math.floor(Date.now() / 1000);
+    if (session?.user && (!session.expires_at || session.expires_at > now)) {
+      throw redirect({ to: "/dashboard" });
+    }
   },
   component: AuthPage,
 });

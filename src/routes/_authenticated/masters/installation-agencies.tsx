@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Check, Sparkles, Pencil, Search } from "lucide-react";
+import { Plus, Check, Sparkles, Pencil, Search, Truck, User, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -55,6 +55,9 @@ const EMPTY: InstallationAgencyInput = {
   contact_person: "",
   phone: "",
   work_types: ["installation"],
+  vehicle_type: "",
+  vehicle_no: "",
+  entity_type: "individual",
   notes: "",
   is_active: true,
   sort_order: 100,
@@ -109,12 +112,20 @@ function InstallationAgenciesPage() {
     setCreating(true);
   };
   const openEdit = (row: InstallationAgencyRow) => {
+    const isCompany =
+      row.entity_type === "company" ||
+      (!!row.contact_person &&
+        row.contact_person.trim().toLowerCase() !== row.name.trim().toLowerCase());
+
     setForm({
       code: row.code,
       name: row.name,
       contact_person: row.contact_person ?? "",
       phone: row.phone ?? "",
       work_types: row.work_types && row.work_types.length > 0 ? row.work_types : ["installation"],
+      vehicle_type: row.vehicle_type ?? "",
+      vehicle_no: row.vehicle_no ?? "",
+      entity_type: isCompany ? "company" : "individual",
       notes: row.notes ?? "",
       is_active: row.is_active,
       sort_order: row.sort_order,
@@ -136,6 +147,9 @@ function InstallationAgenciesPage() {
         const nameMatch = r.name.toLowerCase().includes(q);
         const codeMatch = r.code.toLowerCase().includes(q);
         const contactMatch = (r.contact_person ?? "").toLowerCase().includes(q);
+        const vehicleMatch =
+          (r.vehicle_type ?? "").toLowerCase().includes(q) ||
+          (r.vehicle_no ?? "").toLowerCase().includes(q);
         const phoneRaw = r.phone ?? "";
         const phoneMatch = phoneRaw.toLowerCase().includes(q);
         const phoneDigits = phoneRaw.replace(/\D/g, "");
@@ -143,7 +157,7 @@ function InstallationAgenciesPage() {
           qDigits.length >= 4 &&
           (phoneDigits.includes(qDigits) ||
             (qDigits.length >= 10 && phoneDigits.includes(qDigits.slice(-10))));
-        return nameMatch || codeMatch || contactMatch || phoneMatch || digitMatch;
+        return nameMatch || codeMatch || contactMatch || vehicleMatch || phoneMatch || digitMatch;
       });
     }
     return list;
@@ -199,7 +213,7 @@ function InstallationAgenciesPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, phone, contact person…"
+            placeholder="Search by name, phone, vehicle…"
             className="h-8 pl-8 text-xs w-full"
           />
         </div>
@@ -230,9 +244,9 @@ function InstallationAgenciesPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40">
-                <TableHead className="min-w-[180px]">Agency / Contractor Name</TableHead>
-                <TableHead className="min-w-[200px]">Specialization</TableHead>
-                <TableHead className="min-w-[140px]">Contact Person</TableHead>
+                <TableHead className="min-w-[190px]">Agency / Contractor Name</TableHead>
+                <TableHead className="min-w-[200px]">Specialization & Vehicle</TableHead>
+                <TableHead className="min-w-[140px]">Primary Contact</TableHead>
                 <TableHead className="min-w-[130px]">Phone</TableHead>
                 <TableHead className="w-20">Status</TableHead>
                 <TableHead className="w-36 text-right pr-4 sticky right-0 bg-background/95 backdrop-blur-xs">
@@ -251,15 +265,23 @@ function InstallationAgenciesPage() {
                     className="font-medium text-foreground py-3"
                     onClick={() => openEdit(r)}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-sm text-foreground group-hover:text-primary group-hover:underline transition-colors">
-                        {r.name}
-                      </span>
-                      <Pencil className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-sm text-foreground group-hover:text-primary group-hover:underline transition-colors">
+                          {r.name}
+                        </span>
+                        <Pencil className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      </div>
+                      {r.entity_type === "company" && r.contact_person && (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <User className="h-3 w-3 text-muted-foreground/70" /> Contact:{" "}
+                          {r.contact_person}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="py-3">
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
                       {(r.work_types && r.work_types.length > 0
                         ? r.work_types
                         : ["installation"]
@@ -275,9 +297,27 @@ function InstallationAgenciesPage() {
                           </Badge>
                         );
                       })}
+                      {r.vehicle_type && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] py-0.5 px-2 border-blue-500/40 text-blue-700 dark:text-blue-300 bg-blue-500/10 font-medium flex items-center gap-1"
+                        >
+                          <Truck className="h-3 w-3" />
+                          {r.vehicle_type}
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm py-3">{r.contact_person ?? "—"}</TableCell>
+                  <TableCell className="text-sm py-3">
+                    {r.contact_person &&
+                    r.contact_person.trim().toLowerCase() !== r.name.trim().toLowerCase() ? (
+                      r.contact_person
+                    ) : (
+                      <span className="text-muted-foreground/60 text-xs italic">
+                        {r.entity_type === "company" ? "—" : "Self (Individual)"}
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm py-3">
                     {r.phone ? (
                       <a
@@ -344,7 +384,13 @@ function InstallationAgenciesPage() {
       >
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? `Edit ${editing.name}` : "Add Agency / Work Crew"}</DialogTitle>
+            <DialogTitle>
+              {editing
+                ? `Edit ${editing.name}`
+                : form.entity_type === "company"
+                  ? "Add Agency / Company"
+                  : "Add Contractor / Craftsman"}
+            </DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -354,14 +400,82 @@ function InstallationAgenciesPage() {
             }}
           >
             <DialogBody className="grid gap-3 sm:grid-cols-2">
-              <Field label="Agency / Contractor Name" required className="sm:col-span-2">
+              {/* Entity Type Toggle: Individual vs Firm */}
+              <div className="sm:col-span-2 space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Contractor / Agency Category
+                </span>
+                <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-1 border border-border/60">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        entity_type: "individual",
+                        contact_person: "",
+                      }))
+                    }
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-medium transition-all",
+                      form.entity_type !== "company"
+                        ? "bg-background text-foreground shadow-xs font-semibold border border-border/40"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <User className="h-3.5 w-3.5" /> Individual Contractor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        entity_type: "company",
+                      }))
+                    }
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-medium transition-all",
+                      form.entity_type === "company"
+                        ? "bg-background text-foreground shadow-xs font-semibold border border-border/40"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Building2 className="h-3.5 w-3.5" /> Firm / Agency Company
+                  </button>
+                </div>
+              </div>
+
+              {/* Primary Name Field */}
+              <Field
+                label={
+                  form.entity_type === "company"
+                    ? "Firm / Agency Company Name"
+                    : "Contractor / Craftsman Name"
+                }
+                required
+                className={form.entity_type === "company" ? "" : "sm:col-span-2"}
+              >
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="e.g. Royal Marble Crafters / Ramesh Sharma"
+                  placeholder={
+                    form.entity_type === "company"
+                      ? "e.g. Royal Marble Crafters / Shree Ram Transport"
+                      : "e.g. Arjun Parmar / Brijesh Kushwah"
+                  }
                   required
                 />
               </Field>
+
+              {/* Contact person is ONLY shown for Companies/Firms */}
+              {form.entity_type === "company" && (
+                <Field label="Contact Person / Manager">
+                  <Input
+                    value={form.contact_person ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, contact_person: e.target.value }))}
+                    placeholder="e.g. Ramesh Sharma"
+                  />
+                </Field>
+              )}
 
               {/* Work Specialization */}
               <div className="sm:col-span-2 space-y-2 rounded-lg border border-border/80 bg-muted/20 p-3">
@@ -404,13 +518,67 @@ function InstallationAgenciesPage() {
                 </div>
               </div>
 
-              <Field label="Contact person">
-                <Input
-                  value={form.contact_person ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, contact_person: e.target.value }))}
-                  placeholder="Lead craftsman / Manager"
-                />
-              </Field>
+              {/* Dedicated Carting & Transport Vehicle Details Section */}
+              {(form.work_types ?? []).includes("carting") && (
+                <div className="sm:col-span-2 space-y-3 rounded-lg border border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20 p-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-blue-900 dark:text-blue-200">
+                        What Vehicle Do They Have?
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-blue-700/80 dark:text-blue-300/80">
+                      Vehicle reg number not required
+                    </span>
+                  </div>
+
+                  <Field label="Vehicle Type / Fleet Model" required>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          "Tata Ace (Chhota Hathi)",
+                          "Bolero / Pickup (1.5T - 1.7T)",
+                          "14 ft Eicher / Truck",
+                          "17 ft - 19 ft Truck",
+                          "3-Wheeler Tempo",
+                          "Tractor Trolley",
+                          "Trailer / Multi-axle",
+                        ].map((v) => (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, vehicle_type: v }))}
+                            className={cn(
+                              "rounded-full px-2.5 py-0.5 text-xs transition-colors border",
+                              form.vehicle_type === v
+                                ? "bg-blue-600 text-white border-blue-600 font-medium shadow-xs"
+                                : "border-border/80 bg-background hover:bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {v}
+                          </button>
+                        ))}
+                      </div>
+                      <Input
+                        value={form.vehicle_type ?? ""}
+                        onChange={(e) => setForm((f) => ({ ...f, vehicle_type: e.target.value }))}
+                        placeholder="e.g. Tata Ace, Bolero Pickup, 14ft Eicher..."
+                        required={(form.work_types ?? []).includes("carting")}
+                      />
+                    </div>
+                  </Field>
+
+                  <Field label="Vehicle Reg No. (Optional)">
+                    <Input
+                      value={form.vehicle_no ?? ""}
+                      onChange={(e) => setForm((f) => ({ ...f, vehicle_no: e.target.value }))}
+                      placeholder="e.g. GJ-01-AB-1234 (optional)"
+                    />
+                  </Field>
+                </div>
+              )}
+
               <Field label="Phone">
                 <Input
                   value={form.phone ?? ""}

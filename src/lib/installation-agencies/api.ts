@@ -30,6 +30,9 @@ export type InstallationAgencyRow = {
   notes: string | null;
   work_types?: AgencyWorkType[];
   agency_type?: AgencyWorkType;
+  vehicle_type?: string | null;
+  vehicle_no?: string | null;
+  entity_type?: "individual" | "company";
   is_active: boolean;
   sort_order: number;
 };
@@ -41,6 +44,9 @@ export interface InstallationAgencyInput {
   phone?: string | null;
   work_types?: AgencyWorkType[];
   agency_type?: AgencyWorkType | null;
+  vehicle_type?: string | null;
+  vehicle_no?: string | null;
+  entity_type?: "individual" | "company";
   notes?: string | null;
   is_active?: boolean;
   sort_order?: number;
@@ -49,20 +55,51 @@ export interface InstallationAgencyInput {
 export function encodeAgencyNotes(
   notes: string | null | undefined,
   workTypes: AgencyWorkType[],
+  vehicleType?: string | null,
+  vehicleNo?: string | null,
+  entityType?: "individual" | "company",
 ): string | null {
-  const clean = (notes ?? "").replace(/\[WorkTypes:[^\]]+\]\s*/g, "").trim();
-  if (workTypes.length === 0) return clean || null;
-  const tag = `[WorkTypes:${workTypes.join(",")}]`;
-  return clean ? `${tag} ${clean}` : tag;
+  const clean = (notes ?? "")
+    .replace(/\[WorkTypes:[^\]]+\]\s*/g, "")
+    .replace(/\[VehicleType:[^\]]+\]\s*/g, "")
+    .replace(/\[VehicleNo:[^\]]+\]\s*/g, "")
+    .replace(/\[EntityType:[^\]]+\]\s*/g, "")
+    .trim();
+
+  const tags: string[] = [];
+  if (workTypes.length > 0) tags.push(`[WorkTypes:${workTypes.join(",")}]`);
+  if (vehicleType && vehicleType.trim()) tags.push(`[VehicleType:${vehicleType.trim()}]`);
+  if (vehicleNo && vehicleNo.trim()) tags.push(`[VehicleNo:${vehicleNo.trim()}]`);
+  if (entityType) tags.push(`[EntityType:${entityType}]`);
+
+  const tagPrefix = tags.join(" ");
+  if (!tagPrefix) return clean || null;
+  return clean ? `${tagPrefix} ${clean}` : tagPrefix;
 }
 
 export function decodeAgencyWorkTypes(notes: string | null | undefined): {
   cleanNotes: string;
   workTypes: AgencyWorkType[];
+  vehicleType: string | null;
+  vehicleNo: string | null;
+  entityType: "individual" | "company";
 } {
-  if (!notes) return { cleanNotes: "", workTypes: ["installation"] };
-  const match = notes.match(/\[WorkTypes:([^\]]+)\]/);
-  if (!match) {
+  if (!notes) {
+    return {
+      cleanNotes: "",
+      workTypes: ["installation"],
+      vehicleType: null,
+      vehicleNo: null,
+      entityType: "individual",
+    };
+  }
+
+  // 1. Work types
+  let workTypes: AgencyWorkType[] = [];
+  const wtMatch = notes.match(/\[WorkTypes:([^\]]+)\]/);
+  if (wtMatch) {
+    workTypes = wtMatch[1].split(",").map((s) => s.trim()) as AgencyWorkType[];
+  } else {
     const lower = notes.toLowerCase();
     const detected: AgencyWorkType[] = [];
     if (lower.includes("handcraft") || lower.includes("carv")) detected.push("handcrafter");
@@ -71,20 +108,43 @@ export function decodeAgencyWorkTypes(notes: string | null | undefined): {
     if (lower.includes("art")) detected.push("artwork");
     if (lower.includes("carting") || lower.includes("transport")) detected.push("carting");
     if (detected.length === 0) detected.push("installation");
-    return { cleanNotes: notes, workTypes: detected };
+    workTypes = detected;
   }
-  const types = match[1].split(",").map((s) => s.trim()) as AgencyWorkType[];
-  const cleanNotes = notes.replace(/\[WorkTypes:[^\]]+\]\s*/g, "").trim();
-  return { cleanNotes, workTypes: types.length > 0 ? types : ["installation"] };
+  if (workTypes.length === 0) workTypes = ["installation"];
+
+  // 2. Vehicle details (for carting & transport)
+  const vtMatch = notes.match(/\[VehicleType:([^\]]+)\]/);
+  const vehicleType = vtMatch ? vtMatch[1].trim() : null;
+
+  const vnMatch = notes.match(/\[VehicleNo:([^\]]+)\]/);
+  const vehicleNo = vnMatch ? vnMatch[1].trim() : null;
+
+  // 3. Entity type (individual contractor vs firm / company)
+  const etMatch = notes.match(/\[EntityType:([^\]]+)\]/);
+  const entityType = etMatch && etMatch[1] === "company" ? "company" : "individual";
+
+  const cleanNotes = notes
+    .replace(/\[WorkTypes:[^\]]+\]\s*/g, "")
+    .replace(/\[VehicleType:[^\]]+\]\s*/g, "")
+    .replace(/\[VehicleNo:[^\]]+\]\s*/g, "")
+    .replace(/\[EntityType:[^\]]+\]\s*/g, "")
+    .trim();
+
+  return { cleanNotes, workTypes, vehicleType, vehicleNo, entityType };
 }
 
 function parseRow(r: Record<string, unknown>): InstallationAgencyRow {
-  const { cleanNotes, workTypes } = decodeAgencyWorkTypes(r.notes as string | null);
+  const { cleanNotes, workTypes, vehicleType, vehicleNo, entityType } = decodeAgencyWorkTypes(
+    r.notes as string | null,
+  );
   return {
     ...(r as unknown as InstallationAgencyRow),
     notes: cleanNotes,
     work_types: workTypes,
     agency_type: workTypes[0] ?? "installation",
+    vehicle_type: (r.vehicle_type as string | undefined) ?? vehicleType,
+    vehicle_no: (r.vehicle_no as string | undefined) ?? vehicleNo,
+    entity_type: entityType,
   };
 }
 
@@ -104,7 +164,13 @@ function toPayload(input: InstallationAgencyInput) {
     name: input.name.trim(),
     contact_person: input.contact_person ?? null,
     phone: input.phone ?? null,
-    notes: encodeAgencyNotes(input.notes, workTypes),
+    notes: encodeAgencyNotes(
+      input.notes,
+      workTypes,
+      input.vehicle_type,
+      input.vehicle_no,
+      input.entity_type,
+    ),
     is_active: input.is_active ?? true,
     sort_order: input.sort_order ?? 100,
   };
@@ -129,6 +195,7 @@ export async function listInstallationAgencies(
       `code.ilike.%${s}%`,
       `contact_person.ilike.%${s}%`,
       `phone.ilike.%${s}%`,
+      `notes.ilike.%${s}%`,
     ];
     if (digits.length >= 4) {
       clauses.push(`phone.ilike.%${digits}%`);

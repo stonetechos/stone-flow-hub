@@ -48,6 +48,9 @@ export function DailyMoneyFlowCard() {
   const todayStr = useMemo(() => getTodayString(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
+  // Only fetch and display for Admins & Super Admins who manage financial flows
+  const isAuthorized = roles.isAdmin || roles.isSuperAdmin;
+
   // Filter tabs and search query
   const [filterTab, setFilterTab] = useState<"all" | "in" | "out">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +59,7 @@ export function DailyMoneyFlowCard() {
   const customerPaymentsQ = useQuery({
     queryKey: qk.paymentRegister.list(""),
     queryFn: () => listPaymentRegister(""),
+    enabled: isAuthorized && roles.isReady,
     staleTime: 30_000,
   });
 
@@ -63,6 +67,7 @@ export function DailyMoneyFlowCard() {
   const vendorPaymentsQ = useQuery({
     queryKey: qk.vendorPayments.all,
     queryFn: () => listVendorPayments(),
+    enabled: isAuthorized && roles.isReady,
     staleTime: 30_000,
   });
 
@@ -70,6 +75,7 @@ export function DailyMoneyFlowCard() {
   const agencyLedgerQ = useQuery({
     queryKey: qk.installationLedger.all(),
     queryFn: () => listInstallationLedger(),
+    enabled: isAuthorized && roles.isReady,
     staleTime: 30_000,
   });
 
@@ -77,6 +83,7 @@ export function DailyMoneyFlowCard() {
   const agenciesQ = useQuery({
     queryKey: ["installationAgencies", "list"],
     queryFn: () => listInstallationAgencies(),
+    enabled: isAuthorized && roles.isReady,
     staleTime: 60_000,
   });
 
@@ -117,12 +124,17 @@ export function DailyMoneyFlowCard() {
 
     const query = searchQuery.toLowerCase().trim();
     return list.filter((item) => {
+      const party = (item.partyName || "").toLowerCase();
+      const doc = (item.docNo || "").toLowerCase();
+      const ref = (item.referenceNo || "").toLowerCase();
+      const note = (item.notes || "").toLowerCase();
+      const meth = (item.method || "").toLowerCase();
       return (
-        item.partyName.toLowerCase().includes(query) ||
-        item.docNo.toLowerCase().includes(query) ||
-        (item.referenceNo && item.referenceNo.toLowerCase().includes(query)) ||
-        (item.notes && item.notes.toLowerCase().includes(query)) ||
-        item.method.toLowerCase().includes(query)
+        party.includes(query) ||
+        doc.includes(query) ||
+        ref.includes(query) ||
+        note.includes(query) ||
+        meth.includes(query)
       );
     });
   }, [summary, filterTab, searchQuery]);
@@ -153,8 +165,6 @@ export function DailyMoneyFlowCard() {
     setSelectedDate(todayStr);
   };
 
-  // Only display to Super Admins & Admins who manage financial flows
-  const isAuthorized = roles.isAdmin || roles.isSuperAdmin;
   if (!isAuthorized && roles.isReady) {
     return null;
   }

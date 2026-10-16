@@ -51,55 +51,95 @@ export const Route = createFileRoute("/_authenticated")({
     // before redirecting makes the two agree again, and `flow: "expired"`
     // both explains what happened and is a flow `/auth` never redirects out
     // of, so the loop cannot re-form even if the sign-out fails.
-    const getUserWithTimeout = async () => {
-      try {
-        const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((resolve) =>
-          setTimeout(
-            () => resolve({ data: { user: null }, error: new Error("Auth timeout") }),
-            3000,
-          ),
-        );
-        const fetchPromise = supabase.auth
-          .getUser()
-          .catch((err) => ({ data: { user: null }, error: err as Error }));
-        return await Promise.race([fetchPromise, timeoutPromise]);
-      } catch (err) {
-        return { data: { user: null }, error: err as Error };
-      }
-    };
+    // Verify session locally first (instant, non-blocking from storage)
+    const { data: sessionData } = await supabase.auth
+      .getSession()
+      .catch(() => ({ data: { session: null } }));
+    const session = sessionData?.session;
 
-    const { data, error } = await getUserWithTimeout();
-    if (error || !data.user) {
-      const getSessionWithTimeout = async () => {
+    if (!session?.user) {
+      throw redirect({ to: "/auth", search: { flow: "signin" } });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = session.expires_at ?? 0;
+    const isExpired = expiresAt > 0 && expiresAt <= now;
+
+    let activeUser = session.user;
+
+    if (isExpired) {
+      // Attempt token refresh if local session timestamp is past expiration
+      const { data: refreshed, error: refreshErr } = await supabase.auth
+        .refreshSession()
+        .catch((err) => ({
+          data: { session: null },
+          error: err as Error,
+        }));
+      if (refreshErr || !refreshed?.session?.user) {
+        beginManagedSignOut();
         try {
-          const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null } }), 1500),
+          await supabase.auth.signOut({ scope: "local" });
+        } catch (signOutError) {
+          console.warn(
+            "[auth] local sign-out failed while clearing an expired session",
+            signOutError,
+          );
+        }
+        throw redirect({ to: "/auth", search: { flow: "expired" } });
+      }
+      activeUser = refreshed.session.user;
+    } else {
+      // Token is currently unexpired. Perform server verification with a generous timeout.
+      const getUserWithTimeout = async () => {
+        try {
+          const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((resolve) =>
+            setTimeout(
+              () => resolve({ data: { user: null }, error: new Error("Auth timeout") }),
+              5000,
+            ),
           );
           const fetchPromise = supabase.auth
-            .getSession()
-            .catch(() => ({ data: { session: null } }));
+            .getUser()
+            .catch((err) => ({ data: { user: null }, error: err as Error }));
           return await Promise.race([fetchPromise, timeoutPromise]);
-        } catch {
-          return { data: { session: null } };
+        } catch (err) {
+          return { data: { user: null }, error: err as Error };
         }
       };
 
-      const { data: stored } = await getSessionWithTimeout();
-      if (!stored?.session) throw redirect({ to: "/auth", search: { flow: "signin" } });
-      // `beginManagedSignOut` tells the root shell's `SIGNED_OUT` listener
-      // to leave this one alone; otherwise its `window.location.replace`
-      // fires first and the redirect below — the part that explains what
-      // happened and breaks the loop — never runs. The sign-out itself is
-      // best-effort: it clears local storage, and if it fails the redirect
-      // still has to happen, because leaving the user on a route that just
-      // rejected them is the one outcome with no way out.
-      beginManagedSignOut();
-      try {
-        await supabase.auth.signOut({ scope: "local" });
-      } catch (signOutError) {
-        console.warn("[auth] local sign-out failed while clearing a dead session", signOutError);
+      const { data: userData, error: userError } = await getUserWithTimeout();
+      if (userData?.user) {
+        activeUser = userData.user;
+      } else if (userError) {
+        const errMsg = userError.message?.toLowerCase() || "";
+        const isAuthRejection =
+          (userError as { status?: number })?.status === 401 ||
+          errMsg.includes("invalid claim") ||
+          errMsg.includes("invalid token") ||
+          errMsg.includes("token is expired");
+
+        if (isAuthRejection) {
+          const { data: refreshed, error: refreshErr } = await supabase.auth
+            .refreshSession()
+            .catch((err) => ({ data: { session: null }, error: err as Error }));
+          if (refreshErr || !refreshed?.session?.user) {
+            beginManagedSignOut();
+            try {
+              await supabase.auth.signOut({ scope: "local" });
+            } catch (signOutError) {
+              console.warn(
+                "[auth] local sign-out failed while clearing a revoked session",
+                signOutError,
+              );
+            }
+            throw redirect({ to: "/auth", search: { flow: "expired" } });
+          }
+          activeUser = refreshed.session.user;
+        } else {
+          // Timeout, network blip, or slow mobile connectivity: do NOT sign out!
+          console.warn("[auth] Network verify slow/unreachable; keeping valid local session.");
+        }
       }
-      throw redirect({ to: "/auth", search: { flow: "expired" } });
     }
 
     // A temporary password (Part 5) or an admin-driven
@@ -110,7 +150,7 @@ export const Route = createFileRoute("/_authenticated")({
       const profilePromise = supabase
         .from("profiles")
         .select("force_password_change")
-        .eq("id", data.user.id)
+        .eq("id", activeUser.id)
         .maybeSingle();
       const profileTimeout = new Promise<{ data: null }>((resolve) =>
         setTimeout(() => resolve({ data: null }), 2000),
@@ -123,7 +163,7 @@ export const Route = createFileRoute("/_authenticated")({
       if ((e as { to?: string })?.to) throw e;
     }
 
-    return { user: data.user };
+    return { user: activeUser };
   },
   component: AuthenticatedLayout,
 });
@@ -141,23 +181,26 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const router = useRouter();
   const pathname = router.state.location.pathname;
+  const routeContext = Route.useRouteContext();
   const { isReady, user } = useAuthReady();
+  const activeUser = routeContext?.user || user;
 
   useEffect(() => {
-    if (isReady && !user) {
+    // Only redirect if auth resolution is complete AND neither routeContext nor useAuthReady has a user
+    if (isReady && !activeUser) {
       if (typeof window !== "undefined") {
         window.location.replace("/auth?flow=signin");
       }
-    } else if (isReady && user) {
+    } else if (activeUser) {
       import("@/lib/admin/users.functions")
         .then(({ syncOrganizationDataServerFn }) => {
           void syncOrganizationDataServerFn().catch(() => {});
         })
         .catch(() => {});
     }
-  }, [isReady, user]);
+  }, [isReady, activeUser]);
 
-  if (!isReady || !user) {
+  if (!activeUser && !isReady) {
     return <LoadingBlock />;
   }
 
