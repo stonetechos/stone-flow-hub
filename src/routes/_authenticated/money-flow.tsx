@@ -57,6 +57,11 @@ import { listCustomers } from "@/lib/customers/api";
 import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { listVendors } from "@/lib/vendors/api";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
+import {
+  compareCustomerLedgerRows,
+  compareVendorLedgerRows,
+  compareAgencyLedgerRows,
+} from "@/lib/ledger-sorting";
 import { PersonalTransfersLedger } from "@/components/finance/PersonalTransfersLedger";
 
 type MoneyFlowTab =
@@ -1227,7 +1232,7 @@ function CustomerLedgersSection({
     if (!customersQ.data || !summaries) return [];
     return customersQ.data
       .map((c) => ({ customer: c, summary: summaries.get(c.id) }))
-      .sort((a, b) => ((b.summary?.balance ?? 0) > (a.summary?.balance ?? 0) ? 1 : -1));
+      .sort(compareCustomerLedgerRows);
   }, [customersQ.data, summaries]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -1377,7 +1382,7 @@ function VendorLedgersSection({
     if (!vendorsQ.data || !summaries) return [];
     return vendorsQ.data
       .map((v) => ({ vendor: v, summary: summaries.get(v.id) }))
-      .sort((a, b) => ((b.summary?.outstanding ?? 0) > (a.summary?.outstanding ?? 0) ? 1 : -1));
+      .sort(compareVendorLedgerRows);
   }, [vendorsQ.data, summaries]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -1514,12 +1519,13 @@ function AgencyLedgersSection({
   const [pageSize, setPageSize] = useState(25);
 
   const filtered = useMemo(() => {
-    if (!dq) return summaries;
+    if (!dq) return [...summaries].sort(compareAgencyLedgerRows);
     const term = dq.toLowerCase();
-    return summaries.filter(
+    const matched = summaries.filter(
       (s) =>
         s.agency_name.toLowerCase().includes(term) || s.agency_code.toLowerCase().includes(term),
     );
+    return [...matched].sort(compareAgencyLedgerRows);
   }, [summaries, dq]);
 
   const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);

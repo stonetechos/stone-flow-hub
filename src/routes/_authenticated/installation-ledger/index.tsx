@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable, EmptyState } from "@/components/layout/States";
@@ -14,6 +15,7 @@ import { toUserMessage } from "@/lib/errors";
 import { formatInr } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
+import { compareAgencyLedgerRows } from "@/lib/ledger-sorting";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -35,7 +37,9 @@ function InstallationLedgerIndex() {
     queryFn: listInstallationLedgerSummaries,
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => {
+    return [...(query.data ?? [])].sort(compareAgencyLedgerRows);
+  }, [query.data]);
 
   return (
     <div>

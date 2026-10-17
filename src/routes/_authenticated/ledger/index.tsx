@@ -28,6 +28,11 @@ import { listCustomerLedgerSummaries } from "@/lib/customer-ledger/api";
 import { listVendors } from "@/lib/vendors/api";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
 import { listInstallationLedgerSummaries } from "@/lib/installation-ledger/api";
+import {
+  compareCustomerLedgerRows,
+  compareVendorLedgerRows,
+  compareAgencyLedgerRows,
+} from "@/lib/ledger-sorting";
 import { AccountingGuard } from "@/components/auth/AccountingGuard";
 
 export const Route = createFileRoute("/_authenticated/ledger/")({
@@ -130,7 +135,7 @@ function SalesLedgerView() {
     if (!customersQ.data || !summaries) return [];
     return customersQ.data
       .map((c) => ({ customer: c, summary: summaries.get(c.id) }))
-      .sort((a, b) => ((b.summary?.balance ?? 0) > (a.summary?.balance ?? 0) ? 1 : -1));
+      .sort(compareCustomerLedgerRows);
   }, [customersQ.data, summariesQ.data]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -294,7 +299,7 @@ function PurchaseLedgerView() {
     if (!vendorsQ.data || !summaries) return [];
     return vendorsQ.data
       .map((v) => ({ vendor: v, summary: summaries.get(v.id) }))
-      .sort((a, b) => ((b.summary?.outstanding ?? 0) > (a.summary?.outstanding ?? 0) ? 1 : -1));
+      .sort(compareVendorLedgerRows);
   }, [vendorsQ.data, summariesQ.data]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -445,12 +450,13 @@ function AgencyLedgerView() {
   const rawRows = query.data;
   const filteredRows = useMemo(() => {
     const list = rawRows ?? [];
-    if (!dq) return list;
+    if (!dq) return [...list].sort(compareAgencyLedgerRows);
     const term = dq.toLowerCase();
-    return list.filter(
+    const matched = list.filter(
       (r) =>
         r.agency_name.toLowerCase().includes(term) || r.agency_code.toLowerCase().includes(term),
     );
+    return [...matched].sort(compareAgencyLedgerRows);
   }, [rawRows, dq]);
   const allRows = query.data ?? [];
 

@@ -37,6 +37,7 @@ import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listVendors } from "@/lib/vendors/api";
 import { listVendorLedgerSummaries } from "@/lib/vendors/ledger";
+import { compareVendorLedgerRows } from "@/lib/ledger-sorting";
 import { formatInr, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/purchase-ledger/")({
@@ -69,8 +70,7 @@ function PurchaseLedgerIndexPage() {
     if (!vendorsQ.data || !summaries) return [];
     return vendorsQ.data
       .map((v) => ({ vendor: v, summary: summaries.get(v.id) }))
-      .filter((r) => r.summary) // only vendors with at least one ledger entry
-      .sort((a, b) => (b.summary!.outstanding ?? 0) - (a.summary!.outstanding ?? 0));
+      .sort(compareVendorLedgerRows);
   }, [vendorsQ.data, summariesQ.data]);
 
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -165,20 +165,20 @@ function PurchaseLedgerIndexPage() {
                     </Link>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {summary!.lastEntryAt ? formatDate(summary!.lastEntryAt) : "—"}
+                    {summary?.lastEntryAt ? formatDate(summary.lastEntryAt) : "—"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatInr(summary!.totalDebit)}
+                    {formatInr(summary?.totalDebit ?? 0)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatInr(summary!.totalCredit)}
+                    {formatInr(summary?.totalCredit ?? 0)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums font-medium">
                     <Badge
-                      variant={summary!.outstanding > 0 ? "default" : "secondary"}
+                      variant={(summary?.outstanding ?? 0) > 0 ? "default" : "secondary"}
                       className="tabular-nums"
                     >
-                      {formatInr(summary!.outstanding)}
+                      {formatInr(summary?.outstanding ?? 0)}
                     </Badge>
                   </TableCell>
                 </TableRow>
