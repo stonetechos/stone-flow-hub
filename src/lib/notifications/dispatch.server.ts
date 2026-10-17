@@ -400,6 +400,17 @@ export async function dispatchQueueBatch(
   let failed = 0;
 
   for (const m of list) {
+    if (m.channel === "whatsapp") {
+      const c = resolveWaCfg(s.whatsapp);
+      const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
+      if (!token) {
+        // Meta Cloud API is not configured.
+        // In Stone Tech, WhatsApp notifications are sent directly by staff via click-to-chat ("Open in WhatsApp").
+        // Do not fail the message — skip automated delivery so it remains cleanly available for direct send.
+        continue;
+      }
+    }
+
     // Mark sending
     await supabase.from("message_queue").update({ status: "sending" }).eq("id", m.id);
 
@@ -415,17 +426,7 @@ export async function dispatchQueueBatch(
       if (m.channel === "email") {
         res = await sendEmailViaResend(s.email, redirectedTo, m.subject ?? "(no subject)", m.body);
       } else if (m.channel === "whatsapp") {
-        const c = resolveWaCfg(s.whatsapp);
-        const token = pickSecret(c.access_token_secret_name, "WHATSAPP_ACCESS_TOKEN");
-        if (!token) {
-          res = {
-            ok: false,
-            error:
-              "Meta Cloud API not configured. Use 'Open in WhatsApp' in Communication Centre to send from your WhatsApp account.",
-          };
-        } else {
-          res = await sendWhatsappViaMeta(s.whatsapp, redirectedTo, m.body);
-        }
+        res = await sendWhatsappViaMeta(s.whatsapp, redirectedTo, m.body);
       } else {
         res = { ok: false, error: `Channel ${m.channel} not implemented` };
       }

@@ -14,6 +14,8 @@ import { getQuote, getQuoteItems } from "@/lib/quotes/api";
 import { resolveAllQuoteImages, getLineItemImage } from "@/lib/quotes/quote-images";
 import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { getReceipt, getReceiptAllocations } from "@/lib/receipts/api";
+import { RECEIPT_METHOD_LABELS, type ReceiptMethod } from "@/lib/receipts/schema";
+import { getCustomerLedgerSummary } from "@/lib/customer-ledger/api";
 import { getSalesOrder, listSalesOrderItems } from "@/lib/sales-orders/api";
 import { getPurchaseOrder } from "@/lib/purchase-orders/api";
 import { getDispatch, listDispatchItems } from "@/lib/dispatch/api";
@@ -428,6 +430,15 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       if (!r) throw new Error("Receipt not found");
       const alloc = await getReceiptAllocations(id);
       const cust = await fetchCustomer(r.customer_id);
+      let currentBalance: number | null = null;
+      if (r.customer_id) {
+        try {
+          const summary = await getCustomerLedgerSummary(r.customer_id);
+          currentBalance = summary.balance;
+        } catch {
+          // Graceful fallback if customer ledger cannot be queried
+        }
+      }
       const lines: PdfLine[] = alloc.map((a) => ({
         label: `Applied to invoice ${a.invoice?.invoice_no ?? a.invoice_id}`,
         qty: 1,
@@ -435,6 +446,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
         rate: inr(a.amount),
         amount: inr(a.amount),
       }));
+      const formattedBalance =
+        currentBalance !== null
+          ? currentBalance > 0
+            ? inr(currentBalance)
+            : currentBalance === 0
+              ? "₹0 (Fully Paid)"
+              : `${inr(Math.abs(currentBalance))} (Advance Credit)`
+          : null;
       const totals: PdfMeta[] = [
         { label: "Amount received", value: inr(r.amount) },
         ...(Number(r.tds_amount) > 0 ? [{ label: "TDS", value: inr(r.tds_amount) }] : []),
@@ -442,7 +461,14 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           ? [{ label: "Bank charges", value: inr(r.bank_charges) }]
           : []),
         { label: "Net amount", value: inr(r.net_amount) },
+        ...(formattedBalance !== null
+          ? [{ label: "Current Balance", value: formattedBalance }]
+          : []),
       ];
+      const methodLabel =
+        (r.method && RECEIPT_METHOD_LABELS[r.method as ReceiptMethod]) ||
+        r.method?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
+        "—";
       return {
         doc: {
           kind: "receipt",
@@ -450,8 +476,9 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           number: r.receipt_no,
           date: r.received_at?.slice(0, 10) ?? "",
           to: customerParty(cust),
+          balanceDue: currentBalance !== null ? currentBalance : undefined,
           meta: [
-            { label: "Method", value: r.method },
+            { label: "Method", value: methodLabel },
             { label: "Bank", value: r.bank_name ?? "—" },
             { label: "Reference", value: r.reference_no ?? r.cheque_no ?? "—" },
             { label: "Allocated", value: inr(r.allocated_amount) },
@@ -558,6 +585,7 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
     }
     if (doc.totals?.length) {
       for (const t of doc.totals) {
+        if (t.label === "Current Balance") continue;
         lines.push(`• ${t.label}: *${t.value}*`);
       }
     }
@@ -567,6 +595,21 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
       for (const it of doc.lines) {
         lines.push(`• ${it.label}: ${it.amount}`);
       }
+    }
+    const balanceTotal = doc.totals?.find((t) => t.label === "Current Balance");
+    if (balanceTotal) {
+      lines.push("");
+      lines.push(`*Current Customer Balance:* *${balanceTotal.value}*`);
+    } else if (doc.balanceDue !== undefined && doc.balanceDue !== null) {
+      lines.push("");
+      const bal = doc.balanceDue;
+      const balStr =
+        bal > 0
+          ? inr(bal)
+          : bal === 0
+            ? "₹0 (Fully Paid)"
+            : `${inr(Math.abs(bal))} (Advance Credit)`;
+      lines.push(`*Current Customer Balance:* *${balStr}*`);
     }
     if (doc.notes) {
       lines.push("");

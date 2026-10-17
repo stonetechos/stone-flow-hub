@@ -93,9 +93,14 @@ const RELATED = [
   "reminder",
 ] as const;
 
-function statusVariant(s: string): "default" | "outline" | "destructive" | "secondary" {
+function statusVariant(s: string, r?: Row): "default" | "outline" | "destructive" | "secondary" {
   if (s === "sent") return "default";
-  if (s === "failed") return "destructive";
+  if (s === "failed") {
+    if (r?.channel === "whatsapp" && r?.last_error?.includes("Meta Cloud API not configured")) {
+      return "secondary";
+    }
+    return "destructive";
+  }
   if (s === "cancelled") return "outline";
   return "secondary";
 }
@@ -460,14 +465,27 @@ function CommunicationCentre() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
-                      {r.last_error && (
-                        <div
-                          className="mt-1 max-w-[220px] truncate text-xs text-destructive"
-                          title={r.last_error}
-                        >
-                          {r.last_error}
-                        </div>
+                      {r.status === "failed" &&
+                      r.channel === "whatsapp" &&
+                      r.last_error?.includes("Meta Cloud API not configured") ? (
+                        <>
+                          <Badge variant="secondary">ready</Badge>
+                          <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            Direct WhatsApp ready
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Badge variant={statusVariant(r.status, r)}>{r.status}</Badge>
+                          {r.last_error && (
+                            <div
+                              className="mt-1 max-w-[220px] truncate text-xs text-destructive"
+                              title={r.last_error}
+                            >
+                              {r.last_error}
+                            </div>
+                          )}
+                        </>
                       )}
                     </TableCell>
                     <TableCell>{r.attempts}</TableCell>
