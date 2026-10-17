@@ -39,6 +39,11 @@ import {
   getTodayString,
   type DailyMoneyFlowTransaction,
 } from "@/lib/dashboard/daily-money-flow";
+import {
+  formatPaymentMethodDisplay,
+  getPaymentAccountCategory,
+  getPaymentMethodBadgeClass,
+} from "@/lib/payments/method-display";
 
 export function DailyMoneyFlowCard() {
   const { t } = useTranslation();
@@ -664,8 +669,26 @@ export function DailyMoneyFlowCard() {
 
                         {/* Payment Mode */}
                         <td className="py-2.5 px-3">
-                          <Badge variant="outline" className="capitalize text-[10px] font-mono">
-                            {tx.method.replace(/_/g, " ")}
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] font-medium font-sans border",
+                              getPaymentMethodBadgeClass(
+                                getPaymentAccountCategory({
+                                  method: tx.method,
+                                  account_used: tx.accountUsed,
+                                  bank_name: tx.bankName,
+                                  notes: tx.notes,
+                                }),
+                              ),
+                            )}
+                          >
+                            {formatPaymentMethodDisplay({
+                              method: tx.method,
+                              account_used: tx.accountUsed,
+                              bank_name: tx.bankName,
+                              notes: tx.notes,
+                            })}
                           </Badge>
                         </td>
 

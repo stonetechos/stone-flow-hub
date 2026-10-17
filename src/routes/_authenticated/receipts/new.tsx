@@ -344,7 +344,26 @@ function NewReceiptPage() {
                   )}
                 </Field>
                 <Field label="Method" required>
-                  <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
+                  <Select
+                    value={method}
+                    onValueChange={(v) => {
+                      const m = v as typeof method;
+                      setMethod(m);
+                      if (m === "upi_rishi") {
+                        setAccountUsed("Personal UPI - Rishi");
+                      } else if (m === "upi_raman") {
+                        setAccountUsed("Personal UPI - Raman");
+                      } else if (m === "current_bob") {
+                        setAccountUsed("Current Account BOB");
+                        if (!bankName) setBankName("Bank of Baroda");
+                      } else if (m === "upi_bob_current" || m === "upi_stone_tech") {
+                        setAccountUsed("Stone Tech BOB Current A/c");
+                        if (!bankName) setBankName("Bank of Baroda");
+                      } else if (m === "cash") {
+                        setAccountUsed("Cash");
+                      }
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

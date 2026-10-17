@@ -20,7 +20,12 @@ import { Field } from "@/components/forms/Field";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { getPayment, updatePayment } from "@/lib/payments/crud";
-import { PAYMENT_METHODS, type PaymentCreateInput } from "@/lib/payments/schema";
+import {
+  PAYMENT_METHODS,
+  PAYMENT_METHOD_LABELS,
+  type PaymentCreateInput,
+  type PaymentMethod,
+} from "@/lib/payments/schema";
 import { listInvoices } from "@/lib/invoices/api";
 import { invalidatePayment } from "@/lib/query-invalidation";
 
@@ -40,10 +45,20 @@ function EditPaymentPage() {
   useEffect(() => {
     if (query.data) {
       const r = query.data;
+      let method: PaymentMethod = r.method;
+      const notes = (r.notes || "").toLowerCase();
+      if (method === "upi_personal") {
+        if (notes.includes("rishi")) method = "upi_rishi";
+        else if (notes.includes("raman")) method = "upi_raman";
+      } else if (method === "bank_transfer" && notes.includes("bob")) {
+        method = "current_bob";
+      } else if (method === "upi_bob_current" && notes.includes("stone tech")) {
+        method = "upi_stone_tech";
+      }
       setForm({
         invoice_id: r.invoice_id,
         amount: Number(r.amount),
-        method: r.method,
+        method,
         paid_at: r.paid_at.slice(0, 10),
         reference_no: r.reference_no,
         notes: r.notes,
@@ -115,8 +130,8 @@ function EditPaymentPage() {
               </SelectTrigger>
               <SelectContent>
                 {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m} className="capitalize">
-                    {m.replace(/_/g, " ")}
+                  <SelectItem key={m} value={m}>
+                    {PAYMENT_METHOD_LABELS[m] ?? m.replace(/_/g, " ")}
                   </SelectItem>
                 ))}
               </SelectContent>

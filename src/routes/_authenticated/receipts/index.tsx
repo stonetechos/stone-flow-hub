@@ -31,6 +31,12 @@ import { toUserMessage } from "@/lib/errors";
 import { listReceipts, deleteReceipt, type ReceiptListItem } from "@/lib/receipts/api";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import {
+  formatPaymentMethodDisplay,
+  getPaymentAccountCategory,
+  getPaymentMethodBadgeClass,
+} from "@/lib/payments/method-display";
 import { TransactionMessageReaderModal } from "@/components/banking/TransactionMessageReaderModal";
 
 export const Route = createFileRoute("/_authenticated/receipts/")({
@@ -216,7 +222,33 @@ function ReceiptsListPage() {
                     <TableCell className="text-sm">{r.customer?.name ?? "—"}</TableCell>
                   )}
                   {!isHidden("method") && (
-                    <TableCell className="text-sm uppercase">{r.method}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const cat = getPaymentAccountCategory({
+                          method: r.method,
+                          account_used: r.account_used,
+                          bank_name: r.bank_name,
+                          notes: r.remarks,
+                        });
+                        const label = formatPaymentMethodDisplay({
+                          method: r.method,
+                          account_used: r.account_used,
+                          bank_name: r.bank_name,
+                          notes: r.remarks,
+                        });
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs font-medium border whitespace-nowrap",
+                              getPaymentMethodBadgeClass(cat),
+                            )}
+                          >
+                            {label}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>
                   )}
                   {!isHidden("reference") && (
                     <TableCell className="text-sm">

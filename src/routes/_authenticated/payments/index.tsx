@@ -1,11 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Wallet, Banknote, HandCoins, Users, Factory } from "lucide-react";
+import {
+  Plus,
+  Wallet,
+  Banknote,
+  HandCoins,
+  Users,
+  Factory,
+  Landmark,
+  Smartphone,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +35,13 @@ import { DataTableShell } from "@/components/data/DataTableShell";
 import { TablePagination } from "@/components/data/Pagination";
 import { ColumnsMenu, type ColumnDef } from "@/components/data/ColumnsMenu";
 import { DensityMenu } from "@/components/data/DensityMenu";
+import { cn } from "@/lib/utils";
+import {
+  formatPaymentMethodDisplay,
+  getPaymentAccountCategory,
+  getPaymentMethodBadgeClass,
+  type PaymentAccountCategory,
+} from "@/lib/payments/method-display";
 import {
   Dialog,
   DialogContent,
@@ -164,6 +182,9 @@ function CustomerPaymentsTab() {
   const roles = useRoles();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
+  const [selectedAccountFilter, setSelectedAccountFilter] = useState<
+    PaymentAccountCategory | "all"
+  >("all");
   const [toDelete, setToDelete] = useState<PaymentRegisterRow | null>(null);
   const [editingReceipt, setEditingReceipt] = useState<ReceiptListItem | null>(null);
   const [page, setPage] = useState(1);
@@ -207,15 +228,261 @@ function CustomerPaymentsTab() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  useEffect(() => setPage(1), [dq]);
+  const rows = useMemo(() => query.data ?? [], [query.data]);
 
-  const rows = query.data ?? [];
-  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const accountStats = useMemo(() => {
+    let bobTotal = 0;
+    let bobCount = 0;
+    let rishiTotal = 0;
+    let rishiCount = 0;
+    let ramanTotal = 0;
+    let ramanCount = 0;
+    let cashTotal = 0;
+    let cashCount = 0;
+    let otherTotal = 0;
+    let otherCount = 0;
+
+    for (const r of rows) {
+      const amt = Number(r.amount) || 0;
+      const cat = getPaymentAccountCategory({
+        method: r.method,
+        account_used: r.account_used,
+        bank_name: r.bank_name,
+        notes: r.notes,
+      });
+
+      if (cat === "bob_current") {
+        bobTotal += amt;
+        bobCount += 1;
+      } else if (cat === "upi_rishi") {
+        rishiTotal += amt;
+        rishiCount += 1;
+      } else if (cat === "upi_raman") {
+        ramanTotal += amt;
+        ramanCount += 1;
+      } else if (cat === "cash") {
+        cashTotal += amt;
+        cashCount += 1;
+      } else {
+        otherTotal += amt;
+        otherCount += 1;
+      }
+    }
+
+    const grandTotal = bobTotal + rishiTotal + ramanTotal + cashTotal + otherTotal;
+
+    return {
+      bob: { total: bobTotal, count: bobCount },
+      rishi: { total: rishiTotal, count: rishiCount },
+      raman: { total: ramanTotal, count: ramanCount },
+      cash: { total: cashTotal, count: cashCount },
+      other: { total: otherTotal, count: otherCount },
+      grandTotal,
+      totalCount: rows.length,
+    };
+  }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    if (selectedAccountFilter === "all") return rows;
+    return rows.filter((r) => {
+      const cat = getPaymentAccountCategory({
+        method: r.method,
+        account_used: r.account_used,
+        bank_name: r.bank_name,
+        notes: r.notes,
+      });
+      return cat === selectedAccountFilter;
+    });
+  }, [rows, selectedAccountFilter]);
+
+  useEffect(() => setPage(1), [dq, selectedAccountFilter]);
+
+  const pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div>
+      {/* Account Inflow Breakdown Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Card 1: BOB Current Account */}
+        <Card
+          className={cn(
+            "cursor-pointer transition-all duration-200 border-l-4 hover:shadow-md",
+            selectedAccountFilter === "bob_current"
+              ? "ring-2 ring-primary border-l-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20"
+              : "border-l-emerald-500 hover:border-l-emerald-600",
+          )}
+          onClick={() =>
+            setSelectedAccountFilter((curr) => (curr === "bob_current" ? "all" : "bob_current"))
+          }
+        >
+          <CardHeader className="p-4 pb-1">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <Landmark className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                BOB Current Account
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+              >
+                Bank / UPI
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-1">
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
+              {formatInr(accountStats.bob.total)}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
+              <span>{accountStats.bob.count} payments</span>
+              {selectedAccountFilter === "bob_current" && (
+                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: UPI Personal - Rishi */}
+        <Card
+          className={cn(
+            "cursor-pointer transition-all duration-200 border-l-4 hover:shadow-md",
+            selectedAccountFilter === "upi_rishi"
+              ? "ring-2 ring-primary border-l-sky-600 bg-sky-50/50 dark:bg-sky-950/20"
+              : "border-l-sky-500 hover:border-l-sky-600",
+          )}
+          onClick={() =>
+            setSelectedAccountFilter((curr) => (curr === "upi_rishi" ? "all" : "upi_rishi"))
+          }
+        >
+          <CardHeader className="p-4 pb-1">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <Smartphone className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                UPI Personal – Rishi
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300"
+              >
+                Personal UPI
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-1">
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
+              {formatInr(accountStats.rishi.total)}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
+              <span>{accountStats.rishi.count} payments</span>
+              {selectedAccountFilter === "upi_rishi" && (
+                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: UPI Personal - Raman */}
+        <Card
+          className={cn(
+            "cursor-pointer transition-all duration-200 border-l-4 hover:shadow-md",
+            selectedAccountFilter === "upi_raman"
+              ? "ring-2 ring-primary border-l-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20"
+              : "border-l-indigo-500 hover:border-l-indigo-600",
+          )}
+          onClick={() =>
+            setSelectedAccountFilter((curr) => (curr === "upi_raman" ? "all" : "upi_raman"))
+          }
+        >
+          <CardHeader className="p-4 pb-1">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <Smartphone className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                UPI Personal – Raman
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300"
+              >
+                Personal UPI
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-1">
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
+              {formatInr(accountStats.raman.total)}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
+              <span>{accountStats.raman.count} payments</span>
+              {selectedAccountFilter === "upi_raman" && (
+                <span className="text-[11px] font-medium text-primary">Active filter ✕</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Total Collections */}
+        <Card
+          className={cn(
+            "cursor-pointer transition-all duration-200 border-l-4 hover:shadow-md",
+            selectedAccountFilter === "all"
+              ? "ring-2 ring-primary border-l-slate-700 bg-slate-50/50 dark:bg-slate-900/20"
+              : "border-l-slate-400 hover:border-l-slate-600",
+          )}
+          onClick={() => setSelectedAccountFilter("all")}
+        >
+          <CardHeader className="p-4 pb-1">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <Wallet className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" />
+                Total Collections
+              </CardTitle>
+              <Badge variant="outline" className="text-[10px]">
+                All Accounts
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-1">
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
+              {formatInr(accountStats.grandTotal)}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
+              <span>{accountStats.totalCount} receipts</span>
+              {accountStats.cash.count > 0 && (
+                <span className="text-[11px] text-muted-foreground">
+                  ({formatInr(accountStats.cash.total)} cash)
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {accountStats.other.count > 0 && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <span>
+              <strong>
+                {accountStats.other.count} payment(s) ({formatInr(accountStats.other.total)})
+              </strong>{" "}
+              are recorded in Personal UPI without Rishi or Raman specified.
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs border-amber-300 hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-900/40 cursor-pointer"
+            onClick={() => setSelectedAccountFilter((curr) => (curr === "other" ? "all" : "other"))}
+          >
+            {selectedAccountFilter === "other"
+              ? "Show All Payments"
+              : "Filter & Assign (Rishi / Raman)"}
+          </Button>
+        </div>
+      )}
+
       <DataToolbar
-        count={rows.length}
+        count={filteredRows.length}
         search={q}
         onSearchChange={setQ}
         searchPlaceholder={t(
@@ -255,6 +522,17 @@ function CustomerPaymentsTab() {
             ) : undefined
           }
         />
+      ) : filteredRows.length === 0 ? (
+        <EmptyState
+          icon={<Wallet className="h-6 w-6" />}
+          title="No payments in this account"
+          message="No customer payments match the selected account filter."
+          action={
+            <Button variant="outline" onClick={() => setSelectedAccountFilter("all")}>
+              Show All Payments
+            </Button>
+          }
+        />
       ) : (
         <DataTableShell
           density={prefs.density}
@@ -262,7 +540,7 @@ function CustomerPaymentsTab() {
             <TablePagination
               page={page}
               pageSize={pageSize}
-              total={rows.length}
+              total={filteredRows.length}
               onPageChange={setPage}
               onPageSizeChange={(s) => {
                 setPageSize(s);
@@ -333,9 +611,31 @@ function CustomerPaymentsTab() {
                   )}
                   {!isHidden("method") && (
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {r.method.replace(/_/g, " ")}
-                      </Badge>
+                      {(() => {
+                        const cat = getPaymentAccountCategory({
+                          method: r.method,
+                          account_used: r.account_used,
+                          bank_name: r.bank_name,
+                          notes: r.notes,
+                        });
+                        const label = formatPaymentMethodDisplay({
+                          method: r.method,
+                          account_used: r.account_used,
+                          bank_name: r.bank_name,
+                          notes: r.notes,
+                        });
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs font-medium border whitespace-nowrap",
+                              getPaymentMethodBadgeClass(cat),
+                            )}
+                          >
+                            {label}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                   )}
                   {!isHidden("reference") && <TableCell>{r.reference_no ?? "—"}</TableCell>}

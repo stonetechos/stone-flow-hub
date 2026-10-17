@@ -15,6 +15,8 @@ export interface DailyMoneyFlowTransaction {
   docNo: string;
   amount: number;
   method: string;
+  accountUsed?: string | null;
+  bankName?: string | null;
   referenceNo?: string | null;
   notes?: string | null;
   detailUrl: string;
@@ -125,6 +127,8 @@ export function buildDailyMoneyFlowData({
       docNo: cp.doc_no,
       amount: Math.abs(Number(cp.amount) || 0),
       method: cp.method || "bank_transfer",
+      accountUsed: cp.account_used,
+      bankName: cp.bank_name,
       referenceNo: cp.reference_no,
       notes: cp.notes,
       detailUrl: cp.source === "receipt" ? `/receipts/${cp.id}` : `/payments/${cp.id}`,

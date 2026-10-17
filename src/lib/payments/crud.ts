@@ -33,6 +33,8 @@ export interface PaymentRegisterRow {
   paid_at: string;
   status: string;
   created_at: string;
+  account_used?: string | null;
+  bank_name?: string | null;
 }
 
 const SELECT = "*, invoice:invoices!payments_invoice_id_fkey(id,invoice_no)";
@@ -53,7 +55,48 @@ export async function listPaymentRegister(query = ""): Promise<PaymentRegisterRo
   if (s) q = q.or(`doc_no.ilike.%${s}%,reference_no.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return (data ?? []) as unknown as PaymentRegisterRow[];
+  const rows = (data ?? []) as unknown as PaymentRegisterRow[];
+
+  // Augment receipt rows with account_used and bank_name from public.receipts
+  const receiptIds = rows.filter((r) => r.source === "receipt").map((r) => r.id);
+  if (receiptIds.length > 0) {
+    try {
+      const { data: receiptDetails } = await supabase
+        .from("receipts")
+        .select("id, account_used, bank_name, remarks")
+        .in("id", receiptIds);
+
+      if (receiptDetails && receiptDetails.length > 0) {
+        const map = new Map(receiptDetails.map((rd) => [rd.id, rd]));
+        for (const r of rows) {
+          if (r.source === "receipt") {
+            const rd = map.get(r.id);
+            if (rd) {
+              r.account_used = rd.account_used;
+              r.bank_name = rd.bank_name;
+              if (rd.remarks && !r.notes) {
+                r.notes = rd.remarks;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[payments] failed to augment receipt accounts", e);
+    }
+  }
+
+  // Augment payment rows from notes if notes mentions an account
+  for (const r of rows) {
+    if (!r.account_used && r.notes) {
+      const match = r.notes.match(/Account:\s*([^|;,\n]+)/i);
+      if (match) {
+        r.account_used = match[1].trim();
+      }
+    }
+  }
+
+  return rows;
 }
 
 export async function getPayment(id: string): Promise<PaymentListItem | null> {

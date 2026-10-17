@@ -63,11 +63,42 @@ export function EditReceiptDialog({
   const [charges, setCharges] = useState<number>(0);
   const [remarks, setRemarks] = useState("");
 
+  const handleMethodChange = (v: ReceiptMethod) => {
+    setMethod(v);
+    if (v === "upi_rishi") {
+      setAccountUsed("Personal UPI - Rishi");
+    } else if (v === "upi_raman") {
+      setAccountUsed("Personal UPI - Raman");
+    } else if (v === "current_bob") {
+      setAccountUsed("Current Account BOB");
+      if (!bankName) setBankName("Bank of Baroda");
+    } else if (v === "upi_bob_current" || v === "upi_stone_tech") {
+      setAccountUsed("Stone Tech BOB Current A/c");
+      if (!bankName) setBankName("Bank of Baroda");
+    } else if (v === "cash") {
+      setAccountUsed("Cash");
+    }
+  };
+
   useEffect(() => {
     if (receipt && open) {
       setReceivedAt(receipt.received_at ? receipt.received_at.slice(0, 10) : "");
       setAmount(Number(receipt.amount) || 0);
-      setMethod((receipt.method as ReceiptMethod) || "bank_transfer");
+      let initMethod = (receipt.method as ReceiptMethod) || "bank_transfer";
+      const acc = (receipt.account_used || "").toLowerCase();
+      const rem = (receipt.remarks || "").toLowerCase();
+      if (initMethod === "upi_personal") {
+        if (acc.includes("rishi") || rem.includes("rishi")) {
+          initMethod = "upi_rishi";
+        } else if (acc.includes("raman") || rem.includes("raman")) {
+          initMethod = "upi_raman";
+        }
+      } else if (initMethod === "upi_bob_current" || initMethod === "upi_stone_tech") {
+        initMethod = "upi_bob_current";
+      } else if (initMethod === "bank_transfer" && (acc.includes("bob") || rem.includes("bob"))) {
+        initMethod = "current_bob";
+      }
+      setMethod(initMethod);
       setBankName(receipt.bank_name || "");
       setAccountUsed(receipt.account_used || "");
       setReferenceNo(receipt.reference_no || "");
@@ -190,7 +221,7 @@ export function EditReceiptDialog({
             {/* Payment Method */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">Payment Method *</label>
-              <Select value={method} onValueChange={(v) => setMethod(v as ReceiptMethod)}>
+              <Select value={method} onValueChange={(v) => handleMethodChange(v as ReceiptMethod)}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
