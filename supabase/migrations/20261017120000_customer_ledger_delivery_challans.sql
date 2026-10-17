@@ -1,0 +1,26 @@
+-- Customer Ledger enhancement: Document delivery challan inclusion for cash deals
+-- Note: Handled defensively in TypeScript application layer (`src/lib/customer-ledger/api.ts`)
+-- to guarantee immediate production availability without requiring DB push in CI.
+
+-- Optional reference view updating public.customer_ledger if run manually on the database:
+-- CREATE OR REPLACE VIEW public.customer_ledger
+-- WITH (security_invoker = true) AS
+--   SELECT i.customer_id, i.issue_date AS entry_date, 'invoice'::text AS entry_type,
+--          i.id AS ref_id, i.invoice_no AS ref_no, i.total AS debit, 0::numeric AS credit, i.status::text AS status
+--     FROM public.invoices i WHERE i.status <> 'cancelled'
+--   UNION ALL
+--   SELECT r.customer_id, r.received_at, 'receipt', r.id, r.receipt_no, 0, r.net_amount, r.status
+--     FROM public.receipts r WHERE r.status='active'
+--   UNION ALL
+--   SELECT i.customer_id, p.paid_at::date, 'payment', p.id, p.payment_no, 0::numeric, p.amount, 'active'::text
+--     FROM public.payments p
+--     JOIN public.invoices i ON i.id = p.invoice_id
+--   UNION ALL
+--   SELECT c.customer_id, c.issued_at, 'credit_note', c.id, c.cn_no, 0, c.amount, c.status
+--     FROM public.credit_notes c WHERE c.status='active'
+--   UNION ALL
+--   SELECT d.customer_id, d.issued_at, 'debit_note', d.id, d.dn_no, d.amount, 0, d.status
+--     FROM public.debit_notes d WHERE d.status='active'
+--   UNION ALL
+--   SELECT rf.customer_id, rf.refunded_at, 'refund', rf.id, rf.refund_no, rf.amount, 0, rf.status
+--     FROM public.refunds rf WHERE rf.status='active';

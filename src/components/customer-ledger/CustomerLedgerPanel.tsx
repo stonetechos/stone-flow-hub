@@ -32,6 +32,8 @@ const TYPE_LABEL: Record<string, string> = {
   credit_note: "Credit Note",
   debit_note: "Debit Note",
   refund: "Refund",
+  delivery_challan: "Delivery Challan",
+  payment: "Payment",
 };
 
 export function CustomerLedgerPanel({ customerId }: { customerId: string }) {
@@ -110,6 +112,14 @@ export function CustomerLedgerPanel({ customerId }: { customerId: string }) {
                           to="/receipts/$receiptId"
                           params={{ receiptId: r.ref_id }}
                           className="hover:underline"
+                        >
+                          {r.ref_no}
+                        </Link>
+                      ) : r.entry_type === "delivery_challan" ? (
+                        <Link
+                          to="/dispatch/$id"
+                          params={{ id: r.ref_id }}
+                          className="hover:underline text-primary"
                         >
                           {r.ref_no}
                         </Link>

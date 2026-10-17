@@ -36,6 +36,7 @@ import {
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { createReceipt, listOpenInvoicesForCustomer } from "@/lib/receipts/api";
+import { getCustomerLedgerSummary } from "@/lib/customer-ledger/api";
 import { RECEIPT_METHODS, RECEIPT_METHOD_LABELS } from "@/lib/receipts/schema";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
@@ -71,6 +72,8 @@ function NewReceiptPage() {
   const [charges, setCharges] = useState<number>(0);
   const [remarks, setRemarks] = useState("");
   const [allocations, setAllocations] = useState<AllocRow[]>([]);
+  const [hasManualAmount, setHasManualAmount] = useState(false);
+  const [autoFilledForCustomer, setAutoFilledForCustomer] = useState<string | null>(null);
 
   const invoicesQuery = useQuery({
     queryKey: customerId
@@ -79,6 +82,44 @@ function NewReceiptPage() {
     queryFn: () => listOpenInvoicesForCustomer(customerId!),
     enabled: !!customerId,
   });
+
+  const ledgerSummaryQuery = useQuery({
+    queryKey: customerId
+      ? qk.customerLedger.summary(customerId)
+      : ["customer_ledger", "summary", "none"],
+    queryFn: () => getCustomerLedgerSummary(customerId!),
+    enabled: !!customerId,
+  });
+
+  const openInvoicesTotal = useMemo(
+    () => (invoicesQuery.data ?? []).reduce((s, inv) => s + Number(inv.balance_due || 0), 0),
+    [invoicesQuery.data],
+  );
+
+  const customerBalanceDue = Math.max(0, ledgerSummaryQuery.data?.balance ?? 0);
+  const suggestedAmount = customerBalanceDue > 0 ? customerBalanceDue : openInvoicesTotal;
+
+  function autoAllocateInvoices(
+    targetNet: number,
+    openInvoices: Array<{ id: string; invoice_no: string; balance_due: number }>,
+  ) {
+    let remaining = targetNet;
+    const newAllocs: AllocRow[] = [];
+    for (const inv of openInvoices) {
+      if (remaining <= 0) break;
+      const bal = Number(inv.balance_due) || 0;
+      if (bal <= 0) continue;
+      const take = Math.min(bal, remaining);
+      newAllocs.push({
+        invoice_id: inv.id,
+        amount: take,
+        invoice_no: inv.invoice_no,
+        balance_due: bal,
+      });
+      remaining = Math.max(0, remaining - take);
+    }
+    setAllocations(newAllocs);
+  }
 
   // Preselect the invoice + amount when we arrived from an invoice detail
   // page via `?invoice=…`. Fires once, when the invoice list resolves.
@@ -93,9 +134,41 @@ function NewReceiptPage() {
       { invoice_id: inv.id, amount: balance, invoice_no: inv.invoice_no, balance_due: balance },
     ]);
     if (amount === 0) setAmount(balance);
+    setHasManualAmount(true);
     // Only run once per (customer, invoice) preset combo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoicesQuery.data, preset.invoice]);
+
+  // Auto-fill amount with customer balance due when customer is selected
+  useEffect(() => {
+    if (preset.invoice || !customerId) return;
+    if (autoFilledForCustomer === customerId) return;
+    if (hasManualAmount) return;
+
+    if (ledgerSummaryQuery.isLoading && invoicesQuery.isLoading) return;
+
+    if (suggestedAmount > 0) {
+      setAmount(suggestedAmount);
+      setAutoFilledForCustomer(customerId);
+      const targetNet = Math.max(0, suggestedAmount - tds - charges);
+      if (invoicesQuery.data && invoicesQuery.data.length > 0) {
+        autoAllocateInvoices(targetNet, invoicesQuery.data);
+      }
+    } else if (!ledgerSummaryQuery.isLoading && !invoicesQuery.isLoading && suggestedAmount === 0) {
+      setAutoFilledForCustomer(customerId);
+    }
+  }, [
+    customerId,
+    suggestedAmount,
+    autoFilledForCustomer,
+    hasManualAmount,
+    preset.invoice,
+    ledgerSummaryQuery.isLoading,
+    invoicesQuery.isLoading,
+    invoicesQuery.data,
+    tds,
+    charges,
+  ]);
 
   const net = Math.max(0, amount - tds - charges);
   const alloc = useMemo(
@@ -211,6 +284,9 @@ function NewReceiptPage() {
                     value={customerId}
                     onChange={(id) => {
                       setCustomerId(id);
+                      setHasManualAmount(false);
+                      setAutoFilledForCustomer(null);
+                      setAmount(0);
                       setAllocations([]);
                     }}
                   />
@@ -229,9 +305,43 @@ function NewReceiptPage() {
                     step="0.01"
                     inputMode="decimal"
                     value={amount || ""}
-                    onChange={(e) => setAmount(Number(e.target.value))}
+                    onChange={(e) => {
+                      setHasManualAmount(true);
+                      const val = Number(e.target.value) || 0;
+                      setAmount(val);
+                      const newNet = Math.max(0, val - tds - charges);
+                      if (invoicesQuery.data && invoicesQuery.data.length > 0) {
+                        autoAllocateInvoices(newNet, invoicesQuery.data);
+                      }
+                    }}
                     required
                   />
+                  {suggestedAmount > 0 && (
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5">
+                      <span>
+                        Outstanding balance due:{" "}
+                        <strong className="text-foreground font-mono font-medium">
+                          {formatInr(suggestedAmount)}
+                        </strong>
+                      </span>
+                      {amount !== suggestedAmount && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAmount(suggestedAmount);
+                            setHasManualAmount(false);
+                            const newNet = Math.max(0, suggestedAmount - tds - charges);
+                            if (invoicesQuery.data && invoicesQuery.data.length > 0) {
+                              autoAllocateInvoices(newNet, invoicesQuery.data);
+                            }
+                          }}
+                          className="text-primary hover:underline font-medium cursor-pointer"
+                        >
+                          Fill full balance
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </Field>
                 <Field label="Method" required>
                   <Select value={method} onValueChange={(v) => setMethod(v as typeof method)}>
