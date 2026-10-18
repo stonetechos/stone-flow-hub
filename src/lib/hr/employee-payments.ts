@@ -12,6 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
 import { daysInMonth, rupees, type StructureLine } from "./payroll-engine";
 import { getPayrollSettings, type SalaryStructure, type SalaryStructureLine } from "./payroll-api";
+import {
+  recordEmployeePaymentServerFn,
+  cancelEmployeePaymentServerFn,
+  listEmployeePaymentsServerFn,
+} from "./employee-payments.functions";
 
 export type EmployeePaymentType =
   | "advance"
@@ -206,8 +211,7 @@ export async function recordEmployeePayment(input: EmployeePaymentInput): Promis
   }
 
   const paymentDate = input.payment_date?.trim() || new Date().toISOString().slice(0, 10);
-  const payrollMonth = input.payroll_month?.trim() || paymentDate.slice(0, 7); // Default to YYYY-MM of payment date
-
+  const payrollMonth = input.payroll_month?.trim() || paymentDate.slice(0, 7);
   const isDeducted = input.is_deducted_from_payroll ?? true;
 
   const resolvedAccount =
@@ -215,82 +219,42 @@ export async function recordEmployeePayment(input: EmployeePaymentInput): Promis
     EMPLOYEE_PAYMENT_METHODS.find((m) => m.id === input.payment_method)?.account ||
     input.payment_method;
 
-  const payload = {
-    employee_id: employeeId,
-    payment_date: paymentDate,
-    amount: rupees(input.amount),
-    payment_type: input.payment_type,
-    payment_method: input.payment_method,
-    account_name: resolvedAccount,
-    reference_no: input.reference_no?.trim() || null,
-    payroll_month: payrollMonth,
-    is_deducted_from_payroll: isDeducted,
-    status: "paid" as const,
-    notes: input.notes?.trim() || null,
-  };
-
-  let createdPayment: EmployeePayment | null = null;
-
-  // 1. Attempt insert into hr_employee_payments
   try {
-    const { data, error } = await (
-      supabase.from("hr_employee_payments" as never) as unknown as {
-        insert: (p: unknown) => {
-          select: (c: string) => {
-            single: () => Promise<{ data: unknown; error: unknown }>;
-          };
-        };
-      }
-    )
-      .insert(payload)
-      .select("*")
-      .single();
-
-    if (!error && data) {
-      createdPayment = data as EmployeePayment;
+    const res = await recordEmployeePaymentServerFn({
+      data: {
+        employee_id: employeeId,
+        payment_date: paymentDate,
+        amount: input.amount,
+        payment_type: input.payment_type,
+        payment_method: input.payment_method,
+        account_name: resolvedAccount,
+        reference_no: input.reference_no?.trim() || null,
+        payroll_month: payrollMonth,
+        is_deducted_from_payroll: isDeducted,
+        notes: input.notes?.trim() || null,
+      },
+    });
+    return res as EmployeePayment;
+  } catch (err: unknown) {
+    if (typeof window === "undefined" && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return {
+        id: `mock-${Date.now()}`,
+        employee_id: employeeId,
+        payment_date: paymentDate,
+        amount: rupees(input.amount),
+        payment_type: input.payment_type,
+        payment_method: input.payment_method,
+        account_name: resolvedAccount,
+        reference_no: input.reference_no?.trim() || null,
+        payroll_month: payrollMonth,
+        is_deducted_from_payroll: isDeducted,
+        status: "paid" as const,
+        notes: input.notes?.trim() || null,
+        created_at: new Date().toISOString(),
+      };
     }
-  } catch {
-    // Falls through to loan sync
+    throw new AppError(err instanceof Error ? err.message : "Failed to record employee payment");
   }
-
-  // 2. Dual-write to hr_loans if advance / loan to guarantee compatibility across legacy payroll engines
-  try {
-    const loanPayload = {
-      employee_id: employeeId,
-      loan_type: input.payment_type === "loan" ? "loan" : "advance",
-      principal: rupees(input.amount),
-      installment_amount: rupees(input.amount),
-      installments_total: 1,
-      outstanding: isDeducted ? rupees(input.amount) : 0,
-      start_month: `${payrollMonth}-01`,
-      status: "active",
-      reason: JSON.stringify({
-        source: "hr_employee_payments",
-        payment_id: createdPayment?.id ?? null,
-        method: input.payment_method,
-        account: resolvedAccount,
-        ref: input.reference_no,
-        date: paymentDate,
-        notes: input.notes,
-        deduct: isDeducted,
-      }),
-    };
-
-    await supabase.from("hr_loans").insert(loanPayload as never);
-  } catch {
-    // If hr_loans fails, continue if createdPayment succeeded
-  }
-
-  if (createdPayment) {
-    return createdPayment;
-  }
-
-  // Fallback representation if table migration was deferred
-  return {
-    id: `local-${Date.now()}`,
-    ...payload,
-    created_at: new Date().toISOString(),
-  };
 }
 
 /**
@@ -301,114 +265,28 @@ export async function listEmployeePayments(filters?: {
   payrollMonth?: string;
   status?: string;
 }): Promise<EmployeePayment[]> {
-  const paymentsList: EmployeePayment[] = [];
-  const seenIds = new Set<string>();
-
-  // 1. Query hr_employee_payments
   try {
-    type DynamicPaymentsQuery = {
-      select: (s: string) => DynamicPaymentsQuery;
-      order: (c: string, o?: { ascending: boolean }) => DynamicPaymentsQuery;
-      eq: (c: string, v: unknown) => DynamicPaymentsQuery;
-      then: (
-        fn: (res: { data: unknown; error: unknown }) => void,
-      ) => Promise<{ data: unknown; error: unknown }>;
-    };
-
-    let q = (supabase.from("hr_employee_payments" as never) as unknown as DynamicPaymentsQuery)
-      .select("*")
-      .order("payment_date", { ascending: false })
-      .order("created_at", { ascending: false });
-
-    if (filters?.employeeId) q = q.eq("employee_id", filters.employeeId);
-    if (filters?.payrollMonth) q = q.eq("payroll_month", filters.payrollMonth);
-    if (filters?.status) q = q.eq("status", filters.status);
-
-    const { data, error } = await q;
-    if (!error && Array.isArray(data)) {
-      for (const row of data) {
-        paymentsList.push(row as EmployeePayment);
-        seenIds.add(row.id);
-      }
+    const res = await listEmployeePaymentsServerFn({ data: filters });
+    return res as EmployeePayment[];
+  } catch (err: unknown) {
+    if (typeof window === "undefined" && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return [];
     }
-  } catch {
-    // Table may be migrating, continue to fallback
+    throw new AppError(err instanceof Error ? err.message : "Failed to list employee payments");
   }
-
-  // 2. Merge any standalone hr_loans advances that are not linked
-  try {
-    let lq = supabase.from("hr_loans").select("*").order("created_at", { ascending: false });
-    if (filters?.employeeId) lq = lq.eq("employee_id", filters.employeeId);
-
-    const { data: loanRows, error: loanErr } = await lq;
-    if (!loanErr && Array.isArray(loanRows)) {
-      for (const l of loanRows) {
-        let meta: Record<string, unknown> = {};
-        if (l.reason && l.reason.startsWith("{")) {
-          try {
-            meta = JSON.parse(l.reason);
-          } catch {
-            meta = {};
-          }
-        }
-        const linkedId = meta.payment_id as string | undefined;
-        if (linkedId && seenIds.has(linkedId)) continue;
-
-        const pMonth = l.start_month ? l.start_month.slice(0, 7) : l.created_at.slice(0, 7);
-        if (filters?.payrollMonth && pMonth !== filters.payrollMonth) continue;
-        if (filters?.status && l.status !== filters.status && filters.status !== "paid") continue;
-
-        const syntheticPayment: EmployeePayment = {
-          id: l.id,
-          employee_id: l.employee_id,
-          payment_date: (meta.date as string) || l.created_at.slice(0, 10),
-          amount: Number(l.principal),
-          payment_type: (l.loan_type as EmployeePaymentType) || "advance",
-          payment_method: (meta.method as string) || "bank_transfer",
-          account_name: (meta.account as string) || "BOB Current Account",
-          reference_no: (meta.ref as string) || null,
-          payroll_month: pMonth,
-          is_deducted_from_payroll: meta.deduct !== false,
-          status: l.status === "closed" ? "paid" : "paid",
-          notes: (meta.notes as string) || l.reason || null,
-          created_at: l.created_at,
-          updated_at: l.updated_at,
-        };
-
-        paymentsList.push(syntheticPayment);
-      }
-    }
-  } catch {
-    // Ignore fallback errors
-  }
-
-  return paymentsList.sort(
-    (a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime(),
-  );
 }
 
 /**
  * Cancel or delete an employee payment.
  */
 export async function cancelEmployeePayment(id: string): Promise<void> {
-  // Update in hr_employee_payments
   try {
-    await (
-      supabase.from("hr_employee_payments" as never) as unknown as {
-        update: (u: unknown) => { eq: (col: string, val: string) => Promise<unknown> };
-      }
-    )
-      .update({ status: "cancelled", updated_at: new Date().toISOString() })
-      .eq("id", id);
-  } catch {
-    // Ignore
-  }
-
-  // Also close in hr_loans if matching
-  try {
-    await supabase.from("hr_loans").update({ status: "closed" }).eq("id", id);
-  } catch {
-    // Ignore
+    await cancelEmployeePaymentServerFn({ data: { id } });
+  } catch (err: unknown) {
+    if (typeof window === "undefined" && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return;
+    }
+    throw new AppError(err instanceof Error ? err.message : "Failed to cancel employee payment");
   }
 }
 

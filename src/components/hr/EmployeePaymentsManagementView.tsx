@@ -88,7 +88,7 @@ export function EmployeePaymentsManagementView({ initialEmployeeId, embedded = f
     queryFn: () => listCompanySalaryBalances(selectedMonth),
   });
 
-  const balances = summaryQ.data?.balances ?? [];
+  const balances = useMemo(() => summaryQ.data?.balances ?? [], [summaryQ.data?.balances]);
 
   // Flatten payments from all balances for the transactions tab
   const allPayments = useMemo(() => {
