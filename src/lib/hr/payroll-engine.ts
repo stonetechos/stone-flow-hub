@@ -256,6 +256,7 @@ export interface PayslipInput {
   paidLeaveDays?: number;
   overtimeHours?: number;
   loanInstallment?: number;
+  advancePayments?: number;
   reimbursements?: number;
   settings: PayrollSettings;
   /** Months left in the financial year, used to spread TDS. */
@@ -289,6 +290,7 @@ export interface PayslipResult {
   professionalTax: number;
   tds: number;
   loanDeduction: number;
+  advanceDeduction: number;
   reimbursements: number;
   employerCost: number;
   lines: PayslipLine[];
@@ -344,6 +346,7 @@ export function computePayslip(input: PayslipInput): PayslipResult {
   const pt = computeProfessionalTax(gross, s.pt_slabs);
   const tds = computeMonthlyTds(taxableMonthly * 12, s, input.remainingMonths ?? 12);
   const loan = rupees(Math.max(0, input.loanInstallment ?? 0));
+  const advance = rupees(Math.max(0, input.advancePayments ?? 0));
   const reimb = rupees(Math.max(0, input.reimbursements ?? 0));
 
   if (pf.employee)
@@ -358,7 +361,14 @@ export function computePayslip(input: PayslipInput): PayslipResult {
   if (pt) lines.push({ label: "Professional tax", kind: "deduction", amount: pt, sort_order: 912 });
   if (tds) lines.push({ label: "TDS", kind: "deduction", amount: tds, sort_order: 913 });
   if (loan)
-    lines.push({ label: "Loan / advance", kind: "deduction", amount: loan, sort_order: 914 });
+    lines.push({ label: "Loan instalment", kind: "deduction", amount: loan, sort_order: 914 });
+  if (advance)
+    lines.push({
+      label: "Intermediate payments / advances",
+      kind: "deduction",
+      amount: advance,
+      sort_order: 915,
+    });
   if (reimb)
     lines.push({ label: "Reimbursements", kind: "earning", amount: reimb, sort_order: 920 });
   if (pf.employer)
@@ -371,7 +381,8 @@ export function computePayslip(input: PayslipInput): PayslipResult {
       sort_order: 931,
     });
 
-  const totalDeductions = structuredDeductions + pf.employee + esi.employee + pt + tds + loan;
+  const totalDeductions =
+    structuredDeductions + pf.employee + esi.employee + pt + tds + loan + advance;
   const netPay = rupees(gross + reimb - totalDeductions);
 
   return {
@@ -394,6 +405,7 @@ export function computePayslip(input: PayslipInput): PayslipResult {
     professionalTax: pt,
     tds,
     loanDeduction: loan,
+    advanceDeduction: advance,
     reimbursements: reimb,
     employerCost: rupees(gross + reimb + pf.employer + esi.employer),
     lines: lines.sort((a, b) => a.sort_order - b.sort_order),

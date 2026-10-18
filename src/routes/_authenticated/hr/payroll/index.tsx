@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SalaryView } from "../salary";
 import { LoansView } from "../loans";
 import { TaxRegimeOptimizer } from "@/components/hr/TaxRegimeOptimizer";
+import { EmployeePaymentsManagementView } from "@/components/hr/EmployeePaymentsManagementView";
 import {
   Table,
   TableBody,
@@ -273,8 +274,11 @@ export function PayrollHubPage() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl">
           <TabsTrigger value="runs">{t("payroll.tabs.runs", "Payroll Runs")}</TabsTrigger>
+          <TabsTrigger value="payments">
+            {t("payroll.tabs.payments", "Employee Payments & Advances")}
+          </TabsTrigger>
           <TabsTrigger value="structures">
             {t("payroll.tabs.structures", "Salary Structures")}
           </TabsTrigger>
@@ -284,6 +288,10 @@ export function PayrollHubPage() {
 
         <TabsContent value="runs" className="mt-4 space-y-6">
           <PayrollRunsView />
+        </TabsContent>
+
+        <TabsContent value="payments" className="mt-4 space-y-6">
+          <EmployeePaymentsManagementView embedded initialEmployeeId={search.employee} />
         </TabsContent>
 
         <TabsContent value="structures" className="mt-4 space-y-6">

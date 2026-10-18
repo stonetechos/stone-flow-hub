@@ -175,6 +175,21 @@ describe("payslip", () => {
     expect(p.netPay).toBe(p.grossEarnings + 1500 - p.totalDeductions);
   });
 
+  it("deducts intermediate advance payments from month-end salary", () => {
+    const p = computePayslip({
+      employeeId: "e1",
+      lines: LINES,
+      calendarDays: 30,
+      lopDays: 0,
+      advancePayments: 10000,
+      settings: S,
+    });
+    expect(p.advanceDeduction).toBe(10000);
+    expect(p.netPay).toBe(p.grossEarnings - p.totalDeductions);
+    const advanceLine = p.lines.find((l) => l.label.includes("Intermediate payments"));
+    expect(advanceLine?.amount).toBe(10000);
+  });
+
   it("pays nothing when the whole month is loss of pay", () => {
     const p = computePayslip({
       employeeId: "e1",

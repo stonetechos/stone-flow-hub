@@ -6,16 +6,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil, Plus, Trash2, Fingerprint, Mail } from "lucide-react";
+import { Pencil, Plus, Trash2, Fingerprint, Mail, Banknote, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TaxRegimeOptimizer } from "@/components/hr/TaxRegimeOptimizer";
+import { RecordEmployeePaymentDialog } from "@/components/hr/RecordEmployeePaymentDialog";
+import { EmployeeSalaryBalanceDrawer } from "@/components/hr/EmployeeSalaryBalanceDrawer";
+import {
+  currentMonthStr,
+  formatMonthLabel,
+  listEmployeePayments,
+  listCompanySalaryBalances,
+  type EmployeeSalaryMonthBalance,
+} from "@/lib/hr/employee-payments";
+import { formatInr } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -807,8 +818,15 @@ function EmployeeProfile() {
           <DocumentsTab employeeId={id} />
         </TabsContent>
 
-        <TabsContent value="payroll" className="mt-4">
-          <TaxRegimeOptimizer initialEmployeeId={id} />
+        <TabsContent value="payroll" className="mt-4 space-y-6">
+          <EmployeePayrollSection
+            employeeId={id}
+            employeeName={e.full_name}
+            employeeCode={e.employee_code}
+          />
+          <div className="pt-2">
+            <TaxRegimeOptimizer initialEmployeeId={id} />
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -958,5 +976,181 @@ function DocumentsTab({ employeeId }: { employeeId: string }) {
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function EmployeePayrollSection({
+  employeeId,
+  employeeName,
+  employeeCode,
+}: {
+  employeeId: string;
+  employeeName: string;
+  employeeCode: string | null;
+}) {
+  const currentMonth = currentMonthStr();
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const balancesQuery = useQuery({
+    queryKey: ["hr", "salary-balances", currentMonth],
+    queryFn: () => listCompanySalaryBalances(currentMonth),
+  });
+
+  const paymentsQuery = useQuery({
+    queryKey: ["hr", "employee-payments", employeeId],
+    queryFn: () => listEmployeePayments({ employeeId }),
+  });
+
+  const empBalance: EmployeeSalaryMonthBalance = balancesQuery.data?.balances.find(
+    (b) => b.employeeId === employeeId,
+  ) ?? {
+    employeeId,
+    employeeName,
+    employeeCode,
+    designation: null,
+    department: null,
+    phone: null,
+    baseGrossSalary: 0,
+    estimatedNetSalary: 0,
+    attendanceLopDays: 0,
+    earnedSalary: 0,
+    statutoryDeductions: 0,
+    intermediatePaymentsCount: 0,
+    totalIntermediatePaid: 0,
+    remainingSalaryDue: 0,
+    advanceExcess: 0,
+    status: "pending_full",
+    payments: [],
+  };
+
+  const recentPayments = (paymentsQuery.data ?? []).slice(0, 5);
+
+  return (
+    <div className="space-y-4">
+      {/* Salary & Intermediate Payments Summary Card */}
+      <Card className="border border-border/80 shadow-1 overflow-hidden">
+        <CardHeader className="bg-muted/30 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Banknote className="h-5 w-5 text-primary" />
+                Monthly Salary &amp; Payment Tracker
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5">
+                Current month:{" "}
+                <span className="font-semibold text-foreground">
+                  {formatMonthLabel(currentMonth)}
+                </span>
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setDrawerOpen(true)}>
+                View Ledger
+              </Button>
+              <Button size="sm" onClick={() => setRecordDialogOpen(true)}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Record Payment / Advance
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center sm:text-left">
+            <div className="rounded-lg border bg-card p-3">
+              <div className="text-xs text-muted-foreground">Base Salary / Mo</div>
+              <div className="text-lg font-bold text-foreground mt-1">
+                {formatInr(empBalance.baseGrossSalary)}
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-3">
+              <div className="text-xs text-muted-foreground">Estimated Net Salary</div>
+              <div className="text-lg font-bold text-foreground mt-1">
+                {formatInr(empBalance.estimatedNetSalary)}
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-amber-500/10 border-amber-500/30 p-3">
+              <div className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                Advances Paid ({empBalance.intermediatePaymentsCount})
+              </div>
+              <div className="text-lg font-bold text-amber-700 dark:text-amber-300 mt-1">
+                {formatInr(empBalance.totalIntermediatePaid)}
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-emerald-500/10 border-emerald-500/30 p-3">
+              <div className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                Salary Due After Month Ends
+              </div>
+              <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                {formatInr(empBalance.remainingSalaryDue)}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Payments preview */}
+          {recentPayments.length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">
+                  Recent Disbursed Payments &amp; Advances
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Showing latest {recentPayments.length} of {paymentsQuery.data?.length ?? 0}
+                </span>
+              </div>
+              <div className="divide-y rounded-md border text-xs">
+                {recentPayments.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between p-2.5 hover:bg-muted/40"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">{formatInr(p.amount)}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+                          {p.payment_type}
+                        </Badge>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {p.account_name}
+                        </Badge>
+                      </div>
+                      <div className="text-muted-foreground text-[11px]">
+                        {p.payment_date} {p.reference_no ? `• Ref: ${p.reference_no}` : ""}
+                        {p.notes ? ` • "${p.notes}"` : ""}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={p.status === "paid" ? "default" : "secondary"}
+                        className="text-[10px] uppercase font-mono"
+                      >
+                        {p.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <RecordEmployeePaymentDialog
+        open={recordDialogOpen}
+        onOpenChange={setRecordDialogOpen}
+        defaultEmployeeId={employeeId}
+        defaultMonth={currentMonth}
+      />
+
+      <EmployeeSalaryBalanceDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        balance={empBalance}
+        payrollMonth={currentMonth}
+      />
+    </div>
   );
 }

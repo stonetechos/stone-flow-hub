@@ -20,6 +20,7 @@ import {
   type PtSlab,
   type StructureLine,
 } from "./payroll-engine";
+import { listEmployeePayments } from "./employee-payments";
 
 export type SalaryComponent = DbTable<"hr_salary_components">;
 export type SalaryStructure = DbTable<"hr_salary_structures">;
@@ -400,7 +401,8 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
   }
 
   const structureIds = [...structureByEmployee.values()].map((s) => s.id);
-  const [linesRes, attendanceRes, loansRes, reimbRes] = await Promise.all([
+  const payrollMonthStr = `${run.period_year}-${String(run.period_month).padStart(2, "0")}`;
+  const [linesRes, attendanceRes, loansRes, reimbRes, paymentsList] = await Promise.all([
     structureIds.length
       ? supabase.from("hr_salary_structure_lines").select("*").in("structure_id", structureIds)
       : Promise.resolve({ data: [], error: null }),
@@ -411,6 +413,7 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
       .lte("work_date", to),
     supabase.from("hr_loans").select("*").eq("status", "active"),
     supabase.from("hr_reimbursements").select("*").eq("status", "approved"),
+    listEmployeePayments({ payrollMonth: payrollMonthStr }).catch(() => []),
   ]);
   if (linesRes.error) throw new AppError(mapDbError(linesRes.error));
   if (attendanceRes.error) throw new AppError(mapDbError(attendanceRes.error));
@@ -444,6 +447,16 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
   const loanByEmployee = new Map<string, HrLoan>();
   for (const l of (loansRes.data ?? []) as HrLoan[])
     if (!loanByEmployee.has(l.employee_id)) loanByEmployee.set(l.employee_id, l);
+
+  const intermediateAdvancesByEmployee = new Map<string, number>();
+  for (const p of paymentsList ?? []) {
+    if (p.is_deducted_from_payroll && p.status === "paid") {
+      intermediateAdvancesByEmployee.set(
+        p.employee_id,
+        (intermediateAdvancesByEmployee.get(p.employee_id) ?? 0) + Number(p.amount),
+      );
+    }
+  }
 
   const reimbByEmployee = new Map<string, number>();
   for (const r of (reimbRes.data ?? []) as HrReimbursement[])
@@ -486,6 +499,7 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
         loanInstallment: loan
           ? Math.min(Number(loan.installment_amount), Number(loan.outstanding))
           : 0,
+        advancePayments: intermediateAdvancesByEmployee.get(emp.id) ?? 0,
         reimbursements: reimbByEmployee.get(emp.id) ?? 0,
         settings,
         remainingMonths: remainingFyMonths(run.period_month),
@@ -523,7 +537,7 @@ export async function processPayrollRun(runId: string): Promise<ProcessResult> {
         esi_employer: p.esiEmployer,
         professional_tax: p.professionalTax,
         tds: p.tds,
-        loan_deduction: p.loanDeduction,
+        loan_deduction: p.loanDeduction + p.advanceDeduction,
         reimbursements: p.reimbursements,
         employer_cost: p.employerCost,
       })),

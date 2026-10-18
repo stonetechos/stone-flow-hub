@@ -13,6 +13,8 @@ import {
   Building2,
   ArrowRight,
   Plus,
+  Banknote,
+  Wallet,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -23,6 +25,12 @@ import { listAttendanceDays, listHolidays, listLeaveRequests, listBranches } fro
 import { listEmployees } from "@/lib/workforce/api";
 import { ATTENDANCE_STATUS_LABEL } from "@/lib/hr/types";
 import { toUserMessage } from "@/lib/errors";
+import {
+  currentMonthStr,
+  listCompanySalaryBalances,
+  formatMonthLabel,
+} from "@/lib/hr/employee-payments";
+import { formatInr } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/hr/")({
   head: () => ({
@@ -56,6 +64,11 @@ function HrDashboard() {
     queryFn: () => listHolidays(new Date().getFullYear()),
   });
   const branches = useQuery({ queryKey: ["hr", "branches"], queryFn: listBranches });
+  const currentMonth = currentMonthStr();
+  const salaryBalances = useQuery({
+    queryKey: ["hr", "salary-balances", currentMonth],
+    queryFn: () => listCompanySalaryBalances(currentMonth),
+  });
 
   const loading =
     employees.isLoading || attendance.isLoading || leave.isLoading || branches.isLoading;
@@ -66,6 +79,7 @@ function HrDashboard() {
   const onLeave = rows.filter((r) => r.status === "on_leave").length;
   const active = (employees.data ?? []).filter((e) => e.employment_status === "active").length;
   const upcoming = (holidays.data ?? []).filter((h) => h.holiday_date >= today()).slice(0, 4);
+  const salaryData = salaryBalances.data;
 
   return (
     <>
@@ -74,11 +88,18 @@ function HrDashboard() {
         subtitle="Headcount, attendance, shifts and leave at a glance."
         eyebrow="People"
         actions={
-          <Button asChild size="sm">
-            <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
-              <Plus className="mr-1 h-4 w-4" /> Add employee
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/hr/payments">
+                <Banknote className="mr-1 h-4 w-4" /> Employee Payments
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/workforce-intelligence/employees/new" search={{ id: undefined }}>
+                <Plus className="mr-1 h-4 w-4" /> Add employee
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -108,6 +129,51 @@ function HrDashboard() {
               value={(leave.data ?? []).length}
               to="/hr/leave"
             />
+          </div>
+
+          {/* Salary Due & Intermediate Payments Highlight */}
+          <div className="mt-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/[0.02] to-background p-4 shadow-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="bg-background text-xs font-semibold text-primary"
+                  >
+                    {formatMonthLabel(currentMonth)}
+                  </Badge>
+                  <span className="text-sm font-semibold text-foreground">
+                    Employee Payments &amp; Salary Tracker
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Track mid-month salary advances and exact balance due to be paid after month ends.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="text-left sm:text-right">
+                  <div className="text-xs text-muted-foreground">Advances / Paid</div>
+                  <div className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                    {formatInr(salaryData?.totalIntermediatePaymentsPaid ?? 0)}
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-border hidden sm:block" />
+                <div className="text-left sm:text-right">
+                  <div className="text-xs text-muted-foreground">Due After Month Ends</div>
+                  <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatInr(salaryData?.totalSalaryRemainingToPay ?? 0)}
+                  </div>
+                </div>
+                <Button asChild size="sm" variant="default" className="shadow-sm">
+                  <Link to="/hr/payments">
+                    <Wallet className="mr-1.5 h-3.5 w-3.5" />
+                    Manage Payments
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">

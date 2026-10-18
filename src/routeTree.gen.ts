@@ -118,6 +118,7 @@ import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedInstallationLedgerAgencyIdRouteImport } from './routes/_authenticated/installation-ledger/$agencyId'
 import { Route as AuthenticatedHrShiftsRouteImport } from './routes/_authenticated/hr/shifts'
 import { Route as AuthenticatedHrSalaryRouteImport } from './routes/_authenticated/hr/salary'
+import { Route as AuthenticatedHrPaymentsRouteImport } from './routes/_authenticated/hr/payments'
 import { Route as AuthenticatedHrLoansRouteImport } from './routes/_authenticated/hr/loans'
 import { Route as AuthenticatedHrLeaveRouteImport } from './routes/_authenticated/hr/leave'
 import { Route as AuthenticatedHrHolidaysRouteImport } from './routes/_authenticated/hr/holidays'
@@ -816,6 +817,11 @@ const AuthenticatedHrSalaryRoute = AuthenticatedHrSalaryRouteImport.update({
   path: '/hr/salary',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHrPaymentsRoute = AuthenticatedHrPaymentsRouteImport.update({
+  id: '/hr/payments',
+  path: '/hr/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHrLoansRoute = AuthenticatedHrLoansRouteImport.update({
   id: '/hr/loans',
   path: '/hr/loans',
@@ -1347,6 +1353,7 @@ export interface FileRoutesByFullPath {
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/hr/payments': typeof AuthenticatedHrPaymentsRoute
   '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
@@ -1534,6 +1541,7 @@ export interface FileRoutesByTo {
   '/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/hr/payments': typeof AuthenticatedHrPaymentsRoute
   '/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
@@ -1724,6 +1732,7 @@ export interface FileRoutesById {
   '/_authenticated/hr/holidays': typeof AuthenticatedHrHolidaysRoute
   '/_authenticated/hr/leave': typeof AuthenticatedHrLeaveRoute
   '/_authenticated/hr/loans': typeof AuthenticatedHrLoansRoute
+  '/_authenticated/hr/payments': typeof AuthenticatedHrPaymentsRoute
   '/_authenticated/hr/salary': typeof AuthenticatedHrSalaryRoute
   '/_authenticated/hr/shifts': typeof AuthenticatedHrShiftsRoute
   '/_authenticated/installation-ledger/$agencyId': typeof AuthenticatedInstallationLedgerAgencyIdRoute
@@ -1914,6 +1923,7 @@ export interface FileRouteTypes {
     | '/hr/holidays'
     | '/hr/leave'
     | '/hr/loans'
+    | '/hr/payments'
     | '/hr/salary'
     | '/hr/shifts'
     | '/installation-ledger/$agencyId'
@@ -2101,6 +2111,7 @@ export interface FileRouteTypes {
     | '/hr/holidays'
     | '/hr/leave'
     | '/hr/loans'
+    | '/hr/payments'
     | '/hr/salary'
     | '/hr/shifts'
     | '/installation-ledger/$agencyId'
@@ -2290,6 +2301,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr/holidays'
     | '/_authenticated/hr/leave'
     | '/_authenticated/hr/loans'
+    | '/_authenticated/hr/payments'
     | '/_authenticated/hr/salary'
     | '/_authenticated/hr/shifts'
     | '/_authenticated/installation-ledger/$agencyId'
@@ -3197,6 +3209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrSalaryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr/payments': {
+      id: '/_authenticated/hr/payments'
+      path: '/hr/payments'
+      fullPath: '/hr/payments'
+      preLoaderRoute: typeof AuthenticatedHrPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/loans': {
       id: '/_authenticated/hr/loans'
       path: '/hr/loans'
@@ -3940,6 +3959,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHrHolidaysRoute: typeof AuthenticatedHrHolidaysRoute
   AuthenticatedHrLeaveRoute: typeof AuthenticatedHrLeaveRoute
   AuthenticatedHrLoansRoute: typeof AuthenticatedHrLoansRoute
+  AuthenticatedHrPaymentsRoute: typeof AuthenticatedHrPaymentsRoute
   AuthenticatedHrSalaryRoute: typeof AuthenticatedHrSalaryRoute
   AuthenticatedHrShiftsRoute: typeof AuthenticatedHrShiftsRoute
   AuthenticatedInstallationLedgerAgencyIdRoute: typeof AuthenticatedInstallationLedgerAgencyIdRoute
@@ -4115,6 +4135,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHrHolidaysRoute: AuthenticatedHrHolidaysRoute,
   AuthenticatedHrLeaveRoute: AuthenticatedHrLeaveRoute,
   AuthenticatedHrLoansRoute: AuthenticatedHrLoansRoute,
+  AuthenticatedHrPaymentsRoute: AuthenticatedHrPaymentsRoute,
   AuthenticatedHrSalaryRoute: AuthenticatedHrSalaryRoute,
   AuthenticatedHrShiftsRoute: AuthenticatedHrShiftsRoute,
   AuthenticatedInstallationLedgerAgencyIdRoute:

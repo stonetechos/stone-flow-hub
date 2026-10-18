@@ -300,6 +300,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin", "hr"],
   },
   {
+    id: "hr-payments",
+    to: "/hr/payments",
+    label: "Employee Payments",
+    icon: Wallet,
+    group: "payroll",
+    allowedRoles: ["admin", "super_admin", "hr"],
+  },
+  {
     id: "hr-payroll",
     to: "/hr/payroll",
     label: "Payroll",
