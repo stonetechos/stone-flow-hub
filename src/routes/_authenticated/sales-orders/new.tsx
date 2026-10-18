@@ -47,6 +47,7 @@ function NewSalesOrderPage() {
   const qc = useQueryClient();
   const params = Route.useSearch();
 
+  const [fulfilmentSource, setFulfilmentSource] = useState<string>("live_stock");
   const [form, setForm] = useState<SalesOrderCreateInput>({
     quote_id: params.quote ?? null,
     project_id: params.project ?? null,
@@ -54,7 +55,7 @@ function NewSalesOrderPage() {
     status: "draft",
     order_date: today(),
     delivery_date: null,
-    notes: null,
+    notes: "Fulfilment: Live Stock (In-House Yard)",
   });
   const set = <K extends keyof SalesOrderCreateInput>(k: K, v: SalesOrderCreateInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -179,6 +180,39 @@ function NewSalesOrderPage() {
                     {s.replace(/_/g, " ")}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field
+            label="Fulfilment Source"
+            hint="Designate whether stone slabs will be supplied from live yard stock or outsourced to a vendor."
+          >
+            <Select
+              value={fulfilmentSource}
+              onValueChange={(v) => {
+                setFulfilmentSource(v);
+                const prefix =
+                  v === "live_stock"
+                    ? "Fulfilment: Live Stock (In-House Yard)"
+                    : v === "stock_lifted"
+                      ? "Fulfilment: Material Lifted from Live Stock"
+                      : "Fulfilment: Outsourced to Vendor";
+                set(
+                  "notes",
+                  form.notes
+                    ? `${prefix} | ${form.notes.replace(/^Fulfilment:[^|]+\|?\s*/i, "")}`
+                    : prefix,
+                );
+              }}
+              disabled={!!form.quote_id}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="live_stock">📦 Live Stock (In-House Yard)</SelectItem>
+                <SelectItem value="stock_lifted">🚚 Material Lifted from Live Stock</SelectItem>
+                <SelectItem value="vendor">🏭 Outsource to Vendor</SelectItem>
               </SelectContent>
             </Select>
           </Field>

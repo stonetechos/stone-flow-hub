@@ -226,48 +226,48 @@ export function AssignQuoteVendorDialog({
           <button
             type="button"
             onClick={() => {
-              setMode("stock_lifted");
-              if (!stockLocation || stockLocation === "Main Warehouse / Yard Stock") {
-                setStockLocation("Lifted from Stock / Yard");
-              }
-            }}
-            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
-              mode === "stock_lifted"
-                ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold border border-emerald-300"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-            }`}
-          >
-            <PackageCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span className="leading-tight">Lifted from Stock</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
               setMode("in_stock");
               if (!stockLocation || stockLocation === "Lifted from Stock / Yard") {
                 setStockLocation("Main Warehouse / Yard Stock");
               }
             }}
-            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-md transition-all cursor-pointer text-center ${
               mode === "in_stock"
+                ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold border border-emerald-300"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Boxes className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span className="leading-tight text-[11px]">Live Stock (Yard)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("stock_lifted");
+              if (!stockLocation || stockLocation === "Main Warehouse / Yard Stock") {
+                setStockLocation("Lifted from Stock / Yard");
+              }
+            }}
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-md transition-all cursor-pointer text-center ${
+              mode === "stock_lifted"
                 ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-xs font-bold border border-blue-300"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
             }`}
           >
-            <Boxes className="h-4 w-4 text-blue-600 shrink-0" />
-            <span className="leading-tight">In-House Stock</span>
+            <PackageCheck className="h-4 w-4 text-blue-600 shrink-0" />
+            <span className="leading-tight text-[11px]">Lifted from Stock</span>
           </button>
           <button
             type="button"
             onClick={() => setMode("vendor")}
-            className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-md transition-all cursor-pointer text-center ${
+            className={`flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-md transition-all cursor-pointer text-center ${
               mode === "vendor"
                 ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold border border-slate-300"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
             }`}
           >
             <Building2 className="h-4 w-4 text-slate-600 dark:text-slate-300 shrink-0" />
-            <span className="leading-tight">Outsource (RFQ)</span>
+            <span className="leading-tight text-[11px]">Outsource Vendor</span>
           </button>
         </div>
 

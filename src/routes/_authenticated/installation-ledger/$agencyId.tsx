@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, Building2, Smartphone, Banknote, CreditCard } from "lucide-react";
+import {
+  Plus,
+  User,
+  Building2,
+  Smartphone,
+  Banknote,
+  CreditCard,
+  MessageCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBlock, SkeletonTable, EmptyState } from "@/components/layout/States";
@@ -57,6 +65,11 @@ import {
 } from "@/lib/installation-agencies/api";
 import { LEDGER_ENTRY_TYPES, type LedgerEntryType } from "@/lib/installation-ledger/schema";
 import { useRoles } from "@/hooks/use-roles";
+import { ShareStatementDialog } from "@/components/statements/ShareStatementDialog";
+import {
+  getCurrentStatementTimestamp,
+  type AccountingStatementData,
+} from "@/lib/statements/accounting-statement";
 
 /**
  * Installation Agency Ledger — per-agency detail.
@@ -90,6 +103,7 @@ function InstallationLedgerDetail() {
   const categories = getAgencyCategoryInfo(agency);
 
   const [recording, setRecording] = useState(false);
+  const [statementOpen, setStatementOpen] = useState(false);
   const [entryType, setEntryType] = useState<LedgerEntryType>("charge");
   const [entryDate, setEntryDate] = useState(today());
   const [description, setDescription] = useState("");
@@ -254,6 +268,33 @@ function InstallationLedgerDetail() {
 
   const rows = ledgerQuery.data ?? [];
   const balance = rows.length > 0 ? rows[rows.length - 1].running_balance : 0;
+  const totalCharge = rows.reduce((s, r) => s + (Number(r.debit) || 0), 0);
+  const totalPayment = rows.reduce((s, r) => s + (Number(r.credit) || 0), 0);
+
+  const statementData: AccountingStatementData = {
+    party: {
+      partyType: "agency",
+      id: agencyId,
+      name: agency?.name || "Agency",
+      code: agency?.code,
+      phone: (agency as unknown as { phone?: string })?.phone || null,
+      whatsapp: (agency as unknown as { whatsapp?: string })?.whatsapp || null,
+      contactPerson: (agency as unknown as { contact_person?: string })?.contact_person || null,
+    },
+    asOfTimestamp: getCurrentStatementTimestamp(),
+    totalDebit: totalCharge,
+    totalCredit: totalPayment,
+    balance: balance,
+    transactions: rows.map((r) => ({
+      date: r.entry_date,
+      type: r.debit > 0 ? "Work / Installation Charge" : "Payment Disbursement",
+      refNo: r.ref_no || "—",
+      description: r.description,
+      debit: r.debit,
+      credit: r.credit,
+      runningBalance: r.running_balance,
+    })),
+  };
 
   return (
     <div className="space-y-4">
@@ -282,11 +323,21 @@ function InstallationLedgerDetail() {
             : undefined
         }
         actions={
-          roles.canWrite ? (
-            <Button size="sm" onClick={() => setRecording(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Record entry
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs font-semibold"
+              onClick={() => setStatementOpen(true)}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Share Statement (WhatsApp)
             </Button>
-          ) : undefined
+            {roles.canWrite && (
+              <Button size="sm" onClick={() => setRecording(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Record entry
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -783,6 +834,12 @@ function InstallationLedgerDetail() {
         }
         busy={deleteMut.isPending}
         onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
+      />
+
+      <ShareStatementDialog
+        open={statementOpen}
+        onOpenChange={setStatementOpen}
+        data={statementData}
       />
     </div>
   );

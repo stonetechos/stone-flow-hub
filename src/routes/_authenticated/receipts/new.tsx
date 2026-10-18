@@ -40,6 +40,7 @@ import { getCustomerLedgerSummary } from "@/lib/customer-ledger/api";
 import { RECEIPT_METHODS, RECEIPT_METHOD_LABELS } from "@/lib/receipts/schema";
 import { invalidateReceipt } from "@/lib/query-invalidation";
 import { formatInr, formatDate } from "@/lib/format";
+import { createWriteOff, WRITE_OFF_REASONS, type WriteOffReason } from "@/lib/write-offs/api";
 
 const search = z.object({
   customer: z.string().uuid().optional(),
@@ -74,6 +75,11 @@ function NewReceiptPage() {
   const [allocations, setAllocations] = useState<AllocRow[]>([]);
   const [hasManualAmount, setHasManualAmount] = useState(false);
   const [autoFilledForCustomer, setAutoFilledForCustomer] = useState<string | null>(null);
+
+  const [enableWriteOff, setEnableWriteOff] = useState(false);
+  const [writeOffAmount, setWriteOffAmount] = useState<number>(0);
+  const [writeOffReason, setWriteOffReason] = useState<WriteOffReason>("quality_issue");
+  const [writeOffRemarks, setWriteOffRemarks] = useState("");
 
   const invoicesQuery = useQuery({
     queryKey: customerId
@@ -186,8 +192,8 @@ function NewReceiptPage() {
   const negativeAlloc = allocations.some((a) => Number(a.amount) < 0);
 
   const mut = useMutation({
-    mutationFn: () =>
-      createReceipt({
+    mutationFn: async () => {
+      const receipt = await createReceipt({
         customer_id: customerId!,
         received_at: receivedAt,
         amount,
@@ -203,10 +209,36 @@ function NewReceiptPage() {
         allocations: allocations
           .map((a) => ({ invoice_id: a.invoice_id, amount: a.amount }))
           .filter((a) => a.amount > 0),
-      }),
+      });
+
+      if (enableWriteOff && writeOffAmount > 0) {
+        await createWriteOff({
+          customer_id: customerId!,
+          invoice_id: allocations[0]?.invoice_id || null,
+          amount: writeOffAmount,
+          reason: writeOffReason,
+          remarks: writeOffRemarks.trim() || `Adjusted with payment receipt ${receipt.receipt_no}`,
+          issued_at: receivedAt,
+        });
+      }
+
+      return receipt;
+    },
     onSuccess: (r) => {
-      toast.success(`Receipt ${r.receipt_no} created`);
+      if (enableWriteOff && writeOffAmount > 0) {
+        toast.success(
+          `Receipt ${r.receipt_no} recorded & ${formatInr(writeOffAmount)} written off (${WRITE_OFF_REASONS[writeOffReason].label})`,
+        );
+      } else {
+        toast.success(`Receipt ${r.receipt_no} created`);
+      }
       invalidateReceipt(qc, r.id, customerId ?? undefined);
+      qc.invalidateQueries({ queryKey: ["write-offs"] });
+      qc.invalidateQueries({ queryKey: qk.dashboard });
+      if (customerId) {
+        qc.invalidateQueries({ queryKey: qk.customerLedger.byCustomer(customerId) });
+        qc.invalidateQueries({ queryKey: qk.customerLedger.summary(customerId) });
+      }
       nav({ to: "/receipts/$receiptId", params: { receiptId: r.id } });
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -339,6 +371,92 @@ function NewReceiptPage() {
                         >
                           Fill full balance
                         </button>
+                      )}
+                    </div>
+                  )}
+
+                  {suggestedAmount > 0 && amount > 0 && suggestedAmount > amount && (
+                    <div className="mt-3 rounded-xl border border-red-200 bg-red-50/70 p-3 dark:border-red-950/60 dark:bg-red-950/30 space-y-3">
+                      <div className="flex items-start gap-2.5">
+                        <input
+                          type="checkbox"
+                          id="enable-writeoff"
+                          checked={enableWriteOff}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setEnableWriteOff(checked);
+                            if (checked && (!writeOffAmount || writeOffAmount === 0)) {
+                              setWriteOffAmount(Math.max(0, suggestedAmount - amount));
+                            }
+                          }}
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor="enable-writeoff"
+                            className="text-xs font-bold text-red-900 dark:text-red-200 cursor-pointer block"
+                          >
+                            Write off remaining balance difference of{" "}
+                            {formatInr(Math.max(0, suggestedAmount - amount))}
+                          </label>
+                          <p className="text-[11px] text-red-700/80 dark:text-red-300/80 mt-0.5">
+                            Customer paid less due to quality complaints, delivery delays, damage,
+                            or settlement. Authorize write-off to balance ledger.
+                          </p>
+                        </div>
+                      </div>
+
+                      {enableWriteOff && (
+                        <div className="space-y-2.5 pt-2 border-t border-red-200/70 dark:border-red-900/40">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                Write-Off Amount (₹)
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                className="font-mono text-xs text-red-600 bg-white dark:bg-slate-900 h-8"
+                                value={writeOffAmount || ""}
+                                onChange={(e) => setWriteOffAmount(Number(e.target.value) || 0)}
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                Commercial Reason
+                              </label>
+                              <Select
+                                value={writeOffReason}
+                                onValueChange={(v) => setWriteOffReason(v as WriteOffReason)}
+                              >
+                                <SelectTrigger className="text-xs bg-white dark:bg-slate-900 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(WRITE_OFF_REASONS).map(([key, meta]) => (
+                                    <SelectItem key={key} value={key} className="text-xs">
+                                      {meta.icon} {meta.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                              Explanation &amp; Justification Note
+                            </label>
+                            <Input
+                              type="text"
+                              className="text-xs bg-white dark:bg-slate-900 h-8"
+                              placeholder="e.g. Paid 25k against 27.5k due to shade mismatch & late arrival concession..."
+                              value={writeOffRemarks}
+                              onChange={(e) => setWriteOffRemarks(e.target.value)}
+                            />
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

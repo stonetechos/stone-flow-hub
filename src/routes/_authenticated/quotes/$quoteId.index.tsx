@@ -233,13 +233,13 @@ function QuoteDetailPage() {
               {SALE_MODE_CONFIG[saleMode].label}
             </span>
             {assignment.fulfilmentType === "in_stock" ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
-                <Boxes className="h-3 w-3 text-blue-600" /> In-House Stock (
-                {assignment.stockLocation || "Main Warehouse"})
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Boxes className="h-3 w-3 text-emerald-600" /> Live Stock (
+                {assignment.stockLocation || "Main Yard"})
               </span>
             ) : assignment.isAssigned ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
-                <Building2 className="h-3 w-3 text-emerald-600" /> Vendor: {assignment.vendorName}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-800 border border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+                <Building2 className="h-3 w-3 text-cyan-600" /> Vendor: {assignment.vendorName}
               </span>
             ) : null}
           </div>
@@ -263,27 +263,27 @@ function QuoteDetailPage() {
                     "font-medium shadow-xs",
                     assignment.isAssigned
                       ? assignment.fulfilmentType === "in_stock"
-                        ? "border-blue-300 text-blue-700 bg-blue-50/60 hover:bg-blue-100 dark:border-blue-700/60 dark:text-blue-300"
-                        : "border-emerald-300 text-emerald-700 bg-emerald-50/60 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300"
+                        ? "border-emerald-300 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300"
+                        : "border-cyan-300 text-cyan-800 bg-cyan-50/60 hover:bg-cyan-100 dark:border-cyan-700/60 dark:text-cyan-300"
                       : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300",
                   )}
                   onClick={() => setAssignVendorOpen(true)}
-                  title="Assign order fulfilment to In-House Stock or Outsource to Vendor"
+                  title="Assign order fulfilment to Live Stock on-hand or Outsource to Vendor"
                 >
                   {assignment.fulfilmentType === "in_stock" ? (
                     <>
-                      <PackageCheck className="mr-1.5 h-4 w-4 text-blue-600" />
-                      In-House Stock
+                      <Boxes className="mr-1.5 h-4 w-4 text-emerald-600" />
+                      Live Stock (Yard)
                     </>
                   ) : assignment.isAssigned ? (
                     <>
-                      <Building2 className="mr-1.5 h-4 w-4 text-emerald-600" />
+                      <Building2 className="mr-1.5 h-4 w-4 text-cyan-600" />
                       {assignment.vendorName}
                     </>
                   ) : (
                     <>
-                      <Boxes className="mr-1.5 h-4 w-4 text-slate-600" />
-                      Assign Stock / Vendor
+                      <Boxes className="mr-1.5 h-4 w-4 text-emerald-600" />
+                      Assign Live Stock / Vendor
                     </>
                   )}
                 </Button>
@@ -657,28 +657,28 @@ function QuoteDetailPage() {
                     )}
                   </div>
                 ) : assignment.fulfilmentType === "in_stock" ? (
-                  <div className="rounded-md bg-blue-50/80 border border-blue-200/80 p-2.5 text-xs text-blue-900 dark:bg-blue-950/20 dark:border-blue-900/40">
-                    <p className="font-semibold flex items-center gap-1.5 text-blue-950 dark:text-blue-100">
-                      <PackageCheck className="h-4 w-4 text-blue-600" /> Fulfilled from In-House
-                      Stock
+                  <div className="rounded-md bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-xs text-emerald-950 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                    <p className="font-semibold flex items-center gap-1.5 text-emerald-950 dark:text-emerald-100">
+                      <Boxes className="h-4 w-4 text-emerald-600" /> Fulfilled from Live Stock
+                      (In-House Yard)
                     </p>
-                    <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1">
-                      Godown:{" "}
+                    <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-1">
+                      Godown / Yard:{" "}
                       <span className="font-medium">
-                        {assignment.stockLocation || "Main Warehouse / Yard Stock"}
+                        {assignment.stockLocation || "Main Yard / Slab Storage"}
                       </span>
                     </p>
                   </div>
                 ) : assignment.isAssigned ? (
-                  <div className="rounded-md bg-emerald-50/80 border border-emerald-200/80 p-2.5 text-xs text-emerald-900 dark:bg-emerald-950/20 dark:border-emerald-900/40">
-                    <p className="font-semibold flex items-center gap-1.5 text-emerald-950 dark:text-emerald-100">
-                      <Building2 className="h-4 w-4 text-emerald-600" /> Vendor Assigned
+                  <div className="rounded-md bg-cyan-50/80 border border-cyan-200/80 p-2.5 text-xs text-cyan-950 dark:bg-cyan-950/20 dark:border-cyan-900/40">
+                    <p className="font-semibold flex items-center gap-1.5 text-cyan-950 dark:text-cyan-100">
+                      <Building2 className="h-4 w-4 text-cyan-600" /> Vendor Assigned
                     </p>
-                    <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5 font-medium">
+                    <p className="text-[11px] text-cyan-800 dark:text-cyan-300 mt-0.5 font-medium">
                       {assignment.vendorName}
                     </p>
                     {assignment.promisedDeliveryDate && (
-                      <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">
+                      <p className="text-[10px] text-cyan-700 dark:text-cyan-400 mt-0.5">
                         Promised Delivery: {assignment.promisedDeliveryDate.slice(0, 10)}
                       </p>
                     )}
@@ -690,7 +690,8 @@ function QuoteDetailPage() {
                     className="w-full text-xs border-dashed text-slate-700 hover:text-slate-900 hover:bg-slate-50 justify-start"
                     onClick={() => setAssignVendorOpen(true)}
                   >
-                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-slate-500" />+ Assign Stock or Vendor
+                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />+ Assign Live Stock or
+                    Vendor
                   </Button>
                 )}
               </div>

@@ -14,6 +14,7 @@ import {
   Share2,
   FolderOpen,
   History,
+  ShieldAlert,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
@@ -23,6 +24,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EntityInsightPanel } from "@/components/insights/EntityInsightPanel";
 import { GuidedNextStep } from "@/components/guided-workflow/GuidedNextStep";
+import { RecordWriteOffDialog } from "@/components/write-offs/RecordWriteOffDialog";
 import { LoadingBlock, ErrorBlock } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
@@ -77,6 +79,7 @@ function InvoiceDetailPage() {
   const nav = useNavigate();
   useDetailHotkeys({ onBack: () => nav({ to: "/invoices" }) });
   const [payOpen, setPayOpen] = useState(false);
+  const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
 
   const inv = useQuery({
@@ -178,6 +181,15 @@ function InvoiceDetailPage() {
                 </Button>
                 <Button size="sm" onClick={() => setPayOpen(true)} disabled={balance <= 0}>
                   <Plus className="mr-2 h-4 w-4" /> Record payment
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-900/60 dark:text-red-300"
+                  onClick={() => setWriteOffOpen(true)}
+                  disabled={balance <= 0}
+                >
+                  <ShieldAlert className="mr-1.5 h-4 w-4" /> Write-off
                 </Button>
                 <DocumentToolbar entity="invoice" entityId={invoiceId} />
                 <Button
@@ -444,6 +456,16 @@ function InvoiceDetailPage() {
         onOpenChange={setPayOpen}
         invoiceId={invoiceId}
         maxAmount={balance}
+      />
+
+      <RecordWriteOffDialog
+        open={writeOffOpen}
+        onOpenChange={setWriteOffOpen}
+        customerId={invoice.customer_id}
+        customerName={invoice.customer?.name}
+        invoiceId={invoice.id}
+        invoiceNo={invoice.invoice_no}
+        defaultAmount={balance > 0 ? balance : undefined}
       />
 
       <ConfirmDialog

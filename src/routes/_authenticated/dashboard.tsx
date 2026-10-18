@@ -85,6 +85,7 @@ import { useVendorDeliveryPrompts } from "@/lib/vendors/delivery-prompts";
 import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesPromptCard";
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
+import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -233,6 +234,9 @@ function DashboardPage() {
 
                 {/* Executive Daily Money Flow & Transaction Radar */}
                 <DailyMoneyFlowCard />
+
+                {/* SuperAdmin Write-Offs & Concessions Audit Radar */}
+                <SuperAdminWriteOffsCard />
 
                 <BusinessHealthGrid kpis={kpisQ.data} />
 
@@ -1807,6 +1811,10 @@ function localizeInsightAction(label: string, t: TFunction): string {
   if (label.startsWith("Assign vendor · ")) {
     const name = label.replace(/^Assign vendor · /, "");
     return `${t("insights.actionAssignVendor", "Assign vendor")} · ${name}`;
+  }
+  if (label.startsWith("Assign Live Stock / Vendor · ")) {
+    const name = label.replace(/^Assign Live Stock \/ Vendor · /, "");
+    return `Assign Live Stock / Vendor · ${name}`;
   }
   return label;
 }

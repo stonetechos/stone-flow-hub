@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Wallet } from "lucide-react";
+import { ArrowLeft, Wallet, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toUserMessage } from "@/lib/errors";
-import { getVendor } from "@/lib/vendors/api";
+import { getVendor, getVendorPhone, getVendorContactName } from "@/lib/vendors/api";
 import {
   listVendorLedger,
   routeForLedgerRow,
@@ -24,6 +25,11 @@ import {
 } from "@/lib/vendors/ledger";
 import { formatInr } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
+import { ShareStatementDialog } from "@/components/statements/ShareStatementDialog";
+import {
+  getCurrentStatementTimestamp,
+  type AccountingStatementData,
+} from "@/lib/statements/accounting-statement";
 
 export const Route = createFileRoute("/_authenticated/vendors/$vendorId/ledger")({
   ssr: false,
@@ -32,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/vendors/$vendorId/ledger")
 
 function VendorLedgerPage() {
   const { vendorId } = Route.useParams();
+  const [statementOpen, setStatementOpen] = useState(false);
 
   const vendorQ = useQuery({
     queryKey: qk.vendors.byId(vendorId),
@@ -44,6 +51,35 @@ function VendorLedgerPage() {
   });
 
   const summary = useMemo(() => summariseLedger(ledgerQ.data ?? []), [ledgerQ.data]);
+
+  const vendorPhone = getVendorPhone(vendorQ.data);
+  const vendorContact = getVendorContactName(vendorQ.data);
+
+  const statementData: AccountingStatementData = {
+    party: {
+      partyType: "vendor",
+      id: vendorId,
+      name: vendorQ.data?.company_name || "Vendor",
+      code: vendorQ.data?.vendor_code,
+      phone: vendorPhone,
+      whatsapp: vendorPhone,
+      contactPerson: vendorContact,
+      city: vendorQ.data?.city,
+    },
+    asOfTimestamp: getCurrentStatementTimestamp(),
+    totalDebit: summary.totalDebit,
+    totalCredit: summary.totalCredit,
+    balance: summary.outstanding,
+    transactions: (ledgerQ.data ?? []).map((r) => ({
+      date: r.entry_date,
+      type: sourceLabel(r.source_type),
+      refNo: r.ref_no || "—",
+      description: r.description,
+      debit: r.debit,
+      credit: r.credit,
+      runningBalance: r.running_balance,
+    })),
+  };
 
   return (
     <div>
@@ -59,6 +95,18 @@ function VendorLedgerPage() {
       <PageHeader
         title={vendorQ.data ? `${vendorQ.data.company_name} · Ledger` : "Vendor Ledger"}
         subtitle="Every commitment, receipt, and payment posted to this vendor, in chronological order."
+        actions={
+          vendorQ.data ? (
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs font-semibold"
+              onClick={() => setStatementOpen(true)}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Share Statement (WhatsApp)
+            </Button>
+          ) : undefined
+        }
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
@@ -132,6 +180,12 @@ function VendorLedgerPage() {
           </Table>
         </Card>
       )}
+
+      <ShareStatementDialog
+        open={statementOpen}
+        onOpenChange={setStatementOpen}
+        data={statementData}
+      />
     </div>
   );
 }

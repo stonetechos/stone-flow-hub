@@ -8,6 +8,8 @@ import {
   type SalesOrderStatus,
 } from "./schema";
 
+import { parseItemFulfilment } from "./vendor-assignment";
+
 export type SalesOrderRow = DbTable<"sales_orders">;
 export type SalesOrderListItem = SalesOrderRow & {
   customer: {
@@ -23,11 +25,139 @@ export type SalesOrderListItem = SalesOrderRow & {
     quote_no: string;
     status: DbTable<"quotes">["status"];
     enquiry_id: string | null;
+    workflow_state?: unknown;
   } | null;
+  items?: Array<{ id: string; fulfilment?: string | null; product_name?: string | null }>;
+  dispatches?: Array<{
+    id: string;
+    status?: string | null;
+    dispatch_no?: string | null;
+    delivered_by?: string | null;
+  }>;
 };
 
 const SELECT =
-  "*, customer:customers!sales_orders_customer_id_fkey(id,name,customer_code,primary_phone,whatsapp), project:projects!sales_orders_project_id_fkey(id,name,project_code), quote:quotes!sales_orders_quote_id_fkey(id,quote_no,status,enquiry_id)";
+  "*, customer:customers!sales_orders_customer_id_fkey(id,name,customer_code,primary_phone,whatsapp), project:projects!sales_orders_project_id_fkey(id,name,project_code), quote:quotes!sales_orders_quote_id_fkey(id,quote_no,status,enquiry_id,workflow_state), items:sales_order_items(id,fulfilment,product_name), dispatches:dispatches!dispatches_sales_order_id_fkey(id,status,dispatch_no,delivered_by)";
+
+export function resolveSalesOrderFulfilment(so: {
+  status?: string | null;
+  notes?: string | null;
+  quote?: { workflow_state?: unknown } | null;
+  items?: Array<{ fulfilment?: string | null }>;
+  dispatches?: Array<{ status?: string | null; delivered_at?: string | null }>;
+}): {
+  type: "delivered" | "live_stock" | "stock_lifted" | "vendor" | "unassigned";
+  label: string;
+  badgeClass: string;
+} {
+  const st = (so.status || "").toLowerCase();
+  const hasDelivered =
+    st === "delivered" ||
+    st === "completed" ||
+    (so.dispatches ?? []).some(
+      (d) => (d.status || "").toLowerCase() === "delivered" || Boolean(d.delivered_at),
+    );
+
+  if (hasDelivered) {
+    return {
+      type: "delivered",
+      label: "Delivered to Site",
+      badgeClass:
+        "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300",
+    };
+  }
+
+  const items = so.items ?? [];
+  let liveStockCount = 0;
+  let stockLiftedCount = 0;
+  let vendorCount = 0;
+  let firstVendorName = "";
+
+  for (const it of items) {
+    const f = parseItemFulfilment(it.fulfilment);
+    if (f.mode === "live_stock") liveStockCount++;
+    else if (f.mode === "stock_lifted") stockLiftedCount++;
+    else if (f.mode === "vendor") {
+      vendorCount++;
+      if (!firstVendorName && f.vendorAssignment?.vendor_name) {
+        firstVendorName = f.vendorAssignment.vendor_name;
+      }
+    }
+  }
+
+  if (liveStockCount > 0 && vendorCount === 0) {
+    return {
+      type: "live_stock",
+      label: "Live Stock (In-House Yard)",
+      badgeClass:
+        "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300",
+    };
+  }
+
+  if (stockLiftedCount > 0 && vendorCount === 0) {
+    return {
+      type: "stock_lifted",
+      label: "Material Lifted from Stock",
+      badgeClass: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300",
+    };
+  }
+
+  if (vendorCount > 0) {
+    return {
+      type: "vendor",
+      label: firstVendorName ? `Vendor: ${firstVendorName}` : "Vendor Assigned",
+      badgeClass: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300",
+    };
+  }
+
+  // Check notes or quote workflow_state
+  const qWf = (so.quote?.workflow_state as Record<string, unknown> | null) ?? {};
+  if (
+    qWf.fulfilment_type === "in_stock" ||
+    qWf.assigned_vendor_id === "in_house_stock" ||
+    (so.notes || "").toLowerCase().includes("live stock")
+  ) {
+    return {
+      type: "live_stock",
+      label: "Live Stock (In-House Yard)",
+      badgeClass:
+        "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300",
+    };
+  }
+
+  if (
+    qWf.fulfilment_type === "stock_lifted" ||
+    qWf.assigned_vendor_id === "stock_lifted" ||
+    (so.notes || "").toLowerCase().includes("stock lifted")
+  ) {
+    return {
+      type: "stock_lifted",
+      label: "Material Lifted from Stock",
+      badgeClass: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300",
+    };
+  }
+
+  const hasInTransit = (so.dispatches ?? []).some(
+    (d) =>
+      (d.status || "").toLowerCase() === "dispatched" ||
+      (d.status || "").toLowerCase() === "in_transit",
+  );
+  if (hasInTransit) {
+    return {
+      type: "delivered",
+      label: "Dispatched / In Transit",
+      badgeClass:
+        "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300",
+    };
+  }
+
+  return {
+    type: "unassigned",
+    label: "Fulfilment Pending",
+    badgeClass:
+      "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300",
+  };
+}
 
 export async function listSalesOrders(query = "", status = ""): Promise<SalesOrderListItem[]> {
   let q = getDb()

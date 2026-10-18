@@ -1,12 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Calendar, MessageSquare } from "lucide-react";
+import {
+  Plus,
+  ShoppingCart,
+  Calendar,
+  MessageSquare,
+  Boxes,
+  PackageCheck,
+  Truck,
+  Factory,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { OrderTrackingWhatsappDialog } from "@/components/orders/OrderTrackingWhatsappDialog";
 import {
@@ -35,7 +46,12 @@ import { DensityMenu } from "@/components/data/DensityMenu";
 import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { deleteSalesOrder, listSalesOrders, type SalesOrderListItem } from "@/lib/sales-orders/api";
+import {
+  deleteSalesOrder,
+  listSalesOrders,
+  resolveSalesOrderFulfilment,
+  type SalesOrderListItem,
+} from "@/lib/sales-orders/api";
 import { SALES_ORDER_STATUSES } from "@/lib/sales-orders/schema";
 import { invalidateSalesOrder } from "@/lib/query-invalidation";
 
@@ -53,6 +69,7 @@ function SalesOrdersPage() {
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [status, setStatus] = useState<string>(search.status ?? "");
+  const [fulfilmentFilter, setFulfilmentFilter] = useState<string>("all");
   const [toDelete, setToDelete] = useState<SalesOrderListItem | null>(null);
   const [trackingTarget, setTrackingTarget] = useState<SalesOrderListItem | null>(null);
   const [page, setPage] = useState(1);
@@ -67,6 +84,7 @@ function SalesOrdersPage() {
       { key: "quote", label: "Quote" },
       { key: "date", label: "Order date" },
       { key: "deliveryDate", label: "Promised Delivery" },
+      { key: "fulfilment", label: "Fulfilment Source" },
       { key: "status", label: "Status" },
     ],
     [],
@@ -76,7 +94,7 @@ function SalesOrdersPage() {
     queryKey: qk.salesOrders.list(dq, status),
     queryFn: () => listSalesOrders(dq, status),
   });
-  useEffect(() => setPage(1), [dq, status]);
+  useEffect(() => setPage(1), [dq, status, fulfilmentFilter]);
 
   const del = useMutation({
     mutationFn: (id: string) => deleteSalesOrder(id),
@@ -88,7 +106,14 @@ function SalesOrdersPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
-  const rows = query.data ?? [];
+  const rawRows = query.data ?? [];
+  const rows = useMemo(() => {
+    if (fulfilmentFilter === "all") return rawRows;
+    return rawRows.filter((r) => {
+      const f = resolveSalesOrderFulfilment(r);
+      return f.type === fulfilmentFilter;
+    });
+  }, [rawRows, fulfilmentFilter]);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   return (
@@ -104,19 +129,35 @@ function SalesOrdersPage() {
         onSearchChange={setQ}
         searchPlaceholder="Search by SO no…"
         primaryFilter={
-          <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 w-44 text-sm">
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              {SALES_ORDER_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">
-                  {s.replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
+              <SelectTrigger className="h-8 w-36 text-sm">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {SALES_ORDER_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="capitalize">
+                    {s.replace(/_/g, " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={fulfilmentFilter} onValueChange={setFulfilmentFilter}>
+              <SelectTrigger className="h-8 w-44 text-sm">
+                <SelectValue placeholder="All Fulfilment" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Fulfilment</SelectItem>
+                <SelectItem value="live_stock">Live Stock (Yard)</SelectItem>
+                <SelectItem value="stock_lifted">Lifted from Stock</SelectItem>
+                <SelectItem value="vendor">Vendor Assigned</SelectItem>
+                <SelectItem value="delivered">Delivered to Site</SelectItem>
+                <SelectItem value="unassigned">Fulfilment Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         }
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
@@ -169,6 +210,7 @@ function SalesOrdersPage() {
                 {!isHidden("deliveryDate") && (
                   <TableHead className="w-40">Promised Delivery</TableHead>
                 )}
+                {!isHidden("fulfilment") && <TableHead>Fulfilment Source</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
                 <TableHead className="w-12" />
               </TableRow>
@@ -208,6 +250,35 @@ function SalesOrdersPage() {
                       ) : (
                         <span className="text-muted-foreground italic">—</span>
                       )}
+                    </TableCell>
+                  )}
+                  {!isHidden("fulfilment") && (
+                    <TableCell>
+                      {(() => {
+                        const f = resolveSalesOrderFulfilment(r);
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs font-medium border whitespace-nowrap gap-1.5",
+                              f.badgeClass,
+                            )}
+                          >
+                            {f.type === "delivered" ? (
+                              <Truck className="h-3 w-3" />
+                            ) : f.type === "live_stock" ? (
+                              <Boxes className="h-3 w-3" />
+                            ) : f.type === "stock_lifted" ? (
+                              <PackageCheck className="h-3 w-3" />
+                            ) : f.type === "vendor" ? (
+                              <Factory className="h-3 w-3" />
+                            ) : (
+                              <Boxes className="h-3 w-3" />
+                            )}
+                            <span>{f.label}</span>
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                   )}
                   {!isHidden("status") && (

@@ -11,7 +11,9 @@ import {
   Landmark,
   Smartphone,
   AlertCircle,
+  ShieldAlert,
 } from "lucide-react";
+import { RecordWriteOffDialog } from "@/components/write-offs/RecordWriteOffDialog";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
@@ -98,6 +100,7 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 function UnifiedPaymentsPage() {
   const { t } = useTranslation();
   const search = Route.useSearch();
+  const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"customer" | "vendor" | "agency">(
     (search.tab as "customer" | "vendor" | "agency") || "customer",
   );
@@ -130,6 +133,15 @@ function UnifiedPaymentsPage() {
                   <Plus className="mr-1.5 h-3.5 w-3.5" />
                   {t("payments.recordVendor", "Record Vendor Payment")}
                 </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-900/60 dark:text-red-300"
+                onClick={() => setWriteOffOpen(true)}
+              >
+                <ShieldAlert className="mr-1.5 h-3.5 w-3.5" />
+                Record Write-Off
               </Button>
             </div>
           }
@@ -167,6 +179,8 @@ function UnifiedPaymentsPage() {
             <AgencyPaymentsTab />
           </TabsContent>
         </Tabs>
+
+        <RecordWriteOffDialog open={writeOffOpen} onOpenChange={setWriteOffOpen} />
       </div>
     </AccountingGuard>
   );

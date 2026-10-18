@@ -181,12 +181,13 @@ export async function getCustomerLedger(customerId: string): Promise<LedgerEntry
   if (error) throw new AppError(mapDbError(error));
   const ledgerEntries = (data ?? []) as LedgerEntry[];
 
-  if (ledgerEntries.some((r) => r.entry_type === "delivery_challan")) {
-    return ledgerEntries;
-  }
+  // Defensively augment with any active credit_notes not in customer_ledger view
+  const existingCnIds = new Set(
+    ledgerEntries.filter((r) => r.entry_type === "credit_note").map((r) => r.ref_id),
+  );
 
-  // Augment with uninvoiced delivery challans
-  const [dispRes, invRes, quoteRes] = await Promise.all([
+  // Augment with uninvoiced delivery challans & missing credit notes
+  const [dispRes, invRes, quoteRes, cnRes] = await Promise.all([
     supabase
       .from("dispatches")
       .select(
@@ -204,7 +205,25 @@ export async function getCustomerLedger(customerId: string): Promise<LedgerEntry
       .select("id, quote_no, total, status, customer_id")
       .eq("customer_id", customerId)
       .neq("status", "rejected"),
+    supabase
+      .from("credit_notes")
+      .select("id, cn_no, amount, issued_at, status, customer_id")
+      .eq("customer_id", customerId)
+      .neq("status", "cancelled"),
   ]);
+
+  const missingCreditNotes: LedgerEntry[] = (cnRes.data ?? [])
+    .filter((cn) => !existingCnIds.has(cn.id))
+    .map((cn) => ({
+      customer_id: cn.customer_id,
+      entry_date: cn.issued_at || new Date().toISOString().slice(0, 10),
+      entry_type: "credit_note" as const,
+      ref_id: cn.id,
+      ref_no: cn.cn_no || "CN-RECORD",
+      debit: 0,
+      credit: Number(cn.amount) || 0,
+      status: cn.status,
+    }));
 
   const challanEntries = resolveUninvoicedDeliveryChallans({
     dispatches: (dispRes.data ?? []) as unknown as RawDispatchForLedger[],
@@ -213,9 +232,9 @@ export async function getCustomerLedger(customerId: string): Promise<LedgerEntry
     targetCustomerId: customerId,
   });
 
-  if (challanEntries.length === 0) return ledgerEntries;
+  if (challanEntries.length === 0 && missingCreditNotes.length === 0) return ledgerEntries;
 
-  const combined = [...ledgerEntries, ...challanEntries];
+  const combined = [...ledgerEntries, ...missingCreditNotes, ...challanEntries];
   combined.sort((a, b) => (a.entry_date || "").localeCompare(b.entry_date || ""));
   return combined;
 }
@@ -255,7 +274,7 @@ export interface CustomerLedgerOverviewItem {
 export async function listCustomerLedgerSummaries(): Promise<
   Map<string, CustomerLedgerOverviewItem>
 > {
-  const [ledgerRes, dispRes, invRes, quoteRes] = await Promise.all([
+  const [ledgerRes, dispRes, invRes, quoteRes, cnRes] = await Promise.all([
     supabase.from("customer_ledger").select("*").order("entry_date", { ascending: true }),
     supabase
       .from("dispatches")
@@ -271,13 +290,21 @@ export async function listCustomerLedgerSummaries(): Promise<
       .from("quotes")
       .select("id, quote_no, total, status, customer_id")
       .neq("status", "rejected"),
+    supabase
+      .from("credit_notes")
+      .select("id, amount, customer_id, issued_at, status")
+      .neq("status", "cancelled"),
   ]);
 
   if (ledgerRes.error) throw new AppError(mapDbError(ledgerRes.error));
   const data = ledgerRes.data ?? [];
   const map = new Map<string, CustomerLedgerOverviewItem>();
 
+  const existingCnIds = new Set<string>();
   for (const r of data) {
+    if (r.entry_type === "credit_note" && r.ref_id) {
+      existingCnIds.add(r.ref_id);
+    }
     if (!r.customer_id) continue;
     let s = map.get(r.customer_id);
     if (!s) {
@@ -289,6 +316,23 @@ export async function listCustomerLedgerSummaries(): Promise<
     s.balance = s.totalDebit - s.totalCredit;
     s.entryCount += 1;
     s.lastEntryAt = r.entry_date;
+  }
+
+  // Augment with missing credit_notes if not already in customer_ledger view
+  for (const cn of cnRes.data ?? []) {
+    if (!cn.customer_id || existingCnIds.has(cn.id)) continue;
+    let s = map.get(cn.customer_id);
+    if (!s) {
+      s = { totalDebit: 0, totalCredit: 0, balance: 0, entryCount: 0, lastEntryAt: null };
+      map.set(cn.customer_id, s);
+    }
+    const amt = Number(cn.amount) || 0;
+    s.totalCredit += amt;
+    s.balance = s.totalDebit - s.totalCredit;
+    s.entryCount += 1;
+    if (!s.lastEntryAt || (cn.issued_at && cn.issued_at > s.lastEntryAt)) {
+      s.lastEntryAt = cn.issued_at;
+    }
   }
 
   // If customer_ledger already has delivery_challan, we're done

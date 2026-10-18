@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Phone,
   MessageSquare,
+  Boxes,
+  PackageCheck,
 } from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershipDialog";
@@ -35,11 +37,20 @@ import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity
 import { SalesOrderInstallationPanel } from "@/components/installation/SalesOrderInstallationPanel";
 import { SalesOrderDeliveryPanel } from "@/components/dispatch/SalesOrderDeliveryPanel";
 import { AssignVendorModal } from "@/components/sales-orders/AssignVendorModal";
-import { parseItemVendorAssignment } from "@/lib/sales-orders/vendor-assignment";
+import {
+  parseItemVendorAssignment,
+  parseItemFulfilment,
+  serializeLiveStockAssignment,
+} from "@/lib/sales-orders/vendor-assignment";
 
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getSalesOrder, listSalesOrderItems, type SalesOrderItemRow } from "@/lib/sales-orders/api";
+import {
+  getSalesOrder,
+  listSalesOrderItems,
+  updateSalesOrderItem,
+  type SalesOrderItemRow,
+} from "@/lib/sales-orders/api";
 import { listDispatchesBySalesOrder } from "@/lib/dispatch/api";
 import { convertQuoteToInvoice } from "@/lib/quotes/api";
 import { invalidateInvoice } from "@/lib/query-invalidation";
@@ -81,12 +92,64 @@ function SalesOrderDetailPage() {
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const fulfillAllFromLiveStockMut = useMutation({
+    mutationFn: async () => {
+      const allItems = itemsQuery.data ?? [];
+      const payload = serializeLiveStockAssignment({
+        location: "Main Yard / Slab Storage",
+        notes: "Fulfilled from on-hand live stock",
+      });
+      for (const it of allItems) {
+        await updateSalesOrderItem(it.id, { fulfilment: payload });
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.salesOrders.items(id) });
+      qc.invalidateQueries({ queryKey: qk.salesOrders.byId(id) });
+      qc.invalidateQueries({ queryKey: ["operations.order-vendor-assignment"] });
+      qc.invalidateQueries({ queryKey: ["insights"] });
+      toast.success("All items marked as Fulfilled from Live Stock (In-House Yard)");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   if (query.isLoading) return <LoadingBlock />;
   if (query.error)
     return <ErrorBlock message={toUserMessage(query.error)} onRetry={() => query.refetch()} />;
   if (!query.data) return <ErrorBlock message="Sales order not found." />;
   const r = query.data;
   const quoteAccepted = r.quote?.status === "accepted";
+
+  const dispatches = dispatchesQuery.data ?? [];
+  const items = itemsQuery.data ?? [];
+
+  const isDelivered =
+    (r.status as string) === "delivered" ||
+    (r.status as string) === "completed" ||
+    dispatches.some(
+      (d) => (d.status || "").toLowerCase() === "delivered" || Boolean(d.delivered_by),
+    );
+
+  let liveStockCount = 0;
+  let stockLiftedCount = 0;
+  let vendorCount = 0;
+  let assignedVendorName = "";
+
+  for (const it of items) {
+    const f = parseItemFulfilment(it.fulfilment);
+    if (f.mode === "live_stock") liveStockCount++;
+    else if (f.mode === "stock_lifted") stockLiftedCount++;
+    else if (f.mode === "vendor") {
+      vendorCount++;
+      if (!assignedVendorName && f.vendorAssignment?.vendor_name) {
+        assignedVendorName = f.vendorAssignment.vendor_name;
+      }
+    }
+  }
+
+  const allItemsLiveStock = items.length > 0 && liveStockCount === items.length;
+  const isStockLifted = stockLiftedCount > 0 && vendorCount === 0;
+  const hasVendorAssigned = vendorCount > 0;
 
   return (
     <div>
@@ -97,7 +160,52 @@ function SalesOrderDetailPage() {
       </div>
       <PageHeader
         title={r.so_no}
-        subtitle={`Order date ${r.order_date}`}
+        subtitle={
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <span className="text-muted-foreground text-xs">Order date {r.order_date}</span>
+            {isDelivered ? (
+              <Badge
+                variant="outline"
+                className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold gap-1"
+              >
+                <Truck className="h-3 w-3 text-emerald-600" />
+                Delivered to Site
+              </Badge>
+            ) : allItemsLiveStock ? (
+              <Badge
+                variant="outline"
+                className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold gap-1"
+              >
+                <Boxes className="h-3 w-3 text-emerald-600" />
+                Live Stock (In-House Yard)
+              </Badge>
+            ) : isStockLifted ? (
+              <Badge
+                variant="outline"
+                className="bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 text-xs font-semibold gap-1"
+              >
+                <PackageCheck className="h-3 w-3 text-blue-600" />
+                Material Lifted from Live Stock
+              </Badge>
+            ) : hasVendorAssigned ? (
+              <Badge
+                variant="outline"
+                className="bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 text-xs font-semibold gap-1"
+              >
+                <Factory className="h-3 w-3 text-cyan-600" />
+                Vendor: {assignedVendorName}
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-xs font-semibold gap-1"
+              >
+                <Boxes className="h-3 w-3 text-amber-600" />
+                Fulfilment Pending
+              </Badge>
+            )}
+          </div>
+        }
         actions={
           <DetailActionBar
             pin={{ entityType: "sales_order", entityId: id, label: r.so_no }}
@@ -109,6 +217,19 @@ function SalesOrderDetailPage() {
                 >
                   <Pencil className="mr-2 h-4 w-4" /> Edit
                 </Button>
+                {!isDelivered && !allItemsLiveStock && items.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-emerald-500/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 font-semibold"
+                    onClick={() => fulfillAllFromLiveStockMut.mutate()}
+                    disabled={fulfillAllFromLiveStockMut.isPending}
+                    title="1-Click: Mark all items as fulfilled from Live Stock on-hand in yard"
+                  >
+                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+                    Fulfil from Live Stock
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -295,13 +416,37 @@ function SalesOrderDetailPage() {
           })()}
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-semibold">
-                Line items & Manufacturer Assignments
-              </CardTitle>
-              <span className="text-xs text-muted-foreground">
-                Attach manufacturers to track product-level fulfillment
-              </span>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <span>Line items &amp; Fulfilment Source</span>
+                  {allItemsLiveStock && (
+                    <Badge
+                      variant="outline"
+                      className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] gap-1 font-semibold"
+                    >
+                      <Boxes className="h-3 w-3 text-emerald-600" />
+                      Fulfilled from Live Stock
+                    </Badge>
+                  )}
+                </CardTitle>
+                <span className="text-xs text-muted-foreground">
+                  Designate Live Stock (In-House Yard) or attach external manufacturer
+                </span>
+              </div>
+              {!isDelivered && !allItemsLiveStock && (itemsQuery.data ?? []).length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-medium"
+                  onClick={() => fulfillAllFromLiveStockMut.mutate()}
+                  disabled={fulfillAllFromLiveStockMut.isPending}
+                  title="1-Click: Mark all items as fulfilled from Live Stock on-hand in yard"
+                >
+                  <Boxes className="h-3.5 w-3.5 text-emerald-600" />
+                  Fulfil All from Live Stock
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="p-0">
               {itemsQuery.isLoading ? (
@@ -317,7 +462,9 @@ function SalesOrderDetailPage() {
                       <tr>
                         <th className="px-3 py-2 text-left">#</th>
                         <th className="px-3 py-2 text-left">Item</th>
-                        <th className="px-3 py-2 text-left min-w-[200px]">Manufacturer / Vendor</th>
+                        <th className="px-3 py-2 text-left min-w-[220px]">
+                          Fulfilment Source / Vendor
+                        </th>
                         <th className="px-3 py-2 text-right">Qty</th>
                         <th className="px-3 py-2 text-right">Rate</th>
                         <th className="px-3 py-2 text-right">Disc %</th>
@@ -327,7 +474,8 @@ function SalesOrderDetailPage() {
                     </thead>
                     <tbody>
                       {(itemsQuery.data ?? []).map((it, idx) => {
-                        const vendorInfo = parseItemVendorAssignment(it.fulfilment);
+                        const fState = parseItemFulfilment(it.fulfilment);
+                        const vendorInfo = fState.vendorAssignment;
                         return (
                           <tr key={it.id} className="border-t hover:bg-muted/20">
                             <td className="px-3 py-2 align-top text-muted-foreground">{idx + 1}</td>
@@ -346,7 +494,69 @@ function SalesOrderDetailPage() {
                               </div>
                             </td>
                             <td className="px-3 py-2 align-top">
-                              {vendorInfo ? (
+                              {fState.mode === "live_stock" ? (
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="font-semibold text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                                      <Boxes className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                      Live Stock (In-House Yard)
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                                      onClick={() => {
+                                        setSelectedVendorItem(it);
+                                        setVendorModalOpen(true);
+                                      }}
+                                    >
+                                      Edit
+                                    </Button>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 mt-0.5">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] py-0 px-1.5 h-4 font-normal bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-300"
+                                    >
+                                      {fState.location || "Main Yard / Slab Storage"}
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] py-0 px-1.5 h-4 font-normal text-muted-foreground"
+                                    >
+                                      No Vendor Needed
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ) : fState.mode === "stock_lifted" ? (
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="font-semibold text-xs text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                                      <PackageCheck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                                      Lifted from Live Stock
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                                      onClick={() => {
+                                        setSelectedVendorItem(it);
+                                        setVendorModalOpen(true);
+                                      }}
+                                    >
+                                      Edit
+                                    </Button>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 mt-0.5">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] py-0 px-1.5 h-4 font-normal bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-300"
+                                    >
+                                      {fState.location || "Lifted from Yard"}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ) : fState.mode === "vendor" && vendorInfo ? (
                                 <div className="space-y-1">
                                   <div className="flex items-center justify-between gap-1">
                                     <span className="font-semibold text-xs text-foreground flex items-center gap-1">
@@ -412,18 +622,32 @@ function SalesOrderDetailPage() {
                                   </div>
                                 </div>
                               ) : (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-6 text-[11px] gap-1 border-dashed text-muted-foreground hover:text-foreground hover:border-primary/50"
-                                  onClick={() => {
-                                    setSelectedVendorItem(it);
-                                    setVendorModalOpen(true);
-                                  }}
-                                >
-                                  <Factory className="h-3 w-3" />
-                                  Attach Vendor
-                                </Button>
+                                <div className="inline-flex items-center gap-1.5">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-6 text-[11px] gap-1 text-emerald-700 bg-emerald-50/60 hover:bg-emerald-100 hover:text-emerald-800 border-emerald-300 cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedVendorItem(it);
+                                      setVendorModalOpen(true);
+                                    }}
+                                  >
+                                    <Boxes className="h-3 w-3 text-emerald-600" />
+                                    Live Stock
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-6 text-[11px] gap-1 text-cyan-700 bg-cyan-50/60 hover:bg-cyan-100 hover:text-cyan-800 border-cyan-300 cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedVendorItem(it);
+                                      setVendorModalOpen(true);
+                                    }}
+                                  >
+                                    <Factory className="h-3 w-3 text-cyan-600" />
+                                    Vendor
+                                  </Button>
+                                </div>
                               )}
                             </td>
                             <td className="px-3 py-2 text-right align-top">
