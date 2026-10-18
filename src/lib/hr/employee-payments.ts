@@ -10,8 +10,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { AppError, mapDbError } from "@/lib/errors";
-import { daysInMonth, rupees, type StructureLine } from "./payroll-engine";
-import { getPayrollSettings, type SalaryStructure, type SalaryStructureLine } from "./payroll-api";
+import { rupees } from "./payroll-engine";
+import type { SalaryStructure } from "./payroll-api";
 import {
   recordEmployeePaymentServerFn,
   cancelEmployeePaymentServerFn,
@@ -318,85 +318,94 @@ export async function listCompanySalaryBalances(
 async function computeLocalCompanySalaryBalances(
   payrollMonth: string,
 ): Promise<CompanySalaryMonthSummary> {
-  const [yearStr, monthNumStr] = (payrollMonth || currentMonthStr()).split("-");
-  const year = Number(yearStr) || new Date().getFullYear();
-  const month = Number(monthNumStr) || new Date().getMonth() + 1;
-  const calendarDays = daysInMonth(year, month);
-  const fromDate = `${year}-${String(month).padStart(2, "0")}-01`;
-  const toDate = `${year}-${String(month).padStart(2, "0")}-${String(calendarDays).padStart(2, "0")}`;
+  const pMonth = payrollMonth || currentMonthStr();
 
-  // 1. Fetch employees, active structures, lines, attendance, and intermediate payments
+  // 1. Fetch active employees, loans/advances, and active structures concurrently
   const [
     { data: employees, error: empErr },
+    { data: loanRows, error: loanErr },
     { data: structures, error: structErr },
-    settings,
-    payments,
-    { data: attendance, error: attErr },
   ] = await Promise.all([
     supabase
       .from("employees")
-      .select("id, full_name, employee_code, designation_id, department, phone, employment_status")
+      .select(
+        "id, full_name, employee_code, designation_id, department, phone, employment_status, salary_ctc",
+      )
       .eq("employment_status", "active")
       .order("full_name", { ascending: true }),
-    supabase.from("hr_salary_structures").select("*").eq("status", "active"),
-    getPayrollSettings(),
-    listEmployeePayments({ payrollMonth }),
+    supabase.from("hr_loans").select("*").order("created_at", { ascending: false }),
     supabase
-      .from("hr_attendance_days")
-      .select("employee_id, work_date, status")
-      .gte("work_date", fromDate)
-      .lte("work_date", toDate),
+      .from("hr_salary_structures")
+      .select("id, employee_id, effective_from, ctc_annual, status")
+      .eq("status", "active"),
   ]);
 
   if (empErr) throw new AppError(mapDbError(empErr));
+  if (loanErr) throw new AppError(mapDbError(loanErr));
   if (structErr) throw new AppError(mapDbError(structErr));
-  if (attErr) throw new AppError(mapDbError(attErr));
 
   const activeEmployees = employees ?? [];
 
   // Map active structures
   const structureByEmployee = new Map<string, SalaryStructure>();
-  for (const s of (structures ?? []) as SalaryStructure[]) {
+  for (const s of (structures ?? []) as unknown as SalaryStructure[]) {
     const existing = structureByEmployee.get(s.employee_id);
     if (!existing || s.effective_from > existing.effective_from) {
       structureByEmployee.set(s.employee_id, s);
     }
   }
 
-  // Fetch structure lines
-  const structureIds = [...structureByEmployee.values()].map((s) => s.id);
-  let structureLines: SalaryStructureLine[] = [];
-  if (structureIds.length > 0) {
-    const { data: linesData } = await supabase
-      .from("hr_salary_structure_lines")
-      .select("*")
-      .in("structure_id", structureIds)
-      .order("sort_order", { ascending: true });
-    structureLines = (linesData ?? []) as SalaryStructureLine[];
-  }
-
-  const linesByStructure = new Map<string, SalaryStructureLine[]>();
-  for (const l of structureLines) {
-    const arr = linesByStructure.get(l.structure_id) ?? [];
-    arr.push(l);
-    linesByStructure.set(l.structure_id, arr);
-  }
-
-  // Map loss of pay (LOP)
-  const lopByEmployee = new Map<string, number>();
-  for (const d of attendance ?? []) {
-    if (d.status === "absent") {
-      lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 1);
-    } else if (d.status === "half_day") {
-      lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 0.5);
+  // Parse loans / payments for this month
+  const paymentsList: EmployeePayment[] = [];
+  for (const l of (loanRows ?? []) as Array<{
+    id: string;
+    employee_id: string;
+    loan_type: string;
+    principal: number;
+    start_month?: string | null;
+    status: string;
+    reason?: string | null;
+    created_at: string;
+  }>) {
+    let meta: Record<string, unknown> = {};
+    if (l.reason && typeof l.reason === "string" && l.reason.startsWith("{")) {
+      try {
+        meta = JSON.parse(l.reason);
+      } catch {
+        meta = {};
+      }
     }
+
+    const rowMonth =
+      (meta.payroll_month as string) ||
+      (l.start_month ? l.start_month.slice(0, 7) : l.created_at.slice(0, 7));
+
+    if (rowMonth !== pMonth) continue;
+
+    const paymentType =
+      (meta.payment_type as EmployeePaymentType) || (l.loan_type === "loan" ? "loan" : "advance");
+
+    paymentsList.push({
+      id: l.id,
+      employee_id: l.employee_id,
+      payment_date: (meta.date as string) || l.created_at.slice(0, 10),
+      amount: Number(l.principal),
+      payment_type: paymentType,
+      payment_method: (meta.method as string) || "cash",
+      account_name: (meta.account as string) || "Cash",
+      reference_no: (meta.ref as string) || null,
+      payroll_month: rowMonth,
+      is_deducted_from_payroll: meta.deduct !== false,
+      status: l.status === "closed" ? "cancelled" : "paid",
+      notes: (meta.notes as string) || (!l.reason?.startsWith("{") ? l.reason : null) || null,
+      created_at: l.created_at,
+    });
   }
 
-  // Group payments by employee
   const paymentsByEmployee = new Map<string, EmployeePayment[]>();
   const byPaymentMethod: Record<string, number> = {};
 
-  for (const p of payments) {
+  for (const p of paymentsList) {
     if (p.status === "cancelled") continue;
     const arr = paymentsByEmployee.get(p.employee_id) ?? [];
     arr.push(p);
@@ -415,66 +424,23 @@ async function computeLocalCompanySalaryBalances(
 
   for (const emp of activeEmployees) {
     const structure = structureByEmployee.get(emp.id);
-    const lines = structure ? (linesByStructure.get(structure.id) ?? []) : [];
     const empPayments = paymentsByEmployee.get(emp.id) ?? [];
 
-    // Sum intermediate payments marked for salary deduction
     const intermediatePaid = empPayments
       .filter((p) => p.is_deducted_from_payroll && p.status === "paid")
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
     let baseGross = 0;
-    let estimatedNet = 0;
-    let earnedSalary = 0;
-    let statutoryDeductions = 0;
-
-    if (lines.length > 0) {
-      let gross = 0;
-      let pfWage = 0;
-      let esiWage = 0;
-      let structuredDeductions = 0;
-
-      const lopDays = lopByEmployee.get(emp.id) ?? 0;
-      const paidDays = Math.max(0, calendarDays - lopDays);
-      const factor = paidDays / calendarDays;
-
-      for (const l of lines) {
-        const amt = Number(l.monthly_amount);
-        if (l.kind === "earning") {
-          gross += amt;
-          if (l.pf_applicable) pfWage += amt;
-          if (l.esi_applicable) esiWage += amt;
-        } else {
-          structuredDeductions += amt;
-        }
-      }
-
-      baseGross = rupees(gross);
-      earnedSalary = rupees(gross * factor);
-
-      // Estimated PF / ESI / PT
-      const pfEmp = settings.pf_limit_to_ceiling
-        ? Math.min(pfWage, settings.pf_wage_ceiling) * (settings.pf_employee_pct / 100)
-        : pfWage * (settings.pf_employee_pct / 100);
-
-      const esiEmp =
-        gross <= settings.esi_wage_ceiling ? (esiWage * settings.esi_employee_pct) / 100 : 0;
-
-      const pt = gross >= 10000 ? 200 : gross >= 7500 ? 175 : 0;
-
-      statutoryDeductions = rupees(structuredDeductions + pfEmp + esiEmp + pt);
-      estimatedNet = rupees(earnedSalary - statutoryDeductions);
-    } else if (structure?.ctc_annual) {
-      // Structure without line items: fallback to standard monthly CTC
-      baseGross = rupees(Number(structure.ctc_annual) / 12);
-      earnedSalary = baseGross;
-      estimatedNet = baseGross;
-    } else {
-      // Default placeholder if structure has not been set yet
-      baseGross = 0;
-      earnedSalary = 0;
-      estimatedNet = 0;
+    if (emp.salary_ctc != null && Number(emp.salary_ctc) > 0) {
+      const rawCtc = Number(emp.salary_ctc);
+      baseGross = rawCtc > 100000 ? Math.round(rawCtc / 12) : Math.round(rawCtc);
+    } else if (structure?.ctc_annual != null && Number(structure.ctc_annual) > 0) {
+      baseGross = Math.round(Number(structure.ctc_annual) / 12);
     }
+
+    const estimatedNet = baseGross;
+    const earnedSalary = baseGross;
+    const statutoryDeductions = 0;
 
     const remainingDue = Math.max(0, estimatedNet - intermediatePaid);
     const advanceExcess = Math.max(0, intermediatePaid - estimatedNet);
@@ -502,12 +468,12 @@ async function computeLocalCompanySalaryBalances(
       employeeId: emp.id,
       employeeName: emp.full_name,
       employeeCode: emp.employee_code ?? null,
-      designation: null, // hydrated in view from designations table if needed
+      designation: null,
       department: emp.department ?? null,
       phone: emp.phone ?? null,
       baseGrossSalary: baseGross,
       estimatedNetSalary: estimatedNet,
-      attendanceLopDays: lopByEmployee.get(emp.id) ?? 0,
+      attendanceLopDays: 0,
       earnedSalary,
       statutoryDeductions,
       intermediatePaymentsCount: empPayments.length,
@@ -520,8 +486,8 @@ async function computeLocalCompanySalaryBalances(
   }
 
   return {
-    payrollMonth,
-    payrollMonthLabel: formatMonthLabel(payrollMonth),
+    payrollMonth: pMonth,
+    payrollMonthLabel: formatMonthLabel(pMonth),
     totalActiveEmployees: activeEmployees.length,
     totalMonthlySalaryLiability: rupees(totalLiability),
     totalIntermediatePaymentsPaid: rupees(totalIntermediate),

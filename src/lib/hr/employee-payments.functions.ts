@@ -31,49 +31,9 @@ export const recordEmployeePaymentServerFn = createServerFn({ method: "POST" })
     const resolvedAccount = data.account_name?.trim() || "Cash";
     const amountNum = Math.round(data.amount);
 
-    // 1. Try to insert into hr_employee_payments if table exists
-    let createdPaymentId: string | null = null;
-    let paymentRecord: Record<string, unknown> | null = null;
-
-    try {
-      const { data: inserted, error: payErr } = await (
-        supabaseAdmin.from("hr_employee_payments" as never) as unknown as {
-          insert: (p: unknown) => {
-            select: (c: string) => {
-              maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
-            };
-          };
-        }
-      )
-        .insert({
-          employee_id: data.employee_id,
-          payment_date: paymentDate,
-          amount: amountNum,
-          payment_type: data.payment_type,
-          payment_method: data.payment_method,
-          account_name: resolvedAccount,
-          reference_no: data.reference_no?.trim() || null,
-          payroll_month: payrollMonth,
-          is_deducted_from_payroll: isDeducted,
-          status: "paid",
-          notes: data.notes?.trim() || null,
-          created_by: uid,
-        })
-        .select("*")
-        .maybeSingle();
-
-      if (!payErr && inserted) {
-        createdPaymentId = (inserted as { id: string }).id;
-        paymentRecord = inserted as Record<string, unknown>;
-      }
-    } catch {
-      // hr_employee_payments table migration not present, fallback cleanly
-    }
-
-    // 2. Insert into hr_loans (native table) to guarantee persistence and payroll integration
+    // Save directly to hr_loans to guarantee persistence and payroll integration
     const loanReason = JSON.stringify({
       source: "hr_employee_payments",
-      payment_id: createdPaymentId,
       payment_type: data.payment_type,
       method: data.payment_method,
       account: resolvedAccount,
@@ -104,12 +64,11 @@ export const recordEmployeePaymentServerFn = createServerFn({ method: "POST" })
       .select("*")
       .single();
 
-    if (loanErr && !paymentRecord) {
+    if (loanErr) {
       throw new Error(`Failed to save payment: ${loanErr.message}`);
     }
 
-    const finalId =
-      createdPaymentId || (loanRow as { id: string } | null)?.id || `gen-${Date.now()}`;
+    const finalId = (loanRow as { id: string } | null)?.id || `gen-${Date.now()}`;
 
     return {
       id: finalId,
@@ -141,19 +100,6 @@ export const cancelEmployeePaymentServerFn = createServerFn({ method: "POST" })
       .update({ status: "closed", updated_at: new Date().toISOString() } as never)
       .eq("id" as never, data.id as never);
 
-    // Cancel in hr_employee_payments if table exists
-    try {
-      await (
-        supabaseAdmin.from("hr_employee_payments" as never) as unknown as {
-          update: (u: unknown) => { eq: (c: string, v: string) => Promise<unknown> };
-        }
-      )
-        .update({ status: "cancelled", updated_at: new Date().toISOString() })
-        .eq("id", data.id);
-    } catch {
-      // Ignore
-    }
-
     return { success: true };
   });
 
@@ -177,115 +123,74 @@ async function fetchPaymentsInternal(
     created_at: string;
     updated_at?: string;
   }> = [];
-  const seenIds = new Set<string>();
 
-  // 1. Try hr_employee_payments
-  try {
-    type DynamicQuery = {
-      select: (s: string) => DynamicQuery;
-      order: (c: string, o?: { ascending: boolean }) => DynamicQuery;
-      eq: (c: string, v: unknown) => DynamicQuery;
-      then: (
-        fn: (res: { data: unknown; error: unknown }) => void,
-      ) => Promise<{ data: unknown; error: unknown }>;
-    };
+  let lq = supabaseAdmin
+    .from("hr_loans" as never)
+    .select("*" as never)
+    .order("created_at" as never, { ascending: false });
 
-    let q = (supabaseAdmin.from("hr_employee_payments" as never) as unknown as DynamicQuery)
-      .select("*")
-      .order("payment_date", { ascending: false })
-      .order("created_at", { ascending: false });
-
-    if (filters.employeeId) q = q.eq("employee_id", filters.employeeId);
-    if (filters.payrollMonth) q = q.eq("payroll_month", filters.payrollMonth);
-    if (filters.status) q = q.eq("status", filters.status);
-
-    const { data: rows, error } = await q;
-    if (!error && Array.isArray(rows)) {
-      for (const row of rows) {
-        paymentsList.push(row as (typeof paymentsList)[0]);
-        seenIds.add((row as { id: string }).id);
-      }
-    }
-  } catch {
-    // Table doesn't exist yet, continue
+  if (filters.employeeId) {
+    lq = lq.eq("employee_id" as never, filters.employeeId as never);
   }
 
-  // 2. Query hr_loans using supabaseAdmin
-  try {
-    let lq = supabaseAdmin
-      .from("hr_loans" as never)
-      .select("*")
-      .order("created_at" as never, { ascending: false });
-
-    if (filters.employeeId) {
-      lq = lq.eq("employee_id" as never, filters.employeeId as never);
-    }
-
-    const { data: loanRows, error: loanErr } = await lq;
-    if (!loanErr && Array.isArray(loanRows)) {
-      for (const l of loanRows as Array<{
-        id: string;
-        employee_id: string;
-        loan_type: string;
-        principal: number;
-        start_month?: string | null;
-        status: string;
-        reason?: string | null;
-        created_at: string;
-        updated_at?: string;
-      }>) {
-        let meta: Record<string, unknown> = {};
-        if (l.reason && typeof l.reason === "string" && l.reason.startsWith("{")) {
-          try {
-            meta = JSON.parse(l.reason);
-          } catch {
-            meta = {};
-          }
+  const { data: loanRows, error: loanErr } = await lq;
+  if (!loanErr && Array.isArray(loanRows)) {
+    for (const l of loanRows as unknown as Array<{
+      id: string;
+      employee_id: string;
+      loan_type: string;
+      principal: number;
+      start_month?: string | null;
+      status: string;
+      reason?: string | null;
+      created_at: string;
+      updated_at?: string;
+    }>) {
+      let meta: Record<string, unknown> = {};
+      if (l.reason && typeof l.reason === "string" && l.reason.startsWith("{")) {
+        try {
+          meta = JSON.parse(l.reason);
+        } catch {
+          meta = {};
         }
-
-        const linkedId = (meta.payment_id as string) || l.id;
-        if (seenIds.has(linkedId)) continue;
-
-        const pMonth =
-          (meta.payroll_month as string) ||
-          (l.start_month ? l.start_month.slice(0, 7) : l.created_at.slice(0, 7));
-
-        if (filters.payrollMonth && pMonth !== filters.payrollMonth) continue;
-        if (filters.status && l.status !== filters.status && filters.status !== "paid") continue;
-
-        const paymentType =
-          (meta.payment_type as
-            | "advance"
-            | "salary_part"
-            | "bonus"
-            | "incentive"
-            | "loan"
-            | "settlement") || (l.loan_type === "loan" ? "loan" : "advance");
-
-        const paymentMethod = (meta.method as string) || "cash";
-        const accountName = (meta.account as string) || "Cash";
-
-        paymentsList.push({
-          id: l.id,
-          employee_id: l.employee_id,
-          payment_date: (meta.date as string) || l.created_at.slice(0, 10),
-          amount: Number(l.principal),
-          payment_type: paymentType,
-          payment_method: paymentMethod,
-          account_name: accountName,
-          reference_no: (meta.ref as string) || null,
-          payroll_month: pMonth,
-          is_deducted_from_payroll: meta.deduct !== false,
-          status: l.status === "closed" ? "cancelled" : "paid",
-          notes: (meta.notes as string) || (!l.reason?.startsWith("{") ? l.reason : null) || null,
-          created_at: l.created_at,
-          updated_at: l.updated_at,
-        });
-        seenIds.add(l.id);
       }
+
+      const pMonth =
+        (meta.payroll_month as string) ||
+        (l.start_month ? l.start_month.slice(0, 7) : l.created_at.slice(0, 7));
+
+      if (filters.payrollMonth && pMonth !== filters.payrollMonth) continue;
+      if (filters.status && l.status !== filters.status && filters.status !== "paid") continue;
+
+      const paymentType =
+        (meta.payment_type as
+          | "advance"
+          | "salary_part"
+          | "bonus"
+          | "incentive"
+          | "loan"
+          | "settlement") || (l.loan_type === "loan" ? "loan" : "advance");
+
+      const paymentMethod = (meta.method as string) || "cash";
+      const accountName = (meta.account as string) || "Cash";
+
+      paymentsList.push({
+        id: l.id,
+        employee_id: l.employee_id,
+        payment_date: (meta.date as string) || l.created_at.slice(0, 10),
+        amount: Number(l.principal),
+        payment_type: paymentType,
+        payment_method: paymentMethod,
+        account_name: accountName,
+        reference_no: (meta.ref as string) || null,
+        payroll_month: pMonth,
+        is_deducted_from_payroll: meta.deduct !== false,
+        status: l.status === "closed" ? "cancelled" : "paid",
+        notes: (meta.notes as string) || (!l.reason?.startsWith("{") ? l.reason : null) || null,
+        created_at: l.created_at,
+        updated_at: l.updated_at,
+      });
     }
-  } catch {
-    // Ignore
   }
 
   return paymentsList.sort(
@@ -327,32 +232,24 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
     const [yearStr, monthNumStr] = payrollMonth.split("-");
     const year = Number(yearStr) || new Date().getFullYear();
     const month = Number(monthNumStr) || new Date().getMonth() + 1;
-    const calendarDays = new Date(year, month, 0).getDate();
-    const fromDate = `${year}-${String(month).padStart(2, "0")}-01`;
-    const toDate = `${year}-${String(month).padStart(2, "0")}-${String(calendarDays).padStart(2, "0")}`;
 
-    // 1. Concurrent server-side fetches
-    const [empRes, structRes, settingsRes, attRes] = await Promise.all([
+    // 1. Concurrent server-side fetches — 3 fast indexed queries executed in parallel
+    const [empRes, loanRes, structRes] = await Promise.all([
       supabaseAdmin
         .from("employees" as never)
         .select(
-          "id, full_name, employee_code, designation_id, department, phone, employment_status" as never,
+          "id, full_name, employee_code, designation_id, department, phone, employment_status, salary_ctc" as never,
         )
         .eq("employment_status" as never, "active" as never)
         .order("full_name" as never, { ascending: true }),
       supabaseAdmin
+        .from("hr_loans" as never)
+        .select("*" as never)
+        .order("created_at" as never, { ascending: false }),
+      supabaseAdmin
         .from("hr_salary_structures" as never)
-        .select("*" as never)
+        .select("id, employee_id, effective_from, ctc_annual, status" as never)
         .eq("status" as never, "active" as never),
-      supabaseAdmin
-        .from("hr_payroll_settings" as never)
-        .select("*" as never)
-        .maybeSingle(),
-      supabaseAdmin
-        .from("hr_attendance_days" as never)
-        .select("employee_id, work_date, status" as never)
-        .gte("work_date" as never, fromDate as never)
-        .lte("work_date" as never, toDate as never),
     ]);
 
     const activeEmployees = (empRes.data ?? []) as Array<{
@@ -362,6 +259,7 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
       designation_id: string | null;
       department: string | null;
       phone: string | null;
+      salary_ctc?: number | null;
     }>;
 
     const rawStructures = (structRes.data ?? []) as Array<{
@@ -380,52 +278,79 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
       }
     }
 
-    const structureIds = [...structureByEmployee.values()].map((s) => s.id);
-    let structureLines: Array<{
-      structure_id: string;
-      kind: "earning" | "deduction";
-      monthly_amount: number;
-      pf_applicable: boolean;
-      esi_applicable: boolean;
-      sort_order: number;
+    // Process loans / payments for this month in memory
+    const paymentsList: Array<{
+      id: string;
+      employee_id: string;
+      payment_date: string;
+      amount: number;
+      payment_type: "advance" | "salary_part" | "bonus" | "incentive" | "loan" | "settlement";
+      payment_method: string;
+      account_name: string;
+      reference_no: string | null;
+      payroll_month: string;
+      is_deducted_from_payroll: boolean;
+      status: "pending" | "paid" | "cancelled";
+      notes: string | null;
+      created_at: string;
     }> = [];
 
-    if (structureIds.length > 0) {
-      try {
-        const { data: linesData } = await supabaseAdmin
-          .from("hr_salary_structure_lines" as never)
-          .select(
-            "structure_id, kind, monthly_amount, pf_applicable, esi_applicable, sort_order" as never,
-          )
-          .in("structure_id" as never, structureIds as never)
-          .order("sort_order" as never, { ascending: true });
-        if (Array.isArray(linesData)) {
-          structureLines = linesData as typeof structureLines;
+    const loanRows = (loanRes.data ?? []) as unknown as Array<{
+      id: string;
+      employee_id: string;
+      loan_type: string;
+      principal: number;
+      start_month?: string | null;
+      status: string;
+      reason?: string | null;
+      created_at: string;
+    }>;
+
+    for (const l of loanRows) {
+      let meta: Record<string, unknown> = {};
+      if (l.reason && typeof l.reason === "string" && l.reason.startsWith("{")) {
+        try {
+          meta = JSON.parse(l.reason);
+        } catch {
+          meta = {};
         }
-      } catch {
-        // Fallback gracefully
       }
+
+      const pMonth =
+        (meta.payroll_month as string) ||
+        (l.start_month ? l.start_month.slice(0, 7) : l.created_at.slice(0, 7));
+
+      if (pMonth !== payrollMonth) continue;
+
+      const paymentType =
+        (meta.payment_type as
+          | "advance"
+          | "salary_part"
+          | "bonus"
+          | "incentive"
+          | "loan"
+          | "settlement") || (l.loan_type === "loan" ? "loan" : "advance");
+
+      const paymentMethod = (meta.method as string) || "cash";
+      const accountName = (meta.account as string) || "Cash";
+
+      paymentsList.push({
+        id: l.id,
+        employee_id: l.employee_id,
+        payment_date: (meta.date as string) || l.created_at.slice(0, 10),
+        amount: Number(l.principal),
+        payment_type: paymentType,
+        payment_method: paymentMethod,
+        account_name: accountName,
+        reference_no: (meta.ref as string) || null,
+        payroll_month: pMonth,
+        is_deducted_from_payroll: meta.deduct !== false,
+        status: l.status === "closed" ? "cancelled" : "paid",
+        notes: (meta.notes as string) || (!l.reason?.startsWith("{") ? l.reason : null) || null,
+        created_at: l.created_at,
+      });
     }
 
-    const linesByStructure = new Map<string, typeof structureLines>();
-    for (const l of structureLines) {
-      const arr = linesByStructure.get(l.structure_id) ?? [];
-      arr.push(l);
-      linesByStructure.set(l.structure_id, arr);
-    }
-
-    // Attendance loss of pay (LOP)
-    const lopByEmployee = new Map<string, number>();
-    for (const d of (attRes.data as Array<{ employee_id: string; status: string }> | null) ?? []) {
-      if (d.status === "absent") {
-        lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 1);
-      } else if (d.status === "half_day") {
-        lopByEmployee.set(d.employee_id, (lopByEmployee.get(d.employee_id) ?? 0) + 0.5);
-      }
-    }
-
-    // Intermediate payments & advances (from hr_employee_payments and hr_loans)
-    const paymentsList = await fetchPaymentsInternal(supabaseAdmin, { payrollMonth });
     const paymentsByEmployee = new Map<string, typeof paymentsList>();
     const byPaymentMethod: Record<string, number> = {};
 
@@ -439,13 +364,6 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
       byPaymentMethod[mKey] = (byPaymentMethod[mKey] ?? 0) + Number(p.amount);
     }
 
-    const settingsData = settingsRes.data as Record<string, unknown> | null;
-    const pf_employee_pct = Number(settingsData?.pf_employee_pct ?? 12);
-    const pf_wage_ceiling = Number(settingsData?.pf_wage_ceiling ?? 15000);
-    const pf_limit_to_ceiling = Boolean(settingsData?.pf_limit_to_ceiling ?? true);
-    const esi_employee_pct = Number(settingsData?.esi_employee_pct ?? 0.75);
-    const esi_wage_ceiling = Number(settingsData?.esi_wage_ceiling ?? 21000);
-
     const balances = [];
     let totalLiability = 0;
     let totalIntermediate = 0;
@@ -455,7 +373,6 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
 
     for (const emp of activeEmployees) {
       const structure = structureByEmployee.get(emp.id);
-      const lines = structure ? (linesByStructure.get(structure.id) ?? []) : [];
       const empPayments = paymentsByEmployee.get(emp.id) ?? [];
 
       const intermediatePaid = empPayments
@@ -463,48 +380,16 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
         .reduce((sum, p) => sum + Number(p.amount), 0);
 
       let baseGross = 0;
-      let estimatedNet = 0;
-      let earnedSalary = 0;
-      let statutoryDeductions = 0;
-
-      if (lines.length > 0) {
-        let gross = 0;
-        let pfWage = 0;
-        let esiWage = 0;
-        let structuredDeductions = 0;
-
-        const lopDays = lopByEmployee.get(emp.id) ?? 0;
-        const paidDays = Math.max(0, calendarDays - lopDays);
-        const factor = paidDays / calendarDays;
-
-        for (const l of lines) {
-          const amt = Number(l.monthly_amount);
-          if (l.kind === "earning") {
-            gross += amt;
-            if (l.pf_applicable) pfWage += amt;
-            if (l.esi_applicable) esiWage += amt;
-          } else {
-            structuredDeductions += amt;
-          }
-        }
-
-        baseGross = Math.round(gross);
-        earnedSalary = Math.round(gross * factor);
-
-        const pfEmp = pf_limit_to_ceiling
-          ? Math.min(pfWage, pf_wage_ceiling) * (pf_employee_pct / 100)
-          : pfWage * (pf_employee_pct / 100);
-
-        const esiEmp = gross <= esi_wage_ceiling ? (esiWage * esi_employee_pct) / 100 : 0;
-        const pt = gross >= 10000 ? 200 : gross >= 7500 ? 175 : 0;
-
-        statutoryDeductions = Math.round(structuredDeductions + pfEmp + esiEmp + pt);
-        estimatedNet = Math.round(earnedSalary - statutoryDeductions);
-      } else if (structure?.ctc_annual) {
+      if (emp.salary_ctc != null && Number(emp.salary_ctc) > 0) {
+        const rawCtc = Number(emp.salary_ctc);
+        baseGross = rawCtc > 100000 ? Math.round(rawCtc / 12) : Math.round(rawCtc);
+      } else if (structure?.ctc_annual != null && Number(structure.ctc_annual) > 0) {
         baseGross = Math.round(Number(structure.ctc_annual) / 12);
-        earnedSalary = baseGross;
-        estimatedNet = baseGross;
       }
+
+      const estimatedNet = baseGross;
+      const earnedSalary = baseGross;
+      const statutoryDeductions = 0;
 
       const remainingDue = Math.max(0, estimatedNet - intermediatePaid);
       const advanceExcess = Math.max(0, intermediatePaid - estimatedNet);
@@ -537,7 +422,7 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
         phone: emp.phone ?? null,
         baseGrossSalary: baseGross,
         estimatedNetSalary: estimatedNet,
-        attendanceLopDays: lopByEmployee.get(emp.id) ?? 0,
+        attendanceLopDays: 0,
         earnedSalary,
         statutoryDeductions,
         intermediatePaymentsCount: empPayments.length,
