@@ -97,9 +97,7 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
         setAdvanceRequired(
           parsedVendor.advance_required_inr ? String(parsedVendor.advance_required_inr) : "",
         );
-        setAdvancePaid(
-          parsedVendor.advance_paid_inr ? String(parsedVendor.advance_paid_inr) : "",
-        );
+        setAdvancePaid(parsedVendor.advance_paid_inr ? String(parsedVendor.advance_paid_inr) : "");
         setAdvanceStatus(parsedVendor.advance_status);
         setProdStatus(parsedVendor.production_status);
         setNotes(parsedVendor.manufacturer_notes || "");
