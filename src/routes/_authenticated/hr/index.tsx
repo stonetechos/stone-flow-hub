@@ -68,6 +68,8 @@ function HrDashboard() {
   const salaryBalances = useQuery({
     queryKey: ["hr", "salary-balances", currentMonth],
     queryFn: () => listCompanySalaryBalances(currentMonth),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
 
   const loading =

@@ -89,6 +89,8 @@ export function RecordEmployeePaymentDialog({
     queryKey: ["hr", "salary-balances", selectedMonth],
     queryFn: () => listCompanySalaryBalances(selectedMonth),
     enabled: open && Boolean(employeeId),
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
 
   const activeEmployees = (employeesQ.data ?? []).filter((e) => e.employment_status === "active");

@@ -16,6 +16,7 @@ import {
   recordEmployeePaymentServerFn,
   cancelEmployeePaymentServerFn,
   listEmployeePaymentsServerFn,
+  getCompanySalaryBalancesServerFn,
 } from "./employee-payments.functions";
 
 export type EmployeePaymentType =
@@ -295,6 +296,26 @@ export async function cancelEmployeePayment(id: string): Promise<void> {
  * for all active employees for a given month.
  */
 export async function listCompanySalaryBalances(
+  payrollMonth: string,
+): Promise<CompanySalaryMonthSummary> {
+  try {
+    const res = await getCompanySalaryBalancesServerFn({
+      data: { payrollMonth },
+    });
+    return res as CompanySalaryMonthSummary;
+  } catch (err: unknown) {
+    if (typeof window === "undefined" && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return computeLocalCompanySalaryBalances(payrollMonth);
+    }
+    try {
+      return await computeLocalCompanySalaryBalances(payrollMonth);
+    } catch {
+      throw new AppError(err instanceof Error ? err.message : "Failed to load salary balances");
+    }
+  }
+}
+
+async function computeLocalCompanySalaryBalances(
   payrollMonth: string,
 ): Promise<CompanySalaryMonthSummary> {
   const [yearStr, monthNumStr] = (payrollMonth || currentMonthStr()).split("-");
