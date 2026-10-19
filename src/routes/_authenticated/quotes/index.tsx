@@ -562,6 +562,9 @@ function QuotesPage() {
                       <TableCell>
                         {(() => {
                           const mode = getQuoteSaleMode(r);
+                          if (mode === "invoiced") {
+                            return <span className="text-muted-foreground text-xs">—</span>;
+                          }
                           const cfg = SALE_MODE_CONFIG[mode];
                           return (
                             <div className="flex flex-col gap-1 items-start">

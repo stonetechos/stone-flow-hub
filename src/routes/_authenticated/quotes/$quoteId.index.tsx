@@ -221,17 +221,19 @@ function QuoteDetailPage() {
         subtitle={
           <div className="flex items-center gap-2 flex-wrap">
             <span>{`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}</span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                SALE_MODE_CONFIG[saleMode].badgeTone,
-              )}
-            >
+            {saleMode !== "invoiced" && (
               <span
-                className={cn("h-1.5 w-1.5 rounded-full", SALE_MODE_CONFIG[saleMode].dotColor)}
-              />
-              {SALE_MODE_CONFIG[saleMode].label}
-            </span>
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
+                  SALE_MODE_CONFIG[saleMode].badgeTone,
+                )}
+              >
+                <span
+                  className={cn("h-1.5 w-1.5 rounded-full", SALE_MODE_CONFIG[saleMode].dotColor)}
+                />
+                {SALE_MODE_CONFIG[saleMode].label}
+              </span>
+            )}
             {assignment.fulfilmentType === "in_stock" ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                 <Boxes className="h-3 w-3 text-emerald-600" /> Live Stock (

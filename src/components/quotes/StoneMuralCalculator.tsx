@@ -104,12 +104,12 @@ export function StoneMuralCalculator({
   const [unit, setUnit] = useState<LengthUnit>("ft");
 
   // 1) Wall Size
-  const [wallHeight, setWallHeight] = useState<string>("8");
-  const [wallLength, setWallLength] = useState<string>("12");
+  const [wallHeight, setWallHeight] = useState<string>("");
+  const [wallLength, setWallLength] = useState<string>("");
 
   // 2) Slab Size & Thickness
-  const [slabHeight, setSlabHeight] = useState<string>("4");
-  const [slabLength, setSlabLength] = useState<string>("6");
+  const [slabHeight, setSlabHeight] = useState<string>("");
+  const [slabLength, setSlabLength] = useState<string>("");
   const [slabThickness, setSlabThickness] = useState<string>(String(DEFAULT_MURAL_THICKNESS_MM));
   const [stoneType, setStoneType] = useState<string>(DEFAULT_MURAL_STONE_TYPE);
   const [customStoneType, setCustomStoneType] = useState<string>("");
@@ -119,7 +119,7 @@ export function StoneMuralCalculator({
   const [slabsOverride, setSlabsOverride] = useState<string>("");
 
   // 3) CNC Job Work
-  const [cncKey, setCncKey] = useState<string>("embossing_10mm");
+  const [cncKey, setCncKey] = useState<string>("");
   const [cncCustomRate, setCncCustomRate] = useState<string>("");
 
   // 4) Rubbing
@@ -151,7 +151,7 @@ export function StoneMuralCalculator({
 
   // Design visual
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
-  const [timeToComplete, setTimeToComplete] = useState<string>("15 to 20 working days");
+  const [timeToComplete, setTimeToComplete] = useState<string>("");
 
   // WhatsApp / PDF header prefill
   const [greetingName, setGreetingName] = useState("");
@@ -554,8 +554,12 @@ export function StoneMuralCalculator({
   }
 
   async function handleGenerateAndSend() {
-    if (wallAreaSqft <= 0) {
+    if (wallAreaSqft <= 0 || slabsCount <= 0) {
       toast.error("Please enter valid wall and slab dimensions first");
+      return;
+    }
+    if (!cncKey) {
+      toast.error("Please select a CNC job work option (engraving or embossing)");
       return;
     }
     if (!customerMobile.trim()) {
@@ -669,7 +673,7 @@ export function StoneMuralCalculator({
                   value={wallHeight}
                   onChange={(e) => setWallHeight(e.target.value)}
                   className="mt-1 h-8 text-sm"
-                  placeholder="Height"
+                  placeholder="e.g. 10"
                 />
               </div>
               <div>
@@ -683,14 +687,14 @@ export function StoneMuralCalculator({
                   value={wallLength}
                   onChange={(e) => setWallLength(e.target.value)}
                   className="mt-1 h-8 text-sm"
-                  placeholder="Length"
+                  placeholder="e.g. 12"
                 />
               </div>
             </div>
             <div className="rounded-md bg-muted/40 p-2.5 flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Calculated Wall Area:</span>
               <span className="font-mono font-semibold text-foreground text-sm">
-                {wallAreaSqft.toFixed(2)} sq ft
+                {wallAreaSqft > 0 ? `${wallAreaSqft.toFixed(2)} sq ft` : "—"}
               </span>
             </div>
           </CardContent>
@@ -707,7 +711,7 @@ export function StoneMuralCalculator({
                 </CardTitle>
               </div>
               <Badge variant="outline" className="text-[11px] font-mono">
-                {slabsCount} Slabs Required
+                {slabsCount > 0 ? `${slabsCount} Slabs Required` : "— Slabs Required"}
               </Badge>
             </div>
           </CardHeader>
@@ -724,6 +728,7 @@ export function StoneMuralCalculator({
                   value={slabLength}
                   onChange={(e) => setSlabLength(e.target.value)}
                   className="mt-1 h-8 text-sm"
+                  placeholder="e.g. 6"
                 />
               </div>
               <div>
@@ -737,6 +742,7 @@ export function StoneMuralCalculator({
                   value={slabHeight}
                   onChange={(e) => setSlabHeight(e.target.value)}
                   className="mt-1 h-8 text-sm"
+                  placeholder="e.g. 4"
                 />
               </div>
               <div>
@@ -803,14 +809,15 @@ export function StoneMuralCalculator({
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Single Slab Area:</span>
                 <span className="font-mono text-foreground font-medium">
-                  {slabAreaSqft.toFixed(2)} sq ft
+                  {slabAreaSqft > 0 ? `${slabAreaSqft.toFixed(2)} sq ft` : "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Grid Layout Optimization:</span>
                 <span className="font-mono text-foreground">
-                  {slabCalc.slabsGrid.cols} cols × {slabCalc.slabsGrid.rows} rows ={" "}
-                  {slabCalc.slabsGrid.total} slabs
+                  {slabCalc.slabsGrid.cols > 0 && slabCalc.slabsGrid.rows > 0
+                    ? `${slabCalc.slabsGrid.cols} cols × ${slabCalc.slabsGrid.rows} rows = ${slabCalc.slabsGrid.total} slabs`
+                    : "Enter wall & slab dimensions"}
                 </span>
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-border/60">
@@ -819,7 +826,9 @@ export function StoneMuralCalculator({
                   <Input
                     type="number"
                     min="1"
-                    placeholder={String(slabCalc.slabsGrid.total || 1)}
+                    placeholder={
+                      slabCalc.slabsGrid.total > 0 ? String(slabCalc.slabsGrid.total) : "—"
+                    }
                     value={slabsOverride}
                     onChange={(e) => setSlabsOverride(e.target.value)}
                     className="h-6 w-16 text-center text-xs font-mono"
@@ -828,7 +837,9 @@ export function StoneMuralCalculator({
                 </div>
                 <div className="text-right">
                   <div className="font-mono font-bold text-foreground">
-                    {totalSlabSqft} sq ft = {formatInr(stoneSlabsAmount)}
+                    {slabsCount > 0
+                      ? `${totalSlabSqft} sq ft = ${formatInr(stoneSlabsAmount)}`
+                      : "—"}
                   </div>
                 </div>
               </div>
@@ -846,7 +857,11 @@ export function StoneMuralCalculator({
               <CardTitle className="text-sm font-semibold">3) CNC Job Work Pricing</CardTitle>
             </div>
             <div className="font-mono text-xs font-semibold text-primary">
-              {formatInr(cncAmount)} ({formatInr(cncRate)}/sq ft)
+              {cncKey && cncAmount > 0
+                ? `${formatInr(cncAmount)} (${formatInr(cncRate)}/sq ft)`
+                : cncKey
+                  ? `${formatInr(cncRate)}/sq ft`
+                  : "Select carving option"}
             </div>
           </div>
         </CardHeader>
@@ -958,7 +973,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px] text-muted-foreground">/sqft</span>
                 </div>
                 <div className="font-mono text-xs font-semibold w-20 text-right text-foreground">
-                  {formatInr(rubbingAmount)}
+                  {rubbingAmount > 0 ? formatInr(rubbingAmount) : "—"}
                 </div>
               </div>
             </div>
@@ -1004,7 +1019,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px] text-muted-foreground">/sqft</span>
                 </div>
                 <div className="font-mono text-xs font-semibold w-20 text-right text-foreground">
-                  {formatInr(polishingAmount)}
+                  {polishingAmount > 0 ? formatInr(polishingAmount) : "—"}
                 </div>
               </div>
             </div>
@@ -1040,7 +1055,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px] text-muted-foreground">/sqft</span>
                 </div>
                 <div className="font-mono text-xs font-semibold w-20 text-right text-foreground">
-                  {formatInr(labourAmount)}
+                  {labourAmount > 0 ? formatInr(labourAmount) : "—"}
                 </div>
               </div>
             </div>
@@ -1079,7 +1094,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px] text-muted-foreground">/sqft</span>
                 </div>
                 <div className="font-mono text-xs font-semibold w-20 text-right text-foreground">
-                  {formatInr(touchUpAmount)}
+                  {touchUpAmount > 0 ? formatInr(touchUpAmount) : "—"}
                 </div>
               </div>
             </div>
@@ -1097,7 +1112,7 @@ export function StoneMuralCalculator({
                 6) Adhesives (Fetched from Cladding Studio)
               </CardTitle>
               <span className="font-mono text-xs font-semibold text-foreground">
-                {formatInr(adhesivesAmount)}
+                {adhesivesAmount > 0 ? formatInr(adhesivesAmount) : "—"}
               </span>
             </div>
           </CardHeader>
@@ -1130,7 +1145,7 @@ export function StoneMuralCalculator({
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Quantity calculated:</span>
                 <span className="font-mono font-medium text-foreground">
-                  {adhesiveUnits} {activeAdhesiveCatalog?.unit}(s)
+                  {adhesiveUnits > 0 ? `${adhesiveUnits} ${activeAdhesiveCatalog?.unit}(s)` : "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-border/60">
@@ -1258,10 +1273,13 @@ export function StoneMuralCalculator({
               <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                 Stone Mural Estimate Total
               </div>
-              <div className="text-2xl font-bold font-mono text-primary">{formatInr(total)}</div>
+              <div className="text-2xl font-bold font-mono text-primary">
+                {wallAreaSqft > 0 ? formatInr(total) : "₹0"}
+              </div>
               <div className="text-xs text-muted-foreground">
-                Wall coverage: {wallAreaSqft.toFixed(1)} sq ft • Stone slabs: {totalSlabSqft} sq ft
-                ({slabsCount} slabs)
+                {wallAreaSqft > 0
+                  ? `Wall coverage: ${wallAreaSqft.toFixed(1)} sq ft • Stone slabs: ${totalSlabSqft} sq ft (${slabsCount} slabs)`
+                  : "Enter wall dimensions and slab sizes above to compute estimate."}
               </div>
             </div>
 
@@ -1271,7 +1289,7 @@ export function StoneMuralCalculator({
                 variant="outline"
                 size="sm"
                 onClick={handleGenerateAndSend}
-                disabled={sending || wallAreaSqft <= 0}
+                disabled={sending || wallAreaSqft <= 0 || !cncKey}
                 className="gap-1.5 h-9"
               >
                 {sending ? (
@@ -1286,7 +1304,7 @@ export function StoneMuralCalculator({
                 variant="default"
                 size="sm"
                 onClick={handleGenerateAndSend}
-                disabled={sending || wallAreaSqft <= 0}
+                disabled={sending || wallAreaSqft <= 0 || !cncKey}
                 className="gap-1.5 h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {sending ? (
@@ -1324,7 +1342,7 @@ export function StoneMuralCalculator({
               <Input
                 value={timeToComplete}
                 onChange={(e) => setTimeToComplete(e.target.value)}
-                placeholder="15 to 20 working days"
+                placeholder="e.g. 15 to 20 working days"
                 className="mt-0.5 h-7 text-xs"
               />
             </div>
