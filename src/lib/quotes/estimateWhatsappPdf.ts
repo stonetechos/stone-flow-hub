@@ -203,3 +203,76 @@ export async function printEstimatePdf(
 export function openWhatsappWithMessage(customerMobile: string, message: string): void {
   openWhatsappToContact(customerMobile, message);
 }
+
+export interface MuralEstimateWhatsappInput {
+  greetingName: string;
+  wallSizeSummary: string;
+  wallSqft: number;
+  slabDetails: string;
+  slabsCount: number;
+  totalSlabSqft: number;
+  slabAmount: number;
+  slabPricePerSqft: number;
+  cncWorkSummary: string;
+  cncAmount: number;
+  rubbingAmount: number;
+  polishingAmount: number;
+  installationLabourAmount: number;
+  adhesivesAmount: number;
+  adhesivesSummary: string;
+  touchUpAmount: number;
+  cartingAmount: number;
+  cartingLocation?: string;
+  totalEstimate: number;
+  estimatedDeliveryDate?: string;
+  validityDays?: string;
+  preparerName: string;
+}
+
+export function buildMuralEstimateWhatsappMessage(
+  input: MuralEstimateWhatsappInput,
+  companyName: string,
+): string {
+  const deliveryLine = input.estimatedDeliveryDate
+    ? `Estimated delivery date is ${input.estimatedDeliveryDate}, with CNC carving and installation commencing upon material readiness.`
+    : `Estimated delivery date will be shared upon design approval and site readiness.`;
+  const validityLine = input.validityDays
+    ? `This estimate is valid for ${input.validityDays} days. Final cost may vary slightly based on actual site conditions.`
+    : `Final cost may vary slightly based on actual site conditions.`;
+
+  const lines: Array<string | null> = [
+    `Hi ${input.greetingName},`,
+    `Here is the estimate for the Stone Mural project based on the shared details:`,
+    `• Wall Size: ${input.wallSizeSummary} (${input.wallSqft.toFixed(1)} sq ft)`,
+    `• Slabs Required: ${input.slabsCount} slab(s) — ${input.slabDetails} (Total: ${input.totalSlabSqft} sq ft)`,
+    `• Stone Slabs: ${formatInr(input.slabAmount)} (@ ${formatInr(input.slabPricePerSqft)}/sq ft)`,
+    `• CNC Job Work: ${formatInr(input.cncAmount)} (${input.cncWorkSummary})`,
+    input.rubbingAmount > 0 ? `• Surface Rubbing: ${formatInr(input.rubbingAmount)}` : null,
+    input.polishingAmount > 0 ? `• Polishing Work: ${formatInr(input.polishingAmount)}` : null,
+    input.installationLabourAmount > 0
+      ? `• Installation Labour: ${formatInr(input.installationLabourAmount)}`
+      : null,
+    input.adhesivesAmount > 0
+      ? `• Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
+      : null,
+    input.touchUpAmount > 0 ? `• Touch Up Work: ${formatInr(input.touchUpAmount)}` : null,
+    input.cartingAmount > 0
+      ? `• Carting / Freight: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`
+      : `• Carting / Freight: To be confirmed with carting agency as per location`,
+    `Total Estimate: ${formatInr(input.totalEstimate)}`,
+    `Notes:`,
+    `Scaffolding, if required, will be provided by the customer.`,
+    input.cartingAmount <= 0
+      ? `Transportation charges will be extra and on actuals as per delivery location.`
+      : null,
+    deliveryLine,
+    validityLine,
+    `Payment Terms: 75% advance and remaining 25% upon completion of work.`,
+    `Please confirm if you'd like to proceed or if any modifications are needed.`,
+    `Warm regards,`,
+    input.preparerName || "[Your Name]",
+    companyName,
+  ];
+
+  return lines.filter(Boolean).join("\n");
+}

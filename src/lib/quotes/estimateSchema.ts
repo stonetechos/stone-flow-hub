@@ -90,3 +90,63 @@ export const estimateWorksheetSchema = z.object({
   total: z.number().nonnegative(),
 });
 export type EstimateWorksheet = z.infer<typeof estimateWorksheetSchema>;
+
+export const estimateMuralWorksheetSchema = z.object({
+  version: z.literal(1),
+  scenario: z.literal("stone_mural"),
+  unit: z.enum(LENGTH_UNITS),
+  wall: z.object({
+    height: z.number().nonnegative(),
+    length: z.number().nonnegative(),
+    sqft: z.number().nonnegative(),
+  }),
+  slab: z.object({
+    height: z.number().nonnegative(),
+    length: z.number().nonnegative(),
+    sqft: z.number().nonnegative(),
+    thicknessMm: z.number().nonnegative(),
+    stoneType: z.string(),
+    slabsRequired: z.number().nonnegative(),
+    gridCols: z.number().nonnegative(),
+    gridRows: z.number().nonnegative(),
+    totalSlabSqft: z.number().nonnegative(),
+    pricePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  cnc: z.object({
+    selectedKey: z.string(),
+    label: z.string(),
+    ratePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  rubbing: z.object({
+    enabled: z.boolean(),
+    ratePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  polishing: z.object({
+    enabled: z.boolean(),
+    ratePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  installationLabour: z.object({
+    ratePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  adhesives: z.array(estimateAdhesiveLineSchema),
+  adhesivesAmount: z.number().nonnegative(),
+  touchUp: z.object({
+    enabled: z.boolean(),
+    ratePerSqft: z.number().nonnegative(),
+    amount: z.number().nonnegative(),
+  }),
+  carting: z.object({
+    location: z.string().optional(),
+    amount: z.number().nonnegative(),
+  }),
+  timeToComplete: z.string().optional(),
+  imageDataUrl: z.string().nullable().optional(),
+  subtotal: z.number().nonnegative(),
+  total: z.number().nonnegative(),
+});
+export type EstimateMuralWorksheet = z.infer<typeof estimateMuralWorksheetSchema>;

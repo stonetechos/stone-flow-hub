@@ -4,6 +4,8 @@ import {
   DEFAULT_WASTAGE_PCT,
   materialQuantityToOrder,
   wallSqft,
+  getDefaultSlabPrice,
+  calculateMuralSlabs,
 } from "./estimateCatalog";
 
 describe("estimateCatalog - rounding and wastage calculations", () => {
@@ -82,6 +84,83 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(wallSqft(108, 48, "in")).toBeCloseTo(36, 4);
       // 1m x 1m ~ 10.7639 sqft
       expect(wallSqft(1, 1, "m")).toBeCloseTo(10.7639, 3);
+    });
+  });
+
+  describe("Stone Murals - getDefaultSlabPrice", () => {
+    it("returns 550 for 50 mm Sandstone per business rule", () => {
+      expect(getDefaultSlabPrice("Sandstone", 50)).toBe(550);
+      expect(getDefaultSlabPrice("Mint Sandstone", 50)).toBe(550);
+      expect(getDefaultSlabPrice("Teakwood Sandstone", 50.0)).toBe(550);
+    });
+
+    it("returns default price for other stones or thicknesses", () => {
+      expect(getDefaultSlabPrice("Marble", 30)).toBe(550);
+      expect(getDefaultSlabPrice("Granite", 40)).toBe(550);
+    });
+  });
+
+  describe("Stone Murals - calculateMuralSlabs", () => {
+    it("calculates slabs required for standard grid and area fit", () => {
+      // 12ft x 8ft wall = 96 sqft
+      // 6ft x 4ft slab = 24 sqft
+      // 2 cols x 2 rows = 4 slabs
+      const res = calculateMuralSlabs({
+        wallHeight: 8,
+        wallLength: 12,
+        slabHeight: 4,
+        slabLength: 6,
+        unit: "ft",
+      });
+
+      expect(res.wallSqft).toBeCloseTo(96, 2);
+      expect(res.slabSqft).toBeCloseTo(24, 2);
+      expect(res.slabsRequired).toBe(4);
+      expect(res.slabsGrid.cols).toBe(2);
+      expect(res.slabsGrid.rows).toBe(2);
+      expect(res.totalSlabSqft).toBe(96);
+    });
+
+    it("handles fractional grid fits by rounding up slabs per grid", () => {
+      // 10ft x 7ft wall = 70 sqft
+      // 4ft x 3ft slab = 12 sqft
+      // cols = ceil(10/4)=3, rows = ceil(7/3)=3 -> 9 slabs (or rotated: cols=ceil(10/3)=4, rows=ceil(7/4)=2 -> 8 slabs)
+      const res = calculateMuralSlabs({
+        wallHeight: 7,
+        wallLength: 10,
+        slabHeight: 3,
+        slabLength: 4,
+        unit: "ft",
+      });
+
+      expect(res.slabsRequired).toBe(8); // best grid 4x2 = 8
+      expect(res.totalSlabSqft).toBe(96); // 8 * 12
+    });
+
+    it("supports manual slab override count", () => {
+      const res = calculateMuralSlabs({
+        wallHeight: 8,
+        wallLength: 12,
+        slabHeight: 4,
+        slabLength: 6,
+        unit: "ft",
+        slabsCountOverride: 5,
+      });
+
+      expect(res.slabsRequired).toBe(5);
+      expect(res.totalSlabSqft).toBe(120); // 5 * 24
+    });
+
+    it("handles zero or empty values safely", () => {
+      const res = calculateMuralSlabs({
+        wallHeight: 0,
+        wallLength: 0,
+        slabHeight: 0,
+        slabLength: 0,
+        unit: "ft",
+      });
+      expect(res.slabsRequired).toBe(0);
+      expect(res.totalSlabSqft).toBe(0);
     });
   });
 });

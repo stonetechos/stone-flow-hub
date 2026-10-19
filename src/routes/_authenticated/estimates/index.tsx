@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Sparkles, Layers } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState, ErrorBlock, SkeletonTable } from "@/components/layout/States";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -69,7 +70,10 @@ function EstimatesListPage() {
           <Plus className="mr-1.5 h-3.5 w-3.5" /> New estimate
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72">
+      <DropdownMenuContent align="end" className="w-80">
+        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Contract Templates
+        </div>
         {ESTIMATE_TEMPLATE_LIST.map((t) => (
           <DropdownMenuItem key={t.key} asChild>
             <Link
@@ -82,6 +86,38 @@ function EstimatesListPage() {
             </Link>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Interactive Studios
+        </div>
+        <DropdownMenuItem asChild>
+          <Link
+            to="/quotes"
+            search={{ new: "1", studio: "mural" }}
+            className="flex flex-col items-start gap-0.5 cursor-pointer"
+          >
+            <span className="font-medium flex items-center gap-1.5 text-primary">
+              <Sparkles className="h-3.5 w-3.5" /> Stone Mural Studio
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Calculate mural slabs, CNC job work, and installation costing.
+            </span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            to="/quotes"
+            search={{ new: "1", studio: "cladding" }}
+            className="flex flex-col items-start gap-0.5 cursor-pointer"
+          >
+            <span className="font-medium flex items-center gap-1.5">
+              <Layers className="h-3.5 w-3.5" /> Wall Cladding Studio
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Wall coverage, stone panels, adhesive & sealer calculator.
+            </span>
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -90,7 +126,21 @@ function EstimatesListPage() {
     <div>
       <PageHeader
         title="Estimation Studio"
-        subtitle="Stone-industry estimates: material, installation, custom articles, and turnkey manufacturing."
+        subtitle="Stone-industry estimates: material, installation, stone murals, and turnkey manufacturing."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
+              <Link to="/quotes" search={{ new: "1", studio: "mural" }}>
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Stone Mural Studio
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
+              <Link to="/quotes" search={{ new: "1", studio: "cladding" }}>
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" /> Wall Cladding Studio
+              </Link>
+            </Button>
+          </div>
+        }
       />
 
       <DataToolbar

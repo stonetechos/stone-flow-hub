@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,10 +193,24 @@ function NewEstimatePage() {
         title={`New ${cfg.label} Estimate`}
         subtitle={cfg.tagline}
         actions={
-          <Button size="sm" disabled={!canSubmit || mut.isPending} onClick={() => mut.mutate()}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save estimate
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
+              <Link
+                to="/quotes"
+                search={{
+                  new: "1",
+                  studio: "mural",
+                  project: projectId || undefined,
+                }}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Stone Mural Studio
+              </Link>
+            </Button>
+            <Button size="sm" disabled={!canSubmit || mut.isPending} onClick={() => mut.mutate()}>
+              {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save estimate
+            </Button>
+          </div>
         }
       />
 

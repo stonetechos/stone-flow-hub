@@ -65,6 +65,11 @@ export async function resolveAllQuoteImages(
     }
   }
 
+  // Support Stone Mural worksheet visual image
+  if (typeof we.imageDataUrl === "string" && we.imageDataUrl) {
+    imageMap.set("mural", we.imageDataUrl);
+  }
+
   // 3. Master product catalog images (product_images table)
   const productIds = items.map((it) => it.product_id).filter(Boolean) as string[];
   if (productIds.length > 0) {

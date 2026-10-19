@@ -84,6 +84,10 @@ import {
   EstimateStudioCalculator,
   type EstimateStudioResult,
 } from "@/components/quotes/EstimateStudioCalculator";
+import {
+  StoneMuralCalculator,
+  type StoneMuralResult,
+} from "@/components/quotes/StoneMuralCalculator";
 import { NumericInput, PercentInput } from "@/components/forms/inputs/SmartInputs";
 
 const search = z.object({
@@ -92,6 +96,7 @@ const search = z.object({
   enquiry: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
   status: z.string().optional(),
+  studio: z.enum(["cladding", "mural"]).optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/quotes/")({
@@ -813,6 +818,7 @@ function QuotesPage() {
         initialProjectId={params.project ?? null}
         initialEnquiryId={params.enquiry ?? null}
         initialCustomerId={params.customer ?? null}
+        initialStudio={params.studio}
       />
 
       {compareOpen && (
@@ -899,12 +905,14 @@ function CreateQuoteDialog({
   initialProjectId,
   initialEnquiryId,
   initialCustomerId,
+  initialStudio,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   initialProjectId: string | null;
   initialEnquiryId: string | null;
   initialCustomerId?: string | null;
+  initialStudio?: "cladding" | "mural";
 }) {
   const qc = useQueryClient();
   const nav = useNavigate();
@@ -919,8 +927,16 @@ function CreateQuoteDialog({
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [items, setItems] = useState<FormItem[]>([emptyItem("", false)]);
-  const [mode, setMode] = useState<"manual" | "calculator">("manual");
-  const [calcResult, setCalcResult] = useState<EstimateStudioResult | null>(null);
+  const [mode, setMode] = useState<"manual" | "wall_cladding" | "stone_mural" | "calculator">(
+    initialStudio === "mural"
+      ? "stone_mural"
+      : initialStudio === "cladding"
+        ? "wall_cladding"
+        : "manual",
+  );
+  const [calcResult, setCalcResult] = useState<EstimateStudioResult | StoneMuralResult | null>(
+    null,
+  );
 
   useEffect(() => {
     if (open) {
@@ -934,10 +950,12 @@ function CreateQuoteDialog({
       setNotes("");
       setTerms("");
       setItems([emptyItem("", false)]);
-      setMode("manual");
+      if (initialStudio === "mural") setMode("stone_mural");
+      else if (initialStudio === "cladding") setMode("wall_cladding");
+      else setMode("manual");
       setCalcResult(null);
     }
-  }, [open, initialProjectId, initialCustomerId]);
+  }, [open, initialProjectId, initialCustomerId, initialStudio]);
 
   const totals = useMemo(() => {
     let sub = 0,
@@ -982,20 +1000,20 @@ function CreateQuoteDialog({
       return toast.error("Pick a customer");
     }
 
-    if (mode === "calculator") {
+    if (mode === "wall_cladding" || mode === "stone_mural" || mode === "calculator") {
       if (!calcResult || calcResult.items.length === 0) {
-        return toast.error("Add at least one wall and product in the calculator first");
+        return toast.error("Complete the calculation in the studio first");
       }
-      const discount = calcResult.worksheet.discount;
+      const discount = "discount" in calcResult.worksheet ? calcResult.worksheet.discount : null;
       const discountNote =
-        discount.applied && discount.eligible
+        discount && discount.applied && discount.eligible
           ? `Estimate Studio: ${discount.pct}% discount applied (${formatInr(discount.amount)} off) — final estimate total ${formatInr(calcResult.total)}. This quote's own stored total below is the pre-discount subtotal, since quotations have no discount field yet.`
           : null;
       mutation.mutate({
         project_id: initialProjectId ? projectId : undefined,
         customer_id: initialProjectId ? undefined : customerId,
         enquiry_id: initialEnquiryId,
-        category: category || null,
+        category: category || (mode === "stone_mural" ? "material_and_labour" : null),
         valid_until: validUntil || null,
         notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
         terms: terms || null,
@@ -1008,7 +1026,7 @@ function CreateQuoteDialog({
           ...it,
           tax_pct: saleMode === "cash" ? 0 : it.tax_pct,
         })),
-        wall_estimate: calcResult.worksheet,
+        wall_estimate: calcResult.worksheet as Record<string, unknown>,
       });
       return;
     }
@@ -1048,7 +1066,7 @@ function CreateQuoteDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={mode === "calculator" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-4xl"}
+        className={mode !== "manual" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-4xl"}
       >
         <DialogHeader>
           <DialogTitle>New quote</DialogTitle>
@@ -1059,9 +1077,9 @@ function CreateQuoteDialog({
               <button
                 type="button"
                 onClick={() => setMode("manual")}
-                className={`flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                   mode === "manual"
-                    ? "bg-background shadow-sm"
+                    ? "bg-background shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -1069,14 +1087,25 @@ function CreateQuoteDialog({
               </button>
               <button
                 type="button"
-                onClick={() => setMode("calculator")}
-                className={`flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
-                  mode === "calculator"
-                    ? "bg-background shadow-sm"
+                onClick={() => setMode("wall_cladding")}
+                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+                  mode === "wall_cladding" || mode === "calculator"
+                    ? "bg-background shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Wall Cladding Calculator
+                Wall Cladding Studio
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("stone_mural")}
+                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+                  mode === "stone_mural"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Stone Mural Studio
               </button>
             </div>
 
@@ -1370,9 +1399,15 @@ function CreateQuoteDialog({
               </div>
             )}
 
-            {mode === "calculator" && (
+            {(mode === "wall_cladding" || mode === "calculator") && (
               <div className="md:col-span-2">
                 <EstimateStudioCalculator projectId={projectId || null} onResult={setCalcResult} />
+              </div>
+            )}
+
+            {mode === "stone_mural" && (
+              <div className="md:col-span-2">
+                <StoneMuralCalculator projectId={projectId || null} onResult={setCalcResult} />
               </div>
             )}
           </QuickForm.QuickFill>
@@ -1402,7 +1437,7 @@ function CreateQuoteDialog({
             </Button>
             <Button
               type="submit"
-              disabled={mutation.isPending || (mode === "calculator" && !calcResult)}
+              disabled={mutation.isPending || (mode !== "manual" && !calcResult)}
             >
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create quote
             </Button>

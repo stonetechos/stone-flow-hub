@@ -173,3 +173,144 @@ export const DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT = 10;
 
 export const DISCOUNT_SQFT_THRESHOLD = 500;
 export const DISCOUNT_PCT = 7.5;
+
+// ============================================================================
+// Stone Murals Estimate Studio Catalog & Formulas
+// ============================================================================
+
+export const DEFAULT_MURAL_THICKNESS_MM = 50;
+export const DEFAULT_MURAL_STONE_TYPE = "Sandstone";
+export const DEFAULT_MURAL_SANDSTONE_50MM_RATE = 550; // Rs 550 per sq ft
+export const DEFAULT_MURAL_RUBBING_RATE = 25; // Rs 25 per sq ft
+export const DEFAULT_MURAL_POLISHING_RATE = 300; // Rs 300 per sq ft (optional)
+export const DEFAULT_MURAL_INSTALLATION_LABOUR_RATE = 200; // Rs 200 per sq ft
+export const DEFAULT_MURAL_TOUCH_UP_RATE = 200; // Rs 200 per sq ft
+
+export interface MuralCncOption {
+  key: string;
+  category: "engraving_dipping" | "embossing";
+  label: string;
+  depthLabel: string;
+  defaultRatePerSqft: number;
+}
+
+export const MURAL_CNC_OPTIONS: MuralCncOption[] = [
+  {
+    key: "engraving_6mm",
+    category: "engraving_dipping",
+    label: "Engraving / Dipping Work (uptil 6 mm)",
+    depthLabel: "uptil 6 mm",
+    defaultRatePerSqft: 450,
+  },
+  {
+    key: "engraving_12mm",
+    category: "engraving_dipping",
+    label: "Engraving / Dipping Work (uptil 12 mm)",
+    depthLabel: "uptil 12 mm",
+    defaultRatePerSqft: 650,
+  },
+  {
+    key: "embossing_10mm",
+    category: "embossing",
+    label: "Embossing Work (uptil 10 mm)",
+    depthLabel: "uptil 10 mm",
+    defaultRatePerSqft: 850,
+  },
+  {
+    key: "embossing_30mm",
+    category: "embossing",
+    label: "Embossing Work (uptil 30 mm)",
+    depthLabel: "uptil 30 mm",
+    defaultRatePerSqft: 1050,
+  },
+];
+
+/**
+ * Returns default slab price in Rs / sq ft.
+ * Business rule: If stone is 50 mm thick and is a sandstone,
+ * the default price of the slab is Rs 550 per sq ft.
+ */
+export function getDefaultSlabPrice(stoneType: string, thicknessMm: number): number {
+  const isSandstone = (stoneType || "").trim().toLowerCase().includes("sandstone");
+  const is50mm = Math.abs(thicknessMm - 50) < 1;
+  if (isSandstone && is50mm) {
+    return DEFAULT_MURAL_SANDSTONE_50MM_RATE;
+  }
+  return 550;
+}
+
+export interface MuralSlabCalculation {
+  wallSqft: number;
+  slabSqft: number;
+  slabsRequired: number;
+  slabsGrid: { cols: number; rows: number; total: number };
+  slabsByArea: number;
+  totalSlabSqft: number;
+}
+
+/**
+ * Calculates the number of stone slabs required to complete a mural wall.
+ * Considers both rectangular tile/slab grid layout and area coverage.
+ */
+export function calculateMuralSlabs(params: {
+  wallHeight: number;
+  wallLength: number;
+  slabHeight: number;
+  slabLength: number;
+  unit: LengthUnit;
+  slabsCountOverride?: number | null;
+}): MuralSlabCalculation {
+  const wallArea = wallSqft(params.wallHeight, params.wallLength, params.unit);
+  const slabArea = wallSqft(params.slabHeight, params.slabLength, params.unit);
+
+  if (slabArea <= 0 || wallArea <= 0) {
+    return {
+      wallSqft: wallArea,
+      slabSqft: slabArea,
+      slabsRequired: 0,
+      slabsGrid: { cols: 0, rows: 0, total: 0 },
+      slabsByArea: 0,
+      totalSlabSqft: 0,
+    };
+  }
+
+  const wallL = toFeet(params.wallLength, params.unit);
+  const wallH = toFeet(params.wallHeight, params.unit);
+  const slabL = toFeet(params.slabLength, params.unit);
+  const slabH = toFeet(params.slabHeight, params.unit);
+
+  // Normal grid layout
+  const colsA = ceilWhole(wallL / slabL);
+  const rowsA = ceilWhole(wallH / slabH);
+  const totalA = colsA * rowsA;
+
+  // 90-degree rotated layout
+  const colsB = ceilWhole(wallL / slabH);
+  const rowsB = ceilWhole(wallH / slabL);
+  const totalB = colsB * rowsB;
+
+  const bestGrid =
+    totalA <= totalB
+      ? { cols: colsA, rows: rowsA, total: totalA }
+      : { cols: colsB, rows: rowsB, total: totalB };
+
+  const slabsByArea = ceilWhole(wallArea / slabArea);
+
+  const slabsRequired =
+    params.slabsCountOverride && params.slabsCountOverride > 0
+      ? params.slabsCountOverride
+      : bestGrid.total > 0
+        ? bestGrid.total
+        : slabsByArea;
+
+  const totalSlabSqft = ceilWhole(slabsRequired * slabArea);
+
+  return {
+    wallSqft: wallArea,
+    slabSqft: slabArea,
+    slabsRequired,
+    slabsGrid: bestGrid,
+    slabsByArea,
+    totalSlabSqft,
+  };
+}

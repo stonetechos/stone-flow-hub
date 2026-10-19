@@ -11,6 +11,7 @@ const search = z.object({
   project: z.string().uuid().optional(),
   enquiry: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
+  studio: z.enum(["cladding", "mural"]).optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/quotes/new")({
@@ -24,5 +25,7 @@ function NewQuoteShim() {
   const forwarded: Record<string, string> = { new: "1" };
   if (s.project) forwarded.project = s.project;
   if (s.enquiry) forwarded.enquiry = s.enquiry;
+  if (s.customer) forwarded.customer = s.customer;
+  if (s.studio) forwarded.studio = s.studio;
   return <Navigate to="/quotes" search={forwarded as never} replace />;
 }
