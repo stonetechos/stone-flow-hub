@@ -35,6 +35,31 @@ export type QuoteListItem = QuoteRow & {
 const SELECT_WITH_JOINS =
   "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
+function reconcileQuoteItem(quote: QuoteListItem): QuoteListItem {
+  if (quote.status === "converted") {
+    const hasActiveInvoice =
+      Array.isArray(quote.invoices) &&
+      quote.invoices.some((inv) => inv && inv.status !== "cancelled");
+    if (!hasActiveInvoice) {
+      // Background heal the database record so orphaned quotes can be re-invoiced
+      void getDb()
+        .from("quotes")
+        .update({ status: "accepted" })
+        .eq("id", quote.id)
+        .then(
+          () => {},
+          (err) => console.warn("[quotes] auto-heal quote status failed", err),
+        );
+
+      return {
+        ...quote,
+        status: "accepted",
+      };
+    }
+  }
+  return quote;
+}
+
 export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
   let q = getDb()
     .from("quotes")
@@ -45,7 +70,7 @@ export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
   if (s) q = q.or(`quote_no.ilike.%${s}%,notes.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
-  return (data ?? []) as QuoteListItem[];
+  return ((data ?? []) as QuoteListItem[]).map(reconcileQuoteItem);
 }
 
 export async function listQuotesForProject(projectId: string): Promise<QuoteListItem[]> {
@@ -55,7 +80,7 @@ export async function listQuotesForProject(projectId: string): Promise<QuoteList
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
   if (error) throw new AppError(mapDbError(error));
-  return (data ?? []) as QuoteListItem[];
+  return ((data ?? []) as QuoteListItem[]).map(reconcileQuoteItem);
 }
 
 export async function getQuote(id: string): Promise<QuoteListItem | null> {
@@ -65,7 +90,7 @@ export async function getQuote(id: string): Promise<QuoteListItem | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw new AppError(mapDbError(error));
-  return (data as QuoteListItem | null) ?? null;
+  return data ? reconcileQuoteItem(data as QuoteListItem) : null;
 }
 
 export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {

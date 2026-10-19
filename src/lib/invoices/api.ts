@@ -128,6 +128,19 @@ export async function setInvoiceStatus(input: SetInvoiceStatusInput): Promise<In
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
+
+  if (statusToSave === "cancelled" && data?.quote_id) {
+    const { data: remaining } = await getDb()
+      .from("invoices")
+      .select("id")
+      .eq("quote_id", data.quote_id)
+      .neq("status", "cancelled");
+
+    if (!remaining || remaining.length === 0) {
+      await getDb().from("quotes").update({ status: "accepted" }).eq("id", data.quote_id);
+    }
+  }
+
   return data;
 }
 

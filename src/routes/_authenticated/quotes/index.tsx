@@ -563,9 +563,8 @@ function QuotesPage() {
                         {(() => {
                           const mode = getQuoteSaleMode(r);
                           const cfg = SALE_MODE_CONFIG[mode];
-                          const activeInvoice =
-                            r.invoices?.find((i) => i.status !== "cancelled") ?? r.invoices?.[0];
-                          const isInvoiced = r.status === "converted" || !!activeInvoice;
+                          const activeInvoice = r.invoices?.find((i) => i.status !== "cancelled");
+                          const isInvoiced = !!activeInvoice;
 
                           return (
                             <div className="flex flex-col gap-0.5 items-start">
@@ -581,22 +580,15 @@ function QuotesPage() {
                                 <span>{cfg.shortLabel}</span>
                               </span>
                               {mode === "invoiced" ? (
-                                isInvoiced ? (
-                                  activeInvoice ? (
-                                    <Link
-                                      to="/invoices/$invoiceId"
-                                      params={{ invoiceId: activeInvoice.id }}
-                                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
-                                    >
-                                      <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                                      <span>Invoiced ({activeInvoice.invoice_no})</span>
-                                    </Link>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700">
-                                      <CheckCircle2 className="h-3 w-3 text-blue-600" />
-                                      <span>Invoiced</span>
-                                    </span>
-                                  )
+                                isInvoiced && activeInvoice ? (
+                                  <Link
+                                    to="/invoices/$invoiceId"
+                                    params={{ invoiceId: activeInvoice.id }}
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3 text-blue-600" />
+                                    <span>Invoiced ({activeInvoice.invoice_no})</span>
+                                  </Link>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground font-normal">
                                     To be invoiced
@@ -613,21 +605,15 @@ function QuotesPage() {
                                 </Link>
                               ) : (
                                 <div className="flex items-center gap-1 text-[10px]">
-                                  {isInvoiced ? (
-                                    activeInvoice ? (
-                                      <Link
-                                        to="/invoices/$invoiceId"
-                                        params={{ invoiceId: activeInvoice.id }}
-                                        className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
-                                      >
-                                        <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
-                                        <span>Invoiced ({activeInvoice.invoice_no})</span>
-                                      </Link>
-                                    ) : (
-                                      <span className="font-semibold text-purple-700">
-                                        Invoiced
-                                      </span>
-                                    )
+                                  {isInvoiced && activeInvoice ? (
+                                    <Link
+                                      to="/invoices/$invoiceId"
+                                      params={{ invoiceId: activeInvoice.id }}
+                                      className="font-semibold text-purple-700 hover:underline inline-flex items-center gap-0.5"
+                                    >
+                                      <CheckCircle2 className="h-2.5 w-2.5 text-purple-600" />
+                                      <span>Invoiced ({activeInvoice.invoice_no})</span>
+                                    </Link>
                                   ) : (
                                     <span className="text-purple-700 font-normal">Bill</span>
                                   )}
