@@ -24,10 +24,16 @@ export type QuoteListItem = QuoteRow & {
     workflow_state?: unknown;
   } | null;
   project: { id: string; name: string; project_code: string } | null;
+  invoices?: Array<{
+    id: string;
+    invoice_no: string;
+    status: string;
+    total: number;
+  }> | null;
 };
 
 const SELECT_WITH_JOINS =
-  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code)";
+  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
 export async function listQuotes(query = ""): Promise<QuoteListItem[]> {
   let q = getDb()

@@ -13,12 +13,11 @@ export interface SaleModeConfig {
 export const SALE_MODE_CONFIG: Record<SaleMode, SaleModeConfig> = {
   invoiced: {
     value: "invoiced",
-    label: "GST Deal (To Be Invoiced)",
+    label: "GST Deal (Tax Bill)",
     shortLabel: "GST Deal",
     badgeTone: "bg-blue-50 text-blue-800 border-blue-200 font-medium",
     dotColor: "bg-blue-500",
-    description:
-      "Standard GST deal: Official Tax Invoice will be generated when order is confirmed.",
+    description: "Standard GST deal: Official Tax Invoice is generated when order is confirmed.",
     documentType: "bill",
   },
   cash: {
