@@ -41,6 +41,7 @@ function EditInvoicePage() {
     queryFn: () => getInvoice(invoiceId),
   });
   const [form, setForm] = useState<InvoiceUpdateInput>({
+    issue_date: null,
     due_date: null,
     notes: null,
     terms: null,
@@ -49,6 +50,7 @@ function EditInvoicePage() {
   useEffect(() => {
     if (query.data) {
       setForm({
+        issue_date: query.data.issue_date ?? null,
         due_date: query.data.due_date ?? null,
         notes: query.data.notes ?? null,
         terms: query.data.terms ?? null,
@@ -98,6 +100,13 @@ function EditInvoicePage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
+          <Field label="Invoice date">
+            <Input
+              type="date"
+              value={form.issue_date ?? ""}
+              onChange={(e) => set("issue_date", e.target.value || null)}
+            />
+          </Field>
           <Field label="Due date">
             <Input
               type="date"

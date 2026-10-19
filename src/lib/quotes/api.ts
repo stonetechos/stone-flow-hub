@@ -228,7 +228,19 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
     p_due_date: parsed.due_date ?? undefined,
   });
   if (error) throw new AppError(mapDbError(error));
-  return data as DbTable<"invoices">;
+  const invoice = data as DbTable<"invoices">;
+  if (parsed.issue_date && invoice?.id) {
+    const { data: updated, error: updErr } = await getDb()
+      .from("invoices")
+      .update({ issue_date: parsed.issue_date })
+      .eq("id", invoice.id)
+      .select("*")
+      .single();
+    if (!updErr && updated) {
+      return updated as DbTable<"invoices">;
+    }
+  }
+  return invoice;
 }
 
 export async function updateQuote(id: string, input: QuoteUpdateInput): Promise<QuoteRow> {

@@ -213,6 +213,7 @@ export function invalidateInvoice(qc: QueryClient, id?: string): void {
     bump(qc, qk.invoices.items(id));
     bump(qc, qk.invoices.payments(id));
   }
+  bump(qc, qk.quotes.all);
   bump(qc, qk.dashboard);
   bump(qc, qk.activity.recent);
 }

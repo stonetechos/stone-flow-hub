@@ -18,6 +18,7 @@ export const setInvoiceStatusSchema = z.object({
 export type SetInvoiceStatusInput = z.infer<typeof setInvoiceStatusSchema>;
 
 export const invoiceUpdateSchema = z.object({
+  issue_date: zOptional(),
   due_date: zOptional(),
   notes: zOptional(),
   terms: zOptional(),

@@ -136,13 +136,17 @@ export async function recordManualPayment(input: RecordPaymentInput): Promise<Pa
 
 export async function updateInvoice(id: string, input: InvoiceUpdateInput): Promise<InvoiceRow> {
   const parsed = invoiceUpdateSchema.parse(input);
+  const patch: Record<string, unknown> = {
+    due_date: parsed.due_date ?? null,
+    notes: parsed.notes ?? null,
+    terms: parsed.terms ?? null,
+  };
+  if (parsed.issue_date !== undefined) {
+    patch.issue_date = parsed.issue_date || null;
+  }
   const { data, error } = await getDb()
     .from("invoices")
-    .update({
-      due_date: parsed.due_date ?? null,
-      notes: parsed.notes ?? null,
-      terms: parsed.terms ?? null,
-    })
+    .update(patch as never)
     .eq("id", id)
     .select("*")
     .single();
@@ -151,8 +155,26 @@ export async function updateInvoice(id: string, input: InvoiceUpdateInput): Prom
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
+  const { data: inv } = await getDb()
+    .from("invoices")
+    .select("id, quote_id")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await getDb().from("invoices").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
+
+  if (inv?.quote_id) {
+    const { data: remaining } = await getDb()
+      .from("invoices")
+      .select("id")
+      .eq("quote_id", inv.quote_id)
+      .neq("status", "cancelled");
+
+    if (!remaining || remaining.length === 0) {
+      await getDb().from("quotes").update({ status: "accepted" }).eq("id", inv.quote_id);
+    }
+  }
 }
 
 /* ------------------------------------------------------------------ */

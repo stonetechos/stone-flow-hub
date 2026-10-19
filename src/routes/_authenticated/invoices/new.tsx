@@ -21,8 +21,7 @@ import {
 import { Receipt } from "lucide-react";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { listQuotes } from "@/lib/quotes/api";
-import { convertQuoteToInvoice } from "@/lib/quotes/api";
+import { listQuotes, convertQuoteToInvoice, type QuoteListItem } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 
 const searchSchema = z.object({
@@ -43,11 +42,13 @@ function NewInvoicePage() {
   const nav = useNavigate();
   const preset = Route.useSearch();
   const [q, setQ] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0, 10));
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const convert = useMutation({
-    mutationFn: (id: string) => convertQuoteToInvoice({ quote_id: id }),
+    mutationFn: (args: { quoteId: string; issueDate?: string }) =>
+      convertQuoteToInvoice({ quote_id: args.quoteId, issue_date: args.issueDate }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`, {
         action: {
@@ -68,10 +69,18 @@ function NewInvoicePage() {
   });
 
   // Scope the accepted-quote list by whatever context arrived on the URL.
-  // If a specific `quote=` was passed we pre-filter to just that row so the
-  // convert click is a single action.
+  // A quote is eligible if it is:
+  // 1. accepted, OR
+  // 2. converted but has no active (non-cancelled) invoice (e.g. previous invoice was deleted)
   const eligible = useMemo(() => {
-    const base = (query.data ?? []).filter((r) => r.status === "accepted");
+    const hasActiveInvoice = (r: QuoteListItem) => {
+      const invoices = (r as { invoices?: Array<{ id: string; status: string }> | null }).invoices;
+      return Array.isArray(invoices) && invoices.some((i) => i.status !== "cancelled");
+    };
+
+    const base = (query.data ?? []).filter(
+      (r) => r.status === "accepted" || (r.status === "converted" && !hasActiveInvoice(r)),
+    );
     if (preset.quote) return base.filter((r) => r.id === preset.quote);
     if (preset.customer) return base.filter((r) => r.customer_id === preset.customer);
     if (preset.so) {
@@ -95,13 +104,28 @@ function NewInvoicePage() {
           </Button>
         }
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search quotes…"
           className="max-w-md"
         />
+        <div className="flex items-center gap-2 text-xs">
+          <label
+            htmlFor="inv-date-input"
+            className="font-medium text-muted-foreground whitespace-nowrap"
+          >
+            Invoice date:
+          </label>
+          <Input
+            id="inv-date-input"
+            type="date"
+            value={invoiceDate}
+            onChange={(e) => setInvoiceDate(e.target.value)}
+            className="w-36 h-9 text-xs"
+          />
+        </div>
         {hasContextFilter && (
           <Button
             variant="outline"
@@ -120,7 +144,7 @@ function NewInvoicePage() {
       ) : eligible.length === 0 ? (
         <EmptyState
           icon={<Receipt className="h-6 w-6" />}
-          title="No accepted quotes"
+          title="No eligible quotes"
           message="Mark a quote as Accepted first, then convert it here."
           action={<Button onClick={() => nav({ to: "/quotes" })}>Go to quotes</Button>}
         />
@@ -152,8 +176,11 @@ function NewInvoicePage() {
                   <TableCell>{r.customer?.name ?? "—"}</TableCell>
                   <TableCell>{r.project?.name ?? "—"}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {r.status}
+                    <Badge
+                      variant={r.status === "converted" ? "secondary" : "outline"}
+                      className="capitalize"
+                    >
+                      {r.status === "converted" ? "Ready to re-invoice" : r.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatInr(r.total)}</TableCell>
@@ -163,7 +190,7 @@ function NewInvoicePage() {
                       disabled={busyId === r.id}
                       onClick={() => {
                         setBusyId(r.id);
-                        convert.mutate(r.id);
+                        convert.mutate({ quoteId: r.id, issueDate: invoiceDate });
                       }}
                     >
                       {busyId === r.id ? (

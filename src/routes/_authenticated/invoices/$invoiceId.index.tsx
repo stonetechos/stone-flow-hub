@@ -398,12 +398,23 @@ function InvoiceDetailPage() {
         <div className="space-y-4">
           <Card className="shadow-1">
             <CardHeader>
-              <CardTitle className="text-sm">Status</CardTitle>
+              <CardTitle className="text-sm">Invoice Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="outline" className="capitalize">
-                {invoice.status === "sent" ? "Issued / Sent" : invoice.status.replace(/_/g, " ")}
-              </Badge>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Invoice Date:</span>
+                <span className="font-medium text-foreground">{invoice.issue_date || "—"}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Due Date:</span>
+                <span className="font-medium text-foreground">{invoice.due_date || "—"}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs pt-1 border-t">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant="outline" className="capitalize">
+                  {invoice.status === "sent" ? "Issued / Sent" : invoice.status.replace(/_/g, " ")}
+                </Badge>
+              </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Change status</label>
                 <Select

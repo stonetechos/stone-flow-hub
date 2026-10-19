@@ -77,6 +77,7 @@ function InvoicesPage() {
       { key: "no", label: "Invoice / Customer", required: true },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
+      { key: "date", label: "Date" },
       { key: "status", label: "Status" },
       { key: "total", label: "Total" },
       { key: "balance", label: "Balance" },
@@ -201,6 +202,7 @@ function InvoicesPage() {
                 {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
+                {!isHidden("date") && <TableHead>Date</TableHead>}
                 {!isHidden("status") && <TableHead>Status</TableHead>}
                 {!isHidden("total") && <TableHead className="text-right">Total</TableHead>}
                 {!isHidden("balance") && <TableHead className="text-right">Balance</TableHead>}
@@ -229,6 +231,11 @@ function InvoicesPage() {
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
                   {!isHidden("project") && <TableCell>{r.project?.name ?? "—"}</TableCell>}
+                  {!isHidden("date") && (
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {r.issue_date ?? "—"}
+                    </TableCell>
+                  )}
                   {!isHidden("status") && (
                     <TableCell>
                       <Badge variant="outline" className="capitalize">

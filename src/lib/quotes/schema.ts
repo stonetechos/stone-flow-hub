@@ -84,6 +84,7 @@ export type QuoteCreateInput = z.infer<typeof quoteCreateSchema>;
 
 export const convertQuoteSchema = z.object({
   quote_id: zUuid,
+  issue_date: zOptional(),
   due_date: zOptional(),
 });
 export type ConvertQuoteInput = z.infer<typeof convertQuoteSchema>;
