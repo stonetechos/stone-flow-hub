@@ -15,7 +15,10 @@ import {
   FolderOpen,
   History,
   ShieldAlert,
+  Truck,
+  CheckCircle2,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { AttachmentsPanel, NotesPanel, TimelinePanel } from "@/components/entity/DetailPanels";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
@@ -98,6 +101,23 @@ function InvoiceDetailPage() {
     queryKey: qk.invoices.links(invoiceId),
     queryFn: () => getInvoicePaymentLinks(invoiceId),
   });
+  const dispatches = useQuery({
+    queryKey: ["invoices", invoiceId, "dispatches", inv.data?.customer_id],
+    queryFn: async () => {
+      if (!inv.data?.customer_id) return [];
+      const { data, error } = await supabase
+        .from("dispatches")
+        .select(
+          "id, dispatch_no, dispatch_date, status, carrier, vehicle_no, driver_name, driver_phone, lr_no, tracking_no, notes, remarks",
+        )
+        .eq("customer_id", inv.data.customer_id)
+        .neq("status", "cancelled")
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return data ?? [];
+    },
+    enabled: !!inv.data?.customer_id,
+  });
 
   const invalidateAll = () => {
     invalidateInvoice(qc, invoiceId);
@@ -153,6 +173,17 @@ function InvoiceDetailPage() {
   const invoice = inv.data;
   const activeLink = (links.data ?? []).find((l) => l.status === "created");
   const balance = Number(invoice.balance_due ?? 0);
+
+  const matchingDispatches = dispatches.data ?? [];
+  const hasInvoiceDispatchFields = Boolean(
+    invoice.dispatch_date ||
+    invoice.vehicle_no ||
+    invoice.truck_no ||
+    invoice.lr_no ||
+    invoice.eway_bill_no ||
+    invoice.transporter,
+  );
+  const hasExistingDispatch = matchingDispatches.length > 0 || hasInvoiceDispatchFields;
 
   return (
     <div>
@@ -247,6 +278,32 @@ function InvoiceDetailPage() {
                     .getElementById("invoice-timeline")
                     ?.scrollIntoView({ behavior: "smooth", block: "start" }),
               },
+              ...(hasExistingDispatch && matchingDispatches[0]?.id
+                ? [
+                    {
+                      label: `View Challan ${matchingDispatches[0].dispatch_no}`,
+                      icon: <Truck className="h-4 w-4" />,
+                      onSelect: () =>
+                        nav({
+                          to: "/dispatch/$id",
+                          params: { id: matchingDispatches[0].id },
+                        }),
+                    },
+                  ]
+                : [
+                    {
+                      label: "Create Delivery Challan",
+                      icon: <Truck className="h-4 w-4" />,
+                      onSelect: () =>
+                        nav({
+                          to: "/dispatch/new",
+                          search: {
+                            customer: invoice.customer_id,
+                            invoice: invoice.id,
+                          },
+                        }),
+                    },
+                  ]),
               {
                 label: "Delete invoice",
                 icon: <Trash2 className="h-4 w-4" />,
@@ -264,7 +321,13 @@ function InvoiceDetailPage() {
       <GuidedNextStep
         entity="invoice"
         entityId={invoiceId}
-        ctx={{ invoice_id: invoiceId, customer_id: invoice.customer_id }}
+        ctx={{
+          invoice_id: invoiceId,
+          customer_id: invoice.customer_id,
+          project_id: invoice.project_id,
+          has_dispatch: hasExistingDispatch,
+          balance_due: balance,
+        }}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -321,37 +384,177 @@ function InvoiceDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-1">
-          <CardHeader>
-            <CardTitle className="text-sm">Status</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Badge variant="outline" className="capitalize">
-              {invoice.status}
-            </Badge>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Change status</label>
-              <Select
-                value={invoice.status}
-                onValueChange={(v) => statusMut.mutate(v as InvoiceStatus)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="issued">Issued</SelectItem>
-                  <SelectItem value="sent">Sent</SelectItem>
-                  <SelectItem value="overdue">Overdue</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Paid/partially_paid are set automatically as payments are recorded.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card className="shadow-1">
+            <CardHeader>
+              <CardTitle className="text-sm">Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Badge variant="outline" className="capitalize">
+                {invoice.status}
+              </Badge>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Change status</label>
+                <Select
+                  value={invoice.status}
+                  onValueChange={(v) => statusMut.mutate(v as InvoiceStatus)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="issued">Issued</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Paid/partially_paid are set automatically as payments are recorded.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Delivery & Dispatch Challan Details Card */}
+          {hasExistingDispatch ? (
+            <Card className="shadow-1 border-primary/20 bg-primary/[0.02]">
+              <CardHeader className="p-4 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-semibold">Delivery Challan</CardTitle>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-300 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 capitalize text-[11px]"
+                  >
+                    <CheckCircle2 className="mr-1 h-3 w-3 inline" />
+                    {matchingDispatches[0]?.status
+                      ? matchingDispatches[0].status.replace("_", " ")
+                      : "Dispatched"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-1 space-y-2 text-xs">
+                {matchingDispatches.length > 0 ? (
+                  matchingDispatches.map((d) => (
+                    <div
+                      key={d.id}
+                      className="rounded-md border border-border/80 bg-background/90 p-2.5 space-y-1.5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Link
+                          to="/dispatch/$id"
+                          params={{ id: d.id }}
+                          className="font-mono font-semibold text-primary hover:underline flex items-center gap-1"
+                        >
+                          {d.dispatch_no} <ExternalLink className="h-3 w-3" />
+                        </Link>
+                        <span className="text-muted-foreground font-medium">{d.dispatch_date}</span>
+                      </div>
+                      {(d.vehicle_no || d.carrier || d.driver_name) && (
+                        <div className="text-muted-foreground space-y-0.5 pt-0.5 border-t border-border/40">
+                          {d.vehicle_no && (
+                            <div>
+                              Vehicle:{" "}
+                              <span className="font-mono text-foreground font-medium">
+                                {d.vehicle_no}
+                              </span>
+                            </div>
+                          )}
+                          {d.carrier && (
+                            <div>
+                              Carrier: <span className="text-foreground">{d.carrier}</span>
+                            </div>
+                          )}
+                          {d.driver_name && (
+                            <div>
+                              Driver: <span className="text-foreground">{d.driver_name}</span>
+                            </div>
+                          )}
+                          {d.lr_no && (
+                            <div>
+                              LR No: <span className="font-mono text-foreground">{d.lr_no}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {d.notes && (
+                        <div className="text-muted-foreground italic text-[11px] pt-0.5">
+                          {d.notes}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-md border border-border/80 bg-background/90 p-2.5 space-y-1 text-muted-foreground shadow-sm">
+                    <div className="font-medium text-foreground">
+                      Dispatched directly on invoice
+                    </div>
+                    {invoice.dispatch_date && (
+                      <div>
+                        Date: <span className="text-foreground">{invoice.dispatch_date}</span>
+                      </div>
+                    )}
+                    {(invoice.vehicle_no || invoice.truck_no) && (
+                      <div>
+                        Vehicle:{" "}
+                        <span className="font-mono text-foreground font-medium">
+                          {invoice.vehicle_no || invoice.truck_no}
+                        </span>
+                      </div>
+                    )}
+                    {invoice.transporter && (
+                      <div>
+                        Transporter: <span className="text-foreground">{invoice.transporter}</span>
+                      </div>
+                    )}
+                    {invoice.lr_no && (
+                      <div>
+                        LR No: <span className="font-mono text-foreground">{invoice.lr_no}</span>
+                      </div>
+                    )}
+                    {invoice.eway_bill_no && (
+                      <div>
+                        E-Way Bill:{" "}
+                        <span className="font-mono text-foreground">{invoice.eway_bill_no}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-1 border-dashed">
+              <CardHeader className="p-4 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-semibold">Delivery Challan</CardTitle>
+                  </div>
+                  <Badge variant="outline" className="text-muted-foreground text-[11px]">
+                    Pending
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-1 space-y-2 text-xs">
+                <p className="text-muted-foreground">
+                  No delivery challan or dispatch document recorded yet.
+                </p>
+                <Button asChild variant="outline" size="sm" className="w-full gap-1 h-8 text-xs">
+                  <Link
+                    to="/dispatch/new"
+                    search={{ customer: invoice.customer_id, invoice: invoice.id }}
+                  >
+                    <Plus className="h-3 w-3" /> Create Delivery Challan
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         <Card className="shadow-1 md:col-span-2">
           <CardHeader>

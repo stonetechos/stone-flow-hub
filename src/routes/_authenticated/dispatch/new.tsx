@@ -28,6 +28,7 @@ import {
 } from "@/lib/dispatch/schema";
 import { getSalesOrder, listSalesOrdersForPicker } from "@/lib/sales-orders/api";
 import { getQuote, getQuoteItems, listQuotes } from "@/lib/quotes/api";
+import { getInvoice, getInvoiceItems } from "@/lib/invoices/api";
 import { formatInr } from "@/lib/format";
 import { invalidateDispatch } from "@/lib/query-invalidation";
 import { DispatchItemsEditor } from "@/components/dispatch/DispatchItemsEditor";
@@ -38,6 +39,7 @@ const search = z.object({
   so: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
   quote: z.string().uuid().optional(),
+  invoice: z.string().uuid().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/dispatch/new")({
@@ -175,6 +177,41 @@ function NewDispatchPage() {
       return { quote, quoteItems };
     },
     enabled: !!params.quote,
+  });
+
+  // Preload customer/project/items when Invoice chosen
+  useQuery({
+    queryKey: ["dispatch", "new", "invoice-defaults", params.invoice ?? ""],
+    queryFn: async () => {
+      if (!params.invoice) return null;
+      const [inv, invItems] = await Promise.all([
+        getInvoice(params.invoice),
+        getInvoiceItems(params.invoice),
+      ]);
+      if (inv) {
+        setForm((f) => ({
+          ...f,
+          customer_id: f.customer_id ?? inv.customer_id,
+          project_id: f.project_id ?? inv.project_id,
+          notes: f.notes ?? `Delivery challan for Invoice #${inv.invoice_no}`,
+        }));
+        if (invItems && invItems.length > 0) {
+          setItems(
+            invItems.map((it, idx) => ({
+              product_id: (it as unknown as { product_id?: string | null }).product_id || null,
+              product_name: it.description || null,
+              description: it.description || "Stone item",
+              unit: it.unit || "sqft",
+              quantity: Number(it.quantity) || 1,
+              sort_order: idx + 1,
+            })),
+          );
+          toast.success(`Loaded ${invItems.length} items from Invoice #${inv.invoice_no}`);
+        }
+      }
+      return { inv, invItems };
+    },
+    enabled: !!params.invoice,
   });
 
   const mut = useMutation({

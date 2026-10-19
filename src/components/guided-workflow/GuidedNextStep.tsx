@@ -54,8 +54,8 @@ export function GuidedNextStep({ entity, entityId, ctx, hasNext, reasonOverride 
   const probeEnabled = !!step && !!enabled && !skipped && hasNext === undefined;
 
   const probe = useQuery({
-    queryKey: downstreamQueryKey(entity, entityId),
-    queryFn: () => probeDownstream(entity, entityId),
+    queryKey: downstreamQueryKey(entity, entityId, ctx?.has_dispatch),
+    queryFn: () => probeDownstream(entity, entityId, ctx),
     enabled: probeEnabled,
     staleTime: 60_000,
     gcTime: 5 * 60_000,

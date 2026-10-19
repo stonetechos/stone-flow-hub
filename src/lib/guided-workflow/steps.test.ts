@@ -52,14 +52,41 @@ describe("Guided Workflow Steps Engine", () => {
     expect(step?.skipKey).toBe("gwa:quote:quote-555:invoice");
   });
 
-  it("recommends dispatch for invoice with customer_id", () => {
+  it("recommends dispatch for invoice with customer_id and invoice_id", () => {
     const ctx: GuidedContext = { customer_id: "cust-123" };
     const step = nextGuidedStep("invoice", "inv-888", ctx);
     expect(step).not.toBeNull();
     expect(step?.href).toBe("/dispatch/new");
     expect(step?.search).toEqual({
       customer: "cust-123",
+      invoice: "inv-888",
     });
+  });
+
+  it("intelligently does not ask to create a dispatch if delivery challan is already created", () => {
+    // When delivery challan is already made and balance is due: recommends recording customer payment
+    const ctxWithChallan: GuidedContext = {
+      customer_id: "cust-123",
+      has_dispatch: true,
+      balance_due: 32320,
+    };
+    const step = nextGuidedStep("invoice", "inv-888", ctxWithChallan);
+    expect(step).not.toBeNull();
+    expect(step?.title).toBe("Record customer payment");
+    expect(step?.href).toBe("/receipts/new");
+    expect(step?.ctaLabel).toContain("Record payment");
+    expect(step?.search).toEqual({
+      customer: "cust-123",
+      invoice: "inv-888",
+    });
+
+    // When delivery challan is already made and invoice is fully paid: returns null
+    const ctxPaid: GuidedContext = {
+      customer_id: "cust-123",
+      has_dispatch: true,
+      balance_due: 0,
+    };
+    expect(nextGuidedStep("invoice", "inv-888", ctxPaid)).toBeNull();
   });
 
   it("recommends customer payment for dispatch with invoice context", () => {

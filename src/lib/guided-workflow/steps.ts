@@ -45,6 +45,8 @@ export interface GuidedContext {
   sales_order_id?: string | null;
   invoice_id?: string | null;
   vendor_id?: string | null;
+  has_dispatch?: boolean | null;
+  balance_due?: number | null;
 }
 
 export interface GuidedStep {
@@ -106,6 +108,26 @@ export function nextGuidedStep(
         skipKey: `gwa:quote:${entityId}:invoice`,
       };
     case "invoice":
+      // If delivery challan is already created, do NOT ask to create a dispatch.
+      if (ctx.has_dispatch) {
+        // If balance is still pending, advance to customer payment / receipt:
+        if (ctx.balance_due === undefined || ctx.balance_due === null || ctx.balance_due > 0) {
+          return {
+            title: "Record customer payment",
+            description:
+              "Delivery challan has already been created for this order. Record the customer payment or receipt to update the ledger.",
+            ctaLabel: "Continue — Record payment",
+            href: "/receipts/new",
+            search: clean({
+              customer: ctx.customer_id,
+              invoice: entityId,
+            }),
+            skipKey: `gwa:invoice:${entityId}:receipt`,
+          };
+        }
+        // Fully dispatched and fully paid: no further actions needed.
+        return null;
+      }
       return {
         title: "Create a dispatch",
         description:
@@ -114,6 +136,7 @@ export function nextGuidedStep(
         href: "/dispatch/new",
         search: clean({
           customer: ctx.customer_id,
+          invoice: entityId,
         }),
         skipKey: `gwa:invoice:${entityId}:dispatch`,
       };
