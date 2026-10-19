@@ -136,7 +136,7 @@ function QuotesPage() {
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "Quote / Customer", required: true },
-      { key: "saleMode", label: "Billing Plan" },
+      { key: "saleMode", label: "Deal Type" },
       { key: "date", label: "Quote Date" },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
@@ -275,11 +275,11 @@ function QuotesPage() {
     <div>
       <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
 
-      {/* Billing Plan Sub-Tabs: Tax Bills vs Cash / Challan vs Hybrid Split */}
+      {/* Deal Type Sub-Tabs Filter: GST Deals vs Cash Deals vs Hybrid Deals */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2">
         <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
           <Receipt className="h-3.5 w-3.5 text-slate-400" />
-          <span>Billing Plan:</span>
+          <span>Deal Type:</span>
         </span>
         <button
           type="button"
@@ -310,7 +310,7 @@ function QuotesPage() {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-          Tax Bill / GST ({quoteCounts.invoiced})
+          GST Deals ({quoteCounts.invoiced})
         </button>
         <button
           type="button"
@@ -326,7 +326,7 @@ function QuotesPage() {
           )}
         >
           <Truck className="h-3.5 w-3.5 text-emerald-600" />
-          Challan Only / Cash ({quoteCounts.cash})
+          Cash Deals ({quoteCounts.cash})
         </button>
         <button
           type="button"
@@ -342,7 +342,7 @@ function QuotesPage() {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-          Hybrid Split ({quoteCounts.hybrid})
+          Hybrid Deals ({quoteCounts.hybrid})
         </button>
       </div>
 
@@ -514,7 +514,7 @@ function QuotesPage() {
               <TableRow>
                 <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
-                {!isHidden("saleMode") && <TableHead className="w-36">Billing Plan</TableHead>}
+                {!isHidden("saleMode") && <TableHead className="w-36">Deal Type</TableHead>}
                 {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
@@ -562,12 +562,9 @@ function QuotesPage() {
                       <TableCell>
                         {(() => {
                           const mode = getQuoteSaleMode(r);
-                          if (mode === "invoiced") {
-                            return <span className="text-muted-foreground text-xs">—</span>;
-                          }
                           const cfg = SALE_MODE_CONFIG[mode];
                           return (
-                            <div className="flex flex-col gap-1 items-start">
+                            <div className="flex flex-col gap-0.5 items-start">
                               <span
                                 className={cn(
                                   "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold border",
@@ -579,7 +576,11 @@ function QuotesPage() {
                                 />
                                 <span>{cfg.shortLabel}</span>
                               </span>
-                              {mode === "cash" && (
+                              {mode === "invoiced" ? (
+                                <span className="text-[10px] text-muted-foreground font-normal">
+                                  To be invoiced
+                                </span>
+                              ) : mode === "cash" ? (
                                 <Link
                                   to="/dispatch/new"
                                   search={{ quote: r.id, customer: r.customer_id }}
@@ -588,6 +589,10 @@ function QuotesPage() {
                                   <Truck className="h-3 w-3" />
                                   <span>Challan Only</span>
                                 </Link>
+                              ) : (
+                                <span className="text-[10px] text-purple-700 font-normal">
+                                  Bill + Cash
+                                </span>
                               )}
                             </div>
                           );
@@ -1159,7 +1164,7 @@ function CreateQuoteDialog({
                 </Select>
               </Field>
 
-              <Field label="Billing Plan" className="md:col-span-2">
+              <Field label="Deal Type (Billing)" className="md:col-span-2">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -1180,7 +1185,7 @@ function CreateQuoteDialog({
                     )}
                   >
                     <Receipt className="h-3.5 w-3.5" />
-                    <span>Tax Invoice (GST Bill)</span>
+                    <span>GST Deal (Tax Bill)</span>
                   </button>
                   <button
                     type="button"
@@ -1196,7 +1201,7 @@ function CreateQuoteDialog({
                     )}
                   >
                     <Truck className="h-3.5 w-3.5" />
-                    <span>Cash Sale (Challan Only · No GST)</span>
+                    <span>Cash Deal (Challan Only)</span>
                   </button>
                   <button
                     type="button"
@@ -1209,7 +1214,7 @@ function CreateQuoteDialog({
                     )}
                   >
                     <Scale className="h-3.5 w-3.5" />
-                    <span>Hybrid (Tax Bill + Cash)</span>
+                    <span>Hybrid Deal (GST + Cash)</span>
                   </button>
                 </div>
                 {saleMode === "cash" && (
