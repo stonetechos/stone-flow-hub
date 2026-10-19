@@ -118,7 +118,7 @@ describe("renderDocWhatsAppText", () => {
   it("renders Quotation with pre-tax line amounts, notes, and taxes at the bottom only", () => {
     const built: BuiltDocument = {
       doc: {
-        kind: "quote",
+        kind: "quotation",
         title: "Quotation",
         number: "QT-000042",
         date: "2026-10-19",
