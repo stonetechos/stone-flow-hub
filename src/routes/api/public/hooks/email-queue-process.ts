@@ -128,7 +128,8 @@ export const Route = createFileRoute("/api/public/hooks/email-queue-process")({
             vt: 30,
           });
           const messages = rawMessages as unknown as
-            { msg_id: number; read_ct: number; message: EmailQueuePayload }[] | null;
+            | { msg_id: number; read_ct: number; message: EmailQueuePayload }[]
+            | null;
 
           if (readError) {
             console.error("Failed to read email batch", { queue, error: readError });

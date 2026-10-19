@@ -451,7 +451,11 @@ export function AssignVendorModal({ open, onOpenChange, item, salesOrderId }: Pr
                   onValueChange={(v) =>
                     setProdStatus(
                       v as
-                        "assigned" | "advance_pending" | "in_fabrication" | "ready" | "dispatched",
+                        | "assigned"
+                        | "advance_pending"
+                        | "in_fabrication"
+                        | "ready"
+                        | "dispatched",
                     )
                   }
                 >

@@ -20,10 +20,20 @@ import {
 } from "./employee-payments.functions";
 
 export type EmployeePaymentType =
-  "advance" | "salary_part" | "bonus" | "incentive" | "loan" | "settlement";
+  | "advance"
+  | "salary_part"
+  | "bonus"
+  | "incentive"
+  | "loan"
+  | "settlement";
 
 export type EmployeePaymentMethodId =
-  "bank_transfer" | "upi_personal_rishi" | "upi_personal_raman" | "cash" | "cheque" | "other";
+  | "bank_transfer"
+  | "upi_personal_rishi"
+  | "upi_personal_raman"
+  | "cash"
+  | "cheque"
+  | "other";
 
 export interface EmployeePaymentMethod {
   id: EmployeePaymentMethodId;

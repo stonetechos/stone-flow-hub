@@ -164,8 +164,12 @@ async function fetchPaymentsInternal(
 
       const paymentType =
         (meta.payment_type as
-          "advance" | "salary_part" | "bonus" | "incentive" | "loan" | "settlement") ||
-        (l.loan_type === "loan" ? "loan" : "advance");
+          | "advance"
+          | "salary_part"
+          | "bonus"
+          | "incentive"
+          | "loan"
+          | "settlement") || (l.loan_type === "loan" ? "loan" : "advance");
 
       const paymentMethod = (meta.method as string) || "cash";
       const accountName = (meta.account as string) || "Cash";
@@ -320,8 +324,12 @@ export const getCompanySalaryBalancesServerFn = createServerFn({ method: "POST" 
 
       const paymentType =
         (meta.payment_type as
-          "advance" | "salary_part" | "bonus" | "incentive" | "loan" | "settlement") ||
-        (l.loan_type === "loan" ? "loan" : "advance");
+          | "advance"
+          | "salary_part"
+          | "bonus"
+          | "incentive"
+          | "loan"
+          | "settlement") || (l.loan_type === "loan" ? "loan" : "advance");
 
       const paymentMethod = (meta.method as string) || "cash";
       const accountName = (meta.account as string) || "Cash";
