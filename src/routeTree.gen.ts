@@ -111,7 +111,6 @@ import { Route as AuthenticatedMastersCartingAgenciesRouteImport } from './route
 import { Route as AuthenticatedMastersApplicationsRouteImport } from './routes/_authenticated/masters/applications'
 import { Route as AuthenticatedLedgerCustomerIdRouteImport } from './routes/_authenticated/ledger/$customerId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices/new'
-import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices/$invoiceId'
 import { Route as AuthenticatedInventoryNewRouteImport } from './routes/_authenticated/inventory/new'
 import { Route as AuthenticatedInventoryIdRouteImport } from './routes/_authenticated/inventory/$id'
 import { Route as AuthenticatedInstallationsIdRouteImport } from './routes/_authenticated/installations/$id'
@@ -166,6 +165,7 @@ import { Route as AuthenticatedWorkforceIntelligenceOwnerIndexRouteImport } from
 import { Route as AuthenticatedWorkforceIntelligenceEmployeesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/employees/index'
 import { Route as AuthenticatedWorkforceIntelligenceCapacitiesIndexRouteImport } from './routes/_authenticated/workforce-intelligence/capacities/index'
 import { Route as AuthenticatedQuotesQuoteIdIndexRouteImport } from './routes/_authenticated/quotes/$quoteId.index'
+import { Route as AuthenticatedInvoicesInvoiceIdIndexRouteImport } from './routes/_authenticated/invoices/$invoiceId.index'
 import { Route as AuthenticatedHrPayrollIndexRouteImport } from './routes/_authenticated/hr/payroll/index'
 import { Route as AuthenticatedDispatchIdIndexRouteImport } from './routes/_authenticated/dispatch/$id.index'
 import { Route as ApiPublicWebhooksRazorpayRouteImport } from './routes/api/public/webhooks/razorpay'
@@ -777,12 +777,6 @@ const AuthenticatedInvoicesNewRoute =
     path: '/invoices/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedInvoicesInvoiceIdRoute =
-  AuthenticatedInvoicesInvoiceIdRouteImport.update({
-    id: '/invoices/$invoiceId',
-    path: '/invoices/$invoiceId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedInventoryNewRoute =
   AuthenticatedInventoryNewRouteImport.update({
     id: '/inventory/new',
@@ -1097,6 +1091,12 @@ const AuthenticatedQuotesQuoteIdIndexRoute =
     path: '/quotes/$quoteId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInvoicesInvoiceIdIndexRoute =
+  AuthenticatedInvoicesInvoiceIdIndexRouteImport.update({
+    id: '/invoices/$invoiceId/',
+    path: '/invoices/$invoiceId/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHrPayrollIndexRoute =
   AuthenticatedHrPayrollIndexRouteImport.update({
     id: '/hr/payroll/',
@@ -1247,9 +1247,9 @@ const AuthenticatedPaymentsIdEditRoute =
   } as any)
 const AuthenticatedInvoicesInvoiceIdEditRoute =
   AuthenticatedInvoicesInvoiceIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedInvoicesInvoiceIdRoute,
+    id: '/invoices/$invoiceId/edit',
+    path: '/invoices/$invoiceId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInventoryIdEditRoute =
   AuthenticatedInventoryIdEditRouteImport.update({
@@ -1360,7 +1360,6 @@ export interface FileRoutesByFullPath {
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
-  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
@@ -1464,6 +1463,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/dispatch/$id/': typeof AuthenticatedDispatchIdIndexRoute
   '/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
+  '/invoices/$invoiceId/': typeof AuthenticatedInvoicesInvoiceIdIndexRoute
   '/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1548,7 +1548,6 @@ export interface FileRoutesByTo {
   '/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/inventory/new': typeof AuthenticatedInventoryNewRoute
-  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/masters/applications': typeof AuthenticatedMastersApplicationsRoute
@@ -1652,6 +1651,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdIndexRoute
   '/hr/payroll': typeof AuthenticatedHrPayrollIndexRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdIndexRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/workforce-intelligence/capacities': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/workforce-intelligence/employees': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1739,7 +1739,6 @@ export interface FileRoutesById {
   '/_authenticated/installations/$id': typeof AuthenticatedInstallationsIdRoute
   '/_authenticated/inventory/$id': typeof AuthenticatedInventoryIdRouteWithChildren
   '/_authenticated/inventory/new': typeof AuthenticatedInventoryNewRoute
-  '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/ledger/$customerId': typeof AuthenticatedLedgerCustomerIdRoute
   '/_authenticated/masters/applications': typeof AuthenticatedMastersApplicationsRoute
@@ -1843,6 +1842,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/razorpay': typeof ApiPublicWebhooksRazorpayRoute
   '/_authenticated/dispatch/$id/': typeof AuthenticatedDispatchIdIndexRoute
   '/_authenticated/hr/payroll/': typeof AuthenticatedHrPayrollIndexRoute
+  '/_authenticated/invoices/$invoiceId/': typeof AuthenticatedInvoicesInvoiceIdIndexRoute
   '/_authenticated/quotes/$quoteId/': typeof AuthenticatedQuotesQuoteIdIndexRoute
   '/_authenticated/workforce-intelligence/capacities/': typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   '/_authenticated/workforce-intelligence/employees/': typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -1930,7 +1930,6 @@ export interface FileRouteTypes {
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/new'
-    | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/ledger/$customerId'
     | '/masters/applications'
@@ -2034,6 +2033,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/razorpay'
     | '/dispatch/$id/'
     | '/hr/payroll/'
+    | '/invoices/$invoiceId/'
     | '/quotes/$quoteId/'
     | '/workforce-intelligence/capacities/'
     | '/workforce-intelligence/employees/'
@@ -2118,7 +2118,6 @@ export interface FileRouteTypes {
     | '/installations/$id'
     | '/inventory/$id'
     | '/inventory/new'
-    | '/invoices/$invoiceId'
     | '/invoices/new'
     | '/ledger/$customerId'
     | '/masters/applications'
@@ -2222,6 +2221,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/razorpay'
     | '/dispatch/$id'
     | '/hr/payroll'
+    | '/invoices/$invoiceId'
     | '/quotes/$quoteId'
     | '/workforce-intelligence/capacities'
     | '/workforce-intelligence/employees'
@@ -2308,7 +2308,6 @@ export interface FileRouteTypes {
     | '/_authenticated/installations/$id'
     | '/_authenticated/inventory/$id'
     | '/_authenticated/inventory/new'
-    | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
     | '/_authenticated/ledger/$customerId'
     | '/_authenticated/masters/applications'
@@ -2412,6 +2411,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/razorpay'
     | '/_authenticated/dispatch/$id/'
     | '/_authenticated/hr/payroll/'
+    | '/_authenticated/invoices/$invoiceId/'
     | '/_authenticated/quotes/$quoteId/'
     | '/_authenticated/workforce-intelligence/capacities/'
     | '/_authenticated/workforce-intelligence/employees/'
@@ -3160,13 +3160,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvoicesNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/invoices/$invoiceId': {
-      id: '/_authenticated/invoices/$invoiceId'
-      path: '/invoices/$invoiceId'
-      fullPath: '/invoices/$invoiceId'
-      preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/inventory/new': {
       id: '/_authenticated/inventory/new'
       path: '/inventory/new'
@@ -3545,6 +3538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotesQuoteIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/invoices/$invoiceId/': {
+      id: '/_authenticated/invoices/$invoiceId/'
+      path: '/invoices/$invoiceId'
+      fullPath: '/invoices/$invoiceId/'
+      preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hr/payroll/': {
       id: '/_authenticated/hr/payroll/'
       path: '/hr/payroll'
@@ -3722,10 +3722,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/invoices/$invoiceId/edit': {
       id: '/_authenticated/invoices/$invoiceId/edit'
-      path: '/edit'
+      path: '/invoices/$invoiceId/edit'
       fullPath: '/invoices/$invoiceId/edit'
       preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdEditRouteImport
-      parentRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inventory/$id/edit': {
       id: '/_authenticated/inventory/$id/edit'
@@ -3792,21 +3792,6 @@ const AuthenticatedInventoryIdRouteChildren: AuthenticatedInventoryIdRouteChildr
 const AuthenticatedInventoryIdRouteWithChildren =
   AuthenticatedInventoryIdRoute._addFileChildren(
     AuthenticatedInventoryIdRouteChildren,
-  )
-
-interface AuthenticatedInvoicesInvoiceIdRouteChildren {
-  AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
-}
-
-const AuthenticatedInvoicesInvoiceIdRouteChildren: AuthenticatedInvoicesInvoiceIdRouteChildren =
-  {
-    AuthenticatedInvoicesInvoiceIdEditRoute:
-      AuthenticatedInvoicesInvoiceIdEditRoute,
-  }
-
-const AuthenticatedInvoicesInvoiceIdRouteWithChildren =
-  AuthenticatedInvoicesInvoiceIdRoute._addFileChildren(
-    AuthenticatedInvoicesInvoiceIdRouteChildren,
   )
 
 interface AuthenticatedPaymentsIdRouteChildren {
@@ -3966,7 +3951,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInstallationsIdRoute: typeof AuthenticatedInstallationsIdRoute
   AuthenticatedInventoryIdRoute: typeof AuthenticatedInventoryIdRouteWithChildren
   AuthenticatedInventoryNewRoute: typeof AuthenticatedInventoryNewRoute
-  AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedLedgerCustomerIdRoute: typeof AuthenticatedLedgerCustomerIdRoute
   AuthenticatedMastersApplicationsRoute: typeof AuthenticatedMastersApplicationsRoute
@@ -4039,12 +4023,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDispatchIdEditRoute: typeof AuthenticatedDispatchIdEditRoute
   AuthenticatedDispatchIdPrintRoute: typeof AuthenticatedDispatchIdPrintRoute
   AuthenticatedHrPayrollRunIdRoute: typeof AuthenticatedHrPayrollRunIdRoute
+  AuthenticatedInvoicesInvoiceIdEditRoute: typeof AuthenticatedInvoicesInvoiceIdEditRoute
   AuthenticatedQuotesQuoteIdEditRoute: typeof AuthenticatedQuotesQuoteIdEditRoute
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIdRoute
   AuthenticatedWorkforceIntelligenceEmployeesNewRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesNewRoute
   AuthenticatedWorkforceIntelligenceRolesIdRoute: typeof AuthenticatedWorkforceIntelligenceRolesIdRoute
   AuthenticatedDispatchIdIndexRoute: typeof AuthenticatedDispatchIdIndexRoute
   AuthenticatedHrPayrollIndexRoute: typeof AuthenticatedHrPayrollIndexRoute
+  AuthenticatedInvoicesInvoiceIdIndexRoute: typeof AuthenticatedInvoicesInvoiceIdIndexRoute
   AuthenticatedQuotesQuoteIdIndexRoute: typeof AuthenticatedQuotesQuoteIdIndexRoute
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute: typeof AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute
   AuthenticatedWorkforceIntelligenceEmployeesIndexRoute: typeof AuthenticatedWorkforceIntelligenceEmployeesIndexRoute
@@ -4143,8 +4129,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInstallationsIdRoute: AuthenticatedInstallationsIdRoute,
   AuthenticatedInventoryIdRoute: AuthenticatedInventoryIdRouteWithChildren,
   AuthenticatedInventoryNewRoute: AuthenticatedInventoryNewRoute,
-  AuthenticatedInvoicesInvoiceIdRoute:
-    AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedLedgerCustomerIdRoute: AuthenticatedLedgerCustomerIdRoute,
   AuthenticatedMastersApplicationsRoute: AuthenticatedMastersApplicationsRoute,
@@ -4234,6 +4218,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDispatchIdEditRoute: AuthenticatedDispatchIdEditRoute,
   AuthenticatedDispatchIdPrintRoute: AuthenticatedDispatchIdPrintRoute,
   AuthenticatedHrPayrollRunIdRoute: AuthenticatedHrPayrollRunIdRoute,
+  AuthenticatedInvoicesInvoiceIdEditRoute:
+    AuthenticatedInvoicesInvoiceIdEditRoute,
   AuthenticatedQuotesQuoteIdEditRoute: AuthenticatedQuotesQuoteIdEditRoute,
   AuthenticatedWorkforceIntelligenceEmployeesIdRoute:
     AuthenticatedWorkforceIntelligenceEmployeesIdRoute,
@@ -4243,6 +4229,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedWorkforceIntelligenceRolesIdRoute,
   AuthenticatedDispatchIdIndexRoute: AuthenticatedDispatchIdIndexRoute,
   AuthenticatedHrPayrollIndexRoute: AuthenticatedHrPayrollIndexRoute,
+  AuthenticatedInvoicesInvoiceIdIndexRoute:
+    AuthenticatedInvoicesInvoiceIdIndexRoute,
   AuthenticatedQuotesQuoteIdIndexRoute: AuthenticatedQuotesQuoteIdIndexRoute,
   AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute:
     AuthenticatedWorkforceIntelligenceCapacitiesIndexRoute,
@@ -4321,13 +4309,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

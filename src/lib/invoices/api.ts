@@ -90,9 +90,10 @@ export async function getInvoicePaymentLinks(invoiceId: string): Promise<Payment
 
 export async function setInvoiceStatus(input: SetInvoiceStatusInput): Promise<InvoiceRow> {
   const parsed = setInvoiceStatusSchema.parse(input);
+  const statusToSave = parsed.status === "issued" ? "sent" : parsed.status;
   const { data, error } = await getDb()
     .from("invoices")
-    .update({ status: parsed.status })
+    .update({ status: statusToSave })
     .eq("id", parsed.invoice_id)
     .select("*")
     .single();

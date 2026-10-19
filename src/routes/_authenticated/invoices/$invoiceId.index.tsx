@@ -71,7 +71,7 @@ import { invalidateInvoice, invalidatePayment } from "@/lib/query-invalidation";
 
 type InvoiceStatus = DbTable<"invoices">["status"];
 
-export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
+export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/")({
   ssr: false,
   component: InvoiceDetailPage,
 });
@@ -402,7 +402,7 @@ function InvoiceDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Badge variant="outline" className="capitalize">
-                {invoice.status}
+                {invoice.status === "sent" ? "Issued / Sent" : invoice.status.replace(/_/g, " ")}
               </Badge>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Change status</label>
@@ -415,8 +415,7 @@ function InvoiceDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="issued">Issued</SelectItem>
-                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="sent">Issued / Sent</SelectItem>
                     <SelectItem value="overdue">Overdue</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>

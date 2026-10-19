@@ -145,7 +145,7 @@ function InvoicesPage() {
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="sent">Issued / Sent</SelectItem>
               <SelectItem value="partially_paid">Partially paid</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="overdue">Overdue</SelectItem>
@@ -232,7 +232,7 @@ function InvoicesPage() {
                   {!isHidden("status") && (
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
-                        {r.status.replace(/_/g, " ")}
+                        {r.status === "sent" ? "Issued / Sent" : r.status.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
                   )}
