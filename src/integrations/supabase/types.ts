@@ -481,7 +481,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string
-          designation: Database["public"]["Enums"]["contact_designation"]
+          designation: Database["public"]["Enums"]["contact_designation"] | string
           email: string | null
           id: string
           is_primary: boolean
@@ -494,7 +494,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id: string
-          designation?: Database["public"]["Enums"]["contact_designation"]
+          designation?: Database["public"]["Enums"]["contact_designation"] | string
           email?: string | null
           id?: string
           is_primary?: boolean
@@ -507,7 +507,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string
-          designation?: Database["public"]["Enums"]["contact_designation"]
+          designation?: Database["public"]["Enums"]["contact_designation"] | string
           email?: string | null
           id?: string
           is_primary?: boolean
@@ -4217,6 +4217,7 @@ export type Database = {
           invoice_id: string
           is_demo: boolean
           line_total: number
+          notes: string | null
           product_id: string | null
           quantity: number
           sgst_amount: number | null
@@ -4236,6 +4237,7 @@ export type Database = {
           invoice_id: string
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           quantity?: number
           sgst_amount?: number | null
@@ -4255,6 +4257,7 @@ export type Database = {
           invoice_id?: string
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           quantity?: number
           sgst_amount?: number | null
@@ -6800,6 +6803,7 @@ export type Database = {
           igst_amount: number | null
           is_demo: boolean
           line_total: number
+          notes: string | null
           product_id: string | null
           quantity: number
           quote_id: string
@@ -6819,6 +6823,7 @@ export type Database = {
           igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           quantity?: number
           quote_id: string
@@ -6838,6 +6843,7 @@ export type Database = {
           igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           quantity?: number
           quote_id?: string
@@ -7351,6 +7357,7 @@ export type Database = {
           igst_amount: number | null
           is_demo: boolean
           line_total: number
+          notes: string | null
           product_id: string | null
           product_name: string | null
           quantity: number
@@ -7378,6 +7385,7 @@ export type Database = {
           igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           product_name?: string | null
           quantity?: number
@@ -7405,6 +7413,7 @@ export type Database = {
           igst_amount?: number | null
           is_demo?: boolean
           line_total?: number
+          notes?: string | null
           product_id?: string | null
           product_name?: string | null
           quantity?: number

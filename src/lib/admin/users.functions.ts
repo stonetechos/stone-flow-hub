@@ -257,9 +257,7 @@ export const listAuthUsers = createServerFn({ method: "GET" })
 
 function formatAppInviteLink(
   properties:
-    | { hashed_token?: string; verification_type?: string; action_link?: string }
-    | null
-    | undefined,
+    { hashed_token?: string; verification_type?: string; action_link?: string } | null | undefined,
   appOrigin: string,
   defaultType: string = "invite",
 ): string | null {

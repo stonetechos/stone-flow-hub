@@ -16,6 +16,9 @@ import {
   Truck,
   MessageCircle,
   Clock,
+  Sparkles,
+  Layers,
+  Receipt,
 } from "lucide-react";
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
@@ -133,7 +136,7 @@ function QuotesPage() {
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "Quote / Customer", required: true },
-      { key: "saleMode", label: "Sale Mode" },
+      { key: "saleMode", label: "Billing Plan" },
       { key: "date", label: "Quote Date" },
       { key: "project", label: "Project" },
       { key: "customer", label: "Customer" },
@@ -272,11 +275,11 @@ function QuotesPage() {
     <div>
       <PageHeader title="Quotes" subtitle="Send priced offers, then convert to invoice." />
 
-      {/* Mode of Sale Sub-Tabs: Cash Sales vs Invoiced Sales vs Hybrid */}
+      {/* Billing Plan Sub-Tabs: Tax Bills vs Cash / Challan vs Hybrid Split */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2">
         <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-          <FileText className="h-3.5 w-3.5 text-slate-400" />
-          <span>Mode of Sale:</span>
+          <Receipt className="h-3.5 w-3.5 text-slate-400" />
+          <span>Billing Plan:</span>
         </span>
         <button
           type="button"
@@ -307,7 +310,7 @@ function QuotesPage() {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-          Invoiced Sales · Tax Bills ({quoteCounts.invoiced})
+          Tax Bill / GST ({quoteCounts.invoiced})
         </button>
         <button
           type="button"
@@ -323,7 +326,7 @@ function QuotesPage() {
           )}
         >
           <Truck className="h-3.5 w-3.5 text-emerald-600" />
-          Cash Sales · Challans Only ({quoteCounts.cash})
+          Challan Only / Cash ({quoteCounts.cash})
         </button>
         <button
           type="button"
@@ -339,7 +342,7 @@ function QuotesPage() {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-          Hybrid ({quoteCounts.hybrid})
+          Hybrid Split ({quoteCounts.hybrid})
         </button>
       </div>
 
@@ -511,7 +514,7 @@ function QuotesPage() {
               <TableRow>
                 <TableHead className="w-8" />
                 {!isHidden("no") && <TableHead>Quote / Customer</TableHead>}
-                {!isHidden("saleMode") && <TableHead className="w-36">Sale Mode</TableHead>}
+                {!isHidden("saleMode") && <TableHead className="w-36">Billing Plan</TableHead>}
                 {!isHidden("date") && <TableHead className="w-28">Quote Date</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
@@ -877,6 +880,7 @@ type FormItem = {
   key: string;
   product_id: string | null;
   description: string;
+  notes: string;
   quantity: string;
   unit: string | null;
   unit_price: string;
@@ -890,6 +894,7 @@ function emptyItem(defaultFulfilment: QuoteCategory | "" = "", isCash = false): 
     key: Math.random().toString(36).slice(2),
     product_id: null,
     description: "",
+    notes: "",
     quantity: "",
     unit: "sqft",
     unit_price: "",
@@ -1036,6 +1041,7 @@ function CreateQuoteDialog({
       const r = quoteItemInputSchema.safeParse({
         product_id: it.product_id,
         description: it.description,
+        notes: it.notes.trim() || null,
         quantity: it.quantity,
         unit: it.unit,
         unit_price: it.unit_price === "" ? 0 : it.unit_price,
@@ -1065,384 +1071,402 @@ function CreateQuoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={mode !== "manual" ? "max-w-5xl max-h-[90vh] overflow-y-auto" : "max-w-4xl"}
-      >
-        <DialogHeader>
+      <DialogContent className="max-w-5xl w-[95vw] h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden">
+        <DialogHeader className="shrink-0 pb-2 border-b">
           <DialogTitle>New quote</DialogTitle>
         </DialogHeader>
-        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
-          <QuickForm.QuickFill>
-            <div className="md:col-span-2 flex gap-1.5 rounded-sm border border-border bg-muted/30 p-1">
-              <button
-                type="button"
-                onClick={() => setMode("manual")}
-                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                  mode === "manual"
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Manual line items
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("wall_cladding")}
-                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                  mode === "wall_cladding" || mode === "calculator"
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Wall Cladding Studio
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("stone_mural")}
-                className={`flex-1 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                  mode === "stone_mural"
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Stone Mural Studio
-              </button>
-            </div>
-
-            {initialProjectId ? (
-              <Field label="Project" required className="md:col-span-2">
-                <EntityPicker
-                  type="project"
-                  value={projectId || null}
-                  onChange={(id) => setProjectId(id ?? "")}
-                  disabled
-                />
-              </Field>
-            ) : (
-              <Field label="Customer" required className="md:col-span-2">
-                <EntityPicker
-                  type="customer"
-                  value={customerId || null}
-                  onChange={(id) => setCustomerId(id ?? "")}
-                  placeholder="Search registered customers…"
-                />
-              </Field>
-            )}
-
-            <Field label="Category" className="md:col-span-2">
-              <Select
-                value={category || "none"}
-                onValueChange={(v) => setCategory(v === "none" ? "" : (v as QuoteCategory))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— None —</SelectItem>
-                  {QUOTE_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {QUOTE_CATEGORY_LABELS[c]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label="Mode of Sale" className="md:col-span-2">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-1 py-1 -mr-1">
+          <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+            <QuickForm.QuickFill>
+              <div className="md:col-span-2 flex gap-1.5 rounded-lg border border-border bg-muted/40 p-1 mb-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setSaleMode("invoiced");
-                    setItems((prev) =>
-                      prev.map((it) => ({
-                        ...it,
-                        tax_pct: it.tax_pct === "0" ? "18" : it.tax_pct,
-                      })),
-                    );
-                  }}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                    saleMode === "invoiced"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                  )}
+                  onClick={() => setMode("manual")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                    mode === "manual"
+                      ? "bg-background shadow-xs text-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <FileText className="h-3.5 w-3.5" />
-                  <span>Invoiced Sale (GST Bill)</span>
+                  <FileText className="h-4 w-4" />
+                  <span>Manual line items</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSaleMode("cash");
-                    setItems((prev) => prev.map((it) => ({ ...it, tax_pct: "0" })));
-                  }}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                    saleMode === "cash"
-                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                  )}
+                  onClick={() => setMode("wall_cladding")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                    mode === "wall_cladding" || mode === "calculator"
+                      ? "bg-background shadow-xs text-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <Truck className="h-3.5 w-3.5" />
-                  <span>Cash Sale (Challan Only · No GST)</span>
+                  <Layers className="h-4 w-4 text-emerald-600" />
+                  <span>Wall Cladding Calculator</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSaleMode("hybrid")}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                    saleMode === "hybrid"
-                      ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                  )}
+                  onClick={() => setMode("stone_mural")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                    mode === "stone_mural"
+                      ? "bg-background shadow-xs text-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                  <span>Hybrid (Invoiced + Cash)</span>
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <span>Stone Mural Calculator</span>
                 </button>
               </div>
-              {saleMode === "cash" && (
-                <p className="text-[11px] text-emerald-700 font-medium mt-1.5 flex items-center gap-1">
-                  <Truck className="h-3.5 w-3.5 shrink-0" />
-                  <span>
-                    GST percentage is removed. Amounts are added as-is without tax. Only Delivery
-                    Challans will be sent.
-                  </span>
-                </p>
-              )}
-              {saleMode === "hybrid" && (
-                <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
-                  <div>
-                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
-                      Cash Amount (Challan · No GST)
-                    </label>
-                    <NumericInput
-                      placeholder="0"
-                      value={hybridCashAmount}
-                      onChange={setHybridCashAmount}
-                      min={0}
-                      allowDecimal
-                      className="h-8 text-xs bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
-                      Invoiced Amount (With GST Bill)
-                    </label>
-                    <NumericInput
-                      placeholder="0"
-                      value={hybridInvoicedAmount}
-                      onChange={setHybridInvoicedAmount}
-                      min={0}
-                      allowDecimal
-                      className="h-8 text-xs bg-white"
-                    />
-                  </div>
-                </div>
-              )}
-            </Field>
 
-            {mode === "manual" && (
-              <div className="md:col-span-2">
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="text-sm font-medium">Line items</label>
-                  <Button
+              {initialProjectId ? (
+                <Field label="Project" required className="md:col-span-2">
+                  <EntityPicker
+                    type="project"
+                    value={projectId || null}
+                    onChange={(id) => setProjectId(id ?? "")}
+                    disabled
+                  />
+                </Field>
+              ) : (
+                <Field label="Customer" required className="md:col-span-2">
+                  <EntityPicker
+                    type="customer"
+                    value={customerId || null}
+                    onChange={(id) => setCustomerId(id ?? "")}
+                    placeholder="Search registered customers…"
+                  />
+                </Field>
+              )}
+
+              <Field label="Category" className="md:col-span-2">
+                <Select
+                  value={category || "none"}
+                  onValueChange={(v) => setCategory(v === "none" ? "" : (v as QuoteCategory))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— None —</SelectItem>
+                    {QUOTE_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {QUOTE_CATEGORY_LABELS[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field label="Billing Plan" className="md:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setItems((p) => [...p, emptyItem(category, saleMode === "cash")])
-                    }
-                  >
-                    <Plus className="mr-1 h-3 w-3" /> Add line
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {items.map((it) => (
-                    <div
-                      key={it.key}
-                      className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
-                    >
-                      <LineField
-                        label="Description / Product"
-                        className="col-span-12 md:col-span-3"
-                      >
-                        <CatalogProductSelect
-                          value={it.description}
-                          onChange={(val) => updateItem(it.key, { description: val })}
-                          onSelectCatalogItem={(cat) => {
-                            updateItem(it.key, {
-                              description: cat.name,
-                              unit: cat.defaultUnit,
-                              unit_price: cat.defaultPrice
-                                ? String(cat.defaultPrice)
-                                : it.unit_price,
-                              hsn_sac: cat.hsnCode || it.hsn_sac,
-                              tax_pct:
-                                saleMode === "cash"
-                                  ? "0"
-                                  : cat.defaultTaxPct !== undefined
-                                    ? String(cat.defaultTaxPct)
-                                    : it.tax_pct,
-                            });
-                          }}
-                        />
-                      </LineField>
-                      <LineField label="HSN Code" className="col-span-6 md:col-span-2">
-                        <Input
-                          placeholder="4-8 digits"
-                          value={it.hsn_sac}
-                          onChange={(e) =>
-                            updateItem(it.key, {
-                              hsn_sac: e.target.value.replace(/\D/g, "").slice(0, 8),
-                            })
-                          }
-                        />
-                      </LineField>
-                      <LineField label="Quantity" className="col-span-6 md:col-span-1">
-                        <NumericInput
-                          placeholder="0"
-                          value={it.quantity}
-                          onChange={(val) => updateItem(it.key, { quantity: val })}
-                          min={0}
-                          allowDecimal
-                        />
-                      </LineField>
-                      <LineField label="Unit" className="col-span-6 md:col-span-1">
-                        <Input
-                          placeholder="sqft"
-                          value={it.unit ?? ""}
-                          onChange={(e) => updateItem(it.key, { unit: e.target.value })}
-                        />
-                      </LineField>
-                      <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
-                        <NumericInput
-                          placeholder="0"
-                          value={it.unit_price}
-                          onChange={(val) => updateItem(it.key, { unit_price: val })}
-                          min={0}
-                          allowDecimal
-                        />
-                      </LineField>
-                      <LineField label="GST %" className="col-span-6 md:col-span-1">
-                        {saleMode === "cash" ? (
-                          <div
-                            className="h-9 px-2 flex items-center justify-center text-xs font-semibold text-slate-400 bg-slate-50 border rounded-md"
-                            title="0% GST for Cash Sale"
-                          >
-                            0%
-                          </div>
-                        ) : (
-                          <PercentInput
-                            placeholder="0"
-                            value={it.tax_pct}
-                            onChange={(val) => updateItem(it.key, { tax_pct: val })}
-                          />
-                        )}
-                      </LineField>
-                      <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
-                        <Select
-                          value={it.fulfilment || "inherit"}
-                          onValueChange={(v) =>
-                            updateItem(it.key, {
-                              fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
-                            })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="inherit">— Inherit quote —</SelectItem>
-                            {QUOTE_CATEGORIES.map((c) => (
-                              <SelectItem key={c} value={c}>
-                                {QUOTE_CATEGORY_LABELS[c]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </LineField>
-                      <div className="col-span-2 md:col-span-1 flex items-end justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Remove line item"
-                          onClick={() => removeItem(it.key)}
-                          disabled={items.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-2 flex justify-end gap-6 text-sm">
-                  <div>
-                    Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
-                  </div>
-                  {saleMode !== "cash" && (
-                    <div>
-                      Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
-                    </div>
-                  )}
-                  <div>
-                    Total:{" "}
-                    <span className="font-bold text-slate-900">{formatInr(totals.total)}</span>
-                    {saleMode === "cash" && (
-                      <span className="text-[11px] text-emerald-700 ml-1.5 font-semibold">
-                        (Cash · No GST)
-                      </span>
+                    onClick={() => {
+                      setSaleMode("invoiced");
+                      setItems((prev) =>
+                        prev.map((it) => ({
+                          ...it,
+                          tax_pct: it.tax_pct === "0" ? "18" : it.tax_pct,
+                        })),
+                      );
+                    }}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                      saleMode === "invoiced"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                     )}
+                  >
+                    <Receipt className="h-3.5 w-3.5" />
+                    <span>Tax Invoice (GST Bill)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSaleMode("cash");
+                      setItems((prev) => prev.map((it) => ({ ...it, tax_pct: "0" })));
+                    }}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                      saleMode === "cash"
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                    )}
+                  >
+                    <Truck className="h-3.5 w-3.5" />
+                    <span>Cash Sale (Challan Only · No GST)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSaleMode("hybrid")}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                      saleMode === "hybrid"
+                        ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                    )}
+                  >
+                    <Scale className="h-3.5 w-3.5" />
+                    <span>Hybrid (Tax Bill + Cash)</span>
+                  </button>
+                </div>
+                {saleMode === "cash" && (
+                  <p className="text-[11px] text-emerald-700 font-medium mt-1.5 flex items-center gap-1">
+                    <Truck className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      GST percentage is removed. Amounts are added as-is without tax. Only Delivery
+                      Challans will be sent.
+                    </span>
+                  </p>
+                )}
+                {saleMode === "hybrid" && (
+                  <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
+                    <div>
+                      <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                        Cash Amount (Challan · No GST)
+                      </label>
+                      <NumericInput
+                        placeholder="0"
+                        value={hybridCashAmount}
+                        onChange={setHybridCashAmount}
+                        min={0}
+                        allowDecimal
+                        className="h-8 text-xs bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                        Invoiced Amount (With GST Bill)
+                      </label>
+                      <NumericInput
+                        placeholder="0"
+                        value={hybridInvoicedAmount}
+                        onChange={setHybridInvoicedAmount}
+                        min={0}
+                        allowDecimal
+                        className="h-8 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </Field>
+
+              {mode === "manual" && (
+                <div className="md:col-span-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="text-sm font-medium">Line items</label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setItems((p) => [...p, emptyItem(category, saleMode === "cash")])
+                      }
+                    >
+                      <Plus className="mr-1 h-3 w-3" /> Add line
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {items.map((it) => (
+                      <div
+                        key={it.key}
+                        className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
+                      >
+                        <LineField
+                          label="Description / Product"
+                          className="col-span-12 md:col-span-3"
+                        >
+                          <CatalogProductSelect
+                            value={it.description}
+                            onChange={(val) => updateItem(it.key, { description: val })}
+                            onSelectCatalogItem={(cat) => {
+                              updateItem(it.key, {
+                                description: cat.name,
+                                unit: cat.defaultUnit,
+                                unit_price: cat.defaultPrice
+                                  ? String(cat.defaultPrice)
+                                  : it.unit_price,
+                                hsn_sac: cat.hsnCode || it.hsn_sac,
+                                tax_pct:
+                                  saleMode === "cash"
+                                    ? "0"
+                                    : cat.defaultTaxPct !== undefined
+                                      ? String(cat.defaultTaxPct)
+                                      : it.tax_pct,
+                              });
+                            }}
+                          />
+                        </LineField>
+                        <LineField label="HSN Code" className="col-span-6 md:col-span-2">
+                          <Input
+                            placeholder="4-8 digits"
+                            value={it.hsn_sac}
+                            onChange={(e) =>
+                              updateItem(it.key, {
+                                hsn_sac: e.target.value.replace(/\D/g, "").slice(0, 8),
+                              })
+                            }
+                          />
+                        </LineField>
+                        <LineField label="Quantity" className="col-span-6 md:col-span-1">
+                          <NumericInput
+                            placeholder="0"
+                            value={it.quantity}
+                            onChange={(val) => updateItem(it.key, { quantity: val })}
+                            min={0}
+                            allowDecimal
+                          />
+                        </LineField>
+                        <LineField label="Unit" className="col-span-6 md:col-span-1">
+                          <Input
+                            placeholder="sqft"
+                            value={it.unit ?? ""}
+                            onChange={(e) => updateItem(it.key, { unit: e.target.value })}
+                          />
+                        </LineField>
+                        <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
+                          <NumericInput
+                            placeholder="0"
+                            value={it.unit_price}
+                            onChange={(val) => updateItem(it.key, { unit_price: val })}
+                            min={0}
+                            allowDecimal
+                          />
+                        </LineField>
+                        <LineField label="GST %" className="col-span-6 md:col-span-1">
+                          {saleMode === "cash" ? (
+                            <div
+                              className="h-9 px-2 flex items-center justify-center text-xs font-semibold text-slate-400 bg-slate-50 border rounded-md"
+                              title="0% GST for Cash Sale"
+                            >
+                              0%
+                            </div>
+                          ) : (
+                            <PercentInput
+                              placeholder="0"
+                              value={it.tax_pct}
+                              onChange={(val) => updateItem(it.key, { tax_pct: val })}
+                            />
+                          )}
+                        </LineField>
+                        <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
+                          <Select
+                            value={it.fulfilment || "inherit"}
+                            onValueChange={(v) =>
+                              updateItem(it.key, {
+                                fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
+                              })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="inherit">— Inherit quote —</SelectItem>
+                              {QUOTE_CATEGORIES.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                  {QUOTE_CATEGORY_LABELS[c]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </LineField>
+                        <div className="col-span-2 md:col-span-1 flex items-end justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Remove line item"
+                            onClick={() => removeItem(it.key)}
+                            disabled={items.length === 1}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <LineField
+                          label="Product Notes (Material Details & Size Specs)"
+                          hint="Blank box for exact material description, dimensions, finish, etc."
+                          className="col-span-12"
+                        >
+                          <Input
+                            placeholder="e.g. 50mm thick sandstone, honed surface, 4ft × 2ft slab sizes, chamfered edges..."
+                            value={it.notes}
+                            onChange={(e) => updateItem(it.key, { notes: e.target.value })}
+                          />
+                        </LineField>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex justify-end gap-6 text-sm">
+                    <div>
+                      Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>
+                    </div>
+                    {saleMode !== "cash" && (
+                      <div>
+                        Tax: <span className="font-medium">{formatInr(totals.tax)}</span>
+                      </div>
+                    )}
+                    <div>
+                      Total:{" "}
+                      <span className="font-bold text-slate-900">{formatInr(totals.total)}</span>
+                      {saleMode === "cash" && (
+                        <span className="text-[11px] text-emerald-700 ml-1.5 font-semibold">
+                          (Cash · No GST)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {(mode === "wall_cladding" || mode === "calculator") && (
-              <div className="md:col-span-2">
-                <EstimateStudioCalculator projectId={projectId || null} onResult={setCalcResult} />
-              </div>
-            )}
+              {(mode === "wall_cladding" || mode === "calculator") && (
+                <div className="md:col-span-2">
+                  <EstimateStudioCalculator
+                    projectId={projectId || null}
+                    onResult={setCalcResult}
+                  />
+                </div>
+              )}
 
-            {mode === "stone_mural" && (
-              <div className="md:col-span-2">
-                <StoneMuralCalculator projectId={projectId || null} onResult={setCalcResult} />
-              </div>
-            )}
-          </QuickForm.QuickFill>
+              {mode === "stone_mural" && (
+                <div className="md:col-span-2">
+                  <StoneMuralCalculator projectId={projectId || null} onResult={setCalcResult} />
+                </div>
+              )}
+            </QuickForm.QuickFill>
 
-          <QuickForm.MoreDetails>
-            <Field label="Valid until">
-              <Input
-                type="date"
-                value={validUntil}
-                onChange={(e) => setValidUntil(e.target.value)}
-              />
-            </Field>
-          </QuickForm.MoreDetails>
+            <QuickForm.MoreDetails>
+              <Field label="Valid until">
+                <Input
+                  type="date"
+                  value={validUntil}
+                  onChange={(e) => setValidUntil(e.target.value)}
+                />
+              </Field>
+            </QuickForm.MoreDetails>
 
-          <QuickForm.Advanced>
-            <Field label="Notes" className="md:col-span-2">
-              <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
-            </Field>
-            <Field label="Terms" className="md:col-span-2">
-              <Textarea rows={2} value={terms} onChange={(e) => setTerms(e.target.value)} />
-            </Field>
-          </QuickForm.Advanced>
+            <QuickForm.Advanced>
+              <Field label="Notes" className="md:col-span-2">
+                <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              </Field>
+              <Field label="Terms" className="md:col-span-2">
+                <Textarea rows={2} value={terms} onChange={(e) => setTerms(e.target.value)} />
+              </Field>
+            </QuickForm.Advanced>
 
-          <QuickForm.Actions>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={mutation.isPending || (mode !== "manual" && !calcResult)}
-            >
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create quote
-            </Button>
-          </QuickForm.Actions>
-        </QuickForm>
+            <QuickForm.Actions>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || (mode !== "manual" && !calcResult)}
+              >
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create
+                quote
+              </Button>
+            </QuickForm.Actions>
+          </QuickForm>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -1450,16 +1474,21 @@ function CreateQuoteDialog({
 
 function LineField({
   label,
+  hint,
   className,
   children,
 }: {
   label: string;
+  hint?: string;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
+      <div className="mb-1 flex items-center justify-between">
+        <label className="block text-xs font-medium text-muted-foreground">{label}</label>
+        {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
+      </div>
       {children}
     </div>
   );

@@ -114,4 +114,61 @@ describe("renderDocWhatsAppText", () => {
     const text = renderDocWhatsAppText(built);
     expect(text).toContain("*Current Customer Balance:* *₹5,000 (Advance Credit)*");
   });
+
+  it("renders Quotation with pre-tax line amounts, notes, and taxes at the bottom only", () => {
+    const built: BuiltDocument = {
+      doc: {
+        kind: "quote",
+        title: "Quotation",
+        number: "QT-000042",
+        date: "2026-10-19",
+        to: { name: "Aditi Sharma", phone: "9876543210" },
+        lines: [
+          {
+            label: "Mint White Sandstone (Honed)",
+            qty: 140,
+            unit: "sqft",
+            rate: "₹95",
+            amount: "₹13,300",
+            notes: "Size: 600x400x20mm, Honed finish, calibrated",
+          },
+          {
+            label: "Teakwood Sandstone",
+            qty: 200,
+            unit: "sqft",
+            rate: "₹120",
+            amount: "₹24,000",
+          },
+        ],
+        totals: [
+          { label: "Subtotal", value: "₹37,300" },
+          { label: "GST (5%)", value: "₹1,865" },
+          { label: "Grand Total", value: "₹39,165" },
+        ],
+        notes: "Delivery within 7 working days from advance.",
+      },
+      meta: {
+        toName: "Aditi Sharma",
+        toEmail: null,
+        toPhone: "9876543210",
+        docNumber: "QT-000042",
+        customerId: "cust-42",
+        vendorId: null,
+        projectId: null,
+      },
+    };
+
+    const text = renderDocWhatsAppText(built);
+
+    expect(text).toContain("*Quotation — QT-000042*");
+    expect(text).toContain("To: Aditi Sharma");
+    expect(text).toContain("• Mint White Sandstone (Honed) — 140 sqft × ₹95 = ₹13,300");
+    expect(text).toContain("_Specs/Notes: Size: 600x400x20mm, Honed finish, calibrated_");
+    expect(text).toContain("• Teakwood Sandstone — 200 sqft × ₹120 = ₹24,000");
+    expect(text).toContain("Subtotal: *₹37,300*");
+    expect(text).toContain("GST (5%): *₹1,865*");
+    expect(text).toContain("Grand Total: *₹39,165*");
+    // Ensure tax was not pre-calculated into the line items
+    expect(text).not.toContain("₹13,965");
+  });
 });

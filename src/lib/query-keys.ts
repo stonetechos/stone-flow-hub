@@ -16,6 +16,7 @@ export const qk = {
     list: (q?: string) => ["customers", "list", q ?? ""] as const,
     byId: (id: string) => ["customers", "byId", id] as const,
     picker: (q?: string) => ["customers", "picker", q ?? ""] as const,
+    contacts: (customerId: string) => ["customers", "contacts", customerId] as const,
   },
   projects: {
     all: ["projects"] as const,

@@ -22,6 +22,7 @@ export const zQuoteCategory = z.preprocess(
 export const quoteItemInputSchema = z.object({
   product_id: z.string().uuid().nullable().optional(),
   description: z.string().trim().min(1, "Description is required"),
+  notes: zOptional(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unit: zOptional(),
   unit_price: z.coerce.number().nonnegative(),

@@ -470,12 +470,14 @@ function QuoteDetailPage() {
                   <TableHead>Unit</TableHead>
                   <TableHead className="text-right">Rate</TableHead>
                   <TableHead className="text-right">Tax %</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(items.data ?? []).map((it) => {
                   const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                  const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                  const itemNotes = (it as { notes?: string | null }).notes;
                   return (
                     <TableRow key={it.id}>
                       <TableCell className="p-2 text-center align-middle">
@@ -507,6 +509,11 @@ function QuoteDetailPage() {
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
                           <span>{it.description}</span>
+                          {itemNotes && (
+                            <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
+                              {itemNotes}
+                            </span>
+                          )}
                           {img && (
                             <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
                               <Sparkles className="h-2.5 w-2.5" /> Visual attached
@@ -521,7 +528,7 @@ function QuoteDetailPage() {
                       <TableCell>{it.unit ?? "—"}</TableCell>
                       <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
                       <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                      <TableCell className="text-right">{formatInr(it.line_total)}</TableCell>
+                      <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
                     </TableRow>
                   );
                 })}

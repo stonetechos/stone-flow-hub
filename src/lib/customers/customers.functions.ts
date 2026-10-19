@@ -164,6 +164,25 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       if (insertError) throw new Error(insertError.message);
       row = normalizeCustomerRow(insertData as CustomerRow);
 
+      if (input.contacts && input.contacts.length > 0 && row?.id) {
+        const contactRows = input.contacts
+          .filter((c) => c.name?.trim())
+          .map((c) => ({
+            customer_id: row.id,
+            name: c.name.trim(),
+            phone: c.phone ? normalizeMobile(c.phone) || c.phone.trim() : null,
+            designation: c.designation?.trim() || "other",
+            email: c.email?.trim() || null,
+            is_primary: Boolean(c.is_primary),
+          }));
+        if (contactRows.length > 0) {
+          const { error: cErr } = await supabaseAdmin
+            .from("customer_contacts")
+            .insert(contactRows as never);
+          if (cErr) console.warn("[customers.functions] failed to insert contacts:", cErr);
+        }
+      }
+
       if (row) {
         try {
           const { broadcastCustomerCreated } = await import("@/lib/notifications/broadcast");
@@ -261,8 +280,94 @@ export const saveCustomerServerFn = createServerFn({ method: "POST" })
       }
 
       if (updateError) throw new Error(updateError.message);
+
+      // Sync contacts if provided
+      if (input.contacts !== undefined && id) {
+        const validContacts = input.contacts.filter((c) => c.name?.trim());
+        const existingIds = validContacts
+          .map((c) => c.id)
+          .filter((cId): cId is string => Boolean(cId));
+
+        if (existingIds.length > 0) {
+          await supabaseAdmin
+            .from("customer_contacts")
+            .delete()
+            .eq("customer_id", id)
+            .not("id", "in", `(${existingIds.join(",")})`);
+        } else if (validContacts.length === 0) {
+          await supabaseAdmin.from("customer_contacts").delete().eq("customer_id", id);
+        }
+
+        for (const c of validContacts) {
+          const payload = {
+            customer_id: id,
+            name: c.name.trim(),
+            phone: c.phone ? normalizeMobile(c.phone) || c.phone.trim() : null,
+            designation: c.designation?.trim() || "other",
+            email: c.email?.trim() || null,
+            is_primary: Boolean(c.is_primary),
+          };
+          if (c.id) {
+            await supabaseAdmin
+              .from("customer_contacts")
+              .update(payload as never)
+              .eq("id", c.id);
+          } else {
+            await supabaseAdmin.from("customer_contacts").insert(payload as never);
+          }
+        }
+      }
+
       return normalizeCustomerRow(updateData as CustomerRow);
     }
+  });
+
+const addContactInput = z.object({
+  customerId: z.string().uuid(),
+  name: z.string().trim().min(1, "Name is required"),
+  phone: z.string().trim().nullable().optional(),
+  designation: z.string().trim().default("other"),
+  email: z.string().trim().nullable().optional(),
+  is_primary: z.boolean().default(false).optional(),
+});
+
+export const addCustomerContactServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => addContactInput.parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { customerId, name, phone, designation, email, is_primary } = data;
+    const { data: contact, error } = await supabaseAdmin
+      .from("customer_contacts")
+      .insert({
+        customer_id: customerId,
+        name,
+        phone: phone ? normalizeMobile(phone) || phone : null,
+        designation: designation || "other",
+        email: email || null,
+        is_primary: Boolean(is_primary),
+      } as never)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return contact;
+  });
+
+const deleteContactInput = z.object({
+  contactId: z.string().uuid(),
+});
+
+export const deleteCustomerContactServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) => deleteContactInput.parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("customer_contacts")
+      .delete()
+      .eq("id", data.contactId);
+    if (error) throw new Error(error.message);
+    return { success: true };
   });
 
 const deleteCustomerInput = z.object({

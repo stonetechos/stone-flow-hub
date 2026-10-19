@@ -35,7 +35,7 @@ import {
   renderDocWhatsAppText,
   type DocumentEntity,
 } from "@/lib/documents/engine";
-import { downloadPdf, previewPdf, printPdf } from "@/lib/pdf/generator";
+import { downloadPdf, previewPdf, printPdf, generatePdfBlob } from "@/lib/pdf/generator";
 import {
   getWhatsappModePreference,
   openWhatsappToContact,
@@ -94,55 +94,127 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
     try {
       const built = await buildDocument(entity, entityId);
       const phone = built.meta.toPhone?.trim();
-      const text = renderDocWhatsAppText(built);
+      const docTitle = built.doc.title || "Document";
+      const docNo = built.doc.number || "";
+      const recipientName = built.meta.toName || "Customer";
 
       if (!phone) {
         if (popupWin && !popupWin.closed) popupWin.close();
-        toast.info(
-          `No mobile number on file for ${built.meta.toName || "recipient"} — please enter WhatsApp number`,
-        );
+        toast.info(`No mobile number on file for ${recipientName} — please enter WhatsApp number`);
         setSendOpen("whatsapp");
         return;
       }
 
+      // 1. Generate real binary PDF Blob
+      let pdfBlob: Blob | null = null;
+      try {
+        pdfBlob = await generatePdfBlob(built.doc);
+      } catch (pdfErr) {
+        console.warn("Could not generate PDF blob:", pdfErr);
+      }
+
+      // 2. Direct PDF send via Web Share API if supported (Mobile, iPad, Android, macOS Safari)
+      if (pdfBlob && typeof navigator !== "undefined" && typeof navigator.canShare === "function") {
+        const fileName = `${docNo || docTitle}.pdf`;
+        const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
+        if (navigator.canShare({ files: [pdfFile] })) {
+          if (popupWin && !popupWin.closed) popupWin.close();
+          try {
+            await navigator.share({
+              title: `${docTitle} — ${docNo}`,
+              text: `Dear ${recipientName}, please find your official ${docTitle} (${docNo}) from Stone Tech attached.`,
+              files: [pdfFile],
+            });
+            toast.success(`Shared ${docTitle} PDF directly via WhatsApp!`);
+            void enqueueMessage({
+              channel: "whatsapp",
+              to: phone,
+              body: `[PDF Shared directly: ${fileName}]`,
+              relatedType: relatedTypeFor(entity),
+              relatedId: entityId,
+              customerId: built.meta.customerId ?? undefined,
+              templateCode: `${entity}_whatsapp_pdf`,
+              status: "sent",
+              variables: { entity, doc_number: built.meta.docNumber },
+            }).catch(() => {});
+            return;
+          } catch (shareErr) {
+            // If user closed native share sheet, fallback to desktop download + chat flow
+            console.log("Native share dismissed:", shareErr);
+          }
+        }
+      }
+
+      // 3. Desktop / Browser: Automatically download the PDF file to user's device
+      if (pdfBlob) {
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${docNo || docTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      }
+
+      // Create a clean, professional cover message directing to the attached PDF
+      const totalMeta = built.doc.totals?.find(
+        (t) =>
+          t.label.toLowerCase().includes("grand") ||
+          t.label.toLowerCase().includes("total") ||
+          t.label.toLowerCase().includes("received"),
+      );
+      const totalStr = totalMeta?.value ? String(totalMeta.value) : "";
+
+      const cleanPdfMessage = [
+        `*Official ${docTitle} — ${docNo}*`,
+        `Dear ${recipientName},`,
+        ``,
+        `Please find attached your official ${docTitle} PDF from Stone Tech.`,
+        totalStr ? `💰 *Amount:* ${totalStr}` : null,
+        ``,
+        `_Note: The official PDF (${docNo || "document"}.pdf) is attached to this chat._`,
+        ``,
+        `Warm regards,`,
+        `Stone Tech`,
+      ]
+        .filter((x) => x !== null)
+        .join("\n");
+
       if (mode === "app") {
-        // Copy formatted message text to clipboard as convenience
         try {
           if (typeof navigator !== "undefined" && navigator.clipboard) {
-            await navigator.clipboard.writeText(text);
+            await navigator.clipboard.writeText(cleanPdfMessage);
           }
         } catch {
           /* ignore */
         }
-
-        openWhatsappToContact(phone, text, popupWin, { mode: "wa.me" });
-
-        toast.success(`Opening WhatsApp for ${built.meta.toName || "recipient"}!`, {
-          duration: 5000,
-        });
-      } else if (mode === "web") {
-        openWhatsappToContact(phone, text, popupWin, { mode: "web" });
-
-        toast.success(`Opening WhatsApp Web for ${built.meta.toName || "recipient"}!`, {
-          duration: 5000,
-        });
-      } else {
-        // Mode "wa.me"
-        openWhatsappToContact(phone, text, popupWin, { mode: "wa.me" });
+        openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "wa.me" });
         toast.success(
-          `Opening WhatsApp link for ${built.meta.toName || "recipient"} — press Enter to send`,
+          `Opening WhatsApp! Attach the downloaded ${docNo || "document"}.pdf to send.`,
+        );
+      } else if (mode === "web") {
+        openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "web" });
+        toast.success(
+          `Opening WhatsApp Web! Attach the downloaded ${docNo || "document"}.pdf to send.`,
+        );
+      } else {
+        openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "wa.me" });
+        toast.success(
+          `PDF (${docNo || "document"}.pdf) downloaded! Drag & drop it into the WhatsApp chat to send directly.`,
+          { duration: 7000 },
         );
       }
 
-      // Record in queue/timeline as SENT so server dispatcher never attempts automated Meta API
+      // Record in queue/timeline as SENT
       void enqueueMessage({
         channel: "whatsapp",
         to: phone,
-        body: text,
+        body: cleanPdfMessage,
         relatedType: relatedTypeFor(entity),
         relatedId: entityId,
         customerId: built.meta.customerId ?? undefined,
-        templateCode: `${entity}_whatsapp`,
+        templateCode: `${entity}_whatsapp_pdf`,
         status: "sent",
         variables: {
           entity,

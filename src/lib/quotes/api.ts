@@ -151,6 +151,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     quote_id: quote.id,
     product_id: it.product_id ?? null,
     description: it.description,
+    notes: it.notes ?? null,
     quantity: it.quantity,
     unit: it.unit ?? null,
     unit_price: it.unit_price,
@@ -339,6 +340,7 @@ export async function getEstimateForQuote(
 /** Only the writable fields of a quote line item. */
 export type QuoteItemPatch = {
   description?: string;
+  notes?: string | null;
   quantity?: number;
   unit?: string | null;
   unit_price?: number;
@@ -365,6 +367,7 @@ export async function addQuoteItem(
     .insert({
       quote_id: quoteId,
       description: patch.description,
+      notes: patch.notes ?? null,
       quantity: patch.quantity,
       unit: patch.unit ?? null,
       unit_price: patch.unit_price,

@@ -18,6 +18,7 @@ import {
   FolderPlus,
   FileText,
   ShoppingCart,
+  Trash2,
 } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
@@ -93,6 +94,7 @@ import { toUserMessage } from "@/lib/errors";
 import {
   createCustomer,
   deleteCustomer,
+  getCustomerContacts,
   listCustomers,
   updateCustomer,
   type CustomerRow,
@@ -106,6 +108,7 @@ import {
   getCustomerTypeBadgeTone,
   getEffectiveCustomerType,
   type CustomerCreateInput,
+  type CustomerContactInput,
 } from "@/lib/customers/schema";
 import { hydrateMaterialInterests } from "@/lib/customers/material-interests";
 import { normalizeCustomerRow } from "@/lib/customers/normalize";
@@ -1014,16 +1017,33 @@ function CustomerFormDialog({
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [form, setForm] = useState<CustomerCreateInput>(emptyForm);
-  const [baseline, setBaseline] = useState<string>(() => JSON.stringify(emptyForm()));
+  const [contacts, setContacts] = useState<CustomerContactInput[]>([]);
+  const [baseline, setBaseline] = useState<string>(() =>
+    JSON.stringify({ form: emptyForm(), contacts: [] }),
+  );
   const [nameReflectionMode, setNameReflectionMode] = useState<NameReflectionMode>("smart");
-  const dirty = JSON.stringify(form) !== baseline;
+  const dirty = JSON.stringify({ form, contacts }) !== baseline;
 
   useEffect(() => {
     if (!open) return;
     if (editing) {
       const next = fromRow(editing);
       setForm(next);
-      setBaseline(JSON.stringify(next));
+      setBaseline(JSON.stringify({ form: next, contacts: [] }));
+      getCustomerContacts(editing.id)
+        .then((saved) => {
+          const mapped: CustomerContactInput[] = saved.map((c) => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone ?? "",
+            designation: c.designation ?? "other",
+            email: c.email ?? "",
+            is_primary: c.is_primary,
+          }));
+          setContacts(mapped);
+          setBaseline(JSON.stringify({ form: next, contacts: mapped }));
+        })
+        .catch(() => setContacts([]));
 
       const f = (next.company_name ?? "").trim();
       const c = (next.contact_person ?? "").trim();
@@ -1055,15 +1075,29 @@ function CustomerFormDialog({
         notes: voiceExtractedData.notes,
       };
       setForm(next);
-      setBaseline(JSON.stringify(emptyForm()));
+      setContacts([]);
+      setBaseline(JSON.stringify({ form: next, contacts: [] }));
       setNameReflectionMode(voiceExtractedData.recommendedReflectionMode);
     } else {
       const next = emptyForm();
       setForm(next);
-      setBaseline(JSON.stringify(next));
+      setContacts([]);
+      setBaseline(JSON.stringify({ form: next, contacts: [] }));
       setNameReflectionMode("smart");
     }
   }, [open, editing, voiceExtractedData]);
+
+  const addEmptyContact = () => {
+    setContacts((prev) => [...prev, { name: "", phone: "", designation: "Site Engineer" }]);
+  };
+
+  const updateContact = (idx: number, patch: Partial<CustomerContactInput>) => {
+    setContacts((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)));
+  };
+
+  const removeContact = (idx: number) => {
+    setContacts((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   const mutation = useMutation({
     mutationFn: (input: CustomerCreateInput) =>
@@ -1083,6 +1117,7 @@ function CustomerFormDialog({
         });
       }
       invalidateCustomer(qc, row.id);
+      void qc.invalidateQueries({ queryKey: ["hub", "customer", row.id, "contacts"] });
       onOpenChange(false);
     },
     onError: (err) => toast.error(toUserMessage(err)),
@@ -1090,7 +1125,7 @@ function CustomerFormDialog({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = customerCreateSchema.safeParse(form);
+    const parsed = customerCreateSchema.safeParse({ ...form, contacts });
     if (!parsed.success) {
       toast.error(parsed.error.issues.map((i) => i.message).join(" • "));
       return;
@@ -1400,6 +1435,92 @@ function CustomerFormDialog({
                 />
               </div>
             </Field>
+
+            {/* Multiple Contacts section with "+ Add a contact" */}
+            <div className="md:col-span-2 rounded-lg border border-slate-200/90 bg-slate-50/70 p-3.5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-primary" />
+                    <span>Additional Contacts</span>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Add multiple contacts with name, phone number, and designation manually
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addEmptyContact}
+                  className="h-8 text-xs font-medium bg-white hover:bg-slate-100"
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5 text-primary" /> + Add a contact
+                </Button>
+              </div>
+
+              {contacts.length === 0 ? (
+                <div className="text-center py-2.5 text-xs text-muted-foreground border border-dashed rounded-md bg-white/70">
+                  No additional contacts yet. Click <b>+ Add a contact</b> to add site engineers,
+                  architects, managers, etc.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {contacts.map((contact, idx) => (
+                    <div
+                      key={contact.id ?? `contact-${idx}`}
+                      className="grid grid-cols-12 gap-2.5 items-center bg-white p-2.5 rounded-md border border-slate-200 shadow-xs"
+                    >
+                      <div className="col-span-12 sm:col-span-4">
+                        <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
+                          Contact Name *
+                        </label>
+                        <Input
+                          placeholder="e.g. Vikram Sharma"
+                          value={contact.name}
+                          onChange={(e) => updateContact(idx, { name: e.target.value })}
+                          className="h-8 text-xs"
+                          required
+                        />
+                      </div>
+                      <div className="col-span-12 sm:col-span-4">
+                        <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
+                          Phone Number
+                        </label>
+                        <PhoneInput
+                          placeholder="10 digits mobile"
+                          value={contact.phone ?? ""}
+                          onChange={(v) => updateContact(idx, { phone: v })}
+                        />
+                      </div>
+                      <div className="col-span-10 sm:col-span-3">
+                        <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
+                          Designation
+                        </label>
+                        <Input
+                          placeholder="e.g. Site Engineer"
+                          value={contact.designation ?? ""}
+                          onChange={(e) => updateContact(idx, { designation: e.target.value })}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 flex items-end justify-end pt-3 sm:pt-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeContact(idx)}
+                          title="Remove contact"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <Field
               label={t("customers.siteAddress", "Site's Area/Address")}
               className="md:col-span-2"

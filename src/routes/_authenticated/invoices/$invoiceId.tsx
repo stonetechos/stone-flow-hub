@@ -345,23 +345,34 @@ function InvoiceDetailPage() {
                   <TableHead>Unit</TableHead>
                   <TableHead className="text-right">Rate</TableHead>
                   <TableHead className="text-right">Tax %</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(items.data ?? []).map((it) => (
-                  <TableRow key={it.id}>
-                    <TableCell className="font-medium">{it.description}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">{it.quantity}</TableCell>
-                    <TableCell>{it.unit ?? "—"}</TableCell>
-                    <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                    <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                    <TableCell className="text-right">{formatInr(it.line_total)}</TableCell>
-                  </TableRow>
-                ))}
+                {(items.data ?? []).map((it) => {
+                  const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                  const itemNotes = (it as { notes?: string | null }).notes;
+                  return (
+                    <TableRow key={it.id}>
+                      <TableCell className="font-medium">
+                        <div>{it.description}</div>
+                        {itemNotes && (
+                          <div className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
+                            {itemNotes}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                      </TableCell>
+                      <TableCell className="text-right">{it.quantity}</TableCell>
+                      <TableCell>{it.unit ?? "—"}</TableCell>
+                      <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
+                      <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                      <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <div className="mt-4 flex flex-col items-end gap-1 text-sm">

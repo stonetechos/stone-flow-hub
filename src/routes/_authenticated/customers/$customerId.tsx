@@ -21,6 +21,7 @@ import {
   Truck,
   Receipt,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +59,7 @@ import {
 } from "@/components/ui/table";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { getCustomer } from "@/lib/customers/api";
+import { getCustomer, addCustomerContact, deleteCustomerContact } from "@/lib/customers/api";
 import {
   SPACE_TYPES,
   MATERIAL_OPTIONS,
@@ -421,6 +422,106 @@ function CreateCustomerProjectDialog({
   );
 }
 
+function AddContactDialog({
+  open,
+  onOpenChange,
+  customerId,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  customerId: string;
+}) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    designation: "",
+    email: "",
+    is_primary: false,
+  });
+
+  useEffect(() => {
+    if (open) {
+      setForm({ name: "", phone: "", designation: "", email: "", is_primary: false });
+    }
+  }, [open]);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      addCustomerContact(customerId, {
+        name: form.name.trim(),
+        phone: form.phone.trim() || null,
+        designation: form.designation.trim() || null,
+        email: form.email.trim() || null,
+        is_primary: form.is_primary,
+      }),
+    onSuccess: () => {
+      toast.success("Contact added successfully");
+      qc.invalidateQueries({ queryKey: ["hub", "customer", customerId, "contacts"] });
+      qc.invalidateQueries({ queryKey: qk.customers.contacts(customerId) });
+      onOpenChange(false);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      toast.error("Contact name is required");
+      return;
+    }
+    mutation.mutate();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5 text-primary" />
+            <span>Add Contact Person</span>
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground -mt-2">
+          Add an additional contact person (e.g. Architect, Site Engineer, Supervisor, Manager).
+        </p>
+        <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
+          <Field label="Contact Name" required>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Rajesh Kumar"
+              autoFocus
+            />
+          </Field>
+          <Field label="Phone / Mobile">
+            <Input
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              placeholder="e.g. 9876543210"
+            />
+          </Field>
+          <Field label="Designation / Role">
+            <Input
+              value={form.designation}
+              onChange={(e) => setForm((f) => ({ ...f, designation: e.target.value }))}
+              placeholder="e.g. Site Supervisor, Architect, Purchase Manager"
+            />
+          </Field>
+          <Field label="Email">
+            <Input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              placeholder="e.g. rajesh@example.com"
+            />
+          </Field>
+        </QuickForm>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function CustomerProjectsTab({
   customerId,
   customerName,
@@ -608,6 +709,18 @@ function CustomerHub() {
   const canTransfer = roles.isAdmin || roles.isSalesManager;
   const [transferOpen, setTransferOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [addContactOpen, setAddContactOpen] = useState(false);
+  const qc = useQueryClient();
+
+  const deleteContactMut = useMutation({
+    mutationFn: (contactId: string) => deleteCustomerContact(contactId),
+    onSuccess: () => {
+      toast.success("Contact removed");
+      qc.invalidateQueries({ queryKey: ["hub", "customer", customerId, "contacts"] });
+      qc.invalidateQueries({ queryKey: qk.customers.contacts(customerId) });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
   const q = useQuery({
     queryKey: qk.customers.byId(customerId),
     queryFn: () => getCustomer(customerId),
@@ -1040,6 +1153,12 @@ function CustomerHub() {
         <TabsContent value="contacts" className="mt-4">
           <RelatedList
             title="Contacts"
+            action={
+              <Button size="sm" onClick={() => setAddContactOpen(true)}>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Add a contact
+              </Button>
+            }
             queryKey={["hub", "customer", customerId, "contacts"]}
             queryFn={() => hub.customerContacts(customerId)}
             emptyMessage="No contacts recorded."
@@ -1052,7 +1171,30 @@ function CustomerHub() {
                 header: "Primary",
                 cell: (r) => (r.is_primary ? <Badge variant="secondary">Primary</Badge> : "—"),
               },
+              {
+                header: "Actions",
+                cell: (r) => (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    title="Remove contact"
+                    onClick={() => {
+                      if (window.confirm(`Remove contact ${r.name}?`)) {
+                        deleteContactMut.mutate(r.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                ),
+              },
             ]}
+          />
+          <AddContactDialog
+            open={addContactOpen}
+            onOpenChange={setAddContactOpen}
+            customerId={customerId}
           />
         </TabsContent>
 

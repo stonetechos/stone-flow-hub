@@ -174,14 +174,18 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const items = await getEstimateItems(id);
       const schedule = await getEstimateSchedule(id);
       const cust = await fetchCustomer(e.customer_id);
-      const lines: PdfLine[] = items.map((it) => ({
-        label: it.description,
-        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
-        qty: it.quantity ?? "",
-        unit: it.unit ?? "",
-        rate: inr(it.unit_price),
-        amount: inr(it.line_total),
-      }));
+      const lines: PdfLine[] = items.map((it) => {
+        const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+        return {
+          label: it.description,
+          notes: (it as { notes?: string | null }).notes ?? undefined,
+          hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
+          qty: it.quantity ?? "",
+          unit: it.unit ?? "",
+          rate: inr(it.unit_price),
+          amount: inr(itemPreTax),
+        };
+      });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(e.subtotal) },
@@ -231,15 +235,19 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const items = await getQuoteItems(id);
       const cust = await fetchCustomer(q.customer_id);
       const imageMap = await resolveAllQuoteImages(q, items);
-      const lines: PdfLine[] = items.map((it) => ({
-        label: it.description,
-        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
-        qty: it.quantity,
-        unit: it.unit ?? "",
-        rate: inr(it.unit_price),
-        amount: inr(it.line_total),
-        image: getLineItemImage(it, imageMap),
-      }));
+      const lines: PdfLine[] = items.map((it) => {
+        const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+        return {
+          label: it.description,
+          notes: (it as { notes?: string | null }).notes ?? undefined,
+          hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
+          qty: it.quantity,
+          unit: it.unit ?? "",
+          rate: inr(it.unit_price),
+          amount: inr(itemPreTax),
+          image: getLineItemImage(it, imageMap),
+        };
+      });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(q.subtotal) },
@@ -279,14 +287,18 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       if (!so) throw new Error("Sales order not found");
       const items = await listSalesOrderItems(id);
       const cust = await fetchCustomer(so.customer_id);
-      const lines: PdfLine[] = items.map((it) => ({
-        label: it.description ?? it.product_name ?? "",
-        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
-        qty: it.quantity,
-        unit: it.unit ?? "",
-        rate: inr(it.unit_price),
-        amount: inr(it.line_total),
-      }));
+      const lines: PdfLine[] = items.map((it) => {
+        const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+        return {
+          label: it.description ?? it.product_name ?? "",
+          notes: (it as { notes?: string | null }).notes ?? undefined,
+          hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
+          qty: it.quantity,
+          unit: it.unit ?? "",
+          rate: inr(it.unit_price),
+          amount: inr(itemPreTax),
+        };
+      });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(so.subtotal) },
@@ -370,14 +382,18 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       if (!i) throw new Error("Invoice not found");
       const items = await getInvoiceItems(id);
       const cust = await fetchCustomer(i.customer_id);
-      const lines: PdfLine[] = items.map((it) => ({
-        label: it.description,
-        hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
-        qty: it.quantity,
-        unit: it.unit ?? "",
-        rate: inr(it.unit_price),
-        amount: inr(it.line_total),
-      }));
+      const lines: PdfLine[] = items.map((it) => {
+        const itemPreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+        return {
+          label: it.description,
+          notes: (it as { notes?: string | null }).notes ?? undefined,
+          hsn: (it as { hsn_sac?: string | null }).hsn_sac ?? undefined,
+          qty: it.quantity,
+          unit: it.unit ?? "",
+          rate: inr(it.unit_price),
+          amount: inr(itemPreTax),
+        };
+      });
       const gstSplit = gstTotalsFromItems(items as unknown as GstItem[]);
       const totals: PdfMeta[] = [
         { label: "Subtotal", value: inr(i.subtotal) },
@@ -634,6 +650,9 @@ export function renderDocWhatsAppText(built: BuiltDocument): string {
       const rateAmount =
         it.rate !== undefined && it.amount !== undefined ? ` × ${it.rate} = ${it.amount}` : "";
       lines.push(`• ${it.label}${qtyUnit ? ` — ${qtyUnit}` : ""}${rateAmount}`);
+      if (it.notes) {
+        lines.push(`   _Specs/Notes: ${it.notes}_`);
+      }
     }
   }
   if (doc.totals?.length) {

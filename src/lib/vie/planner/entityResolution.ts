@@ -62,9 +62,7 @@ export const DEFAULT_MAX_CANDIDATES = 20;
 // ---------------------------------------------------------------------------
 
 export type MatchOutcome<TRecord> =
-  | { kind: "none" }
-  | { kind: "one"; record: TRecord }
-  | { kind: "many"; records: TRecord[] };
+  { kind: "none" } | { kind: "one"; record: TRecord } | { kind: "many"; records: TRecord[] };
 
 /** Classifies an already-fetched candidate list. Used directly by resolvers
  *  that do their own business-specific filtering before deciding ambiguity

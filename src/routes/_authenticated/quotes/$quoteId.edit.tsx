@@ -178,7 +178,7 @@ function EditQuotePage() {
         busy={mut.isPending}
       >
         <QuickForm.QuickFill>
-          <Field label="Mode of Sale" className="md:col-span-2">
+          <Field label="Billing Plan" className="md:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
@@ -193,7 +193,7 @@ function EditQuotePage() {
                     : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                 )}
               >
-                <span>📄 Invoiced (GST Bill)</span>
+                <span>📄 Tax Invoice (GST Bill)</span>
               </button>
               <button
                 type="button"
@@ -223,7 +223,7 @@ function EditQuotePage() {
                     : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
                 )}
               >
-                <span>⚖️ Hybrid</span>
+                <span>⚖️ Hybrid (Tax Bill + Cash)</span>
               </button>
             </div>
             {saleMode === "cash" && (

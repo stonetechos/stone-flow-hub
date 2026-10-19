@@ -626,3 +626,78 @@ export async function updateCustomerSalesperson(input: {
     return normalizeCustomerRow(updated as CustomerRow);
   }
 }
+
+export type CustomerContactRow = DbTable<"customer_contacts">;
+
+export async function getCustomerContacts(customerId: string): Promise<CustomerContactRow[]> {
+  const { data, error } = await getDb()
+    .from("customer_contacts")
+    .select("*")
+    .eq("customer_id", customerId)
+    .order("is_primary", { ascending: false })
+    .order("created_at", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return (data ?? []) as CustomerContactRow[];
+}
+
+export async function addCustomerContact(
+  customerId: string,
+  contact: {
+    name: string;
+    phone?: string | null;
+    designation?: string | null;
+    email?: string | null;
+    is_primary?: boolean;
+  },
+): Promise<CustomerContactRow> {
+  try {
+    const { addCustomerContactServerFn } = await import("./customers.functions");
+    const res = await addCustomerContactServerFn({
+      data: {
+        customerId,
+        name: contact.name,
+        phone: contact.phone ?? null,
+        designation: contact.designation ?? "other",
+        email: contact.email ?? null,
+        is_primary: contact.is_primary ?? false,
+      },
+    });
+    if (res) return res as CustomerContactRow;
+  } catch (serverErr) {
+    console.warn(
+      "[customers.api] addCustomerContactServerFn failed, trying direct db insert:",
+      serverErr,
+    );
+  }
+
+  const { data, error } = await getDb()
+    .from("customer_contacts")
+    .insert({
+      customer_id: customerId,
+      name: contact.name.trim(),
+      phone: contact.phone ? normalizeMobile(contact.phone) || contact.phone.trim() : null,
+      designation: contact.designation?.trim() || "other",
+      email: contact.email?.trim() || null,
+      is_primary: Boolean(contact.is_primary),
+    } as never)
+    .select("*")
+    .single();
+  if (error) throw new AppError(mapDbError(error));
+  return data as CustomerContactRow;
+}
+
+export async function deleteCustomerContact(contactId: string): Promise<void> {
+  try {
+    const { deleteCustomerContactServerFn } = await import("./customers.functions");
+    await deleteCustomerContactServerFn({ data: { contactId } });
+    return;
+  } catch (serverErr) {
+    console.warn(
+      "[customers.api] deleteCustomerContactServerFn failed, trying direct db delete:",
+      serverErr,
+    );
+  }
+
+  const { error } = await getDb().from("customer_contacts").delete().eq("id", contactId);
+  if (error) throw new AppError(mapDbError(error));
+}

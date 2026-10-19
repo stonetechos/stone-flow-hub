@@ -135,6 +135,16 @@ export const MATERIAL_OPTIONS: ReadonlyArray<{
   { value: "agate_slabs", label: "Agate Slabs" },
 ];
 
+export const customerContactInputSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Contact name is required"),
+  phone: z.string().trim().nullable().optional(),
+  designation: z.string().trim().default("other"),
+  email: z.string().trim().nullable().optional(),
+  is_primary: z.boolean().default(false).optional(),
+});
+export type CustomerContactInput = z.infer<typeof customerContactInputSchema>;
+
 export const customerCreateSchema = z
   .object({
     // Quick Fill — Step 1 simplified Customer Registration fields
@@ -196,6 +206,9 @@ export const customerCreateSchema = z
       .optional(),
     material_interests: z.array(z.string()).default([]),
     notes: zOptional(),
+
+    // Multiple contacts (Name, Phone, Designation)
+    contacts: z.array(customerContactInputSchema).optional(),
 
     // More details / Advanced — kept from the original form so GST, email,
     // and address data used elsewhere (invoicing, tax) is never lost.

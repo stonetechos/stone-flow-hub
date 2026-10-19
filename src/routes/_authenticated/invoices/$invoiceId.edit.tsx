@@ -146,6 +146,7 @@ function EditInvoicePage() {
 type InvoiceDraftRow = {
   id: string;
   description: string;
+  notes: string;
   quantity: string;
   unit: string | null;
   unit_price: string;
@@ -154,10 +155,11 @@ type InvoiceDraftRow = {
 };
 
 function toInvoiceDraft(row: InvoiceItemRow): InvoiceDraftRow {
-  const anyRow = row as unknown as { hsn_sac?: string | null };
+  const anyRow = row as unknown as { hsn_sac?: string | null; notes?: string | null };
   return {
     id: row.id,
     description: row.description ?? "",
+    notes: anyRow.notes ?? "",
     quantity: String(row.quantity ?? ""),
     unit: row.unit ?? null,
     unit_price: String(row.unit_price ?? ""),
@@ -278,6 +280,10 @@ function InvoiceLineItemsEditor({ invoiceId }: { invoiceId: string }) {
         }
         patchMut.mutate({ id, patch: { hsn_sac: v } });
       }
+    } else if (key === "notes") {
+      const v = row.notes?.trim() || null;
+      const orig = (original as unknown as { notes?: string | null }).notes ?? null;
+      if (v !== orig) patchMut.mutate({ id, patch: { notes: v } });
     }
   };
 
@@ -382,6 +388,17 @@ function InvoiceLineItemsEditor({ invoiceId }: { invoiceId: string }) {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                    </div>
+                    <div className="md:col-span-12 mt-2">
+                      <label className="text-xs text-muted-foreground">
+                        Product Notes (Material Details & Size Specs)
+                      </label>
+                      <Input
+                        placeholder="Describe what exactly the material is and the size specs (e.g. 50mm sandstone, honed, 4ft × 2ft)..."
+                        value={r.notes}
+                        onChange={(e) => updateRow(r.id, "notes", e.target.value)}
+                        onBlur={() => commit(r.id, "notes", original)}
+                      />
                     </div>
                   </div>
                 </div>

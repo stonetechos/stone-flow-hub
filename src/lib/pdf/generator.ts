@@ -34,6 +34,7 @@ export type DocKind =
 
 export type PdfLine = {
   label: string;
+  notes?: string;
   qty?: number | string;
   unit?: string;
   rate?: number | string;
@@ -117,7 +118,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
               </td>`
             : ""
         }
-        <td style="padding:8px;border-bottom:1px solid ${border};vertical-align:middle">${esc(l.label)}</td>
+        <td style="padding:8px;border-bottom:1px solid ${border};vertical-align:middle">
+          <div style="font-weight:600">${esc(l.label)}</div>
+          ${l.notes ? `<div style="font-size:10.5px;color:#64748b;margin-top:2px;white-space:pre-wrap;line-height:1.35">${esc(l.notes)}</div>` : ""}
+        </td>
         ${showHsn ? `<td style="padding:8px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px;vertical-align:middle">${esc(l.hsn ?? "")}</td>` : ""}
         <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;vertical-align:middle">${esc(l.qty ?? "")}</td>
         <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};vertical-align:middle">${esc(l.unit ?? "")}</td>
@@ -387,6 +391,65 @@ function openInNewTab(html: string, autoPrint: boolean, targetWindow?: Window | 
   }
 }
 
+/**
+ * Generates an actual binary PDF Blob for the document.
+ * Uses jsPDF and html2canvas with graceful fallback.
+ */
+export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
+  const html = await renderDocHtmlAsync(doc);
+  if (typeof document === "undefined") {
+    return new Blob([html], { type: "application/pdf" });
+  }
+
+  // Create temporary offscreen container
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.top = "-9999px";
+  container.style.left = "-9999px";
+  container.style.width = "794px"; // Standard A4 width at 96 DPI
+  container.style.backgroundColor = "#ffffff";
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  try {
+    const { default: html2canvas } = await import("html2canvas");
+    const { default: jsPDF } = await import("jspdf");
+
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+    }
+
+    return pdf.output("blob");
+  } catch (err) {
+    console.warn("Direct canvas PDF generation failed, falling back to html blob:", err);
+    return new Blob([html], { type: "application/pdf" });
+  } finally {
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+  }
+}
+
 /** Open the branded document in a new tab (no print dialog). */
 export async function previewPdf(doc: PdfDoc, targetWindow?: Window | null): Promise<void> {
   openInNewTab(await renderDocHtmlAsync(doc), false, targetWindow);
@@ -398,20 +461,23 @@ export async function printPdf(doc: PdfDoc, targetWindow?: Window | null): Promi
 }
 
 /**
- * Download document: downloads the full self-contained document file
+ * Download document: downloads the full self-contained PDF file
  * directly without opening a disruptive system print dialog.
  */
 export async function downloadPdf(doc: PdfDoc, _targetWindow?: Window | null): Promise<void> {
-  const html = await renderDocHtmlAsync(doc);
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  const safeTitle = (doc.title || doc.kind || "document").replace(/[^a-zA-Z0-9_-]/g, "_");
-  const safeNumber = (doc.number || "").replace(/[^a-zA-Z0-9_-]/g, "_");
-  a.download = `${safeTitle}_${safeNumber || "doc"}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  try {
+    const blob = await generatePdfBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const safeTitle = (doc.title || doc.kind || "document").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const safeNumber = (doc.number || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+    a.download = `${safeTitle}_${safeNumber || "doc"}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  } catch {
+    printPdf(doc);
+  }
 }

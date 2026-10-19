@@ -22,6 +22,7 @@ export interface RelatedColumn<T> {
 
 export function RelatedList<T extends { id: string }>({
   title,
+  action,
   queryKey,
   queryFn,
   columns,
@@ -29,6 +30,7 @@ export function RelatedList<T extends { id: string }>({
   emptyMessage = "Nothing here yet.",
 }: {
   title: string;
+  action?: React.ReactNode;
   queryKey: readonly unknown[];
   queryFn: () => Promise<T[]>;
   columns: RelatedColumn<T>[];
@@ -39,8 +41,9 @@ export function RelatedList<T extends { id: string }>({
 
   return (
     <Card className="shadow-1">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">{title}</CardTitle>
+        {action}
       </CardHeader>
       <CardContent>
         {q.isLoading ? (

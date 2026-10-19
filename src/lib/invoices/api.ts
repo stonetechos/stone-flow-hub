@@ -160,6 +160,7 @@ export async function deleteInvoice(id: string): Promise<void> {
 
 export type InvoiceItemPatch = {
   description?: string;
+  notes?: string | null;
   quantity?: number;
   unit?: string | null;
   unit_price?: number;
@@ -185,6 +186,7 @@ export async function addInvoiceItem(
     .insert({
       invoice_id: invoiceId,
       description: patch.description,
+      notes: patch.notes ?? null,
       quantity: patch.quantity,
       unit: patch.unit ?? null,
       unit_price: patch.unit_price,
