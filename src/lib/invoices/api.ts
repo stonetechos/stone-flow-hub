@@ -65,7 +65,37 @@ export async function getInvoiceItems(invoiceId: string): Promise<InvoiceItemRow
     .eq("invoice_id", invoiceId)
     .order("sort_order", { ascending: true });
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+
+  const { data: inv } = await getDb()
+    .from("invoices")
+    .select("workflow_state, quote_id")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  const wf = (inv?.workflow_state as Record<string, unknown> | null) ?? {};
+  const notesMap = { ...((wf.line_item_notes as Record<string, string> | null) ?? {}) };
+
+  if (inv?.quote_id) {
+    const { data: q } = await getDb()
+      .from("quotes")
+      .select("workflow_state")
+      .eq("id", inv.quote_id)
+      .maybeSingle();
+    const qWf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
+    const qNotes = (qWf.line_item_notes as Record<string, string> | null) ?? {};
+    Object.entries(qNotes).forEach(([k, v]) => {
+      if (!notesMap[k]) notesMap[k] = v;
+    });
+  }
+
+  return (data ?? []).map((it, idx) => ({
+    ...it,
+    notes:
+      (it as { notes?: string | null }).notes ||
+      notesMap[it.id] ||
+      notesMap[String(idx)] ||
+      notesMap[it.description?.trim().toLowerCase()] ||
+      null,
+  }));
 }
 
 export async function getInvoicePayments(invoiceId: string): Promise<PaymentRow[]> {
@@ -209,7 +239,6 @@ export async function addInvoiceItem(
     .insert({
       invoice_id: invoiceId,
       description: patch.description,
-      notes: patch.notes ?? null,
       quantity: patch.quantity,
       unit: patch.unit ?? null,
       unit_price: patch.unit_price,
@@ -220,21 +249,72 @@ export async function addInvoiceItem(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+
+  if (patch.notes && patch.notes.trim()) {
+    await updateInvoiceItemNote(invoiceId, data.id, patch.notes.trim());
+  }
+  return { ...data, notes: patch.notes ?? null };
 }
 
 export async function updateInvoiceItem(
   itemId: string,
   patch: InvoiceItemPatch,
 ): Promise<InvoiceItemRow> {
-  const { data, error } = await getDb()
-    .from("invoice_items")
-    .update(patch as never)
-    .eq("id", itemId)
-    .select("*")
-    .single();
+  if (patch.notes !== undefined) {
+    const { data: item } = await getDb()
+      .from("invoice_items")
+      .select("invoice_id")
+      .eq("id", itemId)
+      .maybeSingle();
+    if (item?.invoice_id) {
+      await updateInvoiceItemNote(item.invoice_id, itemId, patch.notes);
+    }
+  }
+
+  const { notes, ...dbPatch } = patch;
+  if (Object.keys(dbPatch).length > 0) {
+    const { data, error } = await getDb()
+      .from("invoice_items")
+      .update(dbPatch as never)
+      .eq("id", itemId)
+      .select("*")
+      .single();
+    if (error) throw new AppError(mapDbError(error));
+    return { ...data, notes: patch.notes ?? null };
+  }
+
+  const { data, error } = await getDb().from("invoice_items").select("*").eq("id", itemId).single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return { ...data, notes: patch.notes ?? null };
+}
+
+export async function updateInvoiceItemNote(
+  invoiceId: string,
+  itemId: string,
+  notes: string | null,
+): Promise<void> {
+  const { data: inv, error: fetchErr } = await getDb()
+    .from("invoices")
+    .select("id, workflow_state")
+    .eq("id", invoiceId)
+    .single();
+  if (fetchErr || !inv) return;
+
+  const wf = (inv.workflow_state as Record<string, unknown> | null) ?? {};
+  const currentNotes = { ...((wf.line_item_notes as Record<string, string> | null) ?? {}) };
+
+  if (notes && notes.trim()) {
+    currentNotes[itemId] = notes.trim();
+  } else {
+    delete currentNotes[itemId];
+  }
+
+  const updatedWf = { ...wf, line_item_notes: currentNotes };
+  const { error } = await getDb()
+    .from("invoices")
+    .update({ workflow_state: updatedWf } as never)
+    .eq("id", invoiceId);
+  if (error) throw new AppError(mapDbError(error));
 }
 
 export async function deleteInvoiceItem(itemId: string): Promise<void> {

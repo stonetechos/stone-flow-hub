@@ -75,7 +75,27 @@ export async function getQuoteItems(quoteId: string): Promise<QuoteItemRow[]> {
     .eq("quote_id", quoteId)
     .order("sort_order", { ascending: true });
   if (error) throw new AppError(mapDbError(error));
-  return data ?? [];
+
+  const { data: q } = await getDb()
+    .from("quotes")
+    .select("workflow_state")
+    .eq("id", quoteId)
+    .maybeSingle();
+  const wf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
+  const notesMap = (wf.line_item_notes as Record<string, string> | null) ?? {};
+
+  return (data ?? []).map((it, idx) => {
+    const serverNote = (it as { notes?: string | null }).notes;
+    const wfNote =
+      notesMap[it.id] ??
+      notesMap[String(idx)] ??
+      notesMap[it.description?.trim().toLowerCase()] ??
+      null;
+    return {
+      ...it,
+      notes: serverNote || wfNote || null,
+    };
+  });
 }
 
 export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
@@ -123,6 +143,14 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     }
   }
 
+  const lineItemNotes: Record<string, string> = {};
+  parsed.items.forEach((it, idx) => {
+    if (it.notes && it.notes.trim()) {
+      lineItemNotes[it.description.trim().toLowerCase()] = it.notes.trim();
+      lineItemNotes[String(idx)] = it.notes.trim();
+    }
+  });
+
   const workflowState = {
     sale_mode: parsed.sale_mode ?? "invoiced",
     ...(parsed.hybrid_cash_amount !== undefined
@@ -132,6 +160,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
       ? { hybrid_invoiced_amount: parsed.hybrid_invoiced_amount }
       : {}),
     ...(Object.keys(lineItemImages).length > 0 ? { line_item_images: lineItemImages } : {}),
+    ...(Object.keys(lineItemNotes).length > 0 ? { line_item_notes: lineItemNotes } : {}),
   };
 
   const { data: quote, error } = await getDb()
@@ -157,7 +186,6 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     quote_id: quote.id,
     product_id: it.product_id ?? null,
     description: it.description,
-    notes: it.notes ?? null,
     quantity: it.quantity,
     unit: it.unit ?? null,
     unit_price: it.unit_price,
@@ -166,10 +194,28 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteRow> {
     sort_order: idx,
     ...(it.fulfilment ? { fulfilment: it.fulfilment } : {}),
   }));
-  const { error: itemErr } = await getDb()
+  const { data: insertedRows, error: itemErr } = await getDb()
     .from("quote_items")
-    .insert(rows as never);
+    .insert(rows as never)
+    .select("id, description, sort_order");
   if (itemErr) throw new AppError(mapDbError(itemErr));
+
+  if (insertedRows && insertedRows.length > 0) {
+    let hasNotes = false;
+    insertedRows.forEach((ins, idx) => {
+      const itNote = parsed.items[idx]?.notes;
+      if (itNote && itNote.trim()) {
+        lineItemNotes[ins.id] = itNote.trim();
+        hasNotes = true;
+      }
+    });
+    if (hasNotes) {
+      await getDb()
+        .from("quotes")
+        .update({ workflow_state: { ...workflowState, line_item_notes: lineItemNotes } } as never)
+        .eq("id", quote.id);
+    }
+  }
 
   // Reload to reflect totals
   const { data: reloaded } = await getDb().from("quotes").select("*").eq("id", quote.id).single();
@@ -229,15 +275,36 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
   });
   if (error) throw new AppError(mapDbError(error));
   const invoice = data as DbTable<"invoices">;
-  if (parsed.issue_date && invoice?.id) {
-    const { data: updated, error: updErr } = await getDb()
-      .from("invoices")
-      .update({ issue_date: parsed.issue_date })
-      .eq("id", invoice.id)
-      .select("*")
-      .single();
-    if (!updErr && updated) {
-      return updated as DbTable<"invoices">;
+  if (invoice?.id) {
+    const invUpdate: Record<string, unknown> = {};
+    if (parsed.issue_date) {
+      invUpdate.issue_date = parsed.issue_date;
+    }
+    const { data: q } = await getDb()
+      .from("quotes")
+      .select("workflow_state")
+      .eq("id", parsed.quote_id)
+      .maybeSingle();
+    const qWf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
+    if (qWf.line_item_notes) {
+      const { data: curInv } = await getDb()
+        .from("invoices")
+        .select("workflow_state")
+        .eq("id", invoice.id)
+        .maybeSingle();
+      const invWf = (curInv?.workflow_state as Record<string, unknown> | null) ?? {};
+      invUpdate.workflow_state = { ...invWf, line_item_notes: qWf.line_item_notes };
+    }
+    if (Object.keys(invUpdate).length > 0) {
+      const { data: updated, error: updErr } = await getDb()
+        .from("invoices")
+        .update(invUpdate as never)
+        .eq("id", invoice.id)
+        .select("*")
+        .single();
+      if (!updErr && updated) {
+        return updated as DbTable<"invoices">;
+      }
     }
   }
   return invoice;
@@ -385,7 +452,6 @@ export async function addQuoteItem(
     .insert({
       quote_id: quoteId,
       description: patch.description,
-      notes: patch.notes ?? null,
       quantity: patch.quantity,
       unit: patch.unit ?? null,
       unit_price: patch.unit_price,
@@ -397,21 +463,72 @@ export async function addQuoteItem(
     .select("*")
     .single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+
+  if (patch.notes && patch.notes.trim()) {
+    await updateQuoteItemNote(quoteId, data.id, patch.notes.trim());
+  }
+  return { ...data, notes: patch.notes ?? null };
 }
 
 export async function updateQuoteItem(
   itemId: string,
   patch: QuoteItemPatch,
 ): Promise<QuoteItemRow> {
-  const { data, error } = await getDb()
-    .from("quote_items")
-    .update(patch as never)
-    .eq("id", itemId)
-    .select("*")
-    .single();
+  if (patch.notes !== undefined) {
+    const { data: item } = await getDb()
+      .from("quote_items")
+      .select("quote_id")
+      .eq("id", itemId)
+      .maybeSingle();
+    if (item?.quote_id) {
+      await updateQuoteItemNote(item.quote_id, itemId, patch.notes);
+    }
+  }
+
+  const { notes, ...dbPatch } = patch;
+  if (Object.keys(dbPatch).length > 0) {
+    const { data, error } = await getDb()
+      .from("quote_items")
+      .update(dbPatch as never)
+      .eq("id", itemId)
+      .select("*")
+      .single();
+    if (error) throw new AppError(mapDbError(error));
+    return { ...data, notes: patch.notes ?? null };
+  }
+
+  const { data, error } = await getDb().from("quote_items").select("*").eq("id", itemId).single();
   if (error) throw new AppError(mapDbError(error));
-  return data;
+  return { ...data, notes: patch.notes ?? null };
+}
+
+export async function updateQuoteItemNote(
+  quoteId: string,
+  itemId: string,
+  notes: string | null,
+): Promise<void> {
+  const { data: q, error: fetchErr } = await getDb()
+    .from("quotes")
+    .select("id, workflow_state")
+    .eq("id", quoteId)
+    .single();
+  if (fetchErr || !q) return;
+
+  const wf = (q.workflow_state as Record<string, unknown> | null) ?? {};
+  const currentNotes = { ...((wf.line_item_notes as Record<string, string> | null) ?? {}) };
+
+  if (notes && notes.trim()) {
+    currentNotes[itemId] = notes.trim();
+  } else {
+    delete currentNotes[itemId];
+  }
+
+  const updatedWf = { ...wf, line_item_notes: currentNotes };
+  const { error } = await getDb()
+    .from("quotes")
+    .update({ workflow_state: updatedWf } as never)
+    .eq("id", quoteId);
+  if (error) throw new AppError(mapDbError(error));
 }
 
 export async function deleteQuoteItem(itemId: string): Promise<void> {

@@ -343,6 +343,7 @@ function EditQuotePage() {
 type DraftRow = {
   id: string;
   description: string;
+  notes: string;
   quantity: string;
   unit: string | null;
   unit_price: string;
@@ -352,10 +353,15 @@ type DraftRow = {
 };
 
 function toDraft(row: QuoteItemRow): DraftRow {
-  const anyRow = row as unknown as { fulfilment?: string | null; hsn_sac?: string | null };
+  const anyRow = row as unknown as {
+    fulfilment?: string | null;
+    hsn_sac?: string | null;
+    notes?: string | null;
+  };
   return {
     id: row.id,
     description: row.description ?? "",
+    notes: anyRow.notes ?? "",
     quantity: String(row.quantity ?? ""),
     unit: row.unit ?? null,
     unit_price: String(row.unit_price ?? ""),
@@ -535,6 +541,12 @@ function LineItemsEditor({
           return;
         }
         patchMut.mutate({ id, patch: { hsn_sac: v } });
+      }
+    } else if (key === "notes") {
+      const v = row.notes.trim();
+      const orig = ((original as unknown as { notes?: string | null }).notes ?? "").trim();
+      if (v !== orig) {
+        patchMut.mutate({ id, patch: { notes: v || null } });
       }
     }
   };
@@ -763,6 +775,24 @@ function LineItemsEditor({
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="md:col-span-12 mt-1 pt-2 border-t border-dashed border-border/70">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Product Notes (Material Details & Size Specs)
+                        </label>
+                        <span className="text-[10px] text-muted-foreground">
+                          Blank box for describing slabs, thickness, finish, dimensions, etc.
+                        </span>
+                      </div>
+                      <Textarea
+                        rows={2}
+                        placeholder="Describe what exactly the material is and the size specs (e.g. 50mm sandstone, honed, 4ft × 2ft slab sizes, chamfered edges)..."
+                        value={r.notes ?? ""}
+                        onChange={(e) => updateRow(r.id, "notes", e.target.value)}
+                        onBlur={() => commit(r.id, "notes", original)}
+                        className="text-xs resize-y bg-background"
+                      />
                     </div>
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
