@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Ban, Link2, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DocumentToolbar } from "@/components/documents/DocumentToolbar";
 import { ConfirmDialog } from "@/components/data/ConfirmDialog";
 import { EditReceiptDialog } from "@/components/receipts/EditReceiptDialog";
+import { AllocateReceiptDialog } from "@/components/receipts/AllocateReceiptDialog";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ function ReceiptDetailPage() {
   });
 
   const [editOpen, setEditOpen] = useState(false);
+  const [allocateOpen, setAllocateOpen] = useState(false);
   const [confirmVoid, setConfirmVoid] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -125,6 +127,16 @@ function ReceiptDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setAllocateOpen(true)}
+                className="bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+              >
+                <Link2 className="mr-2 h-4 w-4" /> {t("receipts.allocate", "Allocate")}
+              </Button>
+            )}
+            {r.status !== "void" && (
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setConfirmVoid(true)}
                 disabled={voidMut.isPending}
                 className="text-amber-700 border-amber-300 hover:bg-amber-50"
@@ -147,6 +159,17 @@ function ReceiptDetailPage() {
       <EditReceiptDialog
         open={editOpen}
         onOpenChange={setEditOpen}
+        receipt={r}
+        customerName={r.customer?.name}
+        onSuccess={() => {
+          query.refetch();
+          allocs.refetch();
+        }}
+      />
+
+      <AllocateReceiptDialog
+        open={allocateOpen}
+        onOpenChange={setAllocateOpen}
         receipt={r}
         customerName={r.customer?.name}
         onSuccess={() => {
@@ -237,19 +260,47 @@ function ReceiptDetailPage() {
       </div>
 
       <Card className="mt-4 shadow-1">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm">{t("receipts.allocations", "Allocations")}</CardTitle>
+          {r.status !== "void" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAllocateOpen(true)}
+              className="h-8 text-xs font-medium"
+            >
+              <Link2 className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+              {(allocs.data ?? []).length > 0
+                ? t("receipts.editAllocations", "Edit Allocations")
+                : t("receipts.allocateInvoices", "Allocate to Invoices")}
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {allocs.isLoading ? (
             <LoadingBlock />
           ) : (allocs.data ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t(
-                "receipts.unallocatedAdvanceNote",
-                "Unallocated advance — apply to invoices from the customer ledger.",
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/20">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {Number(r.unallocated_amount) > 0
+                    ? `Unallocated advance: ${formatInr(r.unallocated_amount)}`
+                    : "No allocations recorded"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Apply this receipt directly to open customer invoices.
+                </p>
+              </div>
+              {r.status !== "void" && (
+                <Button
+                  size="sm"
+                  onClick={() => setAllocateOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                >
+                  <Link2 className="mr-1.5 h-3.5 w-3.5" /> Allocate to Invoices
+                </Button>
               )}
-            </p>
+            </div>
           ) : (
             <Table>
               <TableHeader>

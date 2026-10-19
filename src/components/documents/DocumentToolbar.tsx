@@ -37,6 +37,7 @@ import {
 } from "@/lib/documents/engine";
 import { downloadPdf, previewPdf, printPdf, generatePdfBlob } from "@/lib/pdf/generator";
 import {
+  buildWhatsappUrl,
   getWhatsappModePreference,
   openWhatsappToContact,
   setWhatsappModePreference,
@@ -87,6 +88,20 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
     let popupWin: Window | null = null;
     try {
       popupWin = window.open("about:blank", "_blank");
+      if (popupWin && !popupWin.closed) {
+        try {
+          popupWin.document.title = "Opening WhatsApp...";
+          popupWin.document.body.innerHTML = `
+            <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f8fafc; color: #1e293b; text-align: center; padding: 20px;">
+              <div style="font-size: 36px; margin-bottom: 12px;">💬</div>
+              <div style="font-size: 18px; font-weight: 600; margin-bottom: 6px;">Opening WhatsApp...</div>
+              <div style="font-size: 13px; color: #64748b;">Preparing your official document to attach.</div>
+            </div>
+          `;
+        } catch {
+          /* ignore cross-origin */
+        }
+      }
     } catch {
       // Popup blocked or denied; will fall back to direct navigation inside openWhatsappToContact
     }
@@ -113,18 +128,22 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         console.warn("Could not generate PDF blob:", pdfErr);
       }
 
-      // 2. Direct PDF send via Web Share API if supported (Mobile, iPad, Android, macOS Safari)
-      if (pdfBlob && typeof navigator !== "undefined" && typeof navigator.canShare === "function") {
+      // 2. Direct PDF send via Web Share API ONLY on actual mobile devices (iOS / Android)
+      const isMobileDevice =
+        typeof navigator !== "undefined" &&
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+
+      if (isMobileDevice && pdfBlob && typeof navigator.canShare === "function") {
         const fileName = `${docNo || docTitle}.pdf`;
         const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
         if (navigator.canShare({ files: [pdfFile] })) {
-          if (popupWin && !popupWin.closed) popupWin.close();
           try {
             await navigator.share({
               title: `${docTitle} — ${docNo}`,
               text: `Dear ${recipientName}, please find your official ${docTitle} (${docNo}) from Stone Tech attached.`,
               files: [pdfFile],
             });
+            if (popupWin && !popupWin.closed) popupWin.close();
             toast.success(`Shared ${docTitle} PDF directly via WhatsApp!`);
             void enqueueMessage({
               channel: "whatsapp",
@@ -139,8 +158,7 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
             }).catch(() => {});
             return;
           } catch (shareErr) {
-            // If user closed native share sheet, fallback to desktop download + chat flow
-            console.log("Native share dismissed:", shareErr);
+            console.log("Mobile native share dismissed or unsupported:", shareErr);
           }
         }
       }
@@ -181,6 +199,9 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         .filter((x) => x !== null)
         .join("\n");
 
+      const effectiveWaMode = mode === "app" ? "wa.me" : mode;
+      const waUrl = buildWhatsappUrl(phone, cleanPdfMessage, effectiveWaMode);
+
       if (mode === "app") {
         try {
           if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -192,17 +213,43 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
         openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "wa.me" });
         toast.success(
           `Opening WhatsApp! Attach the downloaded ${docNo || "document"}.pdf to send.`,
+          {
+            action: {
+              label: "Open WhatsApp",
+              onClick: () => {
+                window.open(waUrl, "_blank");
+              },
+            },
+            duration: 10000,
+          },
         );
       } else if (mode === "web") {
         openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "web" });
         toast.success(
           `Opening WhatsApp Web! Attach the downloaded ${docNo || "document"}.pdf to send.`,
+          {
+            action: {
+              label: "Open WhatsApp Web",
+              onClick: () => {
+                window.open(waUrl, "_blank");
+              },
+            },
+            duration: 10000,
+          },
         );
       } else {
         openWhatsappToContact(phone, cleanPdfMessage, popupWin, { mode: "wa.me" });
         toast.success(
           `PDF (${docNo || "document"}.pdf) downloaded! Drag & drop it into the WhatsApp chat to send directly.`,
-          { duration: 7000 },
+          {
+            action: {
+              label: "Open WhatsApp",
+              onClick: () => {
+                window.open(waUrl, "_blank");
+              },
+            },
+            duration: 10000,
+          },
         );
       }
 
