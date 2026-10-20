@@ -41,6 +41,7 @@ import {
 
 import {
   saveEmployeeServerFn,
+  updateEmployeeStatusServerFn,
   deleteEmployeeServerFn,
   getEmployeeServerFn,
   listEmployeesServerFn,
@@ -302,14 +303,19 @@ export async function updateEmployeeStatus(
   id: string,
   status: EmploymentStatus,
 ): Promise<Employee> {
-  const { data, error } = await supabase
-    .from("employees")
-    .update({ employment_status: status })
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new AppError(mapDbError(error));
-  return enrichEmployee(data);
+  try {
+    const res = await updateEmployeeStatusServerFn({ data: { id, status } });
+    return enrichEmployee(res);
+  } catch (err) {
+    const { data, error } = await supabase
+      .from("employees")
+      .update({ employment_status: status })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw new AppError(mapDbError(error));
+    return enrichEmployee(data);
+  }
 }
 
 export async function deleteEmployee(id: string): Promise<void> {

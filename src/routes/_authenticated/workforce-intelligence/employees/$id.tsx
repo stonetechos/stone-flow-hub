@@ -205,9 +205,15 @@ function EmployeeProfile() {
       }
       return updateEmployeeStatus(id, status);
     },
-    onSuccess: () => {
+    onSuccess: (_, status) => {
       qc.invalidateQueries({ queryKey: ["wf", "employees"] });
-      toast.success("Employment status updated");
+      if (status === "terminated") {
+        toast.success(
+          "Employee marked as Terminated. Software login rights and access have been revoked.",
+        );
+      } else {
+        toast.success("Employment status updated");
+      }
     },
     onError: (e) => toast.error(toUserMessage(e)),
   });

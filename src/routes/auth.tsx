@@ -60,7 +60,18 @@ import { LoadingBlock } from "@/components/layout/States";
 
 const flowSchema = z.object({
   flow: z
-    .enum(["signin", "reset", "update", "invite", "force-change", "expired", "denied", "loading"])
+    .enum([
+      "signin",
+      "reset",
+      "update",
+      "invite",
+      "force-change",
+      "expired",
+      "denied",
+      "terminated",
+      "deactivated",
+      "loading",
+    ])
     .optional()
     .default("signin")
     .catch("signin"),
@@ -330,6 +341,26 @@ function FormArea({ flow }: { flow: string }) {
           primary={{ label: "Back to sign in", to: "/auth" }}
         />
       );
+    case "terminated":
+      return (
+        <NoticeCard
+          tone="danger"
+          icon={ShieldOff}
+          title="Account terminated"
+          body="Your employment status has been marked as terminated. All software login rights and access to STOS have been revoked."
+          primary={{ label: "Back to sign in", to: "/auth" }}
+        />
+      );
+    case "deactivated":
+      return (
+        <NoticeCard
+          tone="danger"
+          icon={ShieldOff}
+          title="Account deactivated"
+          body="Your STOS user account has been deactivated. Contact an administrator if you believe this is in error."
+          primary={{ label: "Back to sign in", to: "/auth" }}
+        />
+      );
     case "loading":
       return <AuthLoadingCard />;
     case "signin":
@@ -450,6 +481,35 @@ function SignInCard() {
         });
       }
       const uid = sess.session?.user?.id;
+      if (uid) {
+        // Strict security gate: check for deactivated account or terminated employee
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("is_active")
+          .eq("id", uid)
+          .maybeSingle();
+
+        const userEmail = email.trim().toLowerCase();
+        const { data: terminatedEmp } = await supabase
+          .from("employees")
+          .select("id, employment_status")
+          .or(`user_id.eq.${uid}${userEmail ? `,email.ilike.${userEmail}` : ""}`)
+          .in("employment_status", ["terminated", "resigned"])
+          .maybeSingle();
+
+        if (prof?.is_active === false || terminatedEmp) {
+          await supabase.auth.signOut();
+          const err = new Error(
+            terminatedEmp
+              ? "Access denied: Your employment status is terminated and software access has been revoked."
+              : "Access denied: Your account has been deactivated.",
+          );
+          setFormError(err.message);
+          toast.error(err.message);
+          return;
+        }
+      }
+
       let isVendor = false;
       if (uid) {
         const { data: vu } = await supabase
@@ -486,6 +546,35 @@ function SignInCard() {
       toast.success("Fingerprint verified! Welcome back.");
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
+      if (uid) {
+        // Strict security gate: check for deactivated account or terminated employee
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("is_active")
+          .eq("id", uid)
+          .maybeSingle();
+
+        const userEmail = targetEmail.trim().toLowerCase();
+        const { data: terminatedEmp } = await supabase
+          .from("employees")
+          .select("id, employment_status")
+          .or(`user_id.eq.${uid}${userEmail ? `,email.ilike.${userEmail}` : ""}`)
+          .in("employment_status", ["terminated", "resigned"])
+          .maybeSingle();
+
+        if (prof?.is_active === false || terminatedEmp) {
+          await supabase.auth.signOut();
+          const err = new Error(
+            terminatedEmp
+              ? "Access denied: Your employment status is terminated and software access has been revoked."
+              : "Access denied: Your account has been deactivated.",
+          );
+          setFormError(err.message);
+          toast.error(err.message);
+          return;
+        }
+      }
+
       let isVendor = false;
       if (uid) {
         const { data: vu } = await supabase

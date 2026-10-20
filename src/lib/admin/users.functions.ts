@@ -1065,7 +1065,6 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
       email.includes("raman") ||
       email.includes("rishi") ||
       email === "raman.pupneja@gmail.com" ||
-      email === "rp140528@gmail.com" ||
       email === "stonetechrajasthan@gmail.com" ||
       email === "rishirai@gmail.com";
 
@@ -1109,11 +1108,34 @@ export const syncOrganizationDataServerFn = createServerFn({ method: "POST" })
 
       for (const u of usersList) {
         const uEmail = u.email?.toLowerCase() || "";
+
+        // Check if this user is linked to a terminated or resigned employee
+        const { data: terminatedEmp } = await supabaseAdmin
+          .from("employees")
+          .select("id, employment_status")
+          .or(`user_id.eq.${u.id},email.ilike.${uEmail}`)
+          .in("employment_status", ["terminated", "resigned"])
+          .maybeSingle();
+
+        if (terminatedEmp || uEmail === "rp140528@gmail.com") {
+          // Strictly revoke access: strip roles, deactivate profile, ban auth user, and skip
+          await supabaseAdmin.from("user_roles").delete().eq("user_id", u.id);
+          await supabaseAdmin.from("profiles").update({ is_active: false }).eq("id", u.id);
+          try {
+            await supabaseAdmin.auth.admin.updateUserById(u.id, {
+              ban_duration: "876000h",
+            } as { ban_duration: string });
+            await supabaseAdmin.auth.admin.signOut(u.id);
+          } catch {
+            /* ignore */
+          }
+          continue;
+        }
+
         const uIsDirector =
           uEmail.includes("raman") ||
           uEmail.includes("rishi") ||
           uEmail === "raman.pupneja@gmail.com" ||
-          uEmail === "rp140528@gmail.com" ||
           uEmail === "stonetechrajasthan@gmail.com" ||
           uEmail === "rishirai@gmail.com";
 

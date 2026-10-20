@@ -141,22 +141,53 @@ export const Route = createFileRoute("/_authenticated")({
       }
     }
 
-    // A temporary password (Part 5) or an admin-driven
-    // reset (Part 6) both set `force_password_change` — checked here so it
-    // applies no matter which authenticated route the user lands on first,
-    // and the dashboard is unreachable until they set their own password.
+    // Check account status: password change, deactivation, and termination
     try {
       const profilePromise = supabase
         .from("profiles")
-        .select("force_password_change")
+        .select("force_password_change, is_active")
         .eq("id", activeUser.id)
         .maybeSingle();
       const profileTimeout = new Promise<{ data: null }>((resolve) =>
         setTimeout(() => resolve({ data: null }), 2000),
       );
       const { data: profile } = await Promise.race([profilePromise, profileTimeout]);
+
+      if (profile && profile.is_active === false) {
+        beginManagedSignOut();
+        try {
+          await supabase.auth.signOut({ scope: "local" });
+        } catch {
+          // ignore signout error
+        }
+        throw redirect({ to: "/auth", search: { flow: "deactivated" } });
+      }
+
       if (profile?.force_password_change) {
         throw redirect({ to: "/auth", search: { flow: "force-change" } });
+      }
+
+      // Check if user is linked to an employee whose status is terminated/resigned
+      const userEmail = activeUser.email?.trim().toLowerCase();
+      const empPromise = supabase
+        .from("employees")
+        .select("id, employment_status")
+        .or(`user_id.eq.${activeUser.id}${userEmail ? `,email.ilike.${userEmail}` : ""}`)
+        .in("employment_status", ["terminated", "resigned"])
+        .maybeSingle();
+      const empTimeout = new Promise<{ data: null }>((resolve) =>
+        setTimeout(() => resolve({ data: null }), 2000),
+      );
+      const { data: terminatedEmp } = await Promise.race([empPromise, empTimeout]);
+
+      if (terminatedEmp) {
+        beginManagedSignOut();
+        try {
+          await supabase.auth.signOut({ scope: "local" });
+        } catch {
+          // ignore signout error
+        }
+        throw redirect({ to: "/auth", search: { flow: "terminated" } });
       }
     } catch (e) {
       if ((e as { to?: string })?.to) throw e;
