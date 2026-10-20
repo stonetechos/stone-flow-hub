@@ -174,7 +174,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     : "";
   const qrImg =
     qrString && qrAmount > 0
-      ? `<img src="https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent(qrString)}" alt="UPI QR Code" style="margin-top:8px;border-radius:4px;border:1px solid ${border}" />`
+      ? `<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrString)}" alt="UPI QR Code" crossorigin="anonymous" style="margin-top:8px;border-radius:4px;border:1px solid ${border}" />`
       : "";
 
   const bankBlock = hasBankDetails
@@ -391,38 +391,294 @@ function openInNewTab(html: string, autoPrint: boolean, targetWindow?: Window | 
   }
 }
 
+async function getJsPdfConstructor() {
+  const jspdfModule = await import("jspdf");
+  return (
+    jspdfModule.jsPDF ??
+    (jspdfModule.default as unknown as { jsPDF?: typeof jspdfModule.jsPDF })?.jsPDF ??
+    (jspdfModule.default as unknown as typeof jspdfModule.jsPDF)
+  );
+}
+
+/**
+ * Pure vector fallback generator using jsPDF.
+ * Guarantees a 100% valid, uncorrupted binary PDF without relying on DOM/canvas.
+ */
+async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
+  const JsPdf = await getJsPdfConstructor();
+  const pdf = new JsPdf("p", "mm", "a4");
+
+  // Document Title & Accent Bar
+  pdf.setFillColor(15, 118, 110); // #0F766E
+  pdf.rect(15, 12, 180, 2, "F");
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(20);
+  pdf.setTextColor(15, 118, 110);
+  pdf.text((doc.title || doc.kind || "DOCUMENT").toUpperCase(), 15, 22);
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(doc.number || "", 195, 20, { align: "right" });
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text(doc.date || "", 195, 25, { align: "right" });
+
+  // Divider
+  let y = 32;
+  pdf.setDrawColor(229, 231, 235);
+  pdf.line(15, y, 195, y);
+
+  // Parties (From / To)
+  y = 38;
+  if (doc.from) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text("FROM", 15, y);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(doc.from.name || "", 15, y + 5);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(71, 85, 105);
+    let fromY = y + 9;
+    if (doc.from.address) {
+      const addrLines = pdf.splitTextToSize(doc.from.address, 80);
+      pdf.text(addrLines, 15, fromY);
+      fromY += addrLines.length * 4;
+    }
+    if (doc.from.gstin) {
+      pdf.text(`GSTIN: ${doc.from.gstin}`, 15, fromY);
+      fromY += 4;
+    }
+    if (doc.from.phone) {
+      pdf.text(`Phone: ${doc.from.phone}`, 15, fromY);
+    }
+  }
+
+  if (doc.to) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text("BILL TO", 110, y);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(doc.to.name || "", 110, y + 5);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(71, 85, 105);
+    let toY = y + 9;
+    if (doc.to.address) {
+      const addrLines = pdf.splitTextToSize(doc.to.address, 80);
+      pdf.text(addrLines, 110, toY);
+      toY += addrLines.length * 4;
+    }
+    if (doc.to.gstin) {
+      pdf.text(`GSTIN: ${doc.to.gstin}`, 110, toY);
+      toY += 4;
+    }
+    if (doc.to.phone) {
+      pdf.text(`Phone: ${doc.to.phone}`, 110, toY);
+    }
+  }
+
+  y = 65;
+
+  // Metadata items if any
+  if (doc.meta && doc.meta.length > 0) {
+    pdf.setDrawColor(229, 231, 235);
+    pdf.setFillColor(248, 250, 252);
+    pdf.roundedRect(15, y, 180, 12, 1.5, 1.5, "FD");
+    let metaX = 20;
+    pdf.setFontSize(8);
+    for (const m of doc.meta.slice(0, 4)) {
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(`${m.label}:`, metaX, y + 7);
+      pdf.setTextColor(15, 23, 42);
+      pdf.text(String(m.value ?? "—"), metaX + 22, y + 7);
+      metaX += 42;
+    }
+    y += 16;
+  }
+
+  // Items Table Header
+  pdf.setFillColor(15, 118, 110);
+  pdf.rect(15, y, 180, 7.5, "F");
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8);
+  pdf.setTextColor(255, 255, 255);
+  pdf.text("#", 18, y + 5);
+  pdf.text("Description", 26, y + 5);
+  pdf.text("Qty", 125, y + 5, { align: "right" });
+  pdf.text("Unit", 131, y + 5);
+  pdf.text("Rate", 160, y + 5, { align: "right" });
+  pdf.text("Amount", 190, y + 5, { align: "right" });
+
+  y += 7.5;
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8.5);
+  pdf.setTextColor(15, 23, 42);
+
+  const lines = doc.lines ?? [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (y > 265) {
+      pdf.addPage();
+      y = 20;
+    }
+    y += 6;
+    pdf.text(String(i + 1), 18, y);
+    pdf.text(l.label ? l.label.slice(0, 45) : "—", 26, y);
+    pdf.text(String(l.qty ?? ""), 125, y, { align: "right" });
+    pdf.text(String(l.unit ?? ""), 131, y);
+    pdf.text(String(l.rate ?? ""), 160, y, { align: "right" });
+    pdf.text(String(l.amount ?? ""), 190, y, { align: "right" });
+
+    if (l.notes) {
+      y += 4;
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(l.notes.slice(0, 70), 26, y);
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(15, 23, 42);
+    }
+
+    pdf.setDrawColor(241, 245, 249);
+    pdf.line(15, y + 2, 195, y + 2);
+  }
+
+  y += 6;
+  // Totals
+  const totals = doc.totals ?? [];
+  for (let i = 0; i < totals.length; i++) {
+    const t = totals[i];
+    if (y > 275) {
+      pdf.addPage();
+      y = 20;
+    }
+    const isLast = i === totals.length - 1;
+    pdf.setFont("helvetica", isLast ? "bold" : "normal");
+    pdf.setFontSize(isLast ? 10 : 8.5);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text(`${t.label}:`, 150, y, { align: "right" });
+    pdf.text(String(t.value ?? ""), 190, y, { align: "right" });
+    y += isLast ? 7 : 5;
+  }
+
+  // Footer / Terms
+  if (doc.terms || doc.notes) {
+    if (y > 255) {
+      pdf.addPage();
+      y = 20;
+    }
+    y += 6;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text("TERMS & NOTES", 15, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(71, 85, 105);
+    const textContent = [doc.notes, doc.terms].filter(Boolean).join("\n");
+    const termLines = pdf.splitTextToSize(textContent, 175);
+    pdf.text(termLines.slice(0, 10), 15, y + 4);
+  }
+
+  return pdf.output("blob");
+}
+
 /**
  * Generates an actual binary PDF Blob for the document.
  * Uses jsPDF and html2canvas with graceful fallback.
+ * NEVER returns an HTML blob under an application/pdf MIME type.
  */
 export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
   const html = await renderDocHtmlAsync(doc);
   if (typeof document === "undefined") {
-    return new Blob([html], { type: "application/pdf" });
+    return generateVectorPdfFallback(doc);
   }
 
   // Create temporary offscreen container
   const container = document.createElement("div");
   container.style.position = "fixed";
-  container.style.top = "-9999px";
   container.style.left = "-9999px";
+  container.style.top = "0";
   container.style.width = "794px"; // Standard A4 width at 96 DPI
   container.style.backgroundColor = "#ffffff";
   container.innerHTML = html;
   document.body.appendChild(container);
 
+  // Remove buttons / toolbars that shouldn't appear in the PDF
+  container.querySelectorAll(".no-print, .toolbar").forEach((el) => el.remove());
+
+  // Mark all images crossOrigin = anonymous to permit canvas extraction
+  container.querySelectorAll("img").forEach((img) => {
+    img.crossOrigin = "anonymous";
+  });
+
   try {
-    const { default: html2canvas } = await import("html2canvas");
-    const { default: jsPDF } = await import("jspdf");
+    const html2canvasModule = await import("html2canvas");
+    const html2canvas = html2canvasModule.default ?? html2canvasModule;
+    const JsPdf = await getJsPdfConstructor();
 
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    });
+    const sheetEl = (container.querySelector(".sheet") as HTMLElement) || container;
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    const pdf = new jsPDF("p", "mm", "a4");
+    let canvas: HTMLCanvasElement;
+    try {
+      canvas = await html2canvas(sheetEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 794,
+      });
+    } catch {
+      // If external images fail CORS, hide them and capture layout
+      sheetEl.querySelectorAll("img").forEach((img) => {
+        (img as HTMLElement).style.display = "none";
+      });
+      canvas = await html2canvas(sheetEl, {
+        scale: 2,
+        useCORS: false,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 794,
+      });
+    }
+
+    let imgData: string;
+    try {
+      imgData = canvas.toDataURL("image/jpeg", 0.95);
+    } catch {
+      // Canvas was tainted; re-capture with images hidden
+      sheetEl.querySelectorAll("img").forEach((img) => {
+        (img as HTMLElement).style.display = "none";
+      });
+      const cleanCanvas = await html2canvas(sheetEl, {
+        scale: 2,
+        useCORS: false,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 794,
+      });
+      imgData = cleanCanvas.toDataURL("image/jpeg", 0.95);
+    }
+
+    const pdf = new JsPdf("p", "mm", "a4");
     const pdfWidth = 210;
     const pdfHeight = 297;
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -439,10 +695,14 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
       heightLeft -= pdfHeight;
     }
 
-    return pdf.output("blob");
+    const outputBlob = pdf.output("blob");
+    if (outputBlob.size > 100) {
+      return outputBlob;
+    }
+    return await generateVectorPdfFallback(doc);
   } catch (err) {
-    console.warn("Direct canvas PDF generation failed, falling back to html blob:", err);
-    return new Blob([html], { type: "application/pdf" });
+    console.warn("Canvas PDF generation failed, generating clean vector PDF:", err);
+    return await generateVectorPdfFallback(doc);
   } finally {
     if (container.parentNode) {
       container.parentNode.removeChild(container);
