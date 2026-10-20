@@ -405,64 +405,96 @@ async function getJsPdfConstructor() {
  * Guarantees a 100% valid, uncorrupted binary PDF without relying on DOM/canvas.
  */
 async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
+  const brand = await loadBranding().catch(() => DEFAULT_BRANDING);
+  const from = doc.from ?? brandParty(brand);
   const JsPdf = await getJsPdfConstructor();
   const pdf = new JsPdf("p", "mm", "a4");
 
-  // Document Title & Accent Bar
+  const cleanAmount = (s: unknown) => String(s ?? "").replace(/₹/g, "Rs. ");
+
+  // Top Accent Bar
   pdf.setFillColor(15, 118, 110); // #0F766E
   pdf.rect(15, 12, 180, 2, "F");
 
+  // Company Name & Tagline (Left)
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(20);
+  pdf.setFontSize(22);
   pdf.setTextColor(15, 118, 110);
-  pdf.text((doc.title || doc.kind || "DOCUMENT").toUpperCase(), 15, 22);
+  pdf.text(brand.company_name || "STONE TECH", 15, 23);
+
+  if (brand.tagline) {
+    pdf.setFont("helvetica", "italic");
+    pdf.setFontSize(9.5);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text(brand.tagline, 15, 28);
+  }
+
+  // Document Title & Number (Right)
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  pdf.setTextColor(15, 118, 110);
+  pdf.text((doc.title || doc.kind || "DOCUMENT").toUpperCase(), 195, 22, { align: "right" });
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(11);
   pdf.setTextColor(15, 23, 42);
-  pdf.text(doc.number || "", 195, 20, { align: "right" });
+  pdf.text(doc.number || "", 195, 27, { align: "right" });
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   pdf.setTextColor(100, 116, 139);
-  pdf.text(doc.date || "", 195, 25, { align: "right" });
+  pdf.text(doc.date || "", 195, 32, { align: "right" });
 
   // Divider
-  let y = 32;
+  let y = 35;
   pdf.setDrawColor(229, 231, 235);
   pdf.line(15, y, 195, y);
 
-  // Parties (From / To)
-  y = 38;
-  if (doc.from) {
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text("FROM", 15, y);
+  // FROM Block (Left) & BILL TO Block (Right)
+  y = 41;
 
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(10);
-    pdf.setTextColor(15, 23, 42);
-    pdf.text(doc.from.name || "", 15, y + 5);
+  // FROM Block
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text("FROM", 15, y);
 
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(from.name || brand.company_name, 15, y + 4.5);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  pdf.setTextColor(71, 85, 105);
+  let fromY = y + 8.5;
+  if (from.address) {
+    const addrLines = pdf.splitTextToSize(from.address, 80);
+    pdf.text(addrLines, 15, fromY);
+    fromY += addrLines.length * 3.5;
+  }
+  if (from.gstin) {
+    pdf.setFont("helvetica", "bold");
+    pdf.text("GSTIN: ", 15, fromY);
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
-    pdf.setTextColor(71, 85, 105);
-    let fromY = y + 9;
-    if (doc.from.address) {
-      const addrLines = pdf.splitTextToSize(doc.from.address, 80);
-      pdf.text(addrLines, 15, fromY);
-      fromY += addrLines.length * 4;
-    }
-    if (doc.from.gstin) {
-      pdf.text(`GSTIN: ${doc.from.gstin}`, 15, fromY);
-      fromY += 4;
-    }
-    if (doc.from.phone) {
-      pdf.text(`Phone: ${doc.from.phone}`, 15, fromY);
-    }
+    pdf.text(from.gstin, 27, fromY);
+    fromY += 3.5;
+  }
+  if (from.phone || brand.phone) {
+    pdf.text(`Phone: ${from.phone || brand.phone}`, 15, fromY);
+    fromY += 3.5;
+  }
+  if (from.email || brand.email) {
+    pdf.text(`Email: ${from.email || brand.email}`, 15, fromY);
+    fromY += 3.5;
+  }
+  if (from.website || brand.website) {
+    pdf.text(`Web: ${from.website || brand.website}`, 15, fromY);
+    fromY += 3.5;
   }
 
+  // BILL TO Block
+  let toY = y + 8.5;
   if (doc.to) {
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(8);
@@ -470,45 +502,52 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     pdf.text("BILL TO", 110, y);
 
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(10);
+    pdf.setFontSize(10.5);
     pdf.setTextColor(15, 23, 42);
-    pdf.text(doc.to.name || "", 110, y + 5);
+    pdf.text(doc.to.name || "Customer", 110, y + 4.5);
 
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
+    pdf.setFontSize(8);
     pdf.setTextColor(71, 85, 105);
-    let toY = y + 9;
     if (doc.to.address) {
       const addrLines = pdf.splitTextToSize(doc.to.address, 80);
       pdf.text(addrLines, 110, toY);
-      toY += addrLines.length * 4;
+      toY += addrLines.length * 3.5;
     }
     if (doc.to.gstin) {
-      pdf.text(`GSTIN: ${doc.to.gstin}`, 110, toY);
-      toY += 4;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("GSTIN: ", 110, toY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(doc.to.gstin, 122, toY);
+      toY += 3.5;
     }
     if (doc.to.phone) {
       pdf.text(`Phone: ${doc.to.phone}`, 110, toY);
+      toY += 3.5;
+    }
+    if (doc.to.email) {
+      pdf.text(`Email: ${doc.to.email}`, 110, toY);
+      toY += 3.5;
     }
   }
 
-  y = 65;
+  y = Math.max(fromY, toY) + 4;
 
   // Metadata items if any
   if (doc.meta && doc.meta.length > 0) {
     pdf.setDrawColor(229, 231, 235);
     pdf.setFillColor(248, 250, 252);
-    pdf.roundedRect(15, y, 180, 12, 1.5, 1.5, "FD");
+    pdf.roundedRect(15, y, 180, 10, 1.5, 1.5, "FD");
     let metaX = 20;
     pdf.setFontSize(8);
     for (const m of doc.meta.slice(0, 4)) {
       pdf.setTextColor(100, 116, 139);
-      pdf.text(`${m.label}:`, metaX, y + 7);
+      pdf.text(`${m.label}:`, metaX, y + 6);
       pdf.setTextColor(15, 23, 42);
-      pdf.text(String(m.value ?? "—"), metaX + 22, y + 7);
+      pdf.text(String(m.value ?? "—"), metaX + 22, y + 6);
       metaX += 42;
     }
-    y += 16;
+    y += 14;
   }
 
   // Items Table Header
@@ -533,7 +572,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   const lines = doc.lines ?? [];
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i];
-    if (y > 265) {
+    if (y > 250) {
       pdf.addPage();
       y = 20;
     }
@@ -542,8 +581,8 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     pdf.text(l.label ? l.label.slice(0, 45) : "—", 26, y);
     pdf.text(String(l.qty ?? ""), 125, y, { align: "right" });
     pdf.text(String(l.unit ?? ""), 131, y);
-    pdf.text(String(l.rate ?? ""), 160, y, { align: "right" });
-    pdf.text(String(l.amount ?? ""), 190, y, { align: "right" });
+    pdf.text(cleanAmount(l.rate), 160, y, { align: "right" });
+    pdf.text(cleanAmount(l.amount), 190, y, { align: "right" });
 
     if (l.notes) {
       y += 4;
@@ -563,7 +602,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   const totals = doc.totals ?? [];
   for (let i = 0; i < totals.length; i++) {
     const t = totals[i];
-    if (y > 275) {
+    if (y > 255) {
       pdf.addPage();
       y = 20;
     }
@@ -572,28 +611,90 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     pdf.setFontSize(isLast ? 10 : 8.5);
     pdf.setTextColor(15, 23, 42);
     pdf.text(`${t.label}:`, 150, y, { align: "right" });
-    pdf.text(String(t.value ?? ""), 190, y, { align: "right" });
+    pdf.text(cleanAmount(t.value), 190, y, { align: "right" });
     y += isLast ? 7 : 5;
   }
 
-  // Footer / Terms
-  if (doc.terms || doc.notes) {
-    if (y > 255) {
-      pdf.addPage();
-      y = 20;
-    }
-    y += 6;
+  // Payment Details & Signatory
+  y = Math.max(y + 2, 230);
+  if (y > 250) {
+    pdf.addPage();
+    y = 20;
+  }
+
+  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.upi_id;
+  if (hasBankDetails) {
+    pdf.setDrawColor(229, 231, 235);
+    pdf.setFillColor(248, 250, 252);
+    pdf.roundedRect(15, y, 95, 26, 1.5, 1.5, "FD");
+
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(8);
+    pdf.setFontSize(7.5);
     pdf.setTextColor(100, 116, 139);
-    pdf.text("TERMS & NOTES", 15, y);
+    pdf.text("PAYMENT DETAILS", 18, y + 4.5);
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7.5);
-    pdf.setTextColor(71, 85, 105);
-    const textContent = [doc.notes, doc.terms].filter(Boolean).join("\n");
-    const termLines = pdf.splitTextToSize(textContent, 175);
-    pdf.text(termLines.slice(0, 10), 15, y + 4);
+    pdf.setTextColor(15, 23, 42);
+    let bankY = y + 9;
+    if (brand.bank_name) {
+      pdf.text(
+        `Bank: ${brand.bank_name}${brand.bank_branch ? ` (${brand.bank_branch})` : ""}`,
+        18,
+        bankY,
+      );
+      bankY += 3.8;
+    }
+    if (brand.bank_account_number) {
+      pdf.text(`A/C No: ${brand.bank_account_number}`, 18, bankY);
+      bankY += 3.8;
+    }
+    if (brand.bank_ifsc) {
+      pdf.text(`IFSC: ${brand.bank_ifsc}`, 18, bankY);
+      bankY += 3.8;
+    }
+    if (brand.upi_id) {
+      pdf.text(`UPI ID: ${brand.upi_id}`, 18, bankY);
+    }
   }
+
+  // Authorized Signatory
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text(`For ${brand.company_name}`, 195, y + 4.5, { align: "right" });
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(brand.authorized_signatory || "Authorized Signatory", 195, y + 20, { align: "right" });
+  pdf.setFontSize(7);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text("Authorized Signatory", 195, y + 24, { align: "right" });
+
+  // Terms & Notes
+  if (doc.terms || doc.notes) {
+    y += 30;
+    if (y < 275) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text("TERMS & NOTES", 15, y);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7);
+      pdf.setTextColor(71, 85, 105);
+      const textContent = [doc.notes, doc.terms].filter(Boolean).join("\n");
+      const termLines = pdf.splitTextToSize(textContent, 175);
+      pdf.text(termLines.slice(0, 4), 15, y + 4);
+    }
+  }
+
+  // Centered Footer
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  pdf.setTextColor(100, 116, 139);
+  const footerText = `${brand.company_name} — System Generated Document${brand.pan ? ` · PAN: ${brand.pan}` : ""}${brand.website ? ` · ${brand.website}` : ""}`;
+  pdf.text(footerText, 105, 290, { align: "center" });
 
   return pdf.output("blob");
 }
@@ -609,30 +710,40 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     return generateVectorPdfFallback(doc);
   }
 
-  // Create temporary offscreen container
-  const container = document.createElement("div");
-  container.style.position = "fixed";
-  container.style.left = "-9999px";
-  container.style.top = "0";
-  container.style.width = "794px"; // Standard A4 width at 96 DPI
-  container.style.backgroundColor = "#ffffff";
-  container.innerHTML = html;
-  document.body.appendChild(container);
-
-  // Remove buttons / toolbars that shouldn't appear in the PDF
-  container.querySelectorAll(".no-print, .toolbar").forEach((el) => el.remove());
-
-  // Mark all images crossOrigin = anonymous to permit canvas extraction
-  container.querySelectorAll("img").forEach((img) => {
-    img.crossOrigin = "anonymous";
-  });
+  // Create isolated offscreen iframe to shield html2canvas from host Tailwind v4 CSS
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.left = "-9999px";
+  iframe.style.top = "0";
+  iframe.style.width = "794px";
+  iframe.style.height = "1200px";
+  iframe.style.border = "none";
+  iframe.style.backgroundColor = "#ffffff";
+  document.body.appendChild(iframe);
 
   try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      return await generateVectorPdfFallback(doc);
+    }
+
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+
+    // Remove buttons / toolbars that shouldn't appear in the PDF
+    iframeDoc.querySelectorAll(".no-print, .toolbar").forEach((el) => el.remove());
+
+    // Mark all images crossOrigin = anonymous to permit canvas extraction
+    iframeDoc.querySelectorAll("img").forEach((img) => {
+      img.crossOrigin = "anonymous";
+    });
+
     const html2canvasModule = await import("html2canvas");
     const html2canvas = html2canvasModule.default ?? html2canvasModule;
     const JsPdf = await getJsPdfConstructor();
 
-    const sheetEl = (container.querySelector(".sheet") as HTMLElement) || container;
+    const sheetEl = (iframeDoc.querySelector(".sheet") as HTMLElement) || iframeDoc.body;
 
     let canvas: HTMLCanvasElement;
     try {
@@ -704,8 +815,8 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     console.warn("Canvas PDF generation failed, generating clean vector PDF:", err);
     return await generateVectorPdfFallback(doc);
   } finally {
-    if (container.parentNode) {
-      container.parentNode.removeChild(container);
+    if (iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
     }
   }
 }

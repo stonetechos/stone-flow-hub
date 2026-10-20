@@ -176,21 +176,45 @@ export function DocumentToolbar({ entity, entityId, hideEmail, hideWhatsapp, com
       }
 
       // Create a clean, professional cover message directing to the attached PDF
-      const totalMeta = built.doc.totals?.find(
-        (t) =>
-          t.label.toLowerCase().includes("grand") ||
-          t.label.toLowerCase().includes("total") ||
-          t.label.toLowerCase().includes("received"),
+      const grandTotalMeta =
+        built.doc.totals?.find(
+          (t) =>
+            t.label.toLowerCase() === "total" ||
+            t.label.toLowerCase() === "grand total" ||
+            t.label.toLowerCase() === "total amount" ||
+            t.label.toLowerCase() === "amount received" ||
+            t.label.toLowerCase().includes("total payable") ||
+            t.label.toLowerCase().includes("balance due"),
+        ) ??
+        built.doc.totals?.find(
+          (t) =>
+            !t.label.toLowerCase().includes("subtotal") && t.label.toLowerCase().includes("total"),
+        ) ??
+        built.doc.totals?.[built.doc.totals.length - 1];
+
+      const subtotalMeta = built.doc.totals?.find((t) =>
+        t.label.toLowerCase().includes("subtotal"),
       );
-      const totalStr = totalMeta?.value ? String(totalMeta.value) : "";
+      const taxMeta = built.doc.totals?.find(
+        (t) => t.label.toLowerCase().includes("tax") || t.label.toLowerCase().includes("gst"),
+      );
+
+      const summaryLines: string[] = [];
+      if (subtotalMeta && taxMeta && grandTotalMeta && subtotalMeta !== grandTotalMeta) {
+        summaryLines.push(`📋 *Financial Details:*`);
+        summaryLines.push(`• Subtotal: ${subtotalMeta.value}`);
+        summaryLines.push(`• Tax (GST): ${taxMeta.value}`);
+        summaryLines.push(`• *Total Amount:* *${grandTotalMeta.value}*`);
+      } else if (grandTotalMeta?.value) {
+        summaryLines.push(`💰 *Total Amount:* *${grandTotalMeta.value}*`);
+      }
 
       const cleanPdfMessage = [
         `*Official ${docTitle} — ${docNo}*`,
         `Dear ${recipientName},`,
         ``,
         `Please find attached your official ${docTitle} PDF from Stone Tech.`,
-        totalStr ? `💰 *Amount:* ${totalStr}` : null,
-        ``,
+        summaryLines.length ? `\n${summaryLines.join("\n")}\n` : null,
         `_Note: The official PDF (${docNo || "document"}.pdf) is attached to this chat._`,
         ``,
         `Warm regards,`,

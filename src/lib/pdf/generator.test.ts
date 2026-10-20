@@ -60,4 +60,19 @@ describe("PDF Generator", () => {
     // A valid PDF must start with %PDF-
     expect(magicHeader).toBe("%PDF-");
   });
+
+  it("generatePdfBlob automatically includes company details even if doc.from is omitted", async () => {
+    const docWithoutFrom: PdfDoc = {
+      ...sampleDoc,
+      from: undefined,
+    };
+    const blob = await generatePdfBlob(docWithoutFrom);
+    expect(blob).toBeDefined();
+    expect(blob.type).toBe("application/pdf");
+    expect(blob.size).toBeGreaterThan(1000);
+
+    const arrayBuffer = await blob.arrayBuffer();
+    const textContent = new TextDecoder("latin1").decode(arrayBuffer);
+    expect(textContent).toContain("Stone Tech");
+  });
 });

@@ -8,6 +8,7 @@
  */
 import { formatInr } from "@/lib/format";
 import type { PdfDoc, PdfLine, PdfMeta, PdfParty } from "@/lib/pdf/generator";
+import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 
 import { getEstimate, getEstimateItems, getEstimateSchedule } from "@/lib/estimates/api";
 import { getQuote, getQuoteItems } from "@/lib/quotes/api";
@@ -165,8 +166,22 @@ function vendorParty(
   };
 }
 
+function brandParty(brand: BrandingConfig): PdfParty {
+  return {
+    name: brand.company_name,
+    address: brand.address,
+    gstin: brand.gstin,
+    email: brand.email,
+    phone: brand.phone,
+    website: brand.website,
+  };
+}
+
 /** Build a fully-populated PdfDoc from live ERP data. */
 export async function buildDocument(entity: DocumentEntity, id: string): Promise<BuiltDocument> {
+  const brand = await loadBranding().catch(() => DEFAULT_BRANDING);
+  const companyFrom = brandParty(brand);
+
   switch (entity) {
     case "estimate": {
       const e = await getEstimate(id);
@@ -207,6 +222,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Estimate",
           number: e.estimate_no,
           date: e.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           meta: [
             { label: "Project", value: e.project?.name ?? "—" },
@@ -260,6 +276,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Quotation",
           number: q.quote_no,
           date: q.issue_date ?? q.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           meta: [
             { label: "Project", value: q.project?.name ?? "—" },
@@ -316,6 +333,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Sales Order",
           number: so.so_no,
           date: so.order_date ?? so.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           meta: [
             { label: "Project", value: so.project?.name ?? "—" },
@@ -347,6 +365,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Purchase Order",
           number: po.po_no,
           date: po.order_date ?? po.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: vendorParty(ven),
           meta: [
             { label: "Project", value: po.project?.name ?? "—" },
@@ -421,6 +440,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Tax Invoice",
           number: i.invoice_no,
           date: i.issue_date ?? i.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           lines,
           totals,
@@ -491,6 +511,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Payment Receipt",
           number: r.receipt_no,
           date: r.received_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           balanceDue: currentBalance !== null ? currentBalance : undefined,
           meta: [
@@ -534,6 +555,7 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           title: "Delivery Challan",
           number: d.dispatch_no,
           date: d.dispatch_date ?? d.created_at?.slice(0, 10) ?? "",
+          from: companyFrom,
           to: customerParty(cust),
           meta: [
             { label: "Site address", value: d.site_address ?? "—" },
