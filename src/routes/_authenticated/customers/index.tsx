@@ -352,11 +352,26 @@ function CustomersPage() {
           "customers.subtitle",
           "Master list of everyone you sell to and active order delivery commitments.",
         )}
+        className="mb-3"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <StoreVoiceAssistantTab
+              onCustomerExtracted={(parsed) => {
+                setVoiceData(parsed);
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            />
+            <Button size="sm" className="h-8 shadow-xs" onClick={openCreate}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
+            </Button>
+          </div>
+        }
       />
 
       {/* Dual View Tabs: All Customers directory vs. Order Pipeline */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 mb-4">
-        <div className="inline-flex items-center rounded-lg bg-slate-100 p-1 text-slate-600">
+      <div className="flex items-center justify-between gap-3 border-b border-border-subtle pb-2.5 mb-3.5">
+        <div className="inline-flex items-center rounded-lg bg-slate-100/90 p-1 text-slate-600">
           <button
             type="button"
             onClick={() => {
@@ -364,9 +379,9 @@ function CustomersPage() {
               nav({ to: "/customers", search: { tab: "directory" }, replace: true });
             }}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer",
               activeTab === "directory"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-white text-slate-900 shadow-2xs font-bold"
                 : "text-slate-600 hover:text-slate-900",
             )}
           >
@@ -374,9 +389,9 @@ function CustomersPage() {
             <span>{t("customers.allCustomers", "All Customers")}</span>
             <span
               className={cn(
-                "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                "rounded-full px-1.5 py-0.2 text-[10px] font-bold tabular-nums",
                 activeTab === "directory"
-                  ? "bg-slate-100 text-slate-800"
+                  ? "bg-slate-100 text-slate-900"
                   : "bg-slate-200/70 text-slate-600",
               )}
             >
@@ -390,9 +405,9 @@ function CustomersPage() {
               nav({ to: "/customers", search: { tab: "pipeline" }, replace: true });
             }}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all",
+              "flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer",
               activeTab === "pipeline"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-white text-slate-900 shadow-2xs font-bold"
                 : "text-slate-600 hover:text-slate-900",
             )}
           >
@@ -403,21 +418,6 @@ function CustomersPage() {
             </span>
           </button>
         </div>
-
-        {activeTab === "directory" && (
-          <div className="flex items-center gap-3">
-            <StoreVoiceAssistantTab
-              onCustomerExtracted={(parsed) => {
-                setVoiceData(parsed);
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            />
-            <Button size="sm" className="h-8" onClick={openCreate}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
-            </Button>
-          </div>
-        )}
       </div>
 
       {activeTab === "pipeline" ? (
@@ -425,10 +425,10 @@ function CustomersPage() {
       ) : (
         <>
           {/* Quick Payment Status Sub-Tabs / Filter Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3">
-            <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-              <CreditCard className="h-3.5 w-3.5 text-slate-400" />
-              <span>Payment Status:</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1 shrink-0">
+              <CreditCard className="h-3 w-3 text-slate-400" />
+              <span>Payment:</span>
             </span>
             <button
               type="button"
@@ -437,13 +437,13 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 cursor-pointer",
                 paymentFilter === "all"
-                  ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+                  ? "bg-slate-900 text-white shadow-2xs font-semibold"
+                  : "bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900",
               )}
             >
-              All ({paymentCounts.all})
+              All <span className="ml-0.5 opacity-75 tabular-nums">({paymentCounts.all})</span>
             </button>
             <button
               type="button"
@@ -452,14 +452,14 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "no_dues"
-                  ? "bg-slate-800 text-white border-slate-800 shadow-2xs font-semibold"
-                  : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
+                  ? "bg-slate-800 text-white shadow-2xs font-semibold"
+                  : "bg-slate-100/90 text-slate-700 hover:bg-slate-200/80",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-              No Dues ({paymentCounts.no_dues})
+              No Dues <span className="opacity-75 tabular-nums">({paymentCounts.no_dues})</span>
             </button>
             <button
               type="button"
@@ -468,14 +468,15 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "payment_pending"
-                  ? "bg-rose-700 text-white border-rose-700 shadow-2xs font-semibold"
-                  : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+                  ? "bg-rose-700 text-white shadow-2xs font-semibold"
+                  : "bg-rose-50 text-rose-700 hover:bg-rose-100/80 border border-rose-200/60",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-              Payment Pending ({paymentCounts.payment_pending})
+              Payment Pending{" "}
+              <span className="opacity-75 tabular-nums">({paymentCounts.payment_pending})</span>
             </button>
             <button
               type="button"
@@ -484,14 +485,17 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "part_payment_received"
-                  ? "bg-amber-700 text-white border-amber-700 shadow-2xs font-semibold"
-                  : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+                  ? "bg-amber-700 text-white shadow-2xs font-semibold"
+                  : "bg-amber-50 text-amber-700 hover:bg-amber-100/80 border border-amber-200/60",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Part Payment Received ({paymentCounts.part_payment_received})
+              Part Payment Received{" "}
+              <span className="opacity-75 tabular-nums">
+                ({paymentCounts.part_payment_received})
+              </span>
             </button>
             <button
               type="button"
@@ -500,14 +504,17 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "full_payment_received"
-                  ? "bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+                  ? "bg-emerald-700 text-white shadow-2xs font-semibold"
+                  : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100/80 border border-emerald-200/60",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Full Payment Received ({paymentCounts.full_payment_received})
+              Full Payment Received{" "}
+              <span className="opacity-75 tabular-nums">
+                ({paymentCounts.full_payment_received})
+              </span>
             </button>
             <button
               type="button"
@@ -516,14 +523,15 @@ function CustomersPage() {
                 setPage(1);
               }}
               className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-md transition-all border shrink-0 flex items-center gap-1.5",
+                "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
                 paymentFilter === "payment_received"
-                  ? "bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold"
-                  : "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+                  ? "bg-sky-700 text-white shadow-2xs font-semibold"
+                  : "bg-sky-50 text-sky-700 hover:bg-sky-100/80 border border-sky-200/60",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-              Advance / Rcvd ({paymentCounts.payment_received})
+              Advance / Rcvd{" "}
+              <span className="opacity-75 tabular-nums">({paymentCounts.payment_received})</span>
             </button>
           </div>
 
@@ -565,36 +573,6 @@ function CustomersPage() {
                 </Select>
 
                 <Select
-                  value={paymentFilter}
-                  onValueChange={(v) => {
-                    setPaymentFilter(v);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-8 w-44 text-xs bg-white">
-                    <SelectValue placeholder="Payment status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All payment statuses</SelectItem>
-                    {(Object.keys(CUSTOMER_PAYMENT_STATUS_CONFIG) as CustomerPaymentStatus[]).map(
-                      (key) => {
-                        const cfg = CUSTOMER_PAYMENT_STATUS_CONFIG[key];
-                        return (
-                          <SelectItem key={key} value={key}>
-                            <span className="flex items-center gap-1.5">
-                              <span
-                                className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dotColor)}
-                              />
-                              <span>{cfg.label}</span>
-                            </span>
-                          </SelectItem>
-                        );
-                      },
-                    )}
-                  </SelectContent>
-                </Select>
-
-                <Select
                   value={typeFilter}
                   onValueChange={(v) => {
                     setTypeFilter(v);
@@ -613,6 +591,7 @@ function CustomersPage() {
                     ))}
                   </SelectContent>
                 </Select>
+
                 <Select
                   value={salespersonFilter}
                   onValueChange={(v) => {
@@ -633,11 +612,6 @@ function CustomersPage() {
               </div>
             }
             density={<DensityMenu density={prefs.density} onChange={setDensity} />}
-            action={
-              <Button size="sm" className="h-8" onClick={openCreate}>
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> {t("customers.newCustomer", "New customer")}
-              </Button>
-            }
           />
 
           {query.isLoading ? (
@@ -671,8 +645,8 @@ function CustomersPage() {
                 />
               }
             >
-              <Table className="w-full table-fixed min-w-[980px]">
-                <TableHeader>
+              <Table className="w-full table-fixed min-w-[980px] table-sticky-head">
+                <TableHeader sticky className="bg-white/95 backdrop-blur-xs">
                   <TableRow>
                     <TableHead className="w-14 text-center px-1.5">
                       {t("common.srNo", "Sr. No.")}
