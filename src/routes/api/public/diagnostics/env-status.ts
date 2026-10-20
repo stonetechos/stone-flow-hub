@@ -176,9 +176,9 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
                   {
                     name: "Google Pay UPI (+91 7742090866)",
                     bank_name: "GPay / NPCI UPI",
-                    account_number: "Linked: +91 7742090866",
+                    account_number: "Linked: Bank of Baroda 0136",
                     account_type: "clearing",
-                    upi_id: "stonetech.ahmedabad@okaxis",
+                    upi_id: "stonetech.ahmedabad@okicici",
                     opening_balance: 0,
                     current_balance: 0,
                     is_active: true,

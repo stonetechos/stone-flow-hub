@@ -41,6 +41,7 @@ export interface CompanyProfileRow {
   bank_account_number: string | null;
   bank_ifsc: string | null;
   upi_id: string | null;
+  upi_qr_url: string | null;
   authorized_signatory: string | null;
   signature_url: string | null;
   stamp_url: string | null;
@@ -98,7 +99,7 @@ export async function updateCompanyProfile(
   return data as unknown as CompanyProfileRow;
 }
 
-export type CompanyAssetKind = "logo" | "signature" | "stamp";
+export type CompanyAssetKind = "logo" | "signature" | "stamp" | "upi_qr";
 
 /** Uploads a logo/signature/stamp image to the public company-assets
  *  bucket and returns its durable public URL — these need to render

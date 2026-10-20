@@ -12,6 +12,11 @@
  * ...) keeps working unchanged; only this loader function changed.
  */
 import { getActiveCompanyProfile } from "@/lib/company/api";
+import {
+  STONE_TECH_UPI_ID,
+  STONE_TECH_UPI_QR_DATA_URL,
+  STONE_TECH_UPI_QR_PATH,
+} from "./upi-qr-asset";
 
 export interface BrandingConfig {
   company_name: string;
@@ -36,6 +41,7 @@ export interface BrandingConfig {
   bank_account_number?: string;
   bank_ifsc?: string;
   upi_id?: string;
+  upi_qr_url?: string;
   authorized_signatory?: string;
   signature_url?: string;
   stamp_url?: string;
@@ -55,7 +61,8 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   bank_name: "Bank of Baroda",
   bank_account_number: "53130200000136",
   bank_ifsc: "BARB0CHAAHM",
-  upi_id: "stonetech.ahmedabad@okaxis",
+  upi_id: STONE_TECH_UPI_ID,
+  upi_qr_url: STONE_TECH_UPI_QR_PATH,
   authorized_signatory: "Stone Tech",
   signature_url: "/signature.jpg",
 };
@@ -95,7 +102,11 @@ export async function loadBranding(): Promise<BrandingConfig> {
     bank_branch: c.bank_branch ?? undefined,
     bank_account_number: c.bank_account_number ?? DEFAULT_BRANDING.bank_account_number,
     bank_ifsc: c.bank_ifsc ?? DEFAULT_BRANDING.bank_ifsc,
-    upi_id: c.upi_id ?? DEFAULT_BRANDING.upi_id,
+    upi_id:
+      c.upi_id === "stonetech.ahmedabad@okaxis"
+        ? DEFAULT_BRANDING.upi_id
+        : (c.upi_id ?? DEFAULT_BRANDING.upi_id),
+    upi_qr_url: (c as { upi_qr_url?: string | null }).upi_qr_url || DEFAULT_BRANDING.upi_qr_url,
     authorized_signatory: c.authorized_signatory ?? DEFAULT_BRANDING.authorized_signatory,
     signature_url: c.signature_url || DEFAULT_BRANDING.signature_url,
     stamp_url: c.stamp_url ?? undefined,

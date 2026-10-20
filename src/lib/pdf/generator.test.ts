@@ -39,12 +39,27 @@ const sampleDoc: PdfDoc = {
 };
 
 describe("PDF Generator", () => {
-  it("renders valid HTML document with working QR server URL", () => {
+  it("renders valid HTML document with UPI ID, Bank details, and QR code", () => {
     const html = renderDocHtml(sampleDoc);
     expect(html).toContain("<!doctype html>");
     expect(html).toContain("Quotation");
     expect(html).toContain("QUO-000002");
-    expect(html).not.toContain("chart.googleapis.com");
+    expect(html).toContain("stonetech.ahmedabad@okicici");
+    expect(html).toContain("Bank of Baroda");
+    expect(html).toContain("53130200000136");
+    expect(html).toContain("BARB0CHAAHM");
+    expect(html).toContain('alt="UPI QR Code"');
+  });
+
+  it("renders QR code on Quotations even when balanceDue is undefined", () => {
+    const quoteWithoutBalanceDue: PdfDoc = {
+      ...sampleDoc,
+      balanceDue: undefined,
+    };
+    const html = renderDocHtml(quoteWithoutBalanceDue);
+    expect(html).toContain("stonetech.ahmedabad@okicici");
+    expect(html).toContain('alt="UPI QR Code"');
+    expect(html).toContain("Scan to pay via UPI / GPay");
   });
 
   it("generatePdfBlob produces a real binary PDF with %PDF- header", async () => {

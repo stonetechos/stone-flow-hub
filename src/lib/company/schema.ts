@@ -32,6 +32,7 @@ export const companyProfileSchema = z.object({
   bank_account_number: zOptional(),
   bank_ifsc: zIfsc,
   upi_id: zOptional(),
+  upi_qr_url: zOptional(),
 
   authorized_signatory: zOptional(),
   signature_url: zOptional(),

@@ -18,6 +18,7 @@
  *    the same signature without touching call sites.
  */
 import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
+import { STONE_TECH_UPI_ID, STONE_TECH_UPI_QR_DATA_URL } from "@/lib/branding/upi-qr-asset";
 
 export type DocKind =
   | "quotation"
@@ -164,37 +165,31 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       ${p.phone ? `<div style="font-size:11px;color:${muted}">${esc(p.phone)}</div>` : ""}
     </div>`;
 
-  // Payment Details box — only when at least one bank field is set, so a
-  // profile that hasn't filled these in yet doesn't show an empty box.
-  const hasBankDetails =
-    brand.bank_name || brand.bank_account_number || brand.bank_ifsc || brand.upi_id;
+  // Payment Details box — renders on quotations, invoices, and any customer doc
+  const upiId = brand.upi_id || STONE_TECH_UPI_ID;
+  const qrImgSrc = brand.upi_qr_url || STONE_TECH_UPI_QR_DATA_URL;
+  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.bank_ifsc || upiId;
+
   const qrAmount = doc.balanceDue ?? 0;
-  const qrString = brand.upi_id
-    ? `upi://pay?pa=${brand.upi_id}&pn=${encodeURIComponent(brand.company_name)}&am=${qrAmount}&cu=INR`
-    : "";
-  const qrImg =
-    qrString && qrAmount > 0
-      ? `<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrString)}" alt="UPI QR Code" crossorigin="anonymous" style="margin-top:8px;border-radius:4px;border:1px solid ${border}" />`
-      : "";
+  const scanAmountText =
+    qrAmount > 0
+      ? `Scan to pay ₹${qrAmount.toLocaleString("en-IN")}`
+      : `Scan to pay via UPI / GPay`;
 
   const bankBlock = hasBankDetails
-    ? `<div style="flex:1;min-width:220px;border:1px solid ${border};border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between">
+    ? `<div style="flex:1;min-width:300px;border:1px solid ${border};border-radius:6px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:#f8fafc">
         <div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">Payment Details</div>
-          ${brand.bank_name ? `<div style="font-size:12px"><b>Bank:</b> ${esc(brand.bank_name)}</div>` : ""}
-          ${brand.bank_branch ? `<div style="font-size:12px"><b>Branch:</b> ${esc(brand.bank_branch)}</div>` : ""}
-          ${brand.bank_account_number ? `<div style="font-size:12px"><b>A/C No:</b> ${esc(brand.bank_account_number)}</div>` : ""}
-          ${brand.bank_ifsc ? `<div style="font-size:12px"><b>IFSC:</b> ${esc(brand.bank_ifsc)}</div>` : ""}
-          ${brand.upi_id ? `<div style="font-size:12px"><b>UPI:</b> ${esc(brand.upi_id)}</div>` : ""}
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px;font-weight:700">Bank &amp; Payment Details</div>
+          ${brand.bank_name ? `<div style="font-size:12px;margin-bottom:2px"><b>Bank:</b> ${esc(brand.bank_name)}${brand.bank_branch ? ` (${esc(brand.bank_branch)})` : ""}</div>` : ""}
+          ${brand.bank_account_number ? `<div style="font-size:12px;margin-bottom:2px"><b>A/C No:</b> ${esc(brand.bank_account_number)}</div>` : ""}
+          ${brand.bank_ifsc ? `<div style="font-size:12px;margin-bottom:2px"><b>IFSC:</b> ${esc(brand.bank_ifsc)}</div>` : ""}
+          ${upiId ? `<div style="font-size:12px;color:#0d9488;margin-bottom:2px"><b>UPI ID:</b> ${esc(upiId)}</div>` : ""}
         </div>
-        ${
-          qrImg
-            ? `<div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end">
-            <div style="font-size:10px;color:${muted};margin-bottom:4px;font-weight:600">Scan to pay ${doc.balanceDue ? "₹" + doc.balanceDue : ""}</div>
-            ${qrImg}
-        </div>`
-            : ""
-        }
+        <div style="text-align:center;display:flex;flex-direction:column;align-items:center;margin-left:14px">
+          <div style="font-size:9.5px;color:${muted};margin-bottom:4px;font-weight:600">${scanAmountText}</div>
+          <img src="${qrImgSrc}" alt="UPI QR Code" crossorigin="anonymous" style="width:84px;height:84px;border-radius:6px;border:1px solid ${border};background:#fff;padding:2px;display:block" />
+          <div style="font-size:8px;color:${muted};margin-top:3px;font-weight:600">GPay · PhonePe · Paytm</div>
+        </div>
       </div>`
     : "";
 
@@ -622,11 +617,12 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     y = 20;
   }
 
-  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.upi_id;
+  const upiId = brand.upi_id || STONE_TECH_UPI_ID;
+  const hasBankDetails = brand.bank_name || brand.bank_account_number || upiId;
   if (hasBankDetails) {
     pdf.setDrawColor(229, 231, 235);
     pdf.setFillColor(248, 250, 252);
-    pdf.roundedRect(15, y, 95, 26, 1.5, 1.5, "FD");
+    pdf.roundedRect(15, y, 115, 30, 1.5, 1.5, "FD");
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(7.5);
@@ -653,8 +649,22 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
       pdf.text(`IFSC: ${brand.bank_ifsc}`, 18, bankY);
       bankY += 3.8;
     }
-    if (brand.upi_id) {
-      pdf.text(`UPI ID: ${brand.upi_id}`, 18, bankY);
+    if (upiId) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(13, 148, 136); // teal-600
+      pdf.text(`UPI ID: ${upiId}`, 18, bankY);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(15, 23, 42);
+    }
+
+    try {
+      pdf.addImage(STONE_TECH_UPI_QR_DATA_URL, "PNG", 92, y + 3, 23, 23);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text("SCAN TO PAY (UPI)", 103.5, y + 28, { align: "center" });
+    } catch {
+      /* image add fallback */
     }
   }
 

@@ -24,6 +24,7 @@ import {
   PenTool,
   Stamp as StampIcon,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +71,7 @@ const FIELD_LABELS: Record<keyof CompanyProfileFormValues, string> = {
   bank_account_number: "Account Number",
   bank_ifsc: "IFSC Code",
   upi_id: "UPI ID",
+  upi_qr_url: "UPI QR Code",
   authorized_signatory: "Authorized Signatory",
   signature_url: "Signature",
   stamp_url: "Company Stamp",
@@ -98,6 +100,7 @@ const EMPTY_FORM: CompanyProfileFormValues = {
   bank_account_number: "",
   bank_ifsc: "",
   upi_id: "",
+  upi_qr_url: "",
   authorized_signatory: "",
   signature_url: "",
   stamp_url: "",
@@ -141,6 +144,7 @@ export function CompanyProfileTab() {
       bank_account_number: q.data.bank_account_number ?? "",
       bank_ifsc: q.data.bank_ifsc ?? "",
       upi_id: q.data.upi_id ?? "",
+      upi_qr_url: q.data.upi_qr_url ?? "",
       authorized_signatory: q.data.authorized_signatory ?? "",
       signature_url: q.data.signature_url ?? "",
       stamp_url: q.data.stamp_url ?? "",
@@ -162,7 +166,13 @@ export function CompanyProfileTab() {
     try {
       const url = await uploadCompanyAsset(q.data.id, kind, file);
       const field =
-        kind === "logo" ? "logo_url" : kind === "signature" ? "signature_url" : "stamp_url";
+        kind === "logo"
+          ? "logo_url"
+          : kind === "signature"
+            ? "signature_url"
+            : kind === "stamp"
+              ? "stamp_url"
+              : "upi_qr_url";
       set(field, url);
       // Uploads save immediately — the field still shows in the form for
       // context, but there's no reason to make an admin re-click "Save
@@ -344,7 +354,7 @@ export function CompanyProfileTab() {
             {t("companyProfile.signatoryBranding", "Signatory & Branding")}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">{field("authorized_signatory")}</div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
             <AssetUploadField
               label={t("companyProfile.fields.logo_url", "Logo")}
               icon={ImageIcon}
@@ -368,6 +378,14 @@ export function CompanyProfileTab() {
               isAdmin={isAdmin}
               uploading={uploading === "stamp"}
               onUpload={(f) => handleUpload("stamp", f)}
+            />
+            <AssetUploadField
+              label={t("companyProfile.fields.upi_qr_url", "GPay / UPI QR Code")}
+              icon={QrCode}
+              url={form.upi_qr_url || "/branding/upi-qr.png"}
+              isAdmin={isAdmin}
+              uploading={uploading === "upi_qr"}
+              onUpload={(f) => handleUpload("upi_qr", f)}
             />
           </div>
         </section>
