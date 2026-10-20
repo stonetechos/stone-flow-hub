@@ -44,7 +44,7 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
   active_responsive: {
     value: "active_responsive",
     label: "Active · Responding",
-    shortLabel: "Active · Responding",
+    shortLabel: "Responding",
     tone: "bg-emerald-50 text-emerald-800 border-emerald-200",
     badgeTone: "bg-emerald-100/80 text-emerald-900 border-emerald-300",
     dotColor: "bg-emerald-500",

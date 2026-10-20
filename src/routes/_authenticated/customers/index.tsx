@@ -648,26 +648,24 @@ function CustomersPage() {
               <Table className="w-full table-fixed min-w-[980px] table-sticky-head">
                 <TableHeader sticky className="bg-white/95 backdrop-blur-xs">
                   <TableRow>
-                    <TableHead className="w-14 text-center px-1.5">
+                    <TableHead className="w-12 text-center px-1">
                       {t("common.srNo", "Sr. No.")}
                     </TableHead>
-                    <TableHead className="min-w-[160px] px-2.5">
-                      {t("common.name", "Name")}
-                    </TableHead>
-                    <TableHead className="w-24 whitespace-nowrap px-2">
+                    <TableHead className="min-w-[180px] px-2">{t("common.name", "Name")}</TableHead>
+                    <TableHead className="w-22 whitespace-nowrap px-1.5">
                       {t("common.createdDate", "Created")}
                     </TableHead>
-                    <TableHead className="w-28 whitespace-nowrap px-1.5">Type</TableHead>
-                    <TableHead className="w-44 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-26 whitespace-nowrap px-1.5">Type</TableHead>
+                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                       CRM Status
                     </TableHead>
-                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-26 whitespace-nowrap px-1.5 overflow-hidden">
                       Assigned To
                     </TableHead>
-                    <TableHead className="w-38 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
                       Payment Status
                     </TableHead>
-                    <TableHead className="w-36 whitespace-nowrap px-1.5">Contact</TableHead>
+                    <TableHead className="w-40 whitespace-nowrap px-1.5">Contact</TableHead>
                     <TableHead className="w-10 text-right px-1" />
                   </TableRow>
                 </TableHeader>
@@ -680,7 +678,7 @@ function CustomersPage() {
                     const orderInfo = customerOrderMap.get(c.id);
                     return (
                       <TableRow key={c.id}>
-                        <TableCell className="w-14 text-center font-mono text-xs text-muted-foreground px-1.5">
+                        <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground px-1">
                           <Link
                             to="/customers/$customerId"
                             params={{ customerId: c.id }}
@@ -689,7 +687,7 @@ function CustomersPage() {
                             {serial !== null ? serial : rows.length - ((page - 1) * pageSize + i)}
                           </Link>
                         </TableCell>
-                        <TableCell className="min-w-[160px] font-medium px-2.5">
+                        <TableCell className="min-w-[180px] font-medium px-2">
                           <Link
                             to="/customers/$customerId"
                             params={{ customerId: c.id }}
@@ -748,10 +746,10 @@ function CustomersPage() {
                             })()}
                           </Link>
                         </TableCell>
-                        <TableCell className="w-24 text-xs text-muted-foreground whitespace-nowrap px-2">
+                        <TableCell className="w-22 text-xs text-muted-foreground whitespace-nowrap px-1.5">
                           {c.created_at ? formatDate(c.created_at) : "—"}
                         </TableCell>
-                        <TableCell className="w-28 whitespace-nowrap px-1.5">
+                        <TableCell className="w-26 whitespace-nowrap px-1.5">
                           {(() => {
                             const effType = getEffectiveCustomerType(c);
                             return (
@@ -766,7 +764,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-44 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerResponseStatusSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -775,7 +773,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-26 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerAssigneeSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -783,7 +781,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-38 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
                           {(() => {
                             if (!hasCustomerPlacedOrder(c, orderInfo)) {
                               return (
@@ -807,7 +805,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-36 whitespace-nowrap px-1.5">
+                        <TableCell className="w-40 whitespace-nowrap px-1.5">
                           {phone ? (
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <a

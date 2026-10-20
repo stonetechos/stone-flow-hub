@@ -105,7 +105,7 @@ export function CustomerAssigneeSelect({
             ) : (
               <UserPlus className="h-3 w-3 shrink-0 text-slate-400" />
             )}
-            <span className="truncate">{config ? config.label : "Assign"}</span>
+            <span className="truncate">{config ? config.shortName || config.label : "Assign"}</span>
             <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
           </button>
         ) : (
@@ -128,7 +128,7 @@ export function CustomerAssigneeSelect({
             ) : (
               <UserCheck className="h-3.5 w-3.5 shrink-0" />
             )}
-            <span className="truncate">{config ? config.label : "Assign"}</span>
+            <span className="truncate">{config ? config.shortName || config.label : "Assign"}</span>
             <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
           </Button>
         )}
