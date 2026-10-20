@@ -79,45 +79,57 @@ export function CustomerAssigneeSelect({
             type="button"
             disabled={mutation.isPending}
             className={cn(
-              "inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-cyan-500/20 focus:outline-hidden",
+              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-cyan-500/20 focus:outline-hidden",
               config
                 ? config.badgeTone
                 : "border-dashed border-slate-300 bg-slate-50/80 text-slate-500 hover:border-slate-400 hover:text-slate-800",
               size === "sm" ? "h-6 text-[11px]" : "h-7 text-xs",
             )}
-            title="Click to assign or reassign customer to Rishi or Raman"
+            title={
+              config
+                ? `Assigned to ${config.label}. Click to reassign.`
+                : "Unassigned. Click to assign to Rishi or Raman."
+            }
           >
             {mutation.isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin text-current" />
+              <Loader2 className="h-3 w-3 animate-spin text-current shrink-0" />
             ) : config ? (
               <span
                 className={cn(
-                  "flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] font-bold text-white",
+                  "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white",
                   config.avatarTone,
                 )}
               >
                 {config.shortName[0]}
               </span>
             ) : (
-              <UserPlus className="h-3 w-3 text-slate-400" />
+              <UserPlus className="h-3 w-3 shrink-0 text-slate-400" />
             )}
-            <span>{config ? config.label : "Assign Salesperson"}</span>
-            <ChevronDown className="h-3 w-3 opacity-60" />
+            <span className="truncate">{config ? config.label : "Assign"}</span>
+            <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
           </button>
         ) : (
           <Button
             variant="outline"
             size="sm"
             disabled={mutation.isPending}
-            className={cn("gap-1.5 font-semibold", config ? config.badgeTone : "text-slate-600")}
+            className={cn(
+              "gap-1.5 font-semibold max-w-full",
+              config ? config.badgeTone : "text-slate-600",
+            )}
+            title={
+              config
+                ? `Assigned to ${config.label}. Click to reassign.`
+                : "Unassigned. Click to assign to Rishi or Raman."
+            }
           >
             {mutation.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
             ) : (
-              <UserCheck className="h-3.5 w-3.5" />
+              <UserCheck className="h-3.5 w-3.5 shrink-0" />
             )}
-            <span>{config ? config.label : "Assign (Rishi / Raman)"}</span>
-            <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+            <span className="truncate">{config ? config.label : "Assign"}</span>
+            <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
           </Button>
         )}
       </DropdownMenuTrigger>

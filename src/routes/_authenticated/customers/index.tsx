@@ -657,11 +657,17 @@ function CustomersPage() {
                     <TableHead className="w-24 whitespace-nowrap px-2">
                       {t("common.createdDate", "Created")}
                     </TableHead>
-                    <TableHead className="w-28 whitespace-nowrap px-2">Type</TableHead>
-                    <TableHead className="w-36 whitespace-nowrap px-2">CRM Status</TableHead>
-                    <TableHead className="w-32 whitespace-nowrap px-2">Assigned To</TableHead>
-                    <TableHead className="w-40 whitespace-nowrap px-2">Payment Status</TableHead>
-                    <TableHead className="w-36 whitespace-nowrap px-2">Contact</TableHead>
+                    <TableHead className="w-28 whitespace-nowrap px-1.5">Type</TableHead>
+                    <TableHead className="w-44 whitespace-nowrap px-1.5 overflow-hidden">
+                      CRM Status
+                    </TableHead>
+                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                      Assigned To
+                    </TableHead>
+                    <TableHead className="w-38 whitespace-nowrap px-1.5 overflow-hidden">
+                      Payment Status
+                    </TableHead>
+                    <TableHead className="w-36 whitespace-nowrap px-1.5">Contact</TableHead>
                     <TableHead className="w-10 text-right px-1" />
                   </TableRow>
                 </TableHeader>
@@ -745,7 +751,7 @@ function CustomersPage() {
                         <TableCell className="w-24 text-xs text-muted-foreground whitespace-nowrap px-2">
                           {c.created_at ? formatDate(c.created_at) : "—"}
                         </TableCell>
-                        <TableCell className="w-28 whitespace-nowrap px-2">
+                        <TableCell className="w-28 whitespace-nowrap px-1.5">
                           {(() => {
                             const effType = getEffectiveCustomerType(c);
                             return (
@@ -760,7 +766,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-36 whitespace-nowrap px-2">
+                        <TableCell className="w-44 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerResponseStatusSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -769,7 +775,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-32 whitespace-nowrap px-2">
+                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerAssigneeSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -777,7 +783,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-40 whitespace-nowrap px-2">
+                        <TableCell className="w-38 whitespace-nowrap px-1.5 overflow-hidden">
                           {(() => {
                             if (!hasCustomerPlacedOrder(c, orderInfo)) {
                               return (
@@ -801,7 +807,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-36 whitespace-nowrap px-2">
+                        <TableCell className="w-36 whitespace-nowrap px-1.5">
                           {phone ? (
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <a

@@ -108,34 +108,35 @@ export function CustomerResponseStatusSelect({
             type="button"
             disabled={mutation.isPending || toggleActiveMutation.isPending}
             className={cn(
-              "inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden",
+              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden",
               config.badgeTone,
               size === "sm" ? "h-6 text-[11px]" : "h-7 text-xs",
             )}
-            title="Click to change customer response status"
+            title={`Customer status: ${config.label}. Click to change.`}
           >
             {mutation.isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin text-current" />
+              <Loader2 className="h-3 w-3 animate-spin text-current shrink-0" />
             ) : (
-              <span className={cn("h-2 w-2 rounded-full", config.dotColor)} />
+              <span className={cn("h-2 w-2 rounded-full shrink-0", config.dotColor)} />
             )}
-            <span>{config.label}</span>
-            <ChevronDown className="h-3 w-3 opacity-60" />
+            <span className="truncate">{config.shortLabel || config.label}</span>
+            <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
           </button>
         ) : (
           <Button
             variant="outline"
             size="sm"
             disabled={mutation.isPending || toggleActiveMutation.isPending}
-            className={cn("gap-1.5 font-semibold", config.tone)}
+            className={cn("gap-1.5 font-semibold max-w-full", config.tone)}
+            title={`Customer status: ${config.label}. Click to change.`}
           >
             {mutation.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
             ) : (
-              <span className={cn("h-2 w-2 rounded-full", config.dotColor)} />
+              <span className={cn("h-2 w-2 rounded-full shrink-0", config.dotColor)} />
             )}
-            <span>{config.label}</span>
-            <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+            <span className="truncate">{config.shortLabel || config.label}</span>
+            <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
           </Button>
         )}
       </DropdownMenuTrigger>
