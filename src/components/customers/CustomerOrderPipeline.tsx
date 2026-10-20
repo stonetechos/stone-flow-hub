@@ -412,7 +412,7 @@ export function CustomerOrderPipeline() {
                         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
                           {item.contactPerson && (
                             <span
-                              className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/60 px-1.5 py-0.2 text-[10px] font-medium"
+                              className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/60 px-1.5 py-0.5 text-[10px] font-medium"
                               title="Point of Contact / Representative"
                             >
                               <User className="h-2.5 w-2.5 text-teal-600" />
@@ -421,7 +421,7 @@ export function CustomerOrderPipeline() {
                           )}
                           {item.firmName && item.firmName !== item.customerName && (
                             <span
-                              className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.2 text-[10px]"
+                              className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px]"
                               title="Firm Name"
                             >
                               <Building2 className="h-2.5 w-2.5 text-slate-500" />

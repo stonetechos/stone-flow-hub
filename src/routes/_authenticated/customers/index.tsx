@@ -356,6 +356,7 @@ function CustomersPage() {
         actions={
           <div className="flex items-center gap-2.5">
             <StoreVoiceAssistantTab
+              compact
               onCustomerExtracted={(parsed) => {
                 setVoiceData(parsed);
                 setEditing(null);
@@ -389,7 +390,7 @@ function CustomersPage() {
             <span>{t("customers.allCustomers", "All Customers")}</span>
             <span
               className={cn(
-                "rounded-full px-1.5 py-0.2 text-[10px] font-bold tabular-nums",
+                "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
                 activeTab === "directory"
                   ? "bg-slate-100 text-slate-900"
                   : "bg-slate-200/70 text-slate-600",
@@ -413,7 +414,7 @@ function CustomersPage() {
           >
             <Workflow className="h-3.5 w-3.5 text-indigo-600" />
             <span>Order Pipeline</span>
-            <span className="rounded-full bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.2 text-[10px] font-bold text-indigo-700">
+            <span className="rounded-full bg-indigo-50 border border-indigo-200/60 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
               Vendor & Customer Deadlines
             </span>
           </button>
@@ -645,7 +646,7 @@ function CustomersPage() {
                 />
               }
             >
-              <Table className="w-full table-fixed min-w-[980px] table-sticky-head">
+              <Table className="w-full table-fixed min-w-[1020px] table-sticky-head">
                 <TableHeader sticky className="bg-white/95 backdrop-blur-xs">
                   <TableRow>
                     <TableHead className="w-12 text-center px-1">
@@ -656,13 +657,13 @@ function CustomersPage() {
                       {t("common.createdDate", "Created")}
                     </TableHead>
                     <TableHead className="w-26 whitespace-nowrap px-1.5">Type</TableHead>
-                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
                       CRM Status
                     </TableHead>
-                    <TableHead className="w-26 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                       Assigned To
                     </TableHead>
-                    <TableHead className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
+                    <TableHead className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
                       Payment Status
                     </TableHead>
                     <TableHead className="w-40 whitespace-nowrap px-1.5">Contact</TableHead>
@@ -764,7 +765,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerResponseStatusSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -773,7 +774,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-26 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-32 whitespace-nowrap px-1.5 overflow-hidden">
                           <CustomerAssigneeSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -781,7 +782,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell className="w-36 whitespace-nowrap px-1.5 overflow-hidden">
+                        <TableCell className="w-34 whitespace-nowrap px-1.5 overflow-hidden">
                           {(() => {
                             if (!hasCustomerPlacedOrder(c, orderInfo)) {
                               return (

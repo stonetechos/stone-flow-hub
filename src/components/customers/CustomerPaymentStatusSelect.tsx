@@ -84,6 +84,7 @@ export function CustomerPaymentStatusSelect({
         <Button
           variant="outline"
           size="sm"
+          title={`Payment status: ${config.label}. Click to change.`}
           className={cn(
             "h-6 px-2 text-[11px] font-semibold gap-1.5 transition-all shadow-2xs border rounded-full justify-between",
             config.badgeTone,
@@ -96,7 +97,7 @@ export function CustomerPaymentStatusSelect({
             ) : (
               <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", config.dotColor)} />
             )}
-            <span className="truncate">{config.label}</span>
+            <span className="truncate">{config.shortLabel || config.label}</span>
           </span>
           <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
         </Button>
