@@ -671,20 +671,24 @@ function CustomersPage() {
                 />
               }
             >
-              <Table>
+              <Table className="w-full table-fixed min-w-[980px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">{t("common.srNo", "Sr. No.")}</TableHead>
-                    <TableHead>{t("common.name", "Name")}</TableHead>
-                    <TableHead className="w-32">
-                      {t("common.createdDate", "Created Date")}
+                    <TableHead className="w-14 text-center px-1.5">
+                      {t("common.srNo", "Sr. No.")}
                     </TableHead>
-                    <TableHead className="w-40">Customer Type</TableHead>
-                    <TableHead className="w-52">CRM · Response Status</TableHead>
-                    <TableHead className="w-48">Assigned To</TableHead>
-                    <TableHead className="w-52">Payment Status</TableHead>
-                    <TableHead className="w-48">Contact</TableHead>
-                    <TableHead className="w-12" />
+                    <TableHead className="min-w-[160px] px-2.5">
+                      {t("common.name", "Name")}
+                    </TableHead>
+                    <TableHead className="w-24 whitespace-nowrap px-2">
+                      {t("common.createdDate", "Created")}
+                    </TableHead>
+                    <TableHead className="w-28 whitespace-nowrap px-2">Type</TableHead>
+                    <TableHead className="w-36 whitespace-nowrap px-2">CRM Status</TableHead>
+                    <TableHead className="w-32 whitespace-nowrap px-2">Assigned To</TableHead>
+                    <TableHead className="w-40 whitespace-nowrap px-2">Payment Status</TableHead>
+                    <TableHead className="w-36 whitespace-nowrap px-2">Contact</TableHead>
+                    <TableHead className="w-10 text-right px-1" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -696,7 +700,7 @@ function CustomersPage() {
                     const orderInfo = customerOrderMap.get(c.id);
                     return (
                       <TableRow key={c.id}>
-                        <TableCell className="font-mono text-xs text-muted-foreground">
+                        <TableCell className="w-14 text-center font-mono text-xs text-muted-foreground px-1.5">
                           <Link
                             to="/customers/$customerId"
                             params={{ customerId: c.id }}
@@ -705,16 +709,18 @@ function CustomersPage() {
                             {serial !== null ? serial : rows.length - ((page - 1) * pageSize + i)}
                           </Link>
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="min-w-[160px] font-medium px-2.5">
                           <Link
                             to="/customers/$customerId"
                             params={{ customerId: c.id }}
-                            className="hover:underline flex flex-col gap-1 py-1"
+                            className="hover:underline flex flex-col gap-0.5 py-0.5"
                           >
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="font-semibold text-slate-900">{c.name}</span>
+                              <span className="font-semibold text-slate-900 truncate">
+                                {c.name}
+                              </span>
                               {c.customer_code && (
-                                <span className="font-mono text-[11px] text-muted-foreground">
+                                <span className="font-mono text-[11px] text-muted-foreground shrink-0">
                                   ({c.customer_code})
                                 </span>
                               )}
@@ -723,7 +729,7 @@ function CustomersPage() {
                                 orderInfo.health !== "completed" && (
                                   <span
                                     className={cn(
-                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border",
+                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold border shrink-0",
                                       orderInfo.health === "overdue"
                                         ? "bg-rose-50 text-rose-700 border-rose-200"
                                         : orderInfo.health === "tight_buffer"
@@ -741,9 +747,9 @@ function CustomersPage() {
                               return (
                                 <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
                                   {norm.contact_person && (
-                                    <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium">
+                                    <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
                                       <User className="h-3 w-3 text-teal-600 shrink-0" />
-                                      <span>
+                                      <span className="truncate">
                                         Contact:{" "}
                                         <strong className="font-semibold text-teal-900">
                                           {norm.contact_person}
@@ -752,9 +758,9 @@ function CustomersPage() {
                                     </span>
                                   )}
                                   {norm.company_name && norm.company_name !== c.name && (
-                                    <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium">
+                                    <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
                                       <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
-                                      <span>Firm: {norm.company_name}</span>
+                                      <span className="truncate">Firm: {norm.company_name}</span>
                                     </span>
                                   )}
                                 </div>
@@ -762,10 +768,10 @@ function CustomersPage() {
                             })()}
                           </Link>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        <TableCell className="w-24 text-xs text-muted-foreground whitespace-nowrap px-2">
                           {c.created_at ? formatDate(c.created_at) : "—"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-28 whitespace-nowrap px-2">
                           {(() => {
                             const effType = getEffectiveCustomerType(c);
                             return (
@@ -780,7 +786,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-36 whitespace-nowrap px-2">
                           <CustomerResponseStatusSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -789,7 +795,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-32 whitespace-nowrap px-2">
                           <CustomerAssigneeSelect
                             customerId={c.id}
                             customerName={c.name}
@@ -797,7 +803,7 @@ function CustomersPage() {
                             externalRef={c.external_ref}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-40 whitespace-nowrap px-2">
                           {(() => {
                             if (!hasCustomerPlacedOrder(c, orderInfo)) {
                               return (
@@ -821,7 +827,7 @@ function CustomersPage() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-36 whitespace-nowrap px-2">
                           {phone ? (
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <a
@@ -829,8 +835,8 @@ function CustomersPage() {
                                 title={`Call ${phone}`}
                                 className="inline-flex items-center gap-1 text-slate-700 hover:text-primary font-mono transition-colors"
                               >
-                                <Phone className="h-3 w-3 text-emerald-600" />
-                                <span>{phone}</span>
+                                <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
+                                <span className="truncate">{phone}</span>
                               </a>
                               {cleanPhone && (
                                 <a
@@ -838,7 +844,7 @@ function CustomersPage() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title="Chat on WhatsApp"
-                                  className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors"
+                                  className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors shrink-0"
                                 >
                                   <MessageSquare className="h-3 w-3" />
                                 </a>
@@ -848,7 +854,7 @@ function CustomersPage() {
                             <span className="text-xs text-muted-foreground italic">No phone</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-10 text-right px-1">
                           <RowActions
                             extra={
                               <>
