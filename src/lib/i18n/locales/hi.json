@@ -9,9 +9,12 @@
       "items": "आइटम्स",
       "sales": "बिक्री",
       "purchase": "खरीद",
-      "finance": "बैंकिंग और वित्त",
-      "payroll": "समय और HR",
-      "reports": "रिपोर्ट्स और दस्तावेज़",
+      "time": "टाइम ट्रैकिंग",
+      "banking": "बैंकिंग",
+      "compliance": "फाइलिंग और अनुपालन",
+      "accountant": "अकाउंटेंट",
+      "reports": "रिपोर्ट्स",
+      "documents": "दस्तावेज़",
       "settings": "सेटिंग्स"
     },
     "items": {

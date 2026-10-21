@@ -10,9 +10,12 @@
       "items": "આઇટમ્સ",
       "sales": "વેચાણ",
       "purchase": "ખરીદી",
-      "finance": "બેંકિંગ અને નાણાં",
-      "payroll": "સમય અને HR",
-      "reports": "અહેવાલો અને દસ્તાવેજો",
+      "time": "ટાઇમ ટ્રેકિંગ",
+      "banking": "બેંકિંગ",
+      "compliance": "ફાઇલિંગ અને અનુપાલન",
+      "accountant": "એકાઉન્ટન્ટ",
+      "reports": "અહેવાલો",
+      "documents": "દસ્તાવેજો",
       "settings": "સેટિંગ્સ"
     },
     "items": {

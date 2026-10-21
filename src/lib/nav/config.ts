@@ -11,7 +11,6 @@ import {
   Factory,
   PackageSearch,
   ClipboardList,
-  CalendarClock,
   FileText,
   Receipt,
   Gem,
@@ -19,7 +18,6 @@ import {
   Send,
   Truck,
   Warehouse,
-  ClipboardCheck,
   BookOpen,
   Wallet,
   Banknote,
@@ -28,15 +26,12 @@ import {
   ReceiptText,
   BarChart3,
   Settings,
-  CheckSquare,
   FolderOpen,
   ShieldCheck,
   MessageSquare,
   Bell,
   Mails,
   Fingerprint,
-  CalendarDays,
-  UserCog,
   Globe,
   ArrowLeftRight,
   Layers,
@@ -44,6 +39,7 @@ import {
   Coins,
   TrendingUp,
   Bot,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -54,9 +50,12 @@ export type NavGroupId =
   | "items"
   | "sales"
   | "purchase"
-  | "finance"
-  | "payroll"
+  | "time"
+  | "banking"
+  | "compliance"
+  | "accountant"
   | "reports"
+  | "documents"
   | "settings";
 
 export interface NavGroupDef {
@@ -69,49 +68,77 @@ export interface NavGroupDef {
   allowedRoles?: readonly AppRole[];
 }
 
-// Order here is the sidebar's group order (Zoho Books 8-module hierarchy).
+// Order here is the sidebar's group order (Zoho Books 11-module hierarchy).
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
   { id: "overview", label: "Home", icon: LayoutDashboard, to: "/dashboard" },
   {
     id: "items",
     label: "Items",
     icon: PackageSearch,
+    to: "/products",
     allowedRoles: ["admin", "super_admin", "purchase", "sales_manager"],
   },
   {
     id: "sales",
     label: "Sales",
     icon: ShoppingCart,
+    to: "/sales-orders",
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   {
     id: "purchase",
     label: "Purchases",
     icon: Truck,
+    to: "/purchase-orders",
     allowedRoles: ["admin", "super_admin", "purchase"],
   },
   {
-    id: "finance",
-    label: "Banking & Finance",
-    icon: Landmark,
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "payroll",
-    label: "Time & HR",
-    icon: Users,
+    id: "time",
+    label: "Time Tracking",
+    icon: Clock,
+    to: "/workforce-intelligence",
     allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
   },
   {
+    id: "banking",
+    label: "Banking",
+    icon: Landmark,
+    to: "/money-flow",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "compliance",
+    label: "Filing & Compliance",
+    icon: ShieldCheck,
+    to: "/gst",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "accountant",
+    label: "Accountant",
+    icon: BookOpen,
+    to: "/ledger?tab=sales",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
     id: "reports",
-    label: "Reports & Docs",
+    label: "Reports",
     icon: BarChart3,
+    to: "/reports",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "documents",
+    label: "Documents",
+    icon: FolderOpen,
+    to: "/documents",
     allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "settings",
     label: "Settings",
     icon: Settings,
+    to: "/settings",
     allowedRoles: ["admin", "super_admin"],
   },
 ];
@@ -122,6 +149,7 @@ export interface NavItemDef {
   label: string;
   icon: LucideIcon;
   group: NavGroupId;
+  quickCreateTo?: string;
   adminOnly?: boolean;
   superAdminOnly?: boolean;
   allowedRoles?: readonly AppRole[];
@@ -159,6 +187,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Products & Materials",
     icon: PackageSearch,
     group: "items",
+    quickCreateTo: "/products",
   },
   {
     id: "inventory",
@@ -176,7 +205,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   },
 
   // 3. Sales & CRM
-  { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
+  {
+    id: "customers",
+    to: "/customers",
+    label: "Customers",
+    icon: Users,
+    group: "sales",
+    quickCreateTo: "/customers",
+  },
   {
     id: "enquiries",
     to: "/enquiries",
@@ -193,21 +229,44 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "sales",
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
-  { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
+  {
+    id: "quotes",
+    to: "/quotes",
+    label: "Quotations",
+    icon: FileText,
+    group: "sales",
+    quickCreateTo: "/quotes/new",
+  },
   {
     id: "sales-orders",
     to: "/sales-orders",
     label: "Sales Orders",
     icon: ShoppingCart,
     group: "sales",
+    quickCreateTo: "/sales-orders/new",
   },
-  { id: "invoices", to: "/invoices", label: "Sales Invoices", icon: Receipt, group: "sales" },
+  {
+    id: "invoices",
+    to: "/invoices",
+    label: "Sales Invoices",
+    icon: Receipt,
+    group: "sales",
+    quickCreateTo: "/invoices/new",
+  },
   {
     id: "dispatch",
     to: "/dispatch",
     label: "Delivery Challans & Dispatch",
     icon: Truck,
     group: "sales",
+  },
+  {
+    id: "payments",
+    to: "/payments?tab=customer",
+    label: "Payments Received",
+    icon: Wallet,
+    group: "sales",
+    allowedRoles: ["admin", "super_admin"],
   },
 
   // 4. Purchases
@@ -217,14 +276,23 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Vendors",
     icon: Factory,
     group: "purchase",
+    quickCreateTo: "/vendors",
   },
-  { id: "rfqs", to: "/rfqs", label: "RFQ (Request for Quote)", icon: Send, group: "purchase" },
+  {
+    id: "rfqs",
+    to: "/rfqs",
+    label: "RFQ (Request for Quote)",
+    icon: Send,
+    group: "purchase",
+    quickCreateTo: "/rfqs",
+  },
   {
     id: "purchase-orders",
     to: "/purchase-orders",
     label: "Purchase Orders",
     icon: ClipboardList,
     group: "purchase",
+    quickCreateTo: "/purchase-orders/new",
   },
   {
     id: "purchase-invoices",
@@ -232,6 +300,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Purchase Invoices (Bills)",
     icon: Receipt,
     group: "purchase",
+    quickCreateTo: "/purchase-invoices/new",
   },
   {
     id: "vendor-payments",
@@ -250,29 +319,54 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
 
-  // 5. Banking & Finance
+  // 5. Time Tracking (HR & Workforce)
+  {
+    id: "wf-employees",
+    to: "/workforce-intelligence/employees",
+    label: "Employees",
+    icon: Users,
+    group: "time",
+    allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
+  },
+  {
+    id: "hr-attendance",
+    to: "/hr/attendance",
+    label: "Attendance & Leave",
+    icon: Fingerprint,
+    group: "time",
+    allowedRoles: ["admin", "super_admin", "hr"],
+  },
+  {
+    id: "hr-payroll",
+    to: "/hr/payroll",
+    label: "Payroll",
+    icon: Banknote,
+    group: "time",
+    allowedRoles: ["admin", "super_admin", "hr"],
+  },
+  {
+    id: "hr-payments",
+    to: "/hr/payments",
+    label: "Employee Payments",
+    icon: Wallet,
+    group: "time",
+    allowedRoles: ["admin", "super_admin", "hr"],
+  },
+  {
+    id: "wf-today",
+    to: "/workforce-intelligence",
+    label: "Workforce Intelligence",
+    icon: BarChart3,
+    group: "time",
+  },
+
+  // 6. Banking
   {
     id: "money-flow",
     to: "/money-flow",
-    label: "Money Flow Command Center",
-    icon: ArrowLeftRight,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "payments",
-    to: "/payments?tab=customer",
-    label: "Payments Received",
-    icon: Wallet,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "ledger",
-    to: "/ledger?tab=sales",
-    label: "Customer Ledgers",
-    icon: BookOpen,
-    group: "finance",
+    label: "Banking Overview",
+    icon: Landmark,
+    group: "banking",
     allowedRoles: ["admin", "super_admin"],
   },
   {
@@ -280,7 +374,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/business-expenses",
     label: "Business Expenses",
     icon: ReceiptText,
-    group: "finance",
+    group: "banking",
     allowedRoles: ["admin", "super_admin"],
   },
   {
@@ -288,7 +382,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/liabilities",
     label: "Liabilities & Loans",
     icon: Landmark,
-    group: "finance",
+    group: "banking",
     allowedRoles: ["admin", "super_admin"],
   },
   {
@@ -296,7 +390,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/ramans-cashbook",
     label: "Raman's Cashbook",
     icon: Coins,
-    group: "finance",
+    group: "banking",
     allowedRoles: ["super_admin"],
     superAdminOnly: true,
   },
@@ -305,71 +399,27 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/money-flow?tab=personal-transfers",
     label: "Personal Transfers",
     icon: ArrowLeftRight,
-    group: "finance",
+    group: "banking",
     allowedRoles: ["admin", "super_admin"],
   },
+
+  // 7. Filing & Compliance
   {
     id: "gst",
     to: "/gst",
     label: "Pay GST & Filing",
-    icon: Landmark,
-    group: "finance",
+    icon: ShieldCheck,
+    group: "compliance",
     allowedRoles: ["admin", "super_admin"],
   },
 
-  // 6. Time & HR
+  // 8. Accountant
   {
-    id: "wf-employees",
-    to: "/workforce-intelligence/employees",
-    label: "Employees",
-    icon: Users,
-    group: "payroll",
-    allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
-  },
-  {
-    id: "hr-attendance",
-    to: "/hr/attendance",
-    label: "Attendance & Leave",
-    icon: Fingerprint,
-    group: "payroll",
-    allowedRoles: ["admin", "super_admin", "hr"],
-  },
-  {
-    id: "hr-payroll",
-    to: "/hr/payroll",
-    label: "Payroll",
-    icon: Banknote,
-    group: "payroll",
-    allowedRoles: ["admin", "super_admin", "hr"],
-  },
-  {
-    id: "hr-payments",
-    to: "/hr/payments",
-    label: "Employee Payments",
-    icon: Wallet,
-    group: "payroll",
-    allowedRoles: ["admin", "super_admin", "hr"],
-  },
-  {
-    id: "wf-today",
-    to: "/workforce-intelligence",
-    label: "Workforce Intelligence",
-    icon: BarChart3,
-    group: "payroll",
-  },
-  {
-    id: "agencies",
-    to: "/masters/installation-agencies",
-    label: "Installation Agencies",
-    icon: HardHat,
-    group: "payroll",
-  },
-  {
-    id: "agency-payments",
-    to: "/agency-payments",
-    label: "Agency Payments",
-    icon: HandCoins,
-    group: "payroll",
+    id: "ledger",
+    to: "/ledger?tab=sales",
+    label: "Customer Ledgers",
+    icon: BookOpen,
+    group: "accountant",
     allowedRoles: ["admin", "super_admin"],
   },
   {
@@ -377,11 +427,26 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/installation-ledger",
     label: "Agency Ledgers",
     icon: Layers,
-    group: "payroll",
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "agencies",
+    to: "/masters/installation-agencies",
+    label: "Installation Agencies",
+    icon: HardHat,
+    group: "accountant",
+  },
+  {
+    id: "agency-payments",
+    to: "/agency-payments",
+    label: "Agency Payments",
+    icon: HandCoins,
+    group: "accountant",
     allowedRoles: ["admin", "super_admin"],
   },
 
-  // 7. Reports & Docs
+  // 9. Reports
   {
     id: "reports",
     to: "/reports",
@@ -396,15 +461,17 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: LayoutDashboard,
     group: "reports",
   },
+
+  // 10. Documents
   {
     id: "documents",
     to: "/documents",
-    label: "Documents",
+    label: "All Documents",
     icon: FolderOpen,
-    group: "reports",
+    group: "documents",
   },
 
-  // 8. Settings & Admin
+  // 11. Settings & More Features
   {
     id: "communication",
     to: "/communication",

@@ -59,6 +59,7 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   gstin: "24BJEPR8383P1ZB",
   website: "www.stonetech.in",
   bank_name: "Bank of Baroda",
+  bank_branch: "Chandlodiya, Ahmedabad",
   bank_account_number: "53130200000136",
   bank_ifsc: "BARB0CHAAHM",
   upi_id: STONE_TECH_UPI_ID,

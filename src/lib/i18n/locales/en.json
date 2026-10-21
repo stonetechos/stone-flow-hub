@@ -9,9 +9,12 @@
       "items": "Items",
       "sales": "Sales",
       "purchase": "Purchases",
-      "finance": "Banking & Finance",
-      "payroll": "Time & HR",
-      "reports": "Reports & Docs",
+      "time": "Time Tracking",
+      "banking": "Banking",
+      "compliance": "Filing & Compliance",
+      "accountant": "Accountant",
+      "reports": "Reports",
+      "documents": "Documents",
       "settings": "Settings"
     },
     "items": {

@@ -81,59 +81,77 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
       <html>
       <head>
         <title>Statement of Account — ${data.party.name}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; line-height: 1.5; }
-          .header { border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 24px; }
-          .company-name { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #0f172a; }
-          .title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 4px; }
-          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; font-size: 13px; }
-          .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; }
-          .summary-card { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+          * { box-sizing: border-box; }
+          body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #0f172a; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 11px; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 16px; }
+          .company-name { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #111827; letter-spacing: 0.02em; }
+          .company-sub { font-size: 10px; color: #475569; margin-top: 3px; line-height: 1.4; }
+          .title { font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; }
+          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; font-size: 10.5px; }
+          .meta-box { background: #fafafa; border: 1px solid #cbd5e1; padding: 10px 12px; border-radius: 4px; }
+          .summary-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 12px; margin-bottom: 16px; }
           .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; }
-          .summary-val { font-size: 18px; font-weight: 800; font-family: monospace; }
+          .summary-val { font-size: 15px; font-weight: 800; font-family: monospace; }
           .due { color: #b91c1c; }
           .paid { color: #15803d; }
-          table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
-          th { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; font-weight: 700; }
-          td { border: 1px solid #e2e8f0; padding: 8px 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10.5px; }
+          thead th { background: #3b4758; color: #ffffff; padding: 6px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.03em; }
+          td { border-bottom: 1px solid #e2e8f0; padding: 7px 8px; vertical-align: top; }
           .text-right { text-align: right; }
           .font-mono { font-family: monospace; }
-          .footer { margin-top: 40px; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 16px; text-align: center; }
+          .footer { margin-top: 24px; font-size: 9.5px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: center; }
           @media print { body { padding: 0; } }
         </style>
       </head>
       <body>
         <div class="header">
-          <div class="company-name">STONE TECH</div>
-          <div class="title">Official Statement of Account (Real-Time Ledger)</div>
+          <div>
+            <img src="/branding/stone-tech-logo.png" alt="Stone Tech" style="height:55px;object-fit:contain;display:block;margin-bottom:6px;" onerror="this.style.display='none'" />
+            <div class="company-name">STONE TECH</div>
+            <div class="company-sub">
+              E-02, Ground Floor, SG Business Hub, Opp to Festival Residency, Vasant Nagar,<br/>
+              Gota, Ahmedabad Gujarat 380060, India<br/>
+              <strong>GSTIN 24BJEPR8383P1ZB</strong>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div class="title">STATEMENT</div>
+            <div style="font-size: 11px; color: #4b5563; font-weight: 600; margin-top: 4px;">Statement of Account</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">As of: ${data.asOfTimestamp}</div>
+          </div>
         </div>
 
         <div class="meta-grid">
           <div class="meta-box">
-            <strong>Account Name:</strong> ${data.party.name}<br/>
+            <strong style="color: #374151;">Account Name:</strong> ${data.party.name}<br/>
             ${data.party.code ? `<strong>Party Code:</strong> ${data.party.code}<br/>` : ""}
             ${data.party.companyName ? `<strong>Firm:</strong> ${data.party.companyName}<br/>` : ""}
             ${data.party.phone ? `<strong>Contact:</strong> ${data.party.phone}<br/>` : ""}
           </div>
           <div class="meta-box">
-            <strong>Statement Generated:</strong> ${data.asOfTimestamp}<br/>
+            <strong style="color: #374151;">Account Summary:</strong><br/>
             <strong>Transactions:</strong> ${data.transactions.length} record(s)<br/>
-            <strong>Scope:</strong> Complete accounting history to present
+            <strong>Bank A/C:</strong> Bank of Baroda · 53130200000136<br/>
+            <strong>IFSC:</strong> BARB0CHAAHM (Chandlodiya, Ahmedabad)
           </div>
         </div>
 
         <div class="summary-card">
           <div class="summary-grid">
             <div>
-              <div style="font-size: 11px; color: #64748b;">Total Invoiced / Debits</div>
+              <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Total Billed / Debits</div>
               <div class="summary-val">${formatInr(data.totalDebit)}</div>
             </div>
             <div>
-              <div style="font-size: 11px; color: #64748b;">Total Received / Credits</div>
+              <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Total Received / Credits</div>
               <div class="summary-val paid">${formatInr(data.totalCredit)}</div>
             </div>
             <div>
-              <div style="font-size: 11px; color: #64748b;">Net Outstanding Balance</div>
+              <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Net Outstanding Balance</div>
               <div class="summary-val ${data.balance > 0 ? "due" : ""}">${formatInr(data.balance)}</div>
             </div>
           </div>
@@ -142,12 +160,12 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
         <table>
           <thead>
             <tr>
-              <th style="width: 80px;">Date</th>
-              <th>Type</th>
-              <th>Reference</th>
-              <th class="text-right">Debit</th>
-              <th class="text-right">Credit</th>
-              <th class="text-right">Running Balance</th>
+              <th style="width: 75px;">Date</th>
+              <th>Transaction Details</th>
+              <th style="width: 100px;">Reference</th>
+              <th class="text-right" style="width: 90px;">Debit</th>
+              <th class="text-right" style="width: 90px;">Credit</th>
+              <th class="text-right" style="width: 110px;">Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -167,6 +185,22 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
               .join("")}
           </tbody>
         </table>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:9.5px;">
+          <div>
+            <div style="font-weight:700;color:#1e293b;">ACCOUNT NAME: STONE TECH</div>
+            <div>BANK: BANK OF BARODA</div>
+            <div>BRANCH: CHANDLODIYA, AHMEDABAD</div>
+            <div>ACCOUNT NUMBER: 53130200000136 · IFSC: BARB0CHAAHM</div>
+            <div style="color:#0d9488;font-weight:600;margin-top:2px;">UPI ID: stonetech.ahmedabad@okicici</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700;color:#111827;text-transform:uppercase;">FOR: STONE TECH</div>
+            <div style="margin:10px 0 2px;"><img src="/signature.jpg" alt="Signature" style="max-height:40px;object-fit:contain;" onerror="this.style.display='none'" /></div>
+            <div style="font-weight:700;">PROPRIETOR</div>
+            <div style="color:#64748b;">Authorized Signatory</div>
+          </div>
+        </div>
 
         <div class="footer">
           Generated automatically by Stone Tech OS Financial Accounting Engine · Validated up till transmission.

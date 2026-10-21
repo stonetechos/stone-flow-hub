@@ -119,6 +119,7 @@ function NavLinkRow({
   starred,
   onToggleStar,
   isChild = false,
+  quickCreateTo,
 }: {
   to: string;
   label: string;
@@ -129,6 +130,7 @@ function NavLinkRow({
   starred: boolean;
   onToggleStar: () => void;
   isChild?: boolean;
+  quickCreateTo?: string;
 }) {
   const link = (
     <Link
@@ -141,10 +143,10 @@ function NavLinkRow({
         collapsed
           ? "justify-center p-2"
           : isChild
-            ? "py-1.5 pl-2.5 pr-7 text-[12.5px]"
-            : "py-2 pl-3 pr-8 text-[13px]",
+            ? "py-1.5 pl-2.5 pr-14 text-[12.5px]"
+            : "py-2 pl-3 pr-16 text-[13px]",
         active
-          ? "bg-white/20 text-white font-semibold shadow-xs border border-white/25 backdrop-blur-xs"
+          ? "bg-cyan-600 text-white font-semibold shadow-xs"
           : "text-cyan-100/80 hover:bg-white/12 hover:text-white font-medium",
       )}
     >
@@ -190,25 +192,46 @@ function NavLinkRow({
         link
       )}
       {!collapsed && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleStar();
-          }}
-          aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
-          aria-pressed={starred}
-          className={cn(
-            "absolute right-1 rounded-sm p-1 transition-all",
-            "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
-            starred
-              ? "opacity-100 text-amber-300 drop-shadow-[0_0_4px_rgba(252,211,77,0.7)]"
-              : "opacity-0 group-hover:opacity-100 text-cyan-200/50 hover:text-white",
+        <div className="absolute right-1 flex items-center gap-0.5">
+          {quickCreateTo && (
+            <Link
+              to={quickCreateTo}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate?.();
+              }}
+              title={`New ${label}`}
+              aria-label={`New ${label}`}
+              className={cn(
+                "rounded p-0.5 transition-all",
+                active
+                  ? "opacity-100 text-white hover:bg-cyan-700/80"
+                  : "opacity-0 group-hover:opacity-100 text-cyan-200 hover:text-white hover:bg-white/15",
+              )}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Link>
           )}
-        >
-          <Star className={cn("h-3 w-3", starred && "fill-current")} aria-hidden />
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleStar();
+            }}
+            aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
+            aria-pressed={starred}
+            className={cn(
+              "rounded-sm p-1 transition-all",
+              "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
+              starred
+                ? "opacity-100 text-amber-300 drop-shadow-[0_0_4px_rgba(252,211,77,0.7)]"
+                : "opacity-0 group-hover:opacity-100 text-cyan-200/50 hover:text-white",
+            )}
+          >
+            <Star className={cn("h-3 w-3", starred && "fill-current")} aria-hidden />
+          </button>
+        </div>
       )}
     </div>
   );
@@ -323,23 +346,29 @@ function NavGroupRow({
   }
 
   const handleGroupClick = () => {
-    if (group.id === "overview") {
-      void navigate({ to: "/dashboard" });
+    if (group.to) {
+      void navigate({ to: group.to });
       onNavigate?.();
-      onToggle();
+      if (group.items.length > 0 && !isOpen) {
+        onToggle();
+      }
     } else {
       onToggle();
     }
   };
+
+  const isStandaloneActive = isDirectActive && !hasActiveChild;
 
   return (
     <div className="space-y-0.5">
       <div
         className={cn(
           "group relative flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 cursor-pointer select-none",
-          hasActiveChild || isDirectActive
-            ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
-            : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
+          isStandaloneActive
+            ? "text-white bg-cyan-600 shadow-xs"
+            : hasActiveChild
+              ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
+              : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
         )}
         onClick={handleGroupClick}
       >
@@ -355,8 +384,8 @@ function NavGroupRow({
           <GroupIcon
             className={cn(
               "h-4 w-4 shrink-0 transition-colors",
-              hasActiveChild || isDirectActive
-                ? "text-cyan-200 drop-shadow-[0_0_6px_rgba(103,232,249,0.5)]"
+              isStandaloneActive || hasActiveChild
+                ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
                 : "text-cyan-200/80 group-hover:text-white",
             )}
             aria-hidden
@@ -379,13 +408,15 @@ function NavGroupRow({
               <Plus className="h-3.5 w-3.5" />
             </Link>
           )}
-          <ChevronRight
-            className={cn(
-              "h-3.5 w-3.5 text-cyan-200/70 transition-transform duration-200",
-              isOpen && "rotate-90 text-white",
-            )}
-            aria-hidden
-          />
+          {group.items.length > 0 && (
+            <ChevronRight
+              className={cn(
+                "h-3.5 w-3.5 text-cyan-200/70 transition-transform duration-200",
+                isOpen && "rotate-90 text-white",
+              )}
+              aria-hidden
+            />
+          )}
         </div>
       </div>
 
@@ -403,6 +434,7 @@ function NavGroupRow({
               onNavigate={onNavigate}
               starred={starredIds.has(item.id)}
               onToggleStar={() => onToggleStar(item.id)}
+              quickCreateTo={item.quickCreateTo}
               isChild
             />
           ))}
@@ -516,6 +548,7 @@ function NavList({
                 onNavigate={onNavigate}
                 starred
                 onToggleStar={() => toggleStar(item.id)}
+                quickCreateTo={item.quickCreateTo}
               />
             ))}
           </div>
@@ -524,10 +557,15 @@ function NavList({
 
       {/* Primary Zoho-Style Accordion Groups */}
       {resolved.groups.map((group) => {
-        if (group.items.length === 0 && group.id !== "overview") return null;
+        if (group.items.length === 0 && group.id !== "overview" && !group.to) return null;
         const isOpen = openGroups[group.id] ?? group.id === activeGroupId;
         const hasActiveChild = group.items.some((item) => checkActive(item));
-        const isDirectActive = group.id === "overview" && path === "/dashboard";
+        const cleanPath = path.split("?")[0];
+        const cleanGroupTo = group.to?.split("?")[0];
+        const isDirectActive = cleanGroupTo
+          ? cleanPath === cleanGroupTo ||
+            (cleanGroupTo !== "/" && cleanPath.startsWith(`${cleanGroupTo}/`))
+          : false;
 
         return (
           <NavGroupRow

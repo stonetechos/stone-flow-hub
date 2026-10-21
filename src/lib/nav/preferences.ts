@@ -373,7 +373,7 @@ export function resolveNav(
         items: ordered.filter((i) => !starredSet.has(i.id) && !hiddenSet.has(i.id)),
       };
     })
-    .filter((g) => g.items.length > 0 || g.id === "overview");
+    .filter((g) => g.items.length > 0 || g.id === "overview" || Boolean(g.to));
 
   const hidden = NAV_ITEMS.filter(
     (i) => hiddenSet.has(i.id) && isItemAllowed(i, isAdmin, isSuperAdmin, userRoles),

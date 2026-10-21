@@ -19,6 +19,7 @@
  */
 import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
 import { STONE_TECH_UPI_ID, STONE_TECH_UPI_QR_DATA_URL } from "@/lib/branding/upi-qr-asset";
+import { amountToIndianWords } from "@/lib/format/words";
 
 export type DocKind =
   | "quotation"
@@ -91,136 +92,162 @@ function brandParty(brand: BrandingConfig): PdfParty {
   };
 }
 
+function formatDocDate(d: string): string {
+  if (!d) return "";
+  const parts = d.split("T")[0].split("-");
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    const yy = yyyy.length === 4 ? yyyy.slice(2) : yyyy;
+    return `${dd}/${mm}/${yy}`;
+  }
+  return d;
+}
+
 export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRANDING): string {
   const from = doc.from ?? brandParty(brand);
-  const accent = brand.primary || "#0F766E";
+  const slateHeader = "#3b4758"; // Zoho Books signature dark slate navy
   const ink = "#0F172A";
   const muted = "#64748B";
   const border = "#E5E7EB";
 
+  const isQuote = doc.kind === "quotation" || doc.kind === "estimate";
+  const isInvoice = doc.kind === "invoice";
+
+  const titleText = isQuote
+    ? "QUOTE"
+    : isInvoice
+      ? "GST INVOICE"
+      : (doc.title || doc.kind || "DOCUMENT").toUpperCase();
+
+  const numberLabel = isQuote ? "# :" : isInvoice ? "Invoice#" : "# :";
+  const dateLabel = isQuote ? "Quote Date" : "Date";
+
   const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:64px;max-width:220px;object-fit:contain;display:block" />`
-    : `<div style="font-size:24px;font-weight:800;color:${accent};letter-spacing:-.01em">${esc(brand.company_name)}</div>`;
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:68px;max-width:200px;object-fit:contain;display:block;margin-bottom:6px;" />`
+    : `<div style="font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-.01em;margin-bottom:4px;">${esc(brand.company_name)}</div>`;
+
+  const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
+  const placeOfSupply =
+    posMeta?.value != null && String(posMeta.value).trim() !== ""
+      ? String(posMeta.value)
+      : (doc.to?.address || "").toLowerCase().includes("gujarat")
+        ? "Gujarat (24)"
+        : "Maharashtra (27)";
+
+  const dueMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("due date"));
+  const dueDate = dueMeta ? String(dueMeta.value) : doc.date;
+  const termsText = doc.terms || "Due on Receipt";
 
   const showHsn = (doc.lines ?? []).some((l) => l.hsn);
   const showPhoto = (doc.lines ?? []).some((l) => Boolean(l.image));
+
   const rows = (doc.lines ?? [])
     .map(
-      (l, i) => `<tr>
-        <td style="padding:9px 4px;border-bottom:1px solid ${border};color:${muted};font-size:11px;text-align:center;vertical-align:middle;width:34px">${i + 1}</td>
+      (l, i) => `<tr style="border-bottom:1px solid ${border};font-size:10.5px;">
+        <td style="padding:8px 4px;color:${muted};text-align:center;vertical-align:top;width:34px">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:6px 4px;border-bottom:1px solid ${border};text-align:center;vertical-align:middle;width:56px">
+            ? `<td style="padding:6px 4px;text-align:center;vertical-align:top;width:56px">
                 ${
                   l.image
-                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid ${border};display:block;margin:0 auto;" />`
+                    ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid ${border};display:block;margin:0 auto;" />`
                     : `<span style="color:${muted}">—</span>`
                 }
               </td>`
             : ""
         }
-        <td style="padding:9px 12px;border-bottom:1px solid ${border};text-align:left;vertical-align:middle">
-          <div style="font-weight:600">${esc(l.label)}</div>
-          ${l.notes ? `<div style="font-size:10.5px;color:#64748b;margin-top:2px;white-space:pre-wrap;line-height:1.35">${esc(l.notes)}</div>` : ""}
+        <td style="padding:8px 10px;text-align:left;vertical-align:top;">
+          <div style="font-weight:700;color:${ink};font-size:11px;">${esc(l.label)}</div>
+          ${l.notes ? `<div style="font-size:9.5px;color:${muted};margin-top:2px;white-space:pre-wrap;line-height:1.35">${esc(l.notes)}</div>` : ""}
         </td>
-        ${showHsn ? `<td style="padding:9px 6px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px;text-align:center;vertical-align:middle;width:75px">${esc(l.hsn ?? "")}</td>` : ""}
-        <td style="padding:9px 10px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;width:65px">${esc(l.qty ?? "")}</td>
-        <td style="padding:9px 6px;border-bottom:1px solid ${border};color:${muted};font-size:11px;text-align:center;vertical-align:middle;width:60px">${esc(l.unit ?? "")}</td>
-        <td style="padding:9px 10px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;width:90px">${esc(l.rate ?? "")}</td>
-        <td style="padding:9px 12px;border-bottom:1px solid ${border};text-align:right;font-weight:600;font-variant-numeric:tabular-nums;vertical-align:middle;width:110px">${esc(l.amount ?? "")}</td>
+        ${showHsn ? `<td style="padding:8px 6px;font-family:monospace;font-size:10px;color:#334155;text-align:center;vertical-align:top;width:75px">${esc(l.hsn ?? "—")}</td>` : ""}
+        <td style="padding:8px 8px;text-align:right;font-variant-numeric:tabular-nums;vertical-align:top;width:65px">
+          <div>${esc(l.qty ?? "")}</div>
+          ${l.unit ? `<div style="font-size:9px;color:${muted};">${esc(l.unit)}</div>` : ""}
+        </td>
+        <td style="padding:8px 8px;text-align:right;font-variant-numeric:tabular-nums;vertical-align:top;width:80px">${esc(l.rate ?? "")}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;vertical-align:top;width:95px;color:${ink};">${esc(l.amount ?? "")}</td>
       </tr>`,
     )
     .join("");
 
-  const meta = (doc.meta ?? [])
-    .map(
-      (m) =>
-        `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">
-          <span style="color:${muted}">${esc(m.label)}</span>
-          <span style="color:${ink}">${esc(m.value ?? "—")}</span>
-        </div>`,
-    )
-    .join("");
+  // Total in Words computation
+  const totalMeta =
+    doc.totals?.find((t) => t.label.toLowerCase() === "total") ||
+    doc.totals?.[(doc.totals?.length ?? 1) - 1];
+  let totalInWords = "";
+  if (totalMeta && totalMeta.value) {
+    const rawNum = parseFloat(String(totalMeta.value).replace(/[^0-9.-]/g, ""));
+    if (!isNaN(rawNum) && rawNum > 0) {
+      totalInWords = amountToIndianWords(rawNum);
+    }
+  }
 
-  const totals = (doc.totals ?? [])
-    .map(
-      (t, i, arr) => `<div style="display:flex;justify-content:space-between;padding:5px 0;${
-        i === arr.length - 1
-          ? `border-top:2px solid ${accent};margin-top:4px;font-weight:700;font-size:14px;color:${ink}`
-          : `color:#334155`
+  const totalsHtml = (doc.totals ?? [])
+    .map((t, i, arr) => {
+      const isTotal = t.label.toLowerCase() === "total" || i === arr.length - 1;
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;${
+        isTotal
+          ? "border-top:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;margin:4px 0;padding:6px 0;font-weight:700;font-size:13px;color:#0f172a;"
+          : "color:#475569;"
       }">
-        <span>${esc(t.label)}</span>
-        <span style="font-variant-numeric:tabular-nums">${esc(t.value ?? "")}</span>
-      </div>`,
-    )
+        <span style="${isTotal ? "font-weight:700;" : ""}">${esc(t.label)}</span>
+        <span style="font-variant-numeric:tabular-nums;${isTotal ? "font-weight:700;" : ""}">${esc(t.value ?? "")}</span>
+      </div>`;
+    })
     .join("");
 
-  const partyBlock = (p: PdfParty, label: string) => `
-    <div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">${label}</div>
-      <div style="font-weight:700;font-size:14px;color:${ink}">${esc(p.name)}</div>
-      ${p.address ? `<div style="font-size:12px;color:#475569;white-space:pre-line;margin-top:2px">${esc(p.address)}</div>` : ""}
-      ${p.gstin ? `<div style="font-size:11px;color:${muted};margin-top:4px"><b>GSTIN:</b> ${esc(p.gstin)}</div>` : ""}
-      ${p.email ? `<div style="font-size:11px;color:${muted}">${esc(p.email)}</div>` : ""}
-      ${p.phone ? `<div style="font-size:11px;color:${muted}">${esc(p.phone)}</div>` : ""}
-    </div>`;
-
-  // Payment Details box — renders on quotations, invoices, and any customer doc
+  // Payment Details box with Bank of Baroda & UPI QR
   const upiId = brand.upi_id || STONE_TECH_UPI_ID;
   const qrImgSrc = brand.upi_qr_url || STONE_TECH_UPI_QR_DATA_URL;
-  const hasBankDetails = brand.bank_name || brand.bank_account_number || brand.bank_ifsc || upiId;
+  const bankName = brand.bank_name || "Bank of Baroda";
+  const branchName = brand.bank_branch || "Chandlodiya, Ahmedabad";
+  const acNumber = brand.bank_account_number || "53130200000136";
+  const ifscCode = brand.bank_ifsc || "BARB0CHAAHM";
 
-  const qrAmount = doc.balanceDue ?? 0;
-  const scanAmountText =
-    qrAmount > 0
-      ? `Scan to pay ₹${qrAmount.toLocaleString("en-IN")}`
-      : `Scan to pay via UPI / GPay`;
-
-  const bankBlock = hasBankDetails
-    ? `<div style="flex:1;min-width:300px;border:1px solid ${border};border-radius:6px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:#f8fafc">
+  const bankBlock = `
+    <div style="margin-top:14px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:9.5px;color:#334155;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
         <div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px;font-weight:700">Bank &amp; Payment Details</div>
-          ${brand.bank_name ? `<div style="font-size:12px;margin-bottom:2px"><b>Bank:</b> ${esc(brand.bank_name)}${brand.bank_branch ? ` (${esc(brand.bank_branch)})` : ""}</div>` : ""}
-          ${brand.bank_account_number ? `<div style="font-size:12px;margin-bottom:2px"><b>A/C No:</b> ${esc(brand.bank_account_number)}</div>` : ""}
-          ${brand.bank_ifsc ? `<div style="font-size:12px;margin-bottom:2px"><b>IFSC:</b> ${esc(brand.bank_ifsc)}</div>` : ""}
-          ${upiId ? `<div style="font-size:12px;color:#0d9488;margin-bottom:2px"><b>UPI ID:</b> ${esc(upiId)}</div>` : ""}
+          <div style="font-weight:700;color:#1e293b;margin-bottom:2px;">ACCOUNT NAME: ${esc(brand.company_name.toUpperCase())}</div>
+          <div style="margin-bottom:1.5px;">BANK: ${esc(bankName)}</div>
+          <div style="margin-bottom:1.5px;">BRANCH: ${esc(branchName)}</div>
+          <div style="margin-bottom:1.5px;">ACCOUNT NUMBER: ${esc(acNumber)}</div>
+          <div style="margin-bottom:1.5px;">IFS CODE: ${esc(ifscCode)}</div>
+          ${upiId ? `<div style="margin-top:2px;color:#0d9488;font-weight:600;">UPI ID: ${esc(upiId)}</div>` : ""}
         </div>
-        <div style="text-align:center;display:flex;flex-direction:column;align-items:center;margin-left:14px">
-          <div style="font-size:9.5px;color:${muted};margin-bottom:4px;font-weight:600">${scanAmountText}</div>
-          <img src="${qrImgSrc}" alt="UPI QR Code" crossorigin="anonymous" style="width:84px;height:84px;border-radius:6px;border:1px solid ${border};background:#fff;padding:2px;display:block" />
-          <div style="font-size:8px;color:${muted};margin-top:3px;font-weight:600">GPay · PhonePe · Paytm</div>
+        <div style="text-align:center;display:flex;flex-direction:column;align-items:center;">
+          <img src="${qrImgSrc}" alt="UPI QR Code" crossorigin="anonymous" style="width:72px;height:72px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;padding:2px;background:#fff;display:block;" />
+          <div style="font-size:8px;color:${muted};font-weight:600;margin-top:2px;">Scan to pay via UPI / GPay</div>
         </div>
-      </div>`
-    : "";
+      </div>
+    </div>`;
 
-  // Authorized-signatory sign-off block — only when the profile has a
-  // signatory name, signature image, or stamp image to show.
-  const hasSignatory = brand.authorized_signatory || brand.signature_url || brand.stamp_url;
-  const signatoryBlock = hasSignatory
-    ? `<div style="flex:1;min-width:220px;text-align:right">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:6px">For ${esc(brand.company_name)}</div>
-        <div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:10px">
-          ${brand.signature_url ? `<img src="${esc(brand.signature_url)}" alt="Signature" style="max-height:44px;max-width:120px;object-fit:contain" />` : ""}
-          ${brand.stamp_url ? `<img src="${esc(brand.stamp_url)}" alt="Company stamp" style="max-height:60px;max-width:60px;object-fit:contain" />` : ""}
-        </div>
-        ${brand.authorized_signatory ? `<div style="font-size:12px;margin-top:4px">${esc(brand.authorized_signatory)}</div>` : ""}
-        <div style="font-size:10px;color:${muted}">Authorized Signatory</div>
-      </div>`
-    : "";
+  // Authorized Signatory
+  const signatureUrl = brand.signature_url || "/signature.jpg";
+  const signatoryBlock = `
+    <div style="margin-top:26px;text-align:right;">
+      <div style="font-size:10px;font-weight:700;color:#111827;text-transform:uppercase;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
+      <div style="margin:8px 0 2px;display:flex;justify-content:flex-end;">
+        <img src="${signatureUrl}" alt="Authorized Signature" style="max-height:48px;max-width:140px;object-fit:contain;display:block;" />
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#1e293b;">PROPRIETOR</div>
+      <div style="font-size:9.5px;color:${muted};">Authorized Signature</div>
+    </div>`;
 
   const uniquePhotos = Array.from(
     new Set((doc.lines ?? []).map((l) => l.image).filter((img): img is string => Boolean(img))),
   );
   const galleryBlock =
     uniquePhotos.length > 0
-      ? `<div style="margin-top:20px;padding:12px 14px;border:1px solid ${border};border-radius:6px;background:#FAFAFA;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:${muted};margin-bottom:10px;font-weight:700">Product &amp; Material Visuals</div>
-          <div style="display:flex;flex-wrap:wrap;gap:12px">
+      ? `<div style="margin-top:16px;padding:10px 12px;border:1px solid ${border};border-radius:4px;background:#FAFAFA;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:${muted};margin-bottom:8px;font-weight:700">Product &amp; Material Visuals</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
             ${uniquePhotos
               .map(
                 (url) =>
-                  `<div style="border:1px solid ${border};border-radius:6px;overflow:hidden;background:#fff;padding:4px">
-                    <img src="${esc(url)}" alt="Product Photo" style="width:140px;height:110px;object-fit:cover;border-radius:4px;display:block;" />
+                  `<div style="border:1px solid ${border};border-radius:4px;overflow:hidden;background:#fff;padding:2px">
+                    <img src="${esc(url)}" alt="Product Photo" style="width:130px;height:100px;object-fit:cover;border-radius:2px;display:block;" />
                   </div>`,
               )
               .join("")}
@@ -232,41 +259,34 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
 <title>${esc(doc.title)} · ${esc(doc.number)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 16mm; }
+  @page { size: A4; margin: 14mm 16mm; }
   @media print { .no-print { display:none !important; } }
   * { box-sizing: border-box; }
   body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:${ink}; margin:0; background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; letter-spacing: -0.01em; }
-  .sheet { max-width: 780px; margin: 0 auto; padding: 24px; }
+  .sheet { max-width: 780px; margin: 0 auto; padding: 20px 24px; }
   .toolbar { position: sticky; top:0; background:#f8fafc; border-bottom:1px solid ${border}; padding:8px 24px; display:flex; gap:8px; justify-content:flex-end; }
   .toolbar button { font-family: inherit; font-size:13px; font-weight:500; padding:6px 12px; border-radius:6px; border:1px solid ${border}; background:#fff; cursor:pointer; }
-  header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; padding-bottom:16px; border-bottom:3px solid ${accent}; }
-  .doc-title { font-size:24px; margin:0; color:${accent}; letter-spacing:-0.02em; font-weight:800; text-transform: uppercase; }
-  .doc-sub { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:${muted}; margin-top:4px; }
-  .brand-tagline { font-family: 'Caveat', cursive, 'Brush Script MT', sans-serif; font-size: 19px; font-weight: 700; color: ${accent}; margin-top: 3px; letter-spacing: 0.01em; line-height: 1.2; }
-  .parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0 16px; }
-  table { width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:12px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding-bottom:12px; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; }
   thead th {
-    background:${accent};
+    background:${slateHeader};
     color:#fff;
-    font-size:11px;
+    font-size:10px;
     text-transform:uppercase;
-    letter-spacing:.05em;
+    letter-spacing:.04em;
     font-weight:700;
     line-height:1;
     vertical-align:middle;
-    height:34px;
-    padding:0 8px;
+    height:30px;
+    padding:6px 8px;
     box-sizing:border-box;
   }
-  thead tr th:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
-  thead tr th:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
-  .totals { margin-top:20px; margin-left:auto; width:300px; }
-  .notes { margin-top:16px; padding:12px 14px; background:#F8FAFC; border-left:3px solid ${accent}; font-size:12px; color:#334155; border-radius: 0 4px 4px 0; }
-  .terms { margin-top:14px; font-size:11px; color:${muted}; white-space:pre-line; line-height:1.55; }
-  .footer { margin-top:28px; padding-top:12px; border-top:1px solid ${border}; font-size:10px; color:${muted}; text-align:center; }
-  .footer a { color:${accent}; text-decoration:none; }
+  .notes { margin-top:10px; font-size:10px; color:#475569; }
+  .terms { margin-top:12px; font-size:9.5px; color:#64748b; white-space:pre-line; line-height:1.45; }
+  .footer { margin-top:24px; padding-top:10px; border-top:1px solid ${border}; font-size:9.5px; color:${muted}; text-align:center; }
+  .footer a { color:#0d9488; text-decoration:none; }
 </style>
 </head><body>
   <div class="toolbar no-print">
@@ -277,54 +297,128 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     <header>
       <div>
         ${logo}
-        <div class="brand-tagline">${esc(brand.tagline || "ever evolving!")}</div>
+        <div style="font-size:13px;font-weight:800;color:#111827;text-transform:uppercase;letter-spacing:0.02em;">${esc(from.name || brand.company_name)}</div>
+        <div style="font-size:10px;color:#475569;line-height:1.45;margin-top:3px;white-space:pre-line;">${esc(from.address || brand.address)}
+India</div>
+        ${brand.gstin ? `<div style="font-size:10px;font-weight:700;color:#111827;margin-top:3px;">GSTIN ${esc(brand.gstin)}</div>` : ""}
       </div>
       <div style="text-align:right">
-        <div class="doc-title">${esc(doc.title)}</div>
-        <div style="font-size:14px;font-weight:600;color:${ink};margin-top:4px">${esc(doc.number)}</div>
-        <div class="doc-sub">${esc(doc.date)}</div>
+        <div style="font-size:26px;font-weight:700;color:#374151;letter-spacing:0.04em;text-transform:uppercase;line-height:1.1;">${titleText}</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:5px;font-weight:600;">${numberLabel} ${esc(doc.number)}</div>
+        ${!isInvoice ? `<div style="font-size:10px;color:#4b5563;margin-top:2px;">${dateLabel} : ${formatDocDate(doc.date)}</div>` : ""}
+        <div style="font-size:10px;color:#4b5563;margin-top:2px;">Place Of Supply : ${esc(placeOfSupply)}</div>
       </div>
     </header>
 
-    <div class="parties">
-      ${partyBlock(from, "From")}
-      ${partyBlock(doc.to, "Bill To")}
-    </div>
+    ${
+      isQuote
+        ? `<div style="border:1px solid #cbd5e1;border-radius:2px;display:grid;grid-template-columns:1fr 1fr;font-size:10px;margin:14px 0 12px;">
+            <div style="background:#fafafa;border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:5px 10px;font-weight:700;color:#374151;">Bill To</div>
+            <div style="background:#fafafa;border-bottom:1px solid #cbd5e1;padding:5px 10px;font-weight:700;color:#374151;">Ship To</div>
+            <div style="padding:8px 10px;border-right:1px solid #cbd5e1;">
+              <div style="font-weight:700;font-size:11px;color:#0f172a;">${esc(doc.to.name)}</div>
+              ${doc.to.address ? `<div style="color:#475569;margin-top:2px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
+              ${doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+            </div>
+            <div style="padding:8px 10px;">
+              <div style="font-weight:700;font-size:11px;color:#0f172a;">${esc(doc.to.name)}</div>
+              ${doc.to.address ? `<div style="color:#475569;margin-top:2px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
+              ${doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+            </div>
+          </div>`
+        : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:14px 0 10px;font-size:10px;">
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px;">Bill To</div>
+              <div style="font-weight:700;font-size:11px;color:#0f172a;">${esc(doc.to.name)}</div>
+              ${doc.to.address ? `<div style="color:#475569;margin-top:2px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
+              ${doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+            </div>
+            <div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:3px;">Ship To</div>
+              <div style="font-weight:700;font-size:11px;color:#0f172a;">${esc(doc.to.name)}</div>
+              ${doc.to.address ? `<div style="color:#475569;margin-top:2px;white-space:pre-line;line-height:1.4;">${esc(doc.to.address)}</div>` : ""}
+              ${doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
+            </div>
+          </div>
+          <div style="font-size:10px;color:#374151;font-weight:600;margin-bottom:12px;">Place Of Supply: ${esc(placeOfSupply)}</div>`
+    }
 
-    ${meta ? `<div style="border:1px solid ${border};border-radius:6px;padding:10px 14px;margin-bottom:8px">${meta}</div>` : ""}
+    ${
+      isInvoice
+        ? `<div style="background:#3b4758;color:#ffffff;border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px 12px;font-size:10px;font-weight:700;">
+            <div>Invoice Date</div>
+            <div>Terms</div>
+            <div>Due Date</div>
+          </div>
+          <div style="background:#fafafa;border:1px solid #e2e8f0;border-top:none;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px 12px;font-size:10px;color:#0f172a;margin-bottom:14px;">
+            <div>${formatDocDate(doc.date)}</div>
+            <div>${esc(termsText)}</div>
+            <div>${formatDocDate(dueDate)}</div>
+          </div>`
+        : ""
+    }
 
     ${
       rows
         ? `<table>
-            <thead><tr style="height:34px;">
-              <th style="width:34px;text-align:center;padding:0 4px;vertical-align:middle;line-height:1;height:34px;">#</th>
-              ${showPhoto ? `<th style="width:56px;text-align:center;padding:0 4px;vertical-align:middle;line-height:1;height:34px;">Photo</th>` : ""}
-              <th style="text-align:left;padding:0 12px;vertical-align:middle;line-height:1;height:34px;">Description</th>
-              ${showHsn ? `<th style="width:75px;text-align:center;padding:0 6px;vertical-align:middle;line-height:1;height:34px;">HSN</th>` : ""}
-              <th style="width:65px;text-align:right;padding:0 10px;vertical-align:middle;line-height:1;height:34px;">Qty</th>
-              <th style="width:60px;text-align:center;padding:0 6px;vertical-align:middle;line-height:1;height:34px;">Unit</th>
-              <th style="width:90px;text-align:right;padding:0 10px;vertical-align:middle;line-height:1;height:34px;">Rate</th>
-              <th style="width:110px;text-align:right;padding:0 12px;vertical-align:middle;line-height:1;height:34px;">Amount</th>
+            <thead><tr>
+              <th style="width:34px;text-align:center;">#</th>
+              ${showPhoto ? `<th style="width:52px;text-align:center;">Photo</th>` : ""}
+              <th style="text-align:left;padding-left:10px;">Item &amp; Description</th>
+              ${showHsn ? `<th style="width:75px;text-align:center;">HSN/SAC</th>` : ""}
+              <th style="width:65px;text-align:right;">Qty</th>
+              <th style="width:80px;text-align:right;">Rate</th>
+              <th style="width:95px;text-align:right;padding-right:10px;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
         : ""
     }
 
-    ${totals ? `<div class="totals">${totals}</div>` : ""}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px;gap:20px;">
+      <div style="flex:1;max-width:440px;">
+        ${
+          totalInWords
+            ? `<div style="font-size:10px;margin-bottom:14px;">
+                <span style="color:#64748b;">Total In Words: </span>
+                <b style="color:#0f172a;">${esc(totalInWords)}</b>
+              </div>`
+            : ""
+        }
+
+        ${
+          doc.notes
+            ? `<div class="notes">
+                <div style="font-weight:700;color:#374151;margin-bottom:2px;">Notes</div>
+                <div style="white-space:pre-line;">${esc(doc.notes)}</div>
+              </div>`
+            : ""
+        }
+
+        ${
+          doc.terms
+            ? `<div class="terms">
+                <div style="font-weight:700;color:#374151;margin-bottom:2px;font-size:10px;">Terms &amp; Conditions</div>
+                <div style="white-space:pre-line;">${esc(doc.terms)}</div>
+              </div>`
+            : ""
+        }
+
+        ${bankBlock}
+      </div>
+
+      <div style="width:280px;text-align:right;">
+        <div style="display:inline-block;width:100%;font-size:10.5px;">
+          ${totalsHtml}
+        </div>
+        ${signatoryBlock}
+      </div>
+    </div>
 
     ${galleryBlock}
 
-    <div style="display:flex;justify-content:space-between;gap:24px;margin-top:20px;flex-wrap:wrap">
-      ${bankBlock}
-      ${signatoryBlock}
-    </div>
-
-    ${doc.notes ? `<div class="notes"><b>Notes:</b> ${esc(doc.notes)}</div>` : ""}
-    ${doc.terms ? `<div class="terms"><b>Terms &amp; Conditions</b>\n${esc(doc.terms)}</div>` : ""}
-
     <div class="footer">
-      ${esc(doc.footer ?? `${brand.company_name} — This is a system-generated document.`)}
+      ${esc(doc.footer ?? `${brand.company_name} — System Generated Document`)}
       ${brand.pan ? ` · PAN: ${esc(brand.pan)}` : ""}
       ${brand.website ? ` · <a href="${esc(brand.website)}">${esc(brand.website)}</a>` : ""}
     </div>
@@ -420,41 +514,72 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
 
   const cleanAmount = (s: unknown) => String(s ?? "").replace(/₹/g, "Rs. ");
 
-  // Top Accent Bar
-  pdf.setFillColor(15, 118, 110); // #0F766E
-  pdf.rect(15, 12, 180, 2, "F");
+  // Top styling: Clean Zoho Books slate aesthetic
+  const isQuote = doc.kind === "quotation" || doc.kind === "estimate";
+  const isInvoice = doc.kind === "invoice";
+  const titleText = isQuote
+    ? "QUOTE"
+    : isInvoice
+      ? "GST INVOICE"
+      : (doc.title || doc.kind || "DOCUMENT").toUpperCase();
 
-  // Company Name & Tagline (Left)
+  // Company Name (Left)
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(22);
-  pdf.setTextColor(15, 118, 110);
-  pdf.text(brand.company_name || "STONE TECH", 15, 23);
+  pdf.setFontSize(16);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text((brand.company_name || "STONE TECH").toUpperCase(), 15, 20);
 
-  if (brand.tagline) {
-    pdf.setFont("helvetica", "italic");
-    pdf.setFontSize(9.5);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text(brand.tagline, 15, 28);
+  // Address & GSTIN (Left)
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  pdf.setTextColor(71, 85, 105);
+  let compY = 24.5;
+  if (brand.address) {
+    const addrLines = pdf.splitTextToSize(brand.address, 85);
+    pdf.text(addrLines.slice(0, 3), 15, compY);
+    compY += Math.min(addrLines.length, 3) * 3.5;
+  }
+  if (brand.gstin) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(17, 24, 39);
+    pdf.text(`GSTIN ${brand.gstin}`, 15, compY);
   }
 
   // Document Title & Number (Right)
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(18);
-  pdf.setTextColor(15, 118, 110);
-  pdf.text((doc.title || doc.kind || "DOCUMENT").toUpperCase(), 195, 22, { align: "right" });
+  pdf.setFontSize(20);
+  pdf.setTextColor(55, 65, 81);
+  pdf.text(titleText, 195, 20, { align: "right" });
 
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(11);
-  pdf.setTextColor(15, 23, 42);
-  pdf.text(doc.number || "", 195, 27, { align: "right" });
+  pdf.setFontSize(10);
+  pdf.setTextColor(75, 85, 99);
+  pdf.text(`${isQuote ? "# :" : isInvoice ? "Invoice#" : "# :"} ${doc.number || ""}`, 195, 26, {
+    align: "right",
+  });
 
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setTextColor(100, 116, 139);
-  pdf.text(doc.date || "", 195, 32, { align: "right" });
+  if (!isInvoice) {
+    pdf.text(`${isQuote ? "Quote Date" : "Date"} : ${formatDocDate(doc.date)}`, 195, 30.5, {
+      align: "right",
+    });
+  }
+
+  const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
+  const placeOfSupply =
+    posMeta?.value != null && String(posMeta.value).trim() !== ""
+      ? String(posMeta.value)
+      : (doc.to?.address || "").toLowerCase().includes("gujarat")
+        ? "Gujarat (24)"
+        : "Maharashtra (27)";
+  pdf.text(`Place Of Supply : ${placeOfSupply}`, 195, isInvoice ? 30.5 : 34.5, {
+    align: "right",
+  });
 
   // Divider
-  let y = 35;
+  let y = 38;
   pdf.setDrawColor(229, 231, 235);
   pdf.line(15, y, 195, y);
 
@@ -558,13 +683,13 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     y += 14;
   }
 
-  // Items Table Header - Centered vertically in the turquoise/green bar
+  // Items Table Header - Centered vertically in the slate navy bar (#3b4758)
   const lines = doc.lines ?? [];
   const hasHsnInLines = lines.some((l) => Boolean(l.hsn));
 
-  const headerHeight = 8;
-  pdf.setFillColor(15, 118, 110);
-  pdf.roundedRect(15, y, 180, headerHeight, 1, 1, "F");
+  const headerHeight = 7.5;
+  pdf.setFillColor(59, 71, 88); // #3b4758 Zoho signature
+  pdf.roundedRect(15, y, 180, headerHeight, 0.5, 0.5, "F");
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
@@ -572,9 +697,9 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   const textY = y + headerHeight / 2;
 
   pdf.text("#", 18, textY, { align: "center", baseline: "middle" });
-  pdf.text("Description", 24, textY, { baseline: "middle" });
+  pdf.text("Item & Description", 24, textY, { baseline: "middle" });
   if (hasHsnInLines) {
-    pdf.text("HSN", 110, textY, { align: "center", baseline: "middle" });
+    pdf.text("HSN/SAC", 110, textY, { align: "center", baseline: "middle" });
     pdf.text("Qty", 130, textY, { align: "right", baseline: "middle" });
     pdf.text("Unit", 142, textY, { align: "center", baseline: "middle" });
     pdf.text("Rate", 166, textY, { align: "right", baseline: "middle" });
@@ -645,6 +770,25 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     y += isLast ? 7 : 5;
   }
 
+  // Total in Words
+  const totalMeta =
+    doc.totals?.find((t) => t.label.toLowerCase() === "total") ||
+    doc.totals?.[(doc.totals?.length ?? 1) - 1];
+  if (totalMeta && totalMeta.value) {
+    const rawNum = parseFloat(String(totalMeta.value).replace(/[^0-9.-]/g, ""));
+    if (!isNaN(rawNum) && rawNum > 0) {
+      const words = amountToIndianWords(rawNum);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text("Total In Words:", 15, y);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(15, 23, 42);
+      pdf.text(words, 36, y);
+      y += 6;
+    }
+  }
+
   // Payment Details & Signatory
   y = Math.max(y + 2, 230);
   if (y > 250) {
@@ -657,33 +801,27 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   if (hasBankDetails) {
     pdf.setDrawColor(229, 231, 235);
     pdf.setFillColor(248, 250, 252);
-    pdf.roundedRect(15, y, 115, 30, 1.5, 1.5, "FD");
+    pdf.roundedRect(15, y, 115, 34, 1.5, 1.5, "FD");
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(7.5);
     pdf.setTextColor(100, 116, 139);
-    pdf.text("PAYMENT DETAILS", 18, y + 4.5);
+    pdf.text("BANK & PAYMENT DETAILS", 18, y + 4.5);
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7.5);
     pdf.setTextColor(15, 23, 42);
     let bankY = y + 9;
-    if (brand.bank_name) {
-      pdf.text(
-        `Bank: ${brand.bank_name}${brand.bank_branch ? ` (${brand.bank_branch})` : ""}`,
-        18,
-        bankY,
-      );
-      bankY += 3.8;
-    }
-    if (brand.bank_account_number) {
-      pdf.text(`A/C No: ${brand.bank_account_number}`, 18, bankY);
-      bankY += 3.8;
-    }
-    if (brand.bank_ifsc) {
-      pdf.text(`IFSC: ${brand.bank_ifsc}`, 18, bankY);
-      bankY += 3.8;
-    }
+    pdf.text(`A/C Name: ${(brand.company_name || "STONE TECH").toUpperCase()}`, 18, bankY);
+    bankY += 3.8;
+    pdf.text(`Bank: ${(brand.bank_name || "Bank of Baroda").toUpperCase()}`, 18, bankY);
+    bankY += 3.8;
+    pdf.text(`Branch: ${(brand.bank_branch || "Chandlodiya, Ahmedabad").toUpperCase()}`, 18, bankY);
+    bankY += 3.8;
+    pdf.text(`A/C No: ${brand.bank_account_number || "53130200000136"}`, 18, bankY);
+    bankY += 3.8;
+    pdf.text(`IFS Code: ${brand.bank_ifsc || "BARB0CHAAHM"}`, 18, bankY);
+    bankY += 3.8;
     if (upiId) {
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(13, 148, 136); // teal-600
@@ -693,11 +831,11 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     }
 
     try {
-      pdf.addImage(STONE_TECH_UPI_QR_DATA_URL, "PNG", 92, y + 3, 23, 23);
+      pdf.addImage(STONE_TECH_UPI_QR_DATA_URL, "PNG", 92, y + 4, 23, 23);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(5);
       pdf.setTextColor(100, 116, 139);
-      pdf.text("SCAN TO PAY (UPI)", 103.5, y + 28, { align: "center" });
+      pdf.text("SCAN TO PAY (UPI)", 103.5, y + 30, { align: "center" });
     } catch {
       /* image add fallback */
     }
@@ -707,15 +845,18 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(100, 116, 139);
-  pdf.text(`For ${brand.company_name}`, 195, y + 4.5, { align: "right" });
+  pdf.text(`FOR: ${(brand.company_name || "STONE TECH").toUpperCase()}`, 195, y + 4.5, {
+    align: "right",
+  });
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8.5);
   pdf.setTextColor(15, 23, 42);
-  pdf.text(brand.authorized_signatory || "Authorized Signatory", 195, y + 20, { align: "right" });
-  pdf.setFontSize(7);
+  pdf.text("PROPRIETOR", 195, y + 20, { align: "right" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7.5);
   pdf.setTextColor(100, 116, 139);
-  pdf.text("Authorized Signatory", 195, y + 24, { align: "right" });
+  pdf.text("Authorized Signature", 195, y + 25, { align: "right" });
 
   // Terms & Notes
   if (doc.terms || doc.notes) {
