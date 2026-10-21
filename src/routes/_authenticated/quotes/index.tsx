@@ -938,6 +938,21 @@ function emptyItem(defaultFulfilment: QuoteCategory | "" = "", isCash = false): 
   };
 }
 
+function emptyCartingItem(isCash = false): FormItem {
+  return {
+    key: Math.random().toString(36).slice(2),
+    product_id: null,
+    description: "Local Carting & Transportation",
+    notes: "Site delivery via tempo / pickup from yard to site",
+    quantity: "1",
+    unit: "trip",
+    unit_price: "1500",
+    tax_pct: isCash ? "0" : "5",
+    hsn_sac: "9965",
+    fulfilment: "",
+  };
+}
+
 function CreateQuoteDialog({
   open,
   onOpenChange,
@@ -1301,16 +1316,31 @@ function CreateQuoteDialog({
                 <div className="md:col-span-2">
                   <div className="mb-2 flex items-center justify-between">
                     <label className="text-sm font-medium">Line items</label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setItems((p) => [...p, emptyItem(category, saleMode === "cash")])
-                      }
-                    >
-                      <Plus className="mr-1 h-3 w-3" /> Add line
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setItems((p) => [...p, emptyCartingItem(saleMode === "cash")])
+                        }
+                        className="h-8 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 text-xs font-medium cursor-pointer"
+                        title="Add optional local carting / transport charge"
+                      >
+                        <Truck className="mr-1.5 h-3.5 w-3.5 text-amber-700" />+ Add Local Carting
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setItems((p) => [...p, emptyItem(category, saleMode === "cash")])
+                        }
+                        className="h-8 text-xs cursor-pointer"
+                      >
+                        <Plus className="mr-1 h-3 w-3" /> Add line
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {items.map((it) => (
@@ -1326,12 +1356,19 @@ function CreateQuoteDialog({
                             value={it.description}
                             onChange={(val) => updateItem(it.key, { description: val })}
                             onSelectCatalogItem={(cat) => {
+                              const isCarting =
+                                cat.category === "carting" || cat.id.startsWith("cart_");
                               updateItem(it.key, {
                                 description: cat.name,
                                 unit: cat.defaultUnit,
-                                unit_price: cat.defaultPrice
-                                  ? String(cat.defaultPrice)
-                                  : it.unit_price,
+                                quantity:
+                                  isCarting && (!it.quantity || it.quantity === "0")
+                                    ? "1"
+                                    : it.quantity,
+                                unit_price:
+                                  cat.defaultPrice !== undefined && cat.defaultPrice !== null
+                                    ? String(cat.defaultPrice)
+                                    : it.unit_price,
                                 hsn_sac: cat.hsnCode || it.hsn_sac,
                                 tax_pct:
                                   saleMode === "cash"
@@ -1421,6 +1458,40 @@ function CreateQuoteDialog({
                       </div>
                     ))}
                   </div>
+
+                  {/* Optional Local Carting Provision */}
+                  {!items.some(
+                    (it) =>
+                      it.hsn_sac === "9965" ||
+                      it.description.toLowerCase().includes("carting") ||
+                      it.description.toLowerCase().includes("transport"),
+                  ) && (
+                    <div className="mt-3 flex items-center justify-between rounded-md border border-dashed border-amber-300 bg-amber-50/50 p-2.5 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-amber-700" />
+                        <div>
+                          <span className="font-semibold text-amber-950">
+                            Local Carting &amp; Transportation
+                          </span>
+                          <span className="ml-1 text-[11px] text-amber-700">
+                            (Optional — site delivery via tempo/pickup)
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setItems((p) => [...p, emptyCartingItem(saleMode === "cash")])
+                        }
+                        className="h-7 border-amber-300 bg-white text-amber-900 hover:bg-amber-100 text-xs font-medium cursor-pointer"
+                      >
+                        <Plus className="mr-1 h-3 w-3" /> Add carting (₹1,500)
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="mt-2 flex justify-end gap-6 text-sm">
                     <div>
                       Subtotal: <span className="font-medium">{formatInr(totals.sub)}</span>

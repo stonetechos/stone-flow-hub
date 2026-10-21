@@ -25,7 +25,7 @@
  * reflect the pre-discount subtotal. This is stated explicitly in the UI.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, ImagePlus, FileDown, MessageCircle, Loader2, X } from "lucide-react";
+import { Plus, Trash2, ImagePlus, FileDown, MessageCircle, Loader2, X, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,6 +138,11 @@ export function EstimateStudioCalculator({
   );
   const [discountApply, setDiscountApply] = useState(false);
   const [timeToComplete, setTimeToComplete] = useState("");
+
+  // 6) Local Carting / Transportation (Optional)
+  const [cartingEnabled, setCartingEnabled] = useState(false);
+  const [cartingAmount, setCartingAmount] = useState("1500");
+  const [cartingLocation, setCartingLocation] = useState("");
 
   // WhatsApp / PDF send fields
   const [greetingName, setGreetingName] = useState("");
@@ -369,9 +374,11 @@ export function EstimateStudioCalculator({
     [sealerKey, sealerAppRate, totalWallSqft],
   );
 
+  const cartingNum = cartingEnabled ? Number(cartingAmount) || 0 : 0;
+
   const installationAmount =
     labourAmount + adhesivesAmount + (sealerComputed?.amount ?? 0) + sealerLabourAmount;
-  const subtotal = materialAmount + installationAmount;
+  const subtotal = materialAmount + installationAmount + cartingNum;
   const discountEligible = totalWallSqft > DISCOUNT_SQFT_THRESHOLD;
   const discountAmount = discountApply && discountEligible ? (subtotal * DISCOUNT_PCT) / 100 : 0;
   const total = subtotal - discountAmount;
@@ -388,6 +395,13 @@ export function EstimateStudioCalculator({
         sealer: sealerComputed,
         sealerLabour: { ratePerSqft: Number(sealerAppRate) || 0, amount: sealerLabourAmount },
       },
+      carting:
+        cartingNum > 0
+          ? {
+              amount: cartingNum,
+              location: cartingLocation.trim() || undefined,
+            }
+          : undefined,
       discount: {
         applied: discountApply,
         eligible: discountEligible,
@@ -414,6 +428,8 @@ export function EstimateStudioCalculator({
       discountApply,
       discountEligible,
       discountAmount,
+      cartingNum,
+      cartingLocation,
       timeToComplete,
       totalWallSqft,
       materialAmount,
@@ -486,6 +502,18 @@ export function EstimateStudioCalculator({
         fulfilment: null,
       });
     }
+    if (cartingNum > 0) {
+      out.push({
+        product_id: null,
+        description: `Local Carting & Transportation${cartingLocation.trim() ? ` (${cartingLocation.trim()})` : ""}`,
+        quantity: 1,
+        unit: "trip",
+        unit_price: cartingNum,
+        tax_pct: 0,
+        hsn_sac: "9965",
+        fulfilment: null,
+      });
+    }
     return out;
   }, [
     productsComputed,
@@ -496,6 +524,8 @@ export function EstimateStudioCalculator({
     sealerComputed,
     sealerLabourAmount,
     sealerAppRate,
+    cartingNum,
+    cartingLocation,
     totalWallSqft,
   ]);
 
@@ -569,6 +599,8 @@ export function EstimateStudioCalculator({
           adhesivesSummary: adhesivesSummary || undefined,
           sealerAmount: sealerComputed?.amount ?? 0,
           sealerApplicationAmount: sealerLabourAmount,
+          cartingAmount: cartingNum > 0 ? cartingNum : undefined,
+          cartingLocation: cartingLocation.trim() || undefined,
           totalEstimate: total,
           estimatedDeliveryDate: estimatedDeliveryDate || undefined,
           validityDays: validityDays || undefined,
@@ -1125,6 +1157,54 @@ export function EstimateStudioCalculator({
         <div className="text-right text-sm">
           Installation total: <span className="font-semibold">{formatInr(installationAmount)}</span>
         </div>
+      </div>
+
+      {/* Optional Local Carting / Transportation */}
+      <div className="space-y-3 rounded-sm border border-border bg-background p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="enable-carting"
+              checked={cartingEnabled}
+              onCheckedChange={(v) => setCartingEnabled(!!v)}
+            />
+            <label
+              htmlFor="enable-carting"
+              className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+            >
+              <Truck className="h-4 w-4 text-amber-600" />
+              <span>Local Carting &amp; Transportation (Optional)</span>
+            </label>
+          </div>
+          {cartingNum > 0 && (
+            <span className="text-xs font-semibold text-emerald-700">+{formatInr(cartingNum)}</span>
+          )}
+        </div>
+
+        {cartingEnabled && (
+          <div className="grid grid-cols-12 gap-3 pt-2 border-t border-border/50">
+            <LineField label="Carting Amount (₹ Lump Sum)" className="col-span-12 md:col-span-4">
+              <Input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                placeholder="1500"
+                value={cartingAmount}
+                onChange={(e) => setCartingAmount(e.target.value)}
+              />
+            </LineField>
+            <LineField
+              label="Site Location / Route (Optional)"
+              className="col-span-12 md:col-span-8"
+            >
+              <Input
+                placeholder="e.g. Delivery via tempo to customer site"
+                value={cartingLocation}
+                onChange={(e) => setCartingLocation(e.target.value)}
+              />
+            </LineField>
+          </div>
+        )}
       </div>
 
       {/* Discount */}

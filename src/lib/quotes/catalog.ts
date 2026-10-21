@@ -9,7 +9,7 @@
 export interface CatalogItem {
   id: string;
   name: string;
-  category: "stone_product" | "adhesive" | "sealer" | "labour";
+  category: "stone_product" | "adhesive" | "sealer" | "labour" | "carting";
   defaultUnit: string;
   defaultPrice?: number;
   hsnCode?: string;
@@ -349,11 +349,55 @@ export const SERVICES_CATALOG: CatalogItem[] = [
   },
 ];
 
+export const CARTING_CATALOG: CatalogItem[] = [
+  {
+    id: "cart_local_transportation",
+    name: "Local Carting & Transportation",
+    category: "carting",
+    defaultUnit: "trip",
+    defaultPrice: 1500,
+    hsnCode: "9965",
+    defaultTaxPct: 5,
+    description: "Local tempo / truck transport from factory or yard to project site",
+  },
+  {
+    id: "cart_site_delivery_freight",
+    name: "Site Delivery & Freight",
+    category: "carting",
+    defaultUnit: "trip",
+    defaultPrice: 2000,
+    hsnCode: "9965",
+    defaultTaxPct: 5,
+    description: "Dedicated transport and delivery to customer site",
+  },
+  {
+    id: "cart_unloading_shifting",
+    name: "Site Unloading & Shifting Labour",
+    category: "carting",
+    defaultUnit: "lot",
+    defaultPrice: 1000,
+    hsnCode: "9965",
+    defaultTaxPct: 5,
+    description: "Manual unloading and shifting of stone slabs at site",
+  },
+  {
+    id: "cart_on_actuals",
+    name: "Carting & Transportation (On Actuals)",
+    category: "carting",
+    defaultUnit: "trip",
+    defaultPrice: 0,
+    hsnCode: "9965",
+    defaultTaxPct: 5,
+    description: "Transportation charges on actual transporter receipt / billed separately",
+  },
+];
+
 export const MASTER_PRODUCT_CATALOG: CatalogItem[] = [
   ...STONE_PRODUCTS_CATALOG,
   ...ADHESIVES_CATALOG,
   ...SEALERS_CATALOG,
   ...SERVICES_CATALOG,
+  ...CARTING_CATALOG,
 ];
 
 export function findCatalogItemByName(name: string): CatalogItem | undefined {

@@ -12,6 +12,7 @@ import {
   ImagePlus,
   Image as ImageIcon,
   X as XIcon,
+  Truck,
 } from "lucide-react";
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { useRoles } from "@/hooks/use-roles";
@@ -499,6 +500,26 @@ function LineItemsEditor({
     onError: (e) => toast.error(toUserMessage(e)),
   });
 
+  const addCartingMut = useMutation({
+    mutationFn: () =>
+      addQuoteItem(quoteId, {
+        description: "Local Carting & Transportation",
+        quantity: 1,
+        unit: "trip",
+        unit_price: 1500,
+        tax_pct: saleMode === "cash" ? 0 : 5,
+        hsn_sac: "9965",
+        notes: "Site delivery via tempo / pickup from yard to site",
+        fulfilment: defaultFulfilment,
+        sort_order: rows.length + 1,
+      }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Local Carting added to quotation");
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   const delMut = useMutation({
     mutationFn: (id: string) => deleteQuoteItem(id),
     onSuccess: () => invalidate(),
@@ -630,19 +651,36 @@ function LineItemsEditor({
             </Badge>
           )}
         </CardTitle>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => addMut.mutate()}
-          disabled={addMut.isPending}
-        >
-          {addMut.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="mr-2 h-4 w-4" />
-          )}
-          Add line
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => addCartingMut.mutate()}
+            disabled={addCartingMut.isPending}
+            className="h-8 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-950 text-xs font-medium cursor-pointer"
+            title="Add optional local carting / transport charge"
+          >
+            {addCartingMut.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Truck className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
+            )}
+            + Add Local Carting
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => addMut.mutate()}
+            disabled={addMut.isPending}
+          >
+            {addMut.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            Add line
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {itemsQuery.isLoading ? (
@@ -742,6 +780,13 @@ function LineItemsEditor({
                                       : 1;
                                 updateRow(r.id, "quantity", String(convertedQty));
                                 patchObj.quantity = convertedQty;
+                              }
+                              if (prod.category === "carting" || prod.id.startsWith("cart_")) {
+                                const currentQty = Number(r.quantity) || 0;
+                                if (currentQty <= 0) {
+                                  updateRow(r.id, "quantity", "1");
+                                  patchObj.quantity = 1;
+                                }
                               }
                               if (saleMode === "cash") {
                                 updateRow(r.id, "tax_pct", "0");
@@ -868,6 +913,42 @@ function LineItemsEditor({
                 </div>
               );
             })}
+
+            {!rows.some(
+              (it) =>
+                it.hsn_sac === "9965" ||
+                it.description.toLowerCase().includes("carting") ||
+                it.description.toLowerCase().includes("transport"),
+            ) && (
+              <div className="flex items-center justify-between rounded-md border border-dashed border-amber-300 bg-amber-50/50 p-2.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-amber-700" />
+                  <div>
+                    <span className="font-semibold text-amber-950">
+                      Local Carting &amp; Transportation
+                    </span>
+                    <span className="ml-1 text-[11px] text-amber-700">
+                      (Optional — site delivery via tempo/pickup)
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addCartingMut.mutate()}
+                  disabled={addCartingMut.isPending}
+                  className="h-7 border-amber-300 bg-white text-amber-900 hover:bg-amber-100 text-xs font-medium cursor-pointer"
+                >
+                  {addCartingMut.isPending ? (
+                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                  ) : (
+                    <Plus className="mr-1 h-3 w-3" />
+                  )}
+                  Add Carting
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

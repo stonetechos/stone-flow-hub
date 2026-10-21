@@ -83,6 +83,12 @@ export const estimateWorksheetSchema = z.object({
     amount: z.number().nonnegative(),
   }),
   timeToComplete: z.string().optional(),
+  carting: z
+    .object({
+      location: z.string().optional(),
+      amount: z.number().nonnegative(),
+    })
+    .optional(),
   totalWallSqft: z.number().nonnegative(),
   materialAmount: z.number().nonnegative(),
   installationAmount: z.number().nonnegative(),

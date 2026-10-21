@@ -12,6 +12,8 @@ import {
   isCrazyPatternProduct,
   calculateAdhesiveUnits,
 } from "./estimateCatalog";
+import { CARTING_CATALOG, MASTER_PRODUCT_CATALOG } from "./catalog";
+import { buildEstimateWhatsappMessage } from "./estimateWhatsappPdf";
 
 describe("estimateCatalog - rounding and wastage calculations", () => {
   describe("ceilWhole", () => {
@@ -234,6 +236,67 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
     it("returns 0 for zero or empty sqft", () => {
       const greyAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "standard_cementitious_grey")!;
       expect(calculateAdhesiveUnits(greyAdhesive, { crazySqft: 0, standardSqft: 0 })).toBe(0);
+    });
+  });
+
+  describe("CARTING_CATALOG & master product catalog integration", () => {
+    it("exports standard carting items with SAC 9965 and 5% GST", () => {
+      expect(CARTING_CATALOG.length).toBeGreaterThanOrEqual(4);
+      const localCarting = CARTING_CATALOG.find((c) => c.id === "cart_local_transportation");
+      expect(localCarting).toBeDefined();
+      expect(localCarting?.name).toBe("Local Carting & Transportation");
+      expect(localCarting?.category).toBe("carting");
+      expect(localCarting?.hsnCode).toBe("9965");
+      expect(localCarting?.defaultUnit).toBe("trip");
+      expect(localCarting?.defaultTaxPct).toBe(5);
+      expect(localCarting?.defaultPrice).toBe(1500);
+    });
+
+    it("includes all carting items in MASTER_PRODUCT_CATALOG", () => {
+      const cartingInMaster = MASTER_PRODUCT_CATALOG.filter((p) => p.category === "carting");
+      expect(cartingInMaster.length).toBe(CARTING_CATALOG.length);
+      expect(cartingInMaster.some((p) => p.id === "cart_local_transportation")).toBe(true);
+      expect(cartingInMaster.some((p) => p.id === "cart_site_delivery_freight")).toBe(true);
+      expect(cartingInMaster.some((p) => p.id === "cart_unloading_shifting")).toBe(true);
+      expect(cartingInMaster.some((p) => p.id === "cart_on_actuals")).toBe(true);
+    });
+  });
+
+  describe("buildEstimateWhatsappMessage with optional carting", () => {
+    it("includes Local Carting line and suppresses on-actuals fallback when carting amount is provided", () => {
+      const msg = buildEstimateWhatsappMessage({
+        greetingName: "Rajesh",
+        productDescription: "Mint Sandstone Crazy Pattern",
+        wallSummary: "100 sq ft",
+        materialAmount: 12000,
+        labourAmount: 4500,
+        adhesivesAmount: 2400,
+        sealerAmount: 1800,
+        sealerApplicationAmount: 1000,
+        cartingAmount: 1500,
+        cartingLocation: "From yard to Bodakdev site",
+        totalEstimate: 23200,
+      });
+
+      expect(msg).toContain("Local Carting: ₹1,500 (From yard to Bodakdev site)");
+      expect(msg).not.toContain("Transportation charges will be extra and on actuals.");
+    });
+
+    it("falls back to on-actuals transport note when carting amount is not provided", () => {
+      const msg = buildEstimateWhatsappMessage({
+        greetingName: "Rajesh",
+        productDescription: "Mint Sandstone Crazy Pattern",
+        wallSummary: "100 sq ft",
+        materialAmount: 12000,
+        labourAmount: 4500,
+        adhesivesAmount: 2400,
+        sealerAmount: 1800,
+        sealerApplicationAmount: 1000,
+        totalEstimate: 21700,
+      });
+
+      expect(msg).not.toContain("Local Carting:");
+      expect(msg).toContain("Transportation charges will be extra and on actuals.");
     });
   });
 });

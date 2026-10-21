@@ -26,6 +26,8 @@ export interface EstimateWhatsappMessageInput {
   adhesivesSummary?: string;
   sealerAmount: number;
   sealerApplicationAmount: number;
+  cartingAmount?: number;
+  cartingLocation?: string;
   totalEstimate: number;
   estimatedDeliveryDate?: string;
   validityDays?: string;
@@ -57,10 +59,17 @@ export function buildEstimateWhatsappMessage(
       : `Adhesives: ${formatInr(input.adhesivesAmount)}`,
     `Sealer chemical: ${formatInr(input.sealerAmount)}`,
     `Sealer Application: ${formatInr(input.sealerApplicationAmount)}`,
+    ...(input.cartingAmount && input.cartingAmount > 0
+      ? [
+          `Local Carting: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`,
+        ]
+      : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
     `Scaffolding, if required, will be provided by the customer.`,
-    `Transportation charges will be extra and on actuals.`,
+    ...(input.cartingAmount && input.cartingAmount > 0
+      ? []
+      : [`Transportation charges will be extra and on actuals.`]),
     deliveryLine,
     validityLine,
     `Payment Terms: 75% advance and remaining 25% upon completion of work.`,

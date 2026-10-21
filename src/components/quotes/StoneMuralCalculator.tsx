@@ -495,6 +495,7 @@ export function StoneMuralCalculator({
         unit: "lot",
         unit_price: cartingNum,
         tax_pct: 0,
+        hsn_sac: "9965",
         fulfilment: null,
       });
     }
