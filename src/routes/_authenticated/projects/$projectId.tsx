@@ -52,6 +52,7 @@ import { LEAD_STAGE_LABEL } from "@/lib/constants";
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ProjectFinancials } from "@/components/projects/ProjectFinancials";
+import { ProjectProfitDiaryTab } from "@/components/projects/ProjectProfitDiaryTab";
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   ssr: false,
@@ -181,6 +182,14 @@ function ProjectHub() {
                     <FileText className="mr-2 h-4 w-4" /> New quote
                   </Button>
                 </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTab("diary")}
+                  className="border-cyan-300 bg-cyan-50/70 text-cyan-900 hover:bg-cyan-100 font-semibold"
+                >
+                  <Receipt className="mr-1.5 h-4 w-4 text-cyan-700" /> Profit Diary
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setTab("files")}>
                   <Upload className="mr-2 h-4 w-4" /> Upload files
                 </Button>
@@ -268,6 +277,12 @@ function ProjectHub() {
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="flex h-auto flex-wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger
+            value="diary"
+            className="font-bold text-cyan-900 border border-cyan-300/80 bg-cyan-50/50 data-[state=active]:bg-cyan-700 data-[state=active]:text-white"
+          >
+            💰 Profit Diary & Costs
+          </TabsTrigger>
           <TabsTrigger value="enquiries">Enquiries</TabsTrigger>
           <TabsTrigger value="rfqs">RFQs & Quotes</TabsTrigger>
           <TabsTrigger value="followups">Follow-ups</TabsTrigger>
@@ -288,6 +303,10 @@ function ProjectHub() {
         <TabsContent value="overview" className="mt-4 space-y-4">
           <ProjectFinancials projectId={projectId} />
           <ProjectOverview projectId={projectId} project={p} onJumpToTab={(t) => setTab(t)} />
+        </TabsContent>
+
+        <TabsContent value="diary" className="mt-4">
+          <ProjectProfitDiaryTab projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="enquiries" className="mt-4">
