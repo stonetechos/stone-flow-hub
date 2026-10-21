@@ -250,12 +250,15 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   thead th {
     background:${accent};
     color:#fff;
-    font-size:10.5px;
+    font-size:11px;
     text-transform:uppercase;
     letter-spacing:.05em;
     font-weight:700;
-    line-height:1.2;
+    line-height:1;
     vertical-align:middle;
+    height:34px;
+    padding:0 8px;
+    box-sizing:border-box;
   }
   thead tr th:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
   thead tr th:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
@@ -293,15 +296,15 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     ${
       rows
         ? `<table>
-            <thead><tr>
-              <th style="width:34px;text-align:center;padding:9px 4px;">#</th>
-              ${showPhoto ? `<th style="width:56px;text-align:center;padding:9px 4px;">Photo</th>` : ""}
-              <th style="text-align:left;padding:9px 12px;">Description</th>
-              ${showHsn ? `<th style="width:75px;text-align:center;padding:9px 6px;">HSN</th>` : ""}
-              <th style="width:65px;text-align:right;padding:9px 10px;">Qty</th>
-              <th style="width:60px;text-align:center;padding:9px 6px;">Unit</th>
-              <th style="width:90px;text-align:right;padding:9px 10px;">Rate</th>
-              <th style="width:110px;text-align:right;padding:9px 12px;">Amount</th>
+            <thead><tr style="height:34px;">
+              <th style="width:34px;text-align:center;padding:0 4px;vertical-align:middle;line-height:1;height:34px;">#</th>
+              ${showPhoto ? `<th style="width:56px;text-align:center;padding:0 4px;vertical-align:middle;line-height:1;height:34px;">Photo</th>` : ""}
+              <th style="text-align:left;padding:0 12px;vertical-align:middle;line-height:1;height:34px;">Description</th>
+              ${showHsn ? `<th style="width:75px;text-align:center;padding:0 6px;vertical-align:middle;line-height:1;height:34px;">HSN</th>` : ""}
+              <th style="width:65px;text-align:right;padding:0 10px;vertical-align:middle;line-height:1;height:34px;">Qty</th>
+              <th style="width:60px;text-align:center;padding:0 6px;vertical-align:middle;line-height:1;height:34px;">Unit</th>
+              <th style="width:90px;text-align:right;padding:0 10px;vertical-align:middle;line-height:1;height:34px;">Rate</th>
+              <th style="width:110px;text-align:right;padding:0 12px;vertical-align:middle;line-height:1;height:34px;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
@@ -555,32 +558,35 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     y += 14;
   }
 
-  // Items Table Header
+  // Items Table Header - Centered vertically in the turquoise/green bar
   const lines = doc.lines ?? [];
   const hasHsnInLines = lines.some((l) => Boolean(l.hsn));
 
+  const headerHeight = 8;
   pdf.setFillColor(15, 118, 110);
-  pdf.roundedRect(15, y, 180, 7.5, 1, 1, "F");
+  pdf.roundedRect(15, y, 180, headerHeight, 1, 1, "F");
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(255, 255, 255);
-  pdf.text("#", 18, y + 5, { align: "center" });
-  pdf.text("Description", 24, y + 5);
+  const textY = y + headerHeight / 2;
+
+  pdf.text("#", 18, textY, { align: "center", baseline: "middle" });
+  pdf.text("Description", 24, textY, { baseline: "middle" });
   if (hasHsnInLines) {
-    pdf.text("HSN", 110, y + 5, { align: "center" });
-    pdf.text("Qty", 130, y + 5, { align: "right" });
-    pdf.text("Unit", 142, y + 5, { align: "center" });
-    pdf.text("Rate", 166, y + 5, { align: "right" });
-    pdf.text("Amount", 192, y + 5, { align: "right" });
+    pdf.text("HSN", 110, textY, { align: "center", baseline: "middle" });
+    pdf.text("Qty", 130, textY, { align: "right", baseline: "middle" });
+    pdf.text("Unit", 142, textY, { align: "center", baseline: "middle" });
+    pdf.text("Rate", 166, textY, { align: "right", baseline: "middle" });
+    pdf.text("Amount", 192, textY, { align: "right", baseline: "middle" });
   } else {
-    pdf.text("Qty", 125, y + 5, { align: "right" });
-    pdf.text("Unit", 138, y + 5, { align: "center" });
-    pdf.text("Rate", 166, y + 5, { align: "right" });
-    pdf.text("Amount", 192, y + 5, { align: "right" });
+    pdf.text("Qty", 125, textY, { align: "right", baseline: "middle" });
+    pdf.text("Unit", 138, textY, { align: "center", baseline: "middle" });
+    pdf.text("Rate", 166, textY, { align: "right", baseline: "middle" });
+    pdf.text("Amount", 192, textY, { align: "right", baseline: "middle" });
   }
 
-  y += 7.5;
+  y += headerHeight;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   pdf.setTextColor(15, 23, 42);

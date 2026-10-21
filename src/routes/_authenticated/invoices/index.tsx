@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Receipt, Landmark } from "lucide-react";
+import { Plus, Receipt, Landmark, RefreshCw } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -63,8 +64,12 @@ function InvoicesPage() {
   const query = useQuery({ queryKey: qk.invoices.list(dq), queryFn: () => listInvoices(dq) });
   const del = useMutation({
     mutationFn: (id: string) => deleteInvoice(id),
-    onSuccess: () => {
-      toast.success("Invoice deleted");
+    onSuccess: (res) => {
+      if (res?.action === "voided") {
+        toast.info(res.message, { duration: 6000 });
+      } else {
+        toast.success(res?.message || "Invoice deleted");
+      }
       invalidateInvoice(qc);
       setToDelete(null);
     },
@@ -150,6 +155,7 @@ function InvoicesPage() {
               <SelectItem value="partially_paid">Partially paid</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="overdue">Overdue</SelectItem>
+              <SelectItem value="void">Void</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -238,9 +244,18 @@ function InvoicesPage() {
                   )}
                   {!isHidden("status") && (
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {r.status === "sent" ? "Issued / Sent" : r.status.replace(/_/g, " ")}
-                      </Badge>
+                      {r.status === "void" ? (
+                        <Badge
+                          variant="destructive"
+                          className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 font-bold text-[10px]"
+                        >
+                          VOID
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="capitalize">
+                          {r.status === "sent" ? "Issued / Sent" : r.status.replace(/_/g, " ")}
+                        </Badge>
+                      )}
                     </TableCell>
                   )}
                   {!isHidden("total") && (
@@ -253,12 +268,37 @@ function InvoicesPage() {
                   )}
                   {!isHidden("due") && <TableCell>{r.due_date ?? "—"}</TableCell>}
                   <TableCell>
-                    <RowActions
-                      onEdit={() =>
-                        nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
-                      }
-                      onDelete={() => setToDelete(r)}
-                    />
+                    <div className="flex items-center justify-end gap-1.5">
+                      {(r.status === "void" || r.status === "cancelled") && (
+                        <Button
+                          asChild
+                          size="xs"
+                          variant="outline"
+                          className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                        >
+                          <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
+                            <RefreshCw className="h-3 w-3 text-amber-600" />
+                            <span>Reuse</span>
+                          </Link>
+                        </Button>
+                      )}
+                      <RowActions
+                        extra={
+                          r.status === "void" || r.status === "cancelled" ? (
+                            <DropdownMenuItem asChild>
+                              <Link to="/invoices/new" search={{ reuseInvoiceId: r.id }}>
+                                <RefreshCw className="mr-2 h-4 w-4 text-amber-600" /> Reuse Invoice
+                                Number
+                              </Link>
+                            </DropdownMenuItem>
+                          ) : undefined
+                        }
+                        onEdit={() =>
+                          nav({ to: "/invoices/$invoiceId/edit", params: { invoiceId: r.id } })
+                        }
+                        onDelete={() => setToDelete(r)}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

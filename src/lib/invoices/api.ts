@@ -197,27 +197,89 @@ export async function updateInvoice(id: string, input: InvoiceUpdateInput): Prom
   return data;
 }
 
-export async function deleteInvoice(id: string): Promise<void> {
-  const { data: inv } = await getDb()
-    .from("invoices")
-    .select("id, quote_id")
-    .eq("id", id)
-    .maybeSingle();
+export type DeleteOrVoidResult = {
+  action: "deleted" | "voided";
+  invoice_id: string;
+  invoice_no: string;
+  message: string;
+};
 
-  const { error } = await getDb().from("invoices").delete().eq("id", id);
+export async function deleteInvoice(id: string): Promise<DeleteOrVoidResult> {
+  const { data, error } = await getDb().rpc(
+    "delete_or_void_invoice" as never,
+    {
+      p_invoice_id: id,
+    } as never,
+  );
   if (error) throw new AppError(mapDbError(error));
+  return data as unknown as DeleteOrVoidResult;
+}
 
-  if (inv?.quote_id) {
-    const { data: remaining } = await getDb()
-      .from("invoices")
-      .select("id")
-      .eq("quote_id", inv.quote_id)
-      .neq("status", "cancelled");
+export async function reuseVoidInvoice(input: {
+  invoiceId: string;
+  quoteId: string;
+  issueDate?: string;
+  dueDate?: string;
+}): Promise<InvoiceRow> {
+  const { data, error } = await getDb().rpc(
+    "reuse_void_invoice" as never,
+    {
+      p_invoice_id: input.invoiceId,
+      p_quote_id: input.quoteId,
+      p_issue_date: input.issueDate ?? undefined,
+      p_due_date: input.dueDate ?? undefined,
+    } as never,
+  );
+  if (error) throw new AppError(mapDbError(error));
+  return data as unknown as InvoiceRow;
+}
 
-    if (!remaining || remaining.length === 0) {
-      await getDb().from("quotes").update({ status: "accepted" }).eq("id", inv.quote_id);
-    }
-  }
+export async function getVoidInvoiceDateWindow(invoiceId: string): Promise<{
+  invoice_no: string;
+  prev_invoice_no: string | null;
+  prev_date: string | null;
+  next_invoice_no: string | null;
+  next_date: string | null;
+  suggested_min_date: string | null;
+  suggested_max_date: string | null;
+}> {
+  const { data, error } = await getDb().rpc(
+    "get_void_invoice_date_window" as never,
+    {
+      p_invoice_id: invoiceId,
+    } as never,
+  );
+  if (error) throw new AppError(mapDbError(error));
+  return data as unknown as {
+    invoice_no: string;
+    prev_invoice_no: string | null;
+    prev_date: string | null;
+    next_invoice_no: string | null;
+    next_date: string | null;
+    suggested_min_date: string | null;
+    suggested_max_date: string | null;
+  };
+}
+
+export async function getNextInvoiceNo(date?: string): Promise<string> {
+  const { data, error } = await getDb().rpc(
+    "get_next_invoice_no" as never,
+    {
+      p_date: date ?? undefined,
+    } as never,
+  );
+  if (error) throw new AppError(mapDbError(error));
+  return data as unknown as string;
+}
+
+export async function listVoidInvoices(): Promise<InvoiceListItem[]> {
+  const { data, error } = await getDb()
+    .from("invoices")
+    .select(SELECT_WITH_JOINS)
+    .in("status", ["void", "cancelled"])
+    .order("invoice_no", { ascending: true });
+  if (error) throw new AppError(mapDbError(error));
+  return (data ?? []) as InvoiceListItem[];
 }
 
 /* ------------------------------------------------------------------ */

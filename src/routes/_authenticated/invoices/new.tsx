@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRightCircle, Loader2, X } from "lucide-react";
+import { ArrowLeft, ArrowRightCircle, Loader2, X, RefreshCw, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,7 +29,14 @@ import { Receipt } from "lucide-react";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { listQuotes, convertQuoteToInvoice, type QuoteListItem } from "@/lib/quotes/api";
+import {
+  getNextInvoiceNo,
+  listVoidInvoices,
+  getVoidInvoiceDateWindow,
+  reuseVoidInvoice,
+} from "@/lib/invoices/api";
 import { formatInr } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
   // `new=1` is the guided-workflow entry-point flag; retained for URL clarity.
@@ -30,6 +44,7 @@ const searchSchema = z.object({
   quote: z.string().uuid().optional(),
   so: z.string().uuid().optional(),
   customer: z.string().uuid().optional(),
+  reuseInvoiceId: z.string().uuid().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/invoices/new")({
@@ -43,14 +58,62 @@ function NewInvoicePage() {
   const preset = Route.useSearch();
   const [q, setQ] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedVoidInvoiceId, setSelectedVoidInvoiceId] = useState<string | null>(
+    preset.reuseInvoiceId ?? null,
+  );
   const query = useQuery({ queryKey: qk.quotes.list(q), queryFn: () => listQuotes(q) });
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  const voidInvoicesQ = useQuery({
+    queryKey: ["invoices", "void-list"],
+    queryFn: () => listVoidInvoices(),
+  });
+
+  const nextInvoiceNoQ = useQuery({
+    queryKey: ["invoices", "next-no", invoiceDate],
+    queryFn: () => getNextInvoiceNo(invoiceDate),
+  });
+
+  const voidWindowQ = useQuery({
+    queryKey: ["invoices", "void-window", selectedVoidInvoiceId],
+    queryFn: () => (selectedVoidInvoiceId ? getVoidInvoiceDateWindow(selectedVoidInvoiceId) : null),
+    enabled: !!selectedVoidInvoiceId,
+  });
+
+  const voidInvoices = voidInvoicesQ.data ?? [];
+  const selectedVoidInvoice = voidInvoices.find((v) => v.id === selectedVoidInvoiceId);
 
   const convert = useMutation({
     mutationFn: (args: { quoteId: string; issueDate?: string }) =>
       convertQuoteToInvoice({ quote_id: args.quoteId, issue_date: args.issueDate }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`, {
+        action: {
+          label: "Record receipt",
+          onClick: () =>
+            nav({
+              to: "/receipts/new",
+              search: { invoice: inv.id, customer: inv.customer_id ?? undefined },
+            }),
+        },
+      });
+      nav({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
+    },
+    onError: (e) => {
+      toast.error(toUserMessage(e));
+      setBusyId(null);
+    },
+  });
+
+  const reuseMut = useMutation({
+    mutationFn: (args: { invoiceId: string; quoteId: string; issueDate?: string }) =>
+      reuseVoidInvoice({
+        invoiceId: args.invoiceId,
+        quoteId: args.quoteId,
+        issueDate: args.issueDate,
+      }),
+    onSuccess: (inv) => {
+      toast.success(`Void Invoice ${inv.invoice_no} re-issued successfully!`, {
         action: {
           label: "Record receipt",
           onClick: () =>
@@ -137,6 +200,92 @@ function NewInvoicePage() {
         )}
       </div>
 
+      {/* Invoice Number Assignment & Void Reuse Control */}
+      <div className="mb-4 rounded-xl border border-border/80 bg-muted/30 p-3 sm:p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Assigned Invoice Number:
+            </span>
+            <Badge
+              variant="outline"
+              className={cn(
+                "font-mono text-xs font-bold px-2.5 py-0.5",
+                selectedVoidInvoiceId
+                  ? "border-amber-400 bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
+                  : "border-emerald-400 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200",
+              )}
+            >
+              {selectedVoidInvoice
+                ? `${selectedVoidInvoice.invoice_no} (Reusing Void Number)`
+                : nextInvoiceNoQ.data || "Calculating…"}
+            </Badge>
+          </div>
+
+          {voidInvoices.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Number Mode:</span>
+              <div className="inline-flex rounded-lg border p-0.5 bg-background shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setSelectedVoidInvoiceId(null)}
+                  className={cn(
+                    "px-2.5 py-1 text-xs font-medium rounded-md transition-colors",
+                    !selectedVoidInvoiceId
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Next Sequential ({nextInvoiceNoQ.data || "..."})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVoidInvoiceId(voidInvoices[0]?.id || null)}
+                  className={cn(
+                    "px-2.5 py-1 text-xs font-medium rounded-md transition-colors",
+                    selectedVoidInvoiceId
+                      ? "bg-amber-600 text-white font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Reuse Void ({voidInvoices.length} available)
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {selectedVoidInvoiceId && voidInvoices.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border/50 text-xs">
+            <span className="text-muted-foreground font-medium">Select Void Invoice to reuse:</span>
+            <Select
+              value={selectedVoidInvoiceId}
+              onValueChange={(v) => setSelectedVoidInvoiceId(v)}
+            >
+              <SelectTrigger className="w-56 h-8 text-xs font-mono font-bold">
+                <SelectValue placeholder="Select void number" />
+              </SelectTrigger>
+              <SelectContent>
+                {voidInvoices.map((vi) => (
+                  <SelectItem key={vi.id} value={vi.id} className="font-mono text-xs">
+                    {vi.invoice_no} ({vi.issue_date || "No date"})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {voidWindowQ.data && (
+              <span className="text-amber-800 dark:text-amber-300 text-xs bg-amber-50 dark:bg-amber-950/40 px-2 py-1 rounded border border-amber-200 dark:border-amber-900/50 flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                Recommended date window:{" "}
+                <b>{voidWindowQ.data.suggested_min_date || "Start of FY"}</b> to{" "}
+                <b>{voidWindowQ.data.suggested_max_date || "Next invoice"}</b>
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
       {query.isLoading ? (
         <LoadingBlock />
       ) : query.error ? (
@@ -187,18 +336,31 @@ function NewInvoicePage() {
                   <TableCell>
                     <Button
                       size="sm"
-                      disabled={busyId === r.id}
+                      disabled={busyId === r.id || convert.isPending || reuseMut.isPending}
+                      className={cn(
+                        selectedVoidInvoiceId && "bg-amber-600 hover:bg-amber-700 text-white",
+                      )}
                       onClick={() => {
                         setBusyId(r.id);
-                        convert.mutate({ quoteId: r.id, issueDate: invoiceDate });
+                        if (selectedVoidInvoiceId) {
+                          reuseMut.mutate({
+                            invoiceId: selectedVoidInvoiceId,
+                            quoteId: r.id,
+                            issueDate: invoiceDate,
+                          });
+                        } else {
+                          convert.mutate({ quoteId: r.id, issueDate: invoiceDate });
+                        }
                       }}
                     >
                       {busyId === r.id ? (
                         <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : selectedVoidInvoiceId ? (
+                        <RefreshCw className="mr-1 h-3 w-3" />
                       ) : (
                         <ArrowRightCircle className="mr-1 h-3 w-3" />
                       )}
-                      Convert
+                      {selectedVoidInvoiceId ? "Reuse & Bill" : "Convert"}
                     </Button>
                   </TableCell>
                 </TableRow>

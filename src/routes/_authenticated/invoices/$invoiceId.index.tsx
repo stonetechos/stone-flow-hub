@@ -157,10 +157,15 @@ function InvoiceDetailPage() {
 
   const delMut = useMutation({
     mutationFn: () => deleteInvoice(invoiceId),
-    onSuccess: () => {
-      toast.success("Invoice deleted");
-      invalidateInvoice(qc);
-      nav({ to: "/invoices" });
+    onSuccess: (res) => {
+      if (res?.action === "voided") {
+        toast.info(res.message, { duration: 6000 });
+        invalidateAll();
+      } else {
+        toast.success(res?.message || "Invoice deleted");
+        invalidateInvoice(qc);
+        nav({ to: "/invoices" });
+      }
     },
     onError: (err) => toast.error(toUserMessage(err)),
   });
@@ -315,6 +320,39 @@ function InvoiceDetailPage() {
           />
         }
       />
+
+      {/* Void Invoice Alert & Reuse CTA */}
+      {(invoice.status === "void" || invoice.status === "cancelled") && (
+        <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50/70 p-4 dark:border-rose-900/60 dark:bg-rose-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <Ban className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-rose-950 dark:text-rose-200 text-sm">
+                  This Invoice is VOID
+                </span>
+                <Badge variant="destructive" className="font-mono text-xs">
+                  {invoice.invoice_no}
+                </Badge>
+              </div>
+              <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5">
+                Preserved in your system to prevent tax audit sequence gaps. You can reuse this
+                number to bill any accepted quotation.
+              </p>
+            </div>
+          </div>
+          <Button
+            asChild
+            size="sm"
+            className="bg-rose-700 hover:bg-rose-800 text-white shrink-0 shadow-xs"
+          >
+            <Link to="/invoices/new" search={{ reuseInvoiceId: invoice.id }}>
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Reuse {invoice.invoice_no}
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <EntityInsightPanel entityType="invoice" entityId={invoiceId} />
 

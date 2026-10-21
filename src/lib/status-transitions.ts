@@ -24,13 +24,14 @@ const DISP: Record<DispatchStatus, DispatchStatus[]> = {
 };
 
 const INV: Record<InvoiceStatus, InvoiceStatus[]> = {
-  draft: ["draft", "issued", "sent", "cancelled"],
-  issued: ["issued", "sent", "partially_paid", "paid", "overdue", "cancelled"],
-  sent: ["sent", "partially_paid", "paid", "overdue", "cancelled"],
-  partially_paid: ["partially_paid", "paid", "overdue", "cancelled"],
-  overdue: ["overdue", "partially_paid", "paid", "cancelled"],
+  draft: ["draft", "issued", "sent", "cancelled", "void"],
+  issued: ["issued", "sent", "partially_paid", "paid", "overdue", "cancelled", "void"],
+  sent: ["sent", "partially_paid", "paid", "overdue", "cancelled", "void"],
+  partially_paid: ["partially_paid", "paid", "overdue", "cancelled", "void"],
+  overdue: ["overdue", "partially_paid", "paid", "cancelled", "void"],
   paid: ["paid"],
-  cancelled: ["cancelled"],
+  cancelled: ["cancelled", "void"],
+  void: ["void", "draft"],
 };
 
 const PO: Record<PurchaseOrderStatus, PurchaseOrderStatus[]> = {

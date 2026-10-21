@@ -10272,6 +10272,7 @@ export type Database = {
         | "paid"
         | "cancelled"
         | "overdue"
+        | "void"
       kra_period: "daily" | "weekly" | "monthly" | "quarterly"
       lead_stage:
         | "new_lead"
@@ -10800,6 +10801,7 @@ export const Constants = {
         "paid",
         "cancelled",
         "overdue",
+        "void",
       ],
       kra_period: ["daily", "weekly", "monthly", "quarterly"],
       lead_stage: [
