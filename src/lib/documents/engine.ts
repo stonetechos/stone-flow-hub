@@ -370,17 +370,18 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
           meta: [
             { label: "Project", value: po.project?.name ?? "—" },
             { label: "Expected date", value: po.expected_date ?? "—" },
-            { label: "Status", value: po.status },
-            {
-              label: "Payment terms",
-              value: po.payment_schedule
-                ? String(
-                    typeof po.payment_schedule === "object"
-                      ? JSON.stringify(po.payment_schedule)
-                      : po.payment_schedule,
-                  )
-                : "—",
-            },
+            ...(po.payment_schedule
+              ? [
+                  {
+                    label: "Payment terms",
+                    value: String(
+                      typeof po.payment_schedule === "object"
+                        ? JSON.stringify(po.payment_schedule)
+                        : po.payment_schedule,
+                    ),
+                  },
+                ]
+              : []),
           ],
           notes: po.notes ?? undefined,
         },
@@ -428,11 +429,10 @@ export async function buildDocument(entity: DocumentEntity, id: string): Promise
       const invMeta: PdfMeta[] = [
         { label: "Project", value: i.project?.name ?? "—" },
         { label: "Due date", value: i.due_date ?? "—" },
-        { label: "Status", value: i.status },
         ...(invAny.place_of_supply
           ? [{ label: "Place of supply", value: invAny.place_of_supply }]
           : []),
-        { label: "Reverse charge", value: invAny.reverse_charge ? "Yes" : "No" },
+        ...(invAny.reverse_charge ? [{ label: "Reverse charge", value: "Yes" }] : []),
       ];
       return {
         doc: {

@@ -171,4 +171,44 @@ describe("renderDocWhatsAppText", () => {
     // Ensure tax was not pre-calculated into the line items
     expect(text).not.toContain("₹13,965");
   });
+
+  it("invoice metadata excludes status and omits reverse charge when not applicable", () => {
+    // Mimic the metadata construction in buildDocumentPayload for invoice
+    const inv = {
+      project: { name: "Vishveshwar Goswami" },
+      due_date: "2026-11-05",
+      status: "draft",
+    };
+    const invAnyNoRcm = {
+      place_of_supply: "Gujarat",
+      reverse_charge: false,
+    };
+
+    const invMetaNoRcm = [
+      { label: "Project", value: inv.project?.name ?? "—" },
+      { label: "Due date", value: inv.due_date ?? "—" },
+      ...(invAnyNoRcm.place_of_supply
+        ? [{ label: "Place of supply", value: invAnyNoRcm.place_of_supply }]
+        : []),
+      ...(invAnyNoRcm.reverse_charge ? [{ label: "Reverse charge", value: "Yes" }] : []),
+    ];
+
+    expect(invMetaNoRcm.some((m) => m.label === "Status")).toBe(false);
+    expect(invMetaNoRcm.some((m) => m.label === "Reverse charge")).toBe(false);
+
+    const invAnyRcm = {
+      place_of_supply: "Gujarat",
+      reverse_charge: true,
+    };
+    const invMetaRcm = [
+      { label: "Project", value: inv.project?.name ?? "—" },
+      { label: "Due date", value: inv.due_date ?? "—" },
+      ...(invAnyRcm.place_of_supply
+        ? [{ label: "Place of supply", value: invAnyRcm.place_of_supply }]
+        : []),
+      ...(invAnyRcm.reverse_charge ? [{ label: "Reverse charge", value: "Yes" }] : []),
+    ];
+
+    expect(invMetaRcm.some((m) => m.label === "Reverse charge" && m.value === "Yes")).toBe(true);
+  });
 });
