@@ -131,8 +131,8 @@ export function EstimateStudioCalculator({
     unitLabel: "bag",
     pricePerUnit: "",
   });
-  const [sealerKey, setSealerKey] = useState<string>("none");
-  const [sealerPrice, setSealerPrice] = useState<string>("");
+  const [sealerKey, setSealerKey] = useState<string>("solvent_based_oil_dust_repellent");
+  const [sealerPrice, setSealerPrice] = useState<string>("2500");
   const [sealerAppRate, setSealerAppRate] = useState(
     String(DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT),
   );
@@ -365,8 +365,8 @@ export function EstimateStudioCalculator({
   }, [sealerKey, sealerPrice, totalWallSqft]);
 
   const sealerLabourAmount = useMemo(
-    () => (Number(sealerAppRate) || 0) * totalWallSqft,
-    [sealerAppRate, totalWallSqft],
+    () => (sealerKey !== "none" ? (Number(sealerAppRate) || 0) * totalWallSqft : 0),
+    [sealerKey, sealerAppRate, totalWallSqft],
   );
 
   const installationAmount =
@@ -1117,7 +1117,7 @@ export function EstimateStudioCalculator({
           </LineField>
           <LineField label="Sealer application amount" className="col-span-6 md:col-span-3">
             <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-              {formatInr(sealerLabourAmount)}
+              {sealerKey !== "none" ? formatInr(sealerLabourAmount) : "—"}
             </div>
           </LineField>
         </div>

@@ -1052,7 +1052,13 @@ function CreateQuoteDialog({
         project_id: initialProjectId ? projectId : undefined,
         customer_id: initialProjectId ? undefined : customerId,
         enquiry_id: initialEnquiryId,
-        category: category || (mode === "stone_mural" ? "material_and_labour" : null),
+        category:
+          category ||
+          (mode === "stone_mural"
+            ? "material_and_labour"
+            : mode === "wall_cladding" || mode === "calculator"
+              ? "supply_and_installation"
+              : null),
         valid_until: validUntil || null,
         notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
         terms: terms || null,
@@ -1174,23 +1180,27 @@ function CreateQuoteDialog({
                 </Field>
               )}
 
-              <Field label="Category" className="md:col-span-2">
-                <Select
-                  value={category || "none"}
-                  onValueChange={(v) => setCategory(v === "none" ? "" : (v as QuoteCategory))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— None —</SelectItem>
-                    {QUOTE_CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {QUOTE_CATEGORY_LABELS[c]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Field label="Deal Scope (Work Flow)" className="md:col-span-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {QUOTE_CATEGORIES.map((c) => {
+                    const isSelected = category === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setCategory(isSelected ? "" : c)}
+                        className={cn(
+                          "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer text-center",
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                            : "bg-background text-foreground border-border hover:bg-muted/50",
+                        )}
+                      >
+                        <span>{QUOTE_CATEGORY_LABELS[c]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </Field>
 
               <Field label="Deal Type (Billing)" className="md:col-span-2">
@@ -1310,7 +1320,7 @@ function CreateQuoteDialog({
                       >
                         <LineField
                           label="Description / Product"
-                          className="col-span-12 md:col-span-3"
+                          className="col-span-12 md:col-span-4"
                         >
                           <CatalogProductSelect
                             value={it.description}
@@ -1344,7 +1354,7 @@ function CreateQuoteDialog({
                             }
                           />
                         </LineField>
-                        <LineField label="Quantity" className="col-span-6 md:col-span-1">
+                        <LineField label="Quantity" className="col-span-6 md:col-span-2">
                           <NumericInput
                             placeholder="0"
                             value={it.quantity}
@@ -1385,38 +1395,16 @@ function CreateQuoteDialog({
                             />
                           )}
                         </LineField>
-                        <LineField label="Fulfilment" className="col-span-10 md:col-span-2">
-                          <Select
-                            value={it.fulfilment || "inherit"}
-                            onValueChange={(v) =>
-                              updateItem(it.key, {
-                                fulfilment: v === "inherit" ? "" : (v as QuoteCategory),
-                              })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="inherit">— Inherit quote —</SelectItem>
-                              {QUOTE_CATEGORIES.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {QUOTE_CATEGORY_LABELS[c]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </LineField>
-                        <div className="col-span-2 md:col-span-1 flex items-end justify-end">
+                        <div className="col-span-12 md:col-span-12 flex items-center justify-end">
                           <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
-                            aria-label="Remove line item"
+                            size="sm"
+                            className="text-xs text-muted-foreground hover:text-destructive"
                             onClick={() => removeItem(it.key)}
                             disabled={items.length === 1}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove item
                           </Button>
                         </div>
                         <LineField

@@ -164,6 +164,163 @@ function EditQuotePage() {
         }
       />
 
+      {/* Top Deal Configuration Card */}
+      <Card className="mb-4 shadow-1 border-border/80">
+        <CardContent className="p-4 space-y-3.5">
+          {/* Top Row: Deal Scope (Category) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span>Deal Scope (Work Flow)</span>
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  — sets scope for all line items below
+                </span>
+              </label>
+              {form.category && (
+                <Badge variant="secondary" className="text-[11px] font-medium">
+                  Active Scope: {QUOTE_CATEGORY_LABELS[form.category]}
+                </Badge>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {QUOTE_CATEGORIES.map((c) => {
+                const isSelected = form.category === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      set("category", c);
+                      updateQuote(quoteId, { ...form, category: c })
+                        .then(() => {
+                          toast.success(`Quote scope updated to ${QUOTE_CATEGORY_LABELS[c]}`);
+                          invalidateQuote(qc, quoteId);
+                        })
+                        .catch((err) => toast.error(toUserMessage(err)));
+                    }}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer text-center",
+                      isSelected
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-background text-foreground border-border hover:bg-muted/50",
+                    )}
+                  >
+                    <span>{QUOTE_CATEGORY_LABELS[c]}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Second Row: Billing Deal Type & Validity */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-border/60">
+            <div className="md:col-span-8">
+              <label className="text-xs font-semibold text-foreground block mb-1.5">
+                Deal Type (Billing)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSaleMode("invoiced");
+                    set("sale_mode", "invoiced");
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "invoiced"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <span>📄 GST Deal (Tax Bill)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSaleMode("cash");
+                    set("sale_mode", "cash");
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "cash"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <span>🚚 Cash Deal (Challan Only)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSaleMode("hybrid");
+                    set("sale_mode", "hybrid");
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
+                    saleMode === "hybrid"
+                      ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  <span>⚖️ Hybrid Deal (GST + Cash)</span>
+                </button>
+              </div>
+              {saleMode === "cash" && (
+                <p className="text-[11px] text-emerald-700 font-medium mt-1.5">
+                  GST percentage is removed (0%). Amounts are added as-is without tax. Only Delivery
+                  Challans will be issued.
+                </p>
+              )}
+              {saleMode === "hybrid" && (
+                <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
+                  <div>
+                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                      Cash Amount (Challan · No GST)
+                    </label>
+                    <NumericInput
+                      placeholder="0"
+                      value={form.hybrid_cash_amount != null ? String(form.hybrid_cash_amount) : ""}
+                      onChange={(v) => set("hybrid_cash_amount", v ? Number(v) : null)}
+                      min={0}
+                      allowDecimal
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-purple-900 block mb-1">
+                      Invoiced Amount (With GST Bill)
+                    </label>
+                    <NumericInput
+                      placeholder="0"
+                      value={
+                        form.hybrid_invoiced_amount != null
+                          ? String(form.hybrid_invoiced_amount)
+                          : ""
+                      }
+                      onChange={(v) => set("hybrid_invoiced_amount", v ? Number(v) : null)}
+                      min={0}
+                      allowDecimal
+                      className="h-8 text-xs bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="md:col-span-4">
+              <label className="text-xs font-semibold text-foreground block mb-1.5">
+                Valid until
+              </label>
+              <Input
+                type="date"
+                value={form.valid_until ?? ""}
+                onChange={(e) => set("valid_until", e.target.value || null)}
+                className="h-8.5 text-xs"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <LineItemsEditor
         quoteId={quoteId}
         defaultFulfilment={form.category ?? null}
@@ -177,122 +334,6 @@ function EditQuotePage() {
         }}
         busy={mut.isPending}
       >
-        <QuickForm.QuickFill>
-          <Field label="Deal Type (Billing)" className="md:col-span-2">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setSaleMode("invoiced");
-                  set("sale_mode", "invoiced");
-                }}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                  saleMode === "invoiced"
-                    ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                )}
-              >
-                <span>📄 GST Deal (Tax Bill)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSaleMode("cash");
-                  set("sale_mode", "cash");
-                }}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                  saleMode === "cash"
-                    ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                )}
-              >
-                <span>🚚 Cash Deal (Challan Only)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSaleMode("hybrid");
-                  set("sale_mode", "hybrid");
-                }}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold border transition-all cursor-pointer",
-                  saleMode === "hybrid"
-                    ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
-                )}
-              >
-                <span>⚖️ Hybrid Deal (GST + Cash)</span>
-              </button>
-            </div>
-            {saleMode === "cash" && (
-              <p className="text-[11px] text-emerald-700 font-medium mt-1.5">
-                GST percentage is removed (0%). Amounts are added as-is without tax. Only Delivery
-                Challans will be issued.
-              </p>
-            )}
-            {saleMode === "hybrid" && (
-              <div className="grid grid-cols-2 gap-3 mt-2 p-2.5 rounded-md bg-purple-50 border border-purple-200">
-                <div>
-                  <label className="text-[11px] font-medium text-purple-900 block mb-1">
-                    Cash Amount (Challan · No GST)
-                  </label>
-                  <NumericInput
-                    placeholder="0"
-                    value={form.hybrid_cash_amount != null ? String(form.hybrid_cash_amount) : ""}
-                    onChange={(v) => set("hybrid_cash_amount", v ? Number(v) : null)}
-                    min={0}
-                    allowDecimal
-                    className="h-8 text-xs bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-medium text-purple-900 block mb-1">
-                    Invoiced Amount (With GST Bill)
-                  </label>
-                  <NumericInput
-                    placeholder="0"
-                    value={
-                      form.hybrid_invoiced_amount != null ? String(form.hybrid_invoiced_amount) : ""
-                    }
-                    onChange={(v) => set("hybrid_invoiced_amount", v ? Number(v) : null)}
-                    min={0}
-                    allowDecimal
-                    className="h-8 text-xs bg-white"
-                  />
-                </div>
-              </div>
-            )}
-          </Field>
-
-          <Field label="Category">
-            <Select
-              value={form.category ?? "none"}
-              onValueChange={(v) => set("category", v === "none" ? null : (v as QuoteCategory))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {QUOTE_CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {QUOTE_CATEGORY_LABELS[c]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Valid until">
-            <Input
-              type="date"
-              value={form.valid_until ?? ""}
-              onChange={(e) => set("valid_until", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.QuickFill>
-
         <QuickForm.MoreDetails>
           <Field label="Notes" className="md:col-span-2">
             <Textarea
@@ -318,7 +359,7 @@ function EditQuotePage() {
             Cancel
           </Button>
           <Button type="submit" disabled={mut.isPending}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
+            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save quote settings
           </Button>
         </QuickForm.Actions>
       </QuickForm>
@@ -580,7 +621,15 @@ function LineItemsEditor({
   return (
     <Card className="mb-4 shadow-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-sm">Line items</CardTitle>
+        <CardTitle className="text-sm flex items-center gap-2">
+          <span>Line items</span>
+          {defaultFulfilment && (
+            <Badge variant="outline" className="text-[11px] font-normal text-muted-foreground">
+              Scope:{" "}
+              {QUOTE_CATEGORY_LABELS[defaultFulfilment as QuoteCategory] || defaultFulfilment}
+            </Badge>
+          )}
+        </CardTitle>
         <Button
           size="sm"
           variant="outline"
@@ -611,7 +660,7 @@ function LineItemsEditor({
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-4">
                       <div className="mb-1 flex items-center justify-between">
                         <label className="text-xs text-muted-foreground">Description & Photo</label>
                         {lineImg && (
@@ -679,16 +728,16 @@ function LineItemsEditor({
                                 updateRow(r.id, "hsn_sac", prod.hsnCode);
                                 patchObj.hsn_sac = prod.hsnCode;
                               }
-                              if (
-                                prod.defaultPrice &&
-                                (!r.unit_price || Number(r.unit_price) === 0)
-                              ) {
+                              if (prod.defaultPrice !== undefined && prod.defaultPrice !== null) {
                                 updateRow(r.id, "unit_price", String(prod.defaultPrice));
                                 patchObj.unit_price = prod.defaultPrice;
                               }
                               if (saleMode === "cash") {
                                 updateRow(r.id, "tax_pct", "0");
                                 patchObj.tax_pct = 0;
+                              } else if (prod.defaultTaxPct !== undefined) {
+                                updateRow(r.id, "tax_pct", String(prod.defaultTaxPct));
+                                patchObj.tax_pct = prod.defaultTaxPct;
                               }
                               patchMut.mutate({ id: r.id, patch: patchObj });
                             }}
@@ -708,7 +757,7 @@ function LineItemsEditor({
                         onBlur={() => commit(r.id, "hsn_sac", original)}
                       />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-2">
                       <label className="text-xs text-muted-foreground">Qty</label>
                       <NumericInput
                         value={r.quantity}
@@ -727,7 +776,7 @@ function LineItemsEditor({
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-xs text-muted-foreground">Rate</label>
+                      <label className="text-xs text-muted-foreground">Rate (₹)</label>
                       <NumericInput
                         value={r.unit_price}
                         onChange={(val) => updateRow(r.id, "unit_price", val)}
@@ -752,29 +801,6 @@ function LineItemsEditor({
                           onBlur={() => commit(r.id, "tax_pct", original)}
                         />
                       )}
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="text-xs text-muted-foreground">Fulfilment</label>
-                      <Select
-                        value={r.fulfilment ?? "inherit"}
-                        onValueChange={(v) => {
-                          const val = v === "inherit" ? null : v;
-                          updateRow(r.id, "fulfilment", val);
-                          commitFulfilment(r.id, val, original);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="inherit">Inherit quote</SelectItem>
-                          {QUOTE_CATEGORIES.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {QUOTE_CATEGORY_LABELS[c]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
                     <div className="md:col-span-12 mt-1 pt-2 border-t border-dashed border-border/70">
                       <div className="flex items-center justify-between mb-1">
