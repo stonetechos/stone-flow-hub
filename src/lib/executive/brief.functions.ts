@@ -60,7 +60,7 @@ async function buildSnapshot(scope: "daily" | "weekly" | "monthly"): Promise<Sna
     supabase.from("vendor_ledger").select("debit,credit"),
     supabase
       .from("invoices")
-      .select("total,customers(name)")
+      .select("total,customers:customers!invoices_customer_id_fkey(name)")
       .gte("issue_date", fromDate)
       .limit(500),
   ]);

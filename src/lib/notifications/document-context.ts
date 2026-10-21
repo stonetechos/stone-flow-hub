@@ -80,7 +80,7 @@ export async function buildDocumentContext({
     case "quote": {
       const { data: q } = await from("quotes")
         .select(
-          "*, customer:customers(id,name,primary_email,primary_phone), project:projects(id,name)",
+          "*, customer:customers!quotes_customer_id_fkey(id,name,primary_email,primary_phone), project:projects!quotes_project_id_fkey(id,name)",
         )
         .eq("id", entityId)
         .maybeSingle();
@@ -105,7 +105,7 @@ export async function buildDocumentContext({
     case "invoice": {
       const { data: i } = await from("invoices")
         .select(
-          "*, customer:customers(id,name,primary_email,primary_phone), project:projects(id,name)",
+          "*, customer:customers!invoices_customer_id_fkey(id,name,primary_email,primary_phone), project:projects!invoices_project_id_fkey(id,name)",
         )
         .eq("id", entityId)
         .maybeSingle();
@@ -151,7 +151,7 @@ export async function buildDocumentContext({
     case "sales_order": {
       const { data: so } = await from("sales_orders")
         .select(
-          "*, customer:customers(id,name,primary_email,primary_phone), project:projects(id,name)",
+          "*, customer:customers!sales_orders_customer_id_fkey(id,name,primary_email,primary_phone), project:projects!sales_orders_project_id_fkey(id,name)",
         )
         .eq("id", entityId)
         .maybeSingle();
@@ -173,7 +173,7 @@ export async function buildDocumentContext({
     case "dispatch": {
       const { data: d } = await from("dispatches")
         .select(
-          "*, sales_order:sales_orders(customer_id,project_id, customer:customers(id,name,primary_email,primary_phone), project:projects(id,name))",
+          "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(customer_id,project_id, customer:customers!sales_orders_customer_id_fkey(id,name,primary_email,primary_phone), project:projects!sales_orders_project_id_fkey(id,name))",
         )
         .eq("id", entityId)
         .maybeSingle();

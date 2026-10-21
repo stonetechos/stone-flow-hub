@@ -137,7 +137,9 @@ export async function getProjectFinancialRollup(
   const [projRes, quotesRes, invsRes, dispatchesRes] = await Promise.all([
     db
       .from("projects")
-      .select("id, name, project_code, customer_id, workflow_state, external_ref, customers(*)")
+      .select(
+        "id, name, project_code, customer_id, workflow_state, external_ref, customers:customers!projects_customer_id_fkey(*)",
+      )
       .eq("id", projectId)
       .maybeSingle(),
     db

@@ -87,7 +87,7 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
     db
       .from("projects")
       .select(
-        "id, name, project_code, area_sqft, workflow_state, external_ref, customer_id, customers(*)",
+        "id, name, project_code, area_sqft, workflow_state, external_ref, customer_id, customers:customers!projects_customer_id_fkey(*)",
       )
       .eq("is_active", true)
       .limit(500),

@@ -24,7 +24,7 @@ export async function getProjectProfitability(): Promise<ProjectProfitability[]>
   const [projRes, estRes, quoteRes, invRes, vpRes, poRes] = await Promise.all([
     supabase
       .from("projects")
-      .select("id,name,customer_id,customers(name)")
+      .select("id,name,customer_id,customers:customers!projects_customer_id_fkey(name)")
       .eq("is_active", true)
       .limit(500),
     supabase

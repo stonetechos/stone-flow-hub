@@ -201,7 +201,7 @@ export async function getRevenueByProductFamily(range: Range): Promise<RevenueSl
 export async function getRevenueByCustomer(range: Range): Promise<RevenueSlice[]> {
   const { data, error } = await supabase
     .from("invoices")
-    .select("total,customer_id,customers(name)")
+    .select("total,customer_id,customers:customers!invoices_customer_id_fkey(name)")
     .gte("issue_date", range.from)
     .lte("issue_date", range.to);
   if (error) throw new AppError(mapDbError(error));
