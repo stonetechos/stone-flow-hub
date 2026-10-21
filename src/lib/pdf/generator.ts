@@ -105,7 +105,7 @@ function formatDocDate(d: string): string {
 
 export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRANDING): string {
   const from = doc.from ?? brandParty(brand);
-  const slateHeader = "#3b4758"; // Zoho Books signature dark slate navy
+  const deepTurquoise = "#083b43"; // Stone Tech OS signature deep turquoise
   const ink = "#0F172A";
   const muted = "#64748B";
   const border = "#E5E7EB";
@@ -123,8 +123,8 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const dateLabel = isQuote ? "Quote Date" : "Date";
 
   const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:68px;max-width:200px;object-fit:contain;display:block;margin-bottom:6px;" />`
-    : `<div style="font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-.01em;margin-bottom:4px;">${esc(brand.company_name)}</div>`;
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="width:92px;height:92px;object-fit:contain;display:block;margin-bottom:8px;" />`
+    : `<div style="font-size:20px;font-weight:800;color:${deepTurquoise};letter-spacing:-.01em;margin-bottom:4px;">${esc(brand.company_name)}</div>`;
 
   const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
   const placeOfSupply =
@@ -186,13 +186,16 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const totalsHtml = (doc.totals ?? [])
     .map((t, i, arr) => {
       const isTotal = t.label.toLowerCase() === "total" || i === arr.length - 1;
-      return `<div style="display:flex;justify-content:space-between;padding:4px 0;${
+      const isBalance = t.label.toLowerCase().includes("balance");
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4.5px 0;${
         isTotal
-          ? "border-top:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;margin:4px 0;padding:6px 0;font-weight:700;font-size:13px;color:#0f172a;"
-          : "color:#475569;"
+          ? `border-top:1.5px solid ${deepTurquoise};border-bottom:1.5px solid ${deepTurquoise};margin:6px 0;padding:8px 0;font-weight:800;font-size:13.5px;color:${deepTurquoise};`
+          : isBalance
+            ? "font-weight:800;font-size:12px;color:#0f172a;padding:5px 0;"
+            : "color:#475569;font-size:10.5px;"
       }">
-        <span style="${isTotal ? "font-weight:700;" : ""}">${esc(t.label)}</span>
-        <span style="font-variant-numeric:tabular-nums;${isTotal ? "font-weight:700;" : ""}">${esc(t.value ?? "")}</span>
+        <span style="${isTotal ? "font-weight:800;" : ""}">${esc(t.label)}</span>
+        <span style="font-variant-numeric:tabular-nums;${isTotal ? "font-weight:800;" : ""}">${esc(t.value ?? "")}</span>
       </div>`;
     })
     .join("");
@@ -208,17 +211,17 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const bankBlock = `
     <div style="margin-top:14px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:9.5px;color:#334155;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-        <div>
-          <div style="font-weight:700;color:#1e293b;margin-bottom:2px;">ACCOUNT NAME: ${esc(brand.company_name.toUpperCase())}</div>
-          <div style="margin-bottom:1.5px;">BANK: ${esc(bankName)}</div>
-          <div style="margin-bottom:1.5px;">BRANCH: ${esc(branchName)}</div>
-          <div style="margin-bottom:1.5px;">ACCOUNT NUMBER: ${esc(acNumber)}</div>
-          <div style="margin-bottom:1.5px;">IFS CODE: ${esc(ifscCode)}</div>
-          ${upiId ? `<div style="margin-top:2px;color:#0d9488;font-weight:600;">UPI ID: ${esc(upiId)}</div>` : ""}
+        <div style="line-height:1.5;">
+          <div style="font-weight:700;color:${deepTurquoise};margin-bottom:3px;letter-spacing:0.02em;">ACCOUNT NAME: ${esc(brand.company_name.toUpperCase())}</div>
+          <div style="color:#475569;">BANK: <span style="color:#1e293b;font-weight:600;">${esc(bankName)}</span></div>
+          <div style="color:#475569;">BRANCH: <span style="color:#1e293b;font-weight:600;">${esc(branchName)}</span></div>
+          <div style="color:#475569;">ACCOUNT NUMBER: <span style="color:#1e293b;font-weight:600;">${esc(acNumber)}</span></div>
+          <div style="color:#475569;">IFS CODE: <span style="color:#1e293b;font-weight:600;">${esc(ifscCode)}</span></div>
+          ${upiId ? `<div style="margin-top:3px;color:${deepTurquoise};font-weight:700;">UPI ID: ${esc(upiId)}</div>` : ""}
         </div>
         <div style="text-align:center;display:flex;flex-direction:column;align-items:center;">
-          <img src="${qrImgSrc}" alt="UPI QR Code" crossorigin="anonymous" style="width:72px;height:72px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;padding:2px;background:#fff;display:block;" />
-          <div style="font-size:8px;color:${muted};font-weight:600;margin-top:2px;">Scan to pay via UPI / GPay</div>
+          <img src="${qrImgSrc}" alt="UPI QR Code" crossorigin="anonymous" style="width:74px;height:74px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;padding:2px;background:#fff;display:block;" />
+          <div style="font-size:8px;color:${muted};font-weight:600;margin-top:3px;">Scan to pay via UPI / GPay</div>
         </div>
       </div>
     </div>`;
@@ -226,9 +229,9 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   // Authorized Signatory
   const signatureUrl = brand.signature_url || "/signature.jpg";
   const signatoryBlock = `
-    <div style="margin-top:26px;text-align:right;">
-      <div style="font-size:10px;font-weight:700;color:#111827;text-transform:uppercase;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
-      <div style="margin:8px 0 2px;display:flex;justify-content:flex-end;">
+    <div style="margin-top:24px;text-align:right;">
+      <div style="font-size:10px;font-weight:700;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.03em;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
+      <div style="margin:6px 0 2px;display:flex;justify-content:flex-end;">
         <img src="${signatureUrl}" alt="Authorized Signature" style="max-height:48px;max-width:140px;object-fit:contain;display:block;" />
       </div>
       <div style="font-size:10px;font-weight:700;color:#1e293b;">PROPRIETOR</div>
@@ -256,6 +259,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       : "";
 
   return `<!doctype html><html><head><meta charset="utf-8" />
+<base href="${typeof window !== "undefined" && window.location ? window.location.origin : ""}/">
 <title>${esc(doc.title)} · ${esc(doc.number)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -271,7 +275,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding-bottom:12px; }
   table { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; }
   thead th {
-    background:${slateHeader};
+    background:${deepTurquoise};
     color:#fff;
     font-size:10px;
     text-transform:uppercase;
@@ -286,7 +290,7 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   .notes { margin-top:10px; font-size:10px; color:#475569; }
   .terms { margin-top:12px; font-size:9.5px; color:#64748b; white-space:pre-line; line-height:1.45; }
   .footer { margin-top:24px; padding-top:10px; border-top:1px solid ${border}; font-size:9.5px; color:${muted}; text-align:center; }
-  .footer a { color:#0d9488; text-decoration:none; }
+  .footer a { color:${deepTurquoise}; text-decoration:none; font-weight:600; }
 </style>
 </head><body>
   <div class="toolbar no-print">
@@ -297,16 +301,16 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     <header>
       <div>
         ${logo}
-        <div style="font-size:13px;font-weight:800;color:#111827;text-transform:uppercase;letter-spacing:0.02em;">${esc(from.name || brand.company_name)}</div>
+        <div style="font-size:13px;font-weight:800;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.02em;">${esc(from.name || brand.company_name)}</div>
         <div style="font-size:10px;color:#475569;line-height:1.45;margin-top:3px;white-space:pre-line;">${esc(from.address || brand.address)}
 India</div>
         ${brand.gstin ? `<div style="font-size:10px;font-weight:700;color:#111827;margin-top:3px;">GSTIN ${esc(brand.gstin)}</div>` : ""}
       </div>
       <div style="text-align:right">
-        <div style="font-size:26px;font-weight:700;color:#374151;letter-spacing:0.04em;text-transform:uppercase;line-height:1.1;">${titleText}</div>
+        <div style="font-size:26px;font-weight:700;color:${deepTurquoise};letter-spacing:0.04em;text-transform:uppercase;line-height:1.1;">${titleText}</div>
         <div style="font-size:11px;color:#4b5563;margin-top:5px;font-weight:600;">${numberLabel} ${esc(doc.number)}</div>
         ${!isInvoice ? `<div style="font-size:10px;color:#4b5563;margin-top:2px;">${dateLabel} : ${formatDocDate(doc.date)}</div>` : ""}
-        <div style="font-size:10px;color:#4b5563;margin-top:2px;">Place Of Supply : ${esc(placeOfSupply)}</div>
+        ${!isInvoice ? `<div style="font-size:10px;color:#4b5563;margin-top:2px;">Place Of Supply : ${esc(placeOfSupply)}</div>` : ""}
       </div>
     </header>
 
@@ -340,20 +344,20 @@ India</div>
               ${doc.to.gstin ? `<div style="margin-top:4px;font-weight:600;color:#1e293b;">GSTIN ${esc(doc.to.gstin)}</div>` : ""}
             </div>
           </div>
-          <div style="font-size:10px;color:#374151;font-weight:600;margin-bottom:12px;">Place Of Supply: ${esc(placeOfSupply)}</div>`
+          <div style="font-size:10px;color:#374151;font-weight:600;margin:10px 0 12px;">Place Of Supply: ${esc(placeOfSupply)}</div>`
     }
 
     ${
       isInvoice
-        ? `<div style="background:#3b4758;color:#ffffff;border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px 12px;font-size:10px;font-weight:700;">
+        ? `<div style="background:${deepTurquoise};color:#ffffff;border-radius:2px 2px 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">
             <div>Invoice Date</div>
-            <div>Terms</div>
-            <div>Due Date</div>
+            <div style="text-align:center;">Terms</div>
+            <div style="text-align:right;">Due Date</div>
           </div>
-          <div style="background:#fafafa;border:1px solid #e2e8f0;border-top:none;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px 12px;font-size:10px;color:#0f172a;margin-bottom:14px;">
-            <div>${formatDocDate(doc.date)}</div>
-            <div>${esc(termsText)}</div>
-            <div>${formatDocDate(dueDate)}</div>
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 2px 2px;display:grid;grid-template-columns:1fr 1fr 1fr;padding:8px 14px;font-size:10.5px;color:#0f172a;margin-bottom:14px;">
+            <div style="font-weight:500;">${formatDocDate(doc.date)}</div>
+            <div style="text-align:center;">${esc(termsText)}</div>
+            <div style="text-align:right;font-weight:500;">${formatDocDate(dueDate)}</div>
           </div>`
         : ""
     }
@@ -381,7 +385,7 @@ India</div>
           totalInWords
             ? `<div style="font-size:10px;margin-bottom:14px;">
                 <span style="color:#64748b;">Total In Words: </span>
-                <b style="color:#0f172a;">${esc(totalInWords)}</b>
+                <b style="color:${deepTurquoise};font-weight:700;">${esc(totalInWords)}</b>
               </div>`
             : ""
         }
@@ -548,7 +552,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   // Document Title & Number (Right)
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(20);
-  pdf.setTextColor(55, 65, 81);
+  pdf.setTextColor(8, 59, 67); // #083b43 deep turquoise
   pdf.text(titleText, 195, 20, { align: "right" });
 
   pdf.setFont("helvetica", "bold");
@@ -565,18 +569,17 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     pdf.text(`${isQuote ? "Quote Date" : "Date"} : ${formatDocDate(doc.date)}`, 195, 30.5, {
       align: "right",
     });
+    const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
+    const placeOfSupply =
+      posMeta?.value != null && String(posMeta.value).trim() !== ""
+        ? String(posMeta.value)
+        : (doc.to?.address || "").toLowerCase().includes("gujarat")
+          ? "Gujarat (24)"
+          : "Maharashtra (27)";
+    pdf.text(`Place Of Supply : ${placeOfSupply}`, 195, 34.5, {
+      align: "right",
+    });
   }
-
-  const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
-  const placeOfSupply =
-    posMeta?.value != null && String(posMeta.value).trim() !== ""
-      ? String(posMeta.value)
-      : (doc.to?.address || "").toLowerCase().includes("gujarat")
-        ? "Gujarat (24)"
-        : "Maharashtra (27)";
-  pdf.text(`Place Of Supply : ${placeOfSupply}`, 195, isInvoice ? 30.5 : 34.5, {
-    align: "right",
-  });
 
   // Divider
   let y = 38;
@@ -683,12 +686,12 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
     y += 14;
   }
 
-  // Items Table Header - Centered vertically in the slate navy bar (#3b4758)
+  // Items Table Header - Centered vertically in deep turquoise bar (#083b43)
   const lines = doc.lines ?? [];
   const hasHsnInLines = lines.some((l) => Boolean(l.hsn));
 
   const headerHeight = 7.5;
-  pdf.setFillColor(59, 71, 88); // #3b4758 Zoho signature
+  pdf.setFillColor(8, 59, 67); // #083b43 deep turquoise Zoho signature
   pdf.roundedRect(15, y, 180, headerHeight, 0.5, 0.5, "F");
 
   pdf.setFont("helvetica", "bold");
@@ -844,7 +847,7 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   // Authorized Signatory
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
-  pdf.setTextColor(100, 116, 139);
+  pdf.setTextColor(8, 59, 67); // #083b43 deep turquoise
   pdf.text(`FOR: ${(brand.company_name || "STONE TECH").toUpperCase()}`, 195, y + 4.5, {
     align: "right",
   });
@@ -913,23 +916,47 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
       return await generateVectorPdfFallback(doc);
     }
 
+    // Strip out toolbar before writing to avoid any layout shifts or artifacts
+    const printHtml = html.replace(/<div class="toolbar no-print">[\s\S]*?<\/div>/, "");
+
     iframeDoc.open();
-    iframeDoc.write(html);
+    iframeDoc.write(printHtml);
     iframeDoc.close();
 
-    // Remove buttons / toolbars that shouldn't appear in the PDF
-    iframeDoc.querySelectorAll(".no-print, .toolbar").forEach((el) => el.remove());
+    const sheetEl = (iframeDoc.querySelector(".sheet") as HTMLElement) || iframeDoc.body;
 
-    // Mark all images crossOrigin = anonymous to permit canvas extraction
-    iframeDoc.querySelectorAll("img").forEach((img) => {
-      img.crossOrigin = "anonymous";
-    });
+    // Reset iframe window and body scrolling to guarantee top-left (0,0) alignment
+    if (iframe.contentWindow) {
+      iframe.contentWindow.scrollTo(0, 0);
+    }
+    iframeDoc.body.style.margin = "0";
+    iframeDoc.body.style.padding = "0";
+
+    // Wait for all images inside sheetEl to finish loading
+    const images = Array.from(sheetEl.querySelectorAll("img"));
+    await Promise.all(
+      images.map((img) => {
+        img.crossOrigin = "anonymous";
+        if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          setTimeout(() => resolve(), 2500);
+        });
+      }),
+    );
+
+    // Wait for document fonts if supported
+    if (iframeDoc.fonts) {
+      await iframeDoc.fonts.ready.catch(() => {});
+    }
+
+    // Brief tick to ensure full layout rendering
+    await new Promise((r) => setTimeout(r, 60));
 
     const html2canvasModule = await import("html2canvas");
     const html2canvas = html2canvasModule.default ?? html2canvasModule;
     const JsPdf = await getJsPdfConstructor();
-
-    const sheetEl = (iframeDoc.querySelector(".sheet") as HTMLElement) || iframeDoc.body;
 
     let canvas: HTMLCanvasElement;
     try {
@@ -940,6 +967,10 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         logging: false,
         backgroundColor: "#ffffff",
         windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
       });
     } catch {
       // If external images fail CORS, hide them and capture layout
@@ -953,6 +984,10 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         logging: false,
         backgroundColor: "#ffffff",
         windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
       });
     }
 
@@ -971,6 +1006,10 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
         logging: false,
         backgroundColor: "#ffffff",
         windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
       });
       imgData = cleanCanvas.toDataURL("image/jpeg", 0.95);
     }
@@ -985,7 +1024,7 @@ export async function generatePdfBlob(doc: PdfDoc): Promise<Blob> {
     pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);
     heightLeft -= pdfHeight;
 
-    while (heightLeft > 0) {
+    while (heightLeft > 5) {
       position = heightLeft - imgHeight;
       pdf.addPage();
       pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeight);

@@ -88,9 +88,9 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
           * { box-sizing: border-box; }
           body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #0f172a; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 11px; }
           .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 16px; }
-          .company-name { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #111827; letter-spacing: 0.02em; }
+          .company-name { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #083b43; letter-spacing: 0.02em; }
           .company-sub { font-size: 10px; color: #475569; margin-top: 3px; line-height: 1.4; }
-          .title { font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; }
+          .title { font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #083b43; }
           .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; font-size: 10.5px; }
           .meta-box { background: #fafafa; border: 1px solid #cbd5e1; padding: 10px 12px; border-radius: 4px; }
           .summary-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 12px; margin-bottom: 16px; }
@@ -99,7 +99,7 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
           .due { color: #b91c1c; }
           .paid { color: #15803d; }
           table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10.5px; }
-          thead th { background: #3b4758; color: #ffffff; padding: 6px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.03em; }
+          thead th { background: #083b43; color: #ffffff; padding: 6px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.03em; }
           td { border-bottom: 1px solid #e2e8f0; padding: 7px 8px; vertical-align: top; }
           .text-right { text-align: right; }
           .font-mono { font-family: monospace; }
@@ -110,7 +110,7 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
       <body>
         <div class="header">
           <div>
-            <img src="/branding/stone-tech-logo.png" alt="Stone Tech" style="height:55px;object-fit:contain;display:block;margin-bottom:6px;" onerror="this.style.display='none'" />
+            <img src="/branding/stone-tech-logo.png" alt="Stone Tech" style="width:90px;height:90px;object-fit:contain;display:block;margin-bottom:8px;" onerror="this.style.display='none'" />
             <div class="company-name">STONE TECH</div>
             <div class="company-sub">
               E-02, Ground Floor, SG Business Hub, Opp to Festival Residency, Vasant Nagar,<br/>
