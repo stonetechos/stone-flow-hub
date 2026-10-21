@@ -43,10 +43,13 @@ import { CustomerAssigneeSelect } from "./CustomerAssigneeSelect";
 import {
   CALL_OUTCOMES,
   CUSTOMER_RESPONSE_STATUS_CONFIG,
+  buildCustomerFollowupWhatsappMessage,
   getCustomerCrmState,
   getCustomerResponseStatus,
+  getCustomerSalesperson,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
+import { buildWhatsappUrl } from "@/lib/whatsapp";
 import { updateCustomerCrmStatus, type CustomerRow } from "@/lib/customers/api";
 import { listFollowups, completeFollowup, type FollowupWithEnquiry } from "@/lib/followups/api";
 import { FOLLOWUP_CHANNELS } from "@/lib/followups/schema";
@@ -306,9 +309,17 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                     className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
                   >
                     <a
-                      href={`https://wa.me/${waDigits}?text=${encodeURIComponent(
-                        `Hello ${customer.name}! Following up regarding your stone project inquiry with Stone Tech.`,
-                      )}`}
+                      href={buildWhatsappUrl(
+                        waDigits,
+                        buildCustomerFollowupWhatsappMessage({
+                          customerName: customer.name,
+                          contactPerson: (customer as { contact_person?: string | null })
+                            .contact_person,
+                          companyName: (customer as { company_name?: string | null }).company_name,
+                          salesperson: getCustomerSalesperson(customer),
+                        }),
+                        "wa.me",
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

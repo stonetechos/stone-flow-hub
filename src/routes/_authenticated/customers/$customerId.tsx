@@ -86,6 +86,11 @@ import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeS
 import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaymentStatusSelect";
 import { extractCustomerSerialNumber } from "@/lib/customers/payment-status";
 import { CustomerCrmFollowupCard } from "@/components/customers/CustomerCrmFollowupCard";
+import {
+  buildCustomerFollowupWhatsappMessage,
+  getCustomerSalesperson,
+} from "@/lib/customers/crm-status";
+import { buildWhatsappUrl } from "@/lib/whatsapp";
 
 /** Payment and dispatch due dates for this customer, glanceable right on
  *  Overview (Sales dashboard, 2026-09) — renders nothing when there's
@@ -839,7 +844,16 @@ function CustomerHub() {
                     {
                       label: "WhatsApp",
                       icon: <MessageCircle className="h-4 w-4" />,
-                      href: `https://wa.me/${waDigits}`,
+                      href: buildWhatsappUrl(
+                        waDigits,
+                        buildCustomerFollowupWhatsappMessage({
+                          customerName: c.name,
+                          contactPerson: (c as { contact_person?: string | null }).contact_person,
+                          companyName: (c as { company_name?: string | null }).company_name,
+                          salesperson: getCustomerSalesperson(c),
+                        }),
+                        "wa.me",
+                      ),
                     },
                   ]
                 : []),

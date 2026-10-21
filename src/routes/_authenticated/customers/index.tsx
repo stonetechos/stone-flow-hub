@@ -30,10 +30,12 @@ import { CustomerPaymentStatusSelect } from "@/components/customers/CustomerPaym
 import { CustomerOrderPipeline } from "@/components/customers/CustomerOrderPipeline";
 import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
+  buildCustomerFollowupWhatsappMessage,
   getCustomerResponseStatus,
   getCustomerSalesperson,
   type CustomerResponseStatus,
 } from "@/lib/customers/crm-status";
+import { buildWhatsappUrl } from "@/lib/whatsapp";
 import {
   CUSTOMER_PAYMENT_STATUS_CONFIG,
   getCustomerPaymentStatus,
@@ -672,11 +674,22 @@ function CustomersPage() {
                 </TableHeader>
                 <TableBody>
                   {pageRows.map((c, i) => {
+                    const norm = normalizeCustomerRow(c);
                     const phone =
                       c.primary_phone || (c as unknown as { mobile?: string | null }).mobile || "";
+                    const waPhone = c.whatsapp || phone;
                     const cleanPhone = phone.replace(/[^0-9]/g, "");
+                    const cleanWaPhone = waPhone.replace(/[^0-9]/g, "");
                     const serial = extractCustomerSerialNumber(c.customer_code);
                     const orderInfo = customerOrderMap.get(c.id);
+                    const waFollowupText = buildCustomerFollowupWhatsappMessage({
+                      customerName: c.name,
+                      contactPerson: norm.contact_person,
+                      companyName: norm.company_name,
+                      salesperson: getCustomerSalesperson(c),
+                      orderNo: orderInfo?.urgentOrderNo,
+                    });
+                    const waUrl = buildWhatsappUrl(cleanWaPhone, waFollowupText, "wa.me");
                     return (
                       <TableRow key={c.id}>
                         <TableCell className="w-12 text-center font-mono text-xs text-muted-foreground px-1">
@@ -721,30 +734,25 @@ function CustomersPage() {
                                   </span>
                                 )}
                             </div>
-                            {(() => {
-                              const norm = normalizeCustomerRow(c);
-                              return (
-                                <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
-                                  {norm.contact_person && (
-                                    <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
-                                      <User className="h-3 w-3 text-teal-600 shrink-0" />
-                                      <span className="truncate">
-                                        Contact:{" "}
-                                        <strong className="font-semibold text-teal-900">
-                                          {norm.contact_person}
-                                        </strong>
-                                      </span>
-                                    </span>
-                                  )}
-                                  {norm.company_name && norm.company_name !== c.name && (
-                                    <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
-                                      <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
-                                      <span className="truncate">Firm: {norm.company_name}</span>
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })()}
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
+                              {norm.contact_person && (
+                                <span className="inline-flex items-center gap-1 rounded bg-teal-50 text-teal-800 border border-teal-200/70 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
+                                  <User className="h-3 w-3 text-teal-600 shrink-0" />
+                                  <span className="truncate">
+                                    Contact:{" "}
+                                    <strong className="font-semibold text-teal-900">
+                                      {norm.contact_person}
+                                    </strong>
+                                  </span>
+                                </span>
+                              )}
+                              {norm.company_name && norm.company_name !== c.name && (
+                                <span className="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[11px] font-medium truncate max-w-full">
+                                  <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
+                                  <span className="truncate">Firm: {norm.company_name}</span>
+                                </span>
+                              )}
+                            </div>
                           </Link>
                         </TableCell>
                         <TableCell className="w-22 text-xs text-muted-foreground whitespace-nowrap px-1.5">
@@ -817,12 +825,12 @@ function CustomersPage() {
                                 <Phone className="h-3 w-3 text-emerald-600 shrink-0" />
                                 <span className="truncate">{phone}</span>
                               </a>
-                              {cleanPhone && (
+                              {(cleanWaPhone || cleanPhone) && (
                                 <a
-                                  href={`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}`}
+                                  href={waUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  title="Chat on WhatsApp"
+                                  title={`Send follow-up on WhatsApp to ${norm.contact_person || c.name} (Kindly update / unable to finalise)`}
                                   className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors shrink-0"
                                 >
                                   <MessageSquare className="h-3 w-3" />

@@ -228,3 +228,55 @@ export function getCustomerResponseStatus(customer: {
   }
   return "active_responsive";
 }
+
+export interface BuildCustomerFollowupWhatsappOptions {
+  customerName?: string | null;
+  contactPerson?: string | null;
+  companyName?: string | null;
+  salesperson?: CustomerSalespersonKey | string | null;
+  orderNo?: string | null;
+}
+
+/**
+ * Builds the standard WhatsApp follow-up message for a customer.
+ *
+ * Prompts the customer for a status update on their natural stone requirement,
+ * and asks if they need any assistance or are unable to finalise.
+ */
+export function buildCustomerFollowupWhatsappMessage(
+  options: BuildCustomerFollowupWhatsappOptions,
+): string {
+  const greetingName = options.contactPerson?.trim() || options.customerName?.trim() || "";
+  const greeting = greetingName ? `Hi ${greetingName},` : "Hello,";
+
+  const contextLine = options.orderNo
+    ? `Following up regarding your natural stone requirement (Order/Quote #${options.orderNo}) with Stone Tech.`
+    : `Following up regarding your natural stone requirement with Stone Tech.`;
+
+  const salespersonKey =
+    options.salesperson === "raman" || options.salesperson === "rishi"
+      ? (options.salesperson as CustomerSalespersonKey)
+      : null;
+  const salespersonConfig = salespersonKey ? CUSTOMER_SALESPEOPLE[salespersonKey] : null;
+  const signatureName =
+    salespersonConfig?.label ||
+    (typeof options.salesperson === "string" && options.salesperson.trim()
+      ? options.salesperson.trim()
+      : null);
+
+  const signature = signatureName
+    ? `Regards,\n${signatureName}\nStone Tech`
+    : `Regards,\nStone Tech`;
+
+  return [
+    greeting,
+    "",
+    "Hope you are doing well.",
+    "",
+    `${contextLine} Kindly update us on the status, or please let us know if you need any assistance or are unable to finalise so we can assist you.`,
+    "",
+    "Looking forward to hearing from you.",
+    "",
+    signature,
+  ].join("\n");
+}

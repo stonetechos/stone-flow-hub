@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
   CALL_OUTCOMES,
   CUSTOMER_RESPONSE_STATUS_CONFIG,
+  buildCustomerFollowupWhatsappMessage,
   getCustomerCrmState,
   getCustomerResponseStatus,
   type CustomerResponseStatus,
@@ -127,5 +128,53 @@ describe("Customer CRM Status", () => {
 
     expect(getCustomerSalesperson(null)).toBeNull();
     expect(getCustomerSalesperson({})).toBeNull();
+  });
+
+  describe("buildCustomerFollowupWhatsappMessage", () => {
+    it("builds a personalized follow-up message with contact person and salesperson signature", () => {
+      const msg = buildCustomerFollowupWhatsappMessage({
+        customerName: "Sharma Residence",
+        contactPerson: "Rajesh Sharma",
+        salesperson: "raman",
+      });
+
+      expect(msg).toContain("Hi Rajesh Sharma,");
+      expect(msg).toContain("Kindly update us on the status");
+      expect(msg).toContain("unable to finalise");
+      expect(msg).toContain("Raman Pupneja");
+      expect(msg).toContain("Stone Tech");
+    });
+
+    it("falls back to customer name if contact person is missing", () => {
+      const msg = buildCustomerFollowupWhatsappMessage({
+        customerName: "Apex Builders",
+        salesperson: "rishi",
+      });
+
+      expect(msg).toContain("Hi Apex Builders,");
+      expect(msg).toContain("Rishi Rai");
+      expect(msg).toContain("unable to finalise");
+    });
+
+    it("includes quote/order number when provided", () => {
+      const msg = buildCustomerFollowupWhatsappMessage({
+        customerName: "Metro Spaces",
+        orderNo: "Q-2026-0089",
+      });
+
+      expect(msg).toContain("Order/Quote #Q-2026-0089");
+      expect(msg).toContain("Kindly update us on the status");
+      expect(msg).toContain("unable to finalise");
+      expect(msg).toContain("Regards,\nStone Tech");
+    });
+
+    it("handles missing names gracefully with generic greeting", () => {
+      const msg = buildCustomerFollowupWhatsappMessage({});
+
+      expect(msg).toContain("Hello,");
+      expect(msg).toContain("Kindly update us on the status");
+      expect(msg).toContain("unable to finalise");
+      expect(msg).toContain("Stone Tech");
+    });
   });
 });
