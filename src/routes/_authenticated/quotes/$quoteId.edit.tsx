@@ -700,7 +700,10 @@ function LineItemsEditor({
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
                     <div className="md:col-span-4">
                       <div className="mb-1 flex items-center justify-between">
-                        <label className="text-xs text-muted-foreground">Description & Photo</label>
+                        <label className="text-xs text-muted-foreground">
+                          Description &amp; Photo{" "}
+                          <span className="text-destructive font-bold">*</span>
+                        </label>
                         {lineImg && (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-primary">
                             <ImageIcon className="h-3 w-3" /> Photo attached
@@ -814,7 +817,9 @@ function LineItemsEditor({
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-xs text-muted-foreground">Qty</label>
+                      <label className="text-xs text-muted-foreground">
+                        Qty <span className="text-destructive font-bold">*</span>
+                      </label>
                       <NumericInput
                         value={r.quantity}
                         onChange={(val) => updateRow(r.id, "quantity", val)}
@@ -832,7 +837,9 @@ function LineItemsEditor({
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-xs text-muted-foreground">Rate (₹)</label>
+                      <label className="text-xs text-muted-foreground">
+                        Rate (₹) <span className="text-destructive font-bold">*</span>
+                      </label>
                       <NumericInput
                         value={r.unit_price}
                         onChange={(val) => updateRow(r.id, "unit_price", val)}

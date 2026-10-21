@@ -1091,8 +1091,30 @@ function CreateQuoteDialog({
       return;
     }
 
+    // Filter out completely blank lines (e.g. if an extra line was clicked accidentally)
+    const nonBlankItems = items.filter((it) => {
+      if (items.length === 1) return true;
+      const hasDesc = it.description.trim().length > 0;
+      const hasQty = Number(it.quantity) > 0;
+      const hasPrice = Number(it.unit_price) > 0;
+      const hasNotes = it.notes.trim().length > 0;
+      return hasDesc || hasQty || hasPrice || hasNotes;
+    });
+
+    if (nonBlankItems.length === 0) {
+      return toast.error("Please add at least one line item with a Description / Product");
+    }
+
     const parsedItems: QuoteItemInput[] = [];
-    for (const it of items) {
+    for (let i = 0; i < nonBlankItems.length; i++) {
+      const it = nonBlankItems[i];
+      const lineNum = i + 1;
+      if (!it.description.trim()) {
+        return toast.error(`Line ${lineNum}: Description / Product * is required`);
+      }
+      if (!it.quantity || Number(it.quantity) <= 0) {
+        return toast.error(`Line ${lineNum}: Quantity * must be greater than 0`);
+      }
       const r = quoteItemInputSchema.safeParse({
         product_id: it.product_id,
         description: it.description,
@@ -1104,7 +1126,9 @@ function CreateQuoteDialog({
         hsn_sac: it.hsn_sac || null,
         fulfilment: it.fulfilment || null,
       });
-      if (!r.success) return toast.error(r.error.issues[0]?.message ?? "Invalid line item");
+      if (!r.success) {
+        return toast.error(`Line ${lineNum}: ${r.error.issues[0]?.message ?? "Invalid line item"}`);
+      }
       parsedItems.push(r.data);
     }
     mutation.mutate({
@@ -1343,13 +1367,39 @@ function CreateQuoteDialog({
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {items.map((it) => (
+                    {items.map((it, idx) => (
                       <div
                         key={it.key}
                         className="grid grid-cols-12 gap-3 rounded-sm border border-border bg-background p-3"
                       >
+                        <div className="col-span-12 flex items-center justify-between border-b pb-1.5 mb-0.5 text-xs">
+                          <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                            <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-slate-100 text-[10px] font-bold text-slate-700">
+                              {idx + 1}
+                            </span>
+                            Line Item {idx + 1}
+                          </span>
+                          {items.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                              onClick={() => removeItem(it.key)}
+                              title="Delete this line item"
+                            >
+                              <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove line
+                            </Button>
+                          )}
+                        </div>
+
                         <LineField
-                          label="Description / Product"
+                          label={
+                            <span>
+                              Description / Product{" "}
+                              <span className="text-destructive font-bold">*</span>
+                            </span>
+                          }
                           className="col-span-12 md:col-span-4"
                         >
                           <CatalogProductSelect
@@ -1391,7 +1441,14 @@ function CreateQuoteDialog({
                             }
                           />
                         </LineField>
-                        <LineField label="Quantity" className="col-span-6 md:col-span-2">
+                        <LineField
+                          label={
+                            <span>
+                              Quantity <span className="text-destructive font-bold">*</span>
+                            </span>
+                          }
+                          className="col-span-6 md:col-span-2"
+                        >
                           <NumericInput
                             placeholder="0"
                             value={it.quantity}
@@ -1407,7 +1464,14 @@ function CreateQuoteDialog({
                             onChange={(e) => updateItem(it.key, { unit: e.target.value })}
                           />
                         </LineField>
-                        <LineField label="Rate (₹)" className="col-span-6 md:col-span-2">
+                        <LineField
+                          label={
+                            <span>
+                              Rate (₹) <span className="text-destructive font-bold">*</span>
+                            </span>
+                          }
+                          className="col-span-6 md:col-span-2"
+                        >
                           <NumericInput
                             placeholder="0"
                             value={it.unit_price}
@@ -1432,18 +1496,6 @@ function CreateQuoteDialog({
                             />
                           )}
                         </LineField>
-                        <div className="col-span-12 md:col-span-12 flex items-center justify-end">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs text-muted-foreground hover:text-destructive"
-                            onClick={() => removeItem(it.key)}
-                            disabled={items.length === 1}
-                          >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove item
-                          </Button>
-                        </div>
                         <LineField
                           label="Product Notes (Material Details & Size Specs)"
                           hint="Blank box for exact material description, dimensions, finish, etc."
@@ -1574,7 +1626,7 @@ function LineField({
   className,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   className?: string;
   children: React.ReactNode;
