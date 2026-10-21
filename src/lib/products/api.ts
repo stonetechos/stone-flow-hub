@@ -24,6 +24,25 @@ export async function listProducts(query = ""): Promise<ProductRow[]> {
   }
   const { data, error } = await q;
   if (error) throw new AppError(mapDbError(error));
+
+  // Auto-seed: If the table is completely empty on initial load, auto-seed via server function
+  if (!s && (!data || data.length === 0)) {
+    try {
+      const { seedDefaultProductsServerFn } = await import("./products.functions");
+      const res = await seedDefaultProductsServerFn();
+      if (res && res.seeded > 0) {
+        const { data: refetched } = await getDb()
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(200);
+        return refetched ?? [];
+      }
+    } catch (e) {
+      console.warn("[products.api] auto-seed notice:", e);
+    }
+  }
+
   return data ?? [];
 }
 
@@ -115,6 +134,16 @@ export async function deleteProduct(id: string): Promise<void> {
 
 /** Seeds the 29 standard architectural natural stone products if missing. */
 export async function seedDefaultProducts(): Promise<{ seeded: number }> {
+  try {
+    const { seedDefaultProductsServerFn } = await import("./products.functions");
+    const res = await seedDefaultProductsServerFn();
+    if (res && typeof res.seeded === "number") {
+      return { seeded: res.seeded };
+    }
+  } catch (serverErr) {
+    console.warn("[products.api] seed server function failed, falling back to client:", serverErr);
+  }
+
   const { DEFAULT_PRODUCT_CATEGORIES, DEFAULT_NATURAL_STONE_PRODUCTS } =
     await import("./default-catalog");
   const db = getDb();

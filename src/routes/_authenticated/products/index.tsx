@@ -126,6 +126,20 @@ function ProductsPage() {
     onError: (err) => toast.error(toUserMessage(err)),
   });
 
+  // Auto-seed if the catalogue is empty on initial load
+  useEffect(() => {
+    if (
+      !query.isLoading &&
+      !query.isError &&
+      (query.data ?? []).length === 0 &&
+      !list.query &&
+      !seedMut.isPending &&
+      !seedMut.isSuccess
+    ) {
+      seedMut.mutate();
+    }
+  }, [query.isLoading, query.isError, query.data, list.query, seedMut]);
+
   const delMut = useMutation({
     mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
