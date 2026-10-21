@@ -1105,7 +1105,10 @@ function CreateQuoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden">
+      <DialogContent
+        noAutoScroll
+        className="max-w-5xl w-[95vw] h-[88vh] max-h-[88vh] flex flex-col p-6 overflow-hidden"
+      >
         <DialogHeader className="shrink-0 pb-2 border-b">
           <DialogTitle>New quote</DialogTitle>
         </DialogHeader>

@@ -264,7 +264,7 @@ export function EntityPicker({
   return (
     <>
       <div className={cn("relative", className)}>
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover modal={true} open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
@@ -285,6 +285,8 @@ export function EntityPicker({
             className="w-[var(--radix-popover-trigger-width)] p-0"
             align="start"
             sideOffset={4}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
           >
             <Command shouldFilter={false}>
               <CommandInput

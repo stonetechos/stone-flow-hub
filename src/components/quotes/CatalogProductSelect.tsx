@@ -53,7 +53,7 @@ export function CatalogProductSelect({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover modal={true} open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
         <Button
           variant="outline"
@@ -69,7 +69,12 @@ export function CatalogProductSelect({
           <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] sm:w-[380px] p-0 shadow-lg" align="start">
+      <PopoverContent
+        className="w-[320px] sm:w-[380px] p-0 shadow-lg"
+        align="start"
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+      >
         <Command>
           <CommandInput
             placeholder="Search stone, adhesive, or sealer…"
@@ -77,7 +82,7 @@ export function CatalogProductSelect({
             onValueChange={setSearch}
             className="text-xs"
           />
-          <CommandList className="max-h-[300px]">
+          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y">
             <CommandEmpty>
               <div className="p-2 text-center text-xs">
                 <p className="text-muted-foreground mb-2">No catalog match found</p>

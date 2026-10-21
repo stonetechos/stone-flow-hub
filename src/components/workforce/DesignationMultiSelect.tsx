@@ -70,7 +70,7 @@ export function DesignationMultiSelect({
   return (
     <div className="space-y-2.5">
       {/* Popover trigger button */}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover modal={true} open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -98,7 +98,12 @@ export function DesignationMultiSelect({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-[320px] sm:w-[400px] p-0" align="start">
+        <PopoverContent
+          className="w-[320px] sm:w-[400px] p-0"
+          align="start"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
           <Command>
             <CommandInput
               placeholder={t("workforce.searchDesignation", "Search designation...")}
