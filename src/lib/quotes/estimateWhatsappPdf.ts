@@ -23,6 +23,7 @@ export interface EstimateWhatsappMessageInput {
   materialAmount: number;
   installationLabourAmount: number;
   adhesivesAmount: number;
+  adhesivesSummary?: string;
   sealerAmount: number;
   sealerApplicationAmount: number;
   totalEstimate: number;
@@ -51,7 +52,9 @@ export function buildEstimateWhatsappMessage(
     `Material to Order: ${input.materialToOrderSummary}`,
     `Material Amount: ${formatInr(input.materialAmount)}`,
     `Installation Labour: ${formatInr(input.installationLabourAmount)}`,
-    `Adhesives: ${formatInr(input.adhesivesAmount)}`,
+    input.adhesivesSummary
+      ? `Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
+      : `Adhesives: ${formatInr(input.adhesivesAmount)}`,
     `Sealer chemical: ${formatInr(input.sealerAmount)}`,
     `Sealer Application: ${formatInr(input.sealerApplicationAmount)}`,
     `Total Estimate: ${formatInr(input.totalEstimate)}`,

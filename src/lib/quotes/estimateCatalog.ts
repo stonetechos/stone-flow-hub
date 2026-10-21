@@ -74,6 +74,31 @@ export function materialQuantityToOrder(
 
 export type AdhesiveUnit = "bag" | "bucket";
 
+/**
+ * Adhesive coverage constants (sq ft per unit).
+ *
+ * For Crazy Pattern stone, 1 bag of adhesive covers only 15 sq ft area due to
+ * irregular shapes, varied slab thickness, and wider uneven joints.
+ * For standard cladding tiles/panels, 1 bag covers 25 sq ft.
+ */
+export const CRAZY_PATTERN_ADHESIVE_COVERAGE_SQFT_PER_BAG = 15;
+export const STANDARD_ADHESIVE_COVERAGE_SQFT_PER_BAG = 25;
+
+/** Detects if a product or category refers to Crazy Pattern in Stone. */
+export function isCrazyPatternProduct(
+  materialCategory?: string | null,
+  productName?: string | null,
+): boolean {
+  const cat = (materialCategory || "").toLowerCase().trim();
+  const name = (productName || "").toLowerCase().trim();
+  return (
+    cat === "crazy_pattern_in_stone" ||
+    cat === "crazy_pattern" ||
+    cat.includes("crazy") ||
+    name.includes("crazy")
+  );
+}
+
 export interface AdhesiveCatalogItem {
   key: string;
   label: string;
@@ -82,6 +107,35 @@ export interface AdhesiveCatalogItem {
   defaultPricePerUnit: number;
   coverageSqftPerUnit: number;
   needsPriceConfirmation?: boolean;
+}
+
+/**
+ * Calculates the required units of an adhesive given wall area breakdown.
+ *
+ * For bags:
+ *   - Crazy pattern areas cover 15 sq ft per bag
+ *   - Standard areas cover adhesive.coverageSqftPerUnit (default 25 sq ft per bag)
+ * For buckets (e.g. PU based):
+ *   - Uses adhesive.coverageSqftPerUnit (default 20 sq ft per bucket)
+ */
+export function calculateAdhesiveUnits(
+  adhesive: AdhesiveCatalogItem,
+  wallBreakdown: { crazySqft: number; standardSqft: number },
+): number {
+  if (adhesive.unit === "bag") {
+    const crazyBags =
+      wallBreakdown.crazySqft > 0
+        ? wallBreakdown.crazySqft / CRAZY_PATTERN_ADHESIVE_COVERAGE_SQFT_PER_BAG
+        : 0;
+    const standardBags =
+      wallBreakdown.standardSqft > 0
+        ? wallBreakdown.standardSqft /
+          (adhesive.coverageSqftPerUnit || STANDARD_ADHESIVE_COVERAGE_SQFT_PER_BAG)
+        : 0;
+    return ceilWhole(crazyBags + standardBags);
+  }
+  const totalSqft = (wallBreakdown.crazySqft || 0) + (wallBreakdown.standardSqft || 0);
+  return ceilWhole(totalSqft / adhesive.coverageSqftPerUnit);
 }
 
 export const ADHESIVE_CATALOG: AdhesiveCatalogItem[] = [

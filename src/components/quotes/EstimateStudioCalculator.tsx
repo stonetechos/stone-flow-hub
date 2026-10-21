@@ -53,6 +53,8 @@ import {
   DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT,
   DISCOUNT_SQFT_THRESHOLD,
   DISCOUNT_PCT,
+  isCrazyPatternProduct,
+  calculateAdhesiveUnits,
 } from "@/lib/quotes/estimateCatalog";
 import type {
   EstimateWorksheet,
@@ -280,13 +282,48 @@ export function EstimateStudioCalculator({
     [labourRate, totalWallSqft],
   );
 
+  const wallBreakdown = useMemo(() => {
+    let crazySqft = 0;
+    let standardSqft = 0;
+
+    const crazyWallIds = new Set(
+      productsComputed
+        .filter((p) => isCrazyPatternProduct(p.materialCategory, p.productName))
+        .map((p) => p.wallId),
+    );
+
+    for (const w of wallsComputed) {
+      if (crazyWallIds.has(w.id)) {
+        crazySqft += w.sqft;
+      } else {
+        standardSqft += w.sqft;
+      }
+    }
+
+    // Fallback: if any product in the quote is crazy pattern but wasn't mapped to a wall,
+    // or if only one wall exists and is crazy, treat total area as crazy
+    const hasCrazyProduct = productsComputed.some((p) =>
+      isCrazyPatternProduct(p.materialCategory, p.productName),
+    );
+    if (hasCrazyProduct && crazySqft === 0 && totalWallSqft > 0) {
+      crazySqft = totalWallSqft;
+      standardSqft = 0;
+    }
+
+    return {
+      crazySqft,
+      standardSqft,
+      hasCrazyPattern: crazySqft > 0 || hasCrazyProduct,
+    };
+  }, [wallsComputed, productsComputed, totalWallSqft]);
+
   const adhesiveLines: EstimateAdhesiveLine[] = useMemo(() => {
     const lines: EstimateAdhesiveLine[] = [];
     for (const a of adhesives) {
       if (!a.selected) continue;
       const cat = ADHESIVE_CATALOG.find((c) => c.key === a.key);
       if (!cat) continue;
-      const units = ceilWhole(totalWallSqft / cat.coverageSqftPerUnit);
+      const units = calculateAdhesiveUnits(cat, wallBreakdown);
       const price = Number(a.pricePerUnit) || 0;
       lines.push({
         key: a.key,
@@ -311,7 +348,7 @@ export function EstimateStudioCalculator({
       });
     }
     return lines;
-  }, [adhesives, otherAdhesive, totalWallSqft]);
+  }, [adhesives, otherAdhesive, wallBreakdown]);
 
   const adhesivesAmount = useMemo(
     () => adhesiveLines.reduce((sum, l) => sum + l.amount, 0),
@@ -513,6 +550,13 @@ export function EstimateStudioCalculator({
         )
         .join("; ");
 
+      const adhesivesSummary = adhesiveLines
+        .filter((l) => l.units > 0)
+        .map(
+          (l) => `${l.units} ${l.unitLabel}${l.units === 1 ? "" : "s"} ${l.customName || l.label}`,
+        )
+        .join(", ");
+
       const message = buildEstimateWhatsappMessage(
         {
           greetingName: greetingName.trim() || "there",
@@ -522,6 +566,7 @@ export function EstimateStudioCalculator({
           materialAmount,
           installationLabourAmount: labourAmount,
           adhesivesAmount,
+          adhesivesSummary: adhesivesSummary || undefined,
           sealerAmount: sealerComputed?.amount ?? 0,
           sealerApplicationAmount: sealerLabourAmount,
           totalEstimate: total,
@@ -876,8 +921,15 @@ export function EstimateStudioCalculator({
         </div>
 
         <div>
-          <div className="mb-1.5 text-xs font-medium text-muted-foreground">
-            Adhesives (select all that apply)
+          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              Adhesives (select all that apply)
+            </span>
+            {wallBreakdown.hasCrazyPattern && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                ⚡ Crazy Pattern stone: 1 bag covers 15 sq ft (standard: 25 sq ft)
+              </span>
+            )}
           </div>
           <div className="space-y-1.5">
             {ADHESIVE_CATALOG.map((cat) => {
@@ -920,7 +972,22 @@ export function EstimateStudioCalculator({
                       }
                     />
                   </LineField>
-                  <LineField label={`${cat.unit}s (auto)`} className="col-span-3 md:col-span-2">
+                  <LineField
+                    label={
+                      <span className="flex items-center gap-1">
+                        <span>{cat.unit}s (auto)</span>
+                        {cat.unit === "bag" && wallBreakdown.hasCrazyPattern && (
+                          <span
+                            className="text-[10px] text-amber-600 dark:text-amber-400 font-normal"
+                            title="Crazy Pattern coverage: 15 sq ft per bag"
+                          >
+                            (15 sqft/bag)
+                          </span>
+                        )}
+                      </span>
+                    }
+                    className="col-span-3 md:col-span-2"
+                  >
                     <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm tabular-nums">
                       {a.selected ? (line?.units ?? 0) : "—"}
                     </div>
@@ -1176,7 +1243,7 @@ function LineField({
   className,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {

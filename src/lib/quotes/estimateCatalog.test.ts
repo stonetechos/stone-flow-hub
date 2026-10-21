@@ -6,6 +6,11 @@ import {
   wallSqft,
   getDefaultSlabPrice,
   calculateMuralSlabs,
+  ADHESIVE_CATALOG,
+  CRAZY_PATTERN_ADHESIVE_COVERAGE_SQFT_PER_BAG,
+  STANDARD_ADHESIVE_COVERAGE_SQFT_PER_BAG,
+  isCrazyPatternProduct,
+  calculateAdhesiveUnits,
 } from "./estimateCatalog";
 
 describe("estimateCatalog - rounding and wastage calculations", () => {
@@ -161,6 +166,74 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       });
       expect(res.slabsRequired).toBe(0);
       expect(res.totalSlabSqft).toBe(0);
+    });
+  });
+
+  describe("Crazy Pattern in Stone - Adhesive Coverage (15 sq ft / bag)", () => {
+    it("defines the business coverage constants correctly", () => {
+      expect(CRAZY_PATTERN_ADHESIVE_COVERAGE_SQFT_PER_BAG).toBe(15);
+      expect(STANDARD_ADHESIVE_COVERAGE_SQFT_PER_BAG).toBe(25);
+    });
+
+    it("detects crazy pattern from materialCategory or productName", () => {
+      expect(isCrazyPatternProduct("crazy_pattern_in_stone", "")).toBe(true);
+      expect(isCrazyPatternProduct("crazy_pattern", "")).toBe(true);
+      expect(isCrazyPatternProduct("", "Crazy Pattern in Stone")).toBe(true);
+      expect(isCrazyPatternProduct("sandstone", 'Mint Crazy Pattern 2"')).toBe(true);
+      expect(isCrazyPatternProduct("natural_stone_cladding_tiles", "Regular Tiles")).toBe(false);
+      expect(isCrazyPatternProduct("", "")).toBe(false);
+      expect(isCrazyPatternProduct(null, null)).toBe(false);
+    });
+
+    it("calculates 6 bags for 80 sq ft crazy pattern (80 / 15 = 5.33 -> 6 bags)", () => {
+      const greyAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "standard_cementitious_grey")!;
+      expect(greyAdhesive).toBeDefined();
+
+      // For 80 sq ft crazy pattern:
+      const crazyBags = calculateAdhesiveUnits(greyAdhesive, { crazySqft: 80, standardSqft: 0 });
+      expect(crazyBags).toBe(6);
+
+      // Contrast with standard stone on 80 sq ft (80 / 25 = 3.2 -> 4 bags):
+      const standardBags = calculateAdhesiveUnits(greyAdhesive, { crazySqft: 0, standardSqft: 80 });
+      expect(standardBags).toBe(4);
+    });
+
+    it("calculates exact multiples and ceiling fractional amounts correctly", () => {
+      const whiteAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "standard_cement_white")!;
+
+      // 15 sqft -> exactly 1 bag
+      expect(calculateAdhesiveUnits(whiteAdhesive, { crazySqft: 15, standardSqft: 0 })).toBe(1);
+
+      // 15.1 sqft -> 2 bags
+      expect(calculateAdhesiveUnits(whiteAdhesive, { crazySqft: 15.1, standardSqft: 0 })).toBe(2);
+
+      // 30 sqft -> exactly 2 bags
+      expect(calculateAdhesiveUnits(whiteAdhesive, { crazySqft: 30, standardSqft: 0 })).toBe(2);
+
+      // 45 sqft -> exactly 3 bags
+      expect(calculateAdhesiveUnits(whiteAdhesive, { crazySqft: 45, standardSqft: 0 })).toBe(3);
+
+      // 100 sqft -> 100 / 15 = 6.666 -> 7 bags
+      expect(calculateAdhesiveUnits(whiteAdhesive, { crazySqft: 100, standardSqft: 0 })).toBe(7);
+    });
+
+    it("handles mixed walls (e.g. 50 sq ft crazy pattern + 50 sq ft standard tiles)", () => {
+      const greyAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "standard_cementitious_grey")!;
+
+      // 50 / 15 (= 3.333...) + 50 / 25 (= 2) = 5.333... -> 6 bags
+      const mixedBags = calculateAdhesiveUnits(greyAdhesive, { crazySqft: 50, standardSqft: 50 });
+      expect(mixedBags).toBe(6);
+    });
+
+    it("handles bucket adhesives (PU based) using its per-bucket coverage", () => {
+      const puAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "pu_based")!;
+      // 80 sqft / 20 = 4 buckets
+      expect(calculateAdhesiveUnits(puAdhesive, { crazySqft: 80, standardSqft: 0 })).toBe(4);
+    });
+
+    it("returns 0 for zero or empty sqft", () => {
+      const greyAdhesive = ADHESIVE_CATALOG.find((a) => a.key === "standard_cementitious_grey")!;
+      expect(calculateAdhesiveUnits(greyAdhesive, { crazySqft: 0, standardSqft: 0 })).toBe(0);
     });
   });
 });
