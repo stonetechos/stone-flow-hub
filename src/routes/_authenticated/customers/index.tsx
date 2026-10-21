@@ -120,9 +120,12 @@ import type { DbEnum } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/customers/")({
   ssr: false,
   component: CustomersPage,
-  validateSearch: (s: Record<string, unknown>): { edit?: string; tab?: string } => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { edit?: string; tab?: string; create?: boolean } => ({
     edit: typeof s.edit === "string" ? s.edit : undefined,
     tab: typeof s.tab === "string" ? s.tab : undefined,
+    create: s.create === true || s.create === "true" ? true : undefined,
   }),
 });
 
@@ -130,7 +133,7 @@ function CustomersPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit, tab: urlTab } = Route.useSearch();
+  const { edit, tab: urlTab, create } = Route.useSearch();
   const [activeTab, setActiveTab] = useState<"directory" | "pipeline">(
     urlTab === "pipeline" ? "pipeline" : "directory",
   );
@@ -259,6 +262,14 @@ function CustomersPage() {
       nav({ to: "/customers", search: {}, replace: true });
     }
   }, [edit, query.data, nav]);
+
+  useEffect(() => {
+    if (create) {
+      setEditing(null);
+      setFormOpen(true);
+      nav({ to: "/customers", search: {}, replace: true });
+    }
+  }, [create, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteCustomer(id),

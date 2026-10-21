@@ -273,9 +273,9 @@ function NavGroupRow({
       case "sales":
         return "/quotes/new";
       case "purchase":
-        return "/rfqs";
+        return "/purchase-orders/new";
       case "items":
-        return "/products";
+        return "/products?create=true";
       default:
         return null;
     }
@@ -346,14 +346,11 @@ function NavGroupRow({
   }
 
   const handleGroupClick = () => {
-    if (group.to) {
+    if (group.items.length > 0) {
+      onToggle();
+    } else if (group.to) {
       void navigate({ to: group.to });
       onNavigate?.();
-      if (group.items.length > 0 && !isOpen) {
-        onToggle();
-      }
-    } else {
-      onToggle();
     }
   };
 

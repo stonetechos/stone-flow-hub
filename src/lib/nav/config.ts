@@ -187,7 +187,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Products & Materials",
     icon: PackageSearch,
     group: "items",
-    quickCreateTo: "/products",
+    quickCreateTo: "/products?create=true",
   },
   {
     id: "inventory",
@@ -211,7 +211,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Customers",
     icon: Users,
     group: "sales",
-    quickCreateTo: "/customers",
+    quickCreateTo: "/customers?create=true",
   },
   {
     id: "enquiries",
@@ -276,7 +276,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "Vendors",
     icon: Factory,
     group: "purchase",
-    quickCreateTo: "/vendors",
+    quickCreateTo: "/vendors?create=true",
   },
   {
     id: "rfqs",
@@ -284,7 +284,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     label: "RFQ (Request for Quote)",
     icon: Send,
     group: "purchase",
-    quickCreateTo: "/rfqs",
   },
   {
     id: "purchase-orders",

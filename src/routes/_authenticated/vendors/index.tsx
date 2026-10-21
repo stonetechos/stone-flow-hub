@@ -67,15 +67,17 @@ import {
 export const Route = createFileRoute("/_authenticated/vendors/")({
   ssr: false,
   component: VendorsPage,
-  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
-    typeof s.edit === "string" ? { edit: s.edit } : {},
+  validateSearch: (s: Record<string, unknown>): { edit?: string; create?: boolean } => ({
+    edit: typeof s.edit === "string" ? s.edit : undefined,
+    create: s.create === true || s.create === "true" ? true : undefined,
+  }),
 });
 
 function VendorsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit } = Route.useSearch();
+  const { edit, create } = Route.useSearch();
   const [q, setQ] = useState("");
   const dq = useDebouncedValue(q, 250);
   const [formOpen, setFormOpen] = useState(false);
@@ -111,6 +113,14 @@ function VendorsPage() {
       nav({ to: "/vendors", search: {}, replace: true });
     }
   }, [edit, query.data, nav]);
+
+  useEffect(() => {
+    if (create) {
+      setEditing(null);
+      setFormOpen(true);
+      nav({ to: "/vendors", search: {}, replace: true });
+    }
+  }, [create, nav]);
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteVendor(id),

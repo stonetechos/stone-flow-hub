@@ -112,3 +112,69 @@ export async function deleteProduct(id: string): Promise<void> {
   const { error } = await getDb().from("products").delete().eq("id", id);
   if (error) throw new AppError(mapDbError(error));
 }
+
+/** Seeds the 29 standard architectural natural stone products if missing. */
+export async function seedDefaultProducts(): Promise<{ seeded: number }> {
+  const { DEFAULT_PRODUCT_CATEGORIES, DEFAULT_NATURAL_STONE_PRODUCTS } =
+    await import("./default-catalog");
+  const db = getDb();
+
+  // 1. Ensure categories exist
+  const catMap = new Map<string, string>();
+  for (const cat of DEFAULT_PRODUCT_CATEGORIES) {
+    const { data: existing } = await db
+      .from("product_categories")
+      .select("id, slug")
+      .eq("slug", cat.slug)
+      .maybeSingle();
+
+    if (existing?.id) {
+      catMap.set(cat.slug, existing.id);
+    } else {
+      const { data: created, error } = await db
+        .from("product_categories")
+        .insert({
+          name: cat.name,
+          slug: cat.slug,
+          sort_order: cat.sort_order,
+          is_active: true,
+        })
+        .select("id, slug")
+        .maybeSingle();
+      if (!error && created?.id) {
+        catMap.set(cat.slug, created.id);
+      }
+    }
+  }
+
+  // 2. Fetch existing product names to avoid duplicates
+  const { data: existingProducts } = await db.from("products").select("name");
+  const existingNames = new Set(
+    (existingProducts ?? []).map((p) => (p.name || "").trim().toLowerCase()),
+  );
+
+  let seeded = 0;
+  for (const item of DEFAULT_NATURAL_STONE_PRODUCTS) {
+    if (existingNames.has(item.name.toLowerCase())) continue;
+
+    const categoryId = catMap.get(item.categorySlug) ?? null;
+    const { error } = await db.from("products").insert({
+      product_code: "", // Database trigger assigns PRD-XXXX
+      name: item.name,
+      category_id: categoryId,
+      stone_type: item.stoneType,
+      finish: item.finish,
+      thickness_mm: item.thicknessMm,
+      default_unit: item.defaultUnit,
+      hsn_code: item.hsnCode,
+      description: item.description,
+      is_active: true,
+    });
+
+    if (!error) {
+      seeded++;
+    }
+  }
+
+  return { seeded };
+}

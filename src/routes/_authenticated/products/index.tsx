@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Plus, Loader2, PackageSearch, ExternalLink } from "lucide-react";
+import { Plus, Loader2, PackageSearch, ExternalLink, Sparkles } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
@@ -46,6 +46,7 @@ import {
   deleteProduct,
   listProducts,
   listProductCategories,
+  seedDefaultProducts,
   updateProduct,
   type ProductRow,
 } from "@/lib/products/api";
@@ -60,15 +61,17 @@ import {
 export const Route = createFileRoute("/_authenticated/products/")({
   ssr: false,
   component: ProductsPage,
-  validateSearch: (s: Record<string, unknown>): { edit?: string } =>
-    typeof s.edit === "string" ? { edit: s.edit } : {},
+  validateSearch: (s: Record<string, unknown>): { edit?: string; create?: boolean } => ({
+    edit: typeof s.edit === "string" ? s.edit : undefined,
+    create: s.create === true || s.create === "true" ? true : undefined,
+  }),
 });
 
 function ProductsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
-  const { edit } = Route.useSearch();
+  const { edit, create } = Route.useSearch();
   // Search/debounce/pagination/table-prefs via the
   // shared list-page hook (same 250ms debounce and "products" prefs key).
   const list = useListPageState("products");
@@ -102,6 +105,27 @@ function ProductsPage() {
     }
   }, [edit, query.data, nav]);
 
+  useEffect(() => {
+    if (create) {
+      setEditing(null);
+      setFormOpen(true);
+      nav({ to: "/products", search: {}, replace: true });
+    }
+  }, [create, nav]);
+
+  const seedMut = useMutation({
+    mutationFn: () => seedDefaultProducts(),
+    onSuccess: (res) => {
+      if (res.seeded > 0) {
+        toast.success(`Loaded ${res.seeded} default natural stone products.`);
+      } else {
+        toast.info("All 29 default natural stone products are already in catalogue.");
+      }
+      invalidateProduct(qc);
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
   const delMut = useMutation({
     mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
@@ -134,9 +158,26 @@ function ProductsPage() {
         columns={<ColumnsMenu columns={columnDefs} isHidden={isHidden} onToggle={toggleColumn} />}
         density={<DensityMenu density={prefs.density} onChange={setDensity} />}
         extra={
-          <Button asChild variant="outline" size="sm" className="h-8">
-            <Link to="/products/configure">{t("common.configure", "Configure")}</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs text-cyan-900 border-cyan-300 hover:bg-cyan-50"
+              onClick={() => seedMut.mutate()}
+              disabled={seedMut.isPending}
+              title="Ensure all 29 standard natural stone products are loaded"
+            >
+              {seedMut.isPending ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+              )}
+              Sync Default Stones (29)
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-8">
+              <Link to="/products/configure">{t("common.configure", "Configure")}</Link>
+            </Button>
+          </div>
         }
         action={
           <Button size="sm" className="h-8" onClick={openCreate}>
@@ -158,9 +199,23 @@ function ProductsPage() {
             "Add stones you deal with to reuse them in enquiries and RFQs.",
           )}
           action={
-            <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> {t("products.newProduct", "New product")}
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                onClick={() => seedMut.mutate()}
+                disabled={seedMut.isPending}
+                className="bg-cyan-800 hover:bg-cyan-900 text-white"
+              >
+                {seedMut.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4 text-amber-300" />
+                )}
+                Load Default Stone Products (29)
+              </Button>
+              <Button variant="outline" onClick={openCreate}>
+                <Plus className="mr-2 h-4 w-4" /> {t("products.newProduct", "New product")}
+              </Button>
+            </div>
           }
         />
       ) : (
