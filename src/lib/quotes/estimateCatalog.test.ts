@@ -264,36 +264,46 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
 
   describe("buildEstimateWhatsappMessage with optional carting", () => {
     it("includes Local Carting line and suppresses on-actuals fallback when carting amount is provided", () => {
-      const msg = buildEstimateWhatsappMessage({
-        greetingName: "Rajesh",
-        productDescription: "Mint Sandstone Crazy Pattern",
-        wallSummary: "100 sq ft",
-        materialAmount: 12000,
-        labourAmount: 4500,
-        adhesivesAmount: 2400,
-        sealerAmount: 1800,
-        sealerApplicationAmount: 1000,
-        cartingAmount: 1500,
-        cartingLocation: "From yard to Bodakdev site",
-        totalEstimate: 23200,
-      });
+      const msg = buildEstimateWhatsappMessage(
+        {
+          greetingName: "Rajesh",
+          wallSizeSummary: "Wall 1: 10ft x 10ft = 100 sq ft",
+          materialSummary: "Mint Sandstone Crazy Pattern",
+          materialToOrderSummary: "105 sq ft (including 5% wastage)",
+          materialAmount: 12000,
+          installationLabourAmount: 4500,
+          adhesivesAmount: 2400,
+          sealerAmount: 1800,
+          sealerApplicationAmount: 1000,
+          cartingAmount: 1500,
+          cartingLocation: "From yard to Bodakdev site",
+          totalEstimate: 23200,
+          preparerName: "Stone Tech Sales",
+        },
+        "Stone Tech",
+      );
 
       expect(msg).toContain("Local Carting: ₹1,500 (From yard to Bodakdev site)");
       expect(msg).not.toContain("Transportation charges will be extra and on actuals.");
     });
 
     it("falls back to on-actuals transport note when carting amount is not provided", () => {
-      const msg = buildEstimateWhatsappMessage({
-        greetingName: "Rajesh",
-        productDescription: "Mint Sandstone Crazy Pattern",
-        wallSummary: "100 sq ft",
-        materialAmount: 12000,
-        labourAmount: 4500,
-        adhesivesAmount: 2400,
-        sealerAmount: 1800,
-        sealerApplicationAmount: 1000,
-        totalEstimate: 21700,
-      });
+      const msg = buildEstimateWhatsappMessage(
+        {
+          greetingName: "Rajesh",
+          wallSizeSummary: "Wall 1: 10ft x 10ft = 100 sq ft",
+          materialSummary: "Mint Sandstone Crazy Pattern",
+          materialToOrderSummary: "105 sq ft (including 5% wastage)",
+          materialAmount: 12000,
+          installationLabourAmount: 4500,
+          adhesivesAmount: 2400,
+          sealerAmount: 1800,
+          sealerApplicationAmount: 1000,
+          totalEstimate: 21700,
+          preparerName: "Stone Tech Sales",
+        },
+        "Stone Tech",
+      );
 
       expect(msg).not.toContain("Local Carting:");
       expect(msg).toContain("Transportation charges will be extra and on actuals.");
