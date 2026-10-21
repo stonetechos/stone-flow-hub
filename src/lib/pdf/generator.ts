@@ -107,10 +107,10 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const rows = (doc.lines ?? [])
     .map(
       (l, i) => `<tr>
-        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};font-size:11px;vertical-align:middle">${i + 1}</td>
+        <td style="padding:9px 4px;border-bottom:1px solid ${border};color:${muted};font-size:11px;text-align:center;vertical-align:middle;width:34px">${i + 1}</td>
         ${
           showPhoto
-            ? `<td style="padding:6px;border-bottom:1px solid ${border};text-align:center;vertical-align:middle;width:56px">
+            ? `<td style="padding:6px 4px;border-bottom:1px solid ${border};text-align:center;vertical-align:middle;width:56px">
                 ${
                   l.image
                     ? `<img src="${esc(l.image)}" alt="${esc(l.label)}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid ${border};display:block;margin:0 auto;" />`
@@ -119,15 +119,15 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
               </td>`
             : ""
         }
-        <td style="padding:8px;border-bottom:1px solid ${border};vertical-align:middle">
+        <td style="padding:9px 12px;border-bottom:1px solid ${border};text-align:left;vertical-align:middle">
           <div style="font-weight:600">${esc(l.label)}</div>
           ${l.notes ? `<div style="font-size:10.5px;color:#64748b;margin-top:2px;white-space:pre-wrap;line-height:1.35">${esc(l.notes)}</div>` : ""}
         </td>
-        ${showHsn ? `<td style="padding:8px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px;vertical-align:middle">${esc(l.hsn ?? "")}</td>` : ""}
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;vertical-align:middle">${esc(l.qty ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};color:${muted};vertical-align:middle">${esc(l.unit ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;vertical-align:middle">${esc(l.rate ?? "")}</td>
-        <td style="padding:8px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle">${esc(l.amount ?? "")}</td>
+        ${showHsn ? `<td style="padding:9px 6px;border-bottom:1px solid ${border};font-family:monospace;font-size:11px;text-align:center;vertical-align:middle;width:75px">${esc(l.hsn ?? "")}</td>` : ""}
+        <td style="padding:9px 10px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;width:65px">${esc(l.qty ?? "")}</td>
+        <td style="padding:9px 6px;border-bottom:1px solid ${border};color:${muted};font-size:11px;text-align:center;vertical-align:middle;width:60px">${esc(l.unit ?? "")}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid ${border};text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;width:90px">${esc(l.rate ?? "")}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid ${border};text-align:right;font-weight:600;font-variant-numeric:tabular-nums;vertical-align:middle;width:110px">${esc(l.amount ?? "")}</td>
       </tr>`,
     )
     .join("");
@@ -246,9 +246,19 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   .doc-sub { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:${muted}; margin-top:4px; }
   .brand-tagline { font-family: 'Caveat', cursive, 'Brush Script MT', sans-serif; font-size: 19px; font-weight: 700; color: ${accent}; margin-top: 3px; letter-spacing: 0.01em; line-height: 1.2; }
   .parties { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0 16px; }
-  table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-  thead th { text-align:left; padding:8px 10px; background:${accent}; color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
-  thead th:last-child, thead th.right { text-align:right; }
+  table { width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:12px; }
+  thead th {
+    background:${accent};
+    color:#fff;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    font-weight:700;
+    line-height:1.2;
+    vertical-align:middle;
+  }
+  thead tr th:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+  thead tr th:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
   .totals { margin-top:20px; margin-left:auto; width:300px; }
   .notes { margin-top:16px; padding:12px 14px; background:#F8FAFC; border-left:3px solid ${accent}; font-size:12px; color:#334155; border-radius: 0 4px 4px 0; }
   .terms { margin-top:14px; font-size:11px; color:${muted}; white-space:pre-line; line-height:1.55; }
@@ -284,14 +294,14 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
       rows
         ? `<table>
             <thead><tr>
-              <th style="width:28px">#</th>
-              ${showPhoto ? `<th style="width:56px;text-align:center">Photo</th>` : ""}
-              <th>Description</th>
-              ${showHsn ? `<th style="width:70px">HSN</th>` : ""}
-              <th class="right" style="width:70px">Qty</th>
-              <th style="width:60px">Unit</th>
-              <th class="right" style="width:90px">Rate</th>
-              <th class="right" style="width:110px">Amount</th>
+              <th style="width:34px;text-align:center;padding:9px 4px;">#</th>
+              ${showPhoto ? `<th style="width:56px;text-align:center;padding:9px 4px;">Photo</th>` : ""}
+              <th style="text-align:left;padding:9px 12px;">Description</th>
+              ${showHsn ? `<th style="width:75px;text-align:center;padding:9px 6px;">HSN</th>` : ""}
+              <th style="width:65px;text-align:right;padding:9px 10px;">Qty</th>
+              <th style="width:60px;text-align:center;padding:9px 6px;">Unit</th>
+              <th style="width:90px;text-align:right;padding:9px 10px;">Rate</th>
+              <th style="width:110px;text-align:right;padding:9px 12px;">Amount</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>`
@@ -546,25 +556,35 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   }
 
   // Items Table Header
+  const lines = doc.lines ?? [];
+  const hasHsnInLines = lines.some((l) => Boolean(l.hsn));
+
   pdf.setFillColor(15, 118, 110);
-  pdf.rect(15, y, 180, 7.5, "F");
+  pdf.roundedRect(15, y, 180, 7.5, 1, 1, "F");
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(255, 255, 255);
-  pdf.text("#", 18, y + 5);
-  pdf.text("Description", 26, y + 5);
-  pdf.text("Qty", 125, y + 5, { align: "right" });
-  pdf.text("Unit", 131, y + 5);
-  pdf.text("Rate", 160, y + 5, { align: "right" });
-  pdf.text("Amount", 190, y + 5, { align: "right" });
+  pdf.text("#", 18, y + 5, { align: "center" });
+  pdf.text("Description", 24, y + 5);
+  if (hasHsnInLines) {
+    pdf.text("HSN", 110, y + 5, { align: "center" });
+    pdf.text("Qty", 130, y + 5, { align: "right" });
+    pdf.text("Unit", 142, y + 5, { align: "center" });
+    pdf.text("Rate", 166, y + 5, { align: "right" });
+    pdf.text("Amount", 192, y + 5, { align: "right" });
+  } else {
+    pdf.text("Qty", 125, y + 5, { align: "right" });
+    pdf.text("Unit", 138, y + 5, { align: "center" });
+    pdf.text("Rate", 166, y + 5, { align: "right" });
+    pdf.text("Amount", 192, y + 5, { align: "right" });
+  }
 
   y += 7.5;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   pdf.setTextColor(15, 23, 42);
 
-  const lines = doc.lines ?? [];
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i];
     if (y > 250) {
@@ -572,18 +592,27 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
       y = 20;
     }
     y += 6;
-    pdf.text(String(i + 1), 18, y);
-    pdf.text(l.label ? l.label.slice(0, 45) : "—", 26, y);
-    pdf.text(String(l.qty ?? ""), 125, y, { align: "right" });
-    pdf.text(String(l.unit ?? ""), 131, y);
-    pdf.text(cleanAmount(l.rate), 160, y, { align: "right" });
-    pdf.text(cleanAmount(l.amount), 190, y, { align: "right" });
+    pdf.text(String(i + 1), 18, y, { align: "center" });
+    if (hasHsnInLines) {
+      pdf.text(l.label ? l.label.slice(0, 38) : "—", 24, y);
+      pdf.text(l.hsn ? String(l.hsn) : "—", 110, y, { align: "center" });
+      pdf.text(String(l.qty ?? ""), 130, y, { align: "right" });
+      pdf.text(String(l.unit ?? ""), 142, y, { align: "center" });
+      pdf.text(cleanAmount(l.rate), 166, y, { align: "right" });
+      pdf.text(cleanAmount(l.amount), 192, y, { align: "right" });
+    } else {
+      pdf.text(l.label ? l.label.slice(0, 45) : "—", 24, y);
+      pdf.text(String(l.qty ?? ""), 125, y, { align: "right" });
+      pdf.text(String(l.unit ?? ""), 138, y, { align: "center" });
+      pdf.text(cleanAmount(l.rate), 166, y, { align: "right" });
+      pdf.text(cleanAmount(l.amount), 192, y, { align: "right" });
+    }
 
     if (l.notes) {
       y += 4;
       pdf.setFontSize(7.5);
       pdf.setTextColor(100, 116, 139);
-      pdf.text(l.notes.slice(0, 70), 26, y);
+      pdf.text(l.notes.slice(0, 70), 24, y);
       pdf.setFontSize(8.5);
       pdf.setTextColor(15, 23, 42);
     }
