@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   FileText,
@@ -56,12 +56,22 @@ import { ProjectProfitDiaryTab } from "@/components/projects/ProjectProfitDiaryT
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
   component: ProjectHub,
 });
 
 function ProjectHub() {
   const { projectId } = Route.useParams();
-  const [tab, setTab] = useState("overview");
+  const search = Route.useSearch();
+  const [tab, setTab] = useState(() => (search?.tab ? search.tab : "overview"));
+
+  useEffect(() => {
+    if (search?.tab) {
+      setTab(search.tab);
+    }
+  }, [search?.tab]);
   const qc = useQueryClient();
   const roles = useRoles();
   const canTransfer = roles.isAdmin || roles.isSalesManager;

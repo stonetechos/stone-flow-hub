@@ -42,6 +42,7 @@ import {
   Layers,
   HardHat,
   Coins,
+  TrendingUp,
   Bot,
   type LucideIcon,
 } from "lucide-react";
@@ -132,6 +133,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
   {
+    id: "profitability",
+    to: "/dashboards/profitability",
+    label: "Profit & ₹50L Target",
+    icon: TrendingUp,
+    group: "overview",
+    allowedRoles: ["admin", "super_admin", "sales_manager"],
+  },
+  {
     id: "agent-centre",
     to: "/agent-centre",
     label: "Agent Centre",
@@ -139,7 +148,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
 
-  // Sales & CRM: Website Leads & CRM -> Customers -> Quotations -> Sales Invoices -> Dispatches
+  // Sales & CRM: Website Leads & CRM -> Customers -> Projects -> Quotations -> Sales Invoices -> Dispatches
   {
     id: "enquiries",
     to: "/enquiries",
@@ -149,6 +158,14 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
+  {
+    id: "projects",
+    to: "/projects",
+    label: "Projects & Profit Diary",
+    icon: Building2,
+    group: "sales",
+    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+  },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
   { id: "invoices", to: "/invoices", label: "Sales Invoices", icon: Receipt, group: "sales" },
   { id: "dispatch", to: "/dispatch", label: "Dispatches", icon: Truck, group: "sales" },

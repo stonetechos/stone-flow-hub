@@ -86,6 +86,7 @@ import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesP
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
+import { ProfitTargetDashboardCard } from "@/components/dashboard/ProfitTargetDashboardCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -222,6 +223,9 @@ function DashboardPage() {
                   brief={brief}
                   nocturnalQuip={nocturnalQuip}
                 />
+
+                {/* 50 Lakh Profit Target & Salesperson Leaderboard Radar */}
+                <ProfitTargetDashboardCard />
 
                 {/* Liabilities & Loan EMIs Due Prompts */}
                 <DueLiabilitiesPromptCard />

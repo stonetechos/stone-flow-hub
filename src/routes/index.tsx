@@ -818,6 +818,19 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
+      {/* Authenticated Staff Top Alert */}
+      {isAuthenticatedStaff && (
+        <div className="bg-emerald-700 text-white px-4 py-2 text-center text-xs font-semibold flex items-center justify-center gap-2 shadow-xs">
+          <span>👋 Logged in as Stone Tech Staff.</span>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-1 bg-white text-emerald-950 px-2.5 py-0.5 rounded-full font-bold hover:bg-emerald-50 transition-colors shadow-2xs"
+          >
+            Go to ERP Dashboard & Profit Diary →
+          </Link>
+        </div>
+      )}
+
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
@@ -892,7 +905,12 @@ function HomePage() {
             <Button
               asChild
               size="default"
-              className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
+              className={cn(
+                "h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border",
+                isAuthenticatedStaff
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-500"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90 border-primary",
+              )}
             >
               <Link
                 to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
@@ -903,8 +921,10 @@ function HomePage() {
                   className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
-                <span className="hidden sm:inline">Employees Login</span>
-                <span className="sm:hidden text-xs">Login</span>
+                <span className="hidden sm:inline">
+                  {isAuthenticatedStaff ? "Open ERP Dashboard" : "Employees Login"}
+                </span>
+                <span className="sm:hidden text-xs">{isAuthenticatedStaff ? "ERP" : "Login"}</span>
               </Link>
             </Button>
           </div>

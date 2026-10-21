@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Loader2, Building2, ExternalLink } from "lucide-react";
+import { Plus, Loader2, Building2, ExternalLink, Receipt } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { toast } from "sonner";
@@ -237,20 +237,48 @@ function ProjectsPage() {
                     </TableCell>
                   )}
                   <TableCell>
-                    <RowActions
-                      extra={
-                        <DropdownMenuItem asChild>
-                          <Link to="/projects/$projectId" params={{ projectId: p.id }}>
-                            <ExternalLink className="mr-2 h-4 w-4" /> Open
-                          </Link>
-                        </DropdownMenuItem>
-                      }
-                      onEdit={() => {
-                        setEditing(p);
-                        setFormOpen(true);
-                      }}
-                      onDelete={() => setToDelete(p)}
-                    />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        asChild
+                        size="xs"
+                        variant="outline"
+                        className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/40"
+                      >
+                        <Link
+                          to="/projects/$projectId"
+                          params={{ projectId: p.id }}
+                          search={{ tab: "diary" }}
+                        >
+                          <Receipt className="h-3 w-3 text-cyan-600" />
+                          <span>Profit Diary</span>
+                        </Link>
+                      </Button>
+                      <RowActions
+                        extra={
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to="/projects/$projectId"
+                                params={{ projectId: p.id }}
+                                search={{ tab: "diary" }}
+                              >
+                                <Receipt className="mr-2 h-4 w-4 text-cyan-600" /> Open Profit Diary
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to="/projects/$projectId" params={{ projectId: p.id }}>
+                                <ExternalLink className="mr-2 h-4 w-4" /> Open Project
+                              </Link>
+                            </DropdownMenuItem>
+                          </>
+                        }
+                        onEdit={() => {
+                          setEditing(p);
+                          setFormOpen(true);
+                        }}
+                        onDelete={() => setToDelete(p)}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
