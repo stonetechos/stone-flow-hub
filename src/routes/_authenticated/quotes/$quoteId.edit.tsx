@@ -732,6 +732,17 @@ function LineItemsEditor({
                                 updateRow(r.id, "unit_price", String(prod.defaultPrice));
                                 patchObj.unit_price = prod.defaultPrice;
                               }
+                              if (prod.category === "sealer" || prod.defaultUnit === "ltr") {
+                                const currentQty = Number(r.quantity) || 0;
+                                const convertedQty =
+                                  currentQty > 10
+                                    ? Math.ceil(currentQty / 50)
+                                    : currentQty > 0
+                                      ? currentQty
+                                      : 1;
+                                updateRow(r.id, "quantity", String(convertedQty));
+                                patchObj.quantity = convertedQty;
+                              }
                               if (saleMode === "cash") {
                                 updateRow(r.id, "tax_pct", "0");
                                 patchObj.tax_pct = 0;

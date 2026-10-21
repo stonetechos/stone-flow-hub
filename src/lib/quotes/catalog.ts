@@ -9,7 +9,7 @@
 export interface CatalogItem {
   id: string;
   name: string;
-  category: "stone_product" | "adhesive" | "sealer";
+  category: "stone_product" | "adhesive" | "sealer" | "labour";
   defaultUnit: string;
   defaultPrice?: number;
   hsnCode?: string;
@@ -328,10 +328,32 @@ export const SEALERS_CATALOG: CatalogItem[] = [
   },
 ];
 
+export const SERVICES_CATALOG: CatalogItem[] = [
+  {
+    id: "srv_installation_labour",
+    name: "Installation Labour",
+    category: "labour",
+    defaultUnit: "sqft",
+    defaultPrice: 80,
+    hsnCode: "9954",
+    defaultTaxPct: 18,
+  },
+  {
+    id: "srv_sealer_application_labour",
+    name: "Sealer Application Labour",
+    category: "labour",
+    defaultUnit: "sqft",
+    defaultPrice: 10,
+    hsnCode: "9954",
+    defaultTaxPct: 18,
+  },
+];
+
 export const MASTER_PRODUCT_CATALOG: CatalogItem[] = [
   ...STONE_PRODUCTS_CATALOG,
   ...ADHESIVES_CATALOG,
   ...SEALERS_CATALOG,
+  ...SERVICES_CATALOG,
 ];
 
 export function findCatalogItemByName(name: string): CatalogItem | undefined {

@@ -16,6 +16,7 @@ import {
   STONE_PRODUCTS_CATALOG,
   ADHESIVES_CATALOG,
   SEALERS_CATALOG,
+  SERVICES_CATALOG,
   type CatalogItem,
 } from "@/lib/quotes/catalog";
 
@@ -162,6 +163,32 @@ export function CatalogProductSelect({
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <span className="rounded bg-sky-50 text-sky-800 border border-sky-200 px-1 py-0.2">
                       Sealer
+                    </span>
+                    {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+
+            <CommandGroup heading="Installation & Application Labour">
+              {SERVICES_CATALOG.map((item) => (
+                <CommandItem
+                  key={item.id}
+                  value={item.name}
+                  onSelect={() => handleSelect(item)}
+                  className="text-xs flex items-center justify-between cursor-pointer"
+                >
+                  <div>
+                    <span className="font-medium">{item.name}</span>
+                    {item.defaultPrice && (
+                      <span className="ml-1 text-[11px] text-emerald-700">
+                        (₹{item.defaultPrice}/{item.defaultUnit})
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <span className="rounded bg-indigo-50 text-indigo-800 border border-indigo-200 px-1 py-0.2">
+                      Labour
                     </span>
                     {value === item.name && <Check className="h-3.5 w-3.5 text-primary" />}
                   </div>
