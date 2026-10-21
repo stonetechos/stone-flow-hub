@@ -421,6 +421,7 @@ const updateCustomerCrmStatusInput = z.object({
   response_status: z
     .enum([
       "active_responsive",
+      "payment_pending",
       "order_placed",
       "order_completed",
       "regular_future_requirement",
@@ -436,6 +437,11 @@ const updateCustomerCrmStatusInput = z.object({
   next_call_channel: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]).nullish(),
   next_call_agenda: z.string().nullish(),
   complete_pending_followup_id: z.string().uuid().or(z.literal("")).nullish(),
+  payment_promised_date: z.string().nullish(),
+  payment_promised_amount: z.number().nonnegative().nullish(),
+  payment_reminder_flag_days: z.number().int().nonnegative().nullish(),
+  payment_reminder_notes: z.string().nullish(),
+  payment_reminder_completed: z.boolean().nullish(),
 });
 
 export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" })
@@ -473,9 +479,49 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       updatedWf.call_count = Number(currentWf.call_count ?? 0) + 1;
     }
 
-    if (data.next_call_at) {
-      updatedWf.next_call_at = data.next_call_at;
-      if (data.next_call_agenda) updatedWf.next_call_agenda = data.next_call_agenda;
+    // Handle Payment Promise & Follow-up Reminders
+    if (data.payment_promised_date !== undefined) {
+      if (data.payment_promised_date) {
+        updatedWf.payment_promised_date = data.payment_promised_date;
+        updatedWf.payment_promised_amount =
+          data.payment_promised_amount !== undefined ? data.payment_promised_amount : null;
+        updatedWf.payment_reminder_flag_days =
+          typeof data.payment_reminder_flag_days === "number" ? data.payment_reminder_flag_days : 2;
+        updatedWf.payment_reminder_notes = data.payment_reminder_notes ?? null;
+        delete updatedWf.payment_reminder_completed_at;
+      } else {
+        delete updatedWf.payment_promised_date;
+        delete updatedWf.payment_promised_amount;
+        delete updatedWf.payment_reminder_notes;
+      }
+    }
+
+    if (data.payment_reminder_completed) {
+      updatedWf.payment_reminder_completed_at = nowIso;
+    }
+
+    // Auto-calculate follow-up schedule if payment promised and no explicit next_call_at was provided
+    let effectiveNextCallAt = data.next_call_at;
+    let effectiveNextCallAgenda = data.next_call_agenda;
+
+    if (data.payment_promised_date && !effectiveNextCallAt) {
+      const pDate = new Date(data.payment_promised_date);
+      if (!isNaN(pDate.getTime())) {
+        const flagDays =
+          typeof data.payment_reminder_flag_days === "number" ? data.payment_reminder_flag_days : 2;
+        pDate.setDate(pDate.getDate() - flagDays);
+        pDate.setHours(10, 0, 0, 0); // 10:00 AM on flag start date
+        const autoIso = pDate.toISOString();
+        effectiveNextCallAt = pDate.getTime() < Date.now() ? nowIso : autoIso;
+        effectiveNextCallAgenda = `Payment Follow-up: Customer promised payment on ${new Date(
+          data.payment_promised_date,
+        ).toLocaleDateString("en-IN")}`;
+      }
+    }
+
+    if (effectiveNextCallAt) {
+      updatedWf.next_call_at = effectiveNextCallAt;
+      if (effectiveNextCallAgenda) updatedWf.next_call_agenda = effectiveNextCallAgenda;
     }
 
     // Determine is_active status
@@ -489,6 +535,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       targetIsActive = false;
     } else if (
       data.response_status === "active_responsive" ||
+      data.response_status === "payment_pending" ||
       data.response_status === "order_placed" ||
       data.response_status === "order_completed" ||
       data.response_status === "regular_future_requirement" ||
@@ -597,7 +644,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
     }
 
     // If a next call is scheduled, insert into followups table
-    if (data.next_call_at) {
+    if (effectiveNextCallAt) {
       // Find latest enquiry / project for this customer (e.g. from website leads)
       const { data: latestEnq } = await supabaseAdmin
         .from("enquiries")
@@ -607,7 +654,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
         .limit(1)
         .maybeSingle();
 
-      const scheduledIso = new Date(data.next_call_at).toISOString();
+      const scheduledIso = new Date(effectiveNextCallAt).toISOString();
 
       const { error: insErr } = await supabaseAdmin.from("followups").insert({
         entity_type: "customer",
@@ -616,7 +663,7 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
         project_id: latestEnq?.project_id ?? null,
         scheduled_at: scheduledIso,
         channel: data.next_call_channel || "call",
-        notes: data.next_call_agenda || data.call_note || "Scheduled customer follow-up call",
+        notes: effectiveNextCallAgenda || data.call_note || "Scheduled customer follow-up call",
         status: "pending",
         created_by: uid,
       });

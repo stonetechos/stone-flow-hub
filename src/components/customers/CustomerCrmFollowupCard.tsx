@@ -16,6 +16,8 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  CreditCard,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -44,7 +46,9 @@ import {
   CALL_OUTCOMES,
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   buildCustomerFollowupWhatsappMessage,
+  buildCustomerPaymentReminderWhatsappMessage,
   getCustomerCrmState,
+  getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   getCustomerSalesperson,
   type CustomerResponseStatus,
@@ -55,7 +59,7 @@ import { listFollowups, completeFollowup, type FollowupWithEnquiry } from "@/lib
 import { FOLLOWUP_CHANNELS } from "@/lib/followups/schema";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface CustomerCrmFollowupCardProps {
@@ -83,10 +87,17 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
   const [nextCallChannel, setNextCallChannel] = useState<"call" | "whatsapp" | "meeting">("call");
   const [nextCallAgenda, setNextCallAgenda] = useState("");
 
+  // Payment Promise Follow-up & Reminder State
+  const [isPaymentPromised, setIsPaymentPromised] = useState(false);
+  const [promisedPaymentDate, setPromisedPaymentDate] = useState("");
+  const [promisedPaymentAmount, setPromisedPaymentAmount] = useState("");
+  const [flagDaysPrior, setFlagDaysPrior] = useState("2");
+
   // Outcome dialog state
   const [completionNotes, setCompletionNotes] = useState("");
 
   const crmState = getCustomerCrmState(customer);
+  const paymentReminder = getCustomerPaymentReminderInfo(customer);
   const phone = customer.primary_phone ?? "";
   const wa = customer.whatsapp ?? customer.primary_phone ?? "";
   const waDigits = wa.replace(/[^0-9]/g, "");
@@ -113,6 +124,9 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
       const outcomeObj = CALL_OUTCOMES.find((o) => o.value === callOutcome);
       const outcomeLabel = outcomeObj?.label ?? callOutcome;
 
+      const hasPaymentPromise =
+        callOutcome === "payment_promised" || isPaymentPromised || Boolean(promisedPaymentDate);
+
       return updateCustomerCrmStatus({
         customerId,
         response_status: responseStatus,
@@ -122,15 +136,28 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
         next_call_channel: nextCallChannel,
         next_call_agenda: nextCallAgenda.trim() || undefined,
         complete_pending_followup_id: nextPendingFollowup?.id,
+        payment_promised_date:
+          hasPaymentPromise && promisedPaymentDate ? promisedPaymentDate : undefined,
+        payment_promised_amount:
+          hasPaymentPromise && promisedPaymentAmount
+            ? Math.max(0, Number(promisedPaymentAmount))
+            : undefined,
+        payment_reminder_flag_days: hasPaymentPromise
+          ? Math.max(1, Number(flagDaysPrior) || 2)
+          : undefined,
+        payment_reminder_notes: hasPaymentPromise ? callNote.trim() || undefined : undefined,
       });
     },
     onSuccess: () => {
       toast.success(
-        nextCallAt
-          ? "Follow-up scheduled & CRM status updated"
-          : "Call update saved & CRM status updated",
+        callOutcome === "payment_promised" || promisedPaymentDate
+          ? `Payment reminder scheduled. Software will flag you ${flagDaysPrior || 2} days prior to payment date.`
+          : nextCallAt
+            ? "Follow-up scheduled & CRM status updated"
+            : "Call update saved & CRM status updated",
       );
       void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
       void qc.invalidateQueries({ queryKey: ["customer-pending-followups", customerId] });
       void qc.invalidateQueries({ queryKey: ["customer-followups-history", customerId] });
       void qc.invalidateQueries({ queryKey: ["customer-next-followup", customerId] });
@@ -143,7 +170,58 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
       setCallNote("");
       setNextCallAgenda("");
       setNextCallAt("");
+      setPromisedPaymentDate("");
+      setPromisedPaymentAmount("");
+      setIsPaymentPromised(false);
       setIsLoggingCall(false);
+    },
+    onError: (err) => {
+      toast.error(toUserMessage(err));
+    },
+  });
+
+  // Mutation to mark payment reminder as received/completed
+  const markPaymentReceivedMutation = useMutation({
+    mutationFn: async () => {
+      return updateCustomerCrmStatus({
+        customerId,
+        payment_reminder_completed: true,
+        call_note: "Payment received from customer. Payment reminder closed.",
+        call_outcome: "Payment Received",
+        response_status: "order_placed",
+      });
+    },
+    onSuccess: () => {
+      toast.success("Payment marked as received! Reminder cleared.");
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
+      void qc.invalidateQueries({ queryKey: ["customer-pending-followups", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-followups-history", customerId] });
+      void qc.invalidateQueries({ queryKey: ["customer-next-followup", customerId] });
+      void qc.invalidateQueries({ queryKey: qk.followups.all });
+      void qc.invalidateQueries({ queryKey: qk.enquiries.all });
+      void qc.invalidateQueries({ queryKey: qk.dashboard });
+    },
+    onError: (err) => {
+      toast.error(toUserMessage(err));
+    },
+  });
+
+  // Mutation to clear/cancel payment reminder
+  const clearPaymentReminderMutation = useMutation({
+    mutationFn: async () => {
+      return updateCustomerCrmStatus({
+        customerId,
+        payment_promised_date: null,
+        payment_promised_amount: null,
+        payment_reminder_notes: null,
+        call_note: "Payment reminder cancelled / cleared.",
+      });
+    },
+    onSuccess: () => {
+      toast.success("Payment reminder cleared.");
+      void qc.invalidateQueries({ queryKey: qk.customers.byId(customerId) });
+      void qc.invalidateQueries({ queryKey: qk.customers.all });
     },
     onError: (err) => {
       toast.error(toUserMessage(err));
@@ -259,6 +337,173 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
       </CardHeader>
 
       <CardContent className="space-y-4 pt-4">
+        {/* Payment Request & Promise Alert Banner */}
+        {paymentReminder.hasReminder && (
+          <div
+            className={cn(
+              "rounded-xl border p-3.5 shadow-2xs transition-all",
+              paymentReminder.isFlaggedActive
+                ? paymentReminder.urgency === "overdue"
+                  ? "border-rose-400 bg-rose-50/80 text-rose-950"
+                  : paymentReminder.urgency === "due_today"
+                    ? "border-amber-400 bg-amber-50/90 text-amber-950 shadow-xs"
+                    : "border-amber-300 bg-amber-50/70 text-amber-950"
+                : "border-sky-200 bg-sky-50/50 text-slate-900",
+            )}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded-full text-white shrink-0",
+                      paymentReminder.isFlaggedActive
+                        ? paymentReminder.urgency === "overdue"
+                          ? "bg-rose-600"
+                          : "bg-amber-600"
+                        : "bg-sky-600",
+                    )}
+                  >
+                    <CreditCard className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="font-display text-sm font-bold">Payment Request Reminder</span>
+                  <Badge
+                    className={cn(
+                      "font-mono text-[11px] font-bold border",
+                      paymentReminder.isFlaggedActive
+                        ? paymentReminder.urgency === "overdue"
+                          ? "bg-rose-600 text-white border-rose-700 animate-pulse"
+                          : paymentReminder.urgency === "due_today"
+                            ? "bg-amber-600 text-white border-amber-700 animate-pulse"
+                            : "bg-amber-100 text-amber-900 border-amber-300"
+                        : "bg-sky-100 text-sky-900 border-sky-300",
+                    )}
+                  >
+                    💰 {paymentReminder.badgeLabel}
+                  </Badge>
+                </div>
+
+                <div className="pl-8 text-xs space-y-1">
+                  <div className="text-slate-800">
+                    <span>Promised Payment Date: </span>
+                    <strong className="font-semibold text-slate-950">
+                      {paymentReminder.promisedDate
+                        ? formatDate(paymentReminder.promisedDate)
+                        : "Date specified"}
+                    </strong>
+                    {paymentReminder.promisedAmount !== null && (
+                      <span className="ml-2">
+                        · Amount:{" "}
+                        <strong className="font-semibold text-emerald-800">
+                          {formatInr(paymentReminder.promisedAmount)}
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    {paymentReminder.isFlaggedActive
+                      ? "⚠️ Active follow-up flag (2 days prior to payment date): Please contact the customer and request payment."
+                      : `Software will automatically flag staff ${paymentReminder.flagDays} days prior to the promised payment date.`}
+                  </p>
+                  {paymentReminder.notes && (
+                    <p className="rounded bg-white/80 border border-slate-200/80 px-2 py-1 text-[11px] text-slate-700">
+                      <span className="font-semibold text-slate-900">Note:</span>{" "}
+                      {paymentReminder.notes}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Direct Payment Request Action Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 sm:pt-0">
+                {phone && (
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-8 gap-1.5 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-bold"
+                  >
+                    <a href={`tel:${phone}`}>
+                      <Phone className="h-3.5 w-3.5 fill-current" /> Call
+                    </a>
+                  </Button>
+                )}
+                {waDigits && (
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                  >
+                    <a
+                      href={buildWhatsappUrl(
+                        waDigits,
+                        buildCustomerPaymentReminderWhatsappMessage({
+                          customerName: customer.name,
+                          promisedDate: paymentReminder.promisedDate,
+                          promisedAmount: paymentReminder.promisedAmount,
+                          salesperson: getCustomerSalesperson(customer),
+                        }),
+                        "wa.me",
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 fill-current" /> WhatsApp Reminder
+                    </a>
+                  </Button>
+                )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => markPaymentReceivedMutation.mutate()}
+                  disabled={markPaymentReceivedMutation.isPending}
+                  className="h-8 gap-1 text-xs border-emerald-300 text-emerald-900 hover:bg-emerald-100 font-semibold"
+                >
+                  {markPaymentReceivedMutation.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  )}
+                  Payment Received
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setCallOutcome("payment_promised");
+                    setIsPaymentPromised(true);
+                    if (paymentReminder.promisedDate) {
+                      setPromisedPaymentDate(paymentReminder.promisedDate);
+                    }
+                    if (paymentReminder.promisedAmount !== null) {
+                      setPromisedPaymentAmount(String(paymentReminder.promisedAmount));
+                    }
+                    if (paymentReminder.flagDays) {
+                      setFlagDaysPrior(String(paymentReminder.flagDays));
+                    }
+                    setIsLoggingCall(true);
+                  }}
+                  className="h-8 gap-1 text-xs border-slate-300 text-slate-700 hover:bg-slate-100"
+                >
+                  <CalendarClock className="h-3.5 w-3.5" /> Reschedule
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => clearPaymentReminderMutation.mutate()}
+                  disabled={clearPaymentReminderMutation.isPending}
+                  className="h-8 text-xs text-slate-500 hover:text-slate-800"
+                  title="Clear reminder"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Next Scheduled Follow-up Banner */}
         {nextPendingFollowup ? (
           <div className="rounded-xl border border-amber-200/90 bg-amber-50/40 p-3.5 shadow-2xs">
@@ -414,7 +659,21 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
             <div className="grid gap-3 sm:grid-cols-2">
               {/* Call Outcome */}
               <Field label="Call Outcome / Client Sentiment" required>
-                <Select value={callOutcome} onValueChange={setCallOutcome}>
+                <Select
+                  value={callOutcome}
+                  onValueChange={(val) => {
+                    setCallOutcome(val);
+                    if (val === "payment_promised") {
+                      setResponseStatus("payment_pending");
+                      setIsPaymentPromised(true);
+                      if (!nextCallAgenda) {
+                        setNextCallAgenda("Payment Follow-up: Request promised payment");
+                      }
+                    } else {
+                      setIsPaymentPromised(false);
+                    }
+                  }}
+                >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select outcome" />
                   </SelectTrigger>
@@ -467,6 +726,86 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                 </Select>
               </Field>
             </div>
+
+            {/* Payment Promise Details */}
+            {(callOutcome === "payment_promised" || isPaymentPromised) && (
+              <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-3 space-y-3 animate-in fade-in-50 duration-200">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-amber-700" />
+                  <span className="font-semibold text-xs text-amber-950 uppercase tracking-wide">
+                    Payment Promise & Advance Reminder Setup
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field label="Customer Promised to Pay On *" required>
+                    <Input
+                      type="date"
+                      value={promisedPaymentDate}
+                      onChange={(e) => {
+                        const dateVal = e.target.value;
+                        setPromisedPaymentDate(dateVal);
+                        if (dateVal && !nextCallAt) {
+                          const d = new Date(dateVal);
+                          const flagDays = Number(flagDaysPrior) || 2;
+                          d.setDate(d.getDate() - flagDays);
+                          d.setHours(10, 0, 0, 0);
+                          const y = d.getFullYear();
+                          const m = String(d.getMonth() + 1).padStart(2, "0");
+                          const day = String(d.getDate()).padStart(2, "0");
+                          setNextCallAt(`${y}-${m}-${day}T10:00`);
+                        }
+                      }}
+                      className="bg-white"
+                    />
+                  </Field>
+
+                  <Field label="Promised Amount (₹)">
+                    <Input
+                      type="number"
+                      placeholder="e.g. 50000"
+                      value={promisedPaymentAmount}
+                      onChange={(e) => setPromisedPaymentAmount(e.target.value)}
+                      className="bg-white"
+                    />
+                  </Field>
+
+                  <Field label="Flag in Advance (Days)">
+                    <Select
+                      value={flagDaysPrior}
+                      onValueChange={(val) => {
+                        setFlagDaysPrior(val);
+                        if (promisedPaymentDate) {
+                          const d = new Date(promisedPaymentDate);
+                          d.setDate(d.getDate() - Number(val));
+                          d.setHours(10, 0, 0, 0);
+                          const y = d.getFullYear();
+                          const m = String(d.getMonth() + 1).padStart(2, "0");
+                          const day = String(d.getDate()).padStart(2, "0");
+                          setNextCallAt(`${y}-${m}-${day}T10:00`);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Day Prior</SelectItem>
+                        <SelectItem value="2">2 Days Prior (Recommended)</SelectItem>
+                        <SelectItem value="3">3 Days Prior</SelectItem>
+                        <SelectItem value="5">5 Days Prior</SelectItem>
+                        <SelectItem value="7">1 Week Prior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+                <p className="text-[11px] text-amber-900/90 leading-relaxed">
+                  ✨ <strong>Automatic Flagging:</strong> The software will flag your team starting{" "}
+                  <strong>{flagDaysPrior} days before</strong> the payment date with an alert
+                  banner, WhatsApp reminder button, and directory badge to ask the customer for
+                  payment.
+                </p>
+              </div>
+            )}
 
             {/* Current Call Discussion Note */}
             <Field
@@ -576,7 +915,15 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
               <Button
                 size="sm"
                 onClick={() => logCallMutation.mutate()}
-                disabled={(!callNote.trim() && !nextCallAt) || logCallMutation.isPending}
+                disabled={
+                  logCallMutation.isPending ||
+                  ((callOutcome === "payment_promised" || isPaymentPromised) &&
+                    !promisedPaymentDate) ||
+                  (!callNote.trim() &&
+                    !nextCallAt &&
+                    !promisedPaymentDate &&
+                    callOutcome !== "payment_promised")
+                }
                 className="gap-1.5 bg-cyan-700 text-white hover:bg-cyan-800 font-bold"
               >
                 {logCallMutation.isPending ? (
@@ -584,11 +931,13 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                 ) : (
                   <Send className="h-3.5 w-3.5" />
                 )}
-                {nextCallAt && callNote.trim()
-                  ? "Save Note & Schedule Follow-up"
-                  : nextCallAt
-                    ? "Schedule Follow-up Call"
-                    : "Save Call Note"}
+                {callOutcome === "payment_promised" || promisedPaymentDate
+                  ? "Save Payment Promise & Set Reminder"
+                  : nextCallAt && callNote.trim()
+                    ? "Save Note & Schedule Follow-up"
+                    : nextCallAt
+                      ? "Schedule Follow-up Call"
+                      : "Save Call Note"}
               </Button>
             </div>
           </div>

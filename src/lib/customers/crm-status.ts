@@ -7,6 +7,7 @@
 
 export type CustomerResponseStatus =
   | "active_responsive"
+  | "payment_pending"
   | "order_placed"
   | "order_completed"
   | "regular_future_requirement"
@@ -26,6 +27,11 @@ export interface CustomerCrmWorkflowState {
   next_call_at?: string;
   next_call_agenda?: string;
   call_count?: number;
+  payment_promised_date?: string | null;
+  payment_promised_amount?: number | null;
+  payment_reminder_flag_days?: number | null;
+  payment_reminder_notes?: string | null;
+  payment_reminder_completed_at?: string | null;
   [key: string]: unknown;
 }
 
@@ -49,6 +55,16 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     badgeTone: "bg-emerald-100/80 text-emerald-900 border-emerald-300",
     dotColor: "bg-emerald-500",
     description: "Client is active, engaged, and responding to calls and messages.",
+  },
+  payment_pending: {
+    value: "payment_pending",
+    label: "Payment Due · Promised Date",
+    shortLabel: "Payment Due",
+    tone: "bg-emerald-50 text-emerald-900 border-emerald-300",
+    badgeTone: "bg-emerald-100/90 text-emerald-950 border-emerald-400 font-semibold",
+    dotColor: "bg-emerald-600",
+    description:
+      "Customer requested / promised payment on a specific date; active reminder flagged.",
   },
   order_placed: {
     value: "order_placed",
@@ -119,6 +135,7 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
 
 export const CALL_OUTCOMES = [
   { value: "positive_proceeding", label: "Positive · Ready to proceed" },
+  { value: "payment_promised", label: "Payment Promised · Request for Payment" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
   { value: "order_completed", label: "Order Completed · Delivered & Closed" },
   {
@@ -276,6 +293,168 @@ export function buildCustomerFollowupWhatsappMessage(
     `${contextLine} Kindly update us on the status, or please let us know if you need any assistance or are unable to finalise so we can assist you.`,
     "",
     "Looking forward to hearing from you.",
+    "",
+    signature,
+  ].join("\n");
+}
+
+export interface CustomerPaymentReminderInfo {
+  hasReminder: boolean;
+  promisedDate: string | null;
+  promisedAmount: number | null;
+  flagDays: number;
+  isFlaggedActive: boolean;
+  isOverdue: boolean;
+  daysRemaining: number;
+  urgency: "upcoming" | "flagged_2days" | "due_today" | "overdue";
+  badgeLabel: string;
+  notes?: string | null;
+}
+
+const EMPTY_PAYMENT_REMINDER: CustomerPaymentReminderInfo = {
+  hasReminder: false,
+  promisedDate: null,
+  promisedAmount: null,
+  flagDays: 2,
+  isFlaggedActive: false,
+  isOverdue: false,
+  daysRemaining: 0,
+  urgency: "upcoming",
+  badgeLabel: "",
+  notes: null,
+};
+
+/**
+ * Calculates payment reminder flag state for a customer.
+ *
+ * Business rule:
+ * Customer agreed/promised to pay on a given date.
+ * The software flags the staff to ask for payment starting 2 days prior to the payment date,
+ * on the payment date itself, and alerts if overdue.
+ */
+export function getCustomerPaymentReminderInfo(
+  customer?: {
+    workflow_state?: unknown;
+    external_ref?: unknown;
+  } | null,
+): CustomerPaymentReminderInfo {
+  if (!customer) return EMPTY_PAYMENT_REMINDER;
+  const crm = getCustomerCrmState(customer);
+  if (!crm.payment_promised_date || crm.payment_reminder_completed_at) {
+    return EMPTY_PAYMENT_REMINDER;
+  }
+
+  const promisedDateStr = crm.payment_promised_date;
+  const targetDateOnly = new Date(promisedDateStr);
+  if (isNaN(targetDateOnly.getTime())) return EMPTY_PAYMENT_REMINDER;
+
+  targetDateOnly.setHours(0, 0, 0, 0);
+
+  const flagDays =
+    typeof crm.payment_reminder_flag_days === "number" && crm.payment_reminder_flag_days >= 0
+      ? crm.payment_reminder_flag_days
+      : 2;
+
+  const now = new Date();
+  const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const diffMs = targetDateOnly.getTime() - nowDateOnly.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  const isOverdue = diffDays < 0;
+  // Flagged active if within flagDays (e.g. 2 days before payment date) or overdue
+  const isFlaggedActive = diffDays <= flagDays;
+
+  let urgency: CustomerPaymentReminderInfo["urgency"] = "upcoming";
+  let badgeLabel = `Pay in ${diffDays}d`;
+
+  if (isOverdue) {
+    urgency = "overdue";
+    badgeLabel = `Pay Overdue ${Math.abs(diffDays)}d`;
+  } else if (diffDays === 0) {
+    urgency = "due_today";
+    badgeLabel = "Pay Due Today";
+  } else if (isFlaggedActive) {
+    urgency = "flagged_2days";
+    badgeLabel = `Pay Due in ${diffDays}d`;
+  }
+
+  return {
+    hasReminder: true,
+    promisedDate: promisedDateStr,
+    promisedAmount:
+      typeof crm.payment_promised_amount === "number" ? crm.payment_promised_amount : null,
+    flagDays,
+    isFlaggedActive,
+    isOverdue,
+    daysRemaining: diffDays,
+    urgency,
+    badgeLabel,
+    notes: crm.payment_reminder_notes || null,
+  };
+}
+
+export interface BuildCustomerPaymentReminderWhatsappOptions {
+  customerName?: string | null;
+  contactPerson?: string | null;
+  companyName?: string | null;
+  salesperson?: CustomerSalespersonKey | string | null;
+  orderNo?: string | null;
+  amount?: number | null;
+  promisedAmount?: number | null;
+  promisedDate?: string | null;
+}
+
+/**
+ * Builds a polite, professional payment reminder message for WhatsApp.
+ */
+export function buildCustomerPaymentReminderWhatsappMessage(
+  options: BuildCustomerPaymentReminderWhatsappOptions,
+): string {
+  const greetingName = options.contactPerson?.trim() || options.customerName?.trim() || "";
+  const greeting = greetingName ? `Hi ${greetingName},` : "Hello,";
+
+  const dateFormatted = options.promisedDate
+    ? new Date(options.promisedDate).toLocaleDateString("en-IN", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      })
+    : "today";
+
+  const effAmount = options.promisedAmount ?? options.amount ?? null;
+  const amountStr =
+    effAmount && effAmount > 0
+      ? `gentle reminder regarding the payment of ₹${effAmount.toLocaleString("en-IN")}`
+      : `gentle reminder regarding your pending payment`;
+
+  const orderLine = options.orderNo ? ` for Order #${options.orderNo}` : "";
+
+  const salespersonKey =
+    options.salesperson === "raman" || options.salesperson === "rishi"
+      ? (options.salesperson as CustomerSalespersonKey)
+      : null;
+  const salespersonConfig = salespersonKey ? CUSTOMER_SALESPEOPLE[salespersonKey] : null;
+  const signatureName =
+    salespersonConfig?.label ||
+    (typeof options.salesperson === "string" && options.salesperson.trim()
+      ? options.salesperson.trim()
+      : null);
+
+  const signature = signatureName
+    ? `Warm regards,\n${signatureName}\nStone Tech`
+    : `Warm regards,\nAccounts & Sales Team\nStone Tech`;
+
+  return [
+    greeting,
+    "",
+    "Hope you are doing well!",
+    "",
+    `This is a ${amountStr}${orderLine} with Stone Tech, as discussed for ${dateFormatted}.`,
+    "",
+    "Kindly arrange the transfer or let us know once initiated so our accounts team can confirm the receipt.",
+    "",
+    "If you need our bank account details or UPI QR code again, please let us know.",
     "",
     signature,
   ].join("\n");

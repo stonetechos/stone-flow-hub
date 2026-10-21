@@ -378,6 +378,11 @@ export interface UpdateCustomerCrmStatusOptions {
   next_call_channel?: "call" | "whatsapp" | "email" | "meeting" | "site_visit";
   next_call_agenda?: string;
   complete_pending_followup_id?: string;
+  payment_promised_date?: string | null;
+  payment_promised_amount?: number | null;
+  payment_reminder_flag_days?: number | null;
+  payment_reminder_notes?: string | null;
+  payment_reminder_completed?: boolean;
 }
 
 export async function updateCustomerCrmStatus(
@@ -422,9 +427,49 @@ export async function updateCustomerCrmStatus(
     updatedWf.call_count = Number(currentWf.call_count ?? 0) + 1;
   }
 
-  if (input.next_call_at) {
-    updatedWf.next_call_at = input.next_call_at;
-    if (input.next_call_agenda) updatedWf.next_call_agenda = input.next_call_agenda;
+  // Handle Payment Promise & Follow-up Reminders
+  if (input.payment_promised_date !== undefined) {
+    if (input.payment_promised_date) {
+      updatedWf.payment_promised_date = input.payment_promised_date;
+      updatedWf.payment_promised_amount =
+        input.payment_promised_amount !== undefined ? input.payment_promised_amount : null;
+      updatedWf.payment_reminder_flag_days =
+        typeof input.payment_reminder_flag_days === "number" ? input.payment_reminder_flag_days : 2;
+      updatedWf.payment_reminder_notes = input.payment_reminder_notes ?? null;
+      delete updatedWf.payment_reminder_completed_at;
+    } else {
+      delete updatedWf.payment_promised_date;
+      delete updatedWf.payment_promised_amount;
+      delete updatedWf.payment_reminder_notes;
+    }
+  }
+
+  if (input.payment_reminder_completed) {
+    updatedWf.payment_reminder_completed_at = nowIso;
+  }
+
+  // Auto-calculate follow-up schedule if payment promised and no explicit next_call_at was provided
+  let effectiveNextCallAt = input.next_call_at;
+  let effectiveNextCallAgenda = input.next_call_agenda;
+
+  if (input.payment_promised_date && !effectiveNextCallAt) {
+    const pDate = new Date(input.payment_promised_date);
+    if (!isNaN(pDate.getTime())) {
+      const flagDays =
+        typeof input.payment_reminder_flag_days === "number" ? input.payment_reminder_flag_days : 2;
+      pDate.setDate(pDate.getDate() - flagDays);
+      pDate.setHours(10, 0, 0, 0); // 10:00 AM on flag start date
+      const autoIso = pDate.toISOString();
+      effectiveNextCallAt = pDate.getTime() < Date.now() ? nowIso : autoIso;
+      effectiveNextCallAgenda = `Payment Follow-up: Customer promised payment on ${new Date(
+        input.payment_promised_date,
+      ).toLocaleDateString("en-IN")}`;
+    }
+  }
+
+  if (effectiveNextCallAt) {
+    updatedWf.next_call_at = effectiveNextCallAt;
+    if (effectiveNextCallAgenda) updatedWf.next_call_agenda = effectiveNextCallAgenda;
   }
 
   let targetIsActive = existing.is_active;
@@ -437,6 +482,7 @@ export async function updateCustomerCrmStatus(
     targetIsActive = false;
   } else if (
     input.response_status === "active_responsive" ||
+    input.response_status === "payment_pending" ||
     input.response_status === "order_placed" ||
     input.response_status === "order_completed" ||
     input.response_status === "regular_future_requirement" ||
@@ -541,7 +587,7 @@ export async function updateCustomerCrmStatus(
       .eq("id", input.complete_pending_followup_id);
   }
 
-  if (input.next_call_at) {
+  if (effectiveNextCallAt) {
     const { data: latestEnq } = await db
       .from("enquiries")
       .select("id, project_id")
@@ -550,7 +596,7 @@ export async function updateCustomerCrmStatus(
       .limit(1)
       .maybeSingle();
 
-    const scheduledIso = new Date(input.next_call_at).toISOString();
+    const scheduledIso = new Date(effectiveNextCallAt).toISOString();
 
     const { error: insErr } = await db.from("followups").insert({
       entity_type: "customer",
@@ -559,7 +605,7 @@ export async function updateCustomerCrmStatus(
       project_id: latestEnq?.project_id ?? null,
       scheduled_at: scheduledIso,
       channel: input.next_call_channel || "call",
-      notes: input.next_call_agenda || input.call_note || "Scheduled customer follow-up call",
+      notes: effectiveNextCallAgenda || input.call_note || "Scheduled customer follow-up call",
       status: "pending",
     });
 

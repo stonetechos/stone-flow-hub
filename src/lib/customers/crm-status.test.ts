@@ -3,7 +3,9 @@ import {
   CALL_OUTCOMES,
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   buildCustomerFollowupWhatsappMessage,
+  buildCustomerPaymentReminderWhatsappMessage,
   getCustomerCrmState,
+  getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   type CustomerResponseStatus,
 } from "./crm-status";
@@ -19,11 +21,15 @@ describe("Customer CRM Status", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.label).toBe("Order Completed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.shortLabel).toBe("Completed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.dotColor).toContain("teal");
+
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.payment_pending).toBeDefined();
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.payment_pending.label).toContain("Payment");
   });
 
   it("includes all expected customer response statuses", () => {
     const keys: CustomerResponseStatus[] = [
       "active_responsive",
+      "payment_pending",
       "order_placed",
       "order_completed",
       "regular_future_requirement",
@@ -174,6 +180,122 @@ describe("Customer CRM Status", () => {
       expect(msg).toContain("Hello,");
       expect(msg).toContain("Kindly update us on the status");
       expect(msg).toContain("unable to finalise");
+      expect(msg).toContain("Stone Tech");
+    });
+  });
+
+  describe("Customer Payment Promise & 2-Day Reminder Flag", () => {
+    it("includes payment_promised in CALL_OUTCOMES", () => {
+      const outcome = CALL_OUTCOMES.find((o) => o.value === "payment_promised");
+      expect(outcome).toBeDefined();
+      expect(outcome?.label).toContain("Payment Promised");
+    });
+
+    it("returns hasReminder false when customer has no payment promise", () => {
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {},
+      });
+      expect(info.hasReminder).toBe(false);
+      expect(info.isFlaggedActive).toBe(false);
+    });
+
+    it("returns hasReminder false when payment reminder was already completed", () => {
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {
+          payment_promised_date: "2026-10-25",
+          payment_reminder_completed_at: "2026-10-21T10:00:00.000Z",
+        },
+      });
+      expect(info.hasReminder).toBe(false);
+    });
+
+    it("flags active when today is within 2 days of payment promise", () => {
+      // Create a date 1 day in the future
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const isoDate = tomorrow.toISOString().split("T")[0];
+
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {
+          payment_promised_date: isoDate,
+          payment_promised_amount: 75000,
+          payment_reminder_flag_days: 2,
+        },
+      });
+
+      expect(info.hasReminder).toBe(true);
+      expect(info.isFlaggedActive).toBe(true);
+      expect(info.urgency).toBe("flagged_2days");
+      expect(info.daysRemaining).toBe(1);
+      expect(info.badgeLabel).toBe("Pay Due in 1d");
+      expect(info.promisedAmount).toBe(75000);
+    });
+
+    it("flags active when payment is due today", () => {
+      const today = new Date();
+      const isoDate = today.toISOString().split("T")[0];
+
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {
+          payment_promised_date: isoDate,
+        },
+      });
+
+      expect(info.hasReminder).toBe(true);
+      expect(info.isFlaggedActive).toBe(true);
+      expect(info.urgency).toBe("due_today");
+      expect(info.daysRemaining).toBe(0);
+      expect(info.badgeLabel).toBe("Pay Due Today");
+    });
+
+    it("flags active when payment is overdue", () => {
+      const past = new Date();
+      past.setDate(past.getDate() - 3);
+      const isoDate = past.toISOString().split("T")[0];
+
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {
+          payment_promised_date: isoDate,
+        },
+      });
+
+      expect(info.hasReminder).toBe(true);
+      expect(info.isFlaggedActive).toBe(true);
+      expect(info.urgency).toBe("overdue");
+      expect(info.daysRemaining).toBeLessThan(0);
+      expect(info.badgeLabel).toContain("Pay Overdue");
+    });
+
+    it("is not active yet when payment date is far in the future (> flag days)", () => {
+      const future = new Date();
+      future.setDate(future.getDate() + 10);
+      const isoDate = future.toISOString().split("T")[0];
+
+      const info = getCustomerPaymentReminderInfo({
+        workflow_state: {
+          payment_promised_date: isoDate,
+          payment_reminder_flag_days: 2,
+        },
+      });
+
+      expect(info.hasReminder).toBe(true);
+      expect(info.isFlaggedActive).toBe(false);
+      expect(info.urgency).toBe("upcoming");
+      expect(info.badgeLabel).toBe("Pay in 10d");
+    });
+
+    it("builds a polite, professional WhatsApp payment request reminder", () => {
+      const msg = buildCustomerPaymentReminderWhatsappMessage({
+        customerName: "Horizon Towers",
+        contactPerson: "Mr. Vikram",
+        promisedDate: "2026-10-25",
+        promisedAmount: 125000,
+        salesperson: "raman",
+      });
+
+      expect(msg).toContain("Hi Mr. Vikram,");
+      expect(msg).toContain("gentle reminder regarding the payment of ₹1,25,000");
+      expect(msg).toContain("Raman Pupneja");
       expect(msg).toContain("Stone Tech");
     });
   });

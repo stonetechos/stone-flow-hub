@@ -31,6 +31,7 @@ import { CustomerOrderPipeline } from "@/components/customers/CustomerOrderPipel
 import {
   CUSTOMER_RESPONSE_STATUS_CONFIG,
   buildCustomerFollowupWhatsappMessage,
+  getCustomerPaymentReminderInfo,
   getCustomerResponseStatus,
   getCustomerSalesperson,
   type CustomerResponseStatus,
@@ -294,12 +295,19 @@ function CustomersPage() {
       });
     }
     if (paymentFilter !== "all") {
-      list = list.filter((c) => {
-        const orderInfo = customerOrderMap.get(c.id);
-        if (!hasCustomerPlacedOrder(c, orderInfo)) return false;
-        const ledgerSummary = ledgerQuery.data?.get(c.id);
-        return getCustomerPaymentStatus(c, ledgerSummary) === paymentFilter;
-      });
+      if (paymentFilter === "promised_flagged") {
+        list = list.filter((c) => {
+          const pay = getCustomerPaymentReminderInfo(c);
+          return pay.hasReminder && pay.isFlaggedActive;
+        });
+      } else {
+        list = list.filter((c) => {
+          const orderInfo = customerOrderMap.get(c.id);
+          if (!hasCustomerPlacedOrder(c, orderInfo)) return false;
+          const ledgerSummary = ledgerQuery.data?.get(c.id);
+          return getCustomerPaymentStatus(c, ledgerSummary) === paymentFilter;
+        });
+      }
     }
     return [...list].sort((a, b) =>
       compareCustomersForDirectory(a, b, {
@@ -320,6 +328,7 @@ function CustomersPage() {
   const paymentCounts = useMemo(() => {
     const counts: Record<string, number> = {
       all: (query.data ?? []).length,
+      promised_flagged: 0,
       no_dues: 0,
       payment_pending: 0,
       part_payment_received: 0,
@@ -327,6 +336,10 @@ function CustomersPage() {
       payment_received: 0,
     };
     for (const c of query.data ?? []) {
+      const pay = getCustomerPaymentReminderInfo(c);
+      if (pay.hasReminder && pay.isFlaggedActive) {
+        counts.promised_flagged = (counts.promised_flagged ?? 0) + 1;
+      }
       const orderInfo = customerOrderMap.get(c.id);
       if (!hasCustomerPlacedOrder(c, orderInfo)) continue;
       const ledgerSummary = ledgerQuery.data?.get(c.id);
@@ -448,6 +461,25 @@ function CustomersPage() {
             >
               All <span className="ml-0.5 opacity-75 tabular-nums">({paymentCounts.all})</span>
             </button>
+            {paymentCounts.promised_flagged > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentFilter("promised_flagged");
+                  setPage(1);
+                }}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-full transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
+                  paymentFilter === "promised_flagged"
+                    ? "bg-amber-800 text-white shadow-2xs font-semibold"
+                    : "bg-amber-50 text-amber-900 hover:bg-amber-100/90 border border-amber-300",
+                )}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                💰 Payment Due (Flagged){" "}
+                <span className="opacity-75 tabular-nums">({paymentCounts.promised_flagged})</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -733,6 +765,26 @@ function CustomersPage() {
                                     ⏳ Due: {formatDate(orderInfo.nearestDeadline)}
                                   </span>
                                 )}
+                              {(() => {
+                                const payReminder = getCustomerPaymentReminderInfo(c);
+                                if (!payReminder.hasReminder || !payReminder.isFlaggedActive)
+                                  return null;
+                                return (
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold border shrink-0",
+                                      payReminder.urgency === "overdue"
+                                        ? "bg-rose-100 text-rose-800 border-rose-300 animate-pulse"
+                                        : payReminder.urgency === "due_today"
+                                          ? "bg-amber-100 text-amber-900 border-amber-400 font-bold animate-pulse"
+                                          : "bg-amber-50 text-amber-900 border-amber-300 font-semibold",
+                                    )}
+                                    title={`Payment Promised Date: ${payReminder.promisedDate ? formatDate(payReminder.promisedDate) : ""}`}
+                                  >
+                                    💰 {payReminder.badgeLabel}
+                                  </span>
+                                );
+                              })()}
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 text-xs font-normal">
                               {norm.contact_person && (
