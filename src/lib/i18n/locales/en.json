@@ -5,16 +5,14 @@
   },
   "nav": {
     "groups": {
-      "overview": "Overview",
-      "sales": "Sales & CRM",
-      "purchase": "Purchase",
-      "inventory": "Inventory",
-      "finance": "Finance",
-      "payroll": "HR Operations",
-      "masterData": "Master Data",
-      "communication": "Communication",
-      "others": "Others",
-      "admin": "Administration"
+      "overview": "Home",
+      "items": "Items",
+      "sales": "Sales",
+      "purchase": "Purchases",
+      "finance": "Banking & Finance",
+      "payroll": "Time & HR",
+      "reports": "Reports & Docs",
+      "settings": "Settings"
     },
     "items": {
       "dashboard": "Dashboard",

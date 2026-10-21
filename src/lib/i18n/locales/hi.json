@@ -5,16 +5,14 @@
   },
   "nav": {
     "groups": {
-      "overview": "अवलोकन",
-      "sales": "बिक्री और CRM",
+      "overview": "होम",
+      "items": "आइटम्स",
+      "sales": "बिक्री",
       "purchase": "खरीद",
-      "inventory": "इन्वेंटरी",
-      "finance": "पैसे का प्रवाह",
-      "payroll": "HR संचालन",
-      "masterData": "मास्टर डेटा",
-      "communication": "संचार",
-      "others": "अन्य",
-      "admin": "प्रशासन"
+      "finance": "बैंकिंग और वित्त",
+      "payroll": "समय और HR",
+      "reports": "रिपोर्ट्स और दस्तावेज़",
+      "settings": "सेटिंग्स"
     },
     "items": {
       "dashboard": "डैशबोर्ड",

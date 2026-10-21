@@ -6,16 +6,14 @@
   },
   "nav": {
     "groups": {
-      "overview": "ઝાંખી",
-      "sales": "વેચાણ અને CRM",
+      "overview": "હોમ",
+      "items": "આઇટમ્સ",
+      "sales": "વેચાણ",
       "purchase": "ખરીદી",
-      "inventory": "ઇન્વેન્ટરી",
-      "finance": "ફાઇનાન્સ",
-      "payroll": "HR કામગીરી",
-      "masterData": "માસ્ટર ડેટા",
-      "communication": "સંચાર",
-      "others": "અન્ય",
-      "admin": "વહીવટ"
+      "finance": "બેંકિંગ અને નાણાં",
+      "payroll": "સમય અને HR",
+      "reports": "અહેવાલો અને દસ્તાવેજો",
+      "settings": "સેટિંગ્સ"
     },
     "items": {
       "dashboard": "ડેશબોર્ડ",

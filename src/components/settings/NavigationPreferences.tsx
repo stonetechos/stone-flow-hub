@@ -80,7 +80,7 @@ export function NavigationPreferences({ isAdmin }: { isAdmin: boolean }) {
       const perGroup: Record<NavGroupId, string[]> = {} as Record<NavGroupId, string[]>;
       const effectiveGroup = (itemId: string): NavGroupId => {
         const def = NAV_ITEMS_BY_ID[itemId];
-        return p.itemGroupOverrides[itemId] ?? def?.group ?? "others";
+        return p.itemGroupOverrides[itemId] ?? def?.group ?? "settings";
       };
       for (const g of NAV_GROUPS) {
         const explicit = p.itemOrderByGroup[g.id] ?? [];

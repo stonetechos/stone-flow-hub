@@ -7,6 +7,7 @@
  */
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { LayoutDashboard, type LucideIcon } from "lucide-react";
 import {
   NAV_GROUPS,
   NAV_ITEMS,
@@ -258,6 +259,8 @@ export function trackNavVisit(pathname: string): void {
 export interface ResolvedNavGroup {
   id: NavGroupId;
   label: string;
+  icon: LucideIcon;
+  to?: string;
   items: NavItemDef[];
 }
 
@@ -365,6 +368,8 @@ export function resolveNav(
       return {
         id: gid,
         label: def?.label ?? gid,
+        icon: def?.icon ?? LayoutDashboard,
+        to: def?.to,
         items: ordered.filter((i) => !starredSet.has(i.id) && !hiddenSet.has(i.id)),
       };
     })

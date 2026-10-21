@@ -4,7 +4,9 @@ import {
   Search,
   Menu,
   Star,
+  Plus,
   ChevronDown,
+  ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   User as UserIcon,
@@ -66,8 +68,14 @@ import {
   useCurrentUserId,
   useCurrentUserEmail,
   useNavPreferences,
+  type ResolvedNavGroup,
 } from "@/lib/nav/preferences";
-import { isNavItemActive, NAV_ITEMS_BY_ID, type NavItemDef } from "@/lib/nav/config";
+import {
+  isNavItemActive,
+  findNavItemForPath,
+  NAV_ITEMS_BY_ID,
+  type NavItemDef,
+} from "@/lib/nav/config";
 import { useRoles, type AppRole } from "@/hooks/use-roles";
 
 /* --------------------------------------------------------------------- */
@@ -110,15 +118,17 @@ function NavLinkRow({
   onNavigate,
   starred,
   onToggleStar,
+  isChild = false,
 }: {
   to: string;
   label: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon?: React.ComponentType<{ className?: string }>;
   active: boolean;
   collapsed?: boolean;
   onNavigate?: () => void;
   starred: boolean;
   onToggleStar: () => void;
+  isChild?: boolean;
 }) {
   const link = (
     <Link
@@ -126,9 +136,13 @@ function NavLinkRow({
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex flex-1 items-center gap-3 rounded-lg py-2 pr-8 text-[13px] outline-none",
+        "relative flex flex-1 items-center gap-2.5 rounded-lg outline-none",
         "transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white/40",
-        collapsed ? "justify-center pl-2 pr-2" : "pl-3",
+        collapsed
+          ? "justify-center p-2"
+          : isChild
+            ? "py-1.5 pl-2.5 pr-7 text-[12.5px]"
+            : "py-2 pl-3 pr-8 text-[13px]",
         active
           ? "bg-white/20 text-white font-semibold shadow-xs border border-white/25 backdrop-blur-xs"
           : "text-cyan-100/80 hover:bg-white/12 hover:text-white font-medium",
@@ -142,15 +156,18 @@ function NavLinkRow({
           active ? "opacity-100" : "opacity-0",
         )}
       />
-      <Icon
-        className={cn(
-          "h-4 w-4 shrink-0 transition-all",
-          active
-            ? "text-white opacity-100 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
-            : "text-cyan-200/80 opacity-80 group-hover:text-white group-hover:opacity-100",
-        )}
-        aria-hidden
-      />
+      {Icon && (
+        <Icon
+          className={cn(
+            "shrink-0 transition-all",
+            isChild ? "h-3.5 w-3.5 opacity-80" : "h-4 w-4",
+            active
+              ? "text-white opacity-100 drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+              : "text-cyan-200/80 group-hover:text-white group-hover:opacity-100",
+          )}
+          aria-hidden
+        />
+      )}
       {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
     </Link>
   );
@@ -198,6 +215,204 @@ function NavLinkRow({
 }
 
 /* --------------------------------------------------------------------- */
+/* Nav Group Accordion Item (Zoho Books Style)                            */
+/* --------------------------------------------------------------------- */
+function NavGroupRow({
+  group,
+  isOpen,
+  onToggle,
+  hasActiveChild,
+  isDirectActive,
+  collapsed,
+  onNavigate,
+  checkActive,
+  starredIds,
+  onToggleStar,
+}: {
+  group: ResolvedNavGroup;
+  isOpen: boolean;
+  onToggle: () => void;
+  hasActiveChild: boolean;
+  isDirectActive: boolean;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+  checkActive: (item: NavItemDef) => boolean;
+  starredIds: Set<string>;
+  onToggleStar: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const GroupIcon = group.icon;
+  const groupLabel = t(`nav.groups.${group.id}`, group.label);
+
+  const quickCreateHref = useMemo(() => {
+    switch (group.id) {
+      case "sales":
+        return "/quotes/new";
+      case "purchase":
+        return "/rfqs";
+      case "items":
+        return "/products";
+      default:
+        return null;
+    }
+  }, [group.id]);
+
+  if (collapsed) {
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => {
+                if (group.to) {
+                  void navigate({ to: group.to });
+                  onNavigate?.();
+                } else if (group.items[0]) {
+                  void navigate({ to: group.items[0].to });
+                  onNavigate?.();
+                }
+              }}
+              aria-label={groupLabel}
+              className={cn(
+                "relative flex h-9 w-9 items-center justify-center rounded-lg transition-all mx-auto",
+                hasActiveChild || isDirectActive
+                  ? "bg-white/20 text-white border border-white/25 shadow-xs"
+                  : "text-cyan-100/80 hover:bg-white/12 hover:text-white",
+              )}
+            >
+              <GroupIcon className="h-4 w-4" aria-hidden />
+              {hasActiveChild && (
+                <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_4px_rgba(103,232,249,0.9)]" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            className="border-cyan-800 bg-cyan-950 p-2 text-xs text-white shadow-xl min-w-[170px]"
+          >
+            <div className="font-semibold text-cyan-200 border-b border-cyan-800/80 pb-1 mb-1.5 flex items-center justify-between">
+              <span>{groupLabel}</span>
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = checkActive(item);
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.to}
+                    onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-2 rounded px-2 py-1 text-[11.5px] transition-colors",
+                      active
+                        ? "bg-white/20 text-white font-semibold shadow-xs"
+                        : "text-cyan-100/80 hover:bg-white/10 hover:text-white",
+                    )}
+                  >
+                    <item.icon className="h-3 w-3 shrink-0 opacity-80" />
+                    <span className="truncate">{t(`nav.items.${item.id}`, item.label)}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  const handleGroupClick = () => {
+    if (group.id === "overview") {
+      void navigate({ to: "/dashboard" });
+      onNavigate?.();
+      onToggle();
+    } else {
+      onToggle();
+    }
+  };
+
+  return (
+    <div className="space-y-0.5">
+      <div
+        className={cn(
+          "group relative flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 cursor-pointer select-none",
+          hasActiveChild || isDirectActive
+            ? "text-white bg-white/15 shadow-xs border border-white/20 backdrop-blur-xs"
+            : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
+        )}
+        onClick={handleGroupClick}
+      >
+        {/* Luminous left accent indicator for active group */}
+        {(hasActiveChild || isDirectActive) && (
+          <span
+            aria-hidden
+            className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]"
+          />
+        )}
+
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <GroupIcon
+            className={cn(
+              "h-4 w-4 shrink-0 transition-colors",
+              hasActiveChild || isDirectActive
+                ? "text-cyan-200 drop-shadow-[0_0_6px_rgba(103,232,249,0.5)]"
+                : "text-cyan-200/80 group-hover:text-white",
+            )}
+            aria-hidden
+          />
+          <span className="truncate">{groupLabel}</span>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          {quickCreateHref && (
+            <Link
+              to={quickCreateHref}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate?.();
+              }}
+              title={`Create in ${groupLabel}`}
+              aria-label={`Create in ${groupLabel}`}
+              className="opacity-0 group-hover:opacity-100 hover:bg-white/20 text-cyan-200 hover:text-white rounded p-0.5 transition-all"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Link>
+          )}
+          <ChevronRight
+            className={cn(
+              "h-3.5 w-3.5 text-cyan-200/70 transition-transform duration-200",
+              isOpen && "rotate-90 text-white",
+            )}
+            aria-hidden
+          />
+        </div>
+      </div>
+
+      {/* Accordion Child items */}
+      {isOpen && group.items.length > 0 && (
+        <div className="ml-3.5 border-l border-white/15 pl-1.5 space-y-0.5 py-0.5 my-0.5">
+          {group.items.map((item) => (
+            <NavLinkRow
+              key={item.id}
+              to={item.to}
+              label={t(`nav.items.${item.id}`, item.label)}
+              Icon={item.icon}
+              active={checkActive(item)}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+              starred={starredIds.has(item.id)}
+              onToggleStar={() => onToggleStar(item.id)}
+              isChild
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------------- */
 /* Nav list                                                               */
 /* --------------------------------------------------------------------- */
 function NavList({
@@ -226,7 +441,35 @@ function NavList({
   );
 
   const checkActive = (item: NavItemDef): boolean => isNavItemActive(item, path);
-  const collapsedSet = new Set(prefs.collapsedGroups);
+
+  const activeGroupId = useMemo(() => {
+    const activeItem = findNavItemForPath(path);
+    return activeItem?.group ?? "overview";
+  }, [path]);
+
+  // Smart Accordion: keep active group open, toggle others
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    [activeGroupId]: true,
+  });
+
+  useEffect(() => {
+    if (activeGroupId) {
+      setOpenGroups((prev) => ({
+        ...prev,
+        [activeGroupId]: true,
+      }));
+    }
+  }, [activeGroupId]);
+
+  const toggleGroupOpen = (gid: string): void => {
+    setOpenGroups((prev) => {
+      const isCurrentlyOpen = prev[gid] ?? gid === activeGroupId;
+      return {
+        ...prev,
+        [gid]: !isCurrentlyOpen,
+      };
+    });
+  };
 
   const toggleStar = (id: string): void =>
     update((p) => {
@@ -236,70 +479,35 @@ function NavList({
       return { ...p, starred };
     });
 
-  const toggleGroup = (gid: (typeof prefs.collapsedGroups)[number]): void =>
-    update((p) => ({
-      ...p,
-      collapsedGroups: p.collapsedGroups.includes(gid)
-        ? p.collapsedGroups.filter((g) => g !== gid)
-        : [...p.collapsedGroups, gid],
-    }));
-
+  const starredIds = useMemo(() => new Set(prefs.starred), [prefs.starred]);
   const starredItems = useMemo(
     () => resolved.starred.filter((item) => item.id !== "dashboard"),
     [resolved.starred],
   );
-  const nonOverviewGroups = useMemo(
-    () => resolved.groups.filter((group) => group.id !== "overview"),
-    [resolved.groups],
-  );
-
-  const dashboardDef = NAV_ITEMS_BY_ID["dashboard"] ?? {
-    id: "dashboard",
-    to: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    group: "overview",
-  };
 
   return (
     <nav
       className={cn(
         "flex-1",
         scrollable ? "overflow-y-auto overflow-x-hidden" : "overflow-visible",
-        collapsed ? "px-1.5 py-2 space-y-1" : "px-2 py-2 space-y-3",
+        collapsed ? "px-1.5 py-2 space-y-1.5" : "px-2 py-2 space-y-1.5",
       )}
       aria-label="Primary"
     >
-      {/* Top primary item: Dashboard is always above Sales and never collapsed */}
-      <div className="space-y-px">
-        <NavLinkRow
-          key="dashboard"
-          to="/dashboard"
-          label={t("nav.items.dashboard", "Dashboard")}
-          Icon={LayoutDashboard}
-          active={checkActive(dashboardDef)}
-          collapsed={collapsed}
-          onNavigate={onNavigate}
-          starred={false}
-          onToggleStar={() => toggleStar("dashboard")}
-        />
-      </div>
-
-      {starredItems.length > 0 && (
-        <section aria-labelledby="nav-pinned">
-          {!collapsed && (
-            <h4
-              id="nav-pinned"
-              className="mb-1 flex items-center gap-1.5 px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70"
-            >
-              <Star className="h-3 w-3 text-amber-300" aria-hidden />
-              {t("nav.pinned", "Pinned")}
-            </h4>
-          )}
-          <div className="space-y-px">
+      {/* Pinned favorites rail at top (if user has pinned modules) */}
+      {starredItems.length > 0 && !collapsed && (
+        <section aria-labelledby="nav-pinned" className="pb-1">
+          <h4
+            id="nav-pinned"
+            className="mb-1 flex items-center gap-1.5 px-2 pt-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70"
+          >
+            <Star className="h-3 w-3 text-amber-300" aria-hidden />
+            {t("nav.pinned", "Pinned")}
+          </h4>
+          <div className="space-y-0.5">
             {starredItems.map((item) => (
               <NavLinkRow
-                key={item.id}
+                key={`starred-${item.id}`}
                 to={item.to}
                 label={t(`nav.items.${item.id}`, item.label)}
                 Icon={item.icon}
@@ -314,47 +522,27 @@ function NavList({
         </section>
       )}
 
-      {nonOverviewGroups.map((group) => {
-        if (group.items.length === 0) return null;
-        const groupCollapsed = collapsedSet.has(group.id);
+      {/* Primary Zoho-Style Accordion Groups */}
+      {resolved.groups.map((group) => {
+        if (group.items.length === 0 && group.id !== "overview") return null;
+        const isOpen = openGroups[group.id] ?? group.id === activeGroupId;
+        const hasActiveChild = group.items.some((item) => checkActive(item));
+        const isDirectActive = group.id === "overview" && path === "/dashboard";
+
         return (
-          <section key={group.id} aria-labelledby={`nav-group-${group.id}`}>
-            {!collapsed && (
-              <button
-                type="button"
-                id={`nav-group-${group.id}`}
-                onClick={() => toggleGroup(group.id)}
-                aria-expanded={!groupCollapsed}
-                className="mb-1 flex w-full items-center justify-between rounded-sm px-2 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70 transition-colors hover:text-white"
-              >
-                <span>{t(`nav.groups.${group.id}`, group.label)}</span>
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 text-cyan-200/70 transition-transform duration-150",
-                    groupCollapsed && "-rotate-90",
-                  )}
-                  aria-hidden
-                />
-              </button>
-            )}
-            {(collapsed || !groupCollapsed) && (
-              <div className="space-y-px">
-                {group.items.map((item) => (
-                  <NavLinkRow
-                    key={item.id}
-                    to={item.to}
-                    label={t(`nav.items.${item.id}`, item.label)}
-                    Icon={item.icon}
-                    active={checkActive(item)}
-                    collapsed={collapsed}
-                    onNavigate={onNavigate}
-                    starred={false}
-                    onToggleStar={() => toggleStar(item.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+          <NavGroupRow
+            key={group.id}
+            group={group}
+            isOpen={isOpen}
+            onToggle={() => toggleGroupOpen(group.id)}
+            hasActiveChild={hasActiveChild}
+            isDirectActive={isDirectActive}
+            collapsed={collapsed}
+            onNavigate={onNavigate}
+            checkActive={checkActive}
+            starredIds={starredIds}
+            onToggleStar={toggleStar}
+          />
         );
       })}
     </nav>

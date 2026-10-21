@@ -51,65 +51,69 @@ import type { AppRole } from "@/lib/admin/users";
 
 export type NavGroupId =
   | "overview"
+  | "items"
   | "sales"
   | "purchase"
-  | "inventory"
   | "finance"
   | "payroll"
-  | "workforce"
-  | "masterData"
-  | "communication"
-  | "others"
-  | "admin";
+  | "reports"
+  | "settings";
 
 export interface NavGroupDef {
   id: NavGroupId;
   label: string;
+  icon: LucideIcon;
+  to?: string;
   adminOnly?: boolean;
   superAdminOnly?: boolean;
   allowedRoles?: readonly AppRole[];
 }
 
-// Order here is the sidebar's group order.
+// Order here is the sidebar's group order (Zoho Books 8-module hierarchy).
 export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
-  { id: "overview", label: "Overview" },
+  { id: "overview", label: "Home", icon: LayoutDashboard, to: "/dashboard" },
+  {
+    id: "items",
+    label: "Items",
+    icon: PackageSearch,
+    allowedRoles: ["admin", "super_admin", "purchase", "sales_manager"],
+  },
   {
     id: "sales",
-    label: "Sales & CRM",
+    label: "Sales",
+    icon: ShoppingCart,
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   {
     id: "purchase",
-    label: "Purchase",
+    label: "Purchases",
+    icon: Truck,
     allowedRoles: ["admin", "super_admin", "purchase"],
   },
   {
-    id: "inventory",
-    label: "Inventory",
-    allowedRoles: ["admin", "super_admin", "purchase", "sales_manager"],
-  },
-  {
     id: "finance",
-    label: "Money Flow",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  { id: "payroll", label: "HR Operations" },
-  {
-    id: "masterData",
-    label: "Master Data",
+    label: "Banking & Finance",
+    icon: Landmark,
     allowedRoles: ["admin", "super_admin"],
   },
   {
-    id: "communication",
-    label: "Communication",
-    allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
+    id: "payroll",
+    label: "Time & HR",
+    icon: Users,
+    allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
   },
   {
-    id: "others",
-    label: "Others",
+    id: "reports",
+    label: "Reports & Docs",
+    icon: BarChart3,
     allowedRoles: ["admin", "super_admin"],
   },
-  { id: "admin", label: "Administration", adminOnly: true, allowedRoles: ["admin", "super_admin"] },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: Settings,
+    allowedRoles: ["admin", "super_admin"],
+  },
 ];
 
 export interface NavItemDef {
@@ -124,7 +128,7 @@ export interface NavItemDef {
 }
 
 export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
-  // Overview: Dashboard is placed right at the top above Sales for instant access
+  // 1. Home / Overview
   {
     id: "dashboard",
     to: "/dashboard",
@@ -148,7 +152,31 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "overview",
   },
 
-  // Sales & CRM: Website Leads & CRM -> Customers -> Projects -> Quotations -> Sales Invoices -> Dispatches
+  // 2. Items & Inventory
+  {
+    id: "products",
+    to: "/products",
+    label: "Products & Materials",
+    icon: PackageSearch,
+    group: "items",
+  },
+  {
+    id: "inventory",
+    to: "/inventory",
+    label: "Stock Inventory",
+    icon: Warehouse,
+    group: "items",
+  },
+  {
+    id: "masters",
+    to: "/masters",
+    label: "Price Lists & Masters",
+    icon: Gem,
+    group: "items",
+  },
+
+  // 3. Sales & CRM
+  { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   {
     id: "enquiries",
     to: "/enquiries",
@@ -157,7 +185,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "sales",
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
-  { id: "customers", to: "/customers", label: "Customers", icon: Users, group: "sales" },
   {
     id: "projects",
     to: "/projects",
@@ -167,10 +194,23 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin", "sales_manager", "sales"],
   },
   { id: "quotes", to: "/quotes", label: "Quotations", icon: FileText, group: "sales" },
+  {
+    id: "sales-orders",
+    to: "/sales-orders",
+    label: "Sales Orders",
+    icon: ShoppingCart,
+    group: "sales",
+  },
   { id: "invoices", to: "/invoices", label: "Sales Invoices", icon: Receipt, group: "sales" },
-  { id: "dispatch", to: "/dispatch", label: "Dispatches", icon: Truck, group: "sales" },
+  {
+    id: "dispatch",
+    to: "/dispatch",
+    label: "Delivery Challans & Dispatch",
+    icon: Truck,
+    group: "sales",
+  },
 
-  // Purchase: Vendors -> RFQ -> Purchase Invoices (with Inward Transportation)
+  // 4. Purchases
   {
     id: "vendors",
     to: "/vendors",
@@ -178,29 +218,43 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: Factory,
     group: "purchase",
   },
-  { id: "rfqs", to: "/rfqs", label: "RFQ", icon: Send, group: "purchase" },
+  { id: "rfqs", to: "/rfqs", label: "RFQ (Request for Quote)", icon: Send, group: "purchase" },
+  {
+    id: "purchase-orders",
+    to: "/purchase-orders",
+    label: "Purchase Orders",
+    icon: ClipboardList,
+    group: "purchase",
+  },
   {
     id: "purchase-invoices",
     to: "/purchase-invoices",
-    label: "Purchase Invoices",
+    label: "Purchase Invoices (Bills)",
     icon: Receipt,
     group: "purchase",
   },
-
-  // Inventory (Individual Category)
   {
-    id: "inventory",
-    to: "/inventory",
-    label: "Inventory",
-    icon: Warehouse,
-    group: "inventory",
+    id: "vendor-payments",
+    to: "/vendor-payments",
+    label: "Vendor Payments",
+    icon: Banknote,
+    group: "purchase",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "vendor-ledger",
+    to: "/purchase-ledger",
+    label: "Vendor Ledgers",
+    icon: BookOpen,
+    group: "purchase",
+    allowedRoles: ["admin", "super_admin"],
   },
 
-  // Money Flow: Unified Command Center, Customer & Vendor & Agency Payments, and Ledgers
+  // 5. Banking & Finance
   {
     id: "money-flow",
     to: "/money-flow",
-    label: "Money Flow",
+    label: "Money Flow Command Center",
     icon: ArrowLeftRight,
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
@@ -208,24 +262,8 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "payments",
     to: "/payments?tab=customer",
-    label: "Customer Payments",
+    label: "Payments Received",
     icon: Wallet,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "vendor-payments",
-    to: "/vendor-payments",
-    label: "Vendor Payments",
-    icon: Banknote,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "agency-payments",
-    to: "/agency-payments",
-    label: "Agency Payments",
-    icon: HandCoins,
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
   },
@@ -238,18 +276,10 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
   {
-    id: "vendor-ledger",
-    to: "/purchase-ledger",
-    label: "Vendor Ledgers",
-    icon: Factory,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "agency-ledger",
-    to: "/installation-ledger",
-    label: "Agency Ledgers",
-    icon: Layers,
+    id: "business-expenses",
+    to: "/business-expenses",
+    label: "Business Expenses",
+    icon: ReceiptText,
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
   },
@@ -258,14 +288,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     to: "/liabilities",
     label: "Liabilities & Loans",
     icon: Landmark,
-    group: "finance",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "business-expenses",
-    to: "/business-expenses",
-    label: "Business Expenses",
-    icon: ReceiptText,
     group: "finance",
     allowedRoles: ["admin", "super_admin"],
   },
@@ -295,11 +317,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
 
-  // HR Operations (Merged HR Operations & Workforce Intelligence)
-  // 1. Employees: Workforce master directory
-  // 2. Attendance & Leave: Daily punches + Leave requests & balances (embedded tab)
-  // 3. Payroll: Monthly payroll runs + Salary structures + Loans & claims (embedded tabs)
-  // 4. Workforce Intelligence: Personal work queue + Performance scorecards + Owner intelligence (embedded tabs)
+  // 6. Time & HR
   {
     id: "wf-employees",
     to: "/workforce-intelligence/employees",
@@ -317,18 +335,18 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin", "hr"],
   },
   {
-    id: "hr-payments",
-    to: "/hr/payments",
-    label: "Employee Payments",
-    icon: Wallet,
-    group: "payroll",
-    allowedRoles: ["admin", "super_admin", "hr"],
-  },
-  {
     id: "hr-payroll",
     to: "/hr/payroll",
     label: "Payroll",
     icon: Banknote,
+    group: "payroll",
+    allowedRoles: ["admin", "super_admin", "hr"],
+  },
+  {
+    id: "hr-payments",
+    to: "/hr/payments",
+    label: "Employee Payments",
+    icon: Wallet,
     group: "payroll",
     allowedRoles: ["admin", "super_admin", "hr"],
   },
@@ -339,76 +357,89 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     icon: BarChart3,
     group: "payroll",
   },
-
-  // Master Data
-  { id: "products", to: "/products", label: "Products", icon: PackageSearch, group: "masterData" },
   {
     id: "agencies",
     to: "/masters/installation-agencies",
-    label: "Agencies",
+    label: "Installation Agencies",
     icon: HardHat,
-    group: "masterData",
+    group: "payroll",
   },
-  { id: "masters", to: "/masters", label: "Masters", icon: Gem, group: "masterData" },
+  {
+    id: "agency-payments",
+    to: "/agency-payments",
+    label: "Agency Payments",
+    icon: HandCoins,
+    group: "payroll",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "agency-ledger",
+    to: "/installation-ledger",
+    label: "Agency Ledgers",
+    icon: Layers,
+    group: "payroll",
+    allowedRoles: ["admin", "super_admin"],
+  },
 
-  // Communication
-  // These four pages were complete but unreachable from the sidebar — the
-  // only way in was a stray in-page link (or typing the URL). They are the
-  // customer-communication surface, so they get their own group rather than
-  // being buried in "Others" next to Favorites.
+  // 7. Reports & Docs
+  {
+    id: "reports",
+    to: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+    group: "reports",
+  },
+  {
+    id: "dashboards",
+    to: "/dashboards",
+    label: "Role Dashboards",
+    icon: LayoutDashboard,
+    group: "reports",
+  },
+  {
+    id: "documents",
+    to: "/documents",
+    label: "Documents",
+    icon: FolderOpen,
+    group: "reports",
+  },
+
+  // 8. Settings & Admin
   {
     id: "communication",
     to: "/communication",
-    label: "Communication",
+    label: "Communication Center",
     icon: MessageSquare,
-    group: "communication",
+    group: "settings",
   },
   {
     id: "notifications",
     to: "/notifications",
     label: "Notifications",
     icon: Bell,
-    group: "communication",
+    group: "settings",
   },
   {
     id: "message-templates",
     to: "/message-templates",
     label: "Message Templates",
     icon: Mails,
-    group: "communication",
+    group: "settings",
   },
-  // "Notifications Queue" (outbound send-log) and "Notification Settings"
-  // (config) removed from the sidebar 2026-09-06 decluttering — technical/
-  // admin screens, not something checked day-to-day. Pages/routes
-  // untouched; uncomment to bring back.
-  // { id: "messages", to: "/messages", label: "Notifications Queue", icon: Send, group: "communication" },
-  // { id: "notification-settings", to: "/notification-settings", label: "Notification Settings", icon: BellRing, group: "communication" },
-
-  // Others
-  {
-    id: "dashboards",
-    to: "/dashboards",
-    label: "Role Dashboards",
-    icon: BarChart3,
-    group: "others",
-  },
-  { id: "documents", to: "/documents", label: "Documents", icon: FolderOpen, group: "others" },
-  // "Activity" (audit log) and "Favorites" (bookmarks) removed from the
-  // sidebar 2026-09-06 decluttering — low-traffic utility screens. Pages/
-  // routes untouched; uncomment to bring back.
-  // { id: "activity", to: "/activity", label: "Activity", icon: Activity, group: "others" },
-  // { id: "favorites", to: "/favorites", label: "Favorites", icon: Star, group: "others" },
-  { id: "reports", to: "/reports", label: "Reports", icon: BarChart3, group: "others" },
-  { id: "settings", to: "/settings", label: "Settings", icon: Settings, group: "others" },
-
-  // Admin
   {
     id: "admin-users",
     to: "/admin/users",
     label: "Users & Roles",
     icon: ShieldCheck,
-    group: "admin",
+    group: "settings",
     adminOnly: true,
+  },
+  {
+    id: "settings",
+    to: "/settings",
+    label: "Preferences & Settings",
+    icon: Settings,
+    group: "settings",
   },
 ];
 
