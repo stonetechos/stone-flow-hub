@@ -276,6 +276,8 @@ function NavGroupRow({
         return "/purchase-orders/new";
       case "items":
         return "/products?create=true";
+      case "executions":
+        return "/purchase-transport/new";
       default:
         return null;
     }

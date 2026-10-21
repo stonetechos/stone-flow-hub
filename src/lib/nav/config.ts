@@ -50,6 +50,7 @@ export type NavGroupId =
   | "items"
   | "sales"
   | "purchase"
+  | "executions"
   | "time"
   | "banking"
   | "compliance"
@@ -93,9 +94,16 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
     allowedRoles: ["admin", "super_admin", "purchase"],
   },
   {
+    id: "executions",
+    label: "Executions & Cartings",
+    icon: HardHat,
+    to: "/installations",
+    allowedRoles: ["admin", "super_admin", "sales_manager"],
+  },
+  {
     id: "time",
-    label: "Time Tracking",
-    icon: Clock,
+    label: "HR & Workforce",
+    icon: Users,
     to: "/workforce-intelligence",
     allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
   },
@@ -318,7 +326,51 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
 
-  // 5. Time Tracking (HR & Workforce)
+  // 5. Executions & Cartings
+  {
+    id: "installations",
+    to: "/installations",
+    label: "Site Installations",
+    icon: HardHat,
+    group: "executions",
+    allowedRoles: ["admin", "super_admin", "sales_manager"],
+  },
+  {
+    id: "agencies",
+    to: "/installation-teams",
+    label: "Installation Agencies",
+    icon: Users,
+    group: "executions",
+    quickCreateTo: "/installation-teams",
+    allowedRoles: ["admin", "super_admin", "sales_manager"],
+  },
+  {
+    id: "agency-payments",
+    to: "/agency-payments",
+    label: "Agency Payments",
+    icon: HandCoins,
+    group: "executions",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "agency-ledger",
+    to: "/installation-ledger",
+    label: "Agency Ledgers",
+    icon: Layers,
+    group: "executions",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "purchase-transport",
+    to: "/purchase-transport",
+    label: "Carting & Transport",
+    icon: Truck,
+    group: "executions",
+    quickCreateTo: "/purchase-transport/new",
+    allowedRoles: ["admin", "super_admin", "purchase"],
+  },
+
+  // 6. HR & Workforce
   {
     id: "wf-employees",
     to: "/workforce-intelligence/employees",
@@ -422,27 +474,13 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
   {
-    id: "agency-ledger",
-    to: "/installation-ledger",
-    label: "Agency Ledgers",
-    icon: Layers,
+    id: "cashbook",
+    to: "/ramans-cashbook",
+    label: "Raman's Cashbook",
+    icon: Coins,
     group: "accountant",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "agencies",
-    to: "/masters/installation-agencies",
-    label: "Installation Agencies",
-    icon: HardHat,
-    group: "accountant",
-  },
-  {
-    id: "agency-payments",
-    to: "/agency-payments",
-    label: "Agency Payments",
-    icon: HandCoins,
-    group: "accountant",
-    allowedRoles: ["admin", "super_admin"],
+    allowedRoles: ["super_admin"],
+    superAdminOnly: true,
   },
 
   // 9. Reports

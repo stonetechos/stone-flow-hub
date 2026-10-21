@@ -84,16 +84,25 @@ export const Route = createFileRoute("/_authenticated/money-flow")({
 
 function MoneyFlowCommandCenterPage() {
   const { t } = useTranslation();
+  const nav = useNavigate();
   const search = Route.useSearch();
   const [activeTab, setActiveTab] = useState<MoneyFlowTab>(
     (search.tab as MoneyFlowTab) || "overview",
   );
 
   useEffect(() => {
-    if (search.tab) {
-      setActiveTab(search.tab as MoneyFlowTab);
-    }
+    setActiveTab((search.tab as MoneyFlowTab) || "overview");
   }, [search.tab]);
+
+  const handleTabChange = (nextTab: string) => {
+    const tabValue = (nextTab as MoneyFlowTab) || "overview";
+    setActiveTab(tabValue);
+    void nav({
+      to: "/money-flow",
+      search: tabValue === "overview" ? {} : { tab: tabValue },
+      replace: true,
+    });
+  };
 
   // 1. Customer Receipts (Inflow)
   const customerPaymentsQ = useQuery({
@@ -244,7 +253,7 @@ function MoneyFlowCommandCenterPage() {
                 size="sm"
                 variant="outline"
                 className="border-purple-600/40 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 font-semibold"
-                onClick={() => setActiveTab("personal-transfers")}
+                onClick={() => handleTabChange("personal-transfers")}
               >
                 <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
                 <span>Personal Transfers</span>
@@ -257,7 +266,7 @@ function MoneyFlowCommandCenterPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {/* 1. Customer Receipts Inflow */}
           <Card
-            onClick={() => setActiveTab("customer-payments")}
+            onClick={() => handleTabChange("customer-payments")}
             className="cursor-pointer border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-background to-background dark:from-emerald-950/20 hover:border-emerald-500 transition-all shadow-xs"
           >
             <CardContent className="p-4 space-y-1.5">
@@ -286,7 +295,7 @@ function MoneyFlowCommandCenterPage() {
 
           {/* 2. Vendor Payments Outflow */}
           <Card
-            onClick={() => setActiveTab("vendor-payments")}
+            onClick={() => handleTabChange("vendor-payments")}
             className="cursor-pointer border-amber-500/30 bg-gradient-to-br from-amber-50/50 via-background to-background dark:from-amber-950/20 hover:border-amber-500 transition-all shadow-xs"
           >
             <CardContent className="p-4 space-y-1.5">
@@ -315,7 +324,7 @@ function MoneyFlowCommandCenterPage() {
 
           {/* 3. Agency Payments Outflow */}
           <Card
-            onClick={() => setActiveTab("agency-payments")}
+            onClick={() => handleTabChange("agency-payments")}
             className="cursor-pointer border-cyan-500/30 bg-gradient-to-br from-cyan-50/50 via-background to-background dark:from-cyan-950/20 hover:border-cyan-500 transition-all shadow-xs"
           >
             <CardContent className="p-4 space-y-1.5">
@@ -382,7 +391,7 @@ function MoneyFlowCommandCenterPage() {
 
           {/* 5. Customer Receivables */}
           <Card
-            onClick={() => setActiveTab("customer-ledgers")}
+            onClick={() => handleTabChange("customer-ledgers")}
             className="cursor-pointer border-border hover:border-primary/50 transition-all shadow-xs"
           >
             <CardContent className="p-4 space-y-1.5">
@@ -405,7 +414,7 @@ function MoneyFlowCommandCenterPage() {
 
           {/* 6. Total Payables */}
           <Card
-            onClick={() => setActiveTab("vendor-ledgers")}
+            onClick={() => handleTabChange("vendor-ledgers")}
             className="cursor-pointer border-border hover:border-primary/50 transition-all shadow-xs"
           >
             <CardContent className="p-4 space-y-1.5">
@@ -428,11 +437,7 @@ function MoneyFlowCommandCenterPage() {
         </div>
 
         {/* Unified Tabbed Navigation */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as MoneyFlowTab)}
-          className="space-y-4"
-        >
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <div className="overflow-x-auto pb-1">
             <TabsList className="inline-flex w-auto gap-1">
               <TabsTrigger value="overview" className="gap-1.5 text-xs">
@@ -587,7 +592,7 @@ function MoneyFlowCommandCenterPage() {
               {/* Quick Navigation Cards */}
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Card
-                  onClick={() => setActiveTab("customer-payments")}
+                  onClick={() => handleTabChange("customer-payments")}
                   className="cursor-pointer hover:border-primary/50 transition-all p-5 flex flex-col justify-between group"
                 >
                   <div className="space-y-2">
@@ -622,7 +627,7 @@ function MoneyFlowCommandCenterPage() {
                 </Card>
 
                 <Card
-                  onClick={() => setActiveTab("vendor-payments")}
+                  onClick={() => handleTabChange("vendor-payments")}
                   className="cursor-pointer hover:border-primary/50 transition-all p-5 flex flex-col justify-between group"
                 >
                   <div className="space-y-2">
@@ -654,7 +659,7 @@ function MoneyFlowCommandCenterPage() {
                 </Card>
 
                 <Card
-                  onClick={() => setActiveTab("agency-payments")}
+                  onClick={() => handleTabChange("agency-payments")}
                   className="cursor-pointer hover:border-primary/50 transition-all p-5 flex flex-col justify-between group"
                 >
                   <div className="space-y-2">
@@ -686,7 +691,7 @@ function MoneyFlowCommandCenterPage() {
                 </Card>
 
                 <Card
-                  onClick={() => setActiveTab("customer-ledgers")}
+                  onClick={() => handleTabChange("customer-ledgers")}
                   className="cursor-pointer hover:border-primary/50 transition-all p-5 flex flex-col justify-between group"
                 >
                   <div className="space-y-2">
@@ -781,7 +786,21 @@ function MoneyFlowCommandCenterPage() {
           </TabsContent>
 
           {/* TAB 8: PERSONAL TRANSFERS & LEDGERS */}
-          <TabsContent value="personal-transfers">
+          <TabsContent value="personal-transfers" className="space-y-4">
+            <div className="flex items-center justify-between bg-muted/40 px-3 py-2 rounded-lg border border-border/60">
+              <span className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                <ArrowLeftRight className="h-3.5 w-3.5 text-purple-600" />
+                <span>Personal Transfers Ledger</span>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1.5 hover:bg-background"
+                onClick={() => handleTabChange("overview")}
+              >
+                <span>← Back to Flow Radar</span>
+              </Button>
+            </div>
             <PersonalTransfersLedger />
           </TabsContent>
         </Tabs>
