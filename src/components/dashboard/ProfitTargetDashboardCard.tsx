@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp,
-  Target,
   ArrowRight,
   Sparkles,
   Users,
@@ -63,18 +62,9 @@ export function ProfitTargetDashboardCard() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-foreground tracking-tight">
-                  ₹50 Lakh Cumulative Profit Target
-                </h3>
-                <Badge
-                  variant="outline"
-                  className="bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 font-semibold text-[10px]"
-                >
-                  <Target className="mr-1 h-3 w-3 inline text-emerald-600" />
-                  Live Target
-                </Badge>
-              </div>
+              <h3 className="text-base font-bold text-foreground tracking-tight">
+                ₹50 Lakh Cumulative Profit Target
+              </h3>
               <p className="text-xs text-muted-foreground">
                 Realized net profit from customer collections vs. ₹50L company profit goal
               </p>

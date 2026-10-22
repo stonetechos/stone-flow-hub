@@ -72,17 +72,9 @@ export function SuperAdminWriteOffsCard() {
                 <ShieldAlert className="h-5 w-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
-                    SuperAdmin Audit: Customer Write-Offs & Concessions
-                  </CardTitle>
-                  <Badge
-                    variant="outline"
-                    className="border-red-300 text-red-700 bg-red-50 text-[10px] uppercase font-bold"
-                  >
-                    Executive Radar
-                  </Badge>
-                </div>
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+                  SuperAdmin Audit: Customer Write-Offs & Concessions
+                </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Track and audit every rupee written off due to quality complaints, delivery
                   delays, transit damage, or settlements.

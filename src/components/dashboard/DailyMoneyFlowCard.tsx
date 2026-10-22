@@ -18,7 +18,6 @@ import {
   Building2,
   User,
   ExternalLink,
-  ShieldCheck,
   RotateCcw,
   Sparkles,
 } from "lucide-react";
@@ -193,18 +192,9 @@ export function DailyMoneyFlowCard() {
               <ArrowLeftRight className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                  Daily Money Flow & Transaction Radar
-                </h2>
-                <Badge
-                  variant="outline"
-                  className="bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-purple-200 dark:border-purple-800 text-[10px] font-semibold flex items-center gap-1"
-                >
-                  <ShieldCheck className="h-3 w-3" />
-                  Super Admin View
-                </Badge>
-              </div>
+              <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                Daily Money Flow & Transaction Radar
+              </h2>
               <p className="text-xs text-muted-foreground">
                 Track how much capital arrived from customers versus disbursements to vendors and
                 contractors today.
