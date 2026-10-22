@@ -69,6 +69,15 @@ import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
 import { StonemanMascot } from "@/components/mascot/StonemanMascot";
 import { StonemanCustomerDialog } from "@/components/mascot/StonemanCustomerDialog";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
+import { useTranslation } from "react-i18next";
+import {
+  getLandingTexts,
+  getLocalizedProducts,
+  getLocalizedSpaceTypes,
+  getLocalizedCustomerRoles,
+  getLocalizedQuickIdeas,
+  getProductNameInLang,
+} from "@/lib/i18n/landing-i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -322,6 +331,25 @@ async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Pr
 function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const siteSettings = useSiteSettingsValue();
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.substring(0, 2) || "en";
+  const texts = getLandingTexts(currentLang);
+  const localizedProducts = useMemo(
+    () => getLocalizedProducts(MASTER_PRODUCT_OPTIONS, currentLang),
+    [currentLang],
+  );
+  const localizedSpaceTypes = useMemo(
+    () => getLocalizedSpaceTypes(SPACE_TYPES, currentLang),
+    [currentLang],
+  );
+  const localizedCustomerRoles = useMemo(
+    () => getLocalizedCustomerRoles(CUSTOMER_ROLES, currentLang),
+    [currentLang],
+  );
+  const localizedQuickIdeas = useMemo(
+    () => getLocalizedQuickIdeas(QUICK_IDEA_SUGGESTIONS, currentLang),
+    [currentLang],
+  );
 
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
@@ -548,7 +576,7 @@ function HomePage() {
 
     const remainingSlots = 10 - photos.length;
     if (remainingSlots <= 0) {
-      toast.error("You can upload a maximum of 10 photos.");
+      toast.error(texts.errors.maxPhotos);
       return;
     }
 
@@ -565,7 +593,7 @@ function HomePage() {
 
       for (const file of filesToProcess) {
         if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-          toast.error(`${file.name} is not an image or PDF file.`);
+          toast.error(texts.errors.invalidFileType.replace("{{filename}}", file.name));
           continue;
         }
 
@@ -603,10 +631,10 @@ function HomePage() {
     if (formStep === 1) {
       const step1Errors: Record<string, string> = {};
       if (selectedProducts.length === 0) {
-        step1Errors.selectedProducts = "Please select at least one stone product.";
+        step1Errors.selectedProducts = texts.errors.selectProduct;
       }
       if (!spaceType.trim()) {
-        step1Errors.spaceType = "Please select your project space type.";
+        step1Errors.spaceType = texts.errors.selectSpace;
       }
       if (Object.keys(step1Errors).length > 0) {
         setFormErrors(step1Errors);
@@ -620,23 +648,23 @@ function HomePage() {
 
     const errors: Record<string, string> = {};
     if (selectedProducts.length === 0) {
-      errors.selectedProducts = "Please select at least one stone product.";
+      errors.selectedProducts = texts.errors.selectProduct;
     }
     if (!spaceType.trim()) {
-      errors.spaceType = "Please select your project space type.";
+      errors.spaceType = texts.errors.selectSpace;
     }
     if (!name.trim()) {
-      errors.name = "Please enter your full name.";
+      errors.name = texts.errors.enterName;
     }
     const cleanDigits = whatsapp.replace(/\D/g, "");
     if (cleanDigits.length < 7) {
-      errors.whatsapp = "Please enter a valid WhatsApp phone number (at least 7 digits).";
+      errors.whatsapp = texts.errors.validWhatsapp;
     }
     if (!city.trim()) {
-      errors.city = "Please enter your project city or location.";
+      errors.city = texts.errors.enterCity;
     }
     if (!requiredDate) {
-      errors.requiredDate = "Please pick your required completion date from the calendar.";
+      errors.requiredDate = texts.errors.pickDate;
     }
 
     if (Object.keys(errors).length > 0) {
@@ -676,9 +704,7 @@ function HomePage() {
       });
 
       setSubmittedResult(result);
-      toast.success(
-        "Inquiry received successfully! Our stone specialist will connect with you on WhatsApp.",
-      );
+      toast.success(texts.errors.inquirySuccessToast);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: unknown) {
       console.error("Submission failed:", err);
@@ -704,25 +730,22 @@ function HomePage() {
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                Inquiry Received!
+                {texts.success.title}
               </h1>
               <p className="text-emerald-100 text-sm mt-1">
-                Thank you, {submittedResult.customer_name}. We have registered your custom stone
-                requirements.
+                {texts.success.thankYou.replace("{{name}}", submittedResult.customer_name)}
               </p>
             </div>
 
             <CardContent className="p-6 sm:p-8 space-y-6">
               <div className="rounded-xl border border-border/80 bg-muted/30 p-4 text-center space-y-1">
                 <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  Inquiry Reference Number
+                  {texts.success.refNumber}
                 </div>
                 <div className="text-2xl sm:text-3xl font-mono font-bold text-primary tracking-wide">
                   {submittedResult.enquiry_no}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Keep this reference code for instant swatch tracking and dispatch updates.
-                </p>
+                <p className="text-xs text-muted-foreground">{texts.success.refNote}</p>
               </div>
 
               {/* WhatsApp instant response card */}
@@ -733,12 +756,10 @@ function HomePage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-emerald-950 dark:text-emerald-200">
-                      Automated WhatsApp Update Sent to {submittedResult.whatsapp}
+                      {texts.success.whatsappSent.replace("{{phone}}", submittedResult.whatsapp)}
                     </h3>
                     <p className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
-                      Our system is generating your stone estimate and swatch kit. Connect directly
-                      with our lead architect on WhatsApp to receive rapid pricing & high-res slab
-                      photos:
+                      {texts.success.whatsappDesc}
                     </p>
                   </div>
                 </div>
@@ -749,7 +770,7 @@ function HomePage() {
                 >
                   <a href={submittedResult.whatsapp_link} target="_blank" rel="noopener noreferrer">
                     <Send className="h-4 w-4" />
-                    <span>Open WhatsApp & Chat Now</span>
+                    <span>{texts.success.openWhatsapp}</span>
                   </a>
                 </Button>
               </div>
@@ -759,20 +780,20 @@ function HomePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-rose-500" />
-                    <span className="text-sm font-bold">Visit Our Stone Experience Center</span>
+                    <span className="text-sm font-bold">{texts.success.visitCenter}</span>
                   </div>
                   <Badge
                     variant="outline"
                     className="text-[11px] gap-1 border-amber-300 text-amber-800 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 font-semibold"
                   >
                     <Star className="h-3 w-3 fill-amber-500 text-amber-500" />{" "}
-                    {siteSettings.google_rating} on Google
+                    {texts.success.onGoogle.replace(
+                      "{{rating}}",
+                      String(siteSettings.google_rating),
+                    )}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Touch and feel 200+ curated live slabs, 3D elevation claddings, and flexible stone
-                  veneer installations.
-                </p>
+                <p className="text-xs text-muted-foreground">{texts.success.touchFeel}</p>
                 <Button asChild variant="outline" size="sm" className="w-full gap-2 text-xs">
                   <a
                     href="https://share.google/0J6h6joQLwo1hVTWJ"
@@ -780,7 +801,7 @@ function HomePage() {
                     rel="noopener noreferrer"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    <span>Get Exact Directions on Google Maps</span>
+                    <span>{texts.success.getDirections}</span>
                   </a>
                 </Button>
               </div>
@@ -794,7 +815,7 @@ function HomePage() {
                 }}
                 className="w-full text-xs text-muted-foreground hover:text-foreground"
               >
-                Submit Another Project Requirement
+                {texts.success.submitAnother}
               </Button>
             </CardContent>
           </Card>
@@ -823,7 +844,7 @@ function HomePage() {
                 STONE TECH
               </span>
               <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1 whitespace-nowrap">
-                Architectural Stone Atelier
+                {texts.brandSubtitle}
               </span>
             </div>
           </div>
@@ -834,19 +855,19 @@ function HomePage() {
               href="#gallery-feed"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
-              Our Work
+              {texts.nav.ourWork}
             </a>
             <a
               href="#why-us"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
-              Why Us
+              {texts.nav.whyUs}
             </a>
             <JobOpeningsDialog
               trigger={
                 <button className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-semibold text-foreground/80 py-1 whitespace-nowrap">
                   <Briefcase className="h-4 w-4 text-primary" />
-                  <span>Job Openings</span>
+                  <span>{texts.nav.jobOpenings}</span>
                 </button>
               }
             />
@@ -854,7 +875,7 @@ function HomePage() {
               href="#contact-us"
               className="hover:text-primary transition-colors whitespace-nowrap py-1"
             >
-              Contact
+              {texts.nav.contact}
             </a>
           </nav>
 
@@ -872,8 +893,10 @@ function HomePage() {
                   className="h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs border-border/90 hover:border-primary/60 hover:text-primary shrink-0 rounded-lg"
                 >
                   <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">Track My Inquiry</span>
-                  <span className="sm:hidden text-xs">Track</span>
+                  <span className="hidden sm:inline whitespace-nowrap">
+                    {texts.nav.trackInquiry}
+                  </span>
+                  <span className="sm:hidden text-xs">{texts.nav.track}</span>
                 </Button>
               }
             />
@@ -893,8 +916,8 @@ function HomePage() {
                   className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
-                <span className="hidden sm:inline">Employees Login</span>
-                <span className="sm:hidden text-xs">Employees Login</span>
+                <span className="hidden sm:inline">{texts.nav.employeesLogin}</span>
+                <span className="sm:hidden text-xs">{texts.nav.employeesLogin}</span>
               </Link>
             </Button>
           </div>
@@ -909,9 +932,9 @@ function HomePage() {
             <div className="lg:col-span-6 space-y-6 sm:space-y-7 pt-1 lg:pt-2 animate-in fade-in-50 duration-300">
               {/* Main Heading */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-normal sm:font-medium tracking-tight text-[#111111] dark:text-stone-100 leading-[1.18] sm:leading-[1.14]">
-                Architectural Stone, Crafted for{" "}
+                {texts.hero.titlePart1}
                 <span className="text-[#0D7A7B] dark:text-[#2dd4bf] font-semibold italic sm:not-italic">
-                  Extraordinary Spaces.
+                  {texts.hero.titleHighlight}
                 </span>
               </h1>
 
@@ -922,25 +945,25 @@ function HomePage() {
                     1500+
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
-                    Customers Served
+                    {texts.hero.customersServed}
                   </div>
                 </div>
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    3 Years
+                    {texts.hero.yearsWarranty}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
-                    Installation Warranty
+                    {texts.hero.installationWarranty}
                   </div>
                 </div>
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E9E6E1] dark:border-stone-800 bg-white dark:bg-stone-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-sm cursor-default">
                   <div className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111] dark:text-stone-100">
-                    Direct
+                    {texts.hero.direct}
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
-                    Quarry Pricing
+                    {texts.hero.quarryPricing}
                   </div>
                 </div>
 
@@ -950,7 +973,7 @@ function HomePage() {
                     <span className="text-[#0D7A7B] text-base sm:text-lg">★</span>
                   </div>
                   <div className="text-[11px] sm:text-xs text-[#5F6368] dark:text-stone-400 font-medium mt-1">
-                    Google Rating
+                    {texts.hero.googleRating}
                   </div>
                 </div>
               </div>
@@ -958,27 +981,26 @@ function HomePage() {
               {/* Supporting Copy */}
               <div className="space-y-4 pt-1">
                 <p className="text-sm sm:text-[15px] text-[#5F6368] dark:text-stone-300 leading-relaxed max-w-xl font-normal">
-                  From handcrafted stone veneers to CNC-carved murals, custom flooring and luxury
-                  facades—we transform natural stone into timeless architectural statements.
+                  {texts.hero.description}
                 </p>
 
                 {/* Benefits Checklist */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>Direct Quarry Sourcing</span>
+                    <span>{texts.hero.benefits.quarry}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>CNC &amp; Waterjet Precision</span>
+                    <span>{texts.hero.benefits.cnc}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>Pan India Installation</span>
+                    <span>{texts.hero.benefits.panIndia}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#111111] dark:text-stone-200">
                     <Check className="h-4 w-4 text-[#0D7A7B] shrink-0 stroke-[2.25]" />
-                    <span>Design-to-Installation Support</span>
+                    <span>{texts.hero.benefits.support}</span>
                   </div>
                 </div>
 
@@ -989,7 +1011,7 @@ function HomePage() {
                     className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#0D7A7B] dark:text-[#2dd4bf] transition-colors relative cursor-pointer"
                   >
                     <span className="relative pb-0.5">
-                      Explore 300+ Completed Projects
+                      {texts.hero.exploreProjects}
                       <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#0D7A7B] dark:bg-[#2dd4bf] transition-all duration-300 ease-out group-hover:w-full" />
                     </span>
                     <ArrowDown className="h-3.5 w-3.5 transition-transform duration-250 ease-out group-hover:translate-y-1" />
@@ -1005,7 +1027,7 @@ function HomePage() {
                 <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white p-5 sm:p-6 border-b border-primary/20">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                      Request for estimate
+                      {texts.form.title}
                     </h2>
                   </div>
                 </div>
@@ -1033,8 +1055,10 @@ function HomePage() {
                       >
                         1
                       </span>
-                      <span className="hidden sm:inline">Part 1/2: Stone Requirements</span>
-                      <span className="sm:hidden text-[11px] truncate">1. Stone Needs</span>
+                      <span className="hidden sm:inline">{texts.form.step1}</span>
+                      <span className="sm:hidden text-[11px] truncate">
+                        {texts.form.step1Short}
+                      </span>
                       {selectedProducts.length > 0 && (
                         <span className="ml-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] px-1.5 py-0.2 font-mono">
                           {selectedProducts.length}
@@ -1062,8 +1086,10 @@ function HomePage() {
                       >
                         2
                       </span>
-                      <span className="hidden sm:inline">Part 2/2: Contact &amp; Timeline</span>
-                      <span className="sm:hidden text-[11px] truncate">2. Timeline &amp; Info</span>
+                      <span className="hidden sm:inline">{texts.form.step2}</span>
+                      <span className="sm:hidden text-[11px] truncate">
+                        {texts.form.step2Short}
+                      </span>
                     </button>
                   </div>
 
@@ -1089,7 +1115,8 @@ function HomePage() {
                                 1
                               </span>
                               <span>
-                                Select Stone Products <span className="text-destructive">*</span>:
+                                {texts.form.selectProducts}{" "}
+                                <span className="text-destructive">*</span>:
                               </span>
                             </label>
                             <div className="flex items-center gap-2">
@@ -1103,7 +1130,7 @@ function HomePage() {
                                   }}
                                   className="text-[11px] text-muted-foreground hover:text-destructive underline cursor-pointer"
                                 >
-                                  Clear
+                                  {texts.form.clear}
                                 </button>
                               )}
                               <Badge
@@ -1115,14 +1142,17 @@ function HomePage() {
                                     : "text-muted-foreground",
                                 )}
                               >
-                                {selectedProducts.length} selected
+                                {texts.form.selectedCount.replace(
+                                  "{{count}}",
+                                  String(selectedProducts.length),
+                                )}
                               </Badge>
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
-                            {MASTER_PRODUCT_OPTIONS.map((prod) => {
-                              const isSelected = selectedProducts.includes(prod.name);
+                            {localizedProducts.map((prod) => {
+                              const isSelected = selectedProducts.includes(prod.canonicalName);
                               return (
                                 <button
                                   key={prod.id}
@@ -1130,7 +1160,7 @@ function HomePage() {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    toggleProduct(prod.name);
+                                    toggleProduct(prod.canonicalName);
                                   }}
                                   aria-pressed={isSelected}
                                   className={cn(
@@ -1154,7 +1184,7 @@ function HomePage() {
                           </div>
 
                           <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
-                            <span>Tap any product to select or deselect</span>
+                            <span>{texts.form.tapHint}</span>
                             {selectedProducts.length < MASTER_PRODUCT_OPTIONS.length && (
                               <button
                                 type="button"
@@ -1165,7 +1195,10 @@ function HomePage() {
                                 }}
                                 className="text-primary hover:underline font-medium cursor-pointer"
                               >
-                                Select All ({MASTER_PRODUCT_OPTIONS.length})
+                                {texts.form.selectAll.replace(
+                                  "{{count}}",
+                                  String(MASTER_PRODUCT_OPTIONS.length),
+                                )}
                               </button>
                             )}
                           </div>
@@ -1185,7 +1218,7 @@ function HomePage() {
                                 2
                               </span>
                               <span>
-                                Project Space Type <span className="text-destructive">*</span>:
+                                {texts.form.spaceType} <span className="text-destructive">*</span>:
                               </span>
                             </label>
                             {spaceType && (
@@ -1194,28 +1227,28 @@ function HomePage() {
                                 onClick={() => setSpaceType("")}
                                 className="text-[11px] text-muted-foreground hover:text-destructive underline cursor-pointer"
                               >
-                                Clear
+                                {texts.form.clear}
                               </button>
                             )}
                           </div>
 
                           {/* Space Type Selector Chips */}
                           <div className="flex flex-wrap gap-1.5">
-                            {SPACE_TYPES.slice(0, 6).map((st) => (
+                            {localizedSpaceTypes.slice(0, 6).map((st) => (
                               <button
-                                key={st}
+                                key={st.value}
                                 type="button"
                                 onClick={() => {
                                   clearError("spaceType");
-                                  setSpaceType((prev) => (prev === st ? "" : st));
+                                  setSpaceType((prev) => (prev === st.value ? "" : st.value));
                                 }}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
-                                  spaceType === st
+                                  spaceType === st.value
                                     ? "border-primary bg-primary text-primary-foreground shadow-2xs font-semibold"
                                     : "border-border bg-background text-muted-foreground hover:bg-muted"
                                 }`}
                               >
-                                {st}
+                                {st.label}
                               </button>
                             ))}
                           </div>
@@ -1231,20 +1264,20 @@ function HomePage() {
                             <Textarea
                               value={planDescription}
                               onChange={(e) => setPlanDescription(e.target.value)}
-                              placeholder="Dimensions, wall sizes, or details (e.g., Living room TV wall 12x10 ft, exterior elevation in slate grey)..."
+                              placeholder={texts.form.descPlaceholder}
                               rows={2}
                               className="text-xs resize-none bg-background"
                             />
                             <div className="flex flex-wrap items-center gap-1">
                               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                <Sparkles className="h-3 w-3 text-primary" /> Ideas:
+                                <Sparkles className="h-3 w-3 text-primary" /> {texts.form.ideas}
                               </span>
-                              {QUICK_IDEA_SUGGESTIONS.slice(0, 4).map((tag) => (
+                              {localizedQuickIdeas.slice(0, 4).map((tag) => (
                                 <button
                                   key={tag}
                                   type="button"
                                   onClick={() => appendIdea(tag)}
-                                  className="text-[10px] rounded-full border border-border px-2 py-0.5 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  className="text-[10px] rounded-full border border-border px-2 py-0.5 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
                                 >
                                   + {tag}
                                 </button>
@@ -1260,13 +1293,13 @@ function HomePage() {
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 3
                               </span>
-                              <span>Upload Photos / CAD (Up to 10):</span>
+                              <span>{texts.form.uploadLabel}</span>
                             </label>
                             <Badge
                               variant="outline"
                               className="text-[10px] font-mono border-border bg-muted/30"
                             >
-                              {photos.length}/10 files
+                              {texts.form.filesCount.replace("{{count}}", String(photos.length))}
                             </Badge>
                           </div>
 
@@ -1292,8 +1325,8 @@ function HomePage() {
                               )}
                               <span>
                                 {isProcessingPhotos
-                                  ? "Compressing photos..."
-                                  : "Tap to upload site photos, sketches or CAD drawings"}
+                                  ? texts.form.compressing
+                                  : texts.form.uploadPrompt}
                               </span>
                             </div>
                           )}
@@ -1332,11 +1365,10 @@ function HomePage() {
                             onClick={() => {
                               const step1Errors: Record<string, string> = {};
                               if (selectedProducts.length === 0) {
-                                step1Errors.selectedProducts =
-                                  "Please select at least one stone product.";
+                                step1Errors.selectedProducts = texts.errors.selectProduct;
                               }
                               if (!spaceType.trim()) {
-                                step1Errors.spaceType = "Please select your project space type.";
+                                step1Errors.spaceType = texts.errors.selectSpace;
                               }
                               if (Object.keys(step1Errors).length > 0) {
                                 setFormErrors(step1Errors);
@@ -1348,10 +1380,8 @@ function HomePage() {
                             }}
                             className="w-full h-11 sm:h-12 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
                           >
-                            <span className="hidden sm:inline">
-                              Continue to Step 2/2: Delivery &amp; Contact Details
-                            </span>
-                            <span className="sm:hidden">Continue to Step 2/2</span>
+                            <span className="hidden sm:inline">{texts.form.continueBtn}</span>
+                            <span className="sm:hidden">{texts.form.continueBtnShort}</span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         </div>
@@ -1365,10 +1395,12 @@ function HomePage() {
                         <div className="rounded-xl border border-border/80 bg-background/90 p-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="font-semibold text-muted-foreground shrink-0">
-                              Selected:
+                              {texts.form.selectedLabel}
                             </span>
                             <span className="font-bold text-foreground truncate">
-                              {selectedProducts.join(", ") || "None selected"}
+                              {selectedProducts
+                                .map((p) => getProductNameInLang(p, currentLang))
+                                .join(", ") || texts.form.noneSelected}
                             </span>
                           </div>
                           <button
@@ -1376,7 +1408,7 @@ function HomePage() {
                             onClick={() => setFormStep(1)}
                             className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
                           >
-                            Edit (1/2)
+                            {texts.form.editStep1}
                           </button>
                         </div>
 
@@ -1387,7 +1419,7 @@ function HomePage() {
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                                 4
                               </span>
-                              <span>Contact &amp; Timeline:</span>
+                              <span>{texts.form.contactTitle}</span>
                             </label>
                           </div>
 
@@ -1395,12 +1427,14 @@ function HomePage() {
                           <div className="space-y-1.5">
                             <label className="text-[11px] font-semibold text-foreground flex items-center justify-between">
                               <span>
-                                Your Role / Identity <span className="text-destructive">*</span>
+                                {texts.form.yourRole} <span className="text-destructive">*</span>
                               </span>
-                              <span className="text-[10px] text-muted-foreground">Select one</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {texts.form.selectOne}
+                              </span>
                             </label>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                              {CUSTOMER_ROLES.map((role) => {
+                              {localizedCustomerRoles.map((role) => {
                                 const isSelected = customerRole === role.value;
                                 return (
                                   <button
@@ -1427,7 +1461,7 @@ function HomePage() {
                             {/* Full Name */}
                             <div>
                               <label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
-                                Your Full Name <span className="text-destructive">*</span>
+                                {texts.form.fullName} <span className="text-destructive">*</span>
                               </label>
                               <Input
                                 value={name}
@@ -1452,7 +1486,8 @@ function HomePage() {
                             {/* WhatsApp Number with Country Code Dropdown */}
                             <div>
                               <label className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1 block flex items-center gap-1">
-                                <Phone className="h-3 w-3 fill-current" /> Enter WhatsApp Number:{" "}
+                                <Phone className="h-3 w-3 fill-current" />{" "}
+                                {texts.form.whatsappNumber}{" "}
                                 <span className="text-destructive">*</span>
                               </label>
                               <div className="flex items-center">
@@ -1482,7 +1517,7 @@ function HomePage() {
                             {/* City / Location */}
                             <div>
                               <label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
-                                Project City / Location <span className="text-destructive">*</span>
+                                {texts.form.projectCity} <span className="text-destructive">*</span>
                               </label>
                               <Input
                                 value={city}
@@ -1490,7 +1525,7 @@ function HomePage() {
                                   setCity(e.target.value);
                                   clearError("city");
                                 }}
-                                placeholder="e.g. Ahmedabad, Jaipur, Delhi"
+                                placeholder={texts.form.cityPlaceholder}
                                 className={cn(
                                   "h-9 text-xs bg-background transition-colors",
                                   formErrors.city &&
@@ -1507,7 +1542,7 @@ function HomePage() {
                             {/* Email (Optional) */}
                             <div>
                               <label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
-                                Email (Optional)
+                                {texts.form.emailOptional}
                               </label>
                               <Input
                                 type="email"
@@ -1523,10 +1558,13 @@ function HomePage() {
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="font-semibold text-foreground flex items-center gap-1">
-                                <CalendarIcon className="h-3 w-3 text-primary" /> Required
-                                Completion Date: <span className="text-destructive">*</span>
+                                <CalendarIcon className="h-3 w-3 text-primary" />{" "}
+                                {texts.form.requiredDate}{" "}
+                                <span className="text-destructive">*</span>
                               </span>
-                              <span className="text-muted-foreground">Pick from calendar</span>
+                              <span className="text-muted-foreground">
+                                {texts.form.pickFromCalendar}
+                              </span>
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -1588,11 +1626,10 @@ function HomePage() {
                           <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 dark:border-amber-800 dark:bg-amber-950/40 text-xs space-y-2">
                             <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
                               <Phone className="h-4 w-4 text-emerald-600" />
-                              <span>Instant WhatsApp Estimate Option:</span>
+                              <span>{texts.form.instantWhatsappOption}</span>
                             </div>
                             <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                              Send your requirements directly to our Lead Architect on WhatsApp to
-                              receive rapid pricing & high-res slab photos:
+                              {texts.form.instantWhatsappDesc}
                             </p>
                             <Button
                               asChild
@@ -1605,7 +1642,7 @@ function HomePage() {
                                 rel="noopener noreferrer"
                               >
                                 <Phone className="h-3.5 w-3.5 fill-current" />
-                                <span>Send on WhatsApp (+91 77420 90866)</span>
+                                <span>{texts.form.sendWhatsappBtn}</span>
                               </a>
                             </Button>
                           </div>
@@ -1620,8 +1657,8 @@ function HomePage() {
                             className="h-11 sm:h-12 px-3 sm:px-4 text-xs font-bold gap-1.5 border-border shrink-0 cursor-pointer"
                           >
                             <ArrowLeft className="h-4 w-4" />
-                            <span className="hidden sm:inline">Back (1/2)</span>
-                            <span className="sm:hidden">Back</span>
+                            <span className="hidden sm:inline">{texts.form.backBtn}</span>
+                            <span className="sm:hidden">{texts.form.back}</span>
                           </Button>
 
                           <Button
@@ -1632,11 +1669,11 @@ function HomePage() {
                             {isSubmitting ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                                <span className="truncate">Submitting request...</span>
+                                <span className="truncate">{texts.form.submitting}</span>
                               </>
                             ) : (
                               <>
-                                <span className="truncate">Request for estimate</span>
+                                <span className="truncate">{texts.form.submitBtn}</span>
                                 <ArrowRight className="h-4 w-4 shrink-0" />
                               </>
                             )}
@@ -1645,9 +1682,7 @@ function HomePage() {
 
                         <div className="text-center text-[11px] text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                          <span>
-                            Instant estimate &amp; material specifications sent to WhatsApp
-                          </span>
+                          <span>{texts.form.trustNote}</span>
                         </div>
                       </div>
                     )}
@@ -1680,7 +1715,7 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Built on Precision, Lineage & Transparency
+              {texts.whyUs.title}
             </h2>
           </div>
 
@@ -1689,44 +1724,32 @@ function HomePage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Gem className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">Quarry Direct Sourcing</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                No middleman or distributor markups. We source raw blocks straight from certified
-                mines in Rajasthan and global stone centers.
-              </p>
+              <h3 className="text-base font-bold">{texts.whyUs.p1Title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p1Desc}</p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
                 <Compass className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">Sub-Millimeter CNC Cutting</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                High-pressure 5-axis CNC waterjet routers ensure under 0.5mm joint tolerances for
-                flawless seamless installation.
-              </p>
+              <h3 className="text-base font-bold">{texts.whyUs.p2Title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p2Desc}</p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
                 <Phone className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">WhatsApp Progress Updates</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Get high-resolution photo and video proofs of your stone blocks, dry-lay matching,
-                and packaging sent to WhatsApp in real-time.
-              </p>
+              <h3 className="text-base font-bold">{texts.whyUs.p3Title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p3Desc}</p>
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600">
                 <Truck className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-bold">Export Zero-Damage Crating</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Every shipment is cushioned in EPE shock foam and sealed within export-grade wooden
-                crates with 100% transit replacement coverage.
-              </p>
+              <h3 className="text-base font-bold">{texts.whyUs.p4Title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{texts.whyUs.p4Desc}</p>
             </div>
           </div>
         </div>
@@ -1749,7 +1772,7 @@ function HomePage() {
             rel="noopener noreferrer"
           >
             <Phone className="h-3.5 w-3.5 fill-current shrink-0" />
-            <span className="truncate">WhatsApp</span>
+            <span className="truncate">{texts.mobileBar.whatsapp}</span>
           </a>
         </Button>
 
@@ -1758,7 +1781,7 @@ function HomePage() {
           size="sm"
           className="flex-1 h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1 text-xs cursor-pointer shadow-md"
         >
-          <span className="truncate">Free Estimate</span>
+          <span className="truncate">{texts.mobileBar.freeEstimate}</span>
           <ArrowRight className="h-3.5 w-3.5 shrink-0" />
         </Button>
       </div>

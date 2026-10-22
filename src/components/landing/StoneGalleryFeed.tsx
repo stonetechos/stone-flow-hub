@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Heart,
   MessageCircle,
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getLandingTexts } from "@/lib/i18n/landing-i18n";
 
 interface StoneGalleryFeedProps {
   onSelectProduct?: (productName: string) => void;
@@ -41,6 +43,10 @@ interface StoneGalleryFeedProps {
 const BATCH_SIZE = 30;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.substring(0, 2) || "en";
+  const texts = getLandingTexts(currentLang);
+
   // Directly powered by authentic posts synced via GitHub Actions into src/data/instagram-posts.json
   const [allPosts] = useState<InstagramPost[]>(() => INSTAGRAM_POSTS);
   // Display at least 210 posts immediately (all 300 authentic executed works)
@@ -115,7 +121,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Live Installations &amp; Executed Works
+              {texts.gallery.title}
             </span>
           </div>
         </div>
@@ -342,7 +348,9 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                     <div className="space-y-3 pt-3 border-t border-border/80">
                       <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                         <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
-                        <span>{activeModalPost.likes} Architectural Approvals</span>
+                        <span>
+                          {activeModalPost.likes} {texts.gallery.approvals}
+                        </span>
                       </div>
 
                       <Button
@@ -350,7 +358,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                         className="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 shadow-sm"
                       >
                         <Sparkles className="h-4 w-4" />
-                        <span>Request Estimate for this Finish</span>
+                        <span>{texts.gallery.requestEstimate}</span>
                       </Button>
                     </div>
                   </div>

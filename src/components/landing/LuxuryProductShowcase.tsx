@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Sparkles,
   Layers,
@@ -15,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getLandingTexts, getLocalizedLuxuryProducts } from "@/lib/i18n/landing-i18n";
 
 export interface LuxuryProductItem {
   id: string;
@@ -352,39 +354,47 @@ export function LuxuryProductShowcase({
   onSelectProduct,
   selectedProducts = [],
 }: LuxuryProductShowcaseProps) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.substring(0, 2) || "en";
+  const texts = getLandingTexts(currentLang);
+
+  const localizedLuxuryProducts = useMemo(() => {
+    return getLocalizedLuxuryProducts(LUXURY_PRODUCTS, currentLang);
+  }, [currentLang]);
+
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "facade" | "sacred" | "surfaces" | "exotic"
   >("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const categories = [
-    { key: "all", label: "All Collections", count: LUXURY_PRODUCTS.length },
+    { key: "all", label: texts.showcase.tabs.all, count: localizedLuxuryProducts.length },
     {
       key: "facade",
-      label: "Facades & Veneers",
-      count: LUXURY_PRODUCTS.filter((p) => p.category === "facade").length,
+      label: texts.showcase.tabs.facade,
+      count: localizedLuxuryProducts.filter((p) => p.category === "facade").length,
     },
     {
       key: "sacred",
-      label: "Mandirs & Inlays",
-      count: LUXURY_PRODUCTS.filter((p) => p.category === "sacred").length,
+      label: texts.showcase.tabs.sacred,
+      count: localizedLuxuryProducts.filter((p) => p.category === "sacred").length,
     },
     {
       key: "surfaces",
-      label: "Floors & Monoliths",
-      count: LUXURY_PRODUCTS.filter((p) => p.category === "surfaces").length,
+      label: texts.showcase.tabs.surfaces,
+      count: localizedLuxuryProducts.filter((p) => p.category === "surfaces").length,
     },
     {
       key: "exotic",
-      label: "Gemstones & Outdoors",
-      count: LUXURY_PRODUCTS.filter((p) => p.category === "exotic").length,
+      label: texts.showcase.tabs.exotic,
+      count: localizedLuxuryProducts.filter((p) => p.category === "exotic").length,
     },
   ];
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "all") return LUXURY_PRODUCTS;
-    return LUXURY_PRODUCTS.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategory === "all") return localizedLuxuryProducts;
+    return localizedLuxuryProducts.filter((p) => p.category === selectedCategory);
+  }, [selectedCategory, localizedLuxuryProducts]);
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -399,21 +409,19 @@ export function LuxuryProductShowcase({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-300">
               <Gem className="h-3 w-3 fill-amber-400" />
-              The Architectural Atelier Portfolio
+              {texts.showcase.portfolioBadge}
             </span>
             <span className="text-[11px] font-medium text-stone-400">
-              Direct Mine Sourcing · Sub-Millimeter Tolerances
+              {texts.showcase.directMine}
             </span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Curated Natural Stone Collections
+            {texts.showcase.title}
           </h2>
 
           <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed">
-            From rare translucent agates and precision 5-axis CNC mandir sanctums to flexible
-            cleaved stone veneers and bookmatched Italian marble slabs. Engineered for villas,
-            estates, and sacred architecture.
+            {texts.showcase.subtitle}
           </p>
 
           {/* Quick Filter Navigation Tabs */}
@@ -443,7 +451,9 @@ export function LuxuryProductShowcase({
       <div className="grid grid-cols-1 gap-4 sm:gap-5">
         {filteredProducts.map((product) => {
           const isExpanded = expandedId === product.id;
-          const isSelected = selectedProducts.includes(product.name);
+          const canonicalName = product.canonicalName || product.name;
+          const isSelected =
+            selectedProducts.includes(canonicalName) || selectedProducts.includes(product.name);
 
           return (
             <div
@@ -482,7 +492,7 @@ export function LuxuryProductShowcase({
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => onSelectProduct?.(product.name)}
+                    onClick={() => onSelectProduct?.(canonicalName)}
                     className={cn(
                       "h-8 text-xs font-bold shadow-2xs gap-1.5 px-3 cursor-pointer transition-all",
                       isSelected
@@ -493,11 +503,11 @@ export function LuxuryProductShowcase({
                     {isSelected ? (
                       <>
                         <Check className="h-3.5 w-3.5 stroke-[3]" />
-                        <span>Selected for Estimate</span>
+                        <span>{texts.showcase.selected}</span>
                       </>
                     ) : (
                       <>
-                        <span>Select for Estimate</span>
+                        <span>{texts.showcase.selectForEstimate}</span>
                         <ArrowRight className="h-3 w-3" />
                       </>
                     )}
@@ -525,11 +535,9 @@ export function LuxuryProductShowcase({
                 <button
                   type="button"
                   onClick={() => toggleExpand(product.id)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                  className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
                 >
-                  <span>
-                    {isExpanded ? "Hide Technical Specifications" : "View Technical Specifications"}
-                  </span>
+                  <span>{isExpanded ? texts.showcase.hideSpecs : texts.showcase.viewSpecs}</span>
                   <ChevronDown
                     className={`h-3.5 w-3.5 transition-transform duration-200 ${
                       isExpanded ? "rotate-180" : ""
@@ -542,7 +550,7 @@ export function LuxuryProductShowcase({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider">
-                          Standard Thickness &amp; Formats
+                          {texts.showcase.specsHeaders.thickness}
                         </span>
                         <p className="font-semibold text-foreground mt-0.5">
                           {product.specs.thickness}
@@ -552,27 +560,27 @@ export function LuxuryProductShowcase({
                         </p>
                         {product.specs.weight && (
                           <p className="text-muted-foreground text-[11px]">
-                            Weight: {product.specs.weight}
+                            {texts.showcase.specsHeaders.weight}: {product.specs.weight}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider">
-                          Quarry &amp; Regional Origin
+                          {texts.showcase.specsHeaders.quarry}
                         </span>
                         <p className="font-semibold text-foreground mt-0.5">
                           {product.specs.quarryOrigin}
                         </p>
                         <p className="text-muted-foreground text-[11px]">
-                          Mine-direct certification with zero distributor markups
+                          {texts.showcase.directMineNote}
                         </p>
                       </div>
                     </div>
 
                     <div>
                       <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider mb-1">
-                        Available Surface Finishes
+                        {texts.showcase.specsHeaders.finishes}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {product.specs.finishes.map((f, i) => (
@@ -589,7 +597,7 @@ export function LuxuryProductShowcase({
 
                     <div>
                       <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider mb-1">
-                        Recommended Architectural Applications
+                        {texts.showcase.specsHeaders.applications}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {product.specs.applications.map((app, i) => (
@@ -610,7 +618,7 @@ export function LuxuryProductShowcase({
               {/* Bottom Quick Action Bar */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50 text-xs">
                 <span className="text-[11px] text-muted-foreground">
-                  Need a bespoke sample box or dry-lay proof for this product?
+                  {texts.showcase.sampleBoxQuestion}
                 </span>
 
                 <div className="flex items-center gap-2">
@@ -623,7 +631,7 @@ export function LuxuryProductShowcase({
                     className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
                   >
                     <Phone className="h-3 w-3 fill-current" />
-                    <span>Inquire on WhatsApp</span>
+                    <span>{texts.showcase.inquireWhatsapp}</span>
                     <ExternalLink className="h-2.5 w-2.5 opacity-70" />
                   </a>
 
@@ -631,7 +639,7 @@ export function LuxuryProductShowcase({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => onSelectProduct?.(product.name)}
+                    onClick={() => onSelectProduct?.(canonicalName)}
                     className={cn(
                       "h-7 text-xs font-bold px-2 cursor-pointer transition-colors",
                       isSelected
@@ -639,7 +647,7 @@ export function LuxuryProductShowcase({
                         : "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10",
                     )}
                   >
-                    {isSelected ? "View in Estimate Form →" : "Get Estimate →"}
+                    {isSelected ? texts.showcase.viewInForm : texts.showcase.getEstimate}
                   </Button>
                 </div>
               </div>

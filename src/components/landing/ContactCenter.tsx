@@ -13,13 +13,19 @@
  */
 
 import { Phone, Mail, MapPin, Star, ExternalLink, MessageCircle, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
+import { getLandingTexts } from "@/lib/i18n/landing-i18n";
 
 const GOOGLE_BUSINESS_URL = "https://share.google/0J6h6joQLwo1hVTWJ";
 
 export function ContactCenter({ className }: { className?: string }) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language?.substring(0, 2) || "en";
+  const texts = getLandingTexts(currentLang);
+
   const settings = useSiteSettingsValue();
   const REVIEWS = settings.reviews;
   const googleRating = settings.google_rating;
@@ -39,12 +45,9 @@ export function ContactCenter({ className }: { className?: string }) {
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-2xs">
                 <MapPin className="h-5 w-5" />
               </span>
-              <span>How to reach Us?</span>
+              <span>{texts.contact.title}</span>
             </h2>
-            <p className="text-sm text-muted-foreground max-w-2xl">
-              Connect directly with our stone specialists, request factory dry-lay guidance, or
-              visit our Ahmedabad experience center.
-            </p>
+            <p className="text-sm text-muted-foreground max-w-2xl">{texts.contact.subtitle}</p>
           </div>
 
           {/* Google Verified Rating Pill */}
@@ -64,7 +67,7 @@ export function ContactCenter({ className }: { className?: string }) {
               </div>
             </div>
             <span className="text-xs text-muted-foreground font-semibold border-l border-primary/30 pl-3">
-              Google Verified Business
+              {texts.contact.googleVerified}
             </span>
             <ExternalLink className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
           </a>
@@ -79,10 +82,10 @@ export function ContactCenter({ className }: { className?: string }) {
                 <MessageCircle className="h-5 w-5 fill-current" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Connect Directly on WhatsApp</h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Direct chat with our atelier team
-                </p>
+                <h3 className="text-sm font-bold text-foreground">
+                  {texts.contact.connectWhatsapp}
+                </h3>
+                <p className="text-[11px] text-muted-foreground">{texts.contact.chatAtelier}</p>
               </div>
             </div>
 
@@ -101,7 +104,9 @@ export function ContactCenter({ className }: { className?: string }) {
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                       +91 77420 90866
                     </div>
-                    <div className="text-[10px] text-muted-foreground">Tap to chat on WhatsApp</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {texts.contact.tapToChat}
+                    </div>
                   </div>
                 </div>
                 <ExternalLink className="h-3.5 w-3.5 text-emerald-600 opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -121,7 +126,9 @@ export function ContactCenter({ className }: { className?: string }) {
                     <div className="text-xs font-bold text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                       +91 97844 52998
                     </div>
-                    <div className="text-[10px] text-muted-foreground">Tap to chat on WhatsApp</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {texts.contact.tapToChat}
+                    </div>
                   </div>
                 </div>
                 <ExternalLink className="h-3.5 w-3.5 text-emerald-600 opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -138,16 +145,16 @@ export function ContactCenter({ className }: { className?: string }) {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground">
-                    Showroom &amp; Studio Location
+                    {texts.contact.showroomTitle}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">Ahmedabad Experience Center</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {texts.contact.experienceCenter}
+                  </p>
                 </div>
               </div>
 
               <p className="text-xs text-foreground leading-relaxed font-medium">
-                <span className="font-bold">E-02, Ground Floor</span>, in front of The Festival
-                Residency, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, Pin Code:{" "}
-                <span className="font-bold font-mono">380060</span>
+                {texts.contact.experienceCenterAddress}
               </p>
             </div>
 
@@ -159,7 +166,7 @@ export function ContactCenter({ className }: { className?: string }) {
               >
                 <a href={GOOGLE_BUSINESS_URL} target="_blank" rel="noopener noreferrer">
                   <MapPin className="h-4 w-4 text-rose-400" />
-                  <span>Get Directions on Google Maps</span>
+                  <span>{texts.contact.getDirections}</span>
                   <ExternalLink className="h-3.5 w-3.5 ml-1 opacity-70" />
                 </a>
               </Button>
@@ -174,16 +181,18 @@ export function ContactCenter({ className }: { className?: string }) {
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Email Correspondence</h3>
+                  <h3 className="text-sm font-bold text-foreground">
+                    {texts.contact.emailCorrespondence}
+                  </h3>
                   <p className="text-[11px] text-muted-foreground">
-                    Architectural inquiries &amp; tenders
+                    {texts.contact.emailInquiries}
                   </p>
                 </div>
               </div>
 
               <div className="p-3 rounded-2xl border border-border/70 bg-muted/30">
                 <span className="text-[11px] text-muted-foreground block mb-0.5">
-                  Official Inquiries:
+                  {texts.contact.officialInquiries}
                 </span>
                 <a
                   href="mailto:info@stonetech.in"
@@ -196,7 +205,7 @@ export function ContactCenter({ className }: { className?: string }) {
 
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span>Studio Hours: Mon – Sat, 10:00 AM – 7:30 PM</span>
+                <span>{texts.contact.studioHours}</span>
               </div>
             </div>
 
@@ -209,7 +218,7 @@ export function ContactCenter({ className }: { className?: string }) {
               >
                 <a href="mailto:info@stonetech.in">
                   <Mail className="h-3.5 w-3.5 text-primary" />
-                  <span>Send Architectural RFQ via Email</span>
+                  <span>{texts.contact.sendRfq}</span>
                 </a>
               </Button>
             </div>
@@ -221,13 +230,13 @@ export function ContactCenter({ className }: { className?: string }) {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-              <span>Client Feedback &amp; 5-Star Reviews:</span>
+              <span>{texts.contact.reviewsTitle}</span>
             </span>
             <Badge
               variant="outline"
               className="text-[11px] text-primary border-primary/40 bg-primary/5"
             >
-              5.0 ★ Top Rated Atelier
+              {texts.contact.topRated}
             </Badge>
           </div>
 
