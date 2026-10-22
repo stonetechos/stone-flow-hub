@@ -12,12 +12,13 @@
  * - Highlighted 5-star customer and architect feedback cards
  */
 
+import { useMemo } from "react";
 import { Phone, Mail, MapPin, Star, ExternalLink, MessageCircle, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSiteSettingsValue } from "@/lib/site-settings/use-site-settings";
-import { getLandingTexts } from "@/lib/i18n/landing-i18n";
+import { getLandingTexts, getLocalizedReviews } from "@/lib/i18n/landing-i18n";
 
 const GOOGLE_BUSINESS_URL = "https://share.google/0J6h6joQLwo1hVTWJ";
 
@@ -27,7 +28,10 @@ export function ContactCenter({ className }: { className?: string }) {
   const texts = getLandingTexts(currentLang);
 
   const settings = useSiteSettingsValue();
-  const REVIEWS = settings.reviews;
+  const localizedReviews = useMemo(
+    () => getLocalizedReviews(settings.reviews, currentLang),
+    [settings.reviews, currentLang],
+  );
   const googleRating = settings.google_rating;
 
   return (
@@ -241,7 +245,7 @@ export function ContactCenter({ className }: { className?: string }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {REVIEWS.map((rev, idx) => (
+            {localizedReviews.map((rev, idx) => (
               <div
                 key={idx}
                 className="p-5 rounded-2xl border border-border/70 bg-card space-y-2.5 shadow-2xs hover:border-primary/50 hover:shadow-xs transition-all"
