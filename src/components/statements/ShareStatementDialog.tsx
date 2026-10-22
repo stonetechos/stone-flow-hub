@@ -110,7 +110,7 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
       <body>
         <div class="header">
           <div>
-            <img src="/branding/stone-tech-logo.png" alt="Stone Tech" style="width:90px;height:90px;object-fit:contain;display:block;margin-bottom:8px;" onerror="this.style.display='none'" />
+            <img src="/branding/stone-tech-logo.png" alt="Stone Tech" style="width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:50%;display:block;margin-bottom:8px;" onerror="this.style.display='none'" />
             <div class="company-name">STONE TECH</div>
             <div class="company-sub">
               E-02, Ground Floor, SG Business Hub, Opp to Festival Residency, Vasant Nagar,<br/>
@@ -195,10 +195,8 @@ export function ShareStatementDialog({ open, onOpenChange, data }: ShareStatemen
             <div style="color:#0d9488;font-weight:600;margin-top:2px;">UPI ID: stonetech.ahmedabad@okicici</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-weight:700;color:#111827;text-transform:uppercase;">FOR: STONE TECH</div>
-            <div style="margin:10px 0 2px;"><img src="/signature.jpg" alt="Signature" style="max-height:40px;object-fit:contain;" onerror="this.style.display='none'" /></div>
-            <div style="font-weight:700;">PROPRIETOR</div>
-            <div style="color:#64748b;">Authorized Signatory</div>
+            <div style="margin:4px 0 2px;"><img src="/signature.png" alt="Authorized Signature" style="height:64px;max-width:170px;object-fit:contain;" onerror="this.style.display='none'" /></div>
+            <div style="color:#64748b;font-size:9.5px;margin-top:2px;">Authorized Signatory</div>
           </div>
         </div>
 

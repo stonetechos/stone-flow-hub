@@ -223,7 +223,7 @@ export const Route = createFileRoute("/api/public/diagnostics/env-status")({
                 if (prof && !(prof as { logo_url?: string }).logo_url) {
                   await supabaseAdmin
                     .from("company_profiles" as never)
-                    .update({ logo_url: "/branding/stone-tech-logo.jpg" } as never)
+                    .update({ logo_url: "/branding/stone-tech-logo.png" } as never)
                     .eq("id", (prof as { id: string }).id);
                   body.company_profile_updated = true;
                 }

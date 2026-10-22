@@ -17,7 +17,13 @@
  *    "Save as PDF". A true binary PDF generator can slot in later behind
  *    the same signature without touching call sites.
  */
-import { loadBranding, DEFAULT_BRANDING, type BrandingConfig } from "@/lib/branding";
+import {
+  loadBranding,
+  DEFAULT_BRANDING,
+  type BrandingConfig,
+  STONE_TECH_CIRCULAR_LOGO_DATA_URL,
+  STONE_TECH_SIGNATURE_DATA_URL,
+} from "@/lib/branding";
 import { STONE_TECH_UPI_ID, STONE_TECH_UPI_QR_DATA_URL } from "@/lib/branding/upi-qr-asset";
 import { amountToIndianWords } from "@/lib/format/words";
 
@@ -122,8 +128,16 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
   const numberLabel = isQuote ? "# :" : isInvoice ? "Invoice#" : "# :";
   const dateLabel = isQuote ? "Quote Date" : "Date";
 
-  const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="width:92px;height:92px;object-fit:contain;display:block;margin-bottom:8px;" />`
+  const logoUrl =
+    !brand.logo_url ||
+    brand.logo_url === "/branding/stone-tech-logo.jpg" ||
+    brand.logo_url === "/branding/stone-tech-logo.png" ||
+    brand.logo_url.includes("stone-tech-logo")
+      ? STONE_TECH_CIRCULAR_LOGO_DATA_URL
+      : brand.logo_url;
+
+  const logo = logoUrl
+    ? `<img src="${esc(logoUrl)}" alt="${esc(brand.company_name)}" style="width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:50%;display:block;margin-bottom:8px;" />`
     : `<div style="font-size:20px;font-weight:800;color:${deepTurquoise};letter-spacing:-.01em;margin-bottom:4px;">${esc(brand.company_name)}</div>`;
 
   const posMeta = doc.meta?.find((m) => m.label.toLowerCase().includes("place of supply"));
@@ -227,15 +241,29 @@ export function renderDocHtml(doc: PdfDoc, brand: BrandingConfig = DEFAULT_BRAND
     </div>`;
 
   // Authorized Signatory
-  const signatureUrl = brand.signature_url || "/signature.jpg";
+  const signatureUrl =
+    !brand.signature_url ||
+    brand.signature_url === "/signature.jpg" ||
+    brand.signature_url === "/signature.png" ||
+    brand.signature_url.includes("signature")
+      ? STONE_TECH_SIGNATURE_DATA_URL
+      : brand.signature_url;
+
+  const isDefaultSignature =
+    !brand.signature_url ||
+    brand.signature_url === "/signature.jpg" ||
+    brand.signature_url === "/signature.png" ||
+    brand.signature_url === STONE_TECH_SIGNATURE_DATA_URL ||
+    brand.signature_url.includes("signature");
+
   const signatoryBlock = `
     <div style="margin-top:24px;text-align:right;">
-      <div style="font-size:10px;font-weight:700;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.03em;">FOR: ${esc(brand.company_name.toUpperCase())}</div>
-      <div style="margin:6px 0 2px;display:flex;justify-content:flex-end;">
-        <img src="${signatureUrl}" alt="Authorized Signature" style="max-height:48px;max-width:140px;object-fit:contain;display:block;" />
+      ${!isDefaultSignature ? `<div style="font-size:10px;font-weight:700;color:${deepTurquoise};text-transform:uppercase;letter-spacing:0.03em;">FOR: ${esc(brand.company_name.toUpperCase())}</div>` : ""}
+      <div style="margin:4px 0 2px;display:flex;justify-content:flex-end;">
+        <img src="${signatureUrl}" alt="Authorized Signature" style="height:68px;max-width:180px;object-fit:contain;display:block;" />
       </div>
-      <div style="font-size:10px;font-weight:700;color:#1e293b;">PROPRIETOR</div>
-      <div style="font-size:9.5px;color:${muted};">Authorized Signature</div>
+      ${!isDefaultSignature ? `<div style="font-size:10px;font-weight:700;color:#1e293b;">PROPRIETOR</div>` : ""}
+      <div style="font-size:9.5px;color:${muted};margin-top:2px;">Authorized Signatory</div>
     </div>`;
 
   const uniquePhotos = Array.from(
@@ -845,21 +873,35 @@ async function generateVectorPdfFallback(doc: PdfDoc): Promise<Blob> {
   }
 
   // Authorized Signatory
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8);
-  pdf.setTextColor(8, 59, 67); // #083b43 deep turquoise
-  pdf.text(`FOR: ${(brand.company_name || "STONE TECH").toUpperCase()}`, 195, y + 4.5, {
-    align: "right",
-  });
+  let sigAdded = false;
+  try {
+    pdf.addImage(STONE_TECH_SIGNATURE_DATA_URL, "PNG", 148, y + 2, 47, 24);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text("Authorized Signatory", 195, y + 28, { align: "right" });
+    sigAdded = true;
+  } catch {
+    /* fallback to text */
+  }
 
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8.5);
-  pdf.setTextColor(15, 23, 42);
-  pdf.text("PROPRIETOR", 195, y + 20, { align: "right" });
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(7.5);
-  pdf.setTextColor(100, 116, 139);
-  pdf.text("Authorized Signature", 195, y + 25, { align: "right" });
+  if (!sigAdded) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(8, 59, 67); // #083b43 deep turquoise
+    pdf.text(`FOR: ${(brand.company_name || "STONE TECH").toUpperCase()}`, 195, y + 4.5, {
+      align: "right",
+    });
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(15, 23, 42);
+    pdf.text("PROPRIETOR", 195, y + 20, { align: "right" });
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(100, 116, 139);
+    pdf.text("Authorized Signature", 195, y + 25, { align: "right" });
+  }
 
   // Terms & Notes
   if (doc.terms || doc.notes) {

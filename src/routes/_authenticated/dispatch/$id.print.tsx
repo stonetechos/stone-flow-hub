@@ -59,7 +59,11 @@ function PrintDispatchPage() {
       <header className="mb-6 flex items-start justify-between border-b border-slate-300 pb-4">
         <div className="flex items-center gap-3">
           {b.logo_url ? (
-            <img src={b.logo_url} alt={b.company_name} className="h-14 w-auto" />
+            <img
+              src={b.logo_url}
+              alt={b.company_name}
+              className="h-14 w-14 object-contain rounded-full"
+            />
           ) : (
             <div
               className="flex h-14 w-14 items-center justify-center rounded font-bold text-white"

@@ -90,4 +90,28 @@ describe("PDF Generator", () => {
     const textContent = new TextDecoder("latin1").decode(arrayBuffer);
     expect(textContent).toContain("Stone Tech");
   });
+
+  it("renders circular logo with 1:1 aspect ratio and circular border-radius", () => {
+    const html = renderDocHtml(sampleDoc);
+    expect(html).toContain("border-radius:50%");
+    expect(html).toContain("aspect-ratio:1/1");
+    expect(html).toContain("width:76px;height:76px");
+  });
+
+  it("renders authorized signature in quotations and invoices", () => {
+    const quoteHtml = renderDocHtml(sampleDoc);
+    expect(quoteHtml).toContain('alt="Authorized Signature"');
+    expect(quoteHtml).toContain("Authorized Signatory");
+
+    const invoiceDoc: PdfDoc = {
+      ...sampleDoc,
+      kind: "invoice",
+      title: "Tax Invoice",
+      number: "INV-2026-0001",
+    };
+    const invoiceHtml = renderDocHtml(invoiceDoc);
+    expect(invoiceHtml).toContain('alt="Authorized Signature"');
+    expect(invoiceHtml).toContain("Authorized Signatory");
+    expect(invoiceHtml).toContain("GST INVOICE");
+  });
 });

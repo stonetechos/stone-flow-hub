@@ -96,7 +96,7 @@ function renderEstimateHtml(
 ): string {
   const accent = brand.primary || "#0F766E";
   const logo = brand.logo_url
-    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="max-height:64px;max-width:220px;object-fit:contain;display:block" />`
+    ? `<img src="${esc(brand.logo_url)}" alt="${esc(brand.company_name)}" style="width:68px;height:68px;object-fit:contain;aspect-ratio:1/1;border-radius:50%;display:block" />`
     : `<div style="font-size:24px;font-weight:800;color:${accent}">${esc(brand.company_name)}</div>`;
   const photos = productImageDataUrls.length
     ? `<div style="margin-top:20px">

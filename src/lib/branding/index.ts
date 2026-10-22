@@ -17,6 +17,12 @@ import {
   STONE_TECH_UPI_QR_DATA_URL,
   STONE_TECH_UPI_QR_PATH,
 } from "./upi-qr-asset";
+import {
+  STONE_TECH_CIRCULAR_LOGO_DATA_URL,
+  STONE_TECH_SIGNATURE_DATA_URL,
+} from "./logo-signature-assets";
+
+export { STONE_TECH_CIRCULAR_LOGO_DATA_URL, STONE_TECH_SIGNATURE_DATA_URL };
 
 export interface BrandingConfig {
   company_name: string;
@@ -52,7 +58,7 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   tagline: "ever evolving!",
   primary: "#0d9488", // teal-600
   accent: "#334155", // granite slate-700
-  logo_url: "/branding/stone-tech-logo.jpg",
+  logo_url: "/branding/stone-tech-logo.png",
   address: "E-02, Ground Floor, SG Business Hub, Vasant Nagar, Gota, Ahmedabad, Gujarat, 380060",
   phone: "+91 7742090866",
   email: "hello@stonetech.in",
