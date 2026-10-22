@@ -265,7 +265,7 @@ function AgentCentrePage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Agent Centre — Supervised AI Suite"
+        title="Agent Centre — AI Suite"
         subtitle="Independent AI workflows for Sales Follow-up, Procurement, Accounting Audit, and StoneMan Mascot with strict Zero-Outbound human approval."
         actions={
           <div className="flex items-center gap-2">
@@ -306,16 +306,11 @@ function AgentCentrePage() {
               <span className="font-semibold text-sm tracking-wide text-white">
                 Background Automation Status
               </span>
-              <Badge
-                className={cn(
-                  "text-[10px] font-mono px-2 py-0.5",
-                  scheduler?.config.globalEnabled
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                    : "bg-amber-500/20 text-amber-300 border-amber-500/40",
-                )}
-              >
-                {scheduler?.config.globalEnabled ? "Active (Cron Protected)" : "Paused"}
-              </Badge>
+              {!scheduler?.config.globalEnabled && (
+                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] font-mono px-2 py-0.5">
+                  Paused
+                </Badge>
+              )}
               {scheduler?.isLocked && (
                 <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40 text-[10px] animate-pulse">
                   Scanning in progress…
@@ -386,9 +381,6 @@ function AgentCentrePage() {
               <span className="p-2 rounded-lg bg-teal-100 text-teal-800">
                 <MessageSquare className="h-5 w-5" />
               </span>
-              <Badge variant="outline" className="text-teal-700 border-teal-300 bg-teal-50">
-                Supervised
-              </Badge>
             </div>
             <CardTitle className="text-sm font-semibold text-slate-900 mt-2">
               Sales Follow-up Agent
@@ -426,9 +418,6 @@ function AgentCentrePage() {
               <span className="p-2 rounded-lg bg-amber-100 text-amber-800">
                 <Package className="h-5 w-5" />
               </span>
-              <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
-                Supervised
-              </Badge>
             </div>
             <CardTitle className="text-sm font-semibold text-slate-900 mt-2">
               Purchase Follow-up Agent

@@ -395,7 +395,7 @@ function NavGroupRow({
         <div className="flex items-center gap-1 shrink-0 ml-1">
           {quickCreateHref && (
             <Link
-              to={quickCreateHref}
+              to={quickCreateHref as never}
               onClick={(e) => {
                 e.stopPropagation();
                 onNavigate?.();
