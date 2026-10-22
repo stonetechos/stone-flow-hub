@@ -323,16 +323,6 @@ function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const siteSettings = useSiteSettingsValue();
 
-  // Auth state for staff
-  const [isAuthenticatedStaff, setIsAuthenticatedStaff] = useState(false);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setIsAuthenticatedStaff(true);
-      }
-    });
-  }, []);
-
   // Form states (2-Step Continuation 1/2 and 2/2)
   const [formStep, setFormStep] = useState<1 | 2>(1);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -892,26 +882,19 @@ function HomePage() {
             <Button
               asChild
               size="default"
-              className={cn(
-                "h-8 sm:h-9 px-2 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border",
-                isAuthenticatedStaff
-                  ? "bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-500"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90 border-primary",
-              )}
+              className="h-8 sm:h-9 px-2.5 sm:px-3.5 gap-1 sm:gap-1.5 text-xs font-semibold shadow-2xs transition-colors shrink-0 rounded-lg border bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
             >
               <Link
-                to={isAuthenticatedStaff ? "/dashboard" : "/auth"}
-                search={isAuthenticatedStaff ? undefined : { flow: "signin" }}
+                to="/auth"
+                search={{ flow: "signin" }}
                 className="inline-flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
               >
                 <Lock
                   className="h-3.5 w-3.5 shrink-0 stroke-[2.25] text-primary-foreground"
                   aria-hidden="true"
                 />
-                <span className="hidden sm:inline">
-                  {isAuthenticatedStaff ? "Open ERP Dashboard" : "Employees Login"}
-                </span>
-                <span className="sm:hidden text-xs">{isAuthenticatedStaff ? "ERP" : "Login"}</span>
+                <span className="hidden sm:inline">Employees Login</span>
+                <span className="sm:hidden text-xs">Employees Login</span>
               </Link>
             </Button>
           </div>
