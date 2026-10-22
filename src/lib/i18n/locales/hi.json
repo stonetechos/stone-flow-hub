@@ -20,6 +20,7 @@
     },
     "items": {
       "dashboard": "डैशबोर्ड",
+      "profitability": "लाभ लक्ष्य",
       "enquiries": "वेबसाइट लीड्स और CRM",
       "customers": "ग्राहक",
       "quotes": "उद्धरण",
@@ -1145,7 +1146,7 @@
   "brand": {
     "name": "एसटीओएस",
     "byline": "वेडोरा विज़न द्वारा",
-    "fullTitle": "STOS — प्राकृतिक पत्थर उद्योग के लिए पेशेवर ईआरपी",
+    "fullTitle": "Stone Tech-Architectural Stone Atelier",
     "companyName": "स्टोन टेक",
     "liveErp": "लाइव ERP"
   },

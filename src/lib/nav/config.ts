@@ -167,7 +167,7 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
   {
     id: "profitability",
     to: "/dashboards/profitability",
-    label: "Profit & ₹50L Target",
+    label: "Profit Target",
     icon: TrendingUp,
     group: "overview",
     allowedRoles: ["admin", "super_admin", "sales_manager"],

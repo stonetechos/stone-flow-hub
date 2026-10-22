@@ -20,6 +20,7 @@
     },
     "items": {
       "dashboard": "Dashboard",
+      "profitability": "Profit Target",
       "enquiries": "Website Leads & CRM",
       "customers": "Customers",
       "quotes": "Quotations",
@@ -1138,7 +1139,7 @@
   "brand": {
     "name": "STOS",
     "byline": "By Vedora Vision",
-    "fullTitle": "STOS — Professional ERP for the Natural Stone Industry",
+    "fullTitle": "Stone Tech-Architectural Stone Atelier",
     "companyName": "STONE TECH",
     "liveErp": "Live ERP"
   },

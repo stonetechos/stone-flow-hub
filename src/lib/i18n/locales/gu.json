@@ -21,6 +21,7 @@
     },
     "items": {
       "dashboard": "ડેશબોર્ડ",
+      "profitability": "નફા લક્ષ્ય",
       "enquiries": "વેબસાઇટ લીડ્સ અને CRM",
       "customers": "ગ્રાહકો",
       "quotes": "અવતરણ",
@@ -1146,7 +1147,7 @@
   "brand": {
     "name": "એસટીઓએસ",
     "byline": "વેડોરા વિઝન દ્વારા",
-    "fullTitle": "STOS — નેચરલ સ્ટોન ઉદ્યોગ માટે વ્યવસાયિક ERP",
+    "fullTitle": "Stone Tech-Architectural Stone Atelier",
     "companyName": "સ્ટોન ટેક",
     "liveErp": "લાઈવ ERP"
   },

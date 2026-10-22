@@ -120,10 +120,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      { title: "STOS — Professional ERP for the Natural Stone Industry" },
+      { title: "Stone Tech-Architectural Stone Atelier" },
       {
         name: "description",
-        content: "STOS — Professional ERP for the Natural Stone Industry. By Vedora Vision.",
+        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
       },
       { name: "author", content: "Vedora Vision" },
       // Phase G.10A — PWA foundation. theme_color mirrors the manifest and
@@ -134,18 +134,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "STOS" },
-      { property: "og:title", content: "STOS — Professional ERP for the Natural Stone Industry" },
+      { property: "og:title", content: "Stone Tech-Architectural Stone Atelier" },
       {
         property: "og:description",
-        content: "Professional ERP for the Natural Stone Industry. By Vedora Vision.",
+        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "STOS" },
+      { property: "og:site_name", content: "Stone Tech" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "STOS — Professional ERP for the Natural Stone Industry" },
+      { name: "twitter:title", content: "Stone Tech-Architectural Stone Atelier" },
       {
         name: "twitter:description",
-        content: "Professional ERP for the Natural Stone Industry. By Vedora Vision.",
+        content: "Stone Tech-Architectural Stone Atelier. By Vedora Vision.",
       },
     ],
     links: [
@@ -188,7 +188,7 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    document.title = t("brand.fullTitle", "STOS — Professional ERP for the Natural Stone Industry");
+    document.title = t("brand.fullTitle", "Stone Tech-Architectural Stone Atelier");
     document.documentElement.lang = i18n.language || "en";
   }, [t, i18n.language]);
   // Computed once (module-level memoized in

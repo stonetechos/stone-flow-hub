@@ -82,7 +82,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Stone Tech — Architectural Stone, Crafted for Extraordinary Spaces" },
+      { title: "Stone Tech-Architectural Stone Atelier" },
       {
         name: "description",
         content:
