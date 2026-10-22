@@ -818,19 +818,6 @@ function HomePage() {
   // -------------------------------------------------------------
   return (
     <div className="min-h-screen paper-texture dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-12 w-full max-w-full overflow-x-hidden">
-      {/* Authenticated Staff Top Alert */}
-      {isAuthenticatedStaff && (
-        <div className="bg-emerald-700 text-white px-4 py-2 text-center text-xs font-semibold flex items-center justify-center gap-2 shadow-xs">
-          <span>👋 Logged in as Stone Tech Staff.</span>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-1 bg-white text-emerald-950 px-2.5 py-0.5 rounded-full font-bold hover:bg-emerald-50 transition-colors shadow-2xs"
-          >
-            Go to ERP Dashboard & Profit Diary →
-          </Link>
-        </div>
-      )}
-
       {/* 1. STOS ENTERPRISE NAVBAR (TURQUOISE & PAPER WHITE) */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md shadow-2xs pt-[max(env(safe-area-inset-top),0px)]">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
