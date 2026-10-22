@@ -13,7 +13,12 @@ import { withAuthenticatedClient, getDb } from "@/integrations/supabase/server-c
 import { AppError, mapDbError } from "@/lib/errors";
 import { AGENT_DEFINITIONS } from "./config";
 import type { AgentId, AgentTaskItem, AgentSuiteOverview } from "./types";
-import { scanSalesFollowups, scanPurchaseFollowups, scanAccountingExceptions } from "./scanner";
+import {
+  scanSalesFollowups,
+  scanPurchaseFollowups,
+  scanAccountingExceptions,
+  scanStoneManDesk,
+} from "./scanner";
 import { createDraftHash, isDraftTampered, resolveExecutionDispatch } from "./approval";
 import {
   lookupVerifiedOrder,
@@ -29,6 +34,7 @@ import {
   getSchedulerStatus,
   runScheduledAgentScan,
   runAllScheduledScans,
+  deduplicateAndStageTasks,
   type ScheduledAgentId,
   type AgentSchedulerStatus,
 } from "./scheduler";
@@ -167,11 +173,14 @@ export const runAgentScan = createServerFn({ method: "POST" })
     await requireStaff(context);
 
     if (data.agentId === "stoneman_customer") {
-      throw new AppError(
-        "StoneMan is event-driven and cannot be scanned periodically.",
-        "INVALID_OPERATION",
-        400,
-      );
+      return withAuthenticatedClient(context.supabase, async () => {
+        const db = getDb();
+        const generatedTasks = await scanStoneManDesk(db, context.userId);
+        const { newCount } = deduplicateAndStageTasks(generatedTasks);
+        const nowIso = new Date().toISOString();
+        agentScanTimestamps.set("stoneman_customer", nowIso);
+        return { scanned: generatedTasks.length, newTasksCount: newCount };
+      });
     }
 
     return withAuthenticatedClient(context.supabase, async () => {

@@ -248,8 +248,11 @@ function AgentCentrePage() {
         runAgentScan({ data: { agentId: "sales_followup" } }),
         runAgentScan({ data: { agentId: "purchase_followup" } }),
         runAgentScan({ data: { agentId: "accounting" } }),
+        runAgentScan({ data: { agentId: "stoneman_customer" } }),
       ]);
-      toast.success("Completed full ERP scan across Sales, Purchase, and Accounting.");
+      toast.success(
+        "Completed full ERP scan across Sales, Purchase, Accounting, and StoneMan Desk.",
+      );
       void qc.invalidateQueries({ queryKey: ["agent-suite-overview"] });
       void qc.invalidateQueries({ queryKey: ["agent-scheduler-overview"] });
       void qc.invalidateQueries({ queryKey: ["agent-tasks"] });
@@ -522,7 +525,15 @@ function AgentCentrePage() {
             </div>
             <div className="mt-3 pt-2 border-t flex justify-between items-center text-xs">
               <span className="text-slate-500">Customer safe & verified</span>
-              <span className="text-emerald-600 font-medium">Online</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-emerald-700 hover:text-emerald-900 p-0"
+                onClick={() => scanMutation.mutate("stoneman_customer")}
+                disabled={scanMutation.isPending}
+              >
+                Check Desk →
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -534,19 +545,19 @@ function AgentCentrePage() {
           <Tabs value={selectedAgent} onValueChange={setSelectedAgent} className="w-full sm:w-auto">
             <TabsList className="bg-slate-100 p-1 flex-wrap">
               <TabsTrigger value="all" className="text-xs">
-                All Agents ({tasks.length})
+                All Agents ({overview?.totalPendingApproval ?? 0})
               </TabsTrigger>
               <TabsTrigger value="sales_followup" className="text-xs">
-                Sales Follow-up
+                Sales Follow-up ({overview?.agents.sales_followup.pendingCount ?? 0})
               </TabsTrigger>
               <TabsTrigger value="purchase_followup" className="text-xs">
-                Purchase Follow-up
+                Purchase Follow-up ({overview?.agents.purchase_followup.pendingCount ?? 0})
               </TabsTrigger>
               <TabsTrigger value="accounting" className="text-xs">
-                Accounting Review
+                Accounting Review ({overview?.agents.accounting.pendingCount ?? 0})
               </TabsTrigger>
               <TabsTrigger value="stoneman_customer" className="text-xs">
-                StoneMan Desk
+                StoneMan Desk ({overview?.agents.stoneman_customer.pendingCount ?? 0})
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -572,11 +583,52 @@ function AgentCentrePage() {
         ) : tasks.length === 0 ? (
           <EmptyState
             icon={<Sparkles className="h-8 w-8 text-slate-400" />}
-            title="No pending tasks or recommendations"
-            message="Click 'Scan All Agents' above to audit quotations, purchase orders, deliveries, and ledger balances."
+            title={
+              selectedAgent === "purchase_followup"
+                ? "No pending purchase follow-ups"
+                : selectedAgent === "sales_followup"
+                  ? "No pending sales follow-ups"
+                  : selectedAgent === "accounting"
+                    ? "No pending accounting exceptions"
+                    : selectedAgent === "stoneman_customer"
+                      ? "StoneMan Customer Desk is all clear"
+                      : "No pending tasks or recommendations"
+            }
+            message={
+              selectedAgent === "purchase_followup"
+                ? "Audit purchase orders for draft PO reviews, unacknowledged vendor orders, approaching delivery deadlines, or delayed shipments."
+                : selectedAgent === "sales_followup"
+                  ? "Audit quotations sent >3 days ago, open client enquiries, or scheduled follow-ups."
+                  : selectedAgent === "accounting"
+                    ? "Audit overdue customer receivables and unallocated ledger receipts."
+                    : selectedAgent === "stoneman_customer"
+                      ? "StoneMan is online 24/7 assisting website visitors. Customer complaints, delivery queries, and verification requests appear here for staff action."
+                      : "Click 'Run Scan Now' to audit quotations, purchase orders, deliveries, and ledger balances across the ERP."
+            }
             action={
-              <Button size="sm" onClick={handleScanAll}>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Run Scan Now
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (selectedAgent === "all") {
+                    void handleScanAll();
+                  } else {
+                    scanMutation.mutate(selectedAgent as AgentId);
+                  }
+                }}
+                disabled={scanMutation.isPending}
+              >
+                <RefreshCw
+                  className={cn("mr-1.5 h-3.5 w-3.5", scanMutation.isPending && "animate-spin")}
+                />
+                {selectedAgent === "purchase_followup"
+                  ? "Run Purchase Scan Now"
+                  : selectedAgent === "sales_followup"
+                    ? "Run Sales Scan Now"
+                    : selectedAgent === "accounting"
+                      ? "Run Accounting Audit Now"
+                      : selectedAgent === "stoneman_customer"
+                        ? "Check Customer Desk Now"
+                        : "Run Scan Now"}
               </Button>
             }
           />
