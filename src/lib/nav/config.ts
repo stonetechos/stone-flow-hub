@@ -52,7 +52,6 @@ export type NavGroupId =
   | "purchase"
   | "executions"
   | "time"
-  | "banking"
   | "compliance"
   | "accountant"
   | "reports"
@@ -106,13 +105,6 @@ export const NAV_GROUPS: ReadonlyArray<NavGroupDef> = [
     icon: Users,
     to: "/workforce-intelligence",
     allowedRoles: ["admin", "super_admin", "hr", "sales_manager"],
-  },
-  {
-    id: "banking",
-    label: "Banking",
-    icon: Landmark,
-    to: "/money-flow",
-    allowedRoles: ["admin", "super_admin"],
   },
   {
     id: "compliance",
@@ -411,49 +403,6 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     group: "time",
   },
 
-  // 6. Banking
-  {
-    id: "money-flow",
-    to: "/money-flow",
-    label: "Banking Overview",
-    icon: Landmark,
-    group: "banking",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "business-expenses",
-    to: "/business-expenses",
-    label: "Business Expenses",
-    icon: ReceiptText,
-    group: "banking",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "liabilities",
-    to: "/liabilities",
-    label: "Liabilities & Loans",
-    icon: Landmark,
-    group: "banking",
-    allowedRoles: ["admin", "super_admin"],
-  },
-  {
-    id: "ramans-cashbook",
-    to: "/ramans-cashbook",
-    label: "Raman's Cashbook",
-    icon: Coins,
-    group: "banking",
-    allowedRoles: ["super_admin"],
-    superAdminOnly: true,
-  },
-  {
-    id: "personal-transfers",
-    to: "/money-flow?tab=personal-transfers",
-    label: "Personal Transfers",
-    icon: ArrowLeftRight,
-    group: "banking",
-    allowedRoles: ["admin", "super_admin"],
-  },
-
   // 7. Filing & Compliance
   {
     id: "gst",
@@ -474,13 +423,45 @@ export const NAV_ITEMS: ReadonlyArray<NavItemDef> = [
     allowedRoles: ["admin", "super_admin"],
   },
   {
-    id: "cashbook",
+    id: "money-flow",
+    to: "/money-flow",
+    label: "Money Flow",
+    icon: Landmark,
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "business-expenses",
+    to: "/business-expenses",
+    label: "Business Expenses",
+    icon: ReceiptText,
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "liabilities",
+    to: "/liabilities",
+    label: "Liabilities & Loans",
+    icon: Landmark,
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
+  },
+  {
+    id: "ramans-cashbook",
     to: "/ramans-cashbook",
     label: "Raman's Cashbook",
     icon: Coins,
     group: "accountant",
     allowedRoles: ["super_admin"],
     superAdminOnly: true,
+  },
+  {
+    id: "personal-transfers",
+    to: "/money-flow?tab=personal-transfers",
+    label: "Personal Transfers",
+    icon: ArrowLeftRight,
+    group: "accountant",
+    allowedRoles: ["admin", "super_admin"],
   },
 
   // 9. Reports
