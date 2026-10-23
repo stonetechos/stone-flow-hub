@@ -329,6 +329,7 @@ function EditQuotePage() {
       />
 
       <QuickForm
+        scrollable={false}
         onSubmit={(e) => {
           e.preventDefault();
           mut.mutate();
@@ -406,7 +407,8 @@ function toDraft(row: QuoteItemRow): DraftRow {
     notes: anyRow.notes ?? "",
     quantity: String(row.quantity ?? ""),
     unit: row.unit ?? null,
-    unit_price: String(row.unit_price ?? ""),
+    unit_price:
+      row.unit_price != null && Number(row.unit_price) !== 0 ? String(row.unit_price) : "",
     tax_pct: String(row.tax_pct ?? ""),
     hsn_sac: anyRow.hsn_sac ?? "",
     fulfilment: anyRow.fulfilment ?? null,
@@ -571,11 +573,21 @@ function LineItemsEditor({
       }
       if (n !== Number(original.quantity)) patchMut.mutate({ id, patch: { quantity: n } });
     } else if (key === "unit_price") {
-      const n = Number(row.unit_price);
+      const n = row.unit_price === "" ? 0 : Number(row.unit_price);
       if (!Number.isFinite(n) || n < 0) {
         toast.error("Rate must be ≥ 0");
         setRows((rs) =>
-          rs.map((r) => (r.id === id ? { ...r, unit_price: String(original.unit_price) } : r)),
+          rs.map((r) =>
+            r.id === id
+              ? {
+                  ...r,
+                  unit_price:
+                    original.unit_price != null && Number(original.unit_price) !== 0
+                      ? String(original.unit_price)
+                      : "",
+                }
+              : r,
+          ),
         );
         return;
       }
@@ -841,6 +853,7 @@ function LineItemsEditor({
                         Rate (₹) <span className="text-destructive font-bold">*</span>
                       </label>
                       <NumericInput
+                        placeholder="0"
                         value={r.unit_price}
                         onChange={(val) => updateRow(r.id, "unit_price", val)}
                         onBlur={() => commit(r.id, "unit_price", original)}

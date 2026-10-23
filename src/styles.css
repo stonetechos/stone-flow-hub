@@ -1132,6 +1132,7 @@
   background-position:
     0 0,
     7px 7px;
+  background-attachment: fixed;
 }
 
 @utility card-3d-milky {

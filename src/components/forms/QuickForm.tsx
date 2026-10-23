@@ -6,24 +6,43 @@
  *   3. Advanced (collapsed by default)
  * Used by every "create / edit" form to keep first-time UX under 30–60 seconds.
  */
-import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 import { useTranslation } from "react-i18next";
 
+const QuickFormContext = createContext<{ scrollable: boolean }>({ scrollable: true });
+
 export function QuickForm({
   onSubmit,
   children,
   busy,
   dirty,
+  scrollable = true,
 }: {
   onSubmit: (e: React.FormEvent) => void;
   children: ReactNode;
   busy?: boolean;
   /** When true, a browser refresh / close prompts before discarding edits. */
   dirty?: boolean;
+  /**
+   * When true (default for modals / dialogs), wraps body in an independently scrollable
+   * viewport with sticky Actions.
+   * When false (for full-page forms like Quote Edit), lets the page scroll naturally
+   * without nested scroll trapping or overscroll containment.
+   */
+  scrollable?: boolean;
 }) {
   // Split off the Actions slot so it can stick to the dialog footer while the
   // rest of the form scrolls independently. Without this the entire form is a
@@ -34,23 +53,34 @@ export function QuickForm({
   const body = items.filter((c) => c !== actions);
   useUnsavedChanges(Boolean(dirty) && !busy);
   return (
-    <form
-      onSubmit={onSubmit}
-      aria-busy={busy}
-      onKeyDown={(e) => {
-        // Ctrl/⌘+Enter submits from anywhere in the form (including textareas).
-        if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy) {
-          e.preventDefault();
-          e.currentTarget.requestSubmit();
-        }
-      }}
-      className="flex h-full min-h-0 flex-1 flex-col gap-4"
-    >
-      <div className="-mx-6 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]">
-        {body}
-      </div>
-      {actions}
-    </form>
+    <QuickFormContext.Provider value={{ scrollable }}>
+      <form
+        onSubmit={onSubmit}
+        aria-busy={busy}
+        onKeyDown={(e) => {
+          // Ctrl/⌘+Enter submits from anywhere in the form (including textareas).
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy) {
+            e.preventDefault();
+            e.currentTarget.requestSubmit();
+          }
+        }}
+        className={cn(
+          "flex flex-col gap-4",
+          scrollable ? "h-full min-h-0 flex-1" : "w-full min-h-0",
+        )}
+      >
+        <div
+          className={
+            scrollable
+              ? "-mx-6 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 [-webkit-overflow-scrolling:touch]"
+              : "w-full space-y-4"
+          }
+        >
+          {body}
+        </div>
+        {actions}
+      </form>
+    </QuickFormContext.Provider>
   );
 }
 
@@ -133,9 +163,22 @@ QuickForm.Advanced = function Advanced({ children }: { children: ReactNode }) {
   return <CollapsibleSection title={t("form.advanced", "Advanced")}>{children}</CollapsibleSection>;
 };
 
-QuickForm.Actions = function Actions({ children }: { children: ReactNode }) {
+QuickForm.Actions = function Actions({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const { scrollable } = useContext(QuickFormContext);
   return (
-    <div className="-mx-6 -mb-6 flex items-center justify-end gap-2 border-t border-border bg-background px-6 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <div
+      className={cn(
+        "flex items-center justify-end gap-2 border-t border-border bg-background py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        scrollable ? "-mx-6 -mb-6 px-6" : "w-full pt-4",
+        className,
+      )}
+    >
       {children}
     </div>
   );

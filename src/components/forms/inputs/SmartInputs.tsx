@@ -151,14 +151,66 @@ export const NumericInput = React.forwardRef<
     max?: number;
   }
 >(function NumericInput(
-  { value, onChange, allowDecimal = true, allowNegative = false, min, max, ...rest },
+  {
+    value,
+    onChange,
+    allowDecimal = true,
+    allowNegative = false,
+    min,
+    max,
+    placeholder = "0",
+    onFocus,
+    onClick,
+    onMouseUp,
+    ...rest
+  },
   ref,
 ) {
+  const innerRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleRef = React.useCallback(
+    (node: HTMLInputElement | null) => {
+      innerRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref],
+  );
+
+  const setCursorToEnd = (el: HTMLInputElement | null) => {
+    if (!el) return;
+    requestAnimationFrame(() => {
+      try {
+        if (el.selectionStart !== el.selectionEnd) return;
+        const len = el.value?.length ?? 0;
+        el.setSelectionRange(len, len);
+      } catch {
+        // ignore if not supported by input type
+      }
+    });
+  };
+
   return (
     <Input
-      ref={ref}
+      ref={handleRef}
       inputMode={allowDecimal ? "decimal" : "numeric"}
+      placeholder={placeholder}
       value={value ?? ""}
+      onFocus={(e) => {
+        setCursorToEnd(e.currentTarget);
+        onFocus?.(e);
+      }}
+      onClick={(e) => {
+        setCursorToEnd(e.currentTarget);
+        onClick?.(e);
+      }}
+      onMouseUp={(e) => {
+        setCursorToEnd(e.currentTarget);
+        onMouseUp?.(e);
+      }}
       onChange={(e) => {
         let v = e.target.value;
         // Strip anything that isn't a digit, dot, or leading minus.
@@ -172,6 +224,10 @@ export const NumericInput = React.forwardRef<
             v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, "");
           }
         }
+        // Strip unwanted leading zero(s) before other digits (e.g. "0410" -> "410", "04" -> "4", "-05" -> "-5")
+        // but preserve valid decimals ("0.5", "0.") and standalone "0".
+        v = v.replace(/^(-?)0+(?=\d)/, "$1");
+
         if (v === "" || v === "-" || v === ".") {
           onChange(v);
           return;
