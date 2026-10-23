@@ -218,6 +218,7 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
     // Costing Diary
     const diary = (pWf.costing_diary as ProjectCostingDiary) || {};
     const purchaseCost = Number(diary.purchase_cost || 0);
+    const jobworkCost = Number(diary.jobwork_cost || 0);
     const transportCost = Number(diary.transport_cost || 0);
     const localCartingCost = Number(diary.local_carting_cost || 0);
     const adhesiveCost = Number(diary.adhesive_cost || 0);
@@ -230,6 +231,7 @@ export async function getCompanyProfitabilityAndTargets(customTargets?: {
     const loggedCostSum = (diary.cost_logs || []).reduce((s, l) => s + Number(l.amount || 0), 0);
     const manualCostSum =
       purchaseCost +
+      jobworkCost +
       transportCost +
       localCartingCost +
       adhesiveCost +

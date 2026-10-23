@@ -13,6 +13,7 @@ export interface ProjectCostItemLog {
   date: string;
   category:
     | "purchase"
+    | "jobwork"
     | "transport"
     | "carting"
     | "adhesive"
@@ -28,6 +29,7 @@ export interface ProjectCostItemLog {
 
 export interface ProjectCostingDiary {
   purchase_cost?: number | null; // Raw stone / slab procurement from supplier
+  jobwork_cost?: number | null; // Third-party cutting, CNC carving, waterjet, profiling & finishing
   transport_cost?: number | null; // Main transport / interstate freight to yard
   local_carting_cost?: number | null; // Local tempo / carting trips to site
   adhesive_cost?: number | null; // Adhesive bags cost
@@ -200,6 +202,7 @@ export async function getProjectFinancialRollup(
   // Costing Diary
   const costing = (projWf.costing_diary as ProjectCostingDiary) || {};
   const purchaseCost = Number(costing.purchase_cost || 0);
+  const jobworkCost = Number(costing.jobwork_cost || 0);
   const transportCost = Number(costing.transport_cost || 0);
   const localCartingCost = Number(costing.local_carting_cost || 0);
   const adhesiveCost = Number(costing.adhesive_cost || 0);
@@ -214,6 +217,7 @@ export async function getProjectFinancialRollup(
 
   const totalDirectCosts =
     purchaseCost +
+    jobworkCost +
     transportCost +
     localCartingCost +
     adhesiveCost +

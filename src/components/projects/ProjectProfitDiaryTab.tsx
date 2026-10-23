@@ -137,6 +137,16 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
       updatedDiary.transport_cost = Number(diary.transport_cost || 0) + newLog.amount;
     } else if (eventCategory === "purchase") {
       updatedDiary.purchase_cost = Number(diary.purchase_cost || 0) + newLog.amount;
+    } else if (eventCategory === "jobwork") {
+      updatedDiary.jobwork_cost = Number(diary.jobwork_cost || 0) + newLog.amount;
+    } else if (eventCategory === "labour") {
+      updatedDiary.labour_cost = Number(diary.labour_cost || 0) + newLog.amount;
+    } else if (eventCategory === "adhesive") {
+      updatedDiary.adhesive_cost = Number(diary.adhesive_cost || 0) + newLog.amount;
+    } else if (eventCategory === "sealer") {
+      updatedDiary.sealer_cost = Number(diary.sealer_cost || 0) + newLog.amount;
+    } else if (eventCategory === "other") {
+      updatedDiary.other_cost = Number(diary.other_cost || 0) + newLog.amount;
     }
 
     setDiary(updatedDiary);
@@ -170,22 +180,24 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
 
   // Real-time calculations based on local diary inputs
   const currentPurchase = Number(diary.purchase_cost || 0);
+  const currentJobwork = Number(diary.jobwork_cost || 0);
   const currentTransport = Number(diary.transport_cost || 0);
   const currentCarting = Number(diary.local_carting_cost || 0);
   const currentAdhesive = Number(diary.adhesive_cost || 0);
   const currentSealer = Number(diary.sealer_cost || 0);
-  const currentLabour = Number(diary.labour_cost || 0);
+  const labourCost = Number(diary.labour_cost || 0);
   const currentDamage = Number(diary.damage_cost || 0);
   const currentWriteoff = Number(diary.writeoff_discount || 0);
   const currentOther = Number(diary.other_cost || 0);
 
   const totalCalculatedCosts =
     currentPurchase +
+    currentJobwork +
     currentTransport +
     currentCarting +
     currentAdhesive +
     currentSealer +
-    currentLabour +
+    labourCost +
     currentDamage +
     currentWriteoff +
     currentOther;
@@ -378,6 +390,20 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
               />
             </Field>
 
+            {/* Job Work / Stone Processing */}
+            <Field
+              label="Job Work / Processing (₹)"
+              hint="Third-party CNC carving, edge profiling, polishing & cutting"
+            >
+              <Input
+                type="number"
+                placeholder="e.g. 15000"
+                value={diary.jobwork_cost ?? ""}
+                onChange={(e) => handleFieldChange("jobwork_cost", e.target.value)}
+                className="bg-white font-mono"
+              />
+            </Field>
+
             {/* Main Transport / Freight */}
             <Field
               label="Main Transport / Freight (₹)"
@@ -405,7 +431,9 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
                 className="bg-white font-mono"
               />
             </Field>
+          </div>
 
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {/* Installation & Application Labour */}
             <Field
               label="Installation & Application Labour (₹)"
@@ -419,9 +447,7 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
                 className="bg-white font-mono"
               />
             </Field>
-          </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Adhesives Cost & Bags */}
             <Field
               label="Adhesive Chemicals Cost (₹)"
@@ -572,10 +598,12 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
                           "uppercase text-[10px] font-mono",
                           log.category === "damage" || log.category === "writeoff"
                             ? "bg-rose-50 text-rose-800 border-rose-200"
-                            : "bg-slate-100 text-slate-800",
+                            : log.category === "jobwork"
+                              ? "bg-purple-50 text-purple-800 border-purple-200"
+                              : "bg-slate-100 text-slate-800",
                         )}
                       >
-                        {log.category}
+                        {log.category === "jobwork" ? "job work" : log.category}
                       </Badge>
                       <span className="font-semibold text-slate-900 text-sm">{log.title}</span>
                       <span className="text-muted-foreground text-[11px]">
@@ -626,6 +654,7 @@ export function ProjectProfitDiaryTab({ projectId }: ProjectProfitDiaryTabProps)
                   <SelectItem value="writeoff">📉 Delay Write-off / Deduction</SelectItem>
                   <SelectItem value="transport">🚛 Main Freight / Transport</SelectItem>
                   <SelectItem value="purchase">🏷️ Stone Material Purchase</SelectItem>
+                  <SelectItem value="jobwork">⚙️ Job Work</SelectItem>
                   <SelectItem value="adhesive">🧪 Adhesives</SelectItem>
                   <SelectItem value="sealer">🪣 Chemical Sealers</SelectItem>
                   <SelectItem value="labour">👷 Labour</SelectItem>
