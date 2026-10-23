@@ -35,7 +35,7 @@ interface Props {
 export function DetailActionBar({ primary, overflow, pin }: Props) {
   const hasOverflow = overflow && overflow.length > 0;
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
       {primary}
       {pin && (
         <FavoriteButton

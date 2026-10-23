@@ -285,7 +285,7 @@ function ProjectHub() {
       )}
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="flex h-auto flex-wrap">
+        <TabsList className="w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger
             value="diary"

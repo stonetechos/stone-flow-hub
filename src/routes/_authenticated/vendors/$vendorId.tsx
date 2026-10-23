@@ -164,7 +164,7 @@ function VendorHub() {
       />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="flex flex-wrap h-auto">
+        <TabsList className="w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="po">Purchase Orders</TabsTrigger>
           <TabsTrigger value="products">Products Supplied</TabsTrigger>

@@ -457,7 +457,7 @@ function SalesOrderDetailPage() {
                 </p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[650px]">
                     <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                       <tr>
                         <th className="px-3 py-2 text-left">#</th>

@@ -1182,7 +1182,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 is the same 1400px ceiling FormActions' footer already used,
                 centralized here as one token instead of a second hardcoded
                 number. */}
-            <div className="mx-auto w-full max-w-[var(--stos-content-max-width)] min-w-0 overflow-x-hidden">
+            <div className="mx-auto w-full max-w-[var(--stos-content-max-width)] min-w-0">
               <PageTransition>{children}</PageTransition>
             </div>
           </main>

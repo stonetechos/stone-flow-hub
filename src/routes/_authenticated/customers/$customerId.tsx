@@ -197,8 +197,8 @@ function CustomerInstallationsTab({ customerId }: { customerId: string }) {
       <CardHeader>
         <CardTitle className="text-sm">Installations</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <Table>
+      <CardContent className="p-0 overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               <TableHead>No.</TableHead>
@@ -580,8 +580,8 @@ function CustomerProjectsTab({
           </CardContent>
         </Card>
       ) : (
-        <Card className="shadow-1 overflow-hidden">
-          <Table>
+        <Card className="shadow-1 overflow-x-auto">
+          <Table className="min-w-[640px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-28">Project Code</TableHead>
@@ -771,7 +771,7 @@ function CustomerHub() {
               : c.name;
         })()}
         subtitle={
-          <span className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
             <Badge variant="secondary">{getCustomerTypeLabel(getEffectiveCustomerType(c))}</Badge>
             {c.company_name && (
               <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
@@ -783,26 +783,28 @@ function CustomerHub() {
                 Contact: {c.contact_person}
               </span>
             )}
-            <CustomerResponseStatusSelect
-              customerId={customerId}
-              customerName={c.name}
-              isActive={c.is_active}
-              workflowState={c.workflow_state}
-              externalRef={c.external_ref}
-            />
-            <CustomerAssigneeSelect
-              customerId={customerId}
-              customerName={c.name}
-              workflowState={c.workflow_state}
-              externalRef={c.external_ref}
-            />
-            <CustomerPaymentStatusSelect
-              customerId={customerId}
-              customerName={c.name}
-              workflowState={c.workflow_state}
-              externalRef={c.external_ref}
-            />
-          </span>
+            <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto mt-1 sm:mt-0">
+              <CustomerResponseStatusSelect
+                customerId={customerId}
+                customerName={c.name}
+                isActive={c.is_active}
+                workflowState={c.workflow_state}
+                externalRef={c.external_ref}
+              />
+              <CustomerAssigneeSelect
+                customerId={customerId}
+                customerName={c.name}
+                workflowState={c.workflow_state}
+                externalRef={c.external_ref}
+              />
+              <CustomerPaymentStatusSelect
+                customerId={customerId}
+                customerName={c.name}
+                workflowState={c.workflow_state}
+                externalRef={c.external_ref}
+              />
+            </div>
+          </div>
         }
         actions={
           <DetailActionBar
@@ -911,7 +913,7 @@ function CustomerHub() {
       />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="flex flex-wrap h-auto">
+        <TabsList className="w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="enquiries">Enquiries</TabsTrigger>

@@ -373,61 +373,142 @@ function InvoiceDetailPage() {
           <CardHeader>
             <CardTitle className="text-sm">Line items</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Description</TableHead>
-                  <TableHead>HSN</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
-                  <TableHead className="text-right">Tax %</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(items.data ?? []).map((it) => {
-                  const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
-                  const itemNotes = (it as { notes?: string | null }).notes;
-                  return (
-                    <TableRow key={it.id}>
-                      <TableCell className="font-medium">
-                        <div>{it.description}</div>
-                        {itemNotes && (
-                          <div className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
-                            {itemNotes}
-                          </div>
+          <CardContent className="p-3 sm:p-6">
+            {/* Mobile Responsive Line Items Card View (< sm) */}
+            <div className="sm:hidden space-y-3">
+              {(items.data ?? []).map((it) => {
+                const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                const itemNotes = (it as { notes?: string | null }).notes;
+                return (
+                  <div
+                    key={it.id}
+                    className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
+                  >
+                    <div>
+                      <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
+                        {it.description}
+                      </h4>
+                      {itemNotes && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {itemNotes}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
+                          <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                            HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
+                          </span>
                         )}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">{it.quantity}</TableCell>
-                      <TableCell>{it.unit ?? "—"}</TableCell>
-                      <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                      <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                      <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <div className="mt-4 flex flex-col items-end gap-1 text-sm">
-              <div>
-                Subtotal: <span className="font-medium">{formatInr(invoice.subtotal)}</span>
+                        {it.unit && (
+                          <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                            Unit: {it.unit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Financial Numbers Bar */}
+                    <div className="grid grid-cols-3 gap-2 bg-muted/30 p-2 rounded-md text-xs border border-border/60">
+                      <div>
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Qty
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {it.quantity} {it.unit ?? ""}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Rate
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {formatInr(it.unit_price)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Amount {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
+                        </span>
+                        <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop / Tablet Table View (>= sm) */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>HSN</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Tax %</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(items.data ?? []).map((it) => {
+                    const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                    const itemNotes = (it as { notes?: string | null }).notes;
+                    return (
+                      <TableRow key={it.id}>
+                        <TableCell className="font-medium">
+                          <div>{it.description}</div>
+                          {itemNotes && (
+                            <div className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
+                              {itemNotes}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                        </TableCell>
+                        <TableCell className="text-right">{it.quantity}</TableCell>
+                        <TableCell>{it.unit ?? "—"}</TableCell>
+                        <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
+                        <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                        <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Responsive Invoice Totals Card */}
+            <div className="mt-4 rounded-lg bg-muted/30 border border-border/70 p-3.5 space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>Subtotal:</span>
+                <span className="font-medium text-foreground">{formatInr(invoice.subtotal)}</span>
               </div>
-              <div>
-                Tax: <span className="font-medium">{formatInr(invoice.tax_amount)}</span>
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>GST Tax:</span>
+                <span className="font-medium text-foreground">{formatInr(invoice.tax_amount)}</span>
               </div>
-              <div>
-                Total: <span className="font-medium">{formatInr(invoice.total)}</span>
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>Total Invoice Value:</span>
+                <span className="font-bold text-foreground">{formatInr(invoice.total)}</span>
               </div>
-              <div>
-                Paid: <span className="font-medium">{formatInr(invoice.amount_paid)}</span>
+              <div className="flex justify-between items-center text-emerald-700 font-medium">
+                <span>Amount Paid:</span>
+                <span className="font-semibold">{formatInr(invoice.amount_paid)}</span>
               </div>
-              <div className="text-base font-semibold">
-                Balance: {formatInr(invoice.balance_due)}
+              <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
+                <span>Balance Due:</span>
+                <span
+                  className={
+                    invoice.balance_due > 0
+                      ? "text-amber-600 font-black"
+                      : "text-emerald-600 font-black"
+                  }
+                >
+                  {formatInr(invoice.balance_due)}
+                </span>
               </div>
             </div>
           </CardContent>

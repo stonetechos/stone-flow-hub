@@ -53,8 +53,8 @@ export function RelatedList<T extends { id: string }>({
         ) : (q.data ?? []).length === 0 ? (
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         ) : (
-          <div className="rounded-md border border-border">
-            <Table>
+          <div className="rounded-md border border-border overflow-x-auto">
+            <Table className="min-w-[480px]">
               <TableHeader>
                 <TableRow>
                   {columns.map((c) => (

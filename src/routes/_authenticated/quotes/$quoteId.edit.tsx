@@ -709,8 +709,8 @@ function LineItemsEditor({
                 (Number(r.quantity) || 0) * (Number(r.unit_price) || 0) * (1 + lineTaxPct / 100);
               return (
                 <div key={r.id} className="rounded-md border border-border p-3">
-                  <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
-                    <div className="md:col-span-4">
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-12">
+                    <div className="col-span-2 md:col-span-4">
                       <div className="mb-1 flex items-center justify-between">
                         <label className="text-xs text-muted-foreground">
                           Description &amp; Photo{" "}
@@ -817,7 +817,7 @@ function LineItemsEditor({
                         </div>
                       </div>
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="col-span-2 sm:col-span-1 md:col-span-2">
                       <label className="text-xs text-muted-foreground">HSN Code</label>
                       <Input
                         placeholder="4-8 digits"
@@ -828,7 +828,7 @@ function LineItemsEditor({
                         onBlur={() => commit(r.id, "hsn_sac", original)}
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="col-span-1 md:col-span-2">
                       <label className="text-xs text-muted-foreground">
                         Qty <span className="text-destructive font-bold">*</span>
                       </label>
@@ -840,7 +840,7 @@ function LineItemsEditor({
                         allowDecimal
                       />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="col-span-1 md:col-span-1">
                       <label className="text-xs text-muted-foreground">Unit</label>
                       <Input
                         value={r.unit ?? ""}
@@ -848,7 +848,7 @@ function LineItemsEditor({
                         onBlur={() => commit(r.id, "unit", original)}
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="col-span-1 md:col-span-2">
                       <label className="text-xs text-muted-foreground">
                         Rate (₹) <span className="text-destructive font-bold">*</span>
                       </label>
@@ -861,7 +861,7 @@ function LineItemsEditor({
                         allowDecimal
                       />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="col-span-1 md:col-span-1">
                       <label className="text-xs text-muted-foreground">GST %</label>
                       {saleMode === "cash" ? (
                         <div
@@ -878,7 +878,7 @@ function LineItemsEditor({
                         />
                       )}
                     </div>
-                    <div className="md:col-span-12 mt-1 pt-2 border-t border-dashed border-border/70">
+                    <div className="col-span-2 md:col-span-12 mt-1 pt-2 border-t border-dashed border-border/70">
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-medium text-muted-foreground">
                           Product Notes (Material Details & Size Specs)

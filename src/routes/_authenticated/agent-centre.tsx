@@ -543,7 +543,7 @@ function AgentCentrePage() {
       <div className="bg-white rounded-xl border shadow-2xs p-4 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
           <Tabs value={selectedAgent} onValueChange={setSelectedAgent} className="w-full sm:w-auto">
-            <TabsList className="bg-slate-100 p-1 flex-wrap">
+            <TabsList className="bg-slate-100 p-1 w-full sm:w-auto">
               <TabsTrigger value="all" className="text-xs">
                 All Agents ({overview?.totalPendingApproval ?? 0})
               </TabsTrigger>

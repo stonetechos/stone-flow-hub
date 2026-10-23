@@ -312,7 +312,7 @@ function EmployeeProfile() {
       />
 
       <Tabs defaultValue="overview">
-        <TabsList className="flex flex-wrap">
+        <TabsList className="w-full">
           <TabsTrigger value="overview">
             {t("workforce.employee.tabs.overview", "Overview")}
           </TabsTrigger>

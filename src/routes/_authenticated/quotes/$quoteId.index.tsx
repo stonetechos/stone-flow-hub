@@ -256,13 +256,64 @@ function QuoteDetailPage() {
                   variant={isDraft ? "default" : "outline"}
                   onClick={() => nav({ to: "/quotes/$quoteId/edit", params: { quoteId } })}
                 >
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                  <Pencil className="mr-1.5 h-4 w-4" /> Edit
                 </Button>
+
+                {!isAccepted && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                    onClick={() => statusMut.mutate("accepted")}
+                    disabled={statusMut.isPending}
+                  >
+                    {statusMut.isPending ? (
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                    )}
+                    Approve
+                  </Button>
+                )}
+
+                {isAccepted && (
+                  <Button
+                    size="sm"
+                    className={
+                      saleMode === "cash"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                        : "border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                    }
+                    variant={saleMode === "cash" ? "default" : "outline"}
+                    onClick={() =>
+                      nav({
+                        to: "/dispatch/new",
+                        search: {
+                          quote: quoteId,
+                          customer: quote.customer_id,
+                          ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                        },
+                      })
+                    }
+                    title={
+                      saleMode === "cash"
+                        ? "Issue Delivery Challan for cash transaction (no tax invoice)"
+                        : "Issue Delivery Challan"
+                    }
+                  >
+                    <Truck className="mr-1.5 h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan"}
+                    </span>
+                    <span className="sm:hidden">Challan</span>
+                  </Button>
+                )}
+
+                {/* Secondary buttons visible inline on md+ screens, accessible in ⋮ on mobile */}
                 <Button
                   size="sm"
                   variant="outline"
                   className={cn(
-                    "font-medium shadow-xs",
+                    "hidden md:inline-flex font-medium shadow-xs",
                     assignment.isAssigned
                       ? assignment.fulfilmentType === "in_stock"
                         ? "border-emerald-300 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300"
@@ -289,77 +340,38 @@ function QuoteDetailPage() {
                     </>
                   )}
                 </Button>
+
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
+                  className="hidden lg:inline-flex bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-xs"
                   onClick={() => setRfqOpen(true)}
                   title="Send WhatsApp RFQ to category vendors with product images & assign order"
                 >
                   <MessageCircle className="mr-1.5 h-4 w-4" />
-                  WhatsApp RFQ to Vendors
+                  WhatsApp RFQ
                 </Button>
-                {!isAccepted && (
+
+                {isAccepted && (
                   <Button
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-                    onClick={() => statusMut.mutate("accepted")}
-                    disabled={statusMut.isPending}
+                    variant="outline"
+                    className="hidden lg:inline-flex"
+                    onClick={() => reviseMut.mutate()}
+                    disabled={reviseMut.isPending}
                   >
-                    {statusMut.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {reviseMut.isPending ? (
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      <Copy className="mr-1.5 h-4 w-4" />
                     )}
-                    Approve Quote
+                    Revision
                   </Button>
                 )}
-                {isAccepted && (
-                  <>
-                    <Button
-                      size="sm"
-                      className={
-                        saleMode === "cash"
-                          ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                          : "border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
-                      }
-                      variant={saleMode === "cash" ? "default" : "outline"}
-                      onClick={() =>
-                        nav({
-                          to: "/dispatch/new",
-                          search: {
-                            quote: quoteId,
-                            customer: quote.customer_id,
-                            ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
-                          },
-                        })
-                      }
-                      title={
-                        saleMode === "cash"
-                          ? "Issue Delivery Challan for cash transaction (no tax invoice)"
-                          : "Issue Delivery Challan"
-                      }
-                    >
-                      <Truck className="mr-2 h-4 w-4" />
-                      {saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => reviseMut.mutate()}
-                      disabled={reviseMut.isPending}
-                    >
-                      {reviseMut.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Copy className="mr-2 h-4 w-4" />
-                      )}
-                      Create revision
-                    </Button>
-                  </>
-                )}
+
                 <Button
                   size="sm"
                   variant="outline"
+                  className="hidden md:inline-flex"
                   onClick={() => soMut.mutate()}
                   disabled={soMut.isPending}
                   title={
@@ -369,33 +381,95 @@ function QuoteDetailPage() {
                   }
                 >
                   {soMut.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                   ) : (
-                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <ShoppingCart className="mr-1.5 h-4 w-4" />
                   )}
-                  {linkedSo.data ? "Open sales order" : "Convert to Sales Order"}
+                  {linkedSo.data ? "Sales Order" : "Convert to SO"}
                 </Button>
+
                 {saleMode !== "cash" && (
                   <Button
                     size="sm"
+                    className="hidden md:inline-flex"
                     onClick={() => convertMut.mutate()}
                     disabled={!canConvert || convertMut.isPending}
                     title="Generate Tax Invoice"
                   >
-                    {convertMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <ArrowRightCircle className="mr-2 h-4 w-4" /> Convert to invoice
+                    {convertMut.isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+                    <ArrowRightCircle className="mr-1.5 h-4 w-4" /> Convert to Invoice
                   </Button>
                 )}
+
                 <DocumentToolbar entity="quote" entityId={quoteId} />
               </>
             }
             overflow={[
+              ...(!isAccepted
+                ? [
+                    {
+                      label: "Approve Quote",
+                      icon: <CheckCircle2 className="h-4 w-4 text-blue-600" />,
+                      onSelect: () => statusMut.mutate("accepted"),
+                    },
+                  ]
+                : []),
+              {
+                label: assignment.isAssigned
+                  ? `Vendor: ${assignment.vendorName}`
+                  : "Assign Live Stock / Vendor",
+                icon: <Boxes className="h-4 w-4 text-emerald-600" />,
+                onSelect: () => setAssignVendorOpen(true),
+              },
+              {
+                label: "WhatsApp RFQ to Vendors",
+                icon: <MessageCircle className="h-4 w-4 text-emerald-600" />,
+                onSelect: () => setRfqOpen(true),
+              },
+              {
+                label: linkedSo.data ? "Open sales order" : "Convert to Sales Order",
+                icon: <ShoppingCart className="h-4 w-4" />,
+                onSelect: () => soMut.mutate(),
+              },
+              ...(saleMode !== "cash" && canConvert
+                ? [
+                    {
+                      label: "Convert to invoice",
+                      icon: <ArrowRightCircle className="h-4 w-4 text-primary" />,
+                      onSelect: () => convertMut.mutate(),
+                    },
+                  ]
+                : []),
+              ...(isAccepted
+                ? [
+                    {
+                      label: saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan",
+                      icon: <Truck className="h-4 w-4 text-amber-600" />,
+                      onSelect: () =>
+                        nav({
+                          to: "/dispatch/new",
+                          search: {
+                            quote: quoteId,
+                            customer: quote.customer_id,
+                            ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                          },
+                        }),
+                    },
+                    {
+                      label: "Create revision",
+                      icon: <Copy className="h-4 w-4" />,
+                      onSelect: () => reviseMut.mutate(),
+                    },
+                  ]
+                : []),
               {
                 label: "Share link",
                 icon: <Share2 className="h-4 w-4" />,
                 onSelect: async () => {
                   await navigator.clipboard.writeText(window.location.href);
+                  toast.success("Quote link copied to clipboard");
                 },
+                separatorBefore: true,
               },
               {
                 label: "Documents",
@@ -461,98 +535,205 @@ function QuoteDetailPage() {
               <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit items
             </Button>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-14 text-center">Photo</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>HSN</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
-                  <TableHead className="text-right">Tax %</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(items.data ?? []).map((it) => {
-                  const img = getLineItemImage(it, quoteImages.data ?? new Map());
-                  const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
-                  const itemNotes = (it as { notes?: string | null }).notes;
-                  return (
-                    <TableRow key={it.id}>
-                      <TableCell className="p-2 text-center align-middle">
-                        {img ? (
-                          <button
-                            type="button"
-                            onClick={() => setPreviewImage({ url: img, title: it.description })}
-                            className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
-                            title="Click to view full photo"
-                          >
-                            <img
-                              src={img}
-                              alt={it.description}
-                              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                            />
-                            <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
-                              <Eye className="h-3.5 w-3.5" />
-                            </span>
-                          </button>
-                        ) : (
-                          <div
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
-                            title="No photo attached"
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                          </div>
+          <CardContent className="p-3 sm:p-6">
+            {/* Mobile Responsive Line Items Card View (< sm) */}
+            <div className="sm:hidden space-y-3">
+              {(items.data ?? []).map((it) => {
+                const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                const itemNotes = (it as { notes?: string | null }).notes;
+                return (
+                  <div
+                    key={it.id}
+                    className="rounded-lg border border-border bg-card p-3 shadow-2xs space-y-2.5"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {img ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewImage({ url: img, title: it.description })}
+                          className="group relative h-13 w-13 shrink-0 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs cursor-pointer"
+                          title="Click to view full photo"
+                        >
+                          <img
+                            src={img}
+                            alt={it.description}
+                            className="h-full w-full object-cover"
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
+                            <Eye className="h-3.5 w-3.5" />
+                          </span>
+                        </button>
+                      ) : (
+                        <div
+                          className="flex h-13 w-13 shrink-0 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                          title="No photo attached"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-xs sm:text-sm text-foreground leading-snug">
+                          {it.description}
+                        </h4>
+                        {itemNotes && (
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                            {itemNotes}
+                          </p>
                         )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex flex-col">
-                          <span>{it.description}</span>
-                          {itemNotes && (
-                            <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
-                              {itemNotes}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac && (
+                            <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                              HSN: {(it as unknown as { hsn_sac?: string | null }).hsn_sac}
+                            </span>
+                          )}
+                          {it.unit && (
+                            <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                              Unit: {it.unit}
                             </span>
                           )}
                           {img && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
-                              <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                              <Sparkles className="h-2.5 w-2.5" /> Photo
                             </span>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">{it.quantity}</TableCell>
-                      <TableCell>{it.unit ?? "—"}</TableCell>
-                      <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
-                      <TableCell className="text-right">{it.tax_pct}%</TableCell>
-                      <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <div className="mt-4 flex flex-col items-end gap-1 text-sm">
-              <div>
-                Subtotal: <span className="font-medium">{formatInr(quote.subtotal)}</span>
+                      </div>
+                    </div>
+
+                    {/* Financial Numbers Bar */}
+                    <div className="grid grid-cols-3 gap-2 bg-muted/30 p-2 rounded-md text-xs border border-border/60">
+                      <div>
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Qty
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {it.quantity} {it.unit ?? ""}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Rate
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {formatInr(it.unit_price)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase text-muted-foreground block font-medium">
+                          Amount {it.tax_pct ? `(${it.tax_pct}% GST)` : ""}
+                        </span>
+                        <span className="font-bold text-primary">{formatInr(linePreTax)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop / Tablet Table View (>= sm) */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-14 text-center">Photo</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>HSN</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Tax %</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(items.data ?? []).map((it) => {
+                    const img = getLineItemImage(it, quoteImages.data ?? new Map());
+                    const linePreTax = Number(it.quantity ?? 0) * Number(it.unit_price ?? 0);
+                    const itemNotes = (it as { notes?: string | null }).notes;
+                    return (
+                      <TableRow key={it.id}>
+                        <TableCell className="p-2 text-center align-middle">
+                          {img ? (
+                            <button
+                              type="button"
+                              onClick={() => setPreviewImage({ url: img, title: it.description })}
+                              className="group relative inline-block h-11 w-11 overflow-hidden rounded-md border border-border bg-muted/40 shadow-xs hover:border-primary transition cursor-pointer"
+                              title="Click to view full photo"
+                            >
+                              <img
+                                src={img}
+                                alt={it.description}
+                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                              />
+                              <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                                <Eye className="h-3.5 w-3.5" />
+                              </span>
+                            </button>
+                          ) : (
+                            <div
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-dashed border-border/80 bg-muted/20 text-muted-foreground/30"
+                              title="No photo attached"
+                            >
+                              <ImageIcon className="h-4 w-4" />
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col">
+                            <span>{it.description}</span>
+                            {itemNotes && (
+                              <span className="text-xs text-muted-foreground font-normal mt-0.5 whitespace-pre-wrap">
+                                {itemNotes}
+                              </span>
+                            )}
+                            {img && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-normal text-primary/80">
+                                <Sparkles className="h-2.5 w-2.5" /> Visual attached
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {(it as unknown as { hsn_sac?: string | null }).hsn_sac || "—"}
+                        </TableCell>
+                        <TableCell className="text-right">{it.quantity}</TableCell>
+                        <TableCell>{it.unit ?? "—"}</TableCell>
+                        <TableCell className="text-right">{formatInr(it.unit_price)}</TableCell>
+                        <TableCell className="text-right">{it.tax_pct}%</TableCell>
+                        <TableCell className="text-right">{formatInr(linePreTax)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Responsive Quote Totals Card */}
+            <div className="mt-4 rounded-lg bg-muted/30 border border-border/70 p-3.5 space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>Subtotal:</span>
+                <span className="font-medium text-foreground">{formatInr(quote.subtotal)}</span>
               </div>
               {saleMode === "cash" ? (
-                <div className="text-xs text-emerald-700 font-medium">
-                  GST (Cash Sale · No Tax): <span className="font-semibold">0% (₹0)</span>
+                <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
+                  <span>GST (Cash Deal · Challan Only):</span>
+                  <span className="font-semibold">0% (₹0)</span>
                 </div>
               ) : (
-                <div>
-                  Tax: <span className="font-medium">{formatInr(quote.tax_amount)}</span>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>GST Tax:</span>
+                  <span className="font-medium text-foreground">{formatInr(quote.tax_amount)}</span>
                 </div>
               )}
-              <div className="text-base font-semibold">Total: {formatInr(quote.total)}</div>
+              <div className="border-t border-border pt-2 flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
+                <span>Total Quotation:</span>
+                <span className="text-primary font-black">{formatInr(quote.total)}</span>
+              </div>
               {saleMode === "hybrid" && (
-                <div className="text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded border border-purple-200 mt-1">
-                  Hybrid Split: Cash {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
+                <div className="text-xs text-purple-700 bg-purple-50 px-2.5 py-1.5 rounded-md border border-purple-200 mt-2">
+                  <span className="font-semibold">Hybrid Deal Split:</span> Cash{" "}
+                  {formatInr(hybridSplit.cashAmount ?? 0)} · Invoiced{" "}
                   {formatInr(hybridSplit.invoicedAmount ?? 0)}
                 </div>
               )}
