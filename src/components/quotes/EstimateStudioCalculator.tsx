@@ -25,7 +25,17 @@
  * reflect the pre-discount subtotal. This is stated explicitly in the UI.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, ImagePlus, FileDown, MessageCircle, Loader2, X, Truck } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  ImagePlus,
+  FileDown,
+  MessageCircle,
+  Loader2,
+  X,
+  Truck,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,13 +80,19 @@ import {
   printEstimatePdf,
   openWhatsappWithMessage,
 } from "@/lib/quotes/estimateWhatsappPdf";
-import type { QuoteItemInput } from "@/lib/quotes/schema";
+import type { QuoteCategory, QuoteItemInput } from "@/lib/quotes/schema";
 
 function rid(): string {
   return Math.random().toString(36).slice(2);
 }
 
-type WallForm = { id: string; name: string; height: string; length: string };
+type WallForm = {
+  id: string;
+  name: string;
+  height: string;
+  length: string;
+  sqftOverride?: string;
+};
 type ProductForm = {
   id: string;
   wallId: string;
@@ -86,9 +102,15 @@ type ProductForm = {
   pricePerUnit: string;
   wastagePct: string; // e.g. "5"
   manualQty: string; // used only when priceUnit === "unit"
+  qtyOverride?: string; // allow direct manual override of sqft quantity to order!
   imageDataUrl: string | null;
 };
-type AdhesiveForm = { key: string; selected: boolean; pricePerUnit: string };
+type AdhesiveForm = {
+  key: string;
+  selected: boolean;
+  pricePerUnit: string;
+  unitsOverride?: string;
+};
 type OtherAdhesiveForm = {
   enabled: boolean;
   name: string;
@@ -106,17 +128,37 @@ export interface EstimateStudioResult {
 
 export function EstimateStudioCalculator({
   projectId,
+  category,
+  onCategoryChange,
   onResult,
+  onTransferToManual,
 }: {
   projectId: string | null;
+  category?: QuoteCategory | "";
+  onCategoryChange?: (cat: QuoteCategory) => void;
   onResult: (result: EstimateStudioResult | null) => void;
+  onTransferToManual?: () => void;
 }) {
   const [unit, setUnit] = useState<LengthUnit>("in");
   const [walls, setWalls] = useState<WallForm[]>([
     { id: rid(), name: "Wall 1", height: "", length: "" },
   ]);
   const [products, setProducts] = useState<ProductForm[]>([]);
+  const [includeInstallation, setIncludeInstallation] = useState<boolean>(() => {
+    return category !== "supply_only";
+  });
+
+  // Sync includeInstallation if category prop changes from parent
+  useEffect(() => {
+    if (category === "supply_only") {
+      setIncludeInstallation(false);
+    } else if (category === "supply_and_installation" || category === "material_and_labour") {
+      setIncludeInstallation(true);
+    }
+  }, [category]);
+
   const [labourRate, setLabourRate] = useState("80");
+  const [labourSqftOverride, setLabourSqftOverride] = useState<string>("");
   const [adhesives, setAdhesives] = useState<AdhesiveForm[]>(
     ADHESIVE_CATALOG.map((a) => ({
       key: a.key,
@@ -131,8 +173,9 @@ export function EstimateStudioCalculator({
     unitLabel: "bag",
     pricePerUnit: "",
   });
-  const [sealerKey, setSealerKey] = useState<string>("solvent_based_oil_dust_repellent");
+  const [sealerKey, setSealerKey] = useState<string>("none");
   const [sealerPrice, setSealerPrice] = useState<string>("2500");
+  const [sealerBottlesOverride, setSealerBottlesOverride] = useState<string>("");
   const [sealerAppRate, setSealerAppRate] = useState(
     String(DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT),
   );
@@ -234,14 +277,21 @@ export function EstimateStudioCalculator({
 
   const wallsComputed: EstimateWall[] = useMemo(
     () =>
-      walls.map((w) => ({
-        id: w.id,
-        name: w.name.trim() || "Wall",
-        height: Number(w.height) || 0,
-        length: Number(w.length) || 0,
-        unit,
-        sqft: wallSqft(Number(w.height) || 0, Number(w.length) || 0, unit),
-      })),
+      walls.map((w) => {
+        const autoSqft = wallSqft(Number(w.height) || 0, Number(w.length) || 0, unit);
+        const sqft =
+          w.sqftOverride !== undefined && w.sqftOverride !== "" && !isNaN(Number(w.sqftOverride))
+            ? Number(w.sqftOverride)
+            : autoSqft;
+        return {
+          id: w.id,
+          name: w.name.trim() || "Wall",
+          height: Number(w.height) || 0,
+          length: Number(w.length) || 0,
+          unit,
+          sqft,
+        };
+      }),
     [walls, unit],
   );
 
@@ -257,9 +307,12 @@ export function EstimateStudioCalculator({
         const price = Number(p.pricePerUnit) || 0;
         const wastage =
           p.wastagePct !== "" && !isNaN(Number(p.wastagePct)) ? Number(p.wastagePct) : 5;
+        const autoQty = materialQuantityToOrder(wall?.sqft ?? 0, wastage);
         const qty =
           p.priceUnit === "sqft"
-            ? materialQuantityToOrder(wall?.sqft ?? 0, wastage)
+            ? p.qtyOverride !== undefined && p.qtyOverride !== "" && !isNaN(Number(p.qtyOverride))
+              ? Number(p.qtyOverride)
+              : autoQty
             : Number(p.manualQty) || 0;
         return {
           id: p.id,
@@ -282,9 +335,15 @@ export function EstimateStudioCalculator({
     [productsComputed],
   );
 
+  const effectiveLabourSqft = useMemo(() => {
+    return labourSqftOverride !== "" && !isNaN(Number(labourSqftOverride))
+      ? Number(labourSqftOverride)
+      : totalWallSqft;
+  }, [labourSqftOverride, totalWallSqft]);
+
   const labourAmount = useMemo(
-    () => (Number(labourRate) || 0) * totalWallSqft,
-    [labourRate, totalWallSqft],
+    () => (Number(labourRate) || 0) * effectiveLabourSqft,
+    [labourRate, effectiveLabourSqft],
   );
 
   const wallBreakdown = useMemo(() => {
@@ -328,7 +387,11 @@ export function EstimateStudioCalculator({
       if (!a.selected) continue;
       const cat = ADHESIVE_CATALOG.find((c) => c.key === a.key);
       if (!cat) continue;
-      const units = calculateAdhesiveUnits(cat, wallBreakdown);
+      const autoUnits = calculateAdhesiveUnits(cat, wallBreakdown);
+      const units =
+        a.unitsOverride !== undefined && a.unitsOverride !== "" && !isNaN(Number(a.unitsOverride))
+          ? Number(a.unitsOverride)
+          : autoUnits;
       const price = Number(a.pricePerUnit) || 0;
       lines.push({
         key: a.key,
@@ -364,10 +427,14 @@ export function EstimateStudioCalculator({
     if (sealerKey === "none") return null;
     const cat = SEALER_CATALOG.find((s) => s.key === sealerKey);
     if (!cat) return null;
-    const bottles = ceilWhole(totalWallSqft / cat.coverageSqftPerLtr);
+    const autoBottles = ceilWhole(totalWallSqft / cat.coverageSqftPerLtr);
+    const bottles =
+      sealerBottlesOverride !== "" && !isNaN(Number(sealerBottlesOverride))
+        ? Number(sealerBottlesOverride)
+        : autoBottles;
     const price = Number(sealerPrice) || 0;
     return { key: cat.key, label: cat.label, bottles, pricePerLtr: price, amount: bottles * price };
-  }, [sealerKey, sealerPrice, totalWallSqft]);
+  }, [sealerKey, sealerPrice, totalWallSqft, sealerBottlesOverride]);
 
   const sealerLabourAmount = useMemo(
     () => (sealerKey !== "none" ? (Number(sealerAppRate) || 0) * totalWallSqft : 0),
@@ -376,9 +443,20 @@ export function EstimateStudioCalculator({
 
   const cartingNum = cartingEnabled ? Number(cartingAmount) || 0 : 0;
 
-  const installationAmount =
-    labourAmount + adhesivesAmount + (sealerComputed?.amount ?? 0) + sealerLabourAmount;
-  const subtotal = materialAmount + installationAmount + cartingNum;
+  // If includeInstallation is disabled (e.g. Supply Only deal), installation amounts are 0
+  const effectiveLabourAmount = includeInstallation ? labourAmount : 0;
+  const effectiveAdhesivesAmount = includeInstallation ? adhesivesAmount : 0;
+  const effectiveSealerAmount = includeInstallation ? (sealerComputed?.amount ?? 0) : 0;
+  const effectiveSealerLabourAmount = includeInstallation ? sealerLabourAmount : 0;
+  const effectiveInstallationAmount =
+    effectiveLabourAmount +
+    effectiveAdhesivesAmount +
+    effectiveSealerAmount +
+    effectiveSealerLabourAmount;
+
+  const effectiveMaterialAmount = category === "installation_only" ? 0 : materialAmount;
+
+  const subtotal = effectiveMaterialAmount + effectiveInstallationAmount + cartingNum;
   const discountEligible = totalWallSqft > DISCOUNT_SQFT_THRESHOLD;
   const discountAmount = discountApply && discountEligible ? (subtotal * DISCOUNT_PCT) / 100 : 0;
   const total = subtotal - discountAmount;
@@ -390,10 +468,16 @@ export function EstimateStudioCalculator({
       walls: wallsComputed,
       products: productsComputed.map((p) => ({ ...p, imageDataUrl: p.imageDataUrl || undefined })),
       installation: {
-        labour: { ratePerSqft: Number(labourRate) || 0, amount: labourAmount },
-        adhesives: adhesiveLines,
-        sealer: sealerComputed,
-        sealerLabour: { ratePerSqft: Number(sealerAppRate) || 0, amount: sealerLabourAmount },
+        labour: {
+          ratePerSqft: includeInstallation ? Number(labourRate) || 0 : 0,
+          amount: effectiveLabourAmount,
+        },
+        adhesives: includeInstallation ? adhesiveLines : [],
+        sealer: includeInstallation ? sealerComputed : null,
+        sealerLabour: {
+          ratePerSqft: includeInstallation ? Number(sealerAppRate) || 0 : 0,
+          amount: effectiveSealerLabourAmount,
+        },
       },
       carting:
         cartingNum > 0
@@ -410,8 +494,8 @@ export function EstimateStudioCalculator({
       },
       timeToComplete: timeToComplete || undefined,
       totalWallSqft,
-      materialAmount,
-      installationAmount,
+      materialAmount: effectiveMaterialAmount,
+      installationAmount: effectiveInstallationAmount,
       subtotal,
       total,
     }),
@@ -419,12 +503,13 @@ export function EstimateStudioCalculator({
       unit,
       wallsComputed,
       productsComputed,
+      includeInstallation,
       labourRate,
-      labourAmount,
+      effectiveLabourAmount,
       adhesiveLines,
       sealerComputed,
       sealerAppRate,
-      sealerLabourAmount,
+      effectiveSealerLabourAmount,
       discountApply,
       discountEligible,
       discountAmount,
@@ -432,8 +517,8 @@ export function EstimateStudioCalculator({
       cartingLocation,
       timeToComplete,
       totalWallSqft,
-      materialAmount,
-      installationAmount,
+      effectiveMaterialAmount,
+      effectiveInstallationAmount,
       subtotal,
       total,
     ],
@@ -441,46 +526,50 @@ export function EstimateStudioCalculator({
 
   const items: QuoteItemInput[] = useMemo(() => {
     const out: QuoteItemInput[] = [];
-    for (const p of productsComputed) {
-      if (!p.productName || p.amount <= 0) continue;
-      const materialLabel =
-        MATERIAL_OPTIONS.find((m) => m.value === p.materialCategory)?.label ?? p.materialCategory;
-      const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
-      out.push({
-        product_id: null,
-        description: `${materialLabel} — ${p.productName}${wallName ? ` (${wallName})` : ""}`,
-        quantity: p.quantityToOrder,
-        unit: p.priceUnit === "sqft" ? "sqft" : "unit",
-        unit_price: p.pricePerUnit,
-        tax_pct: 0,
-        fulfilment: null,
-        image_url: p.imageDataUrl || null,
-      });
+    if (category !== "installation_only") {
+      for (const p of productsComputed) {
+        if (!p.productName || p.amount <= 0) continue;
+        const materialLabel =
+          MATERIAL_OPTIONS.find((m) => m.value === p.materialCategory)?.label ?? p.materialCategory;
+        const wallName = wallsComputed.find((w) => w.id === p.wallId)?.name ?? "";
+        out.push({
+          product_id: null,
+          description: `${materialLabel} — ${p.productName}${wallName ? ` (${wallName})` : ""}`,
+          quantity: p.quantityToOrder,
+          unit: p.priceUnit === "sqft" ? "sqft" : "unit",
+          unit_price: p.pricePerUnit,
+          tax_pct: 0,
+          fulfilment: null,
+          image_url: p.imageDataUrl || null,
+        });
+      }
     }
-    if (labourAmount > 0) {
+    if (includeInstallation && effectiveLabourAmount > 0) {
       out.push({
         product_id: null,
         description: "Installation Labour",
-        quantity: totalWallSqft,
+        quantity: effectiveLabourSqft,
         unit: "sqft",
         unit_price: Number(labourRate) || 0,
         tax_pct: 0,
         fulfilment: null,
       });
     }
-    for (const l of adhesiveLines) {
-      if (l.units <= 0) continue;
-      out.push({
-        product_id: null,
-        description: l.customName ? `Adhesive — ${l.customName}` : `Adhesive — ${l.label}`,
-        quantity: l.units,
-        unit: l.unitLabel,
-        unit_price: l.pricePerUnit,
-        tax_pct: 0,
-        fulfilment: null,
-      });
+    if (includeInstallation) {
+      for (const l of adhesiveLines) {
+        if (l.units <= 0) continue;
+        out.push({
+          product_id: null,
+          description: l.customName ? `Adhesive — ${l.customName}` : `Adhesive — ${l.label}`,
+          quantity: l.units,
+          unit: l.unitLabel,
+          unit_price: l.pricePerUnit,
+          tax_pct: 0,
+          fulfilment: null,
+        });
+      }
     }
-    if (sealerComputed && sealerComputed.bottles > 0) {
+    if (includeInstallation && sealerComputed && sealerComputed.bottles > 0) {
       out.push({
         product_id: null,
         description: `Sealer Chemical — ${sealerComputed.label}`,
@@ -491,7 +580,7 @@ export function EstimateStudioCalculator({
         fulfilment: null,
       });
     }
-    if (sealerLabourAmount > 0) {
+    if (includeInstallation && effectiveSealerLabourAmount > 0) {
       out.push({
         product_id: null,
         description: "Sealer Application Labour",
@@ -516,13 +605,16 @@ export function EstimateStudioCalculator({
     }
     return out;
   }, [
+    category,
     productsComputed,
     wallsComputed,
-    labourAmount,
+    includeInstallation,
+    effectiveLabourAmount,
+    effectiveLabourSqft,
     labourRate,
     adhesiveLines,
     sealerComputed,
-    sealerLabourAmount,
+    effectiveSealerLabourAmount,
     sealerAppRate,
     cartingNum,
     cartingLocation,
@@ -593,12 +685,12 @@ export function EstimateStudioCalculator({
           wallSizeSummary: wallSizeSummary || "—",
           materialSummary: materialSummary || "—",
           materialToOrderSummary: materialToOrderSummary || "—",
-          materialAmount,
-          installationLabourAmount: labourAmount,
-          adhesivesAmount,
-          adhesivesSummary: adhesivesSummary || undefined,
-          sealerAmount: sealerComputed?.amount ?? 0,
-          sealerApplicationAmount: sealerLabourAmount,
+          materialAmount: effectiveMaterialAmount,
+          installationLabourAmount: effectiveLabourAmount,
+          adhesivesAmount: effectiveAdhesivesAmount,
+          adhesivesSummary: includeInstallation && adhesivesSummary ? adhesivesSummary : undefined,
+          sealerAmount: effectiveSealerAmount,
+          sealerApplicationAmount: effectiveSealerLabourAmount,
           cartingAmount: cartingNum > 0 ? cartingNum : undefined,
           cartingLocation: cartingLocation.trim() || undefined,
           totalEstimate: total,
@@ -685,10 +777,40 @@ export function EstimateStudioCalculator({
                     onChange={(e) => updateWall(w.id, { length: e.target.value })}
                   />
                 </LineField>
-                <LineField label="Sq ft" className="col-span-8 md:col-span-3">
-                  <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-                    {sqft > 0 ? sqft.toFixed(2) : "—"}
-                  </div>
+                <LineField
+                  label={
+                    <div className="flex items-center justify-between">
+                      <span>Sq ft</span>
+                      {w.sqftOverride && (
+                        <button
+                          type="button"
+                          onClick={() => updateWall(w.id, { sqftOverride: "" })}
+                          className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                          title="Reset to calculated (Height x Length)"
+                        >
+                          Auto (
+                          {wallSqft(Number(w.height) || 0, Number(w.length) || 0, unit).toFixed(1)})
+                        </button>
+                      )}
+                    </div>
+                  }
+                  className="col-span-8 md:col-span-3"
+                >
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="any"
+                    value={
+                      w.sqftOverride !== undefined && w.sqftOverride !== ""
+                        ? w.sqftOverride
+                        : sqft > 0
+                          ? sqft.toFixed(2)
+                          : ""
+                    }
+                    placeholder={sqft > 0 ? sqft.toFixed(2) : "0"}
+                    onChange={(e) => updateWall(w.id, { sqftOverride: e.target.value })}
+                  />
                 </LineField>
                 <div className="col-span-4 md:col-span-1 flex justify-end">
                   <Button
@@ -865,25 +987,47 @@ export function EstimateStudioCalculator({
                         />
                       </LineField>
                       <LineField
-                        label={`Qty to order (+${p.wastagePct || "0"}% rounded up)`}
+                        label={
+                          <div className="flex items-center justify-between">
+                            <span>Qty to order (sqft)</span>
+                            {p.qtyOverride && (
+                              <button
+                                type="button"
+                                onClick={() => updateProduct(p.id, { qtyOverride: "" })}
+                                className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                                title="Reset to auto-calculated wall area + wastage"
+                              >
+                                Auto (
+                                {materialQuantityToOrder(
+                                  wall?.sqft ?? 0,
+                                  p.wastagePct !== "" && !isNaN(Number(p.wastagePct))
+                                    ? Number(p.wastagePct)
+                                    : 5,
+                                )}
+                                )
+                              </button>
+                            )}
+                          </div>
+                        }
                         className="col-span-6 md:col-span-3"
                       >
-                        <div
-                          className="flex h-9 items-center justify-between rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums"
-                          title={`Wall area: ${(wall?.sqft ?? 0).toFixed(2)} sqft + ${p.wastagePct || "0"}% wastage = ${(
-                            (wall?.sqft ?? 0) *
-                            (1 + (Number(p.wastagePct) || 0) / 100)
-                          ).toFixed(
-                            4,
-                          )} sqft → rounded up to ${computed?.quantityToOrder ?? 0} sqft`}
-                        >
-                          <span>{computed?.quantityToOrder ?? 0} sqft</span>
-                          {wall && wall.sqft > 0 && (
-                            <span className="text-[11px] font-normal text-muted-foreground">
-                              ({wall.sqft.toFixed(1)} + {p.wastagePct || "0"}%)
-                            </span>
-                          )}
-                        </div>
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          step="any"
+                          value={
+                            p.qtyOverride !== undefined && p.qtyOverride !== ""
+                              ? p.qtyOverride
+                              : computed?.quantityToOrder
+                                ? String(computed.quantityToOrder)
+                                : ""
+                          }
+                          placeholder={
+                            computed?.quantityToOrder ? String(computed.quantityToOrder) : "0"
+                          }
+                          onChange={(e) => updateProduct(p.id, { qtyOverride: e.target.value })}
+                        />
                       </LineField>
                     </>
                   )}
@@ -933,230 +1077,404 @@ export function EstimateStudioCalculator({
 
       {/* Installation */}
       <div className="space-y-4 rounded-sm border border-border bg-background p-4">
-        <label className="text-sm font-medium">Installation</label>
-
-        <div className="grid grid-cols-12 items-end gap-2">
-          <LineField label="Labour Charges — rate (₹/sqft)" className="col-span-6 md:col-span-3">
-            <Input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              value={labourRate}
-              onChange={(e) => setLabourRate(e.target.value)}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="enable-installation"
+              checked={includeInstallation}
+              onCheckedChange={(v) => {
+                const checked = !!v;
+                setIncludeInstallation(checked);
+                if (!checked && category !== "supply_only") {
+                  onCategoryChange?.("supply_only");
+                } else if (checked && category === "supply_only") {
+                  onCategoryChange?.("supply_and_installation");
+                }
+              }}
             />
-          </LineField>
-          <LineField label="Labour amount" className="col-span-6 md:col-span-3">
-            <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-              {formatInr(labourAmount)}
-            </div>
-          </LineField>
-        </div>
-
-        <div>
-          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Adhesives (select all that apply)
-            </span>
-            {wallBreakdown.hasCrazyPattern && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                ⚡ Crazy Pattern stone: 1 bag covers 15 sq ft (standard: 25 sq ft)
-              </span>
+            <label
+              htmlFor="enable-installation"
+              className="text-sm font-semibold cursor-pointer flex items-center gap-2"
+            >
+              <span>Installation (Labour &amp; Materials)</span>
+              {!includeInstallation && (
+                <span className="text-[11px] font-medium text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                  Excluded (Supply Only)
+                </span>
+              )}
+              {includeInstallation && (
+                <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                  Included in Quote
+                </span>
+              )}
+            </label>
+          </div>
+          <div className="text-sm font-semibold">
+            {includeInstallation ? (
+              <span>Installation total: {formatInr(effectiveInstallationAmount)}</span>
+            ) : (
+              <span className="text-muted-foreground font-normal">₹0 (Excluded)</span>
             )}
           </div>
-          <div className="space-y-1.5">
-            {ADHESIVE_CATALOG.map((cat) => {
-              const a = adhesives.find((x) => x.key === cat.key)!;
-              const line = adhesiveLines.find((l) => l.key === cat.key);
-              return (
-                <div
-                  key={cat.key}
-                  className="grid grid-cols-12 items-center gap-2 rounded-sm border border-border/60 px-2 py-1.5"
-                >
+        </div>
+
+        {!includeInstallation ? (
+          <div className="p-3 bg-amber-50/70 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3">
+            <span>
+              Deal Scope is set to <strong>Supply Only</strong>. Installation Labour, Adhesives, and
+              Sealer Application are excluded from the quote.
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIncludeInstallation(true);
+                onCategoryChange?.("supply_and_installation");
+              }}
+              className="h-7 text-xs border-amber-300 bg-white dark:bg-slate-900 hover:bg-amber-100 shrink-0 cursor-pointer"
+            >
+              Include Installation
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-12 items-end gap-2">
+              <LineField
+                label="Labour Charges — rate (₹/sqft)"
+                className="col-span-6 md:col-span-3"
+              >
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  value={labourRate}
+                  onChange={(e) => setLabourRate(e.target.value)}
+                />
+              </LineField>
+              <LineField
+                label={
+                  <div className="flex items-center justify-between">
+                    <span>Labour Area (sqft)</span>
+                    {labourSqftOverride && (
+                      <button
+                        type="button"
+                        onClick={() => setLabourSqftOverride("")}
+                        className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                      >
+                        Auto ({totalWallSqft.toFixed(1)})
+                      </button>
+                    )}
+                  </div>
+                }
+                className="col-span-6 md:col-span-3"
+              >
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="any"
+                  value={
+                    labourSqftOverride !== ""
+                      ? labourSqftOverride
+                      : totalWallSqft > 0
+                        ? totalWallSqft.toFixed(2)
+                        : ""
+                  }
+                  placeholder={totalWallSqft > 0 ? totalWallSqft.toFixed(2) : "0"}
+                  onChange={(e) => setLabourSqftOverride(e.target.value)}
+                />
+              </LineField>
+              <LineField label="Labour amount" className="col-span-12 md:col-span-3">
+                <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
+                  {formatInr(labourAmount)}
+                </div>
+              </LineField>
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Adhesives (select all that apply)
+                </span>
+                {wallBreakdown.hasCrazyPattern && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    ⚡ Crazy Pattern stone: 1 bag covers 15 sq ft (standard: 25 sq ft)
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                {ADHESIVE_CATALOG.map((cat) => {
+                  const a = adhesives.find((x) => x.key === cat.key)!;
+                  const line = adhesiveLines.find((l) => l.key === cat.key);
+                  const autoUnits = calculateAdhesiveUnits(cat, wallBreakdown);
+                  return (
+                    <div
+                      key={cat.key}
+                      className="grid grid-cols-12 items-center gap-2 rounded-sm border border-border/60 px-2 py-1.5"
+                    >
+                      <div className="col-span-12 md:col-span-5 flex items-center gap-2">
+                        <Checkbox
+                          checked={a.selected}
+                          onCheckedChange={(v) =>
+                            setAdhesives((prev) =>
+                              prev.map((x) => (x.key === cat.key ? { ...x, selected: !!v } : x)),
+                            )
+                          }
+                        />
+                        <span className="text-sm">
+                          {cat.label}{" "}
+                          {cat.needsPriceConfirmation && (
+                            <span className="text-[10px] text-amber-600">(confirm price)</span>
+                          )}
+                        </span>
+                      </div>
+                      <LineField
+                        label={`Price / ${cat.unit} (₹)`}
+                        className="col-span-6 md:col-span-3"
+                      >
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          disabled={!a.selected}
+                          value={a.pricePerUnit}
+                          onChange={(e) =>
+                            setAdhesives((prev) =>
+                              prev.map((x) =>
+                                x.key === cat.key ? { ...x, pricePerUnit: e.target.value } : x,
+                              ),
+                            )
+                          }
+                        />
+                      </LineField>
+                      <LineField
+                        label={
+                          <div className="flex items-center justify-between">
+                            <span>{cat.unit}s</span>
+                            {a.unitsOverride && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAdhesives((prev) =>
+                                    prev.map((x) =>
+                                      x.key === cat.key ? { ...x, unitsOverride: "" } : x,
+                                    ),
+                                  )
+                                }
+                                className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                              >
+                                Auto ({autoUnits})
+                              </button>
+                            )}
+                          </div>
+                        }
+                        className="col-span-3 md:col-span-2"
+                      >
+                        <Input
+                          type="number"
+                          min="0"
+                          disabled={!a.selected}
+                          value={
+                            a.unitsOverride !== undefined && a.unitsOverride !== ""
+                              ? a.unitsOverride
+                              : a.selected && autoUnits > 0
+                                ? String(autoUnits)
+                                : ""
+                          }
+                          placeholder={a.selected && autoUnits > 0 ? String(autoUnits) : "0"}
+                          onChange={(e) =>
+                            setAdhesives((prev) =>
+                              prev.map((x) =>
+                                x.key === cat.key ? { ...x, unitsOverride: e.target.value } : x,
+                              ),
+                            )
+                          }
+                          className="h-9"
+                        />
+                      </LineField>
+                      <LineField label="Amount" className="col-span-3 md:col-span-2">
+                        <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
+                          {a.selected ? formatInr(line?.amount ?? 0) : "—"}
+                        </div>
+                      </LineField>
+                    </div>
+                  );
+                })}
+                <div className="grid grid-cols-12 items-center gap-2 rounded-sm border border-border/60 px-2 py-1.5">
                   <div className="col-span-12 md:col-span-5 flex items-center gap-2">
                     <Checkbox
-                      checked={a.selected}
+                      checked={otherAdhesive.enabled}
                       onCheckedChange={(v) =>
-                        setAdhesives((prev) =>
-                          prev.map((x) => (x.key === cat.key ? { ...x, selected: !!v } : x)),
-                        )
+                        setOtherAdhesive((prev) => ({ ...prev, enabled: !!v }))
                       }
                     />
-                    <span className="text-sm">
-                      {cat.label}{" "}
-                      {cat.needsPriceConfirmation && (
-                        <span className="text-[10px] text-amber-600">(confirm price)</span>
-                      )}
-                    </span>
-                  </div>
-                  <LineField label={`Price / ${cat.unit} (₹)`} className="col-span-6 md:col-span-3">
                     <Input
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      disabled={!a.selected}
-                      value={a.pricePerUnit}
+                      placeholder="Other adhesive — name"
+                      className="h-8"
+                      disabled={!otherAdhesive.enabled}
+                      value={otherAdhesive.name}
                       onChange={(e) =>
-                        setAdhesives((prev) =>
-                          prev.map((x) =>
-                            x.key === cat.key ? { ...x, pricePerUnit: e.target.value } : x,
-                          ),
-                        )
+                        setOtherAdhesive((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <LineField label="Unit" className="col-span-3 md:col-span-1">
+                    <Input
+                      className="h-8"
+                      disabled={!otherAdhesive.enabled}
+                      value={otherAdhesive.unitLabel}
+                      onChange={(e) =>
+                        setOtherAdhesive((prev) => ({ ...prev, unitLabel: e.target.value }))
                       }
                     />
                   </LineField>
-                  <LineField
-                    label={
-                      <span className="flex items-center gap-1">
-                        <span>{cat.unit}s (auto)</span>
-                        {cat.unit === "bag" && wallBreakdown.hasCrazyPattern && (
-                          <span
-                            className="text-[10px] text-amber-600 dark:text-amber-400 font-normal"
-                            title="Crazy Pattern coverage: 15 sq ft per bag"
-                          >
-                            (15 sqft/bag)
-                          </span>
-                        )}
-                      </span>
-                    }
-                    className="col-span-3 md:col-span-2"
-                  >
-                    <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm tabular-nums">
-                      {a.selected ? (line?.units ?? 0) : "—"}
-                    </div>
+                  <LineField label="Qty" className="col-span-3 md:col-span-2">
+                    <Input
+                      className="h-8"
+                      type="number"
+                      min="0"
+                      disabled={!otherAdhesive.enabled}
+                      value={otherAdhesive.units}
+                      onChange={(e) =>
+                        setOtherAdhesive((prev) => ({ ...prev, units: e.target.value }))
+                      }
+                    />
                   </LineField>
-                  <LineField label="Amount" className="col-span-3 md:col-span-2">
-                    <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
-                      {a.selected ? formatInr(line?.amount ?? 0) : "—"}
+                  <LineField label="Price (₹)" className="col-span-6 md:col-span-2">
+                    <Input
+                      className="h-8"
+                      type="number"
+                      min="0"
+                      disabled={!otherAdhesive.enabled}
+                      value={otherAdhesive.pricePerUnit}
+                      onChange={(e) =>
+                        setOtherAdhesive((prev) => ({ ...prev, pricePerUnit: e.target.value }))
+                      }
+                    />
+                  </LineField>
+                  <LineField label="Amount" className="col-span-6 md:col-span-2">
+                    <div className="flex h-8 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
+                      {otherAdhesive.enabled
+                        ? formatInr(
+                            (Number(otherAdhesive.units) || 0) *
+                              (Number(otherAdhesive.pricePerUnit) || 0),
+                          )
+                        : "—"}
                     </div>
                   </LineField>
                 </div>
-              );
-            })}
-            <div className="grid grid-cols-12 items-center gap-2 rounded-sm border border-border/60 px-2 py-1.5">
-              <div className="col-span-12 md:col-span-5 flex items-center gap-2">
-                <Checkbox
-                  checked={otherAdhesive.enabled}
-                  onCheckedChange={(v) => setOtherAdhesive((prev) => ({ ...prev, enabled: !!v }))}
-                />
-                <Input
-                  placeholder="Other adhesive — name"
-                  className="h-8"
-                  disabled={!otherAdhesive.enabled}
-                  value={otherAdhesive.name}
-                  onChange={(e) => setOtherAdhesive((prev) => ({ ...prev, name: e.target.value }))}
-                />
               </div>
-              <LineField label="Unit" className="col-span-3 md:col-span-1">
+              <div className="mt-1.5 text-right text-xs text-muted-foreground">
+                Adhesives total:{" "}
+                <span className="font-medium text-foreground">{formatInr(adhesivesAmount)}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-12 items-end gap-2">
+              <LineField label="Sealer Chemical" className="col-span-12 md:col-span-4">
+                <Select value={sealerKey} onValueChange={setSealerKey}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— None —</SelectItem>
+                    {SEALER_CATALOG.map((s) => (
+                      <SelectItem key={s.key} value={s.key}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </LineField>
+              <LineField label="Price / ltr (₹)" className="col-span-4 md:col-span-2">
                 <Input
-                  className="h-8"
-                  disabled={!otherAdhesive.enabled}
-                  value={otherAdhesive.unitLabel}
-                  onChange={(e) =>
-                    setOtherAdhesive((prev) => ({ ...prev, unitLabel: e.target.value }))
-                  }
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  disabled={sealerKey === "none"}
+                  value={sealerPrice}
+                  onChange={(e) => setSealerPrice(e.target.value)}
                 />
               </LineField>
-              <LineField label="Qty" className="col-span-3 md:col-span-2">
+              <LineField
+                label={
+                  <div className="flex items-center justify-between">
+                    <span>Bottles</span>
+                    {sealerBottlesOverride && (
+                      <button
+                        type="button"
+                        onClick={() => setSealerBottlesOverride("")}
+                        className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                      >
+                        Auto (
+                        {sealerKey !== "none"
+                          ? ceilWhole(
+                              totalWallSqft /
+                                (SEALER_CATALOG.find((s) => s.key === sealerKey)
+                                  ?.coverageSqftPerLtr ?? 1),
+                            )
+                          : 0}
+                        )
+                      </button>
+                    )}
+                  </div>
+                }
+                className="col-span-4 md:col-span-2"
+              >
                 <Input
-                  className="h-8"
                   type="number"
                   min="0"
-                  disabled={!otherAdhesive.enabled}
-                  value={otherAdhesive.units}
-                  onChange={(e) => setOtherAdhesive((prev) => ({ ...prev, units: e.target.value }))}
-                />
-              </LineField>
-              <LineField label="Price (₹)" className="col-span-6 md:col-span-2">
-                <Input
-                  className="h-8"
-                  type="number"
-                  min="0"
-                  disabled={!otherAdhesive.enabled}
-                  value={otherAdhesive.pricePerUnit}
-                  onChange={(e) =>
-                    setOtherAdhesive((prev) => ({ ...prev, pricePerUnit: e.target.value }))
+                  disabled={sealerKey === "none"}
+                  value={
+                    sealerBottlesOverride !== ""
+                      ? sealerBottlesOverride
+                      : sealerKey !== "none" && sealerComputed?.bottles
+                        ? String(sealerComputed.bottles)
+                        : ""
                   }
+                  placeholder={
+                    sealerKey !== "none" && sealerComputed?.bottles
+                      ? String(sealerComputed.bottles)
+                      : "0"
+                  }
+                  onChange={(e) => setSealerBottlesOverride(e.target.value)}
+                  className="h-9"
                 />
               </LineField>
-              <LineField label="Amount" className="col-span-6 md:col-span-2">
-                <div className="flex h-8 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
-                  {otherAdhesive.enabled
-                    ? formatInr(
-                        (Number(otherAdhesive.units) || 0) *
-                          (Number(otherAdhesive.pricePerUnit) || 0),
-                      )
-                    : "—"}
+              <LineField label="Amount" className="col-span-4 md:col-span-2">
+                <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
+                  {sealerKey !== "none" ? formatInr(sealerComputed?.amount ?? 0) : "—"}
                 </div>
               </LineField>
             </div>
-          </div>
-          <div className="mt-1.5 text-right text-xs text-muted-foreground">
-            Adhesives total:{" "}
-            <span className="font-medium text-foreground">{formatInr(adhesivesAmount)}</span>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-12 items-end gap-2">
-          <LineField label="Sealer Chemical" className="col-span-12 md:col-span-4">
-            <Select value={sealerKey} onValueChange={setSealerKey}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {SEALER_CATALOG.map((s) => (
-                  <SelectItem key={s.key} value={s.key}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </LineField>
-          <LineField label="Price / ltr (₹)" className="col-span-4 md:col-span-2">
-            <Input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              disabled={sealerKey === "none"}
-              value={sealerPrice}
-              onChange={(e) => setSealerPrice(e.target.value)}
-            />
-          </LineField>
-          <LineField label="Bottles (auto)" className="col-span-4 md:col-span-2">
-            <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm tabular-nums">
-              {sealerKey !== "none" ? (sealerComputed?.bottles ?? 0) : "—"}
+            <div className="grid grid-cols-12 items-end gap-2">
+              <LineField
+                label="Sealer Application — rate (₹/sqft)"
+                className="col-span-6 md:col-span-3"
+              >
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  value={sealerAppRate}
+                  onChange={(e) => setSealerAppRate(e.target.value)}
+                />
+              </LineField>
+              <LineField label="Sealer application amount" className="col-span-6 md:col-span-3">
+                <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
+                  {sealerKey !== "none" ? formatInr(sealerLabourAmount) : "—"}
+                </div>
+              </LineField>
             </div>
-          </LineField>
-          <LineField label="Amount" className="col-span-4 md:col-span-2">
-            <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-2 text-sm font-medium tabular-nums">
-              {sealerKey !== "none" ? formatInr(sealerComputed?.amount ?? 0) : "—"}
-            </div>
-          </LineField>
-        </div>
 
-        <div className="grid grid-cols-12 items-end gap-2">
-          <LineField
-            label="Sealer Application — rate (₹/sqft)"
-            className="col-span-6 md:col-span-3"
-          >
-            <Input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              value={sealerAppRate}
-              onChange={(e) => setSealerAppRate(e.target.value)}
-            />
-          </LineField>
-          <LineField label="Sealer application amount" className="col-span-6 md:col-span-3">
-            <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-              {sealerKey !== "none" ? formatInr(sealerLabourAmount) : "—"}
+            <div className="text-right text-sm">
+              Installation total:{" "}
+              <span className="font-semibold">{formatInr(effectiveInstallationAmount)}</span>
             </div>
-          </LineField>
-        </div>
-
-        <div className="text-right text-sm">
-          Installation total: <span className="font-semibold">{formatInr(installationAmount)}</span>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Optional Local Carting / Transportation */}
@@ -1235,11 +1553,13 @@ export function EstimateStudioCalculator({
       <div className="ml-auto max-w-xs space-y-1 rounded-sm border border-border bg-muted/20 p-3 text-sm">
         <div className="flex justify-between">
           <span>Material</span>
-          <span className="tabular-nums">{formatInr(materialAmount)}</span>
+          <span className="tabular-nums">{formatInr(effectiveMaterialAmount)}</span>
         </div>
         <div className="flex justify-between">
           <span>Installation</span>
-          <span className="tabular-nums">{formatInr(installationAmount)}</span>
+          <span className="tabular-nums">
+            {includeInstallation ? formatInr(effectiveInstallationAmount) : "₹0 (Excluded)"}
+          </span>
         </div>
         <div className="flex justify-between border-t border-border pt-1">
           <span>Subtotal</span>
@@ -1254,6 +1574,78 @@ export function EstimateStudioCalculator({
         <div className="flex justify-between border-t border-border pt-1 font-semibold">
           <span>Total Estimate</span>
           <span className="tabular-nums">{formatInr(total)}</span>
+        </div>
+      </div>
+
+      {/* Generated Quote Items Preview & Direct Transfer to Manual */}
+      <div className="rounded-lg border border-border bg-slate-50/80 dark:bg-slate-900/60 p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2.5">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <span>Quote Line Items Preview</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                ({items.length} {items.length === 1 ? "item" : "items"})
+              </span>
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              These line items will be created in the quotation. You can change values above, or
+              customize them line-by-line.
+            </p>
+          </div>
+          {onTransferToManual && items.length > 0 && (
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              onClick={onTransferToManual}
+              className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer shadow-sm"
+              title="Switch to Manual line items mode with these items prefilled for full custom editing"
+            >
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              Customize in Line Items &rarr;
+            </Button>
+          )}
+        </div>
+
+        {items.length === 0 ? (
+          <div className="text-xs text-muted-foreground py-2 text-center">
+            Enter wall dimensions and product details above to generate quote line items.
+          </div>
+        ) : (
+          <div className="divide-y divide-border/50 text-xs">
+            {items.map((it, idx) => {
+              const lineTotal = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+              return (
+                <div key={idx} className="py-2 flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {idx + 1}. {it.description}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      Qty:{" "}
+                      <span className="font-medium text-foreground">
+                        {it.quantity} {it.unit}
+                      </span>{" "}
+                      &times; Rate:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatInr(Number(it.unit_price) || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                    {formatInr(lineTotal)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="border-t pt-2.5 flex items-center justify-between text-xs font-semibold">
+          <span>Quote Subtotal ({items.length} items)</span>
+          <span className="text-base font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+            {formatInr(subtotal)}
+          </span>
         </div>
       </div>
 

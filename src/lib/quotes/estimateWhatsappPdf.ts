@@ -39,9 +39,19 @@ export function buildEstimateWhatsappMessage(
   input: EstimateWhatsappMessageInput,
   companyName: string,
 ): string {
+  const hasInstallation =
+    input.installationLabourAmount > 0 ||
+    input.adhesivesAmount > 0 ||
+    input.sealerAmount > 0 ||
+    input.sealerApplicationAmount > 0;
+
   const deliveryLine = input.estimatedDeliveryDate
-    ? `Estimated delivery date is ${input.estimatedDeliveryDate}, and installation will commence shortly after delivery, depending on site readiness.`
-    : `Estimated delivery date will be shared shortly, and installation will commence shortly after delivery, depending on site readiness.`;
+    ? hasInstallation
+      ? `Estimated delivery date is ${input.estimatedDeliveryDate}, and installation will commence shortly after delivery, depending on site readiness.`
+      : `Estimated delivery date is ${input.estimatedDeliveryDate}.`
+    : hasInstallation
+      ? `Estimated delivery date will be shared shortly, and installation will commence shortly after delivery, depending on site readiness.`
+      : `Estimated delivery date will be shared shortly.`;
   const validityLine = input.validityDays
     ? `This estimate is valid for ${input.validityDays} days. Final cost may vary slightly based on actual site conditions.`
     : `Final cost may vary slightly based on actual site conditions.`;
@@ -53,12 +63,16 @@ export function buildEstimateWhatsappMessage(
     `Material: ${input.materialSummary}`,
     `Material to Order: ${input.materialToOrderSummary}`,
     `Material Amount: ${formatInr(input.materialAmount)}`,
-    `Installation Labour: ${formatInr(input.installationLabourAmount)}`,
-    input.adhesivesSummary
-      ? `Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
-      : `Adhesives: ${formatInr(input.adhesivesAmount)}`,
-    `Sealer chemical: ${formatInr(input.sealerAmount)}`,
-    `Sealer Application: ${formatInr(input.sealerApplicationAmount)}`,
+    ...(hasInstallation
+      ? [
+          `Installation Labour: ${formatInr(input.installationLabourAmount)}`,
+          input.adhesivesSummary
+            ? `Adhesives: ${formatInr(input.adhesivesAmount)} (${input.adhesivesSummary})`
+            : `Adhesives: ${formatInr(input.adhesivesAmount)}`,
+          `Sealer chemical: ${formatInr(input.sealerAmount)}`,
+          `Sealer Application: ${formatInr(input.sealerApplicationAmount)}`,
+        ]
+      : []),
     ...(input.cartingAmount && input.cartingAmount > 0
       ? [
           `Local Carting: ${formatInr(input.cartingAmount)}${input.cartingLocation ? ` (${input.cartingLocation})` : ""}`,
@@ -66,7 +80,7 @@ export function buildEstimateWhatsappMessage(
       : []),
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
-    `Scaffolding, if required, will be provided by the customer.`,
+    ...(hasInstallation ? [`Scaffolding, if required, will be provided by the customer.`] : []),
     ...(input.cartingAmount && input.cartingAmount > 0
       ? []
       : [`Transportation charges will be extra and on actuals.`]),
@@ -273,7 +287,9 @@ export function buildMuralEstimateWhatsappMessage(
       : `• Carting / Freight: To be confirmed with carting agency as per location`,
     `Total Estimate: ${formatInr(input.totalEstimate)}`,
     `Notes:`,
-    `Scaffolding, if required, will be provided by the customer.`,
+    input.installationLabourAmount > 0
+      ? `Scaffolding, if required, will be provided by the customer.`
+      : null,
     input.cartingAmount <= 0
       ? `Transportation charges will be extra and on actuals as per delivery location.`
       : null,

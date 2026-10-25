@@ -308,5 +308,33 @@ describe("estimateCatalog - rounding and wastage calculations", () => {
       expect(msg).not.toContain("Local Carting:");
       expect(msg).toContain("Transportation charges will be extra and on actuals.");
     });
+
+    it("omits installation lines and scaffolding note when Deal Scope is Supply Only (installation amounts are 0)", () => {
+      const msg = buildEstimateWhatsappMessage(
+        {
+          greetingName: "Vikram",
+          wallSizeSummary: "Wall 1: 9ft x 8ft = 72 sq ft",
+          materialSummary: "Custom Stone Cladding - Mint Grove",
+          materialToOrderSummary: "76 sq ft (including 5% wastage)",
+          materialAmount: 21280,
+          installationLabourAmount: 0,
+          adhesivesAmount: 0,
+          sealerAmount: 0,
+          sealerApplicationAmount: 0,
+          totalEstimate: 21280,
+          preparerName: "Stone Tech Sales",
+        },
+        "Stone Tech",
+      );
+
+      expect(msg).toContain("Material Amount: ₹21,280");
+      expect(msg).not.toContain("Installation Labour:");
+      expect(msg).not.toContain("Adhesives:");
+      expect(msg).not.toContain("Sealer chemical:");
+      expect(msg).not.toContain("Sealer Application:");
+      expect(msg).not.toContain("Scaffolding, if required, will be provided by the customer.");
+      expect(msg).not.toContain("installation will commence shortly after delivery");
+      expect(msg).toContain("Total Estimate: ₹21,280");
+    });
   });
 });

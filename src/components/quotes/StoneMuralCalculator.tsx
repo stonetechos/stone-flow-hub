@@ -31,6 +31,7 @@ import {
   Wrench,
   CheckCircle2,
   X,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ import {
   printEstimatePdf,
   openWhatsappWithMessage,
 } from "@/lib/quotes/estimateWhatsappPdf";
-import type { QuoteItemInput } from "@/lib/quotes/schema";
+import type { QuoteCategory, QuoteItemInput } from "@/lib/quotes/schema";
 
 export interface StoneMuralResult {
   items: QuoteItemInput[];
@@ -96,12 +97,30 @@ const COMMON_STONE_TYPES = [
 
 export function StoneMuralCalculator({
   projectId,
+  category,
+  onCategoryChange,
   onResult,
+  onTransferToManual,
 }: {
   projectId: string | null;
+  category?: QuoteCategory | "";
+  onCategoryChange?: (cat: QuoteCategory) => void;
   onResult: (result: StoneMuralResult | null) => void;
+  onTransferToManual?: () => void;
 }) {
   const [unit, setUnit] = useState<LengthUnit>("ft");
+
+  const [includeInstallation, setIncludeInstallation] = useState<boolean>(() => {
+    return category !== "supply_only";
+  });
+
+  useEffect(() => {
+    if (category === "supply_only") {
+      setIncludeInstallation(false);
+    } else if (category === "supply_and_installation" || category === "material_and_labour") {
+      setIncludeInstallation(true);
+    }
+  }, [category]);
 
   // 1) Wall Size
   const [wallHeight, setWallHeight] = useState<string>("");
@@ -262,14 +281,17 @@ export function StoneMuralCalculator({
   // 9) Carting Cost
   const cartingNum = Number(cartingAmount) || 0;
 
+  const effectiveLabourAmount = includeInstallation ? labourAmount : 0;
+  const effectiveAdhesivesAmount = includeInstallation ? adhesivesAmount : 0;
+
   // Totals
   const subtotal =
     stoneSlabsAmount +
     cncAmount +
     rubbingAmount +
     polishingAmount +
-    labourAmount +
-    adhesivesAmount +
+    effectiveLabourAmount +
+    effectiveAdhesivesAmount +
     touchUpAmount +
     cartingNum;
   const total = subtotal;
@@ -315,22 +337,23 @@ export function StoneMuralCalculator({
         amount: polishingAmount,
       },
       installationLabour: {
-        ratePerSqft: instRate,
-        amount: labourAmount,
+        ratePerSqft: includeInstallation ? instRate : 0,
+        amount: effectiveLabourAmount,
       },
-      adhesives: activeAdhesiveCatalog
-        ? [
-            {
-              key: activeAdhesiveCatalog.key,
-              label: activeAdhesiveCatalog.label,
-              units: adhesiveUnits,
-              unitLabel: activeAdhesiveCatalog.unit,
-              pricePerUnit: adhesiveUnitPrice,
-              amount: adhesivesAmount,
-            },
-          ]
-        : [],
-      adhesivesAmount,
+      adhesives:
+        includeInstallation && activeAdhesiveCatalog
+          ? [
+              {
+                key: activeAdhesiveCatalog.key,
+                label: activeAdhesiveCatalog.label,
+                units: adhesiveUnits,
+                unitLabel: activeAdhesiveCatalog.unit,
+                pricePerUnit: adhesiveUnitPrice,
+                amount: effectiveAdhesivesAmount,
+              },
+            ]
+          : [],
+      adhesivesAmount: effectiveAdhesivesAmount,
       touchUp: {
         enabled: touchUpEnabled,
         ratePerSqft: touchRate,
@@ -372,11 +395,12 @@ export function StoneMuralCalculator({
     polRate,
     polishingAmount,
     instRate,
-    labourAmount,
+    effectiveLabourAmount,
     activeAdhesiveCatalog,
     adhesiveUnits,
     adhesiveUnitPrice,
-    adhesivesAmount,
+    effectiveAdhesivesAmount,
+    includeInstallation,
     touchUpEnabled,
     touchRate,
     touchUpAmount,
@@ -448,7 +472,7 @@ export function StoneMuralCalculator({
     }
 
     // 5. Installation Labour
-    if (labourAmount > 0) {
+    if (includeInstallation && effectiveLabourAmount > 0) {
       out.push({
         product_id: null,
         description: "Stone Mural Installation Labour",
@@ -461,7 +485,7 @@ export function StoneMuralCalculator({
     }
 
     // 6. Adhesives
-    if (adhesivesAmount > 0 && activeAdhesiveCatalog) {
+    if (includeInstallation && effectiveAdhesivesAmount > 0 && activeAdhesiveCatalog) {
       out.push({
         product_id: null,
         description: `Adhesive — ${activeAdhesiveCatalog.label}`,
@@ -520,12 +544,13 @@ export function StoneMuralCalculator({
     rubRate,
     polishingAmount,
     polRate,
-    labourAmount,
+    effectiveLabourAmount,
     instRate,
-    adhesivesAmount,
+    effectiveAdhesivesAmount,
     activeAdhesiveCatalog,
     adhesiveUnits,
     adhesiveUnitPrice,
+    includeInstallation,
     touchUpAmount,
     touchRate,
     cartingNum,
@@ -1035,13 +1060,36 @@ export function StoneMuralCalculator({
           <CardContent className="p-4 pt-2 space-y-3">
             {/* Installation Labour */}
             <div className="flex items-center justify-between rounded-md border border-border p-2.5">
-              <div>
-                <div className="text-xs font-medium text-foreground">
-                  Installation Labour (Default ₹200/sq ft)
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="mural-installation"
+                  checked={includeInstallation}
+                  onCheckedChange={(c) => {
+                    const checked = !!c;
+                    setIncludeInstallation(checked);
+                    if (!checked && category !== "supply_only") {
+                      onCategoryChange?.("supply_only");
+                    } else if (checked && category === "supply_only") {
+                      onCategoryChange?.("supply_and_installation");
+                    }
+                  }}
+                />
+                <div>
+                  <label
+                    htmlFor="mural-installation"
+                    className="cursor-pointer text-xs font-medium text-foreground flex items-center gap-1.5"
+                  >
+                    <span>Installation Labour (Default ₹200/sq ft)</span>
+                    {!includeInstallation && (
+                      <span className="text-[10px] text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-1.5 py-0.5 rounded border border-amber-200">
+                        Excluded (Supply Only)
+                      </span>
+                    )}
+                  </label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Stone mural anchoring, alignment, and fixing
+                  </p>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Stone mural anchoring, alignment, and fixing
-                </p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
@@ -1049,6 +1097,7 @@ export function StoneMuralCalculator({
                   <Input
                     type="number"
                     min="0"
+                    disabled={!includeInstallation}
                     value={labourRate}
                     onChange={(e) => setLabourRate(e.target.value)}
                     className="h-7 w-16 text-right text-xs font-mono"
@@ -1056,7 +1105,7 @@ export function StoneMuralCalculator({
                   <span className="text-[11px] text-muted-foreground">/sqft</span>
                 </div>
                 <div className="font-mono text-xs font-semibold w-20 text-right text-foreground">
-                  {labourAmount > 0 ? formatInr(labourAmount) : "—"}
+                  {effectiveLabourAmount > 0 ? formatInr(effectiveLabourAmount) : "—"}
                 </div>
               </div>
             </div>
@@ -1113,7 +1162,11 @@ export function StoneMuralCalculator({
                 6) Adhesives (Fetched from Cladding Studio)
               </CardTitle>
               <span className="font-mono text-xs font-semibold text-foreground">
-                {adhesivesAmount > 0 ? formatInr(adhesivesAmount) : "—"}
+                {effectiveAdhesivesAmount > 0
+                  ? formatInr(effectiveAdhesivesAmount)
+                  : includeInstallation
+                    ? "—"
+                    : "₹0 (Excluded)"}
               </span>
             </div>
           </CardHeader>
@@ -1265,6 +1318,78 @@ export function StoneMuralCalculator({
           )}
         </CardContent>
       </Card>
+
+      {/* Generated Quote Items Preview & Direct Transfer to Manual */}
+      <div className="rounded-lg border border-border bg-slate-50/80 dark:bg-slate-900/60 p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2.5">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <span>Quote Line Items Preview</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                ({items.length} {items.length === 1 ? "item" : "items"})
+              </span>
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              These line items will be created in the quotation. You can customize them directly in
+              the line items editor before saving.
+            </p>
+          </div>
+          {onTransferToManual && items.length > 0 && (
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              onClick={onTransferToManual}
+              className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer shadow-sm"
+              title="Switch to Manual line items mode with these items prefilled for full custom editing"
+            >
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              Customize in Line Items &rarr;
+            </Button>
+          )}
+        </div>
+
+        {items.length === 0 ? (
+          <div className="text-xs text-muted-foreground py-2 text-center">
+            Enter wall dimensions and select CNC work above to generate quote line items.
+          </div>
+        ) : (
+          <div className="divide-y divide-border/50 text-xs">
+            {items.map((it, idx) => {
+              const lineTotal = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+              return (
+                <div key={idx} className="py-2 flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {idx + 1}. {it.description}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      Qty:{" "}
+                      <span className="font-medium text-foreground">
+                        {it.quantity} {it.unit}
+                      </span>{" "}
+                      &times; Rate:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatInr(Number(it.unit_price) || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                    {formatInr(lineTotal)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="border-t pt-2.5 flex items-center justify-between text-xs font-semibold">
+          <span>Estimate Total ({items.length} items)</span>
+          <span className="text-base font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+            {formatInr(total)}
+          </span>
+        </div>
+      </div>
 
       {/* Comprehensive Total & WhatsApp/PDF Bar */}
       <Card className="shadow-sm border-primary/30 bg-primary/[0.02]">

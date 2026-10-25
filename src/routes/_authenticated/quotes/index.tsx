@@ -1046,6 +1046,30 @@ function CreateQuoteDialog({
     setItems((prev) => (prev.length === 1 ? prev : prev.filter((it) => it.key !== key)));
   }
 
+  const handleTransferToManual = () => {
+    if (!calcResult || calcResult.items.length === 0) {
+      toast.error("Please add dimensions and products to calculate items first");
+      return;
+    }
+    const newItems: FormItem[] = calcResult.items.map((it) => ({
+      key: Math.random().toString(36).slice(2),
+      product_id: it.product_id ?? "",
+      description: it.description,
+      quantity: String(it.quantity),
+      unit: it.unit || "sqft",
+      unit_price: String(it.unit_price),
+      tax_pct: saleMode === "cash" ? "0" : it.tax_pct !== undefined ? String(it.tax_pct) : "18",
+      notes: it.notes || "",
+      hsn_sac: it.hsn_sac || "",
+      fulfilment: it.fulfilment || "",
+    }));
+    setItems(newItems);
+    setMode("manual");
+    toast.success(
+      "Imported into line items! You can now freely edit, modify quantities/rates, or add notes before creating the quote.",
+    );
+  };
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (initialProjectId) {
@@ -1072,7 +1096,11 @@ function CreateQuoteDialog({
           (mode === "stone_mural"
             ? "material_and_labour"
             : mode === "wall_cladding" || mode === "calculator"
-              ? "supply_and_installation"
+              ? calcResult?.worksheet &&
+                "installation" in calcResult.worksheet &&
+                (calcResult.worksheet.installationAmount ?? 0) === 0
+                ? "supply_only"
+                : "supply_and_installation"
               : null),
         valid_until: validUntil || null,
         notes: [notes, discountNote].filter(Boolean).join("\n\n") || null,
@@ -1160,15 +1188,16 @@ function CreateQuoteDialog({
         <div className="flex-1 overflow-y-auto min-h-0 pr-1 py-1 -mr-1">
           <QuickForm onSubmit={onSubmit} busy={mutation.isPending}>
             <QuickForm.QuickFill>
-              <div className="md:col-span-2 flex gap-1.5 rounded-lg border border-border bg-muted/40 p-1 mb-2">
+              <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 rounded-lg border border-border bg-slate-100/80 dark:bg-slate-900/80 mb-3">
                 <button
                   type="button"
                   onClick={() => setMode("manual")}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "manual"
-                      ? "bg-background shadow-xs text-foreground font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-500/25"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
+                  )}
                 >
                   <FileText className="h-4 w-4" />
                   <span>Manual line items</span>
@@ -1176,25 +1205,27 @@ function CreateQuoteDialog({
                 <button
                   type="button"
                   onClick={() => setMode("wall_cladding")}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "wall_cladding" || mode === "calculator"
-                      ? "bg-background shadow-xs text-foreground font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/25"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
+                  )}
                 >
-                  <Layers className="h-4 w-4 text-emerald-600" />
+                  <Layers className="h-4 w-4" />
                   <span>Wall Cladding Calculator</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("stone_mural")}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer border",
                     mode === "stone_mural"
-                      ? "bg-background shadow-xs text-foreground font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                      ? "bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-500/25"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60",
+                  )}
                 >
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <Sparkles className="h-4 w-4" />
                   <span>Stone Mural Calculator</span>
                 </button>
               </div>
@@ -1570,14 +1601,23 @@ function CreateQuoteDialog({
                 <div className="md:col-span-2">
                   <EstimateStudioCalculator
                     projectId={projectId || null}
+                    category={category}
+                    onCategoryChange={setCategory}
                     onResult={setCalcResult}
+                    onTransferToManual={handleTransferToManual}
                   />
                 </div>
               )}
 
               {mode === "stone_mural" && (
                 <div className="md:col-span-2">
-                  <StoneMuralCalculator projectId={projectId || null} onResult={setCalcResult} />
+                  <StoneMuralCalculator
+                    projectId={projectId || null}
+                    category={category}
+                    onCategoryChange={setCategory}
+                    onResult={setCalcResult}
+                    onTransferToManual={handleTransferToManual}
+                  />
                 </div>
               )}
             </QuickForm.QuickFill>
