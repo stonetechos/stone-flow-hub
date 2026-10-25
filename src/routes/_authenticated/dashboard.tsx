@@ -116,21 +116,29 @@ function DashboardPage() {
     queryKey: qk.dashboard,
     queryFn: getDashboardKpis,
     enabled: activeTab === "operations",
+    staleTime: 60_000,
+    placeholderData: (previousData) => previousData,
   });
   const activityQ = useQuery({
     queryKey: qk.activity.recent,
     queryFn: () => listRecentActivity(8),
     enabled: activeTab === "operations",
+    staleTime: 30_000,
+    placeholderData: (previousData) => previousData,
   });
   const tasksQ = useQuery({
     queryKey: ["tasks", "dashboard", "pending"],
     queryFn: () => listTasks({ status: "pending" }),
     enabled: activeTab === "operations",
+    staleTime: 30_000,
+    placeholderData: (previousData) => previousData,
   });
   const followupsQ = useQuery({
     queryKey: qk.followups.scope("today"),
     queryFn: () => listFollowups("today"),
     enabled: activeTab === "operations",
+    staleTime: 30_000,
+    placeholderData: (previousData) => previousData,
   });
   const profileQ = useQuery({
     queryKey: ["me", "profile", user?.id],
@@ -144,7 +152,8 @@ function DashboardPage() {
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 5 * 60_000,
+    staleTime: 10 * 60_000,
+    placeholderData: (previousData) => previousData,
   });
 
   const toggleTask = useMutation({
@@ -154,7 +163,15 @@ function DashboardPage() {
   });
 
   const profileName = profileQ.data?.full_name?.trim();
-  const rawName = profileName ? profileName.split(" ")[0] : displayName(user);
+  let rawName = profileName ? profileName.split(" ")[0] : displayName(user);
+  if (
+    !rawName ||
+    rawName.toLowerCase() === "there" ||
+    rawName.toLowerCase() === "admin" ||
+    rawName.toLowerCase() === "user"
+  ) {
+    rawName = "Rishi";
+  }
   const name = transliterateName(rawName, i18n.language);
   const now = new Date();
   const greeting = greetingFor(now, t);
@@ -333,11 +350,11 @@ function ExecutiveHero({
             <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
               {isNocturnal ? (
                 <>
-                  {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
+                  {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
                 </>
               ) : (
                 <>
-                  {greeting}, {name}.
+                  {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
                 </>
               )}
             </h1>
@@ -1482,11 +1499,11 @@ function ShellLoading({
         <h1 className="mt-2 font-display text-2xl font-black text-engraved-title">
           {isNocturnal ? (
             <>
-              {greeting} {name && name !== "there" ? `${name} ` : ""}🦉
+              {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
             </>
           ) : (
             <>
-              {greeting}, {name}.
+              {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
             </>
           )}
         </h1>
@@ -1871,15 +1888,20 @@ function buildSuggestions(
 function displayName(
   user: { user_metadata?: Record<string, unknown>; email?: string | null } | null,
 ): string {
-  if (!user) return "there";
+  if (!user) return "Rishi";
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const full = (meta.full_name ?? meta.name) as string | undefined;
-  if (full && typeof full === "string" && full.trim()) return full.trim().split(" ")[0];
+  if (full && typeof full === "string" && full.trim()) {
+    const first = full.trim().split(" ")[0];
+    if (first.toLowerCase() !== "there" && first.toLowerCase() !== "admin") return first;
+  }
   if (user.email) {
     const raw = user.email.split("@")[0].split(/[._\-\s]+/)[0];
-    return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "there";
+    if (raw && !["admin", "user", "owner", "stos", "info", "there"].includes(raw.toLowerCase())) {
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    }
   }
-  return "there";
+  return "Rishi";
 }
 
 function formatMoney(n: number): string {

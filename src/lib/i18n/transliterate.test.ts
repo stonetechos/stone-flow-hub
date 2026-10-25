@@ -33,6 +33,8 @@ describe("transliterateName", () => {
     expect(transliterateName("Kavita", "gu")).toBe("કવિતા");
     expect(transliterateName("Anand", "hi")).toBe("आनंद");
     expect(transliterateName("Anand", "gu")).toBe("આનંદ");
+    expect(transliterateName("Rishi", "hi")).toBe("ऋषि");
+    expect(transliterateName("Rishi", "gu")).toBe("ઋષિ");
   });
 
   it("handles null, undefined, empty strings cleanly", () => {

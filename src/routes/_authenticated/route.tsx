@@ -53,14 +53,33 @@ export const Route = createFileRoute("/_authenticated")({
     const expiresAt = session.expires_at ?? 0;
     const isExpired = expiresAt > 0 && expiresAt <= now;
 
-    // Fast-path for smooth operation: if the session token is unexpired and we already verified this user
-    // in this session within the TTL, return immediately (0ms). Internal tab transitions become instantaneous!
-    if (
-      !isExpired &&
-      cachedUserAuth &&
-      cachedUserAuth.userId === session.user.id &&
-      Date.now() - cachedUserAuth.verifiedAt < VERIFY_TTL_MS
-    ) {
+    // Fast-path: check in-memory cache or sessionStorage
+    const isSessionVerified = (uid: string) => {
+      if (
+        cachedUserAuth &&
+        cachedUserAuth.userId === uid &&
+        Date.now() - cachedUserAuth.verifiedAt < VERIFY_TTL_MS
+      ) {
+        return true;
+      }
+      try {
+        if (typeof window !== "undefined" && window.sessionStorage) {
+          const stored = window.sessionStorage.getItem(`stos_auth_verified_${uid}`);
+          if (stored) {
+            const time = Number(stored);
+            if (time && Date.now() - time < VERIFY_TTL_MS) {
+              cachedUserAuth = { userId: uid, verifiedAt: time };
+              return true;
+            }
+          }
+        }
+      } catch {
+        // ignore storage error
+      }
+      return false;
+    };
+
+    if (!isExpired && isSessionVerified(session.user.id)) {
       return { user: session.user };
     }
 
@@ -87,71 +106,46 @@ export const Route = createFileRoute("/_authenticated")({
         throw redirect({ to: "/auth", search: { flow: "expired" } });
       }
       activeUser = refreshed.session.user;
-    } else {
-      // Token is currently unexpired. Perform server verification with a generous timeout.
-      const getUserWithTimeout = async () => {
-        try {
-          const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((resolve) =>
-            setTimeout(
-              () => resolve({ data: { user: null }, error: new Error("Auth timeout") }),
-              5000,
-            ),
-          );
-          const fetchPromise = supabase.auth
-            .getUser()
-            .catch((err) => ({ data: { user: null }, error: err as Error }));
-          return await Promise.race([fetchPromise, timeoutPromise]);
-        } catch (err) {
-          return { data: { user: null }, error: err as Error };
-        }
-      };
-
-      const { data: userData, error: userError } = await getUserWithTimeout();
-      if (userData?.user) {
-        activeUser = userData.user;
-      } else if (userError) {
-        const errMsg = userError.message?.toLowerCase() || "";
-        const isAuthRejection =
-          (userError as { status?: number })?.status === 401 ||
-          errMsg.includes("invalid claim") ||
-          errMsg.includes("invalid token") ||
-          errMsg.includes("token is expired");
-
-        if (isAuthRejection) {
-          const { data: refreshed, error: refreshErr } = await supabase.auth
-            .refreshSession()
-            .catch((err) => ({ data: { session: null }, error: err as Error }));
-          if (refreshErr || !refreshed?.session?.user) {
-            beginManagedSignOut();
-            try {
-              await supabase.auth.signOut({ scope: "local" });
-            } catch (signOutError) {
-              console.warn(
-                "[auth] local sign-out failed while clearing a revoked session",
-                signOutError,
-              );
-            }
-            throw redirect({ to: "/auth", search: { flow: "expired" } });
-          }
-          activeUser = refreshed.session.user;
-        } else {
-          // Timeout, network blip, or slow mobile connectivity: do NOT sign out!
-          console.warn("[auth] Network verify slow/unreachable; keeping valid local session.");
-        }
-      }
     }
 
-    // Check account status: password change, deactivation, and termination
+    // Check account status: password change, deactivation, and termination in parallel
     try {
-      const profilePromise = supabase
-        .from("profiles")
-        .select("force_password_change, is_active")
-        .eq("id", activeUser.id)
-        .maybeSingle();
-      const profileTimeout = new Promise<{ data: null }>((resolve) =>
-        setTimeout(() => resolve({ data: null }), 2000),
+      const userEmail = activeUser.email?.trim().toLowerCase();
+      const profilePromise = (async () => {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("force_password_change, is_active")
+            .eq("id", activeUser.id)
+            .maybeSingle();
+          return data;
+        } catch {
+          return null;
+        }
+      })();
+
+      const empPromise = (async () => {
+        try {
+          const { data } = await supabase
+            .from("employees")
+            .select("id, employment_status")
+            .or(`user_id.eq.${activeUser.id}${userEmail ? `,email.ilike.${userEmail}` : ""}`)
+            .in("employment_status", ["terminated", "resigned"])
+            .maybeSingle();
+          return data;
+        } catch {
+          return null;
+        }
+      })();
+
+      const timeoutPromise = new Promise<{ profile: null; terminatedEmp: null }>((resolve) =>
+        setTimeout(() => resolve({ profile: null, terminatedEmp: null }), 1500),
       );
-      const { data: profile } = await Promise.race([profilePromise, profileTimeout]);
+
+      const [profile, terminatedEmp] = await Promise.race([
+        Promise.all([profilePromise, empPromise]),
+        timeoutPromise.then((t) => [t.profile, t.terminatedEmp] as const),
+      ]);
 
       if (profile && profile.is_active === false) {
         beginManagedSignOut();
@@ -166,19 +160,6 @@ export const Route = createFileRoute("/_authenticated")({
       if (profile?.force_password_change) {
         throw redirect({ to: "/auth", search: { flow: "force-change" } });
       }
-
-      // Check if user is linked to an employee whose status is terminated/resigned
-      const userEmail = activeUser.email?.trim().toLowerCase();
-      const empPromise = supabase
-        .from("employees")
-        .select("id, employment_status")
-        .or(`user_id.eq.${activeUser.id}${userEmail ? `,email.ilike.${userEmail}` : ""}`)
-        .in("employment_status", ["terminated", "resigned"])
-        .maybeSingle();
-      const empTimeout = new Promise<{ data: null }>((resolve) =>
-        setTimeout(() => resolve({ data: null }), 2000),
-      );
-      const { data: terminatedEmp } = await Promise.race([empPromise, empTimeout]);
 
       if (terminatedEmp) {
         beginManagedSignOut();
@@ -197,6 +178,15 @@ export const Route = createFileRoute("/_authenticated")({
       userId: activeUser.id,
       verifiedAt: Date.now(),
     };
+    try {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        window.sessionStorage.setItem(`stos_auth_verified_${activeUser.id}`, String(Date.now()));
+      }
+    } catch {
+      // ignore storage error
+    }
+
+    return { user: activeUser };
 
     return { user: activeUser };
   },
