@@ -5,8 +5,7 @@ import {
   Menu,
   Star,
   Plus,
-  ChevronDown,
-  ChevronRight,
+  Minus,
   ChevronsLeft,
   ChevronsRight,
   User as UserIcon,
@@ -268,21 +267,6 @@ function NavGroupRow({
   const GroupIcon = group.icon;
   const groupLabel = t(`nav.groups.${group.id}`, group.label);
 
-  const quickCreateHref = useMemo(() => {
-    switch (group.id) {
-      case "sales":
-        return "/quotes/new";
-      case "purchase":
-        return "/purchase-orders/new";
-      case "items":
-        return "/products?create=true";
-      case "executions":
-        return "/purchase-transport/new";
-      default:
-        return null;
-    }
-  }, [group.id]);
-
   if (collapsed) {
     return (
       <TooltipProvider delayDuration={150}>
@@ -370,6 +354,8 @@ function NavGroupRow({
               : "text-cyan-100/85 hover:bg-white/10 hover:text-white",
         )}
         onClick={handleGroupClick}
+        role={group.items.length > 0 ? "button" : undefined}
+        aria-expanded={group.items.length > 0 ? isOpen : undefined}
       >
         {/* Luminous left accent indicator for active group */}
         {(hasActiveChild || isDirectActive) && (
@@ -392,30 +378,19 @@ function NavGroupRow({
           <span className="truncate">{groupLabel}</span>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 ml-1">
-          {quickCreateHref && (
-            <Link
-              to={quickCreateHref as never}
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate?.();
-              }}
-              title={`Create in ${groupLabel}`}
-              aria-label={`Create in ${groupLabel}`}
-              className="opacity-0 group-hover:opacity-100 hover:bg-white/20 text-cyan-200 hover:text-white rounded p-0.5 transition-all"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Link>
-          )}
-          {group.items.length > 0 && (
-            <ChevronRight
-              className={cn(
-                "h-3.5 w-3.5 text-cyan-200/70 transition-transform duration-200",
-                isOpen && "rotate-90 text-white",
-              )}
-              aria-hidden
-            />
-          )}
+        <div className="flex items-center justify-center shrink-0 ml-1">
+          {group.items.length > 0 &&
+            (isOpen ? (
+              <Minus
+                className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+                aria-hidden
+              />
+            ) : (
+              <Plus
+                className="h-3.5 w-3.5 text-cyan-200/80 group-hover:text-white transition-colors"
+                aria-hidden
+              />
+            ))}
         </div>
       </div>
 
