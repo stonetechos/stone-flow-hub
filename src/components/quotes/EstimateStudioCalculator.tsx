@@ -91,7 +91,7 @@ type WallForm = {
   name: string;
   height: string;
   length: string;
-  sqftOverride?: string;
+  sqftOverride?: string | null;
 };
 type ProductForm = {
   id: string;
@@ -102,14 +102,14 @@ type ProductForm = {
   pricePerUnit: string;
   wastagePct: string; // e.g. "5"
   manualQty: string; // used only when priceUnit === "unit"
-  qtyOverride?: string; // allow direct manual override of sqft quantity to order!
+  qtyOverride?: string | null; // allow direct manual override of sqft quantity to order!
   imageDataUrl: string | null;
 };
 type AdhesiveForm = {
   key: string;
   selected: boolean;
   pricePerUnit: string;
-  unitsOverride?: string;
+  unitsOverride?: string | null;
 };
 type OtherAdhesiveForm = {
   enabled: boolean;
@@ -158,12 +158,14 @@ export function EstimateStudioCalculator({
   }, [category]);
 
   const [labourRate, setLabourRate] = useState("80");
-  const [labourSqftOverride, setLabourSqftOverride] = useState<string>("");
+  const [labourSqftOverride, setLabourSqftOverride] = useState<string | null>(null);
+  const [labourAmountOverride, setLabourAmountOverride] = useState<string | null>(null);
   const [adhesives, setAdhesives] = useState<AdhesiveForm[]>(
     ADHESIVE_CATALOG.map((a) => ({
       key: a.key,
       selected: false,
       pricePerUnit: String(a.defaultPricePerUnit),
+      unitsOverride: null,
     })),
   );
   const [otherAdhesive, setOtherAdhesive] = useState<OtherAdhesiveForm>({
@@ -175,7 +177,7 @@ export function EstimateStudioCalculator({
   });
   const [sealerKey, setSealerKey] = useState<string>("none");
   const [sealerPrice, setSealerPrice] = useState<string>("2500");
-  const [sealerBottlesOverride, setSealerBottlesOverride] = useState<string>("");
+  const [sealerBottlesOverride, setSealerBottlesOverride] = useState<string | null>(null);
   const [sealerAppRate, setSealerAppRate] = useState(
     String(DEFAULT_SEALER_APPLICATION_RATE_PER_SQFT),
   );
@@ -280,8 +282,11 @@ export function EstimateStudioCalculator({
       walls.map((w) => {
         const autoSqft = wallSqft(Number(w.height) || 0, Number(w.length) || 0, unit);
         const sqft =
-          w.sqftOverride !== undefined && w.sqftOverride !== "" && !isNaN(Number(w.sqftOverride))
-            ? Number(w.sqftOverride)
+          w.sqftOverride !== undefined &&
+          w.sqftOverride !== null &&
+          w.sqftOverride !== "" &&
+          !isNaN(Number(w.sqftOverride))
+            ? Math.max(0, Number(w.sqftOverride))
             : autoSqft;
         return {
           id: w.id,
@@ -310,8 +315,11 @@ export function EstimateStudioCalculator({
         const autoQty = materialQuantityToOrder(wall?.sqft ?? 0, wastage);
         const qty =
           p.priceUnit === "sqft"
-            ? p.qtyOverride !== undefined && p.qtyOverride !== "" && !isNaN(Number(p.qtyOverride))
-              ? Number(p.qtyOverride)
+            ? p.qtyOverride !== undefined &&
+              p.qtyOverride !== null &&
+              p.qtyOverride !== "" &&
+              !isNaN(Number(p.qtyOverride))
+              ? Math.max(0, Number(p.qtyOverride))
               : autoQty
             : Number(p.manualQty) || 0;
         return {
@@ -336,15 +344,28 @@ export function EstimateStudioCalculator({
   );
 
   const effectiveLabourSqft = useMemo(() => {
-    return labourSqftOverride !== "" && !isNaN(Number(labourSqftOverride))
-      ? Number(labourSqftOverride)
+    return labourSqftOverride !== null &&
+      labourSqftOverride !== "" &&
+      !isNaN(Number(labourSqftOverride))
+      ? Math.max(0, Number(labourSqftOverride))
       : totalWallSqft;
   }, [labourSqftOverride, totalWallSqft]);
 
-  const labourAmount = useMemo(
+  const autoLabourAmount = useMemo(
     () => (Number(labourRate) || 0) * effectiveLabourSqft,
     [labourRate, effectiveLabourSqft],
   );
+
+  const labourAmount = useMemo(() => {
+    if (
+      labourAmountOverride !== null &&
+      labourAmountOverride !== "" &&
+      !isNaN(Number(labourAmountOverride))
+    ) {
+      return Math.max(0, Number(labourAmountOverride));
+    }
+    return autoLabourAmount;
+  }, [labourAmountOverride, autoLabourAmount]);
 
   const wallBreakdown = useMemo(() => {
     let crazySqft = 0;
@@ -389,8 +410,11 @@ export function EstimateStudioCalculator({
       if (!cat) continue;
       const autoUnits = calculateAdhesiveUnits(cat, wallBreakdown);
       const units =
-        a.unitsOverride !== undefined && a.unitsOverride !== "" && !isNaN(Number(a.unitsOverride))
-          ? Number(a.unitsOverride)
+        a.unitsOverride !== undefined &&
+        a.unitsOverride !== null &&
+        a.unitsOverride !== "" &&
+        !isNaN(Number(a.unitsOverride))
+          ? Math.max(0, Number(a.unitsOverride))
           : autoUnits;
       const price = Number(a.pricePerUnit) || 0;
       lines.push({
@@ -429,8 +453,10 @@ export function EstimateStudioCalculator({
     if (!cat) return null;
     const autoBottles = ceilWhole(totalWallSqft / cat.coverageSqftPerLtr);
     const bottles =
-      sealerBottlesOverride !== "" && !isNaN(Number(sealerBottlesOverride))
-        ? Number(sealerBottlesOverride)
+      sealerBottlesOverride !== null &&
+      sealerBottlesOverride !== "" &&
+      !isNaN(Number(sealerBottlesOverride))
+        ? Math.max(0, Number(sealerBottlesOverride))
         : autoBottles;
     const price = Number(sealerPrice) || 0;
     return { key: cat.key, label: cat.label, bottles, pricePerLtr: price, amount: bottles * price };
@@ -781,10 +807,10 @@ export function EstimateStudioCalculator({
                   label={
                     <div className="flex items-center justify-between">
                       <span>Sq ft</span>
-                      {w.sqftOverride && (
+                      {w.sqftOverride !== null && w.sqftOverride !== undefined && (
                         <button
                           type="button"
-                          onClick={() => updateWall(w.id, { sqftOverride: "" })}
+                          onClick={() => updateWall(w.id, { sqftOverride: null })}
                           className="text-[10px] text-blue-600 hover:underline cursor-pointer"
                           title="Reset to calculated (Height x Length)"
                         >
@@ -802,13 +828,14 @@ export function EstimateStudioCalculator({
                     min="0"
                     step="any"
                     value={
-                      w.sqftOverride !== undefined && w.sqftOverride !== ""
+                      w.sqftOverride !== undefined && w.sqftOverride !== null
                         ? w.sqftOverride
                         : sqft > 0
                           ? sqft.toFixed(2)
                           : ""
                     }
                     placeholder={sqft > 0 ? sqft.toFixed(2) : "0"}
+                    onFocus={(e) => e.target.select()}
                     onChange={(e) => updateWall(w.id, { sqftOverride: e.target.value })}
                   />
                 </LineField>
@@ -990,10 +1017,10 @@ export function EstimateStudioCalculator({
                         label={
                           <div className="flex items-center justify-between">
                             <span>Qty to order (sqft)</span>
-                            {p.qtyOverride && (
+                            {p.qtyOverride !== null && p.qtyOverride !== undefined && (
                               <button
                                 type="button"
-                                onClick={() => updateProduct(p.id, { qtyOverride: "" })}
+                                onClick={() => updateProduct(p.id, { qtyOverride: null })}
                                 className="text-[10px] text-blue-600 hover:underline cursor-pointer"
                                 title="Reset to auto-calculated wall area + wastage"
                               >
@@ -1017,7 +1044,7 @@ export function EstimateStudioCalculator({
                           min="0"
                           step="any"
                           value={
-                            p.qtyOverride !== undefined && p.qtyOverride !== ""
+                            p.qtyOverride !== undefined && p.qtyOverride !== null
                               ? p.qtyOverride
                               : computed?.quantityToOrder
                                 ? String(computed.quantityToOrder)
@@ -1026,6 +1053,7 @@ export function EstimateStudioCalculator({
                           placeholder={
                             computed?.quantityToOrder ? String(computed.quantityToOrder) : "0"
                           }
+                          onFocus={(e) => e.target.select()}
                           onChange={(e) => updateProduct(p.id, { qtyOverride: e.target.value })}
                         />
                       </LineField>
@@ -1149,6 +1177,7 @@ export function EstimateStudioCalculator({
                   inputMode="decimal"
                   min="0"
                   value={labourRate}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => setLabourRate(e.target.value)}
                 />
               </LineField>
@@ -1156,11 +1185,12 @@ export function EstimateStudioCalculator({
                 label={
                   <div className="flex items-center justify-between">
                     <span>Labour Area (sqft)</span>
-                    {labourSqftOverride && (
+                    {labourSqftOverride !== null && (
                       <button
                         type="button"
-                        onClick={() => setLabourSqftOverride("")}
+                        onClick={() => setLabourSqftOverride(null)}
                         className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                        title="Reset to calculated total wall sq ft"
                       >
                         Auto ({totalWallSqft.toFixed(1)})
                       </button>
@@ -1175,20 +1205,50 @@ export function EstimateStudioCalculator({
                   min="0"
                   step="any"
                   value={
-                    labourSqftOverride !== ""
+                    labourSqftOverride !== null
                       ? labourSqftOverride
                       : totalWallSqft > 0
                         ? totalWallSqft.toFixed(2)
                         : ""
                   }
                   placeholder={totalWallSqft > 0 ? totalWallSqft.toFixed(2) : "0"}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => setLabourSqftOverride(e.target.value)}
                 />
               </LineField>
-              <LineField label="Labour amount" className="col-span-12 md:col-span-3">
-                <div className="flex h-9 items-center rounded-sm border border-border bg-muted/30 px-3 text-sm font-medium tabular-nums">
-                  {formatInr(labourAmount)}
-                </div>
+              <LineField
+                label={
+                  <div className="flex items-center justify-between">
+                    <span>Labour amount (₹)</span>
+                    {labourAmountOverride !== null && (
+                      <button
+                        type="button"
+                        onClick={() => setLabourAmountOverride(null)}
+                        className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                        title="Reset to calculated rate × sq ft"
+                      >
+                        Auto ({formatInr(autoLabourAmount)})
+                      </button>
+                    )}
+                  </div>
+                }
+                className="col-span-12 md:col-span-3"
+              >
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  value={
+                    labourAmountOverride !== null
+                      ? labourAmountOverride
+                      : autoLabourAmount > 0
+                        ? String(Math.round(autoLabourAmount))
+                        : ""
+                  }
+                  placeholder={autoLabourAmount > 0 ? String(Math.round(autoLabourAmount)) : "0"}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => setLabourAmountOverride(e.target.value)}
+                />
               </LineField>
             </div>
 
@@ -1208,6 +1268,7 @@ export function EstimateStudioCalculator({
                   const a = adhesives.find((x) => x.key === cat.key)!;
                   const line = adhesiveLines.find((l) => l.key === cat.key);
                   const autoUnits = calculateAdhesiveUnits(cat, wallBreakdown);
+                  const isOverridden = a.unitsOverride !== null && a.unitsOverride !== undefined;
                   return (
                     <div
                       key={cat.key}
@@ -1218,7 +1279,15 @@ export function EstimateStudioCalculator({
                           checked={a.selected}
                           onCheckedChange={(v) =>
                             setAdhesives((prev) =>
-                              prev.map((x) => (x.key === cat.key ? { ...x, selected: !!v } : x)),
+                              prev.map((x) =>
+                                x.key === cat.key
+                                  ? {
+                                      ...x,
+                                      selected: !!v,
+                                      unitsOverride: v ? x.unitsOverride : null,
+                                    }
+                                  : x,
+                              ),
                             )
                           }
                         />
@@ -1239,6 +1308,7 @@ export function EstimateStudioCalculator({
                           min="0"
                           disabled={!a.selected}
                           value={a.pricePerUnit}
+                          onFocus={(e) => e.target.select()}
                           onChange={(e) =>
                             setAdhesives((prev) =>
                               prev.map((x) =>
@@ -1250,19 +1320,20 @@ export function EstimateStudioCalculator({
                       </LineField>
                       <LineField
                         label={
-                          <div className="flex items-center justify-between">
-                            <span>{cat.unit}s</span>
-                            {a.unitsOverride && (
+                          <div className="flex items-center justify-between gap-1">
+                            <span>{cat.unit}s (Qty)</span>
+                            {isOverridden && (
                               <button
                                 type="button"
                                 onClick={() =>
                                   setAdhesives((prev) =>
                                     prev.map((x) =>
-                                      x.key === cat.key ? { ...x, unitsOverride: "" } : x,
+                                      x.key === cat.key ? { ...x, unitsOverride: null } : x,
                                     ),
                                   )
                                 }
-                                className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                                className="text-[10px] text-blue-600 hover:underline cursor-pointer font-medium"
+                                title={`Reset to auto-calculated ${autoUnits} ${cat.unit}s`}
                               >
                                 Auto ({autoUnits})
                               </button>
@@ -1276,13 +1347,14 @@ export function EstimateStudioCalculator({
                           min="0"
                           disabled={!a.selected}
                           value={
-                            a.unitsOverride !== undefined && a.unitsOverride !== ""
-                              ? a.unitsOverride
+                            isOverridden
+                              ? (a.unitsOverride ?? "")
                               : a.selected && autoUnits > 0
                                 ? String(autoUnits)
                                 : ""
                           }
                           placeholder={a.selected && autoUnits > 0 ? String(autoUnits) : "0"}
+                          onFocus={(e) => e.target.select()}
                           onChange={(e) =>
                             setAdhesives((prev) =>
                               prev.map((x) =>
@@ -1290,7 +1362,7 @@ export function EstimateStudioCalculator({
                               ),
                             )
                           }
-                          className="h-9"
+                          className="h-9 font-mono"
                         />
                       </LineField>
                       <LineField label="Amount" className="col-span-3 md:col-span-2">
@@ -1401,11 +1473,12 @@ export function EstimateStudioCalculator({
                 label={
                   <div className="flex items-center justify-between">
                     <span>Bottles</span>
-                    {sealerBottlesOverride && (
+                    {sealerBottlesOverride !== null && (
                       <button
                         type="button"
-                        onClick={() => setSealerBottlesOverride("")}
+                        onClick={() => setSealerBottlesOverride(null)}
                         className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                        title="Reset to calculated bottles"
                       >
                         Auto (
                         {sealerKey !== "none"
@@ -1427,7 +1500,7 @@ export function EstimateStudioCalculator({
                   min="0"
                   disabled={sealerKey === "none"}
                   value={
-                    sealerBottlesOverride !== ""
+                    sealerBottlesOverride !== null
                       ? sealerBottlesOverride
                       : sealerKey !== "none" && sealerComputed?.bottles
                         ? String(sealerComputed.bottles)
@@ -1438,6 +1511,7 @@ export function EstimateStudioCalculator({
                       ? String(sealerComputed.bottles)
                       : "0"
                   }
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => setSealerBottlesOverride(e.target.value)}
                   className="h-9"
                 />

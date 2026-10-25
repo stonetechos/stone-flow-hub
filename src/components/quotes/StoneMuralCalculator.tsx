@@ -159,6 +159,7 @@ export function StoneMuralCalculator({
     ADHESIVE_CATALOG[0]?.key ?? "standard_cement_white",
   );
   const [adhesiveCustomPrice, setAdhesiveCustomPrice] = useState<string>("");
+  const [adhesiveCustomUnits, setAdhesiveCustomUnits] = useState<string | null>(null);
 
   // 8) Touch Up Work
   const [touchUpEnabled, setTouchUpEnabled] = useState<boolean>(true);
@@ -264,10 +265,16 @@ export function StoneMuralCalculator({
   // 7) Adhesives (fetched from Wall Stone Cladding catalog)
   const activeAdhesiveCatalog =
     ADHESIVE_CATALOG.find((a) => a.key === selectedAdhesiveKey) || ADHESIVE_CATALOG[0];
-  const adhesiveUnits =
+  const autoAdhesiveUnits =
     wallAreaSqft > 0 && activeAdhesiveCatalog
       ? ceilWhole(wallAreaSqft / activeAdhesiveCatalog.coverageSqftPerUnit)
       : 0;
+  const adhesiveUnits =
+    adhesiveCustomUnits !== null &&
+    adhesiveCustomUnits !== "" &&
+    !isNaN(Number(adhesiveCustomUnits))
+      ? Math.max(0, Number(adhesiveCustomUnits))
+      : autoAdhesiveUnits;
   const adhesiveUnitPrice =
     adhesiveCustomPrice !== ""
       ? Number(adhesiveCustomPrice) || 0
@@ -1197,10 +1204,39 @@ export function StoneMuralCalculator({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Quantity calculated:</span>
-                <span className="font-mono font-medium text-foreground">
-                  {adhesiveUnits > 0 ? `${adhesiveUnits} ${activeAdhesiveCatalog?.unit}(s)` : "—"}
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <span>Quantity ({activeAdhesiveCatalog?.unit || "bag"}s):</span>
+                  {adhesiveCustomUnits !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setAdhesiveCustomUnits(null)}
+                      className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                      title="Reset to calculated units"
+                    >
+                      Auto ({autoAdhesiveUnits})
+                    </button>
+                  )}
                 </span>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder={String(autoAdhesiveUnits)}
+                    value={
+                      adhesiveCustomUnits !== null
+                        ? adhesiveCustomUnits
+                        : autoAdhesiveUnits > 0
+                          ? String(autoAdhesiveUnits)
+                          : ""
+                    }
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setAdhesiveCustomUnits(e.target.value)}
+                    className="h-6 w-20 text-right text-xs font-mono"
+                  />
+                  <span className="text-muted-foreground text-xs">
+                    {activeAdhesiveCatalog?.unit}(s)
+                  </span>
+                </div>
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-border/60">
                 <span className="text-muted-foreground">Price per unit:</span>
