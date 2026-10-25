@@ -235,7 +235,6 @@ function DashboardPage() {
                   greeting={greeting}
                   name={name}
                   today={today}
-                  health={computeHealth(kpisQ.data)}
                   headline={pickHeadline(kpisQ.data, t)}
                   brief={brief}
                   nocturnalQuip={nocturnalQuip}
@@ -320,7 +319,6 @@ function ExecutiveHero({
   greeting,
   name,
   today,
-  health,
   headline,
   brief,
   nocturnalQuip,
@@ -328,7 +326,6 @@ function ExecutiveHero({
   greeting: string;
   name: string;
   today: string;
-  health: HealthScore;
   headline: HeadlineMetric;
   brief: string[];
   nocturnalQuip?: string;
@@ -342,32 +339,27 @@ function ExecutiveHero({
       aria-label="Executive briefing"
     >
       <div className="relative z-10 p-3 sm:p-6 lg:p-8 min-w-0">
-        <div className="flex items-center justify-between gap-2.5 sm:gap-4 min-w-0">
-          <div className="min-w-0 flex-1">
-            <div className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker break-words">
-              {today}
-            </div>
-            <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
-              {isNocturnal ? (
-                <>
-                  {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
-                </>
-              ) : (
-                <>
-                  {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
-                </>
-              )}
-            </h1>
-            {isNocturnal && nocturnalQuip && (
-              <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 break-words">
-                <span>🌙</span>
-                <span>{nocturnalQuip}</span>
-              </p>
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-[0.22em] text-engraved-kicker break-words">
+            {today}
+          </div>
+          <h1 className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl lg:text-[28px] font-black tracking-tight text-engraved-title leading-snug break-words">
+            {isNocturnal ? (
+              <>
+                {greeting} {name && name.toLowerCase() !== "there" ? `${name} ` : "Rishi "}🦉
+              </>
+            ) : (
+              <>
+                {greeting}, {name && name.toLowerCase() !== "there" ? name : "Rishi"}.
+              </>
             )}
-          </div>
-          <div className="shrink-0">
-            <HealthGauge score={health.score} band={health.band} />
-          </div>
+          </h1>
+          {isNocturnal && nocturnalQuip && (
+            <p className="mt-1 sm:mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 break-words">
+              <span>🌙</span>
+              <span>{nocturnalQuip}</span>
+            </p>
+          )}
         </div>
 
         {/* Headline metric in 3D Engraved Well */}
@@ -409,65 +401,6 @@ function ExecutiveHero({
         </div>
       </div>
     </section>
-  );
-}
-
-function HealthGauge({ score, band }: { score: number; band: HealthBand }) {
-  const { t } = useTranslation();
-  const isIdle = band === "idle" || score === 0;
-  const size = 64;
-  const stroke = 6;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = isIdle ? c : c - (Math.max(0, Math.min(100, score)) / 100) * c;
-  const ringColor =
-    band === "strong"
-      ? "text-orange-600"
-      : band === "steady"
-        ? "text-orange-500"
-        : isIdle
-          ? "text-slate-300 dark:text-slate-700"
-          : "text-amber-500";
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke="currentColor"
-          strokeWidth={stroke}
-          fill="none"
-          className="text-slate-100 dark:text-slate-800"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke="currentColor"
-          strokeWidth={stroke}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          className={cn("transition-[stroke-dashoffset] duration-500 ease-out", ringColor)}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className={cn(
-            "font-display text-lg sm:text-2xl font-black tabular-nums leading-none",
-            isIdle ? "text-slate-400 dark:text-slate-500" : "text-orange-700 dark:text-orange-400",
-          )}
-        >
-          {isIdle ? "—" : score}
-        </span>
-        <span className="mt-0.5 font-mono text-[7.5px] sm:text-[9px] font-black uppercase tracking-wider text-engraved-kicker">
-          {isIdle ? t("dashboard.noData", "No Data") : t("dashboard.health", "Health")}
-        </span>
-      </div>
-    </div>
   );
 }
 
