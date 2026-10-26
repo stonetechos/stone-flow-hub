@@ -86,6 +86,8 @@ export const convertQuoteSchema = z.object({
   quote_id: zUuid,
   issue_date: zOptional(),
   due_date: zOptional(),
+  dispatch_id: zUuid.optional(),
+  dispatch_no: zOptional(),
 });
 export type ConvertQuoteInput = z.infer<typeof convertQuoteSchema>;
 

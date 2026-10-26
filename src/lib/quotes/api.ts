@@ -308,7 +308,7 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
     }
     const { data: q } = await getDb()
       .from("quotes")
-      .select("workflow_state")
+      .select("quote_no, workflow_state")
       .eq("id", parsed.quote_id)
       .maybeSingle();
     const qWf = (q?.workflow_state as Record<string, unknown> | null) ?? {};
@@ -321,6 +321,52 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
       const invWf = (curInv?.workflow_state as Record<string, unknown> | null) ?? {};
       invUpdate.workflow_state = { ...invWf, line_item_notes: qWf.line_item_notes };
     }
+
+    // Auto-link Delivery Challan number to invoice
+    let linkedDispatchNo = parsed.dispatch_no;
+    let linkedDispatchId = parsed.dispatch_id;
+
+    if (!linkedDispatchNo) {
+      const { data: lineageD } = await getDb()
+        .from("document_lineage")
+        .select("target_id, meta")
+        .eq("source_type", "quote")
+        .eq("source_id", parsed.quote_id)
+        .eq("target_type", "dispatch")
+        .order("converted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lineageD?.target_id) {
+        linkedDispatchId = lineageD.target_id;
+        const meta = lineageD.meta as Record<string, unknown> | null;
+        if (typeof meta?.dispatch_no === "string") {
+          linkedDispatchNo = meta.dispatch_no;
+        }
+      }
+    }
+
+    if (linkedDispatchId && !linkedDispatchNo) {
+      const { data: dRow } = await getDb()
+        .from("dispatches")
+        .select("dispatch_no, dispatch_date")
+        .eq("id", linkedDispatchId)
+        .maybeSingle();
+      if (dRow) {
+        linkedDispatchNo = dRow.dispatch_no;
+        if (dRow.dispatch_date && !invUpdate.dispatch_date) {
+          invUpdate.dispatch_date = dRow.dispatch_date;
+        }
+      }
+    }
+
+    if (linkedDispatchNo) {
+      invUpdate.dispatch_remarks = `Delivery Challan ${linkedDispatchNo}`;
+      if (!invUpdate.lr_no) {
+        invUpdate.lr_no = linkedDispatchNo;
+      }
+    }
+
     if (Object.keys(invUpdate).length > 0) {
       const { data: updated, error: updErr } = await getDb()
         .from("invoices")
@@ -329,6 +375,37 @@ export async function convertQuoteToInvoice(input: ConvertQuoteInput) {
         .select("*")
         .single();
       if (!updErr && updated) {
+        // Record lineage
+        try {
+          const { recordConversion } = await import("@/lib/lineage/api");
+          if (linkedDispatchId) {
+            void recordConversion({
+              sourceType: "dispatch",
+              sourceId: linkedDispatchId,
+              targetType: "invoice",
+              targetId: invoice.id,
+              customerId: updated.customer_id,
+              projectId: updated.project_id,
+              meta: { dispatch_no: linkedDispatchNo, invoice_no: updated.invoice_no },
+            });
+          }
+          void recordConversion({
+            sourceType: "quote",
+            sourceId: parsed.quote_id,
+            targetType: "invoice",
+            targetId: invoice.id,
+            customerId: updated.customer_id,
+            projectId: updated.project_id,
+            meta: {
+              quote_no: q?.quote_no,
+              invoice_no: updated.invoice_no,
+              dispatch_no: linkedDispatchNo,
+            },
+          });
+        } catch (e) {
+          console.warn("[lineage] failed to record conversion for invoice", e);
+        }
+
         return updated as DbTable<"invoices">;
       }
     }

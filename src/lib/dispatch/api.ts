@@ -9,11 +9,17 @@ import {
   type DispatchItemInput,
   type DispatchStatus,
 } from "./schema";
+import { compareQuoteAndDispatchItems, type FlaggedChallanDiscrepancy } from "./variance";
 
 export type DispatchRow = DbTable<"dispatches">;
 export type DispatchItemRow = DbTable<"dispatch_items">;
 export type DispatchListItem = DispatchRow & {
-  sales_order: { id: string; so_no: string; delivery_date?: string | null } | null;
+  sales_order: {
+    id: string;
+    so_no: string;
+    delivery_date?: string | null;
+    quote_id?: string | null;
+  } | null;
   customer: {
     id: string;
     name: string;
@@ -24,7 +30,7 @@ export type DispatchListItem = DispatchRow & {
 };
 
 const SELECT =
-  "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no,delivery_date), customer:customers!dispatches_customer_id_fkey(id,name,primary_phone,whatsapp), project:projects!dispatches_project_id_fkey(id,name)";
+  "*, sales_order:sales_orders!dispatches_sales_order_id_fkey(id,so_no,delivery_date,quote_id), customer:customers!dispatches_customer_id_fkey(id,name,primary_phone,whatsapp), project:projects!dispatches_project_id_fkey(id,name)";
 
 function toPayload(p: DispatchCreateInput) {
   return {
@@ -356,4 +362,297 @@ export async function listCommittedDemandByProduct(): Promise<CommittedDemandRow
     product_id,
     committed_qty,
   }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Quotation & Invoice Delivery Challan Linkage & Variance Queries    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Batch-lookup dispatches (delivery challans) linked to quotes via
+ * document_lineage, sales_orders, or direct quote references in notes/remarks.
+ */
+export async function getDispatchesForQuotes(
+  quoteIds: string[],
+): Promise<Record<string, DispatchListItem[]>> {
+  if (quoteIds.length === 0) return {};
+  const map: Record<string, DispatchListItem[]> = {};
+  for (const qid of quoteIds) map[qid] = [];
+
+  try {
+    const db = getDb();
+
+    // 1. Lineage lookup: quote -> dispatch
+    const { data: lineage } = await db
+      .from("document_lineage")
+      .select("source_id, target_id")
+      .eq("source_type", "quote")
+      .in("source_id", quoteIds)
+      .eq("target_type", "dispatch");
+
+    const lineageDispatchIds = (lineage ?? []).map((l) => l.target_id).filter(Boolean);
+
+    // 2. Sales Order lookup: quotes -> sales_orders -> dispatches
+    const { data: soRows } = await db
+      .from("sales_orders")
+      .select("id, quote_id")
+      .in("quote_id", quoteIds);
+
+    const soToQuote = new Map<string, string>();
+    for (const so of soRows ?? []) {
+      if (so.quote_id) soToQuote.set(so.id, so.quote_id);
+    }
+    const soIds = Array.from(soToQuote.keys());
+
+    // 3. Fetch dispatches
+    const promises: Array<PromiseLike<{ data: unknown; error: unknown }>> = [];
+
+    if (lineageDispatchIds.length > 0) {
+      promises.push(
+        db
+          .from("dispatches")
+          .select(SELECT)
+          .in("id", lineageDispatchIds)
+          .neq("status", "cancelled"),
+      );
+    }
+    if (soIds.length > 0) {
+      promises.push(
+        db.from("dispatches").select(SELECT).in("sales_order_id", soIds).neq("status", "cancelled"),
+      );
+    }
+
+    // Also look up recent dispatches to match by quote ID or QUO tag in notes
+    promises.push(
+      db
+        .from("dispatches")
+        .select(SELECT)
+        .neq("status", "cancelled")
+        .order("created_at", { ascending: false })
+        .limit(150),
+    );
+
+    const results = await Promise.all(promises);
+
+    const addDispatch = (quoteId: string, disp: DispatchListItem) => {
+      if (!map[quoteId]) map[quoteId] = [];
+      if (!map[quoteId].some((d) => d.id === disp.id)) {
+        map[quoteId].push(disp);
+      }
+    };
+
+    const lineageMap = new Map<string, string>();
+    for (const l of lineage ?? []) {
+      lineageMap.set(l.target_id, l.source_id);
+    }
+
+    for (const res of results) {
+      const rows = (res.data ?? []) as DispatchListItem[];
+      for (const d of rows) {
+        // Lineage match
+        const fromLineage = lineageMap.get(d.id);
+        if (fromLineage && map[fromLineage]) {
+          addDispatch(fromLineage, d);
+        }
+
+        // Sales order match
+        if (d.sales_order_id && soToQuote.has(d.sales_order_id)) {
+          const qId = soToQuote.get(d.sales_order_id)!;
+          addDispatch(qId, d);
+        }
+
+        // Notes / remarks match
+        if (d.notes || d.remarks) {
+          const text = `${d.notes || ""} ${d.remarks || ""}`;
+          for (const qId of quoteIds) {
+            if (text.includes(qId)) {
+              addDispatch(qId, d);
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[dispatch] getDispatchesForQuotes error", err);
+  }
+
+  return map;
+}
+
+/**
+ * Batch-lookup dispatches linked to sales invoices.
+ */
+export async function getDispatchesForInvoices(
+  invoices: Array<{ id: string; quote_id?: string | null; lr_no?: string | null }>,
+): Promise<Record<string, DispatchListItem[]>> {
+  if (invoices.length === 0) return {};
+  const map: Record<string, DispatchListItem[]> = {};
+  for (const inv of invoices) map[inv.id] = [];
+
+  try {
+    const quoteIds = Array.from(
+      new Set(invoices.map((i) => i.quote_id).filter((id): id is string => Boolean(id))),
+    );
+
+    const dispatchesByQuote = await getDispatchesForQuotes(quoteIds);
+
+    for (const inv of invoices) {
+      if (inv.quote_id && dispatchesByQuote[inv.quote_id]?.length) {
+        map[inv.id] = dispatchesByQuote[inv.quote_id];
+      }
+    }
+  } catch (err) {
+    console.warn("[dispatch] getDispatchesForInvoices error", err);
+  }
+
+  return map;
+}
+
+/**
+ * Scans all active Quotation <-> Delivery Challan pairings and computes
+ * material product/quantity discrepancies. Gated to Super Admins on the dashboard.
+ */
+export async function listQuoteChallanDiscrepancies(): Promise<FlaggedChallanDiscrepancy[]> {
+  const db = getDb();
+  const { data: dispatches, error: dispErr } = await db
+    .from("dispatches")
+    .select(SELECT)
+    .neq("status", "cancelled")
+    .order("created_at", { ascending: false })
+    .limit(150);
+
+  if (dispErr) throw new AppError(mapDbError(dispErr));
+  if (!dispatches || dispatches.length === 0) return [];
+
+  const dispatchList = dispatches as unknown as DispatchListItem[];
+  const dispatchIds = dispatchList.map((d) => d.id);
+
+  // Lineage lookup
+  const { data: lineageRows } = await db
+    .from("document_lineage")
+    .select("source_id, source_type, target_id, meta")
+    .eq("target_type", "dispatch")
+    .in("target_id", dispatchIds);
+
+  const lineageQuoteByDispatch = new Map<string, string>();
+  for (const l of lineageRows ?? []) {
+    if (l.source_type === "quote" && l.source_id) {
+      lineageQuoteByDispatch.set(l.target_id, l.source_id);
+    }
+  }
+
+  // Find linked quote for each dispatch
+  const pairs: Array<{ dispatch: DispatchListItem; quoteId: string }> = [];
+  const neededQuoteIds = new Set<string>();
+
+  for (const d of dispatchList) {
+    let quoteId: string | null = null;
+    if (lineageQuoteByDispatch.has(d.id)) {
+      quoteId = lineageQuoteByDispatch.get(d.id)!;
+    } else if (d.sales_order?.quote_id) {
+      quoteId = d.sales_order.quote_id;
+    } else if (d.notes || d.remarks) {
+      const match = `${d.notes || ""} ${d.remarks || ""}`.match(
+        /\[(?:QuoteId|QUO_ID):\s*([a-f0-9-]{36})\]/i,
+      );
+      if (match) {
+        quoteId = match[1];
+      }
+    }
+
+    if (quoteId) {
+      pairs.push({ dispatch: d, quoteId });
+      neededQuoteIds.add(quoteId);
+    }
+  }
+
+  if (pairs.length === 0) return [];
+
+  const quoteIdList = Array.from(neededQuoteIds);
+  const [quotesRes, quoteItemsRes, dispatchItemsRes] = await Promise.all([
+    db
+      .from("quotes")
+      .select("id, quote_no, workflow_state, customer:customers(id, name)")
+      .in("id", quoteIdList),
+    db
+      .from("quote_items")
+      .select("id, quote_id, product_id, description, quantity, unit")
+      .in("quote_id", quoteIdList),
+    db
+      .from("dispatch_items")
+      .select("id, dispatch_id, product_id, product_name, description, quantity, unit")
+      .in(
+        "dispatch_id",
+        pairs.map((p) => p.dispatch.id),
+      ),
+  ]);
+
+  interface QuoteInfoRow {
+    id: string;
+    quote_no: string;
+    workflow_state?: unknown;
+    customer?: { id: string; name: string } | null;
+  }
+  interface DiscrepancyQuoteItem {
+    id: string;
+    quote_id: string;
+    product_id: string | null;
+    description: string;
+    quantity: number | string | null;
+    unit: string | null;
+  }
+  interface DiscrepancyDispatchItem {
+    id: string;
+    dispatch_id: string;
+    product_id: string | null;
+    product_name: string | null;
+    description: string | null;
+    quantity: number | string | null;
+    unit: string | null;
+  }
+
+  const quoteInfoById = new Map<string, QuoteInfoRow>();
+  for (const q of (quotesRes.data ?? []) as unknown as QuoteInfoRow[]) {
+    quoteInfoById.set(q.id, q);
+  }
+
+  const quoteItemsByQuoteId = new Map<string, DiscrepancyQuoteItem[]>();
+  for (const qi of (quoteItemsRes.data ?? []) as unknown as DiscrepancyQuoteItem[]) {
+    const arr = quoteItemsByQuoteId.get(qi.quote_id) ?? [];
+    arr.push(qi);
+    quoteItemsByQuoteId.set(qi.quote_id, arr);
+  }
+
+  const dispatchItemsByDispatchId = new Map<string, DiscrepancyDispatchItem[]>();
+  for (const di of (dispatchItemsRes.data ?? []) as unknown as DiscrepancyDispatchItem[]) {
+    const arr = dispatchItemsByDispatchId.get(di.dispatch_id) ?? [];
+    arr.push(di);
+    dispatchItemsByDispatchId.set(di.dispatch_id, arr);
+  }
+
+  const flagged: FlaggedChallanDiscrepancy[] = [];
+  for (const { dispatch, quoteId } of pairs) {
+    const qInfo = quoteInfoById.get(quoteId);
+    const qItems = quoteItemsByQuoteId.get(quoteId) ?? [];
+    const dItems = dispatchItemsByDispatchId.get(dispatch.id) ?? [];
+
+    const report = compareQuoteAndDispatchItems(qItems, dItems);
+    if (report.hasVariance) {
+      const qWf = (qInfo?.workflow_state as Record<string, unknown> | null) ?? {};
+      const isCash = qWf.sale_mode === "cash";
+      flagged.push({
+        quoteId,
+        quoteNo: qInfo?.quote_no || "Quote",
+        dispatchId: dispatch.id,
+        dispatchNo: dispatch.dispatch_no,
+        customerId: dispatch.customer_id,
+        customerName: dispatch.customer?.name || qInfo?.customer?.name || "Customer",
+        dispatchDate: dispatch.dispatch_date,
+        dealType: isCash ? "cash" : "invoiced",
+        report,
+      });
+    }
+  }
+
+  return flagged;
 }

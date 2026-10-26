@@ -40,6 +40,9 @@ import { getQuote, getQuoteItems, listQuotes } from "@/lib/quotes/api";
 import { formatInr } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { EntityPicker } from "@/components/forms/EntityPicker";
+import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
+import { compareQuoteAndDispatchItems } from "@/lib/dispatch/variance";
+import { recordConversion } from "@/lib/lineage/api";
 
 export const Route = createFileRoute("/_authenticated/dispatch/$id/edit")({
   ssr: false,
@@ -168,11 +171,67 @@ function EditDispatchPage() {
 
   const mut = useMutation({
     mutationFn: async (payload: { form: DispatchCreateInput; items: DispatchItemInput[] }) => {
+      let quoteObj: Awaited<ReturnType<typeof getQuote>> = null;
+      let quoteItems: Awaited<ReturnType<typeof getQuoteItems>> = [];
+
+      if (selectedQuoteId) {
+        try {
+          const [qRes, qiRes] = await Promise.all([
+            getQuote(selectedQuoteId),
+            getQuoteItems(selectedQuoteId),
+          ]);
+          quoteObj = qRes;
+          quoteItems = qiRes;
+
+          const tag = `[Quote: ${quoteObj?.quote_no || "Quotation"} | QUO_ID:${selectedQuoteId}]`;
+          if (!payload.form.notes?.includes(tag)) {
+            payload.form.notes = payload.form.notes ? `${payload.form.notes}\n${tag}` : tag;
+          }
+        } catch (e) {
+          console.warn("[dispatch/edit] failed to load quote", e);
+        }
+      }
+
       await updateDispatch(id, payload.form);
       await replaceDispatchItems(id, payload.items);
+
+      let varianceReport: ReturnType<typeof compareQuoteAndDispatchItems> | null = null;
+      if (selectedQuoteId && quoteObj) {
+        void recordConversion({
+          sourceType: "quote",
+          sourceId: selectedQuoteId,
+          targetType: "dispatch",
+          targetId: id,
+          customerId: payload.form.customer_id,
+          projectId: payload.form.project_id,
+          meta: { quote_no: quoteObj.quote_no, dispatch_no: query.data?.dispatch_no },
+        }).catch((err) => console.warn("[lineage] recordConversion failed", err));
+
+        varianceReport = compareQuoteAndDispatchItems(quoteItems, payload.items);
+        if (varianceReport.hasVariance) {
+          void dispatchSystemNotification({
+            scope: "admin",
+            tier: "critical",
+            title: `⚠️ Challan Discrepancy: ${query.data?.dispatch_no || "Dispatch"} vs ${quoteObj.quote_no}`,
+            body: `Delivery Challan ${query.data?.dispatch_no || "Dispatch"} has product discrepancies against Quote #${quoteObj.quote_no}: ${varianceReport.summaryText}. Flagged on dashboard.`,
+            entityType: "dispatch",
+            entityId: id,
+            linkPath: `/dispatch/${id}`,
+          });
+        }
+      }
+
+      return { varianceReport, quoteNo: quoteObj?.quote_no };
     },
-    onSuccess: () => {
-      toast.success("Delivery challan updated");
+    onSuccess: ({ varianceReport, quoteNo }) => {
+      if (varianceReport?.hasVariance) {
+        toast.warning(
+          `Delivery challan updated with ${varianceReport.varianceCount} product discrepancy(s) against Quote #${quoteNo}. Super admins flagged on dashboard.`,
+          { duration: 7000 },
+        );
+      } else {
+        toast.success("Delivery challan updated");
+      }
       invalidateDispatch(qc, id);
       nav({ to: "/dispatch/$id", params: { id } });
     },

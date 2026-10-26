@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Receipt, Landmark, RefreshCw } from "lucide-react";
+import { Plus, Receipt, Landmark, RefreshCw, Truck } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,7 @@ import { useTablePrefs } from "@/hooks/use-table-prefs";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import { deleteInvoice, listInvoices, type InvoiceListItem } from "@/lib/invoices/api";
+import { getDispatchesForInvoices } from "@/lib/dispatch/api";
 import { formatInr } from "@/lib/format";
 import { invalidateInvoice } from "@/lib/query-invalidation";
 import { useRoles } from "@/hooks/use-roles";
@@ -80,6 +81,7 @@ function InvoicesPage() {
   const columnDefs: ColumnDef[] = useMemo(
     () => [
       { key: "no", label: "Invoice / Customer", required: true },
+      { key: "challan", label: "Delivery Challan" },
       { key: "customer", label: "Customer" },
       { key: "project", label: "Project" },
       { key: "date", label: "Date" },
@@ -108,6 +110,15 @@ function InvoicesPage() {
     (r) => statusFilter === "all" || r.status === statusFilter,
   );
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
+
+  const pageRowIds = useMemo(() => pageRows.map((r) => r.id), [pageRows]);
+  const dispatchesQ = useQuery({
+    queryKey: ["invoices", "dispatches-for-list", pageRowIds],
+    queryFn: () => getDispatchesForInvoices(pageRows),
+    enabled: pageRows.length > 0,
+    staleTime: 60_000,
+  });
+  const dispatchesByInvoice = dispatchesQ.data ?? {};
 
   useEffect(() => {
     setPage(1);
@@ -206,6 +217,7 @@ function InvoicesPage() {
             <TableHeader>
               <TableRow>
                 {!isHidden("no") && <TableHead>Invoice / Customer</TableHead>}
+                {!isHidden("challan") && <TableHead>Delivery Challan</TableHead>}
                 {!isHidden("customer") && <TableHead>Customer</TableHead>}
                 {!isHidden("project") && <TableHead>Project</TableHead>}
                 {!isHidden("date") && <TableHead>Date</TableHead>}
@@ -233,6 +245,37 @@ function InvoicesPage() {
                           {r.invoice_no}
                         </Link>
                       </div>
+                    </TableCell>
+                  )}
+                  {!isHidden("challan") && (
+                    <TableCell className="text-xs">
+                      {(() => {
+                        const challans = dispatchesByInvoice[r.id] ?? [];
+                        const primaryChallan = challans[0];
+                        const challanNo = primaryChallan?.dispatch_no || r.lr_no;
+                        if (primaryChallan) {
+                          return (
+                            <Link
+                              to="/dispatch/$id"
+                              params={{ id: primaryChallan.id }}
+                              className="font-mono text-primary hover:underline inline-flex items-center gap-1 font-semibold"
+                              title={`Delivery Challan ${primaryChallan.dispatch_no} (${primaryChallan.dispatch_date})`}
+                            >
+                              <Truck className="h-3 w-3 text-muted-foreground shrink-0" />
+                              {primaryChallan.dispatch_no}
+                            </Link>
+                          );
+                        }
+                        if (challanNo) {
+                          return (
+                            <span className="font-mono text-muted-foreground inline-flex items-center gap-1">
+                              <Truck className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+                              {challanNo}
+                            </span>
+                          );
+                        }
+                        return <span className="text-muted-foreground/50">—</span>;
+                      })()}
                     </TableCell>
                   )}
                   {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}

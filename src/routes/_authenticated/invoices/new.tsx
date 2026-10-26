@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRightCircle, Loader2, X, RefreshCw, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRightCircle,
+  Loader2,
+  X,
+  RefreshCw,
+  AlertCircle,
+  AlertTriangle,
+  Truck,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -35,6 +45,12 @@ import {
   getVoidInvoiceDateWindow,
   reuseVoidInvoice,
 } from "@/lib/invoices/api";
+import {
+  getDispatchesForQuotes,
+  listQuoteChallanDiscrepancies,
+  type DispatchListItem,
+} from "@/lib/dispatch/api";
+import type { FlaggedChallanDiscrepancy } from "@/lib/dispatch/variance";
 import { formatInr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -84,8 +100,18 @@ function NewInvoicePage() {
   const selectedVoidInvoice = voidInvoices.find((v) => v.id === selectedVoidInvoiceId);
 
   const convert = useMutation({
-    mutationFn: (args: { quoteId: string; issueDate?: string }) =>
-      convertQuoteToInvoice({ quote_id: args.quoteId, issue_date: args.issueDate }),
+    mutationFn: (args: {
+      quoteId: string;
+      issueDate?: string;
+      dispatchId?: string;
+      dispatchNo?: string;
+    }) =>
+      convertQuoteToInvoice({
+        quote_id: args.quoteId,
+        issue_date: args.issueDate,
+        dispatch_id: args.dispatchId,
+        dispatch_no: args.dispatchNo,
+      }),
     onSuccess: (inv) => {
       toast.success(`Invoice ${inv.invoice_no} created`, {
         action: {
@@ -153,6 +179,27 @@ function NewInvoicePage() {
     }
     return base;
   }, [query.data, preset.quote, preset.customer, preset.so]);
+
+  const eligibleQuoteIds = useMemo(() => eligible.map((r) => r.id), [eligible]);
+  const dispatchesQ = useQuery({
+    queryKey: ["invoices", "new", "dispatches-by-quote", eligibleQuoteIds],
+    queryFn: () => getDispatchesForQuotes(eligibleQuoteIds),
+    enabled: eligibleQuoteIds.length > 0,
+  });
+  const dispatchesByQuote = dispatchesQ.data ?? {};
+
+  const discrepanciesQ = useQuery({
+    queryKey: ["dispatch", "discrepancies"],
+    queryFn: listQuoteChallanDiscrepancies,
+    staleTime: 45_000,
+  });
+  const discrepanciesByQuote = useMemo(() => {
+    const map = new Map<string, FlaggedChallanDiscrepancy>();
+    for (const d of discrepanciesQ.data ?? []) {
+      map.set(d.quoteId, d);
+    }
+    return map;
+  }, [discrepanciesQ.data]);
 
   const hasContextFilter = !!(preset.quote || preset.customer || preset.so);
 
@@ -303,6 +350,7 @@ function NewInvoicePage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Quote</TableHead>
+                <TableHead>Delivery Challan</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Status</TableHead>
@@ -311,60 +359,126 @@ function NewInvoicePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eligible.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs">
-                    <Link
-                      to="/quotes/$quoteId"
-                      params={{ quoteId: r.id }}
-                      className="text-primary hover:underline"
-                    >
-                      {r.quote_no}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{r.customer?.name ?? "—"}</TableCell>
-                  <TableCell>{r.project?.name ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={r.status === "converted" ? "secondary" : "outline"}
-                      className="capitalize"
-                    >
-                      {r.status === "converted" ? "Ready to re-invoice" : r.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{formatInr(r.total)}</TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      disabled={busyId === r.id || convert.isPending || reuseMut.isPending}
-                      className={cn(
-                        selectedVoidInvoiceId && "bg-amber-600 hover:bg-amber-700 text-white",
-                      )}
-                      onClick={() => {
-                        setBusyId(r.id);
-                        if (selectedVoidInvoiceId) {
-                          reuseMut.mutate({
-                            invoiceId: selectedVoidInvoiceId,
-                            quoteId: r.id,
-                            issueDate: invoiceDate,
-                          });
-                        } else {
-                          convert.mutate({ quoteId: r.id, issueDate: invoiceDate });
-                        }
-                      }}
-                    >
-                      {busyId === r.id ? (
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                      ) : selectedVoidInvoiceId ? (
-                        <RefreshCw className="mr-1 h-3 w-3" />
+              {eligible.map((r) => {
+                const challans = dispatchesByQuote[r.id] ?? [];
+                const discrepancy = discrepanciesByQuote.get(r.id);
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-xs">
+                      <Link
+                        to="/quotes/$quoteId"
+                        params={{ quoteId: r.id }}
+                        className="text-primary hover:underline font-semibold"
+                      >
+                        {r.quote_no}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {challans.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {challans.map((d) => (
+                            <div key={d.id} className="flex items-center gap-1.5 flex-wrap">
+                              <Link
+                                to="/dispatch/$id"
+                                params={{ id: d.id }}
+                                className="font-mono font-semibold text-primary hover:underline flex items-center gap-1"
+                                title={`View Delivery Challan ${d.dispatch_no}`}
+                              >
+                                <Truck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                {d.dispatch_no}
+                              </Link>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-[10px] px-1.5 py-0 capitalize",
+                                  d.status === "delivered"
+                                    ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                    : "border-blue-400 bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+                                )}
+                              >
+                                {d.status.replace(/_/g, " ")}
+                              </Badge>
+                            </div>
+                          ))}
+                          {discrepancy && (
+                            <Badge
+                              variant="outline"
+                              className="w-fit text-[10px] border-amber-400 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 font-medium cursor-help"
+                              title={discrepancy.report.summaryText}
+                            >
+                              <AlertTriangle className="mr-1 h-3 w-3 text-amber-600 shrink-0" />
+                              Specs Differ ({discrepancy.report.varianceCount})
+                            </Badge>
+                          )}
+                        </div>
                       ) : (
-                        <ArrowRightCircle className="mr-1 h-3 w-3" />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className="border-slate-300 text-slate-500 bg-slate-50 dark:bg-slate-900 text-[10px] w-fit font-normal"
+                          >
+                            Challan Pending
+                          </Badge>
+                          <Link
+                            to="/dispatch/new"
+                            search={{ quote: r.id, customer: r.customer_id }}
+                            className="text-[11px] font-medium text-primary hover:underline inline-flex items-center gap-0.5 whitespace-nowrap"
+                            title="Raise Delivery Challan first before generating tax invoice"
+                          >
+                            <Plus className="h-3 w-3" /> Raise Challan
+                          </Link>
+                        </div>
                       )}
-                      {selectedVoidInvoiceId ? "Reuse & Bill" : "Convert"}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>{r.customer?.name ?? "—"}</TableCell>
+                    <TableCell>{r.project?.name ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={r.status === "converted" ? "secondary" : "outline"}
+                        className="capitalize"
+                      >
+                        {r.status === "converted" ? "Ready to re-invoice" : r.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{formatInr(r.total)}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        disabled={busyId === r.id || convert.isPending || reuseMut.isPending}
+                        className={cn(
+                          selectedVoidInvoiceId && "bg-amber-600 hover:bg-amber-700 text-white",
+                        )}
+                        onClick={() => {
+                          setBusyId(r.id);
+                          if (selectedVoidInvoiceId) {
+                            reuseMut.mutate({
+                              invoiceId: selectedVoidInvoiceId,
+                              quoteId: r.id,
+                              issueDate: invoiceDate,
+                            });
+                          } else {
+                            convert.mutate({
+                              quoteId: r.id,
+                              issueDate: invoiceDate,
+                              dispatchId: challans[0]?.id,
+                              dispatchNo: challans[0]?.dispatch_no,
+                            });
+                          }
+                        }}
+                      >
+                        {busyId === r.id ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : selectedVoidInvoiceId ? (
+                          <RefreshCw className="mr-1 h-3 w-3" />
+                        ) : (
+                          <ArrowRightCircle className="mr-1 h-3 w-3" />
+                        )}
+                        {selectedVoidInvoiceId ? "Reuse & Bill" : "Convert"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Card>

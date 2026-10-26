@@ -1,7 +1,7 @@
 import { dispatchSystemNotification } from "@/lib/notifications/systemNotifications.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDetailHotkeys } from "@/hooks/use-detail-hotkeys";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -25,6 +25,7 @@ import {
   Boxes,
   Building2,
   PackageCheck,
+  AlertTriangle,
 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -87,6 +88,8 @@ import { cn } from "@/lib/utils";
 import { getQuoteSaleMode, getQuoteHybridSplit, SALE_MODE_CONFIG } from "@/lib/quotes/sale-mode";
 import type { DbTable } from "@/lib/types";
 import { invalidateQuote, invalidateInvoice, invalidateSalesOrder } from "@/lib/query-invalidation";
+import { getDispatchesForQuotes, listDispatchItems } from "@/lib/dispatch/api";
+import { compareQuoteAndDispatchItems, type ProductVarianceItem } from "@/lib/dispatch/variance";
 
 type QuoteStatus = DbTable<"quotes">["status"];
 
@@ -123,6 +126,27 @@ function QuoteDetailPage() {
     queryFn: () => (sourceEstimateId ? getEstimateForQuote(sourceEstimateId) : null),
     enabled: !!sourceEstimateId,
   });
+
+  const linkedDispatches = useQuery({
+    queryKey: ["quotes", quoteId, "dispatches"],
+    queryFn: async () => {
+      const map = await getDispatchesForQuotes([quoteId]);
+      return map[quoteId] ?? [];
+    },
+  });
+  const quoteDispatches = linkedDispatches.data ?? [];
+  const primaryDispatch = quoteDispatches[0] ?? null;
+
+  const dispatchItemsQ = useQuery({
+    queryKey: ["dispatch", primaryDispatch?.id, "items"],
+    queryFn: () => (primaryDispatch ? listDispatchItems(primaryDispatch.id) : []),
+    enabled: !!primaryDispatch?.id,
+  });
+
+  const varianceReport = useMemo(() => {
+    if (!items.data || !dispatchItemsQ.data || dispatchItemsQ.data.length === 0) return null;
+    return compareQuoteAndDispatchItems(items.data, dispatchItemsQ.data);
+  }, [items.data, dispatchItemsQ.data]);
 
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
@@ -289,32 +313,46 @@ function QuoteDetailPage() {
                   <Button
                     size="sm"
                     className={
-                      saleMode === "cash"
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                        : "border-amber-600/50 text-amber-800 hover:bg-amber-50 dark:border-amber-500/50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                      primaryDispatch
+                        ? "border-emerald-600/60 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100 dark:border-emerald-700/60 dark:text-emerald-300 shadow-xs"
+                        : saleMode === "cash"
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                          : "bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
                     }
-                    variant={saleMode === "cash" ? "default" : "outline"}
-                    onClick={() =>
-                      nav({
-                        to: "/dispatch/new",
-                        search: {
-                          quote: quoteId,
-                          customer: quote.customer_id,
-                          ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
-                        },
-                      })
-                    }
+                    variant={primaryDispatch ? "outline" : "default"}
+                    onClick={() => {
+                      if (primaryDispatch) {
+                        nav({ to: "/dispatch/$id", params: { id: primaryDispatch.id } });
+                      } else {
+                        nav({
+                          to: "/dispatch/new",
+                          search: {
+                            quote: quoteId,
+                            customer: quote.customer_id,
+                            ...(linkedSo.data ? { so: linkedSo.data.id } : {}),
+                          },
+                        });
+                      }
+                    }}
                     title={
-                      saleMode === "cash"
-                        ? "Issue Delivery Challan for cash transaction (no tax invoice)"
-                        : "Issue Delivery Challan"
+                      primaryDispatch
+                        ? `View Delivery Challan ${primaryDispatch.dispatch_no}`
+                        : saleMode === "cash"
+                          ? "Issue Delivery Challan for cash transaction (no tax invoice)"
+                          : "Raise Delivery Challan before generating tax invoice"
                     }
                   >
                     <Truck className="mr-1.5 h-4 w-4" />
                     <span className="hidden sm:inline">
-                      {saleMode === "cash" ? "Issue Delivery Challan" : "Delivery Challan"}
+                      {primaryDispatch
+                        ? `Challan (${primaryDispatch.dispatch_no})`
+                        : saleMode === "cash"
+                          ? "Issue Delivery Challan"
+                          : "Raise Delivery Challan"}
                     </span>
-                    <span className="sm:hidden">Challan</span>
+                    <span className="sm:hidden">
+                      {primaryDispatch ? primaryDispatch.dispatch_no : "Challan"}
+                    </span>
                   </Button>
                 )}
 
@@ -401,13 +439,24 @@ function QuoteDetailPage() {
                 {saleMode !== "cash" && (
                   <Button
                     size="sm"
-                    className="hidden md:inline-flex"
+                    className={cn(
+                      "hidden md:inline-flex font-medium shadow-xs",
+                      primaryDispatch
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300",
+                    )}
+                    variant={primaryDispatch ? "default" : "outline"}
                     onClick={() => convertMut.mutate()}
                     disabled={!canConvert || convertMut.isPending}
-                    title="Generate Tax Invoice"
+                    title={
+                      primaryDispatch
+                        ? `Generate Tax Invoice for Challan ${primaryDispatch.dispatch_no}`
+                        : "Generate Tax Invoice (Delivery challan recommended first)"
+                    }
                   >
                     {convertMut.isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                    <ArrowRightCircle className="mr-1.5 h-4 w-4" /> Convert to Invoice
+                    <ArrowRightCircle className="mr-1.5 h-4 w-4" />
+                    {primaryDispatch ? "Convert to Invoice" : "Convert to Invoice"}
                   </Button>
                 )}
 
@@ -531,6 +580,42 @@ function QuoteDetailPage() {
         entityId={quoteId}
         ctx={{ customer_id: quote.customer_id, project_id: quote.project_id, quote_id: quoteId }}
       />
+
+      {/* Material Discrepancy Alert Banner */}
+      {varianceReport?.hasVariance && primaryDispatch && (
+        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50/80 dark:border-amber-900/60 dark:bg-amber-950/40 p-4 text-xs text-amber-950 dark:text-amber-200 shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1.5 flex-1">
+              <div className="font-bold text-sm flex items-center justify-between flex-wrap gap-2">
+                <span>⚠️ Delivery Challan Product Discrepancy Flagged</span>
+                <Link
+                  to="/dispatch/$id"
+                  params={{ id: primaryDispatch.id }}
+                  className="font-mono font-semibold text-primary hover:underline text-xs flex items-center gap-1"
+                >
+                  <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                  View Challan #{primaryDispatch.dispatch_no} →
+                </Link>
+              </div>
+              <p className="text-muted-foreground">
+                The line items dispatched on Delivery Challan{" "}
+                <strong>{primaryDispatch.dispatch_no}</strong> differ from this Quotation
+                specification ({varianceReport.summaryText}). Super admins have been flagged on the
+                dashboard.
+              </p>
+              <div className="space-y-1 pt-1">
+                {varianceReport.variances.map((v: ProductVarianceItem, i: number) => (
+                  <div key={i} className="flex items-center gap-1.5 font-medium">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-600 shrink-0" />
+                    <span>{v.message}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-1 md:col-span-2">
@@ -917,8 +1002,8 @@ function QuoteDetailPage() {
                 </div>
               </div>
             )}
-            {(sourceEstimate.data || linkedSo.data) && (
-              <div className="space-y-1 border-t border-border pt-3 text-xs">
+            {(sourceEstimate.data || linkedSo.data || quoteDispatches.length > 0) && (
+              <div className="space-y-1.5 border-t border-border pt-3 text-xs">
                 {sourceEstimate.data && (
                   <div className="text-muted-foreground">
                     Created from Estimate{" "}
@@ -941,6 +1026,22 @@ function QuoteDetailPage() {
                     >
                       {linkedSo.data.so_no}
                     </Link>
+                  </div>
+                )}
+                {quoteDispatches.length > 0 && (
+                  <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                    <span>Delivery Challan:</span>
+                    {quoteDispatches.map((d) => (
+                      <Link
+                        key={d.id}
+                        to="/dispatch/$id"
+                        params={{ id: d.id }}
+                        className="font-mono font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        <Truck className="h-3 w-3 text-muted-foreground" />
+                        {d.dispatch_no}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>

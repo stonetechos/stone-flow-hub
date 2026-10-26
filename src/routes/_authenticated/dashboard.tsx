@@ -86,6 +86,8 @@ import { DueLiabilitiesPromptCard } from "@/components/dashboard/DueLiabilitiesP
 import { useDueLiabilityPrompts } from "@/lib/liabilities/liability-prompts";
 import { DailyMoneyFlowCard } from "@/components/dashboard/DailyMoneyFlowCard";
 import { SuperAdminWriteOffsCard } from "@/components/dashboard/SuperAdminWriteOffsCard";
+import { SuperAdminQuoteChallanDiscrepancyCard } from "@/components/dashboard/SuperAdminQuoteChallanDiscrepancyCard";
+import { listQuoteChallanDiscrepancies } from "@/lib/dispatch/api";
 import { ProfitTargetDashboardCard } from "@/components/dashboard/ProfitTargetDashboardCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -196,11 +198,26 @@ function DashboardPage() {
   const vendorPromptCount = vendorPromptsQ.data?.length ?? 0;
   const dueLiabilitiesQ = useDueLiabilityPrompts();
   const dueLiabilities = dueLiabilitiesQ.items ?? [];
+  const discrepanciesQ = useQuery({
+    queryKey: ["dispatch", "discrepancies"],
+    queryFn: listQuoteChallanDiscrepancies,
+    enabled: activeTab === "operations",
+    staleTime: 45_000,
+  });
+  const discrepancyCount = discrepanciesQ.data?.length ?? 0;
 
   const topInsights = [...processedInsights]
     .sort((a, b) => b.normalizedPriority - a.normalizedPriority)
     .slice(0, 5);
-  const brief = buildBrief(topInsights, tasks, t, kpis, vendorPromptCount, dueLiabilities);
+  const brief = buildBrief(
+    topInsights,
+    tasks,
+    t,
+    kpis,
+    vendorPromptCount,
+    dueLiabilities,
+    discrepancyCount,
+  );
   const headline = kpis
     ? pickHeadline(kpis, t)
     : {
@@ -257,6 +274,9 @@ function DashboardPage() {
 
                 {/* SuperAdmin Write-Offs & Concessions Audit Radar */}
                 <SuperAdminWriteOffsCard />
+
+                {/* SuperAdmin Quotation vs Delivery Challan Product Discrepancies */}
+                <SuperAdminQuoteChallanDiscrepancyCard />
 
                 <BusinessHealthGrid kpis={kpisQ.data} />
 
@@ -1545,8 +1565,18 @@ function buildBrief(
   kpis?: DashboardKpis,
   vendorPromptCount = 0,
   dueLiabilities: import("@/lib/liabilities/liability-prompts").DueLiabilityPromptItem[] = [],
+  discrepancyCount = 0,
 ): string[] {
   const lines: string[] = [];
+
+  // 0. Quotation vs Delivery Challan Product Discrepancies
+  if (discrepancyCount > 0) {
+    lines.push(
+      discrepancyCount === 1
+        ? "⚠️ 1 delivery challan has material product discrepancies against approved quotation specifications."
+        : `⚠️ ${discrepancyCount} delivery challans have material product discrepancies against approved quotation specifications.`,
+    );
+  }
 
   // 1. Rent, loan EMIs, or recurring liabilities due this month
   if (dueLiabilities.length > 0) {
