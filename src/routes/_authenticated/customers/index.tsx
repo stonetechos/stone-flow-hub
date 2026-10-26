@@ -19,6 +19,7 @@ import {
   FileText,
   ShoppingCart,
   Trash2,
+  UserCheck,
 } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { StoreVoiceAssistantTab } from "@/components/customers/StoreVoiceAssistantTab";
@@ -1412,6 +1413,28 @@ function CustomerFormDialog({
                 </SelectContent>
               </Select>
             </Field>
+
+            {editing && (
+              <div className="md:col-span-2 rounded-lg border border-cyan-200 bg-cyan-50/60 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div>
+                  <label className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                    <UserCheck className="h-3.5 w-3.5 text-cyan-700" />
+                    <span>Assigned Salesperson</span>
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Assign this customer account to Rishi or Raman
+                  </p>
+                </div>
+                <CustomerAssigneeSelect
+                  customerId={editing.id}
+                  customerName={editing.name}
+                  workflowState={editing.workflow_state}
+                  externalRef={editing.external_ref}
+                  size="default"
+                  variant="button"
+                />
+              </div>
+            )}
 
             {form.customer_type === "reference" && (
               <Field

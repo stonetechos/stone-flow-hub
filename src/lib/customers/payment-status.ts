@@ -105,9 +105,10 @@ export interface CustomerRankingContext {
 
 /**
  * Customer Directory Ranking:
- * Tier 1: CRM Response Status = "order_placed" (occupies the very top of the list)
- * Tier 2: Customers where "order is completed" AND "payment status is pending"
- * Tier 3: Customers entered recently (sorted by allotted serial number descending / creation date)
+ * Tier 1: "the order is pending" / CRM Response Status = "order_placed" or active order in pipeline (occupies the very top of the list)
+ * Tier 2: Customers who "still need to pay" ("order is completed" AND "payment status is pending / part payment", or outstanding balance)
+ * Tier 3: Customers entered recently (active leads, walk-ins, discussions, quotes in progress)
+ * Tier 10: Customers whose order is completed AND amount is fully paid (put back to the list at a place according to customer number)
  * Tier 99: CRM Response Status = "do_not_contact" ("Closed · Not Interested") pushed to the very bottom / last of the list
  */
 export function getCustomerDirectoryRank(
@@ -130,10 +131,12 @@ export function getCustomerDirectoryRank(
     return 99;
   }
 
-  // Tier 1: "order placed" status occupying the top of the list
-  if (crmStatus === "order_placed") return 1;
+  // Tier 1: "the order is pending" (order placed status or active order count)
+  const hasActiveOrder =
+    crmStatus === "order_placed" || (context?.orderInfo?.activeOrderCount ?? 0) > 0;
+  if (hasActiveOrder) return 1;
 
-  // Tier 2: "order is completed" and "payment status is pending"
+  // Determine order completion and payment status
   const isOrderCompleted =
     crmStatus === "order_completed" ||
     context?.orderInfo?.health === "completed" ||
@@ -145,11 +148,25 @@ export function getCustomerDirectoryRank(
     payStatus === "part_payment_received" ||
     (context?.ledgerSummary ? context.ledgerSummary.balance > 0 : false);
 
-  if (isOrderCompleted && isPaymentPending) {
+  // Tier 2: Customers who still need to pay
+  if (isPaymentPending) {
     return 2;
   }
 
-  // Tier 3: customers entered recently
+  // Tier 10: The customers whose order is completed AND the amount is fully paid.
+  // Put them back to the list at a place according to the customer's number (separate from pending orders and pending payments).
+  const isFullyPaid =
+    payStatus === "full_payment_received" ||
+    (!isPaymentPending && (payStatus === "no_dues" || payStatus === "payment_received")) ||
+    (context?.ledgerSummary
+      ? context.ledgerSummary.balance <= 0 && context.ledgerSummary.totalDebit > 0
+      : false);
+
+  if (isOrderCompleted && isFullyPaid) {
+    return 10;
+  }
+
+  // Tier 3: Active leads, walk-ins, discussions, quotes in progress
   return 3;
 }
 

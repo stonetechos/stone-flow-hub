@@ -23,6 +23,7 @@ import {
 import { parseQuoteVendorAssignment, assignVendorToQuote } from "@/lib/quotes/vendor-assignment";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
+import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { cn } from "@/lib/utils";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -544,10 +545,21 @@ function QuotesPage() {
                     </TableCell>
                     {!isHidden("no") && (
                       <TableCell className="text-xs">
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
-                            {r.customer?.name ?? "—"}
-                          </span>
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-foreground text-xs truncate max-w-[160px] sm:max-w-none">
+                              {r.customer?.name ?? "—"}
+                            </span>
+                            {r.customer?.id && (
+                              <CustomerAssigneeSelect
+                                customerId={r.customer.id}
+                                customerName={r.customer.name}
+                                workflowState={r.customer.workflow_state}
+                                externalRef={r.customer.external_ref}
+                                size="sm"
+                              />
+                            )}
+                          </div>
                           <Link
                             to="/quotes/$quoteId"
                             params={{ quoteId: r.id }}
@@ -633,7 +645,24 @@ function QuotesPage() {
                     {!isHidden("project") && (
                       <TableCell className="font-medium">{r.project?.name ?? "—"}</TableCell>
                     )}
-                    {!isHidden("customer") && <TableCell>{r.customer?.name ?? "—"}</TableCell>}
+                    {!isHidden("customer") && (
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium text-xs text-foreground">
+                            {r.customer?.name ?? "—"}
+                          </span>
+                          {r.customer?.id && (
+                            <CustomerAssigneeSelect
+                              customerId={r.customer.id}
+                              customerName={r.customer.name}
+                              workflowState={r.customer.workflow_state}
+                              externalRef={r.customer.external_ref}
+                              size="sm"
+                            />
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                     {!isHidden("status") && (
                       <TableCell>
                         <Badge
@@ -728,18 +757,25 @@ function QuotesPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setAssigningQuote(r)}
-                              className="inline-flex items-center px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                              title="More options (Vendor, Promised date, Godown)"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAssigningQuote(r);
+                              }}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
+                              title="Assign stone vendor or stock source"
                             >
-                              <span>+ Assign</span>
+                              <Boxes className="h-3 w-3 text-slate-500" />
+                              <span>+ Vendor</span>
                             </button>
                           </div>
                         ) : (
                           <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
-                              onClick={() => setRfqQuote(r)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRfqQuote(r);
+                              }}
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded transition-colors cursor-pointer"
                               title="Send optional WhatsApp RFQ to vendors"
                             >
@@ -748,11 +784,15 @@ function QuotesPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setAssigningQuote(r)}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                              title="Assign vendor or stock"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAssigningQuote(r);
+                              }}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer"
+                              title="Assign stone vendor or stock source"
                             >
-                              <span>+ Assign</span>
+                              <Boxes className="h-3 w-3 text-slate-500" />
+                              <span>+ Vendor</span>
                             </button>
                           </div>
                         )}

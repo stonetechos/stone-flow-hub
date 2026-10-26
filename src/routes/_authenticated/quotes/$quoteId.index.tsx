@@ -38,6 +38,7 @@ import { TransferOwnershipDialog } from "@/components/ownership/TransferOwnershi
 import { ReassignCustomerDialog } from "@/components/quotes/ReassignCustomerDialog";
 import { QuoteSendRfqDialog } from "@/components/rfqs/QuoteSendRfqDialog";
 import { AssignQuoteVendorDialog } from "@/components/quotes/AssignQuoteVendorDialog";
+import { CustomerAssigneeSelect } from "@/components/customers/CustomerAssigneeSelect";
 import { parseQuoteVendorAssignment } from "@/lib/quotes/vendor-assignment";
 import { useRoles } from "@/hooks/use-roles";
 import { DetailActionBar } from "@/components/entity/DetailActionBar";
@@ -221,6 +222,15 @@ function QuoteDetailPage() {
         subtitle={
           <div className="flex items-center gap-2 flex-wrap">
             <span>{`${quote.project?.name ?? "—"} • ${quote.customer?.name ?? "—"}`}</span>
+            {quote.customer?.id && (
+              <CustomerAssigneeSelect
+                customerId={quote.customer.id}
+                customerName={quote.customer.name}
+                workflowState={quote.customer.workflow_state}
+                externalRef={(quote.customer as { external_ref?: unknown })?.external_ref}
+                size="sm"
+              />
+            )}
             {saleMode !== "invoiced" && (
               <span
                 className={cn(
@@ -822,7 +832,7 @@ function QuoteDetailPage() {
                   className="h-6 px-1.5 text-xs text-primary hover:underline"
                   onClick={() => setAssignVendorOpen(true)}
                 >
-                  {assignment.isAssigned ? "Change" : "Assign"}
+                  {assignment.isAssigned ? "Change Vendor" : "Assign Vendor"}
                 </Button>
               </div>
               <div>
@@ -880,8 +890,8 @@ function QuoteDetailPage() {
                     className="w-full text-xs border-dashed text-slate-700 hover:text-slate-900 hover:bg-slate-50 justify-start"
                     onClick={() => setAssignVendorOpen(true)}
                   >
-                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />+ Assign Live Stock or
-                    Vendor
+                    <Boxes className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />+ Assign Vendor or Live
+                    Stock
                   </Button>
                 )}
               </div>

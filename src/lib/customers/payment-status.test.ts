@@ -122,9 +122,9 @@ describe("getCustomerPaymentStatus", () => {
   });
 });
 
-describe("Customer directory sorting and 3-Tier ranking", () => {
-  it("determines directory rank correctly for all three tiers", () => {
-    // Tier 1: Order Placed
+describe("Customer directory sorting and 4-Tier ranking", () => {
+  it("determines directory rank correctly for all tiers", () => {
+    // Tier 1: Order Placed / Pending
     expect(
       getCustomerDirectoryRank({
         workflow_state: { response_status: "order_placed" },
@@ -166,6 +166,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
       }),
     ).toBe(3);
 
+    // Tier 10: Order is completed AND fully paid (put back to the list by customer number)
     expect(
       getCustomerDirectoryRank({
         workflow_state: {
@@ -173,7 +174,25 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
           payment_status: "full_payment_received",
         },
       }),
-    ).toBe(3);
+    ).toBe(10);
+
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: { response_status: "order_completed" },
+        },
+        {
+          orderInfo: { health: "completed" },
+          ledgerSummary: {
+            totalDebit: 50000,
+            totalCredit: 50000,
+            balance: 0,
+            entryCount: 2,
+            lastEntryAt: null,
+          },
+        },
+      ),
+    ).toBe(10);
 
     // Tier 99: Closed · Not Interested (pushed to end of list)
     expect(
@@ -183,7 +202,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
     ).toBe(99);
   });
 
-  it("sorts customers across tiers and pushes closed / not interested customers to the very end", () => {
+  it("sorts customers across tiers and places completed & fully paid customers back in the list by customer number", () => {
     const customers: Partial<CustomerRow>[] = [
       // Tier 99: Closed · Not Interested (should be at the very bottom)
       {
@@ -191,7 +210,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
         customer_code: "CUS-000027",
         workflow_state: { response_status: "do_not_contact" },
       },
-      // Tier 3: newly entered
+      // Tier 3: newly entered / active leads
       {
         id: "new-50",
         customer_code: "CUS-000050",
@@ -204,7 +223,7 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
         workflow_state: { response_status: "followup_pending" },
         created_at: "2026-10-09T10:00:00Z",
       },
-      // Tier 1: Order Placed
+      // Tier 1: Order Placed / Pending
       {
         id: "placed-41",
         customer_code: "CUS-000041",
@@ -229,6 +248,23 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
           payment_status: "part_payment_received",
         },
       },
+      // Tier 10: Order is Completed AND Fully Paid (put back to the list by customer number)
+      {
+        id: "completed-paid-37",
+        customer_code: "CUS-000037",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "full_payment_received",
+        },
+      },
+      {
+        id: "completed-paid-26",
+        customer_code: "CUS-000026",
+        workflow_state: {
+          response_status: "order_completed",
+          payment_status: "full_payment_received",
+        },
+      },
     ];
 
     const sorted = [...customers].sort((a, b) =>
@@ -236,9 +272,10 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
     );
 
     // Expected order:
-    // Tier 1 (Order Placed): 45, 41
+    // Tier 1 (Order Placed / Pending): 45, 41
     // Tier 2 (Order Completed + Payment Pending): 42, 38
-    // Tier 3 (Recently Entered Leads): 50, 49
+    // Tier 3 (Recently Entered Leads / Active Inquiries): 50, 49
+    // Tier 10 (Order Completed & Fully Paid, sorted back in list by customer number): 37, 26
     // Tier 99 (Closed · Not Interested pushed to last): 27
     expect(sorted.map((c) => c.customer_code)).toEqual([
       "CUS-000045", // Tier 1 (serial 45)
@@ -247,6 +284,8 @@ describe("Customer directory sorting and 3-Tier ranking", () => {
       "CUS-000038", // Tier 2 (serial 38)
       "CUS-000050", // Tier 3 (serial 50)
       "CUS-000049", // Tier 3 (serial 49)
+      "CUS-000037", // Tier 10 (serial 37, completed & fully paid)
+      "CUS-000026", // Tier 10 (serial 26, completed & fully paid)
       "CUS-000027", // Tier 99 (serial 27, pushed to very last)
     ]);
   });

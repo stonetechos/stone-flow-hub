@@ -22,6 +22,7 @@ export type QuoteListItem = QuoteRow & {
     name: string;
     customer_code: string;
     workflow_state?: unknown;
+    external_ref?: unknown;
   } | null;
   project: { id: string; name: string; project_code: string } | null;
   invoices?: Array<{
@@ -33,7 +34,7 @@ export type QuoteListItem = QuoteRow & {
 };
 
 const SELECT_WITH_JOINS =
-  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
+  "*, customer:customers!quotes_customer_id_fkey(id,name,customer_code,workflow_state,external_ref), project:projects!quotes_project_id_fkey(id,name,project_code), invoices:invoices!invoices_quote_id_fkey(id,invoice_no,status,total)";
 
 function reconcileQuoteItem(quote: QuoteListItem): QuoteListItem {
   if (quote.status === "converted") {

@@ -78,8 +78,11 @@ export function CustomerAssigneeSelect({
           <button
             type="button"
             disabled={mutation.isPending}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             className={cn(
-              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-cyan-500/20 focus:outline-hidden",
+              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-cyan-500/20 focus:outline-hidden touch-manipulation cursor-pointer",
               config
                 ? config.badgeTone
                 : "border-dashed border-slate-300 bg-slate-50/80 text-slate-500 hover:border-slate-400 hover:text-slate-800",
@@ -113,8 +116,11 @@ export function CustomerAssigneeSelect({
             variant="outline"
             size="sm"
             disabled={mutation.isPending}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             className={cn(
-              "gap-1.5 font-semibold max-w-full",
+              "gap-1.5 font-semibold max-w-full touch-manipulation cursor-pointer",
               config ? config.badgeTone : "text-slate-600",
             )}
             title={
@@ -134,7 +140,7 @@ export function CustomerAssigneeSelect({
         )}
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-56 p-1.5">
+      <DropdownMenuContent align="start" className="w-56 p-1.5 z-50">
         <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           Assign Salesperson
         </DropdownMenuLabel>
@@ -146,9 +152,10 @@ export function CustomerAssigneeSelect({
           return (
             <DropdownMenuItem
               key={key}
+              onSelect={() => mutation.mutate(key)}
               onClick={() => mutation.mutate(key)}
               className={cn(
-                "flex items-center justify-between rounded-md p-2 text-xs cursor-pointer",
+                "flex items-center justify-between rounded-md p-2 text-xs cursor-pointer min-h-[38px] touch-manipulation",
                 isSelected && "bg-cyan-50/90 font-bold text-cyan-950",
               )}
             >
@@ -175,8 +182,9 @@ export function CustomerAssigneeSelect({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
+              onSelect={() => mutation.mutate(null)}
               onClick={() => mutation.mutate(null)}
-              className="flex items-center gap-2 rounded-md p-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer"
+              className="flex items-center gap-2 rounded-md p-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer min-h-[38px] touch-manipulation"
             >
               <X className="h-3.5 w-3.5" />
               <span>Unassign customer</span>
