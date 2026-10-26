@@ -697,7 +697,9 @@ export function CustomerCrmFollowupCard({ customer }: CustomerCrmFollowupCardPro
                     if (
                       nextVal === "order_placed" ||
                       nextVal === "order_completed" ||
-                      nextVal === "do_not_contact"
+                      nextVal === "do_not_contact" ||
+                      nextVal === "order_cancelled_delay" ||
+                      nextVal === "order_cancelled_change_of_plans"
                     ) {
                       setScheduleNextCall(false);
                     }

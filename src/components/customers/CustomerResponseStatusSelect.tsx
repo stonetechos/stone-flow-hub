@@ -107,8 +107,11 @@ export function CustomerResponseStatusSelect({
           <button
             type="button"
             disabled={mutation.isPending || toggleActiveMutation.isPending}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             className={cn(
-              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden",
+              "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold shadow-2xs transition-all hover:opacity-90 hover:ring-2 hover:ring-teal-500/20 focus:outline-hidden touch-manipulation cursor-pointer",
               config.badgeTone,
               size === "sm" ? "h-6 text-[11px]" : "h-7 text-xs",
             )}
@@ -127,7 +130,13 @@ export function CustomerResponseStatusSelect({
             variant="outline"
             size="sm"
             disabled={mutation.isPending || toggleActiveMutation.isPending}
-            className={cn("gap-1.5 font-semibold max-w-full", config.tone)}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className={cn(
+              "gap-1.5 font-semibold max-w-full touch-manipulation cursor-pointer",
+              config.tone,
+            )}
             title={`Customer status: ${config.label}. Click to change.`}
           >
             {mutation.isPending ? (
@@ -141,7 +150,7 @@ export function CustomerResponseStatusSelect({
         )}
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-64 p-1.5">
+      <DropdownMenuContent align="start" className="w-64 p-1.5 z-50">
         <DropdownMenuLabel className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           <span>Client Response Status</span>
           <Sparkles className="h-3 w-3 text-cyan-600" />
@@ -155,9 +164,10 @@ export function CustomerResponseStatusSelect({
             return (
               <DropdownMenuItem
                 key={statusKey}
+                onSelect={() => mutation.mutate(statusKey)}
                 onClick={() => mutation.mutate(statusKey)}
                 className={cn(
-                  "flex items-start gap-2.5 rounded-md p-2 text-xs cursor-pointer",
+                  "flex items-start gap-2.5 rounded-md p-2 text-xs cursor-pointer min-h-[38px] touch-manipulation",
                   isSelected && "bg-cyan-50/80 font-bold text-cyan-950",
                 )}
               >
@@ -181,8 +191,9 @@ export function CustomerResponseStatusSelect({
           Account Directory Status
         </DropdownMenuLabel>
         <DropdownMenuItem
+          onSelect={() => toggleActiveMutation.mutate(!isActive)}
           onClick={() => toggleActiveMutation.mutate(!isActive)}
-          className="flex items-center gap-2 p-2 text-xs cursor-pointer"
+          className="flex items-center gap-2 p-2 text-xs cursor-pointer min-h-[36px] touch-manipulation"
         >
           {isActive ? (
             <>

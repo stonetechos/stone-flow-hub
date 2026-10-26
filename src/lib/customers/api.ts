@@ -477,7 +477,9 @@ export async function updateCustomerCrmStatus(
     targetIsActive = input.is_active;
   } else if (
     input.response_status === "inactive_no_response" ||
-    input.response_status === "do_not_contact"
+    input.response_status === "do_not_contact" ||
+    input.response_status === "order_cancelled_delay" ||
+    input.response_status === "order_cancelled_change_of_plans"
   ) {
     targetIsActive = false;
   } else if (

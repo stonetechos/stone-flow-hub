@@ -10,6 +10,8 @@ export type CustomerResponseStatus =
   | "payment_pending"
   | "order_placed"
   | "order_completed"
+  | "order_cancelled_delay"
+  | "order_cancelled_change_of_plans"
   | "regular_future_requirement"
   | "followup_pending"
   | "awaiting_reply"
@@ -85,6 +87,26 @@ export const CUSTOMER_RESPONSE_STATUS_CONFIG: Record<
     dotColor: "bg-teal-600",
     description: "Order has been successfully fulfilled, delivered, and completed.",
   },
+  order_cancelled_delay: {
+    value: "order_cancelled_delay",
+    label: "Order Cancelled · Delay",
+    shortLabel: "Cancelled · Delay",
+    tone: "bg-rose-50 text-rose-800 border-rose-200",
+    badgeTone: "bg-rose-100/90 text-rose-900 border-rose-300 font-semibold",
+    dotColor: "bg-rose-500",
+    description:
+      "Order was cancelled due to unexpected delays (production, transport, or scheduling).",
+  },
+  order_cancelled_change_of_plans: {
+    value: "order_cancelled_change_of_plans",
+    label: "Order Cancelled · Change of Plans",
+    shortLabel: "Cancelled · Plans",
+    tone: "bg-amber-50 text-amber-900 border-amber-200",
+    badgeTone: "bg-amber-100/90 text-amber-950 border-amber-300 font-semibold",
+    dotColor: "bg-amber-600",
+    description:
+      "Order was cancelled due to client change of plans, revised design, or project scope.",
+  },
   regular_future_requirement: {
     value: "regular_future_requirement",
     label: "Regular Requirement · Future Consideration",
@@ -138,6 +160,8 @@ export const CALL_OUTCOMES = [
   { value: "payment_promised", label: "Payment Promised · Request for Payment" },
   { value: "order_placed", label: "Order Placed / Confirmed · Won" },
   { value: "order_completed", label: "Order Completed · Delivered & Closed" },
+  { value: "order_cancelled_delay", label: "Order Cancelled · Unexpected Delay" },
+  { value: "order_cancelled_change_of_plans", label: "Order Cancelled · Change of Plans" },
   {
     value: "regular_future_requirement",
     label: "Regular requirement · Will consider for future orders",

@@ -125,15 +125,13 @@ export function getCustomerDirectoryRank(
   if (!customer) return 3;
 
   const crmStatus = getCustomerResponseStatus(customer);
+  const isCancelled =
+    crmStatus === "order_cancelled_delay" || crmStatus === "order_cancelled_change_of_plans";
 
-  // Push "Closed · Not Interested" to the very end of the directory
-  if (crmStatus === "do_not_contact") {
-    return 99;
-  }
-
-  // Tier 1: "the order is pending" (order placed status or active order count)
+  // Tier 1: "the order is pending" (order placed status or active order count, unless cancelled)
   const hasActiveOrder =
-    crmStatus === "order_placed" || (context?.orderInfo?.activeOrderCount ?? 0) > 0;
+    !isCancelled &&
+    (crmStatus === "order_placed" || (context?.orderInfo?.activeOrderCount ?? 0) > 0);
   if (hasActiveOrder) return 1;
 
   // Determine order completion and payment status
@@ -151,6 +149,11 @@ export function getCustomerDirectoryRank(
   // Tier 2: Customers who still need to pay
   if (isPaymentPending) {
     return 2;
+  }
+
+  // Push "Closed · Not Interested" and cleanly cancelled orders (with zero pending payments) to the very end of the directory
+  if (crmStatus === "do_not_contact" || isCancelled) {
+    return 99;
   }
 
   // Tier 10: The customers whose order is completed AND the amount is fully paid.

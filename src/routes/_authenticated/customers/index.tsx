@@ -284,11 +284,17 @@ function CustomersPage() {
 
   function hasCustomerPlacedOrder(
     c: CustomerRow,
-    orderInfo?: { activeOrderCount: number } | null,
+    orderInfo?: { activeOrderCount: number; hasCompletedOrder?: boolean } | null,
   ): boolean {
-    if ((orderInfo?.activeOrderCount ?? 0) > 0) return true;
+    if ((orderInfo?.activeOrderCount ?? 0) > 0 || (orderInfo?.hasCompletedOrder ?? false))
+      return true;
     const crmStatus = getCustomerResponseStatus(c);
-    return crmStatus === "order_placed" || crmStatus === "order_completed";
+    return (
+      crmStatus === "order_placed" ||
+      crmStatus === "order_completed" ||
+      crmStatus === "order_cancelled_delay" ||
+      crmStatus === "order_cancelled_change_of_plans"
+    );
   }
 
   const rows = useMemo(() => {
@@ -762,6 +768,9 @@ function CustomersPage() {
                               )}
                               {orderInfo?.nearestDeadline &&
                                 getCustomerResponseStatus(c) !== "order_completed" &&
+                                getCustomerResponseStatus(c) !== "order_cancelled_delay" &&
+                                getCustomerResponseStatus(c) !==
+                                  "order_cancelled_change_of_plans" &&
                                 orderInfo.health !== "completed" && (
                                   <span
                                     className={cn(

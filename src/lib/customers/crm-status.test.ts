@@ -22,6 +22,23 @@ describe("Customer CRM Status", () => {
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.shortLabel).toBe("Completed");
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_completed.dotColor).toContain("teal");
 
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay).toBeDefined();
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay.label).toBe(
+      "Order Cancelled · Delay",
+    );
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay.shortLabel).toBe(
+      "Cancelled · Delay",
+    );
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_delay.dotColor).toContain("rose");
+
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_change_of_plans).toBeDefined();
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_change_of_plans.label).toBe(
+      "Order Cancelled · Change of Plans",
+    );
+    expect(CUSTOMER_RESPONSE_STATUS_CONFIG.order_cancelled_change_of_plans.shortLabel).toBe(
+      "Cancelled · Plans",
+    );
+
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.payment_pending).toBeDefined();
     expect(CUSTOMER_RESPONSE_STATUS_CONFIG.payment_pending.label).toContain("Payment");
   });
@@ -32,6 +49,8 @@ describe("Customer CRM Status", () => {
       "payment_pending",
       "order_placed",
       "order_completed",
+      "order_cancelled_delay",
+      "order_cancelled_change_of_plans",
       "regular_future_requirement",
       "followup_pending",
       "awaiting_reply",
@@ -92,6 +111,16 @@ describe("Customer CRM Status", () => {
     const foundCompleted = CALL_OUTCOMES.find((o) => o.value === "order_completed");
     expect(foundCompleted).toBeDefined();
     expect(foundCompleted?.label).toContain("Order Completed");
+
+    const foundCancelDelay = CALL_OUTCOMES.find((o) => o.value === "order_cancelled_delay");
+    expect(foundCancelDelay).toBeDefined();
+    expect(foundCancelDelay?.label).toContain("Delay");
+
+    const foundCancelPlans = CALL_OUTCOMES.find(
+      (o) => o.value === "order_cancelled_change_of_plans",
+    );
+    expect(foundCancelPlans).toBeDefined();
+    expect(foundCancelPlans?.label).toContain("Change of Plans");
 
     const foundFuture = CALL_OUTCOMES.find((o) => o.value === "regular_future_requirement");
     expect(foundFuture).toBeDefined();

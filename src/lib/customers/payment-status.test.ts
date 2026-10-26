@@ -194,12 +194,37 @@ describe("Customer directory sorting and 4-Tier ranking", () => {
       ),
     ).toBe(10);
 
-    // Tier 99: Closed · Not Interested (pushed to end of list)
+    // Tier 99: Closed · Not Interested or Cancelled Orders without dues
     expect(
       getCustomerDirectoryRank({
         workflow_state: { response_status: "do_not_contact" },
       }),
     ).toBe(99);
+
+    expect(
+      getCustomerDirectoryRank({
+        workflow_state: { response_status: "order_cancelled_delay" },
+      }),
+    ).toBe(99);
+
+    expect(
+      getCustomerDirectoryRank({
+        workflow_state: { response_status: "order_cancelled_change_of_plans" },
+      }),
+    ).toBe(99);
+
+    // Cancelled order with pending payment -> Tier 2 (needs payment follow-up / settlement)
+    expect(
+      getCustomerDirectoryRank(
+        {
+          workflow_state: {
+            response_status: "order_cancelled_delay",
+            payment_status: "payment_pending",
+          },
+        },
+        null,
+      ),
+    ).toBe(2);
   });
 
   it("sorts customers across tiers and places completed & fully paid customers back in the list by customer number", () => {

@@ -424,6 +424,8 @@ const updateCustomerCrmStatusInput = z.object({
       "payment_pending",
       "order_placed",
       "order_completed",
+      "order_cancelled_delay",
+      "order_cancelled_change_of_plans",
       "regular_future_requirement",
       "followup_pending",
       "awaiting_reply",
@@ -530,7 +532,9 @@ export const updateCustomerCrmStatusServerFn = createServerFn({ method: "POST" }
       targetIsActive = data.is_active;
     } else if (
       data.response_status === "inactive_no_response" ||
-      data.response_status === "do_not_contact"
+      data.response_status === "do_not_contact" ||
+      data.response_status === "order_cancelled_delay" ||
+      data.response_status === "order_cancelled_change_of_plans"
     ) {
       targetIsActive = false;
     } else if (
