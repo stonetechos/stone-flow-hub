@@ -1049,7 +1049,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <main
             id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full paper-texture px-2.5 sm:px-4 md:px-8 pt-2.5 sm:pt-5 md:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] transform-gpu"
+            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full paper-texture px-2.5 sm:px-4 md:px-8 pt-2.5 sm:pt-5 md:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             {/* Single consistent content container (Sprint 1.1): every
                 route previously decided its own width ad hoc, or didn't

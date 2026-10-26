@@ -61,12 +61,7 @@ export function FormLayout({
           e.currentTarget.requestSubmit();
         }
       }}
-      // pb leaves room for the sticky FormActions footer so the last field
-      // is never covered; the safe-area term keeps that clearance intact
-      // on devices with a bottom gesture bar (the footer itself grows by
-      // the same inset — see FormActions below — so this buffer must grow
-      // with it rather than being capped by max()).
-      className={cn("space-y-10 pb-[calc(7rem+env(safe-area-inset-bottom))]", className)}
+      className={cn("space-y-8", className)}
       noValidate
     >
       {children}
@@ -155,20 +150,15 @@ export function FormActions({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-background/98 backdrop-blur shadow-2xl",
+        "sticky bottom-0 z-40 -mx-2.5 sm:-mx-4 md:-mx-8 border-t border-border/80 bg-background/98 backdrop-blur shadow-lg",
         "supports-[backdrop-filter]:bg-background/90",
-        "pb-[max(0.5rem,env(safe-area-inset-bottom))]",
+        "py-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))]",
         className,
       )}
       role="group"
       aria-label="Form actions"
     >
-      {/* Base padding uses safe-area max() so a landscape cutout/curved
-          edge never eats into the buttons; md:pl swaps to the shell-inset
-          var to stay aligned with the desktop sidebar, same as before —
-          split into pl/pr (rather than the previous shorthand `px-6`) so
-          the md: override only ever touches the left side. */}
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-2 sm:gap-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-[var(--stos-shell-inset,0px)]">
+      <div className="mx-auto flex h-11 max-w-[1400px] items-center gap-2 sm:gap-3 px-3 sm:px-6">
         <div className="flex items-center gap-2">{extra}</div>
         <div className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
           {busy ? (
