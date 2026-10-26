@@ -3,7 +3,6 @@ import {
   LogOut,
   Search,
   Menu,
-  Star,
   Plus,
   Minus,
   ChevronsLeft,
@@ -115,10 +114,7 @@ function NavLinkRow({
   active,
   collapsed,
   onNavigate,
-  starred,
-  onToggleStar,
   isChild = false,
-  quickCreateTo,
 }: {
   to: string;
   label: string;
@@ -126,10 +122,7 @@ function NavLinkRow({
   active: boolean;
   collapsed?: boolean;
   onNavigate?: () => void;
-  starred: boolean;
-  onToggleStar: () => void;
   isChild?: boolean;
-  quickCreateTo?: string;
 }) {
   const link = (
     <Link
@@ -142,8 +135,8 @@ function NavLinkRow({
         collapsed
           ? "justify-center p-2"
           : isChild
-            ? "py-1.5 pl-2.5 pr-14 text-[12.5px]"
-            : "py-2 pl-3 pr-16 text-[13px]",
+            ? "py-1.5 px-2.5 text-[12.5px]"
+            : "py-2 px-3 text-[13px]",
         active
           ? "bg-cyan-600 text-white font-semibold shadow-xs"
           : "text-cyan-100/80 hover:bg-white/12 hover:text-white font-medium",
@@ -190,48 +183,6 @@ function NavLinkRow({
       ) : (
         link
       )}
-      {!collapsed && (
-        <div className="absolute right-1 flex items-center gap-0.5">
-          {quickCreateTo && (
-            <Link
-              to={quickCreateTo}
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate?.();
-              }}
-              title={`New ${label}`}
-              aria-label={`New ${label}`}
-              className={cn(
-                "rounded p-0.5 transition-all",
-                active
-                  ? "opacity-100 text-white hover:bg-cyan-700/80"
-                  : "opacity-0 group-hover:opacity-100 text-cyan-200 hover:text-white hover:bg-white/15",
-              )}
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Link>
-          )}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleStar();
-            }}
-            aria-label={starred ? `Unpin ${label}` : `Pin ${label}`}
-            aria-pressed={starred}
-            className={cn(
-              "rounded-sm p-1 transition-all",
-              "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
-              starred
-                ? "opacity-100 text-amber-300 drop-shadow-[0_0_4px_rgba(252,211,77,0.7)]"
-                : "opacity-0 group-hover:opacity-100 text-cyan-200/50 hover:text-white",
-            )}
-          >
-            <Star className={cn("h-3 w-3", starred && "fill-current")} aria-hidden />
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -248,8 +199,6 @@ function NavGroupRow({
   collapsed,
   onNavigate,
   checkActive,
-  starredIds,
-  onToggleStar,
 }: {
   group: ResolvedNavGroup;
   isOpen: boolean;
@@ -259,8 +208,6 @@ function NavGroupRow({
   collapsed?: boolean;
   onNavigate?: () => void;
   checkActive: (item: NavItemDef) => boolean;
-  starredIds: Set<string>;
-  onToggleStar: (id: string) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -406,9 +353,6 @@ function NavGroupRow({
               active={checkActive(item)}
               collapsed={collapsed}
               onNavigate={onNavigate}
-              starred={starredIds.has(item.id)}
-              onToggleStar={() => onToggleStar(item.id)}
-              quickCreateTo={item.quickCreateTo}
               isChild
             />
           ))}
@@ -439,7 +383,7 @@ function NavList({
   scrollable?: boolean;
 }) {
   const { t } = useTranslation();
-  const { prefs, update } = useNavPreferences();
+  const { prefs } = useNavPreferences();
   const userEmail = useCurrentUserEmail();
   const resolved = useMemo(
     () => resolveNav(prefs, isAdmin, isSuperAdmin ?? false, userRoles, userEmail ?? undefined),
@@ -453,9 +397,10 @@ function NavList({
     return activeItem?.group ?? "overview";
   }, [path]);
 
-  // Smart Accordion: keep active group open, toggle others
+  // Smart Accordion: keep active group open and overview open by default, toggle others
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     [activeGroupId]: true,
+    overview: true,
   });
 
   useEffect(() => {
@@ -469,27 +414,13 @@ function NavList({
 
   const toggleGroupOpen = (gid: string): void => {
     setOpenGroups((prev) => {
-      const isCurrentlyOpen = prev[gid] ?? gid === activeGroupId;
+      const isCurrentlyOpen = prev[gid] ?? (gid === activeGroupId || gid === "overview");
       return {
         ...prev,
         [gid]: !isCurrentlyOpen,
       };
     });
   };
-
-  const toggleStar = (id: string): void =>
-    update((p) => {
-      const starred = p.starred.includes(id)
-        ? p.starred.filter((s) => s !== id)
-        : [...p.starred, id];
-      return { ...p, starred };
-    });
-
-  const starredIds = useMemo(() => new Set(prefs.starred), [prefs.starred]);
-  const starredItems = useMemo(
-    () => resolved.starred.filter((item) => item.id !== "dashboard"),
-    [resolved.starred],
-  );
 
   return (
     <nav
@@ -500,39 +431,11 @@ function NavList({
       )}
       aria-label="Primary"
     >
-      {/* Pinned favorites rail at top (if user has pinned modules) */}
-      {starredItems.length > 0 && !collapsed && (
-        <section aria-labelledby="nav-pinned" className="pb-1">
-          <h4
-            id="nav-pinned"
-            className="mb-1 flex items-center gap-1.5 px-2 pt-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-200/70"
-          >
-            <Star className="h-3 w-3 text-amber-300" aria-hidden />
-            {t("nav.pinned", "Pinned")}
-          </h4>
-          <div className="space-y-0.5">
-            {starredItems.map((item) => (
-              <NavLinkRow
-                key={`starred-${item.id}`}
-                to={item.to}
-                label={t(`nav.items.${item.id}`, item.label)}
-                Icon={item.icon}
-                active={checkActive(item)}
-                collapsed={collapsed}
-                onNavigate={onNavigate}
-                starred
-                onToggleStar={() => toggleStar(item.id)}
-                quickCreateTo={item.quickCreateTo}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Primary Zoho-Style Accordion Groups */}
       {resolved.groups.map((group) => {
         if (group.items.length === 0 && group.id !== "overview" && !group.to) return null;
-        const isOpen = openGroups[group.id] ?? group.id === activeGroupId;
+        const isOpen =
+          openGroups[group.id] ?? (group.id === activeGroupId || group.id === "overview");
         const hasActiveChild = group.items.some((item) => checkActive(item));
         const cleanPath = path.split("?")[0];
         const cleanGroupTo = group.to?.split("?")[0];
@@ -552,8 +455,6 @@ function NavList({
             collapsed={collapsed}
             onNavigate={onNavigate}
             checkActive={checkActive}
-            starredIds={starredIds}
-            onToggleStar={toggleStar}
           />
         );
       })}

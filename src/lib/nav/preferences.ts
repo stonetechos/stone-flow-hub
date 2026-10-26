@@ -61,7 +61,7 @@ function normalize(p: Partial<NavPreferences> | null | undefined): NavPreference
   const knownGroups = new Set(NAV_GROUPS.map((g) => g.id));
   return {
     version: 1,
-    starred: (p.starred ?? []).filter((id) => known.has(id)),
+    starred: [],
     hidden: (p.hidden ?? []).filter((id) => known.has(id)),
     groupOrder: [
       "overview",
@@ -370,7 +370,7 @@ export function resolveNav(
         label: def?.label ?? gid,
         icon: def?.icon ?? LayoutDashboard,
         to: def?.to,
-        items: ordered.filter((i) => !starredSet.has(i.id) && !hiddenSet.has(i.id)),
+        items: ordered.filter((i) => !hiddenSet.has(i.id)),
       };
     })
     .filter((g) => g.items.length > 0 || g.id === "overview" || Boolean(g.to));
