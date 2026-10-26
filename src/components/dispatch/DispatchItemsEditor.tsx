@@ -168,8 +168,9 @@ export function DispatchItemsEditor({
                         type="number"
                         min={0}
                         step="0.01"
-                        value={Number(r.quantity)}
-                        onChange={(e) => update(idx, { quantity: Number(e.target.value) })}
+                        value={r.quantity === 0 ? "" : r.quantity}
+                        placeholder="0"
+                        onChange={(e) => update(idx, { quantity: Number(e.target.value || 0) })}
                         className="text-right"
                       />
                     </TableCell>

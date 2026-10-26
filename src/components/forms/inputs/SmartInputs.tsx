@@ -200,15 +200,39 @@ export const NumericInput = React.forwardRef<
       placeholder={placeholder}
       value={value ?? ""}
       onFocus={(e) => {
-        setCursorToEnd(e.currentTarget);
+        if (e.currentTarget.value === "0") {
+          try {
+            e.currentTarget.select();
+          } catch {
+            /* ignore */
+          }
+        } else {
+          setCursorToEnd(e.currentTarget);
+        }
         onFocus?.(e);
       }}
       onClick={(e) => {
-        setCursorToEnd(e.currentTarget);
+        if (e.currentTarget.value === "0") {
+          try {
+            e.currentTarget.select();
+          } catch {
+            /* ignore */
+          }
+        } else {
+          setCursorToEnd(e.currentTarget);
+        }
         onClick?.(e);
       }}
       onMouseUp={(e) => {
-        setCursorToEnd(e.currentTarget);
+        if (e.currentTarget.value === "0") {
+          try {
+            e.currentTarget.select();
+          } catch {
+            /* ignore */
+          }
+        } else {
+          setCursorToEnd(e.currentTarget);
+        }
         onMouseUp?.(e);
       }}
       onChange={(e) => {

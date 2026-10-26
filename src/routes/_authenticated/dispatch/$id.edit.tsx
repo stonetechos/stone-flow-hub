@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { QuickForm } from "@/components/forms/QuickForm";
 import { Field } from "@/components/forms/Field";
+import { FormLayout, FormSection, FormGrid, FormActions } from "@/components/forms/FormLayout";
 import { qk } from "@/lib/query-keys";
 import { toUserMessage } from "@/lib/errors";
 import {
@@ -240,190 +240,226 @@ function EditDispatchPage() {
         </div>
       </div>
 
-      <QuickForm
+      <FormLayout
         onSubmit={(e) => {
           e.preventDefault();
           mut.mutate({ form, items });
         }}
         busy={mut.isPending}
       >
-        <QuickForm.QuickFill>
-          <Field label="Quotation (Link Quote / Pull items & value)">
-            <Select
-              value={selectedQuoteId ?? "none"}
-              onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
+        <FormSection
+          title="Challan Details"
+          description="Verify quotation link, customer, order, and challan date."
+        >
+          <FormGrid>
+            <Field label="Quotation (Link Quote / Pull items & value)">
+              <Select
+                value={selectedQuoteId ?? "none"}
+                onValueChange={(v) => handleQuoteSelect(v === "none" ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select quotation to pull items…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None (Custom Challan) —</SelectItem>
+                  {(quotesList.data ?? []).map((q) => (
+                    <SelectItem key={q.id} value={q.id}>
+                      {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Customer">
+              <EntityPicker
+                type="customer"
+                value={form.customer_id ?? null}
+                onChange={(cid) => set("customer_id", cid)}
+                placeholder="Search customers…"
+              />
+            </Field>
+            <Field label="Sales order (optional)">
+              <Select
+                value={form.sales_order_id ?? "none"}
+                onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select SO (if applicable)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {(orders.data ?? []).map((o) => (
+                    <SelectItem key={o.id} value={o.id}>
+                      {o.so_no}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Delivery / Challan date" required>
+              <Input
+                type="date"
+                value={form.dispatch_date}
+                onChange={(e) => set("dispatch_date", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Status">
+              <Select
+                value={form.status}
+                onValueChange={(v) => set("status", v as DispatchCreateInput["status"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="in_transit">Dispatched for delivery</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </FormGrid>
+        </FormSection>
+
+        <FormSection
+          title="Transport & Logistics"
+          description="Carrier, vehicle, driver details, carting charges, and delivery site address."
+        >
+          <FormGrid>
+            <Field label="Carting agency / Carrier">
+              <CartingAgencySelect
+                value={form.carrier}
+                onChange={(c) => set("carrier", c)}
+                onAgencyAutoFill={({ phone, contactPerson }) => {
+                  if (!form.driver_phone && phone) set("driver_phone", phone);
+                  if (!form.driver_name && contactPerson) set("driver_name", contactPerson);
+                }}
+              />
+            </Field>
+            <Field label="Vehicle no.">
+              <Input
+                value={form.vehicle_no ?? ""}
+                onChange={(e) => set("vehicle_no", e.target.value || null)}
+                placeholder="MH 12 AB 1234"
+              />
+            </Field>
+            <Field label="LR / Consignment no.">
+              <Input
+                value={form.lr_no ?? ""}
+                onChange={(e) => set("lr_no", e.target.value || null)}
+                placeholder="LR / Bilty no."
+              />
+            </Field>
+            <Field label="Driver name">
+              <Input
+                value={form.driver_name ?? ""}
+                onChange={(e) => set("driver_name", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Driver phone">
+              <Input
+                value={form.driver_phone ?? ""}
+                onChange={(e) => set("driver_phone", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Tracking #">
+              <Input
+                value={form.tracking_no ?? ""}
+                onChange={(e) => set("tracking_no", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Delivered by">
+              <Input
+                value={form.delivered_by ?? ""}
+                onChange={(e) => set("delivered_by", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Received by">
+              <Input
+                value={form.received_by ?? ""}
+                onChange={(e) => set("received_by", e.target.value || null)}
+              />
+            </Field>
+            <Field label="Carting charge (₹)">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.carting_charge === 0 ? "" : form.carting_charge}
+                placeholder="0"
+                onChange={(e) => set("carting_charge", Number(e.target.value || 0))}
+              />
+            </Field>
+          </FormGrid>
+          <div className="mt-4">
+            <Field label="Site address">
+              <Textarea
+                rows={2}
+                value={form.site_address ?? ""}
+                onChange={(e) => set("site_address", e.target.value || null)}
+                placeholder="Delivery location or site address"
+              />
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="Delivery Challan Line Items (Products, Adhesives & Sealers)"
+          description="Specify natural stone products, adhesives, and sealers to accompany this delivery."
+        >
+          <DispatchItemsEditor
+            salesOrderId={form.sales_order_id ?? null}
+            quoteId={selectedQuoteId ?? null}
+            value={items}
+            onChange={setItems}
+            excludeDispatchId={id}
+          />
+        </FormSection>
+
+        <FormSection
+          title="Remarks & Internal Notes"
+          description="Additional dispatch instructions or internal references."
+        >
+          <FormGrid>
+            <Field label="Remarks">
+              <Textarea
+                rows={2}
+                value={form.remarks ?? ""}
+                onChange={(e) => set("remarks", e.target.value || null)}
+                placeholder="Remarks visible on challan"
+              />
+            </Field>
+            <Field label="Internal notes">
+              <Textarea
+                rows={2}
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value || null)}
+                placeholder="Internal team notes"
+              />
+            </Field>
+          </FormGrid>
+        </FormSection>
+
+        <FormActions
+          busy={mut.isPending}
+          secondary={
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => nav({ to: "/dispatch/$id", params: { id } })}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select quotation to pull items…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None (Custom Challan) —</SelectItem>
-                {(quotesList.data ?? []).map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.quote_no} — {q.customer?.name ?? "Customer"} ({formatInr(q.total)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Customer">
-            <EntityPicker
-              type="customer"
-              value={form.customer_id ?? null}
-              onChange={(cid) => set("customer_id", cid)}
-              placeholder="Search customers…"
-            />
-          </Field>
-          <Field label="Sales order (optional)">
-            <Select
-              value={form.sales_order_id ?? "none"}
-              onValueChange={(v) => set("sales_order_id", v === "none" ? null : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select SO (if applicable)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {(orders.data ?? []).map((o) => (
-                  <SelectItem key={o.id} value={o.id}>
-                    {o.so_no}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Delivery / Challan date" required>
-            <Input
-              type="date"
-              value={form.dispatch_date}
-              onChange={(e) => set("dispatch_date", e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Vehicle no.">
-            <Input
-              value={form.vehicle_no ?? ""}
-              onChange={(e) => set("vehicle_no", e.target.value || null)}
-            />
-          </Field>
-          <Field label="LR / Consignment no.">
-            <Input
-              value={form.lr_no ?? ""}
-              onChange={(e) => set("lr_no", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.QuickFill>
-        <QuickForm.MoreDetails>
-          <Field label="Status">
-            <Select
-              value={form.status}
-              onValueChange={(v) => set("status", v as DispatchCreateInput["status"])}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="planned">Planned</SelectItem>
-                <SelectItem value="in_transit">Dispatched for delivery</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Carting agency / Carrier">
-            <CartingAgencySelect
-              value={form.carrier}
-              onChange={(c) => set("carrier", c)}
-              onAgencyAutoFill={({ phone, contactPerson }) => {
-                if (!form.driver_phone && phone) set("driver_phone", phone);
-                if (!form.driver_name && contactPerson) set("driver_name", contactPerson);
-              }}
-            />
-          </Field>
-          <Field label="Driver name">
-            <Input
-              value={form.driver_name ?? ""}
-              onChange={(e) => set("driver_name", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Driver phone">
-            <Input
-              value={form.driver_phone ?? ""}
-              onChange={(e) => set("driver_phone", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Tracking #">
-            <Input
-              value={form.tracking_no ?? ""}
-              onChange={(e) => set("tracking_no", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Delivered by">
-            <Input
-              value={form.delivered_by ?? ""}
-              onChange={(e) => set("delivered_by", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Received by">
-            <Input
-              value={form.received_by ?? ""}
-              onChange={(e) => set("received_by", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Carting charge (₹)">
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.carting_charge}
-              onChange={(e) => set("carting_charge", Number(e.target.value))}
-            />
-          </Field>
-          <Field label="Site address" className="md:col-span-2">
-            <Textarea
-              rows={2}
-              value={form.site_address ?? ""}
-              onChange={(e) => set("site_address", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.MoreDetails>
-        <QuickForm.Advanced>
-          <Field label="Material" className="md:col-span-2">
-            <DispatchItemsEditor
-              salesOrderId={form.sales_order_id ?? null}
-              value={items}
-              onChange={setItems}
-              excludeDispatchId={id}
-            />
-          </Field>
-          <Field label="Remarks" className="md:col-span-2">
-            <Textarea
-              rows={2}
-              value={form.remarks ?? ""}
-              onChange={(e) => set("remarks", e.target.value || null)}
-            />
-          </Field>
-          <Field label="Internal notes" className="md:col-span-2">
-            <Textarea
-              rows={2}
-              value={form.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value || null)}
-            />
-          </Field>
-        </QuickForm.Advanced>
-        <QuickForm.Actions>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => nav({ to: "/dispatch/$id", params: { id } })}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={mut.isPending}>
-            {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
-          </Button>
-        </QuickForm.Actions>
-      </QuickForm>
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button type="submit" disabled={mut.isPending}>
+              {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
+            </Button>
+          }
+        />
+      </FormLayout>
     </div>
   );
 }
