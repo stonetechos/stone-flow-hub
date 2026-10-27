@@ -11,7 +11,7 @@
  * - Synced via GitHub Actions directly from Meta Instagram Graph API (300 authentic projects)
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Heart,
@@ -40,7 +40,8 @@ interface StoneGalleryFeedProps {
   className?: string;
 }
 
-const BATCH_SIZE = 30;
+const INITIAL_BATCH = 18;
+const BATCH_SIZE = 18;
 
 export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFeedProps) {
   const { i18n } = useTranslation();
@@ -49,13 +50,12 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
 
   // Directly powered by authentic posts synced via GitHub Actions into src/data/instagram-posts.json
   const [allPosts] = useState<InstagramPost[]>(() => INSTAGRAM_POSTS);
-  // Display at least 210 posts immediately (all 300 authentic executed works)
-  const [visibleCount, setVisibleCount] = useState<number>(() =>
-    Math.max(210, INSTAGRAM_POSTS.length),
-  );
+  // Start with 18 items (6 rows) for instant, lightweight 60fps render
+  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH);
   const [activeModalPost, setActiveModalPost] = useState<InstagramPost | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Keyboard navigation for multi-photo modal
   useEffect(() => {
@@ -78,15 +78,33 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeModalPost]);
 
-  // Infinite Scroll Handler: appends more posts as user scrolls down (up to allPosts.length)
-  const handleScroll = useCallback(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    if (scrollTop + clientHeight >= scrollHeight - 350) {
-      setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, allPosts.length));
-    }
-  }, [allPosts.length]);
+  // High-performance infinite scroll: uses IntersectionObserver on bottom sentinel
+  // instead of unthrottled onScroll event listeners to prevent layout recalculations & jank
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          setVisibleCount((prev) => {
+            if (prev >= allPosts.length) return prev;
+            return Math.min(prev + BATCH_SIZE, allPosts.length);
+          });
+        }
+      },
+      {
+        root: container,
+        rootMargin: "350px 0px", // Preload next batch before user reaches bottom
+        threshold: 0,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [allPosts.length, visibleCount]);
 
   // Unique posts only: never clone or repeat posts to create duplicates
   const visiblePosts = useMemo(() => {
@@ -126,11 +144,10 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
           </div>
         </div>
 
-        {/* 3-Column Scrollable Feed with Unique Posts and Expanded Height */}
+        {/* 3-Column Scrollable Feed with Native Momentum & Offscreen Culling */}
         <div
           ref={scrollContainerRef}
-          onScroll={handleScroll}
-          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scroll-smooth"
+          className="max-h-[640px] sm:max-h-[700px] lg:max-h-[750px] overflow-y-auto overscroll-y-contain pr-1 rounded-2xl scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
         >
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
             {visiblePosts.map((post, idx) => {
@@ -145,17 +162,19 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                 <div
                   key={`${post.id}-${idx}`}
                   onClick={() => handleOpenPost(post)}
+                  style={{
+                    contentVisibility: idx >= INITIAL_BATCH ? "auto" : undefined,
+                    containIntrinsicSize: idx >= INITIAL_BATCH ? "auto 120px" : undefined,
+                  }}
                   className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900 border border-border/60 hover:border-amber-500/50 shadow-2xs hover:shadow-md transition-all duration-300"
                   title={post.productName}
                 >
                   {/* Media: Video or Image */}
                   {isVideo ? (
                     <video
-                      src={post.mediaUrl}
+                      src={`${post.mediaUrl}#t=0.001`}
                       muted
                       playsInline
-                      autoPlay
-                      loop
                       preload="metadata"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108 pointer-events-none"
                     />
@@ -164,6 +183,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                       src={post.mediaUrl}
                       alt={post.caption}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
                     />
                   )}
@@ -181,7 +201,7 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
                   {/* Video indicator icon for reels */}
                   {isVideo && (
                     <div
-                      className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md shadow-xs pointer-events-none z-10"
+                      className="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-xs text-white p-1 rounded-md shadow-xs pointer-events-none z-10 flex items-center justify-center"
                       title="Video Walkthrough"
                     >
                       <Play className="h-3 w-3 fill-white text-white" />
@@ -215,11 +235,33 @@ export function StoneGalleryFeed({ onSelectProduct, className }: StoneGalleryFee
             })}
           </div>
 
-          {/* Bottom gentle indicator */}
+          {/* Sentinel element observed by IntersectionObserver to seamlessly load next batches */}
+          {visiblePosts.length < allPosts.length && (
+            <div
+              ref={sentinelRef}
+              className="h-8 w-full flex items-center justify-center py-2"
+              aria-hidden="true"
+            >
+              <div className="h-4 w-4 rounded-full border-2 border-amber-600/60 border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          {/* Bottom gentle indicator with manual trigger fallback */}
           <div className="py-2 text-center text-[10px] text-muted-foreground font-medium">
-            {visiblePosts.length < allPosts.length
-              ? "Scroll down to explore all atelier works..."
-              : `Showing all ${allPosts.length} executed atelier projects`}
+            {visiblePosts.length < allPosts.length ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, allPosts.length))
+                }
+                className="hover:text-foreground hover:underline cursor-pointer transition-colors"
+              >
+                Showing {visiblePosts.length} of {allPosts.length} works · Scroll or tap to load
+                more
+              </button>
+            ) : (
+              `Showing all ${allPosts.length} executed atelier projects`
+            )}
           </div>
         </div>
       </div>
