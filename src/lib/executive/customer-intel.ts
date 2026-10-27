@@ -71,7 +71,10 @@ async function computeCustomerScores(): Promise<CustomerScore[]> {
     const ledger = ledgerSummaries.get(c.id);
     // Real customer net balance: customer ledger accounts for all customer payments,
     // receipts, advance payments, and credit/debit notes.
-    const outstanding = ledger ? Math.max(0, ledger.balance) : invoiceOutstanding;
+    const rawOutstanding = ledger ? Math.max(0, ledger.balance) : invoiceOutstanding;
+    // Filter out floating point precision dust and sub-rupee rounding (< ₹1 is treated as settled)
+    const roundedOutstanding = Math.round(rawOutstanding * 100) / 100;
+    const outstanding = roundedOutstanding >= 1 ? roundedOutstanding : 0;
     const overdueDays =
       outstanding <= 0
         ? 0

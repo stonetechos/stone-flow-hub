@@ -90,7 +90,10 @@ export const CustomerHealthProvider: InsightProvider = {
       let points = 0;
       const reasons: string[] = [];
 
-      if (score.outstanding > 0) {
+      // A customer has an actionable collection balance only if rounded amount is at least ₹1
+      const hasOutstanding = Math.round(score.outstanding) >= 1;
+
+      if (hasOutstanding) {
         if (score.overdue_days > THRESHOLDS.overdueDaysMajor) {
           points += 3;
           reasons.push(
@@ -132,7 +135,7 @@ export const CustomerHealthProvider: InsightProvider = {
 
       let title: string;
       let actionLabel: string;
-      if (score.outstanding > 0) {
+      if (hasOutstanding) {
         title = `${score.name} — ${formatInr(score.outstanding)} balance (${score.overdue_days > 0 ? `${score.overdue_days}d overdue · ` : ""}${level})`;
         actionLabel = `Collect ${formatInr(score.outstanding)} · ${score.name}`;
       } else if (score.orders_count > 0) {
@@ -154,8 +157,11 @@ export const CustomerHealthProvider: InsightProvider = {
         why: `${score.name} is classified "${level}": ${reasons.join("; ")}.`,
         action: { label: actionLabel, href: `/customers/${score.customer_id}` },
         entity: { type: "customer", id: score.customer_id, label: score.name },
-        value: score.outstanding > 0 ? score.outstanding : undefined,
-        priority: computePriority({ urgencyDays: points * 10, valueInr: score.outstanding }),
+        value: hasOutstanding ? score.outstanding : undefined,
+        priority: computePriority({
+          urgencyDays: points * 10,
+          valueInr: hasOutstanding ? score.outstanding : 0,
+        }),
         generatedAt: now,
       });
     }

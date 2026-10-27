@@ -46,14 +46,11 @@ import {
   CheckCircle,
   CheckCircle2,
   CheckSquare,
-  ClipboardCheck,
   Clock,
   Factory,
   FileText,
   Flame,
   LineChart,
-  Package,
-  Plus,
   Receipt,
   Activity,
   TrendingUp,
@@ -312,7 +309,6 @@ function DashboardPage() {
               />
             </div>
           )}
-          <QuickActionsDock />
         </div>
       )}
 
@@ -1287,74 +1283,6 @@ function TodayTimeline({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Section 10 — Quick Actions floating dock                                    */
-/* -------------------------------------------------------------------------- */
-
-function QuickActionsDock() {
-  const { t } = useTranslation();
-
-  const actions: Array<{ to: string; label: string; icon: React.ReactNode }> = [
-    {
-      to: "/customers",
-      label: t("dashboard.actions.customer"),
-      icon: <Users className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/enquiries",
-      label: t("dashboard.actions.enquiry"),
-      icon: <FileText className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/quotes/new",
-      label: t("dashboard.actions.quote"),
-      icon: <FileText className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/sales-orders/new",
-      label: t("dashboard.actions.salesOrder"),
-      icon: <Package className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/purchase-orders/new",
-      label: t("dashboard.actions.purchaseOrder"),
-      icon: <ClipboardCheck className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/receipts/new",
-      label: t("dashboard.actions.receipt"),
-      icon: <Wallet className="h-3.5 w-3.5" />,
-    },
-    {
-      to: "/dispatch/new",
-      label: t("dashboard.actions.dispatch"),
-      icon: <Truck className="h-3.5 w-3.5" />,
-    },
-  ];
-  return (
-    <div
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 hidden md:flex justify-center px-3"
-      aria-label="Quick create actions"
-    >
-      <div className="card-3d-milky pointer-events-auto flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full px-3.5 py-1.5 shadow-2xl backdrop-blur-md">
-        <span className="flex items-center gap-1 pl-1 pr-1 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-engraved-kicker">
-          <Plus className="inline h-3.5 w-3.5 text-blue-600" aria-hidden /> {t("common.new", "New")}
-        </span>
-        {actions.map((a) => (
-          <Link
-            key={a.to}
-            to={a.to}
-            className="engraved-well flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-slate-700 transition-all hover:scale-105 hover:text-engraved-blue"
-          >
-            {a.icon}
-            {a.label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /* Shared building blocks                                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -1836,16 +1764,24 @@ function buildSuggestions(
   topInsights: ProcessedInsight[],
   t: TFunction,
 ): Array<{ label: string; to: string; isRedFlag?: boolean; priority?: number }> {
-  return topInsights.slice(0, 5).map((i) => {
-    const isRedFlag =
-      i.title.includes("Red Flag") || i.tone === "danger" || i.normalizedPriority >= 95;
-    return {
-      label: localizeInsightAction(i.action.label, t),
-      to: i.action.href,
-      isRedFlag,
-      priority: i.normalizedPriority,
-    };
-  });
+  return topInsights
+    .filter((i) => {
+      // Discard any collection action with zero or non-positive amount (e.g. "Collect ₹0 · ...")
+      const rawLabel = i.action?.label ?? "";
+      if (/collect\s*(₹|rs\.?)?\s*0(\.00?)?(\s|·|$)/i.test(rawLabel)) return false;
+      return true;
+    })
+    .slice(0, 5)
+    .map((i) => {
+      const isRedFlag =
+        i.title.includes("Red Flag") || i.tone === "danger" || i.normalizedPriority >= 95;
+      return {
+        label: localizeInsightAction(i.action.label, t),
+        to: i.action.href,
+        isRedFlag,
+        priority: i.normalizedPriority,
+      };
+    });
 }
 
 function displayName(
