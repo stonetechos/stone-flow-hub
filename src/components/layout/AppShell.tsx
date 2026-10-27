@@ -44,7 +44,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GlobalSearchDialog } from "@/components/global/GlobalSearchDialog";
-import { QuickCreateMenu } from "@/components/global/QuickCreateMenu";
 import { NotificationsBell } from "@/components/global/NotificationsBell";
 import { Breadcrumbs } from "@/components/global/Breadcrumbs";
 import { LanguageToggle } from "@/components/global/LanguageToggle";
@@ -666,7 +665,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const uid = useCurrentUserId();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   // Sprint 1.7.1, Part 6/7 — useRoles() is the single client-side source of
   const roles = useRoles();
@@ -681,7 +679,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     toast(t("shortcuts.title", "Keyboard shortcuts"), {
       description: t(
         "shortcuts.description",
-        "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · C — quick create · / — search · ? — help",
+        "⌘/Ctrl+K — search · ⌘/Ctrl+B — toggle sidebar · / — search · ? — help",
       ),
     });
   }, [t]);
@@ -710,11 +708,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         if (e.key === "/") {
           e.preventDefault();
           setSearchOpen(true);
-          return;
-        }
-        if (e.key.toLowerCase() === "c") {
-          e.preventDefault();
-          setCreateOpen((v) => !v);
           return;
         }
         if (e.key === "?") {
@@ -1019,7 +1012,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DemoBadge />
               </div>
 
-              <QuickCreateMenu open={createOpen} onOpenChange={setCreateOpen} />
               <div className="hidden sm:inline-flex">
                 <SyncStatusIndicator />
               </div>
